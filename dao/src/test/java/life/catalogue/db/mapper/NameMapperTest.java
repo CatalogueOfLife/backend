@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.vocab.Gender;
 import life.catalogue.api.vocab.NomStatus;
 
 import org.gbif.nameparser.api.Rank;
@@ -68,6 +69,8 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   Name createTestEntity(int dkey) {
     Name n = TestEntityGenerator.newName(dkey, "sk1");
     n.setNomStatus(NomStatus.ACCEPTABLE);
+    n.setGender(Gender.FEMININE);
+    n.setGenderAgreement(true);
     n.setPublishedInPage("223");
     n.setPublishedInPageLink("http://bhl.org/pub/1234567");
     n.setNomenclaturalNote("nom. illeg.");

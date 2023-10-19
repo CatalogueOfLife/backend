@@ -436,6 +436,9 @@ public enum Issue {
 
   ORDINAL_INVALID(NAME_USAGE, Level.WARNING,
     "The ordinal to sort taxon children is not a valid integer number."),
+
+  GENDER_INVALID(NAME, Level.WARNING,
+    "The gender valid of the name could not be interpreted."),
   ;
 
   /**

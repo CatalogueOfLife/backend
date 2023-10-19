@@ -14,16 +14,22 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2023-10-19 add ordinal ordering and name interpreting issues
+### 2023-10-19 add ordinal ordering, gender and name interpreting issues
 ```sql
 ALTER TABLE name_usage ADD COLUMN ordinal INTEGER;
 ALTER TABLE name_usage_archive ADD COLUMN ordinal INTEGER;
+
+ALTER TABLE name ADD COLUMN gender GENDER;
+ALTER TABLE name ADD COLUMN gender_agreement BOOLEAN;
+ALTER TABLE name_usage_archive ADD COLUMN gender GENDER;
+ALTER TABLE name_usage_archive ADD COLUMN gender_agreement BOOLEAN;
 
 ALTER TYPE ISSUE ADD VALUE 'NOTHO_INVALID';
 ALTER TYPE ISSUE ADD VALUE 'ORIGINAL_SPELLING_INVALID';
 ALTER TYPE ISSUE ADD VALUE 'UNINOMIAL_FIELD_MISPLACED';
 ALTER TYPE ISSUE ADD VALUE 'INFRAGENERIC_FIELD_MISPLACED';
 ALTER TYPE ISSUE ADD VALUE 'ORDINAL_INVALID';
+ALTER TYPE ISSUE ADD VALUE 'GENDER_INVALID';
 ```
 
 ### 2023-10-18 add original spelling flag

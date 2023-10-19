@@ -278,7 +278,8 @@ CREATE TYPE ISSUE AS ENUM (
   'ORIGINAL_SPELLING_INVALID',
   'UNINOMIAL_FIELD_MISPLACED',
   'INFRAGENERIC_FIELD_MISPLACED',
-  'ORDINAL_INVALID'
+  'ORDINAL_INVALID',
+  'GENDER_INVALID'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -1106,6 +1107,8 @@ CREATE TABLE name_usage_archive (
   n_code NOMCODE,
   n_nom_status NOMSTATUS,
   n_original_spelling BOOLEAN,
+  n_gender_agreement BOOLEAN,
+  n_gender GENDER,
   n_origin ORIGIN NOT NULL,
   n_type NAMETYPE NOT NULL,
   n_scientific_name TEXT NOT NULL,
@@ -1264,6 +1267,8 @@ CREATE TABLE name (
   code NOMCODE,
   nom_status NOMSTATUS,
   original_spelling BOOLEAN,
+  gender_agreement BOOLEAN,
+  gender GENDER,
   origin ORIGIN NOT NULL,
   type NAMETYPE NOT NULL,
   scientific_name TEXT NOT NULL,

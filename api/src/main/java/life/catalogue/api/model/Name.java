@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.jackson.IsEmptyFilter;
+import life.catalogue.api.vocab.Gender;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
@@ -141,6 +142,16 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Boolean originalSpelling;
 
   /**
+   * Flag that indicates for bi/trinomials whether the (infra)species epithet must follow and agree with the gender of the genus.
+   */
+  private Boolean genderAgreement;
+
+  /**
+   * Gender of the name, i.e. the genus in case of bi/trinomials.
+   */
+  private Gender gender;
+
+  /**
    * The reference the name was originally published in.
    */
   private String publishedInId;
@@ -223,6 +234,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.code = n.code;
     this.nomStatus = n.nomStatus;
     this.originalSpelling = n.originalSpelling;
+    this.genderAgreement = n.genderAgreement;
+    this.gender = n.gender;
     this.publishedInId = n.publishedInId;
     this.publishedInPage = n.publishedInPage;
     this.publishedInYear = n.publishedInYear;
@@ -267,6 +280,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setCode(builder.code);
     setNomStatus(builder.nomStatus);
     setOriginalSpelling(builder.originalSpelling);
+    setGenderAgreement(builder.genderAgreement);
+    setGender(builder.gender);
     setPublishedInId(builder.publishedInId);
     setPublishedInPage(builder.publishedInPage);
     publishedInPageLink = builder.publishedInPageLink;
@@ -298,6 +313,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     pn.setCode(n.getCode());
     pn.setCandidatus(pn.isCandidatus());
     pn.setNotho(n.getNotho());
+    pn.setOriginalSpelling(n.isOriginalSpelling());
     pn.setNomenclaturalNote(n.getRemarks());
     pn.setType(n.getType());
     return pn;
@@ -336,6 +352,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.code = copy.getCode();
     builder.nomStatus = copy.getNomStatus();
     builder.originalSpelling = copy.isOriginalSpelling();
+    builder.genderAgreement = copy.genderAgreement;
+    builder.gender = copy.gender;
     builder.publishedInId = copy.getPublishedInId();
     builder.publishedInPage = copy.getPublishedInPage();
     builder.publishedInPageLink = copy.getPublishedInPageLink();
@@ -516,6 +534,22 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   public void setOriginalSpelling(Boolean originalSpelling) {
     this.originalSpelling = originalSpelling;
+  }
+
+  public Boolean getGenderAgreement() {
+    return genderAgreement;
+  }
+
+  public void setGenderAgreement(Boolean genderAgreement) {
+    this.genderAgreement = genderAgreement;
+  }
+
+  public Gender getGender() {
+    return gender;
+  }
+
+  public void setGender(Gender gender) {
+    this.gender = gender;
   }
 
   public URI getLink() {
@@ -797,6 +831,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && code == name.code
            && nomStatus == name.nomStatus
            && Objects.equals(originalSpelling, name.originalSpelling)
+           && Objects.equals(genderAgreement, name.genderAgreement)
+           && gender == name.gender
            && Objects.equals(publishedInId, name.publishedInId)
            && Objects.equals(publishedInPage, name.publishedInPage)
            && Objects.equals(publishedInPageLink, name.publishedInPageLink)
@@ -811,7 +847,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
   }
 
   @Override
@@ -889,6 +925,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private NomCode code;
     private NomStatus nomStatus;
     private Boolean originalSpelling;
+    private Boolean genderAgreement;
+    private Gender gender;
     private String publishedInId;
     private String publishedInPage;
     private String publishedInPageLink;
@@ -1036,6 +1074,16 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder originalSpelling(Boolean val) {
       originalSpelling = val;
+      return this;
+    }
+
+    public Builder genderAgreement(Boolean val) {
+      genderAgreement = val;
+      return this;
+    }
+
+    public Builder gender(Gender val) {
+      gender = val;
       return this;
     }
 
