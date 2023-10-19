@@ -149,6 +149,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(EnumSet.class, new EnumSetSerializer());
     kryo.register(EstimateType.class);
     kryo.register(Frequency.class);
+    kryo.register(Gender.class);
     kryo.register(Gazetteer.class);
     kryo.register(GeoTime.class);
     kryo.register(GeoTimeType.class);
