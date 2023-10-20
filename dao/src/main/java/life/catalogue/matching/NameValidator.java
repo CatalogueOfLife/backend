@@ -251,7 +251,7 @@ public class NameValidator {
       if (n instanceof Name) {
         Name name = (Name) n;
         // gender agreement only applicable to bi/trinomen with a terminal epithet
-        if (name.hasGenderAgreement() && name.getTerminalEpithet() == null) {
+        if (name.hasGenderAgreement() != null && name.getTerminalEpithet() == null) {
           issues.addIssue(Issue.GENDER_AGREEMENT_NOT_APPLICABLE);
         }
       }
