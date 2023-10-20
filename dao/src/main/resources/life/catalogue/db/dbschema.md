@@ -45,6 +45,8 @@ CREATE INDEX ON taxon_property (dataset_key, sector_key);
 CREATE INDEX ON taxon_property (dataset_key, verbatim_key);
 CREATE INDEX ON taxon_property (dataset_key, reference_id);
 CREATE INDEX ON taxon_property (dataset_key, property);
+
+ALTER TYPE ENTITYTYPE ADD VALUE 'TAXON_PROPERTY' AFTER 'TAXON_CONCEPT_RELATION';
 ```
 
 ### 2023-10-20 add ordinal ordering, gender, remarks and more interpreting issues
