@@ -247,7 +247,7 @@ public class InterpreterBaseTest {
   }
 
   private void assertDistributions(Gazetteer std, String loc, String... expectedIDs) {
-    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), new BiConsumer<Distribution, VerbatimRecord>() {
+    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), null, new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
       public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
         // dont do anything

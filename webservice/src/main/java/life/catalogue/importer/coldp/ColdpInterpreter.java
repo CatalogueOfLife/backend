@@ -191,7 +191,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   String getRemarks(VerbatimRecord v) {
-    return replaceHtml(v.get(ColdpTerm.remarks), true);
+    return getRemarks(v, ColdpTerm.remarks);
   }
 
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
@@ -230,6 +230,7 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.transliteration,
         ColdpTerm.language,
         ColdpTerm.sex,
+        ColdpTerm.remarks,
         ColdpTerm.area,
         ColdpTerm.country
     );
@@ -240,13 +241,16 @@ public class ColdpInterpreter extends InterpreterBase {
       return super.interpretDistributionByGazetteer(rec, this::setReference,
         ColdpTerm.areaID,
         ColdpTerm.gazetteer,
-        ColdpTerm.status);
+        ColdpTerm.status,
+        ColdpTerm.remarks
+      );
 
     } else if (rec.hasTerm(ColdpTerm.area)) {
       return createDistributions(Gazetteer.TEXT,
         rec.get(ColdpTerm.area),
         rec.get(ColdpTerm.status),
-        rec, this::setReference
+        rec, ColdpTerm.remarks,
+        this::setReference
       );
     }
     return Collections.emptyList();
@@ -261,7 +265,9 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.creator,
         ColdpTerm.created,
         ColdpTerm.title,
-        ColdpTerm.format);
+        ColdpTerm.format,
+        ColdpTerm.remarks
+    );
   }
 
   public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec) {

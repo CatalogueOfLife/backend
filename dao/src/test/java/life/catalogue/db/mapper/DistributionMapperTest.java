@@ -31,7 +31,8 @@ public class DistributionMapperTest extends TaxonExtensionMapperTest<Distributio
         }
 				d.setArea(area);
 				d.setStatus(status);
-				ds.add(TestEntityGenerator.setUserDate(d));
+        d.setRemarks("this isn't right");
+        ds.add(TestEntityGenerator.setUserDate(d));
 			}
 		}
 		return ds;

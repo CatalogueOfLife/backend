@@ -166,19 +166,19 @@ public class DwcInterpreter extends InterpreterBase {
       return createDistributions(null,
           rec.getRaw(DwcTerm.locationID),
           rec.get(DwcTerm.occurrenceStatus),
-          rec, this::setReference);
+          rec, DwcTerm.occurrenceRemarks, this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
       return createDistributions(Gazetteer.ISO,
           rec.getFirst(DwcTerm.countryCode, DwcTerm.country),
           rec.get(DwcTerm.occurrenceStatus),
-          rec, this::setReference);
+        rec, DwcTerm.occurrenceRemarks, this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.locality)) {
       return createDistributions(Gazetteer.TEXT,
           rec.get(DwcTerm.locality),
           rec.get(DwcTerm.occurrenceStatus),
-          rec, this::setReference);
+        rec, DwcTerm.occurrenceRemarks, this::setReference);
       
     } else {
       rec.addIssue(Issue.DISTRIBUTION_INVALID);
@@ -193,6 +193,7 @@ public class DwcInterpreter extends InterpreterBase {
         null,
         DcTerm.language,
         DwcTerm.sex,
+        DwcTerm.taxonRemarks,
         DwcTerm.locality,
         DwcTerm.countryCode, DwcTerm.country
     );
@@ -214,7 +215,9 @@ public class DwcInterpreter extends InterpreterBase {
         DcTerm.creator,
         DcTerm.created,
         DcTerm.title,
-        DcTerm.format);
+        DcTerm.format,
+        DcTerm.description
+    );
   }
 
   List<Media> interpretAcMedia(VerbatimRecord rec) {
@@ -226,7 +229,8 @@ public class DwcInterpreter extends InterpreterBase {
       Set.of(DcTerm.creator, DcElement.creator),
       Set.of(XmpTerm.CreateDate, DcTerm.created),
       Set.of(DcTerm.title, DcElement.title),
-      Set.of(DcTerm.format)
+      Set.of(DcTerm.format),
+      Set.of(AcTerm.comments, AcTerm.reviewerComments)
     );
   }
 

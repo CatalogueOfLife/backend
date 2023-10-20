@@ -101,6 +101,13 @@ public class InterpreterBase {
     return doc.wholeText().trim();
   }
 
+  protected static String getRemarks(VerbatimRecord v, Term tRemarks) {
+    if (tRemarks != null) {
+      return replaceHtml(v.get(tRemarks), true);
+    }
+    return null;
+  }
+
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){
     return setReference(v, refIdTerm, refIdConsumer, null);
   }
@@ -201,12 +208,13 @@ public class InterpreterBase {
   }
 
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
-                                                     Term name, Term translit, Term lang, Term sex, Term area, Term... countryTerms) {
+                                                     Term name, Term translit, Term lang, Term sex, Term remarks, Term area, Term... countryTerms) {
     String vname = rec.get(name);
     if (vname != null) {
       VernacularName vn = new VernacularName();
       vn.setVerbatimKey(rec.getId());
       vn.setName(vname);
+      vn.setRemarks(getRemarks(rec, remarks));
       
       if (translit != null) {
         vn.setLatin(rec.get(translit));
@@ -230,7 +238,7 @@ public class InterpreterBase {
   }
   
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                                Term tArea, Term tGazetteer, Term tStatus) {
+                                                                Term tArea, Term tGazetteer, Term tStatus, Term tRemarks) {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
@@ -241,12 +249,13 @@ public class InterpreterBase {
         gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
             .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
       }
-      return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, addReference);
+      return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, tRemarks, addReference);
     }
     return Collections.emptyList();
   }
   
   protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
+                                                   Term tRemarks,
                                                    BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
 
@@ -254,7 +263,7 @@ public class InterpreterBase {
           .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec);
 
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, addReference) );
+        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, tRemarks, addReference) );
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
@@ -279,7 +288,7 @@ public class InterpreterBase {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
                 area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
-            distributions.add(createDistribution(rec, area, status, addReference));
+            distributions.add(createDistribution(rec, area, status, tRemarks, addReference));
           }
         }
         return distributions;
@@ -298,18 +307,19 @@ public class InterpreterBase {
     return words;
   }
 
-  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, BiConsumer<Distribution, VerbatimRecord> addReference) {
+  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, Term tRemarks, BiConsumer<Distribution, VerbatimRecord> addReference) {
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
     d.setArea(area);
     d.setStatus(status);
+    d.setRemarks(getRemarks(rec, tRemarks));
     addReference.accept(d, rec);
     return d;
   }
 
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
-                                       Set<Term> type, Set<Term> url, Set<Term> link, Set<Term> license, Set<Term> creator, Set<Term> created, Set<Term> title, Set<Term> format) {
-    return interpretMedia(rec, addReference, selectFirst(type, rec), selectFirst(url, rec), selectFirst(link, rec), selectFirst(license, rec), selectFirst(creator, rec), selectFirst(created, rec), selectFirst(title, rec), selectFirst(format, rec));
+                                       Set<Term> type, Set<Term> url, Set<Term> link, Set<Term> license, Set<Term> creator, Set<Term> created, Set<Term> title, Set<Term> format, Set<Term> remarks) {
+    return interpretMedia(rec, addReference, selectFirst(type, rec), selectFirst(url, rec), selectFirst(link, rec), selectFirst(license, rec), selectFirst(creator, rec), selectFirst(created, rec), selectFirst(title, rec), selectFirst(format, rec), selectFirst(remarks, rec));
   }
 
   private static Term selectFirst(Set<Term> terms, VerbatimRecord rec) {
@@ -324,7 +334,7 @@ public class InterpreterBase {
   }
 
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
-                 Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format) {
+                 Term type, Term url, Term link, Term license, Term creator, Term created, Term title, Term format, Term remarks) {
     // require media or link url
     if (rec.hasTerm(url) || rec.hasTerm(link)) {
       Media m = new Media();
@@ -337,6 +347,7 @@ public class InterpreterBase {
       m.setTitle(rec.get(title));
       m.setFormat(MediaInterpreter.parseMimeType(rec.get(format)));
       m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
+      m.setRemarks(getRemarks(rec, remarks));
       MediaInterpreter.detectType(m);
       
       addReference.accept(m, rec);

@@ -34,6 +34,7 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
       v.setSex(Sex.MALE);
       v.setCountry(Country.FRANCE);
       v.setArea("Bretagne");
+      v.setRemarks("ts ts ts");
 			objs.add(TestEntityGenerator.setUserDate(v));
 		}
 		// now sort by name as this is the order we expect in listByTaxon

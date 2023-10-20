@@ -1549,6 +1549,7 @@ CREATE TABLE vernacular_name (
   area TEXT,
   sex SEX,
   reference_id TEXT,
+  remarks TEXT,
   doc tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
@@ -1578,6 +1579,7 @@ CREATE TABLE distribution (
   taxon_id TEXT NOT NULL,
   area TEXT NOT NULL,
   reference_id TEXT,
+  remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
@@ -1627,7 +1629,7 @@ CREATE TABLE estimate (
   target_name TEXT,
   target_authorship TEXT,
   reference_id TEXT,
-  note TEXT,
+  remarks TEXT,
   PRIMARY KEY (dataset_key, id)
 ) PARTITION BY HASH (dataset_key);
 
@@ -1655,6 +1657,7 @@ CREATE TABLE media (
   captured_by TEXT,
   link TEXT,
   reference_id TEXT,
+  remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,

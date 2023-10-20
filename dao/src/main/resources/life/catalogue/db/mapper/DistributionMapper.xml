@@ -13,6 +13,7 @@
     d.gazetteer,
     d.status,
     d.reference_id,
+    d.remarks,
     d.created,
     d.created_by,
     d.modified,
@@ -33,6 +34,7 @@
     gazetteer,
     status,
     reference_id,
+    remarks,
     created_by,
     modified_by
   </sql>
@@ -46,6 +48,7 @@
     #{obj.area.gazetteer}::GAZETTEER,
     #{obj.status}::DISTRIBUTIONSTATUS,
     #{obj.referenceId},
+    #{obj.remarks},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>

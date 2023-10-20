@@ -74,6 +74,7 @@ public class AcefInterpreter extends InterpreterBase {
         AcefTerm.TransliteratedName,
         AcefTerm.Language,
         null,
+        null,
         AcefTerm.Area,
         AcefTerm.Country
     );
@@ -83,7 +84,8 @@ public class AcefInterpreter extends InterpreterBase {
     return super.interpretDistributionByGazetteer(rec, this::setReference,
         AcefTerm.DistributionElement,
         AcefTerm.StandardInUse,
-        AcefTerm.DistributionStatus);
+        AcefTerm.DistributionStatus,
+      null);
   }
   
   private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {

@@ -33,6 +33,7 @@ public class MediaMapperTest extends TaxonExtensionMapperTest<Media, MediaMapper
         d.setLicense(l);
         d.setLink(RandomUtils.randomUri());
         d.setUrl(RandomUtils.randomUri());
+        d.setRemarks("this isn't right");
         ds.add(TestEntityGenerator.setUserDate(d));
       }
     }

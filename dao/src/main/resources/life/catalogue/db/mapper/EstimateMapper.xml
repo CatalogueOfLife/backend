@@ -13,7 +13,7 @@
     ${alias}target_authorship AS ${prefix}target_authorship,
     ${alias}target_rank AS ${prefix}target_rank,
     ${alias}target_code AS ${prefix}target_code,
-    ${alias}note AS ${prefix}note,
+    ${alias}remarks AS ${prefix}remarks,
     ${alias}modified AS ${prefix}modified,
     ${alias}modified_by AS ${prefix}modified_by,
     ${alias}created AS ${prefix}created,
@@ -43,7 +43,7 @@
     target_authorship,
     target_rank,
     target_code,
-    note,
+    remarks,
     modified,
     modified_by,
     estimate,
@@ -109,7 +109,6 @@
 
   <resultMap id="estimateResultMap" type="SpeciesEstimate" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="remarks" column="note"/>
     <association property="target" javaType="SimpleNameLink" autoMapping="true" columnPrefix="target_"/>
   </resultMap>
 

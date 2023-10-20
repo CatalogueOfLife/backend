@@ -16,6 +16,7 @@
     vn.area,
     vn.sex,
     vn.reference_id,
+    vn.remarks,
     vn.created,
     vn.created_by,
     vn.modified,
@@ -38,6 +39,7 @@
     area,
     sex,
     reference_id,
+    remarks,
     created_by,
     modified_by
   </sql>
@@ -54,6 +56,7 @@
     #{obj.area},
     #{obj.sex}::SEX,
     #{obj.referenceId},
+    #{obj.remarks},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>

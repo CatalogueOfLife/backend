@@ -18,6 +18,7 @@
     m.license,
     m.link,
     m.reference_id,
+    m.remarks,
     m.created,
     m.created_by,
     m.modified,
@@ -42,6 +43,7 @@
     license,
     link,
     reference_id,
+    remarks,
     created_by,
     modified_by
   </sql>
@@ -60,6 +62,7 @@
     #{obj.license}::LICENSE,
     #{obj.link},
     #{obj.referenceId},
+    #{obj.remarks},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>
