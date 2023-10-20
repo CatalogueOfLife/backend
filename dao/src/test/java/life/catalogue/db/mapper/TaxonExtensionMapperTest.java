@@ -1,10 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SectorScopedEntity;
-import life.catalogue.api.model.Taxon;
-import life.catalogue.api.model.TaxonExtension;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
 
@@ -19,7 +16,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-abstract class TaxonExtensionMapperTest<T extends SectorScopedEntity<Integer>, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
+abstract class TaxonExtensionMapperTest<T extends ExtensionEntity, M extends TaxonExtensionMapper<T>> extends MapperTestBase<M> {
   
   Taxon tax;
   List<T> originals;

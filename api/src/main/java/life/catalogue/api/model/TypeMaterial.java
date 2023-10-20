@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Type material should only be associated with the original name, not with a recombination.
  */
-public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, Referenced, Remarkable {
+public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScoped, Referenced, Remarkable {
 
   private Integer sectorKey;
   private Integer verbatimKey;

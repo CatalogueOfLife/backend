@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  *
  */
-public interface SectorEntity extends DatasetScoped {
+public interface SectorScoped extends DatasetScoped {
 
   @JsonIgnore
   default DSID<Integer> getSectorDSID() {

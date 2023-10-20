@@ -199,7 +199,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     TaxonInfo info = new TaxonInfo();
     info.setTaxon(taxon);
     fillTaxonInfo(session, info, null, true, true, true, true, true, true,
-      true, true, true, true);
+      true, true, true, true, true);
     return info;
   }
 
@@ -219,6 +219,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
                                    boolean loadTypeMaterial,
                                    boolean loadTreatments,
                                    boolean loadNameRelations,
+                                   boolean loadProperties,
                                    boolean loadConceptRelations,
                                    boolean loadSpeciesInteractions) {
     Taxon taxon = info.getTaxon();
@@ -290,6 +291,12 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
       info.setVernacularNames(vm.listByTaxon(taxon));
       info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+    }
+
+    if (loadProperties) {
+      var mapper = session.getMapper(TaxonPropertyMapper.class);
+      info.setProperties(mapper.listByTaxon(taxon));
+      info.getProperties().forEach(p -> refIds.add(p.getReferenceId()));
     }
 
     if (loadNameRelations) {

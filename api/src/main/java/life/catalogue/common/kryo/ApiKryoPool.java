@@ -80,6 +80,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Synonym.class);
     kryo.register(Taxon.class);
     kryo.register(TaxonConceptRelation.class);
+    kryo.register(TaxonProperty.class);
     kryo.register(Treatment.class);
     kryo.register(TypeMaterial.class);
     kryo.register(VerbatimRecord.class);

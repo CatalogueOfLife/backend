@@ -1672,6 +1672,35 @@ CREATE INDEX ON media (dataset_key, verbatim_key);
 CREATE INDEX ON media (dataset_key, reference_id);
 
 
+CREATE TABLE taxon_property (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  property TEXT NOT NULL,
+  value TEXT NOT NULL,
+  reference_id TEXT,
+  page TEXT,
+  ordinal INTEGER,
+  remarks TEXT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON taxon_property (dataset_key, taxon_id);
+CREATE INDEX ON taxon_property (dataset_key, sector_key);
+CREATE INDEX ON taxon_property (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_property (dataset_key, reference_id);
+CREATE INDEX ON taxon_property (dataset_key, property);
+
 --
 -- SHARED TABLES REFERRING TO DATA TABLES
 --

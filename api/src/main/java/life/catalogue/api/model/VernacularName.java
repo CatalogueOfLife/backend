@@ -8,7 +8,7 @@ import java.util.Objects;
 
 import javax.validation.constraints.Size;
 
-public class VernacularName extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity, Remarkable {
+public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity {
 
   private Integer sectorKey;
   private Integer verbatimKey;

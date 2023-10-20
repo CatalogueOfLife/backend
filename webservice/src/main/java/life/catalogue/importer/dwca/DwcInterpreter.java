@@ -235,6 +235,28 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
 
+  List<TaxonProperty> interpretMeasurements(VerbatimRecord rec) {
+    return super.interpretProperty(rec,
+      this::setReference,
+      DwcTerm.measurementType,
+      DwcTerm.measurementValue,
+      null,
+      null,
+      DwcTerm.measurementRemarks
+    );
+  }
+
+  List<TaxonProperty> interpretDescriptions(VerbatimRecord rec) {
+    return super.interpretProperty(rec,
+      this::setReference,
+      DcTerm.type,
+      DcTerm.description,
+      null,
+      null,
+      DcTerm.license
+    );
+  }
+
   /**
    * Reads the dc:source citation string and looks up or creates a new reference.
    * Sets the reference id of the referenced object.

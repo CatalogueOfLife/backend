@@ -39,6 +39,7 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   public List<Media> media = Lists.newArrayList();
   public List<VernacularName> vernacularNames = Lists.newArrayList();
   public List<SpeciesEstimate> estimates = Lists.newArrayList();
+  public List<TaxonProperty> properties = Lists.newArrayList();
 
   // extra stuff not covered by above for normalizer only
   public Classification classification;
@@ -201,13 +202,14 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
         Objects.equals(distributions, neoUsage.distributions) &&
         Objects.equals(media, neoUsage.media) &&
         Objects.equals(vernacularNames, neoUsage.vernacularNames) &&
+        Objects.equals(estimates, neoUsage.estimates) &&
+        Objects.equals(properties, neoUsage.properties) &&
         Objects.equals(classification, neoUsage.classification) &&
         Objects.equals(remarks, neoUsage.remarks);
   }
   
   @Override
   public int hashCode() {
-    
-    return Objects.hash(node, usage, treatment, distributions, media, vernacularNames, classification, remarks);
+    return Objects.hash(node, usage, treatment, distributions, media, vernacularNames, estimates, properties, classification, remarks);
   }
 }

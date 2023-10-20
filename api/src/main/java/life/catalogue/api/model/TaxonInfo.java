@@ -17,6 +17,7 @@ public class TaxonInfo {
   private List<VernacularName> vernacularNames;
   private List<Media> media;
   private List<NameRelation> nameRelations;
+  private List<TaxonProperty> properties;
   private List<TaxonConceptRelation> conceptRelations;
   private List<SpeciesInteraction> speciesInteractions;
 
@@ -192,6 +193,14 @@ public class TaxonInfo {
     this.nameRelations = nameRelations;
   }
 
+  public List<TaxonProperty> getProperties() {
+    return properties;
+  }
+
+  public void setProperties(List<TaxonProperty> properties) {
+    this.properties = properties;
+  }
+
   public List<TaxonConceptRelation> getConceptRelations() {
     return conceptRelations;
   }
@@ -213,24 +222,25 @@ public class TaxonInfo {
     if (this == o) return true;
     if (!(o instanceof TaxonInfo)) return false;
     TaxonInfo taxonInfo = (TaxonInfo) o;
-    return Objects.equals(taxon, taxonInfo.taxon) &&
-      Objects.equals(treatment, taxonInfo.treatment) &&
-      Objects.equals(source, taxonInfo.source) &&
-      Objects.equals(synonyms, taxonInfo.synonyms) &&
-      Objects.equals(distributions, taxonInfo.distributions) &&
-      Objects.equals(vernacularNames, taxonInfo.vernacularNames) &&
-      Objects.equals(media, taxonInfo.media) &&
-      Objects.equals(nameRelations, taxonInfo.nameRelations) &&
-      Objects.equals(conceptRelations, taxonInfo.conceptRelations) &&
-      Objects.equals(speciesInteractions, taxonInfo.speciesInteractions) &&
-      Objects.equals(typeMaterial, taxonInfo.typeMaterial) &&
-      Objects.equals(references, taxonInfo.references) &&
-      Objects.equals(names, taxonInfo.names) &&
-      Objects.equals(taxa, taxonInfo.taxa);
+    return Objects.equals(taxon, taxonInfo.taxon)
+           && Objects.equals(treatment, taxonInfo.treatment)
+           && Objects.equals(source, taxonInfo.source)
+           && Objects.equals(synonyms, taxonInfo.synonyms)
+           && Objects.equals(distributions, taxonInfo.distributions)
+           && Objects.equals(vernacularNames, taxonInfo.vernacularNames)
+           && Objects.equals(media, taxonInfo.media)
+           && Objects.equals(nameRelations, taxonInfo.nameRelations)
+           && Objects.equals(properties, taxonInfo.properties)
+           && Objects.equals(conceptRelations, taxonInfo.conceptRelations)
+           && Objects.equals(speciesInteractions, taxonInfo.speciesInteractions)
+           && Objects.equals(typeMaterial, taxonInfo.typeMaterial)
+           && Objects.equals(references, taxonInfo.references)
+           && Objects.equals(names, taxonInfo.names)
+           && Objects.equals(taxa, taxonInfo.taxa);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(taxon, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
+    return Objects.hash(taxon, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
   }
 }

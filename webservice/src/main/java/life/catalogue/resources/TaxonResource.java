@@ -132,6 +132,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
+  @Path("{id}/property")
+  public List<TaxonProperty> property(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(TaxonPropertyMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  }
+
+  @GET
   @Path("{id}/interaction")
   public List<SpeciesInteraction> interaction(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(SpeciesInteractionMapper.class).listByTaxon(DSID.of(datasetKey, id));

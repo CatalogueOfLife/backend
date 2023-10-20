@@ -574,6 +574,18 @@ public class PgImportIT extends PgImportITBase {
       assertNull(sdao.get(key(dataset.getKey(), "3")));
     }
   }
+
+  @Test
+  public void coldpProperties() throws Exception {
+    normalizeAndImport(COLDP, 40);
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var t = tdao.getTaxonInfo(key(dataset.getKey(), "1"));
+      var n = t.getTaxon().getName();
+      assertEquals("Toleria aegerides", n.getScientificName());
+      assertEquals("(Strand, 1916)", n.getAuthorship());
+      assertEquals(2, t.getProperties().size());
+    }
+  }
   
   @Test
   @Ignore("manual test for debugging entire imports")

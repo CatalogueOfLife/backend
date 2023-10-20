@@ -1,20 +1,16 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.Area;
-import life.catalogue.api.vocab.DistributionStatus;
-
 import java.util.Objects;
 
-/**
- *
- */
-public class Distribution extends DatasetScopedEntity<Integer> implements ExtensionEntity {
+public class TaxonProperty extends DatasetScopedEntity<Integer> implements ExtensionEntity {
 
   private Integer sectorKey;
   private Integer verbatimKey;
-  private Area area;
-  private DistributionStatus status;
+  private String property;
+  private String value;
   private String referenceId;
+  private String page;
+  private Integer ordinal;
   private String remarks;
 
   @Override
@@ -36,23 +32,39 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
-  public Area getArea() {
-    return area;
-  }
-  
-  public void setArea(Area area) {
-    this.area = area;
+
+  public String getProperty() {
+    return property;
   }
 
-  public DistributionStatus getStatus() {
-    return status;
+  public void setProperty(String property) {
+    this.property = property;
   }
-  
-  public void setStatus(DistributionStatus status) {
-    this.status = status;
+
+  public String getValue() {
+    return value;
   }
-  
+
+  public void setValue(String value) {
+    this.value = value;
+  }
+
+  public String getPage() {
+    return page;
+  }
+
+  public void setPage(String page) {
+    this.page = page;
+  }
+
+  public Integer getOrdinal() {
+    return ordinal;
+  }
+
+  public void setOrdinal(Integer ordinal) {
+    this.ordinal = ordinal;
+  }
+
   @Override
   public String getReferenceId() {
     return referenceId;
@@ -76,24 +88,21 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof Distribution)) return false;
+    if (!(o instanceof TaxonProperty)) return false;
     if (!super.equals(o)) return false;
-    Distribution that = (Distribution) o;
+    TaxonProperty that = (TaxonProperty) o;
     return Objects.equals(sectorKey, that.sectorKey)
            && Objects.equals(verbatimKey, that.verbatimKey)
-           && Objects.equals(area, that.area)
-           && status == that.status
+           && Objects.equals(property, that.property)
+           && Objects.equals(value, that.value)
            && Objects.equals(referenceId, that.referenceId)
+           && Objects.equals(page, that.page)
+           && Objects.equals(ordinal, that.ordinal)
            && Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, area, status, referenceId, remarks);
-  }
-
-  @Override
-  public String toString() {
-    return status == null ? "Unknown" : status + " in:" + area;
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, property, value, referenceId, page, ordinal, remarks);
   }
 }

@@ -14,8 +14,6 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.*;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import org.gbif.dwc.terms.Term;
 
 import java.util.Collections;
@@ -191,7 +189,7 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   String getRemarks(VerbatimRecord v) {
-    return getRemarks(v, ColdpTerm.remarks);
+    return getFormattedText(v, ColdpTerm.remarks);
   }
 
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
@@ -234,6 +232,17 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.remarks,
         ColdpTerm.area,
         ColdpTerm.country
+    );
+  }
+
+  List<TaxonProperty> interpretProperties(VerbatimRecord rec) {
+    return super.interpretProperty(rec,
+      this::setReference,
+      ColdpTerm.property,
+      ColdpTerm.value,
+      ColdpTerm.ordinal,
+      ColdpTerm.page,
+      ColdpTerm.remarks
     );
   }
 

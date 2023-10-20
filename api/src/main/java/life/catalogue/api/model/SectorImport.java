@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public class SectorImport extends ImportMetrics implements SectorEntity {
+public class SectorImport extends ImportMetrics implements SectorScoped {
   private static final int MAX_WARN_SIZE = 25;
 
   private Integer sectorKey;

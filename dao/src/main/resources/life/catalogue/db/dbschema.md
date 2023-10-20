@@ -14,20 +14,53 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-### 2023-10-19 add ordinal ordering, gender and name interpreting issues
+### 2023-10-20 add taxon property table
+```sql
+
+CREATE TABLE taxon_property (
+  id INTEGER NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+  verbatim_key INTEGER,
+  taxon_id TEXT NOT NULL,
+  property TEXT NOT NULL,
+  value TEXT NOT NULL,
+  reference_id TEXT,
+  page TEXT,
+  ordinal INTEGER,
+  remarks TEXT,
+  created_by INTEGER NOT NULL,
+  modified_by INTEGER NOT NULL,
+  created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
+  FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON taxon_property (dataset_key, taxon_id);
+CREATE INDEX ON taxon_property (dataset_key, sector_key);
+CREATE INDEX ON taxon_property (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_property (dataset_key, reference_id);
+CREATE INDEX ON taxon_property (dataset_key, property);
+```
+
+### 2023-10-20 add ordinal ordering, gender, remarks and more interpreting issues
 ```sql
 ALTER TABLE name ADD COLUMN gender GENDER;
 ALTER TABLE name ADD COLUMN gender_agreement BOOLEAN;
+ALTER TABLE name_usage ADD COLUMN ordinal INTEGER;
+
 ALTER TABLE name_usage_archive ADD COLUMN n_gender GENDER;
 ALTER TABLE name_usage_archive ADD COLUMN n_gender_agreement BOOLEAN;
-
-ALTER TABLE name_usage ADD COLUMN ordinal INTEGER;
 ALTER TABLE name_usage_archive ADD COLUMN ordinal INTEGER;
 
 ALTER TABLE media ADD COLUMN remarks TEXT;
 ALTER TABLE distribution ADD COLUMN remarks TEXT;
 ALTER TABLE vernacular_name ADD COLUMN remarks TEXT;
-ALTER TABLE estimate ALTER COLUMN note RENAME TO remarks;
+ALTER TABLE estimate RENAME COLUMN note TO remarks;
 
 ALTER TYPE ISSUE ADD VALUE 'NOTHO_INVALID';
 ALTER TYPE ISSUE ADD VALUE 'ORIGINAL_SPELLING_INVALID';

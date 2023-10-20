@@ -101,9 +101,9 @@ public class InterpreterBase {
     return doc.wholeText().trim();
   }
 
-  protected static String getRemarks(VerbatimRecord v, Term tRemarks) {
-    if (tRemarks != null) {
-      return replaceHtml(v.get(tRemarks), true);
+  protected static String getFormattedText(VerbatimRecord v, Term term) {
+    if (term != null) {
+      return replaceHtml(v.get(term), true);
     }
     return null;
   }
@@ -207,6 +207,24 @@ public class InterpreterBase {
     return ref;
   }
 
+  protected List<TaxonProperty> interpretProperty(VerbatimRecord rec, BiConsumer<TaxonProperty, VerbatimRecord> addReference,
+                                                     Term property, Term value, Term ordinal, Term page, Term remarks) {
+    if (rec.hasTerm(property) && rec.hasTerm(value)) {
+      var tp = new TaxonProperty();
+      tp.setVerbatimKey(rec.getId());
+      tp.setProperty(rec.get(property));
+      tp.setValue(getFormattedText(rec, value));
+      tp.setPage(rec.get(page));
+      tp.setOrdinal(rec.getInt(ordinal, Issue.ORDINAL_INVALID));
+      tp.setRemarks(getFormattedText(rec, remarks));
+
+      addReference.accept(tp, rec);
+
+      return Lists.newArrayList(tp);
+    }
+    return Collections.emptyList();
+  }
+
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
                                                      Term name, Term translit, Term preferred, Term lang, Term sex, Term remarks, Term area, Term... countryTerms) {
     String vname = rec.get(name);
@@ -214,7 +232,7 @@ public class InterpreterBase {
       VernacularName vn = new VernacularName();
       vn.setVerbatimKey(rec.getId());
       vn.setName(vname);
-      vn.setRemarks(getRemarks(rec, remarks));
+      vn.setRemarks(getFormattedText(rec, remarks));
       
       if (translit != null) {
         vn.setLatin(rec.get(translit));
@@ -315,7 +333,7 @@ public class InterpreterBase {
     d.setVerbatimKey(rec.getId());
     d.setArea(area);
     d.setStatus(status);
-    d.setRemarks(getRemarks(rec, tRemarks));
+    d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
     return d;
   }
@@ -350,7 +368,7 @@ public class InterpreterBase {
       m.setTitle(rec.get(title));
       m.setFormat(MediaInterpreter.parseMimeType(rec.get(format)));
       m.setType( SafeParser.parse(MediaTypeParser.PARSER, rec.get(type)).orNull() );
-      m.setRemarks(getRemarks(rec, remarks));
+      m.setRemarks(getFormattedText(rec, remarks));
       MediaInterpreter.detectType(m);
       
       addReference.accept(m, rec);

@@ -7,7 +7,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Media extends DatasetScopedEntity<Integer> implements SectorScopedEntity<Integer>, Referenced, VerbatimEntity, Remarkable {
+public class Media extends DatasetScopedEntity<Integer> implements ExtensionEntity {
 
   private Integer sectorKey;
   private Integer verbatimKey;

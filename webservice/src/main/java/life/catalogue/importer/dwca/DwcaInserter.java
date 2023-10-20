@@ -94,6 +94,18 @@ public class DwcaInserter extends NeoCsvInserter {
       (t, d) -> t.media.add(d)
     );
 
+    insertTaxonEntities(reader, DwcTerm.MeasurementOrFact,
+      inter::interpretMeasurements,
+      inter::taxonID,
+      (t, p) -> t.properties.add(p)
+    );
+
+    insertTaxonEntities(reader, GbifTerm.Description,
+      inter::interpretDescriptions,
+      inter::taxonID,
+      (t, p) -> t.properties.add(p)
+    );
+
     insertTaxonEntities(reader, GbifTerm.Reference,
       inter::interpretReference,
       inter::taxonID,

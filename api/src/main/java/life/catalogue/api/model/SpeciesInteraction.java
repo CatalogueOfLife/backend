@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A species interaction relation between two taxa.
  */
-public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements SectorEntity, VerbatimEntity, Referenced, Remarkable {
+public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements ExtensionEntity, SectorScoped, VerbatimEntity, Referenced, Remarkable {
   private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;

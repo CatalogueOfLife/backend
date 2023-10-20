@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.mapper.MediaMapper">
+<mapper namespace="life.catalogue.db.mapper.TaxonPropertyMapper">
 
   <sql id="SELECT">
     id,
@@ -20,15 +20,11 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
-    url,
-    type,
-    format,
-    title,
-    captured,
-    captured_by,
-    license,
-    link,
+    property,
+    value,
     reference_id,
+    page,
+    ordinal,
     remarks,
     created_by,
     modified_by
@@ -39,92 +35,88 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
-    #{obj.url},
-    #{obj.type}::MEDIATYPE,
-    #{obj.format},
-    #{obj.title},
-    #{obj.captured},
-    #{obj.capturedBy},
-    #{obj.license}::LICENSE,
-    #{obj.link},
+    #{obj.property},
+    #{obj.value},
     #{obj.referenceId},
+    #{obj.page},
+    #{obj.ordinal},
     #{obj.remarks},
     #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">media</sql>
+  <sql id="FROM">taxon_property</sql>
 
-  <resultMap id="mediaResultMap" type="Media" autoMapping="true">
+  <resultMap id="taxPropResultMap" type="TaxonProperty" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
-  <resultMap id="mediaExtResultMap" type="TaxonExtension" autoMapping="true">
+  <resultMap id="taxPropExtResultMap" type="TaxonExtension" autoMapping="true">
     <id column="id"/>
     <result property="taxonID" column="taxon_id"/>
-    <association property="obj" autoMapping="true" javaType="Media">
+    <association property="obj" autoMapping="true" javaType="TaxonProperty">
       <id property="id" column="id"/>
     </association>
   </resultMap>
 
-  <select id="listByTaxon" resultMap="mediaResultMap">
+  <select id="listByTaxon" resultMap="taxPropResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{key.datasetKey} AND taxon_id = #{key.id}
     ORDER BY id
   </select>
 
-  <select id="get" resultMap="mediaResultMap">
+  <select id="get" resultMap="taxPropResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </select>
 
-  <select id="processDataset" parameterType="map" resultMap="mediaExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="taxPropExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{datasetKey}
   </select>
 
-  <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">
-    INSERT INTO media (<include refid="COLS"/>, created, modified, id)
-    VALUES (<include refid="PROPS"/>, now(), now(), nextval('media_${obj.datasetKey}_id_seq'))
+  <insert id="create" parameterType="TaxonProperty" useGeneratedKeys="true" keyProperty="obj.id">
+    INSERT INTO taxon_property (<include refid="COLS"/>, created, modified, id)
+    VALUES (<include refid="PROPS"/>, now(), now(), nextval('taxon_property_${obj.datasetKey}_id_seq'))
   </insert>
 
   <delete id="deleteByTaxon" parameterType="map">
-    DELETE FROM media
+    DELETE FROM taxon_property
     WHERE dataset_key = #{key.datasetKey} AND taxon_id = #{key.id}
   </delete>
 
   <delete id="deleteByTemp" parameterType="map">
-    DELETE FROM media
+    DELETE FROM taxon_property
     USING _tmp_nu tmp
     WHERE dataset_key=#{datasetKey} AND taxon_id = tmp.uid
   </delete>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO media (dataset_key, taxon_id, id, <include refid="COLS_COPY"/>, created, modified)
-    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),nextval('media_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
-    FROM media md
+    INSERT INTO taxon_property (dataset_key, taxon_id, id, <include refid="COLS_COPY"/>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>taxon_id),nextval('taxon_property_${newDatasetKey}_id_seq'),<include refid="COLS_COPY"/>, created, modified
+    FROM taxon_property tp
     <if test="mapIds">
-      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=md.taxon_id
+      LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=tp.taxon_id
     </if>
     WHERE dataset_key = #{datasetKey}
   </insert>
 
-  <select id="processSector" parameterType="map" resultMap="mediaResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processSector" parameterType="map" resultMap="taxPropResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">
-    DELETE FROM media
+    DELETE FROM taxon_property
     WHERE sector_key=#{key.id} AND dataset_key=#{key.datasetKey}
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE media SET sector_key = NULL
+    UPDATE taxon_property SET sector_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

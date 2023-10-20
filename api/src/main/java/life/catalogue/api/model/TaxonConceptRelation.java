@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * A taxon concept relation between two taxa.
  */
-public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implements SectorEntity, VerbatimEntity, Referenced, Remarkable {
+public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implements ExtensionEntity {
   private Integer datasetKey;
   private Integer sectorKey;
   private Integer verbatimKey;

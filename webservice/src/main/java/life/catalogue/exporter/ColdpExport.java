@@ -81,7 +81,7 @@ public class ColdpExport extends ArchiveExport {
       writer.set(ColdpTerm.temporalRangeStart, t.getTemporalRangeStart());
       writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
       writer.set(ColdpTerm.environment, t.getEnvironments(), PermissiveEnumSerde::enumValueName);
-      //writer.set(ColdpTerm.sequenceIndex, null);
+      writer.set(ColdpTerm.ordinal, t.getOrdinal());
     }
   }
 
@@ -122,12 +122,16 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.specificEpithet, n.getSpecificEpithet());
     writer.set(ColdpTerm.infraspecificEpithet, n.getInfraspecificEpithet());
     writer.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
+    writer.set(ColdpTerm.originalSpelling, n.isOriginalSpelling());
+    writer.set(ColdpTerm.genderAgreement, n.hasGenderAgreement());
+    writer.set(ColdpTerm.gender, n.getGender());
     writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
     writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
     writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
     writer.set(ColdpTerm.publishedInPageLink, n.getPublishedInPageLink());
     writer.set(ColdpTerm.code, n.getCode());
     writer.set(ColdpTerm.nameStatus, n.getNomStatus());
+    writer.set(ColdpTerm.remarks, n.getRemarks());
   }
 
   @Override
@@ -140,6 +144,19 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.country, vn.getCountry(), Country::getIso2LetterCode);
     writer.set(ColdpTerm.area, vn.getArea());
     writer.set(ColdpTerm.sex, vn.getSex());
+    writer.set(ColdpTerm.remarks, vn.getRemarks());
+  }
+
+  @Override
+  void write(String taxonID, TaxonProperty tp) {
+    writer.set(ColdpTerm.taxonID, taxonID);
+    writer.set(ColdpTerm.sourceID, sector2datasetKey(tp.getSectorKey()));
+    writer.set(ColdpTerm.property, tp.getProperty());
+    writer.set(ColdpTerm.value, tp.getValue());
+    writer.set(ColdpTerm.referenceID, tp.getReferenceId());
+    writer.set(ColdpTerm.page, tp.getPage());
+    writer.set(ColdpTerm.ordinal, tp.getOrdinal());
+    writer.set(ColdpTerm.remarks, tp.getRemarks());
   }
 
   @Override
@@ -257,6 +274,7 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.creator, m.getCapturedBy());
     writer.set(ColdpTerm.license, m.getLicense());
     writer.set(ColdpTerm.link, m.getLink());
+    writer.set(ColdpTerm.remarks, m.getRemarks());
   }
 
   @Override
@@ -282,7 +300,7 @@ public class ColdpExport extends ArchiveExport {
     }
     writer.set(ColdpTerm.status, d.getStatus());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
-    //writer.set(ColdpTerm.remarks, d.getRemarks());
+    writer.set(ColdpTerm.remarks, d.getRemarks());
   }
 
   @Override

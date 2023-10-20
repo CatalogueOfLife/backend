@@ -2,7 +2,7 @@ package life.catalogue.api.model;
 
 import java.util.Objects;
 
-public class TaxonExtension<T extends SectorScopedEntity<Integer>> {
+public class TaxonExtension<T extends ExtensionEntity> {
   private String taxonID;
   private T obj;
   

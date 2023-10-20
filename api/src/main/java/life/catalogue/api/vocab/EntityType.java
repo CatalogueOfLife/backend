@@ -11,6 +11,7 @@ public enum EntityType {
   NAME_RELATION(ColdpTerm.NameRelation),
   NAME_USAGE(ColdpTerm.NameUsage),
   TAXON_CONCEPT_RELATION(ColdpTerm.TaxonConceptRelation),
+  TAXON_PROPERTY(ColdpTerm.TaxonProperty),
   TYPE_MATERIAL(ColdpTerm.TypeMaterial),
   TREATMENT(ColdpTerm.Treatment),
   DISTRIBUTION(ColdpTerm.Distribution),
@@ -19,7 +20,7 @@ public enum EntityType {
   REFERENCE(ColdpTerm.Reference),
   ESTIMATE(ColdpTerm.SpeciesEstimate),
   SPECIES_INTERACTION(ColdpTerm.SpeciesInteraction);
-  
+
   public final ColdpTerm coldp;
 
   EntityType(ColdpTerm coldp) {

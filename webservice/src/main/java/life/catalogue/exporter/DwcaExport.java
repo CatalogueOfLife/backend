@@ -107,6 +107,12 @@ public class DwcaExport extends ArchiveExport {
           DwcTerm.locality,
           DwcTerm.countryCode,
           DcTerm.source};
+      case TAXON_PROPERTY:
+        return new Term[]{DwcTerm.MeasurementOrFact, DwcTerm.taxonID,
+          DwcTerm.measurementID,
+          DwcTerm.measurementType,
+          DwcTerm.measurementValue,
+          DwcTerm.measurementRemarks};
     }
     return null;
   }
@@ -205,6 +211,15 @@ public class DwcaExport extends ArchiveExport {
       writer.set(DcTerm.source, refCache.get(d.getReferenceId()));
     }
   }
+
+  @Override
+  void write(String taxonID, TaxonProperty tp) {
+    writer.set(ColdpTerm.taxonID, taxonID);
+    writer.set(DwcTerm.measurementID, tp.getId());
+    writer.set(DwcTerm.measurementType, tp.getProperty());
+    writer.set(DwcTerm.measurementValue, tp.getValue());
+    writer.set(DwcTerm.measurementRemarks, tp.getRemarks());
+}
 
   @Override
   protected void bundle() throws IOException {

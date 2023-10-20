@@ -140,17 +140,22 @@ public class ColdpInserter extends NeoCsvInserter {
     insertTaxonEntities(reader, ColdpTerm.Media,
         inter::interpretMedia,
         ColdpTerm.taxonID,
-        (t, d) -> t.media.add(d)
+        (t, m) -> t.media.add(m)
     );
     insertTaxonEntities(reader, ColdpTerm.VernacularName,
         inter::interpretVernacular,
         ColdpTerm.taxonID,
-        (t, d) -> t.vernacularNames.add(d)
+        (t, vn) -> t.vernacularNames.add(vn)
     );
     insertTaxonEntities(reader, ColdpTerm.SpeciesEstimate,
       inter::interpretEstimate,
       ColdpTerm.taxonID,
-      (t, d) -> t.estimates.add(d)
+      (t, se) -> t.estimates.add(se)
+    );
+    insertTaxonEntities(reader, ColdpTerm.TaxonProperty,
+      inter::interpretProperties,
+      ColdpTerm.taxonID,
+      (t, p) -> t.properties.add(p)
     );
     insertTreatments();
   }

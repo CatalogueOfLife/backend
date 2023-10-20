@@ -78,7 +78,7 @@ public class CatCopy {
     // copy related entities
     for (EntityType type : include) {
       if (t.isTaxon() && extMapper.containsKey(type)) {
-        final TaxonExtensionMapper<SectorScopedEntity<Integer>> mapper = (TaxonExtensionMapper<SectorScopedEntity<Integer>>) batchSession.getMapper(extMapper.get(type));
+        final TaxonExtensionMapper<ExtensionEntity> mapper = (TaxonExtensionMapper<ExtensionEntity>) batchSession.getMapper(extMapper.get(type));
         mapper.listByTaxon(origT).forEach(e -> {
           e.setId(null);
           e.setSectorKey(t.getSectorKey());

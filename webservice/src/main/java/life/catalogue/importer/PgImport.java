@@ -79,6 +79,7 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger diCounter = new AtomicInteger(0);
   private final AtomicInteger trCounter = new AtomicInteger(0);
   private final AtomicInteger mCounter = new AtomicInteger(0);
+  private final AtomicInteger tpCounter = new AtomicInteger(0);
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
   private final AtomicInteger eCounter = new AtomicInteger(0);
@@ -130,11 +131,11 @@ public class PgImport implements Callable<Boolean> {
 
       LOG.info("Completed dataset {} insert with {} verbatim records, " +
           "{} names, {} taxa, {} synonyms, {} references, " +
-          "{} type material, {} vernaculars, {} distributions, {} treatments, {} species estimates, {} media items, " +
+          "{} type material, {} vernaculars, {} distributions, {} treatments, {} species estimates, {} media items, {} taxon properties, " +
           "{} name relations, {} concept relations, {} species interactions",
           dataset.getKey(), verbatimKeys.size(),
           nCounter, tCounter, sCounter, rCounter,
-          tmCounter, vCounter, diCounter, trCounter, eCounter, mCounter,
+          tmCounter, vCounter, diCounter, trCounter, eCounter, mCounter, tpCounter,
           nRelCounter, tRelCounter, sRelCounter
         );
       return true;
@@ -386,6 +387,7 @@ public class PgImport implements Callable<Boolean> {
         MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
         TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
+        TaxonPropertyMapper proeprtyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
@@ -454,6 +456,14 @@ public class PgImport implements Callable<Boolean> {
                 updateReferenceKey(m);
                 mediaMapper.create(m, acc.getId());
                 mCounter.incrementAndGet();
+              }
+
+              // insert taxon properties
+              for (var tp : u.properties) {
+                updateVerbatimUserEntity(tp, vKeys);
+                updateReferenceKey(tp);
+                proeprtyMapper.create(tp, acc.getId());
+                tpCounter.incrementAndGet();
               }
 
               // insert estimates

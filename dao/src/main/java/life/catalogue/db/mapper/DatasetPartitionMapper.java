@@ -48,6 +48,7 @@ public interface DatasetPartitionMapper {
       "distribution",
       "media",
       "estimate",
+      "taxon_property",
       "treatment",
       "vernacular_name"
   );
@@ -62,6 +63,7 @@ public interface DatasetPartitionMapper {
       "distribution",
       "media",
       "estimate",
+      "taxon_property",
       "vernacular_name"
   );
 

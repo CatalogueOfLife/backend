@@ -435,7 +435,7 @@ public enum Issue {
     "The name of an infrageneric name is misplaced in the wrong field, e.g. uninomial."),
 
   ORDINAL_INVALID(NAME_USAGE, Level.WARNING,
-    "The ordinal to sort taxon children is not a valid integer number."),
+    "The ordinal to sort taxon children or taxon properties is not a valid integer number."),
 
   GENDER_INVALID(NAME, Level.WARNING,
     "The gender valid of the name could not be interpreted."),

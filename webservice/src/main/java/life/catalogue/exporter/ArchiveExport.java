@@ -271,6 +271,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     exportTaxonExtension(EntityType.VERNACULAR, VernacularNameMapper.class, this::write);
     exportTaxonExtension(EntityType.DISTRIBUTION, DistributionMapper.class, this::write);
     exportTaxonExtension(EntityType.MEDIA, MediaMapper.class, this::write);
+    exportTaxonExtension(EntityType.TAXON_PROPERTY, TaxonPropertyMapper.class, this::write);
     exportEstimates();
     exportTaxonRelation(EntityType.SPECIES_INTERACTION, SpeciesInteractionMapper.class, this::write);
     exportTaxonRelation(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
@@ -305,7 +306,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends SectorScopedEntity<Integer> &Referenced > void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException {
+  private <T extends ExtensionEntity> void exportTaxonExtension(EntityType entity, Class < ? extends TaxonExtensionMapper<T>> mapperClass, ThrowingBiConsumer < String, T, IOException > consumer) throws IOException {
     if (newDataFile(define(entity))) {
       try (SqlSession session = factory.openSession()) {
         TaxonExtensionMapper<T> exm = session.getMapper(mapperClass);
@@ -498,6 +499,9 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   void write(String taxonID, Media m) {
+  }
+
+  void write(String taxonID, TaxonProperty tp) {
   }
 
   void write(SpeciesEstimate e) {

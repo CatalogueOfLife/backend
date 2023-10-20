@@ -37,7 +37,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * The {@link #getAuthorship()} on the other hand contains the original value and is unaltered for parsed names.
  * It is only reconstructed for record that did not contain the authorship separately from the bare scientific name.
  */
-public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorEntity, FormattableName, Remarkable {
+public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScoped, FormattableName, Remarkable {
 
   private Integer sectorKey;
   private Integer verbatimKey;
