@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Gender;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -86,6 +87,8 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     n.setNamesIndexType(null);
     n.addIdentifier("tsn:1234");
     n.setOriginalSpelling(true);
+    n.setGenderAgreement(false);
+    n.setGender(Gender.NEUTER);
     Taxon t = TestEntityGenerator.newTaxon(n);
     t.addIdentifier("col:DF2R");
     t.addIdentifier("gbif:456789");

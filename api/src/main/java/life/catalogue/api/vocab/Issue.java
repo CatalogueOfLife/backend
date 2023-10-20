@@ -439,6 +439,12 @@ public enum Issue {
 
   GENDER_INVALID(NAME, Level.WARNING,
     "The gender valid of the name could not be interpreted."),
+
+  GENDER_AGREEMENT_NOT_APPLICABLE(NAME, Level.WARNING,
+    "The gender agreement flag can only be given to bi- or trinomials with a terminal epithet"),
+
+  NOTHO_NOT_APPLICABLE(NAME, Level.WARNING,
+    "The notho name property refers to a non existing part of the name"),
   ;
 
   /**

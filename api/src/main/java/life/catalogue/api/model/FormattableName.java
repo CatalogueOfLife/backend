@@ -26,6 +26,10 @@ public interface FormattableName extends LinneanName, ScientificName {
   @JsonInclude(value = JsonInclude.Include.NON_DEFAULT)
   boolean isCandidatus();
 
+  default Boolean isOriginalSpelling() {
+    return null;
+  }
+
   String getNomenclaturalNote();
 
   String getUnparsed();

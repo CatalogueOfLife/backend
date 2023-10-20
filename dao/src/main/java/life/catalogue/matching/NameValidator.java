@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.Rank;
@@ -234,6 +235,24 @@ public class NameValidator {
         if (n.getInfraspecificEpithet() == null) {
           LOG.info("Missing infraspecific epithet for {}", n.getLabel());
           issues.addIssue(Issue.INCONSISTENT_NAME);
+        }
+      }
+
+      // notho
+      if (n.getNotho() != null) {
+        String namePart = n.getNamePart(n.getNotho());
+        if (namePart == null) {
+          issues.addIssue(Issue.NOTHO_NOT_APPLICABLE);
+        }
+      }
+
+      // there are some Name class specific properties that we want to test
+      // not great, but we check for the implementing class here
+      if (n instanceof Name) {
+        Name name = (Name) n;
+        // gender agreement only applicable to bi/trinomen with a terminal epithet
+        if (name.hasGenderAgreement() && name.getTerminalEpithet() == null) {
+          issues.addIssue(Issue.GENDER_AGREEMENT_NOT_APPLICABLE);
         }
       }
     }

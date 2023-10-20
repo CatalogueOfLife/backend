@@ -528,6 +528,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.nomStatus = nomStatus;
   }
 
+  @Override
   public Boolean isOriginalSpelling() {
     return originalSpelling;
   }
@@ -536,7 +537,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.originalSpelling = originalSpelling;
   }
 
-  public Boolean getGenderAgreement() {
+  public Boolean hasGenderAgreement() {
     return genderAgreement;
   }
 
