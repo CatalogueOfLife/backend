@@ -105,9 +105,10 @@ public class TxtTreeInserter implements NeoInserter {
       tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
       LOG.info("Read tree with {} nodes from {}", tree.size(), treeFile);
       // insert names and taxa in depth first order
+      int ordinal = 1;
       for (SimpleTreeNode t : tree.getRoot()) {
         try (Transaction tx = store.getNeo().beginTx()) {
-          recursiveNodeInsert(null, t);
+          recursiveNodeInsert(null, t, ordinal++);
           tx.success();
         }
       }
@@ -121,14 +122,14 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void recursiveNodeInsert(Node parent, SimpleTreeNode t) throws InterruptedException {
-    NeoUsage u = usage(t, false);
+  private void recursiveNodeInsert(Node parent, SimpleTreeNode t, int ordinal) throws InterruptedException {
+    NeoUsage u = usage(t, false, ordinal);
     store.createNameAndUsage(u);
     if (parent != null) {
       store.assignParent(parent, u.node);
     }
     for (SimpleTreeNode syn : t.synonyms){
-      NeoUsage s = usage(syn, true);
+      NeoUsage s = usage(syn, true, 0);
       store.createNameAndUsage(s);
       store.createSynonymRel(s.node, u.node);
       if (syn.basionym) {
@@ -138,17 +139,22 @@ public class TxtTreeInserter implements NeoInserter {
         store.createNeoRel(u.nameNode, s.nameNode, rel);
       }
     }
+    int childOrdinal = 1;
     for (SimpleTreeNode c : t.children){
-      recursiveNodeInsert(u.node, c);
+      recursiveNodeInsert(u.node, c, childOrdinal++);
     }
   }
 
-  private NeoUsage usage(SimpleTreeNode tn, boolean synonym) throws InterruptedException {
+  private NeoUsage usage(SimpleTreeNode tn, boolean synonym, int ordinal) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
-    NeoUsage u = synonym ?
-        NeoUsage.createSynonym(Origin.SOURCE, nat.getName(), TaxonomicStatus.SYNONYM) :
-        NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
+    NeoUsage u;
+    if(synonym) {
+      u = NeoUsage.createSynonym(Origin.SOURCE, nat.getName(), TaxonomicStatus.SYNONYM);
+    } else {
+      u = NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
+      u.asTaxon().setOrdinal(ordinal);
+    }
     u.setId(String.valueOf(tn.id));
     u.setVerbatimKey(v.getId());
     u.usage.setAccordingToId(nat.getTaxonomicNote());
