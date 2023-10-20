@@ -228,6 +228,7 @@ public class ColdpInterpreter extends InterpreterBase {
         this::setReference,
         ColdpTerm.name,
         ColdpTerm.transliteration,
+        ColdpTerm.preferred,
         ColdpTerm.language,
         ColdpTerm.sex,
         ColdpTerm.remarks,

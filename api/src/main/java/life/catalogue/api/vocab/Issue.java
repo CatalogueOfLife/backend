@@ -426,7 +426,7 @@ public enum Issue {
     "The notho name property could not be interpreted"),
 
   ORIGINAL_SPELLING_INVALID(NAME, Level.WARNING,
-    "The original spelling name property could not be interpreted"),
+    "The original spelling name property could not be interpreted as a boolean"),
 
   UNINOMIAL_FIELD_MISPLACED(NAME, Level.INFO,
     "The name of a uninomial is misplaced in the wrong field, e.g. genus."),
@@ -445,6 +445,9 @@ public enum Issue {
 
   NOTHO_NOT_APPLICABLE(NAME, Level.WARNING,
     "The notho name property refers to a non existing part of the name"),
+
+  VERNACULAR_PREFERRED(VERNACULAR, Level.WARNING,
+    "The vernacular name preferred property could not be interpreted as a boolean"),
   ;
 
   /**

@@ -191,6 +191,7 @@ public class DwcInterpreter extends InterpreterBase {
         this::setReference,
         DwcTerm.vernacularName,
         null,
+        GbifTerm.isPreferredName,
         DcTerm.language,
         DwcTerm.sex,
         DwcTerm.taxonRemarks,
