@@ -49,6 +49,12 @@ CREATE INDEX ON taxon_property (dataset_key, property);
 ALTER TYPE ENTITYTYPE ADD VALUE 'TAXON_PROPERTY' AFTER 'TAXON_CONCEPT_RELATION';
 ```
 
+In the existing dbs we then need to create the actual partition tables.
+We can use the partition command for that, i.e. to create 24 partitions::
+> ./partition.sh taxon_property 24
+
+TODO: We also need to create the missing sequences for all projects.
+
 ### 2023-10-20 add ordinal ordering, gender, remarks and more interpreting issues
 ```sql
 ALTER TABLE name ADD COLUMN gender GENDER;
