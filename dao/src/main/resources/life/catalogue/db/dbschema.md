@@ -16,7 +16,6 @@ and done it manually. So we can as well log changes here.
 
 ### 2023-10-20 add taxon property table
 ```sql
-
 CREATE TABLE taxon_property (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
@@ -53,7 +52,9 @@ In the existing dbs we then need to create the actual partition tables.
 We can use the partition command for that, i.e. to create 24 partitions::
 > ./partition.sh taxon_property 24
 
-TODO: We also need to create the missing sequences for all projects.
+Finally run the `updSequence --all true` command to create project sequences for the new table.
+Make sure you use the latest jar already with support for the TaxonProperty table.
+> ./sequence-update.sh --all true
 
 ### 2023-10-20 add ordinal ordering, gender, remarks and more interpreting issues
 ```sql

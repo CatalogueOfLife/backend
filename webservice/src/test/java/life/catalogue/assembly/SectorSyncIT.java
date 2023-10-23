@@ -9,9 +9,7 @@ import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.TypeMaterialMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.db.mapper.*;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -72,6 +70,66 @@ public class SectorSyncIT extends SectorSyncTestBase {
     draftRule.getSqlSession().close();
   }
 
+
+  @Test
+  public void accordingto() throws Exception {
+    final int srcKey = dataRule.mapKey(DataFormat.COLDP, 14);
+    final DSID<String> key = DSID.root(srcKey);
+    final String rKey = "r456";
+    final String uKey = "Culicidae-Culicinae-Culicini-Culex-americanus-d0be074c0";
+    // create one species with according to
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var rm = session.getMapper(ReferenceMapper.class);
+      var tm = session.getMapper(TaxonMapper.class);
+
+      var r = new Reference();
+      r.setId(rKey);
+      r.setDatasetKey(srcKey);
+      r.setCitation("Döring (1999): PonTaurus");
+      r.applyUser(TestDataRule.TEST_USER);
+      rm.create(r);
+
+      var nu = tm.get(DSID.of(srcKey, uKey));
+      nu.setAccordingToId(rKey);
+      tm.update(nu);
+    }
+
+    print(Datasets.COL);
+    print(srcKey);
+
+    NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
+    NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
+    final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> s.setCopyAccordingTo(false));
+
+    syncAll();
+    assertTree("cat14b.txt");
+    NameUsageBase u = getByName(Datasets.COL, Rank.SPECIES, "Culex americanus");
+    assertNull(u.getAccordingToId());
+    assertNull(u.getAccordingTo());
+
+    // sync again but this time allow accordingTo
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var ds = dm.getSettings(Datasets.COL);
+      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, true);
+      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+    }
+    syncAll();
+    assertTree("cat14b.txt");
+    u = getByName(Datasets.COL, Rank.SPECIES, "Culex americanus");
+    assertNotNull(u.getAccordingToId());
+    assertNotNull(u.getAccordingTo());
+
+    // cleanup dataset which persists for all tests
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var tm = session.getMapper(TaxonMapper.class);
+      var nu = tm.get(key.id(uKey));
+      nu.setAccordingToId(null);
+      tm.update(nu);
+
+      session.getMapper(ReferenceMapper.class).delete(key.id(rKey));
+    }
+  }
 
   /**
    * https://github.com/gbif/checklistbank/issues/187

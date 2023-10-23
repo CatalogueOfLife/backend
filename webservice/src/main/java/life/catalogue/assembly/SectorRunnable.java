@@ -17,6 +17,8 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -34,6 +36,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
+
+import scala.annotation.meta.setter;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
@@ -204,6 +208,9 @@ abstract class SectorRunnable implements Runnable {
           new DatasetSettings()
         );
 
+        if (ds.has(Setting.SECTOR_COPY_ACCORDING_TO)) {
+          s.setCopyAccordingTo(ds.getBool(Setting.SECTOR_COPY_ACCORDING_TO));
+        }
         addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
         addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
         addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);

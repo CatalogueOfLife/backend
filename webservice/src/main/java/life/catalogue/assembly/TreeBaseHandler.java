@@ -129,6 +129,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (sector.getCode() != null) {
       nu.getName().setCode(sector.getCode());
     }
+    // remove accordingTo?
+    if (!sector.isCopyAccordingTo()) {
+      nu.setAccordingToId(null);
+    }
     // decisions
     if (decisions.containsKey(nu.getId())) {
       applyDecision(nu, decisions.get(nu.getId()));

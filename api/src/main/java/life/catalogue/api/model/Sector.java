@@ -42,6 +42,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<EntityType> entities;
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
+  private boolean copyAccordingTo = false;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -242,6 +243,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   public void setNameStatusExclusion(Set<NomStatus> nameStatusExclusion) {
     this.nameStatusExclusion = nameStatusExclusion;
+  }
+
+  public boolean isCopyAccordingTo() {
+    return copyAccordingTo;
+  }
+
+  public void setCopyAccordingTo(boolean copyAccordingTo) {
+    this.copyAccordingTo = copyAccordingTo;
   }
 
   public Integer getSize() {

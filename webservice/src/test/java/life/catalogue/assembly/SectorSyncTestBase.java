@@ -63,8 +63,12 @@ public abstract class SectorSyncTestBase {
   }
 
   NameUsageBase getByID(int datasetKey, String id) {
+    return getByID(DSID.of(datasetKey, id));
+  }
+
+  NameUsageBase getByID(DSID<String> id) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      return session.getMapper(TaxonMapper.class).get(DSID.of(datasetKey, id));
+      return session.getMapper(TaxonMapper.class).get(id);
     }
   }
 

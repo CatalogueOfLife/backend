@@ -139,6 +139,12 @@ public enum Setting {
   SECTOR_NAME_STATUS_EXCLUSION(NomStatus.class, true, PROJECT),
 
   /**
+   * Project defaults to be used for the sector.copyAccordingTo property.
+   * Defaults to false.
+   */
+  SECTOR_COPY_ACCORDING_TO(Boolean.class, false, PROJECT),
+
+  /**
    * If set to true the dataset metadata is locked and the gbif registry sync will not be applied to the dataset.
    */
   GBIF_SYNC_LOCK(Boolean.class, false, EXTERNAL),
