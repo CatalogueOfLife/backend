@@ -26,6 +26,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Not thread safe !
+ * A usage processor that accepts various filters and feeds a consumer with the full classification of the usage.
+ * This is done by caching of all accepted taxa in a file persisted mapdb.
+ *
+ * Usages are ordered by status, with synonyms coming first before any taxa.
  */
 public class NameUsageProcessor {
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageProcessor.class);

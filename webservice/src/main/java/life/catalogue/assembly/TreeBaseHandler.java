@@ -31,6 +31,7 @@ import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public abstract class TreeBaseHandler implements TreeHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeBaseHandler.class);
+  public static boolean forceMatch = false; // ugly as hell - but we only need this setting for emergencies and it saves us larger refactoring
   protected final Set<EntityType> entities;
   protected final Set<Rank> ranks;
   protected static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES);
@@ -139,6 +140,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     } else {
       // apply general rules otherwise
       SyncNameUsageRules.applyAlways(nu);
+    }
+    // rematch to nidx?
+    if (forceMatch) {
+      var match = nameIndex.match(nu.getName(), true, false);
+      nu.getName().applyMatch(match);
     }
   }
 

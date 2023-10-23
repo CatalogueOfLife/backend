@@ -136,6 +136,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public boolean namesIndexVerification = true;
 
   /**
+   * If true sector sync sources are always rematched
+   */
+  public boolean rematchSyncSources = false;
+
+  /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.
    */
   @NotNull

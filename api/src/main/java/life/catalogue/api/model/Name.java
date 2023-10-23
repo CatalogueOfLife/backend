@@ -402,6 +402,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.namesIndexType = namesIndexType;
   }
 
+  public void applyMatch(NameMatch match) {
+    if (match != null){
+      if (match.hasMatch()) {
+        setNamesIndexType(match.getType());
+        setNamesIndexId(match.getName().getKey());
+      } else {
+        setNamesIndexType(MatchType.NONE);
+        setNamesIndexId(null);
+      }
+    }
+  }
+
   @Override
   public String getScientificName() {
     return scientificName;
