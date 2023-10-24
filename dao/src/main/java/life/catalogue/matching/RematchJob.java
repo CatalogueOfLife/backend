@@ -1,8 +1,10 @@
 package life.catalogue.matching;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.*;
 
 import java.util.Arrays;
 
@@ -32,6 +34,34 @@ public class RematchJob extends BackgroundJob {
         session.getMapper(ArchivedNameUsageMapper.class).listProjects()
       );
       LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), ni.size());
+      return new RematchJob(userKey, factory, ni, keys.toIntArray());
+    }
+  }
+
+  /**
+   * Matches all datasets which have not been fully matched before.
+   */
+  public static RematchJob unmatched(int userKey, SqlSessionFactory factory, NameIndex ni){
+    // load dataset keys to rematch if there are no or less matches below the threshold
+    final double threshold = 0.6;
+
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var um = session.getMapper(NameUsageMapper.class);
+      var nmm = session.getMapper(NameMatchMapper.class);
+      IntSet keys = new IntOpenHashSet();
+      for (int key : dm.keys()) {
+        if (!nmm.exists(key)) {
+          keys.add(key);
+        } else {
+          int total = um.count(key);
+          int matches = nmm.count(key);
+          if (((double) matches / (double) total) < threshold) {
+            keys.add(key);
+          }
+        }
+      }
+      LOG.warn("Rematch {} datasets with no or few matches only", keys.size());
       return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }
   }

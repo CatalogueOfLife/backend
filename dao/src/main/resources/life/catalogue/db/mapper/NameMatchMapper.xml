@@ -90,6 +90,12 @@
 
   <select id="count" resultType="integer">
     SELECT count(*)
+    FROM name_match
+    WHERE dataset_key = #{datasetKey}
+  </select>
+
+  <select id="countNidx" resultType="integer">
+    SELECT count(*)
     FROM name_match nm JOIN names_index ni ON ni.id=nm.index_id
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}
     <if test="datasetKey != null">

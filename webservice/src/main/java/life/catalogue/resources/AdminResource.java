@@ -225,11 +225,16 @@ public class AdminResource {
 
   @POST
   @Path("/rematch")
-  public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys, @Auth User user) {
-    if (datasetKeys == null || datasetKeys.isEmpty()) {
-      throw new IllegalArgumentException("At least one datasetKey parameter is required");
-    } else {
+  public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
+                               @QueryParam("unmatched") boolean unmatched,
+                               @Auth User user
+  ) {
+    if (datasetKeys != null && !datasetKeys.isEmpty()) {
       return runJob(RematchJob.some(user.getKey(),factory, namesIndex, datasetKeys.stream().mapToInt(i->i).toArray()));
+    } else if (unmatched) {
+      return runJob(RematchJob.unmatched(user.getKey(),factory, namesIndex));
+    } else {
+      throw new IllegalArgumentException("At least one datasetKey parameter is required or unmatched=true");
     }
   }
 
