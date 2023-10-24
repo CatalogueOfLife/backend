@@ -1,5 +1,8 @@
 package life.catalogue.resources;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
@@ -16,6 +19,9 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -27,6 +33,7 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
+import life.catalogue.matching.RematchSchedulerJob;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.IOException;
@@ -43,6 +50,7 @@ import javax.validation.Validator;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -226,16 +234,23 @@ public class AdminResource {
   @POST
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
-                               @QueryParam("unmatched") boolean unmatched,
                                @Auth User user
   ) {
     if (datasetKeys != null && !datasetKeys.isEmpty()) {
       return runJob(RematchJob.some(user.getKey(),factory, namesIndex, datasetKeys.stream().mapToInt(i->i).toArray()));
-    } else if (unmatched) {
-      return runJob(RematchJob.unmatched(user.getKey(),factory, namesIndex));
+
     } else {
       throw new IllegalArgumentException("At least one datasetKey parameter is required or unmatched=true");
     }
+  }
+
+  @POST
+  @Path("/rematch/scheduler")
+  /**
+   * Matches all datasets which have not been fully matched before.
+   */
+  public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
+    return new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec::submit);
   }
 
   @DELETE
