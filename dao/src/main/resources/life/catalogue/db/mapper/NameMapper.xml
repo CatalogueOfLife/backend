@@ -241,10 +241,10 @@
     <foreach item="k" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
-  <select id="ambiguousRankNameIds" resultType="string">
+  <select id="unrankedRankNameIds" resultType="string">
     SELECT id
     FROM <include refid="FROM"/>
-    WHERE n.dataset_key=#{datasetKey} AND rank = ANY(ambiguousRanks())
+    WHERE n.dataset_key=#{datasetKey} AND rank IN ('UNRANKED'::RANK, 'OTHER'::RANK)
     <if test="sectorKey">
       AND sector_key = #{sectorKey}
     </if>

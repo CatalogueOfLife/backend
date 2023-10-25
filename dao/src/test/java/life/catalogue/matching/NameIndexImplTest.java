@@ -230,7 +230,7 @@ public class NameIndexImplTest {
     n.setInfragenericEpithet("Tragulla");
     n.setAuthorship("Nardo");
     n.setCombinationAuthorship(Authorship.authors("Nardo"));
-    n.setRank(Rank.SECTION);
+    n.setRank(Rank.SECTION_BOTANY);
     n.setType(NameType.SCIENTIFIC);
     assertInsert(n);
   }

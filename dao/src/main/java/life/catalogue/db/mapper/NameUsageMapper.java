@@ -230,11 +230,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   void addSectorSynonymsToTemp(@Param("key") DSID<Integer> key);
 
   /**
-   * Add usage and name ids for all accepted usages of a given sector and below or equal a max rank to the sessions temp table.
+   * Add usage and name ids for all accepted usages of a given sector and below a max rank to the sessions temp table.
    * Make sure the temp table was created in the session before!
    *
    * @param key the sector key
-   * @param rank max rank to be included, higher ranks will not be deleted
+   * @param rank lowest rank to be excluded, all lower ranks will be added to the temp table
    */
   void addSectorBelowRankToTemp(@Param("key") DSID<Integer> key, @Param("rank") Rank rank);
 

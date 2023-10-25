@@ -252,7 +252,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

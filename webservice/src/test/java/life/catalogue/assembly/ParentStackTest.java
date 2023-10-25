@@ -55,6 +55,7 @@ public class ParentStackTest {
     assertEquals(0, parents.size());
     assertNull(parents.last());
     assertEquals(biota, parents.lowestParentMatch());
+    assertFalse(parents.isDoubtful());
 
     parents.push(src(Rank.KINGDOM, 1,0));
     parents.push(src(Rank.PHYLUM, 2,1));
@@ -74,13 +75,13 @@ public class ParentStackTest {
 
     // ambiguous ranks, botany
     parents.push(src(Rank.GENUS, 5,4));
-    parents.push(src(Rank.SECTION, 6,5));
+    parents.push(src(Rank.SECTION_BOTANY, 6,5));
     assertEquals(4, parents.size());
     assertEquals("6", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
 
     parents.push(src(Rank.GENUS, 5,4));
-    parents.push(src(Rank.SECTION, 6,5));
+    parents.push(src(Rank.SECTION_BOTANY, 6,5));
     assertEquals(4, parents.size());
     assertEquals("6", parents.last().usage.getId());
     assertFalse(parents.isDoubtful());
@@ -92,7 +93,7 @@ public class ParentStackTest {
 
     // zoological way
     parents.push(src(Rank.ORDER, 8,4));
-    parents.push(src(Rank.SECTION, 9,8));
+    parents.push(src(Rank.SECTION_ZOOLOGY, 9,8));
     parents.push(src(Rank.FAMILY, 10,9));
     assertEquals(5, parents.size());
     assertEquals("10", parents.last().usage.getId());

@@ -217,7 +217,7 @@ public class Normalizer implements Callable<Boolean> {
         if (pNode != null && !ru.rank.isUncomparable()) {
           Node pNameNode = NeoProperties.getNameNode(pNode);
           Rank pRank = NeoProperties.getRank(pNameNode, Rank.UNRANKED);
-          if (ru.rank == pRank || RankUtils.higherThanCodeAgnostic(ru.rank, pRank)) {
+          if (pRank.notOtherOrUnranked() && (ru.rank == pRank || ru.rank.higherThan(pRank))) {
             store.addUsageIssues(n, Issue.CLASSIFICATION_RANK_ORDER_INVALID);
           }
         }

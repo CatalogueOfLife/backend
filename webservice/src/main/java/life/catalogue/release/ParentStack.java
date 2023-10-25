@@ -124,8 +124,8 @@ public class ParentStack<T extends NameUsageCore> {
     }
     parents.add(new SNC(nu));
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
-        && pRank != null && nu.getRank().higherThan(pRank)
-        && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()
+        && pRank != null && pRank.notOtherOrUnranked()
+        && nu.getRank().higherOrEqualsTo(pRank)
     ) {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast());
       markSubtreeAsDoubtful();

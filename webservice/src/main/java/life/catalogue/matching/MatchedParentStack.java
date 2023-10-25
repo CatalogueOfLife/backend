@@ -182,7 +182,7 @@ public class MatchedParentStack {
     }
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
         && pRank != null && nu.getRank().higherThan(pRank)
-        && !nu.getRank().isAmbiguous() && !pRank.isAmbiguous()
+        && nu.getRank().notOtherOrUnranked() && pRank.notOtherOrUnranked()
     ) {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast().usage);
       markSubtreeAsDoubtful();

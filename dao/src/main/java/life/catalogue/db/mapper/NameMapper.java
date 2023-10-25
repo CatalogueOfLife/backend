@@ -37,13 +37,11 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
 
   /**
-   * Lists all name ids of a dataset or sector belonging to ranks that are ambiguous in their placement
-   * like section or series which are placed differently in botany and zoology.
-   *
-   * Our rank enum places these ranks according to their frequent botanical use below genus level.
+   * Lists all name ids of a dataset or sector belonging to ranks that are UNRANKED or OTHER
+   * and which can be placed anywhere in the classification.
    */
-  List<String> ambiguousRankNameIds(@Param("datasetKey") int datasetKey,
-                                    @Param("sectorKey") @Nullable Integer sectorKey);
+  List<String> unrankedRankNameIds(@Param("datasetKey") int datasetKey,
+                                   @Param("sectorKey") @Nullable Integer sectorKey);
   /**
    * Deletes names by sector key and a max rank to be included.
    * An optional set of name ids can be provided that will be excluded from the deletion.

@@ -256,7 +256,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     // no real data to delete but tests valid SQL
     mapper().createTempTable();
     mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.GENUS);
-    mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.SUPERSECTION);
+    mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.SUPERSECTION_BOTANY);
     mapper().addSectorBelowRankToTemp(DSID.of(datasetKey, 1), Rank.FAMILY);
   }
 

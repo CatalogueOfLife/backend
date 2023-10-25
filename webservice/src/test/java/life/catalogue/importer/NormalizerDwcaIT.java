@@ -471,7 +471,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
           }
 
         } else if (u.getId().startsWith("12")) {
-          assertEquals(Rank.SECTION, n.getRank());
+          assertEquals(Rank.SECTION_BOTANY, n.getRank());
           assertEquals("Mill.", n.getAuthorship());
           assertEquals("Ferox", n.getInfragenericEpithet());
           assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());

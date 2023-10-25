@@ -16,7 +16,6 @@ import life.catalogue.matching.UsageMatcherGlobal;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -30,14 +29,13 @@ import com.google.common.eventbus.EventBus;
 
 /**
  * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.
- * A sector deletion keeps synced data of rank above species level by default!
- * Names and taxa of ranks above species are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
+ * A sector deletion keeps synced data of rank genus or above by default!
+ * Names and taxa of rank genus or above are kept, but the sectorKey is removed from all entities that previously belonged to the deleted sector.
  * At the same time all verbatim source records and other associated data like vernacular names are entirely removed.
  */
 public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
-  private static final Rank maxAmbiguousRank = Arrays.stream(Rank.values()).filter(Rank::isAmbiguous).max(Rank::compareTo).orElseThrow(() -> new IllegalStateException("No ambiguous ranks exist"));
-  private Rank cutoffRank = Rank.SPECIES;
+  private Rank cutoffRank = Rank.GENUS;
 
   SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
                Consumer<SectorRunnable> successCallback,
@@ -85,11 +83,11 @@ public class SectorDelete extends SectorRunnable {
       // add all synonyms from the sector to the temp table
       um.addSectorSynonymsToTemp(sectorKey);
       // add all accepted usages below genus from the sector to the temp table
-      um.addSectorBelowRankToTemp(sectorKey, Rank.SUBGENUS);
+      um.addSectorBelowRankToTemp(sectorKey, cutoffRank);
       // index temp table
       um.indexTempTable();
-      // remove ambiguous zoological ranks from the temp table so they dont get deleted - they might be higher ranks to keep!
-      removeZoologicalAmbiguousRanks(sectorKey, session);
+      // remove other and unranked usages from the temp table if they are in the higher classification
+      removeHigherUnranked(sectorKey, session);
 
       // delete usages, names and related records that are listed in the temp table
       LOG.info("Delete records using temporary deletion table for sector {}", sectorKey);
@@ -131,24 +129,24 @@ public class SectorDelete extends SectorRunnable {
     }
   }
 
-  private void removeZoologicalAmbiguousRanks(DSID<Integer> sectorKey, SqlSession session) {
+  private void removeHigherUnranked(DSID<Integer> sectorKey, SqlSession session) {
     int counter = 0;
-    List<String> nids = session.getMapper(NameMapper.class).ambiguousRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
-    LOG.debug("Found {} names of ambiguous ranks. Check their usages next", nids.size());
-    // if we have ambiguous ranks filter out the ones that have children of ranks above SUPERSECTION
-    // we iterate over children as we rarely even get ambiguous ranks
+    List<String> nids = session.getMapper(NameMapper.class).unrankedRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
+    LOG.debug("Found {} unranked names. Check their usages next", nids.size());
+    // if we have unranked names filter out the ones that have children of ranks above or equals to GENUS
+    // we iterate over children as we rarely even get unranked usages
     if (nids != null && !nids.isEmpty()) {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       for (String nid : nids) {
         usageLoop:
-        for (NameUsageBase u : um.listByNameID(sector.getDatasetKey(), nid, new Page(0, 1000))){
+        for (String uid : um.listUsageIDsByNameID(sector.getDatasetKey(), nid)){
           TreeTraversalParameter ttp = TreeTraversalParameter.sectorTarget(sector);
-          ttp.setTaxonID(u.getId());
-          ttp.setLowestRank(Rank.INFRAGENERIC_NAME);
+          ttp.setTaxonID(uid);
+          ttp.setLowestRank(cutoffRank);
           ttp.setSynonyms(false);
           try (var cursor = um.processTreeSimple(ttp)) {
             for (SimpleName sn : cursor) {
-              if (sn.getRank().higherThan(maxAmbiguousRank)) {
+              if (sn.getRank().higherOrEqualsTo(cutoffRank)) {
                 um.removeFromTemp(nid);
                 counter++;
                 break usageLoop;
@@ -160,7 +158,7 @@ public class SectorDelete extends SectorRunnable {
         }
       }
     }
-    LOG.info("Found {} ambiguous zoological ranks above genus from sector {} that we will keep", counter, sectorKey);
+    LOG.info("Found {} unranked usages above genus from sector {} that we will keep", counter, sectorKey);
   }
 
 }

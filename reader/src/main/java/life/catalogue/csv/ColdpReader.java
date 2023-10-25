@@ -70,7 +70,7 @@ public class ColdpReader extends CsvReader {
     Map.entry(Rank.SUBTRIBE, ColdpTerm.subtribe),
     Map.entry(Rank.GENUS, ColdpTerm.genus),
     Map.entry(Rank.SUBGENUS, ColdpTerm.subgenus),
-    Map.entry(Rank.SECTION, ColdpTerm.section)
+    Map.entry(Rank.SECTION_BOTANY, ColdpTerm.section)
   );
 
   private File bibtex;

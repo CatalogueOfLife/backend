@@ -66,7 +66,8 @@ public class IndexNameTest {
     assertEquals(Rank.INFRAFAMILY, IndexName.normRank(Rank.INFRAFAMILY));
     assertEquals(Rank.TRIBE, IndexName.normRank(Rank.TRIBE));
     assertEquals(Rank.SUBGENUS, IndexName.normRank(Rank.SUBGENUS));
-    assertEquals(Rank.SECTION, IndexName.normRank(Rank.SECTION));
+    assertEquals(Rank.SECTION_BOTANY, IndexName.normRank(Rank.SECTION_BOTANY));
+    assertEquals(Rank.SECTION_ZOOLOGY, IndexName.normRank(Rank.SECTION_ZOOLOGY));
     assertEquals(Rank.SERIES, IndexName.normRank(Rank.SERIES));
     assertEquals(Rank.SPECIES, IndexName.normRank(Rank.SPECIES));
     assertEquals(Rank.SPECIES_AGGREGATE, IndexName.normRank(Rank.SPECIES_AGGREGATE));

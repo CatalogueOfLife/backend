@@ -53,15 +53,15 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void ambiguousRankNameIds() throws Exception {
     // no real data to delete but tests valid SQL
-    mapper().ambiguousRankNameIds(datasetKey, null);
-    mapper().ambiguousRankNameIds(datasetKey, 1);
+    mapper().unrankedRankNameIds(datasetKey, null);
+    mapper().unrankedRankNameIds(datasetKey, 1);
   }
 
   @Test
   public void deleteBySectorAndRank() throws Exception {
     // no real data to delete but tests valid SQL
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.GENUS, null);
-    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION, Set.of());
+    mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.SUPERSECTION_BOTANY, Set.of());
     mapper().deleteBySectorAndRank(DSID.of(datasetKey, 1), Rank.FAMILY, Set.of("1,2,3", "abc"));
   }
 

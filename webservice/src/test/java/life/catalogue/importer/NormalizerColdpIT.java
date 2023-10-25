@@ -162,7 +162,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
           assertNull(n.getUninomial());
 
         } else if (u.getId().startsWith("13")) {
-          assertEquals(Rank.SECTION, n.getRank());
+          assertEquals(Rank.SECTION_BOTANY, n.getRank());
           assertEquals("Abies sect. Ferox", n.getScientificName());
           assertEquals("Mill.", n.getAuthorship());
           assertEquals("Abies", n.getGenus());
@@ -171,7 +171,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
           assertNull(n.getUninomial());
 
         } else if (u.getId().startsWith("14")) {
-          assertEquals(Rank.SECTION, n.getRank());
+          assertEquals(Rank.SECTION_BOTANY, n.getRank());
           assertEquals("sect. Ferox", n.getScientificName());
           assertEquals("Mill.", n.getAuthorship());
           assertNull(n.getGenus());

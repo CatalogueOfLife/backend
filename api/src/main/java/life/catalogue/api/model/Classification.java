@@ -41,7 +41,7 @@ public class Classification {
       Rank.SUBTRIBE,
       Rank.GENUS,
       Rank.SUBGENUS,
-      Rank.SECTION, // this is a botanical placement!
+      Rank.SECTION_BOTANY, // this is the botanical placement only!
       Rank.SPECIES
   );
   private static final List<Rank> RANKS_REVERSED = ImmutableList.copyOf(Lists.reverse(RANKS));
@@ -442,7 +442,7 @@ public class Classification {
       case SUBGENUS:
         setSubgenus(name);
         return true;
-      case SECTION:
+      case SECTION_BOTANY:
         setSection(name);
         return true;
       case SPECIES:
@@ -499,7 +499,7 @@ public class Classification {
         return getGenus();
       case SUBGENUS:
         return getSubgenus();
-      case SECTION:
+      case SECTION_BOTANY:
         return getSection();
       case SPECIES:
         return getSpecies();
