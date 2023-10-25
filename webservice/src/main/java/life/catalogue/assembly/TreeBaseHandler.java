@@ -47,13 +47,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final NameIndex nameIndex;
   protected final SqlSession session;
   protected final SqlSession batchSession;
-  protected final VerbatimSourceMapper vm;
+  protected final VerbatimSourceMapper vsm;
   protected final NameMatchMapper nmm;
   protected final ReferenceMapper rm;
   protected final TaxonMapper tm;
   protected final NameMapper nm;
   // for reading only:
   protected final NameUsageMapper num;
+  protected final VerbatimRecordMapper vrm;
   protected final Usage targetUsage;
   protected final Taxon target;
   // tracker
@@ -108,6 +109,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     session = factory.openSession(true);
     num = session.getMapper(NameUsageMapper.class);
+    vrm = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
     targetUsage = usage(target);
@@ -116,7 +118,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // writes only
     batchSession = factory.openSession(ExecutorType.BATCH, false);
-    vm = batchSession.getMapper(VerbatimSourceMapper.class);
+    vsm = batchSession.getMapper(VerbatimSourceMapper.class);
     rm = batchSession.getMapper(ReferenceMapper.class);
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
@@ -200,7 +202,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
     v.addIssues(issues);
-    vm.create(v);
+    vsm.create(v);
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());

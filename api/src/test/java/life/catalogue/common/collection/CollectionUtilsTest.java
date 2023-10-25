@@ -22,6 +22,16 @@ public class CollectionUtilsTest {
   }
 
   @Test
+  public void containsAny() {
+    assertTrue(CollectionUtils.overlaps(List.of(1,2), List.of(2,3)));
+    assertTrue(CollectionUtils.overlaps(List.of(1), List.of(-1,0,1,2,3)));
+    assertFalse(CollectionUtils.overlaps(List.of(1), List.of(-1,0,2,3)));
+
+    assertTrue(CollectionUtils.overlaps(List.of(-1,0,1,2,3), List.of(1)));
+    assertFalse(CollectionUtils.overlaps(List.of(-1,0,2,3), List.of(1)));
+  }
+
+  @Test
   public void testEquals() {
     List<String> o1 = new ArrayList<>();
     String[] o2 = new String[5];

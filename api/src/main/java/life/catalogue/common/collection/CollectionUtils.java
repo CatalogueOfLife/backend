@@ -218,6 +218,18 @@ public class CollectionUtils {
     return range;
   }
 
+  public static <T> boolean overlaps(Collection<T> c1, Collection<T> c2) {
+    if (c1 == null || c2 == null) return false;
+    for (var x : c1) {
+      for (var y : c2) {
+        if (x.equals(y)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private CollectionUtils() {
   }
 

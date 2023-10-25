@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.vocab.Issue;
 
 import java.util.*;
 
@@ -61,6 +62,13 @@ public class XReleaseConfig {
    */
   @Valid
   public boolean groupBasionyms = true;
+
+  /**
+   * An optional set of issues that if found on the usage or name will trigger the exclusion of the usage in the merge syncs.
+   */
+  @Valid
+  @NotNull
+  public Set<Issue> issueExclusion = new HashSet<>();
 
   /**
    * List of scientific names that are globally blocked from any source.

@@ -4,10 +4,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.matching.MatchedParentStack;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -41,14 +44,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int created = 0;
   private int updated = 0; // updates
   private final @Nullable TreeMergeHandlerConfig cfg;
+  private final DSID<Integer> vKey;
 
-  TreeMergeHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+  TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                    User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, usageIdGen, typeMaterialIdGen);
     this.cfg = cfg;
+    this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcher;
     uCache = matcher.getUCache();
     if (target == null && cfg != null && cfg.incertae != null) {
@@ -202,6 +207,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // additional checks - we dont want any unranked unless they are OTU names
       ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
         || (cfg != null && cfg.isBlocked(u.getName()));
+      // if issues are to be excluded we need to load the verbatim records
+      if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
+        var issues = vrm.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        if (CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
+          LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
+          return true;
+        }
+      }
     }
     return ignore;
   }
@@ -315,7 +328,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        vm.insertSources(targetKey, nu, updated);
+        vsm.insertSources(targetKey, nu, updated);
         return true;
       }
     } else {

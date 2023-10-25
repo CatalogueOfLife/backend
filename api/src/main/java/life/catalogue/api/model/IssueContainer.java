@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.Issue;
 
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,6 +83,11 @@ public interface IssueContainer {
     @Override
     public boolean hasIssue(Issue issue) {
       return issues.contains(issue);
+    }
+
+    @Override
+    public String toString() {
+      return StringUtils.join(issues, ",");
     }
   }
 
