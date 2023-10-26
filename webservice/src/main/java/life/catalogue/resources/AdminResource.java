@@ -250,7 +250,7 @@ public class AdminResource {
    * Matches all datasets which have not been fully matched before.
    */
   public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
-    return new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec::submit);
+    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec::submit));
   }
 
   @DELETE
