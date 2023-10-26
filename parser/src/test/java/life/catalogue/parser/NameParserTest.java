@@ -86,6 +86,27 @@ public class NameParserTest {
   }
 
   @Test
+  public void authorships() throws Exception {
+    Name n = new Name();
+    n.setScientificName("Acrolophus rhenanus");
+    n.setAuthorship("(Boreau ex Nyman) Á. Löve & D. Löve");
+    n.setRank(Rank.SPECIES);
+    n.setId("x");
+    IssueContainer issues = new IssueContainer.Simple();
+    NameParser.PARSER.parse(n, issues);
+
+    assertEquals(1, n.getBasionymAuthorship().getAuthors().size());
+    assertEquals(1, n.getBasionymAuthorship().getExAuthors().size());
+    assertNull(n.getBasionymAuthorship().getYear());
+
+    assertEquals(2, n.getCombinationAuthorship().getAuthors().size());
+    assertEquals(0, n.getCombinationAuthorship().getExAuthors().size());
+    assertNull(n.getCombinationAuthorship().getYear());
+
+    assertFalse(issues.hasIssues());
+  }
+
+  @Test
   public void parseVirusConfig() throws Exception {
     // no configs yet
     assertName("Aspilota vector Belokobylskij, 2007", "Aspilota vector Belokobylskij, 2007", NameType.VIRUS)

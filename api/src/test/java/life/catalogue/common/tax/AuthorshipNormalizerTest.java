@@ -18,16 +18,6 @@ import static org.junit.Assert.*;
     AuthorshipNormalizer comp = AuthorshipNormalizer.INSTANCE;
 
     @Test
-    @Ignore("To be implmented still, found in Clearinghouse data logs")
-    public void testNormalizeFailures() throws Exception {
-      assertEquals("", AuthorshipNormalizer.normalize("epling, nom kudo, 1931"));
-      assertEquals("", AuthorshipNormalizer.normalize("rothm ,p p 11233"));
-      assertEquals("", AuthorshipNormalizer.normalize(""));
-      assertEquals("", AuthorshipNormalizer.normalize(""));
-      assertEquals("", AuthorshipNormalizer.normalize(""));
-    }
-
-    @Test
     public void testNormalize() throws Exception {
       assertNull(AuthorshipNormalizer.normalize((String) null));
       assertNull(AuthorshipNormalizer.normalize(" "));
