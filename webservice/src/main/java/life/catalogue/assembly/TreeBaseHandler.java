@@ -363,9 +363,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected void persistMatch(Name n) {
-    if (n.getNamesIndexId() != null) {
-      batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
-    }
+    batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
   }
 
   protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {

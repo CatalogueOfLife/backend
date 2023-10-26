@@ -1,10 +1,14 @@
 package life.catalogue.matching;
 
+import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;
@@ -35,14 +39,28 @@ public class RematchSchedulerJob extends BackgroundJob {
     return other instanceof RematchSchedulerJob;
   }
 
-  private void rematch(int key) {
-    var job = RematchJob.one(getUserKey(), factory, ni, key);
-    consumer.accept(job);
+  private static class MatchMetrics {
+    final int datasetKey;
+    final int usages;
+    final int matches;
+
+    public MatchMetrics(int datasetKey, int usages, int matches) {
+      this.datasetKey = datasetKey;
+      this.usages = usages;
+      this.matches = matches;
+    }
+
+    public double percentage() {
+      return ( (double) matches / (double) usages);
+    }
+
+    public void write(Writer writer) throws IOException {
+      writer.write(String.format("%6d\t%8d\t%8d\t%.2f%%\n", datasetKey, usages, matches, percentage()));
+    }
+
   }
 
-  @Override
-  public void execute() {
-    LOG.info("Schedule rematching jobs for currently unmatched datasets. Triggered by {}", getUserKey());
+  private void processDatasets(ThrowingConsumer<MatchMetrics, IOException> consumer) {
     // load dataset keys to rematch if there are no or less matches below the threshold
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -50,27 +68,39 @@ public class RematchSchedulerJob extends BackgroundJob {
       var nmm = session.getMapper(NameMatchMapper.class);
 
       int counter = 0;
-      IntSet withMatches = new IntOpenHashSet();
+      int counterNone = 0;
       for (int key : dm.keys()) {
+        counter++;
+        var usages = dm.usageCount(key);
         if (!nmm.exists(key)) {
-          counter++;
-          rematch(key);
+          counterNone++;
+          consumer.accept(new MatchMetrics(key, usages, 0));
         } else {
-          withMatches.add(key);
+          int matches = nmm.count(key);
+          consumer.accept(new MatchMetrics(key, usages, matches));
         }
       }
-      LOG.info("Scheduled {} datasets with no matches. Look now also for datasets with few matches only", counter);
-
-      int counter2 = 0;
-      for (int key : withMatches) {
-        int total = um.count(key);
-        int matches = nmm.count(key);
-        if (((double) matches / (double) total) < threshold) {
-          counter2++;
-          rematch(key);
-        }
-      }
-      LOG.info("Scheduled {} datasets with few matches.", counter2);
+      LOG.info("Processed {} datasets. {} of which had no matches at all.", counter, counterNone);
     }
+  }
+
+  public void write(Writer writer) throws IOException {
+    writer.write("   key\t  usages\t matches\t   %\n");
+    processDatasets( d -> d.write(writer));
+  }
+
+  @Override
+  public void execute() {
+    LOG.info("Schedule rematching jobs for currently unmatched datasets. Triggered by {}", getUserKey());
+    // load dataset keys to rematch if there are no or less matches below the threshold
+    AtomicInteger counter = new AtomicInteger();
+    processDatasets( d -> {
+      if (d.matches == 0 || d.percentage() < threshold) {
+        var job = RematchJob.one(getUserKey(), factory, ni, d.datasetKey);
+        consumer.accept(job);
+        counter.incrementAndGet();
+      }
+    });
+    LOG.info("Scheduled {} datasets for matching.", counter);
   }
 }

@@ -310,9 +310,7 @@ public class PgImport implements Callable<Boolean> {
         updateVerbatimUserEntity(n.getName());
         updateReferenceKey(n.getName().getPublishedInId(), n.getName()::setPublishedInId);
         nm.create(n.getName());
-        if (n.namesIndexId != null) {
-          nmm.create(n.getName(), n.getName().getSectorKey(), n.namesIndexId, n.namesIndexMatchType);
-        }
+        nmm.create(n.getName(), n.getName().getSectorKey(), n.namesIndexId, n.namesIndexMatchType);
         if (nCounter.incrementAndGet() % batchSize == 0) {
           runtimeInterruptIfCancelled();
           session.commit();

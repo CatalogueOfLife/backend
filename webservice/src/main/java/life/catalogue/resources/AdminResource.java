@@ -22,6 +22,8 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.tree.PrinterFactory;
+import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -36,9 +38,7 @@ import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.RematchSchedulerJob;
 import life.catalogue.resources.legacy.IdMap;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +49,8 @@ import javax.annotation.security.RolesAllowed;
 import javax.validation.Validator;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -251,6 +253,18 @@ public class AdminResource {
    */
   public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
     return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec::submit));
+  }
+
+  @GET
+  @Path("/rematch/overview")
+  public Response rematchOverview(@Auth User user) {
+    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, d -> {});
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
   }
 
   @DELETE

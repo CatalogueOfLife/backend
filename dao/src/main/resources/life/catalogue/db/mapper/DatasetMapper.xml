@@ -370,6 +370,12 @@
     )
   </select>
 
+  <select id="usageCount" resultType="integer">
+    SELECT <include refid="size"/>
+    FROM <include refid="FROM"/>
+    WHERE d.key = #{key}
+  </select>
+
   <select id="isPrivate" resultType="boolean">
     SELECT EXISTS (
       SELECT 1 FROM dataset WHERE key = #{key}

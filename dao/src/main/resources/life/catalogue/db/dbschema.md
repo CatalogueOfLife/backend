@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-10-26 store no match results
+```sql
+ALTER TABLE name_match ALTER COLUMN index_id DROP NOT NULL,
+                       ALTER COLUMN type SET NOT NULL;
+```
+
 ### 2023-10-25 section ranks
 ```sql
 DROP FUNCTION IF EXISTS ambiguousRanks;

@@ -183,6 +183,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   boolean exists(@Param("key") int key);
 
+  Integer usageCount(@Param("key") int datasetKey);
+
   /**
    * @return true if dataset key exists and belongs to a private dataset. Can be a deleted dataset
    */

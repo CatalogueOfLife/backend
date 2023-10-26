@@ -4,6 +4,7 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
@@ -120,13 +121,11 @@ public class DatasetMatcher {
     }
 
     @Override
-    void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
-      if (oldId == null) {
-        nmm.create(n, n.getSectorKey(), newKey, m.getType());
-      } else if (newKey != null) {
-        nmm.update(n, newKey, m.getType());
+    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
+      if (oldType == null) {
+        nmm.create(n, n.getSectorKey(), n.getNamesIndexId(), m.getType());
       } else {
-        nmm.delete(n);
+        nmm.update(n, n.getNamesIndexId(), m.getType());
       }
     }
   }
@@ -140,13 +139,11 @@ public class DatasetMatcher {
     }
 
     @Override
-    void persist(Name n, NameMatch m, Integer oldId, Integer newKey) {
-      if (oldId == null) {
-        nmm.create(n, newKey, m.getType());
-      } else if (newKey != null) {
-        nmm.update(n, newKey, m.getType());
+    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
+      if (oldType == null) {
+        nmm.create(n, n.getNamesIndexId(), m.getType());
       } else {
-        nmm.delete(n);
+        nmm.update(n, n.getNamesIndexId(), m.getType());
       }
     }
   }
@@ -168,7 +165,8 @@ public class DatasetMatcher {
     @Override
     public void accept(Name n) {
       _total++;
-      Integer oldId = n.getNamesIndexId();
+      final Integer oldId = n.getNamesIndexId();
+      final MatchType oldType = n.getNamesIndexType();
       NameMatch m = ni.match(n, allowInserts, false);
       if (!m.hasMatch()) {
         _nomatch++;
@@ -178,8 +176,8 @@ public class DatasetMatcher {
         );
       }
       Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
-      if (!Objects.equals(oldId, newKey)) {
-        persist(n, m, oldId, newKey);
+      if (oldType == null || !Objects.equals(oldId, newKey)) {
+        persist(n, m, oldType, oldId);
         if (_updated++ % 10000 == 0) {
           batchSession.commit();
           LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
@@ -187,7 +185,7 @@ public class DatasetMatcher {
       }
     }
 
-    abstract void persist(Name n, NameMatch m, Integer oldId, Integer newKey);
+    abstract void persist(Name n, NameMatch m, MatchType oldType, Integer oldId);
 
     @Override
     public void close() throws Exception {

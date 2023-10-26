@@ -191,8 +191,6 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
-    matchBaseReleaseIfNeeded();
-
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
@@ -283,41 +281,6 @@ public class XRelease extends ProjectRelease {
         LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),datasetKey);
       }
     }
-  }
-
-  private void matchBaseReleaseIfNeeded() throws InterruptedException {
-    final LocalDateTime start = LocalDateTime.now();
-    updateState(ImportState.PROCESSING);
-    boolean matched = false;
-    final int testSize = 10000;
-    try (SqlSession session = factory.openSession(false)) {
-      var nmm = session.getMapper(NameMatchMapper.class);
-      var nm = session.getMapper(NameMapper.class);
-      var unmatched = nm.listUnmatch(newDatasetKey, NameIndexImpl.INDEX_NAME_TYPES, testSize);
-      if (unmatched == null || unmatched.size() < testSize) {
-        // rematch individually
-        if (unmatched != null) {
-          LOG.warn("Match {} usages from the base release without matching", unmatched.size());
-          for (var n : unmatched) {
-            NameMatch m = ni.match(n, true, false);
-            if (m.hasMatch()) {
-              nmm.create(n, n.getSectorKey(), m.getName().getKey(), m.getType());
-            } else {
-              LOG.info("No match for {}: {}", n.getKey(), n.getLabel());
-            }
-          }
-        }
-        session.commit();
-        matched = true;
-      }
-    }
-    // match outside the session if needed
-    if (!matched) {
-      LOG.warn("Rematch entire base release lacking > {} matches", testSize);
-      DatasetMatcher dm = new DatasetMatcher(factory, ni);
-      dm.match(newDatasetKey, true);
-    }
-    DateUtils.logDuration(LOG, "Base release matching", start);
   }
 
   /**

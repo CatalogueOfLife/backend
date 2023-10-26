@@ -1400,9 +1400,9 @@ CREATE INDEX ON type_material (dataset_key, reference_id);
 CREATE TABLE name_match (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
-  index_id INTEGER NOT NULL REFERENCES names_index,
+  index_id INTEGER REFERENCES names_index,
   name_id TEXT NOT NULL,
-  type MATCHTYPE,
+  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
