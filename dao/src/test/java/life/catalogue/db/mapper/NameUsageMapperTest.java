@@ -301,7 +301,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
     mapper().addSectorBelowRankToTemp(s1, Rank.SUBSPECIES);
     dels = mapper().deleteByTemp(s1.getDatasetKey());
-    assertEquals(270, dels);
+    assertEquals(234, dels);
     left = left-dels;
 
     count.set(0);

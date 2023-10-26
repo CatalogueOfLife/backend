@@ -63,8 +63,8 @@ divisio,PHYLUM
 division,PHYLUM
 domain,DOMAIN
 domaine,DOMAIN
+dominion,DOMAIN
 domäne,DOMAIN
-empire,DOMAIN
 es,SPECIES
 espece,SPECIES
 especie,SPECIES
@@ -97,8 +97,9 @@ groupgenus,GENUS
 groupspecies,SPECIES_AGGREGATE
 higher taxon,SUPRAGENERIC_NAME
 hyperorder,MIRORDER
+hyperordo,MIRORDER
 họ,FAMILY
-imperium,KINGDOM
+imperium,EMPIRE
 infraclassis,INFRACLASS
 infragen,INFRAGENUS
 infragen.unranked,INFRAGENERIC_NAME
@@ -136,12 +137,12 @@ norank,UNRANKED
 nothof,FORM
 nothoform,FORM
 nothogenus,GENUS
-nothosect,SECTION
+nothosect,SECTION_BOTANY
 nothoser,SERIES
 nothospecies,SPECIES
 nothossp,SUBSPECIES
 nothosubgen,SUBGENUS
-nothosubsect,SUBSECTION
+nothosubsect,SUBSECTION_BOTANY
 nothosubsp,SUBSPECIES
 nothosubspecies,SUBSPECIES
 nothosubtrib,SUBTRIBE
@@ -184,11 +185,12 @@ reino,KINGDOM
 ribe,TRIBE
 root,UNRANKED
 s,SPECIES
-sec ion,SECTION
-sec,SECTION
-sect,SECTION
-sectio,SECTION
-section (botany),SECTION
+sec ion,SECTION_BOTANY
+sec,SECTION_BOTANY
+sect,SECTION_BOTANY
+sectio,SECTION_BOTANY
+section (botany),SECTION_BOTANY
+section (zoology),SECTION_ZOOLOGY
 ser,SERIES
 serie,SERIES
 serotype,SEROVAR
@@ -237,9 +239,9 @@ subordo,SUBORDER
 subphyl,SUBPHYLUM
 subregn,SUBKINGDOM
 subregnum,SUBKINGDOM
-subsec ion,SUBSECTION
-subsect,SUBSECTION
-subsectio,SUBSECTION
+subsec ion,SUBSECTION_BOTANY
+subsect,SUBSECTION_BOTANY
+subsectio,SUBSECTION_BOTANY
 subser,SUBSERIES
 subsp,SUBSPECIES
 subspec,SUBSPECIES
@@ -257,6 +259,7 @@ superclassis,SUPERCLASS
 superegnum,SUPERKINGDOM
 superforma,SUPERFORM
 superordo,SUPERORDER
+superordre,SUPERORDER
 superphyl,SUPERPHYLUM
 superregnum,SUPERKINGDOM
 superser,SUPERSERIES
@@ -293,10 +296,12 @@ varietas,VARIETY
 variete,VARIETY
 variety,VARIETY
 zoodivisio,DIVISION
-zoosectio,SECTION
+zoosectio,SECTION_ZOOLOGY
+zoosection,SECTION_ZOOLOGY
 µ,INFRASPECIFIC_NAME
 ß,INFRASPECIFIC_NAME
 ßß,INFRASPECIFIC_NAME
+überordnung,SUPERORDER
 überstamm,SUPERPHYLUM
 ɣ,INFRASPECIFIC_NAME
 α,INFRASPECIFIC_NAME

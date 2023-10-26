@@ -232,6 +232,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Add usage and name ids for all accepted usages of a given sector and below a max rank to the sessions temp table.
    * Make sure the temp table was created in the session before!
+   * Note that ranks are ordered strictly as in the enum with unranked being last/lowest.
    *
    * @param key the sector key
    * @param rank lowest rank to be excluded, all lower ranks will be added to the temp table

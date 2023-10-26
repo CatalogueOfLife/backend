@@ -84,7 +84,7 @@
     <mapdb.version>3.0.9</mapdb.version>
     <mockito.version>3.1.0</mockito.version>
     <mybatis.version>3.5.13</mybatis.version>
-    <name-parser.version>3.10.0</name-parser.version>
+    <name-parser.version>3.10.1-SNAPSHOT</name-parser.version>
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
