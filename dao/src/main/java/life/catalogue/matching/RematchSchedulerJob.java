@@ -55,16 +55,14 @@ public class RematchSchedulerJob extends BackgroundJob {
     }
 
     public void write(Writer writer) throws IOException {
-      writer.write(String.format("%6d\t%8d\t%8d\t%.2f%%\n", datasetKey, usages, matches, percentage()));
+      writer.write(String.format("%6d %8d %8d %.2f%%%n", datasetKey, usages, matches, percentage()));
     }
-
   }
 
   private void processDatasets(ThrowingConsumer<MatchMetrics, IOException> consumer) {
     // load dataset keys to rematch if there are no or less matches below the threshold
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
-      var um = session.getMapper(NameUsageMapper.class);
       var nmm = session.getMapper(NameMatchMapper.class);
 
       int counter = 0;
@@ -85,7 +83,7 @@ public class RematchSchedulerJob extends BackgroundJob {
   }
 
   public void write(Writer writer) throws IOException {
-    writer.write("   key\t  usages\t matches\t   %\n");
+    writer.write("   key   usages  matches    %\n");
     processDatasets( d -> d.write(writer));
   }
 
