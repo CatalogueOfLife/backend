@@ -1,8 +1,8 @@
-*,INFRASPECIFIC_NAME
-**,INFRASPECIFIC_NAME
-***,INFRASPECIFIC_NAME
-****,INFRASPECIFIC_NAME
 *****,INFRASPECIFIC_NAME
+****,INFRASPECIFIC_NAME
+***,INFRASPECIFIC_NAME
+**,INFRASPECIFIC_NAME
+*,INFRASPECIFIC_NAME
 ?,UNRANKED
 ??,UNRANKED
 ???,UNRANKED
@@ -38,9 +38,11 @@ art,SPECIES
 biotype,BIOVAR
 branch,UNRANKED
 bv,BIOVAR
+bộ,ORDER
 c,CLASS
 capaxorder,GRANDORDER
 chemotype,CHEMOFORM
+chi,GENUS
 cl,CLASS
 clade,UNRANKED
 clase,CLASS
@@ -60,6 +62,8 @@ divisao,PHYLUM
 divisio,PHYLUM
 division,PHYLUM
 domain,DOMAIN
+domaine,DOMAIN
+domäne,DOMAIN
 empire,DOMAIN
 es,SPECIES
 espece,SPECIES
@@ -69,7 +73,9 @@ f,FORM
 fam,FAMILY
 familia,FAMILY
 familie,FAMILY
+famille,FAMILY
 familyclade,FAMILY
+filo,PHYLUM
 fm,FAMILY
 fma,FORM
 for,FORM
@@ -80,7 +86,9 @@ gattung,GENUS
 gen,GENUS
 genero,GENUS
 gennus,GENUS
+genre,GENUS
 genusclade,GENUS
+giới,PHYLUM
 gn,GENUS
 gnero,GENUS
 grex sect,GREX
@@ -89,6 +97,7 @@ groupgenus,GENUS
 groupspecies,SPECIES_AGGREGATE
 higher taxon,SUPRAGENERIC_NAME
 hyperorder,MIRORDER
+họ,FAMILY
 imperium,KINGDOM
 infraclassis,INFRACLASS
 infragen,INFRAGENUS
@@ -112,7 +121,9 @@ kla,CLASS
 klasse,CLASS
 königreich,KINGDOM
 legio,LEGION
+loài,SPECIES
 lysotype,PHAGOVAR
+lớp,CLASS
 megaorder,MAGNORDER
 microgen,INFRAGENERIC_NAME
 microorder,PARVORDER
@@ -144,8 +155,11 @@ or,ORDER
 ord,ORDER
 ordem,ORDER
 orden,ORDER
+orden,ORDER
 orderclade,ORDER
+ordnung,ORDER
 ordo,ORDER
+ordre,ORDER
 p,PHYLUM
 pathotype,PATHOVAR
 ph,PHYLUM
@@ -156,19 +170,22 @@ phylumclade,PHYLUM
 phylumdivision,PHYLUM
 physiological type,BIOVAR
 prol,PROLES
-prole,PROLES
 prolata,PROLES
+prole,PROLES
 race,PROLES
 rasse,PROLES
 reg,KINGDOM
+regio,DOMAIN
 regn,KINGDOM
+regne,KINGDOM
 regnum,KINGDOM
 reich,KINGDOM
+reino,KINGDOM
 ribe,TRIBE
 root,UNRANKED
 s,SPECIES
-sec,SECTION
 sec ion,SECTION
+sec,SECTION
 sect,SECTION
 sectio,SECTION
 section (botany),SECTION
@@ -177,6 +194,8 @@ serie,SERIES
 serotype,SEROVAR
 sge,SUBGENUS
 sous-classe,SUBCLASS
+sous-phylum,SUBPHYLUM
+sous-regne,SUBKINGDOM
 sp,SPECIES
 spe,SPECIES
 spec,SPECIES
@@ -191,6 +210,7 @@ ss,SUBSPECIES
 sses,SUBSPECIES
 ssp,SUBSPECIES
 stamm,PHYLUM
+stammgruppe,SUPERPHYLUM
 stirps,PROLES
 sub ribe,SUBTRIBE
 sub variety,SUBVARIETY
@@ -234,6 +254,7 @@ subtribus,SUBTRIBE
 subvar,SUBVARIETY
 subvarietas,SUBVARIETY
 superclassis,SUPERCLASS
+superegnum,SUPERKINGDOM
 superforma,SUPERFORM
 superordo,SUPERORDER
 superphyl,SUPERPHYLUM
@@ -261,6 +282,7 @@ unknown,UNRANKED
 unranked clade,UNRANKED
 unterabteilung,SUBPHYLUM
 unterart,SUBSPECIES
+unterreich,SUBKINGDOM
 v,VARIETY
 var,VARIETY
 varie as,VARIETY
@@ -272,12 +294,25 @@ variete,VARIETY
 variety,VARIETY
 zoodivisio,DIVISION
 zoosectio,SECTION
-α,INFRASPECIFIC_NAME
-β,INFRASPECIFIC_NAME
+µ,INFRASPECIFIC_NAME
 ß,INFRASPECIFIC_NAME
 ßß,INFRASPECIFIC_NAME
-γ,INFRASPECIFIC_NAME
+überstamm,SUPERPHYLUM
 ɣ,INFRASPECIFIC_NAME
+α,INFRASPECIFIC_NAME
+β,INFRASPECIFIC_NAME
+βασίλειο,KINGDOM
+γ,INFRASPECIFIC_NAME
+γένος,GENUS
 δ,INFRASPECIFIC_NAME
+είδος,SPECIES
+οικογένεια,FAMILY
+ομοταξία,CLASS
+τάξη,ORDER
 ẟ,INFRASPECIFIC_NAME
-µ,INFRASPECIFIC_NAME
+属,GENUS
+界,KINGDOM
+目,ORDER
+科,FAMILY
+種,SPECIES
+綱,CLASS
