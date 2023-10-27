@@ -14,7 +14,7 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
   private Integer verbatimKey;
   private String name;
   private String latin;
-  private boolean preferred;
+  private Boolean preferred;
   @Size(min = 3, max = 3)
   private String language;
   private Country country;
@@ -62,11 +62,11 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
     this.latin = latin;
   }
 
-  public boolean isPreferred() {
+  public Boolean isPreferred() {
     return preferred;
   }
 
-  public void setPreferred(boolean preferred) {
+  public void setPreferred(Boolean preferred) {
     this.preferred = preferred;
   }
 
