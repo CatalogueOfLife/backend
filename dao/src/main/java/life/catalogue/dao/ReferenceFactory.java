@@ -89,6 +89,17 @@ public class ReferenceFactory {
 
   public void setResolveDOIs(DoiResolution resolveDOIs) {
     this.resolveDOIs = resolveDOIs;
+    LOG.info("Change DOI resolution: {}", resolveDOIs);
+  }
+
+  /**
+   * Tries to find an existing reference by its id. Returns null if not found
+   */
+  public Reference find(String id) {
+    if (!StringUtils.isBlank(id)) {
+      return store.get(id);
+    }
+    return null;
   }
 
   /**

@@ -82,6 +82,9 @@ public class Normalizer implements Callable<Boolean> {
     this.store = store;
     this.datasetKey = dataset.getKey();
     refFactory = new ReferenceFactory(datasetKey, store.references(), resolver);
+    if (dataset.getSettings().has(Setting.DOI_RESOLUTION)) {
+      refFactory.setResolveDOIs(dataset.getSettings().getEnum(Setting.DOI_RESOLUTION));
+    }
     this.index = index;
     this.imgService = imgService;
     this.validator = validator;
@@ -905,7 +908,7 @@ public class Normalizer implements Callable<Boolean> {
           inserter = new AcefInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case TEXT_TREE:
-          inserter = new TxtTreeInserter(store, sourceDir);
+          inserter = new TxtTreeInserter(store, sourceDir, refFactory);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);

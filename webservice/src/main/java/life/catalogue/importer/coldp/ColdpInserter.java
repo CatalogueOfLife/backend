@@ -1,15 +1,15 @@
 package life.catalogue.importer.coldp;
 
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.csv.ColdpReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.importer.bibtex.BibTexInserter;
+import life.catalogue.importer.csljson.CslJsonInserter;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoProperties;
@@ -18,30 +18,15 @@ import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
 
-import org.gbif.dwc.terms.BibTexTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.jbibtex.*;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import de.undercouch.citeproc.bibtex.BibTeXConverter;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -51,7 +36,6 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 public class ColdpInserter extends NeoCsvInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
-  static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org/CSL-JSON"), "csl", "CSL-JSON", true);
 
   private ColdpInterpreter inter;
 
@@ -255,94 +239,17 @@ public class ColdpInserter extends NeoCsvInserter {
     store.put(v);
   }
 
-  private void insertExtendedReferences() {
+  private void insertExtendedReferences() throws InterruptedException {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasExtendedReferences()) {
-      final int datasetKey = store.getDatasetKey();
       if (coldp.getBibtexFile() != null) {
-        insertBibTex(datasetKey, coldp.getBibtexFile());
+        BibTexInserter bibIns = new BibTexInserter(store, coldp.getBibtexFile(), refFactory);
+        bibIns.insertAll();
       }
       if (coldp.getCslJsonFile() != null) {
-        insertCslJson(datasetKey, coldp.getCslJsonFile());
+        CslJsonInserter bibIns = new CslJsonInserter(store, coldp.getCslJsonFile(), refFactory);
+        bibIns.insertAll();
       }
-    }
-  }
-  
-  private Term bibTexTerm(String name) {
-    return new BibTexTerm(name.trim());
-  }
-  
-  private void insertBibTex(final int datasetKey, File f) {
-    try (InputStream is = new FileInputStream(f)){
-      BibTeXConverter bc = new BibTeXConverter();
-      BibTeXDatabase db = bc.loadDatabase(is);
-      bc.toItemData(db).forEach((id, cslItem) -> {
-        BibTeXEntry bib = db.getEntries().get(new Key(id));
-        VerbatimRecord v = new VerbatimRecord();
-        v.setType(BibTexTerm.CLASS_TERM);
-        v.setDatasetKey(datasetKey);
-        v.setFile(f.getName());
-        for (Map.Entry<Key, Value> field : bib.getFields().entrySet()) {
-          v.put(bibTexTerm(field.getKey().getValue()), field.getValue().toUserString());
-        }
-        store.put(v);
-  
-        try {
-          CslData csl = CslDataConverter.toCslData(cslItem);
-          csl.setId(id); // maybe superfluous but safe
-          Reference ref = refFactory.fromCsl(datasetKey, csl, v);
-          ref.setVerbatimKey(v.getId());
-          store.references().create(ref);
-
-        } catch (RuntimeException e) {
-          LOG.warn("Failed to convert CslDataConverter into Reference: {}", e.getMessage(), e);
-          v.addIssue(Issue.UNPARSABLE_REFERENCE);
-          store.put(v);
-        }
-      });
-    } catch (IOException | ParseException e) {
-      LOG.error("Unable to read BibTex file {}", f, e);
-    }
-  }
-  
-  private void insertCslJson(int datasetKey, File f) {
-    try {
-  
-      JsonNode jsonNode = ApiModule.MAPPER.readTree(f);
-      if (!jsonNode.isArray()) {
-        LOG.error("Unable to read CSL-JSON file {}. Array required", f);
-        return;
-      }
-      
-      for (JsonNode jn : jsonNode) {
-        VerbatimRecord v = new VerbatimRecord();
-        v.setType(CSLJSON_CLASS_TERM);
-        v.setDatasetKey(datasetKey);
-        v.setFile(f.getName());
-        store.put(v);
-        
-        try {
-          CslData csl = ApiModule.MAPPER.treeToValue(jn, CslData.class);
-          // make sure we have an ID!!!
-          if (csl.getId() == null) {
-            if (csl.getDOI() != null) {
-              csl.setId(csl.getDOI());
-            } else {
-              throw new IllegalArgumentException("Missing required CSL id field");
-            }
-          }
-          Reference ref = refFactory.fromCsl(datasetKey, csl, v);
-          ref.setVerbatimKey(v.getId());
-          store.references().create(ref);
-          
-        } catch (JsonProcessingException | RuntimeException e) {
-          LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getId(), e.getMessage(), e);
-          v.addIssue(Issue.UNPARSABLE_REFERENCE);
-          store.put(v);
-        }
-      }
-    } catch (IOException e) {
-      LOG.error("Unable to read CSL-JSON file {}", f, e);
     }
   }
 

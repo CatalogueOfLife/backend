@@ -1,24 +1,27 @@
 package life.catalogue.importer.txttree;
 
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.ParsedNameUsage;
-import life.catalogue.api.model.VerbatimRecord;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.csv.SourceInvalidException;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
+import life.catalogue.importer.bibtex.BibTexInserter;
+import life.catalogue.importer.csljson.CslJsonInserter;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.metadata.MetadataFactory;
+import life.catalogue.parser.EnvironmentParser;
+import life.catalogue.parser.LanguageParser;
 import life.catalogue.parser.NameParser;
 
+import org.gbif.dwc.terms.Term;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 import org.gbif.txtree.TreeLine;
@@ -29,6 +32,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -38,12 +43,16 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
+import javax.annotation.Nullable;
+
+import static life.catalogue.parser.SafeParser.parse;
+
 /**
  *
  */
 public class TxtTreeInserter implements NeoInserter {
-
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeInserter.class);
+  private static final Pattern VERNACULAR = Pattern.compile("([a-z]{2,3}):(.+)");
   private static final MappingInfos FLAGS = new MappingInfos();
   static {
     FLAGS.setDenormedClassificationMapped(false);
@@ -59,8 +68,10 @@ public class TxtTreeInserter implements NeoInserter {
   private String treeFileName;
   private org.gbif.txtree.Tree<SimpleTreeNode> tree;
   private Long2IntMap line2verbatimKey = new Long2IntOpenHashMap();
+  private final BibTexInserter bibIns;
+  private final ReferenceFactory refFactory;
 
-  public TxtTreeInserter(NeoDb store, Path folder) throws IOException {
+  public TxtTreeInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
     if (!Files.isDirectory(folder)) {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
@@ -73,6 +84,14 @@ public class TxtTreeInserter implements NeoInserter {
     });
     if (treeFile == null) {
       throw new SourceInvalidException("No valid tree data file found in " + folder);
+    }
+    this.refFactory = refFactory;
+    Path bib = folder.resolve("reference.bib");
+    if (Files.exists(bib)) {
+      LOG.info("BibTeX file found: {}", bib);
+      bibIns = new BibTexInserter(store, bib.toFile(), refFactory);
+    } else {
+      bibIns = null;
     }
   }
 
@@ -101,6 +120,10 @@ public class TxtTreeInserter implements NeoInserter {
   @Override
   public void insertAll() throws NormalizationFailedException {
     try {
+      if (bibIns != null) {
+        LOG.info("Insert BibTex references");
+        bibIns.insertAll();
+      }
       LOG.info("Read tree and insert verbatim records from {}", treeFile);
       tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
       LOG.info("Read tree with {} nodes from {}", tree.size(), treeFile);
@@ -153,12 +176,86 @@ public class TxtTreeInserter implements NeoInserter {
       u = NeoUsage.createSynonym(Origin.SOURCE, nat.getName(), TaxonomicStatus.SYNONYM);
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
-      u.asTaxon().setOrdinal(ordinal);
+      var t = u.asTaxon();
+      t.setOrdinal(ordinal);
+      // ENVIRONMENT
+      if (hasDataItem(TxtTreeDataKey.ENV, tn)) {
+        String[] vals = rmDataItem(TxtTreeDataKey.ENV, tn);
+        for (String val : vals) {
+          Environment env = parse(EnvironmentParser.PARSER, val).orNull(Issue.ENVIRONMENT_INVALID, v);
+          if (env != null) {
+            t.getEnvironments().add(env);
+          }
+        }
+      }
+      // TAX REF
+      if (hasDataItem(TxtTreeDataKey.REF, tn)) {
+        String[] vals = rmDataItem(TxtTreeDataKey.REF, tn);
+        for (String val : vals) {
+          if (referenceExists(val)) {
+            t.addReferenceId(val);
+          } else {
+            v.addIssue(Issue.REFERENCE_ID_INVALID);
+          }
+        }
+      }
+      // Vernacular
+      if (hasDataItem(TxtTreeDataKey.VERN, tn)) {
+        String[] vals = rmDataItem(TxtTreeDataKey.VERN, tn);
+        for (String val : vals) {
+          var m = VERNACULAR.matcher(val);
+          if (m.find()) {
+            VernacularName vn = new VernacularName();
+            var lang = parse(LanguageParser.PARSER, m.group(1)).orNull(Issue.VERNACULAR_LANGUAGE_INVALID, v);
+            vn.setLanguage(lang);
+            vn.setName(m.group(2));
+            u.vernacularNames.add(vn);
+          } else {
+            v.addIssue(Issue.VERNACULAR_NAME_INVALID);
+          }
+        }
+      }
+      // ALL OTHER
+      for (var entry : tn.infos.entrySet()) {
+        // ignore the PUB entry which we handle below
+        if (!entry.getKey().equalsIgnoreCase(TxtTreeDataKey.PUB.name())) {
+          var tp = new TaxonProperty();
+          if (entry.getValue() == null || entry.getValue().length == 0) continue;
+          tp.setProperty(entry.getKey().toLowerCase());
+          tp.setValue(String.join(", ", entry.getValue()));
+          u.properties.add(tp);
+        }
+      }
     }
     u.setId(String.valueOf(tn.id));
     u.setVerbatimKey(v.getId());
     u.usage.setAccordingToId(nat.getTaxonomicNote());
+    // NAME PUB REF
+    if (hasDataItem(TxtTreeDataKey.PUB, tn)) {
+      String[] vals = rmDataItem(TxtTreeDataKey.PUB, tn);
+      for (String val : vals) {
+        if (!referenceExists(val)) {
+          v.addIssue(Issue.REFERENCE_ID_INVALID);
+        } else if (u.usage.getName().getPublishedInId() != null){
+          v.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
+        } else {
+          u.usage.getName().setPublishedInId(val);
+        }
+      }
+    }
+    // COMMENT
+    u.usage.setRemarks(tn.comment);
     return u;
+  }
+
+  private boolean referenceExists(String id) {
+    return refFactory.find(id) != null;
+  }
+  private boolean hasDataItem(TxtTreeDataKey key, SimpleTreeNode tn) {
+    return tn.infos != null && tn.infos.containsKey(key.name());
+  }
+  private String[] rmDataItem(TxtTreeDataKey key, SimpleTreeNode tn) {
+    return tn.infos.remove(key.name());
   }
 
   @Override

@@ -284,7 +284,14 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setReferenceIds(List<String> referenceIds) {
     this.referenceIds = referenceIds;
   }
-  
+
+  public void addReferenceId(String id) {
+    if (this.referenceIds == null) {
+      this.referenceIds = new ArrayList<>();
+    }
+    this.referenceIds.add(id);
+  }
+
   public SimpleNameLink toSimpleNameLink() {
     SimpleNameLink sn = SimpleNameLink.of(getId(), name.getScientificName(), name.getAuthorship(), name.getRank());
     sn.setStatus(status);

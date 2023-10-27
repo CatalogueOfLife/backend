@@ -68,9 +68,6 @@ public class InterpreterBase {
       LOG.info("No dataset wide distribution standard found in settings");
       distributionStandard = null;
     }
-    if (settings.has(Setting.DOI_RESOLUTION)) {
-      refFactory.setResolveDOIs(settings.getEnum(Setting.DOI_RESOLUTION));
-    }
   }
   
   protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
@@ -136,7 +133,7 @@ public class InterpreterBase {
       if (rids != null) {
         List<String> existingIds = new ArrayList<>();
         for (String rid : splitter.split(rids)) {
-          Reference ref = refFactory.find(rid, null);
+          Reference ref = refFactory.find(rid);
           if (ref == null) {
             LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
             v.addIssue(Issue.REFERENCE_ID_INVALID);
