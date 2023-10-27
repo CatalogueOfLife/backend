@@ -3,9 +3,13 @@ package life.catalogue.importer;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.db.PgSetupRule;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
+
+import org.checkerframework.checker.units.qual.A;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -14,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -24,8 +29,11 @@ import static org.junit.Assert.*;
  */
 public class NormalizerTxtTreeIT extends NormalizerITBase {
 
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
+
   public NormalizerTxtTreeIT() {
-    super(DataFormat.TEXT_TREE);
+    super(DataFormat.TEXT_TREE, NormalizerFullIT::newIndex);
   }
   
   @Test
@@ -58,6 +66,19 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     cfg.setType(NameType.SCIENTIFIC);
     cfg.setCode(NomCode.ZOOLOGICAL);
     return cfg;
+  }
+
+  @Test
+  public void californicum() throws Exception {
+    normalize(2);
+    store.dump();
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = usageByID("14");
+      assertTrue(u.isSynonym());
+      assertEquals("? californicum Torr. & A.Gray", u.usage.getName().getLabel());
+      assertEquals(MatchType.NONE, u.usage.getName().getNamesIndexType());
+      assertNull(u.usage.getName().getNamesIndexId());
+    }
   }
 
   @Test

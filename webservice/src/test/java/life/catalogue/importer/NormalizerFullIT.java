@@ -52,8 +52,7 @@ public class NormalizerFullIT extends NormalizerITBase {
     normalize(0);
     try (Transaction tx = store.getNeo().beginTx()) {
       store.names().all().forEach(n -> {
-        assertNotNull(n.namesIndexId);
-
+        assertNotNull(n.getName().getNamesIndexType());
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
       });

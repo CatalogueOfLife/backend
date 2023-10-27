@@ -21,8 +21,6 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
   public Node node;
   public ParsedNameUsage pnu;
   public boolean homotypic = false;
-  public Integer namesIndexId;
-  public MatchType namesIndexMatchType;
 
   public NeoName() {
   }
@@ -101,13 +99,11 @@ public class NeoName implements NeoNode, DSID<String>, VerbatimEntity {
     NeoName neoName = (NeoName) o;
     return homotypic == neoName.homotypic &&
       Objects.equals(node, neoName.node) &&
-      Objects.equals(pnu, neoName.pnu) &&
-      Objects.equals(namesIndexId, neoName.namesIndexId) &&
-      namesIndexMatchType == neoName.namesIndexMatchType;
+      Objects.equals(pnu, neoName.pnu);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(node, pnu, homotypic, namesIndexId, namesIndexMatchType);
+    return Objects.hash(node, pnu, homotypic);
   }
 }

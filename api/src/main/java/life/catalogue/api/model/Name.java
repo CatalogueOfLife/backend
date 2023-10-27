@@ -43,7 +43,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Integer verbatimKey;
 
   private Integer namesIndexId;
-  private MatchType namesIndexType; // mybatis sets this to none if no match exists. We only ever have null in manually created instances
+  private MatchType namesIndexType;
 
   private List<Identifier> identifier;
 
