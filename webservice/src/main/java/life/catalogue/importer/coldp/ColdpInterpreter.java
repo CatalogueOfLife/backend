@@ -312,6 +312,9 @@ public class ColdpInterpreter extends InterpreterBase {
       remarksTerm = ColdpTerm.nameRemarks;
       refIdTerm = ColdpTerm.nameReferenceID;
       altIdTerm = ColdpTerm.nameAlternativeID;
+    } else if(v.hasTerm(ColdpTerm.genericName)) {
+      // against COolDP specs, but people do sometimes use genericName also in Name files and we dont wanna break these
+      genusNameTerm = ColdpTerm.genericName;
     }
 
     Optional<ParsedNameUsage> opt = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
