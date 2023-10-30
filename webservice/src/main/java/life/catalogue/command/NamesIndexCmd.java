@@ -138,7 +138,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
   }
 
-  private DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni){
+  private DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni) throws RuntimeException {
     LoggingUtils.setDatasetMDC(key, getClass());
     DatasetMatcher matcher = new DatasetMatcher(factory, ni);
     matcher.match(key, true);

@@ -47,7 +47,7 @@ public class DatasetMatcher {
    * @param allowInserts if true allows inserts into the names index
    * @return number of names which have a changed match to before
    */
-  public void match(int datasetKey, boolean allowInserts) {
+  public void match(int datasetKey, boolean allowInserts) throws RuntimeException {
     final int totalBefore = total;
     final int updatedBefore = updated;
     final int nomatchBefore = nomatch;
@@ -74,8 +74,9 @@ public class DatasetMatcher {
         );
         archived = archived + total - totalBeforeArchive;
       }
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       LOG.error("Failed to rematch dataset {}", datasetKey, e);
+      throw e;
     } finally {
       datasets++;
       LOG.info("{} {} name matches for {} names and {} not matching, {} being archived names, for dataset {}", update ? "Updated" : "Created",
@@ -188,7 +189,7 @@ public class DatasetMatcher {
     abstract void persist(Name n, NameMatch m, MatchType oldType, Integer oldId);
 
     @Override
-    public void close() throws Exception {
+    public void close() throws RuntimeException {
       batchSession.commit();
       batchSession.close();
       total += _total;
