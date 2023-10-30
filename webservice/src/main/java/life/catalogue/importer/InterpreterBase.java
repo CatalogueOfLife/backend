@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
@@ -205,16 +206,21 @@ public class InterpreterBase {
   }
 
   protected List<TaxonProperty> interpretProperty(VerbatimRecord rec, BiConsumer<TaxonProperty, VerbatimRecord> addReference,
-                                                     Term property, Term value, Term ordinal, Term page, Term remarks) {
+                                                  Term property, Term value, @Nullable Term ordinal, @Nullable Term page, @Nullable Term remarks) {
     if (rec.hasTerm(property) && rec.hasTerm(value)) {
       var tp = new TaxonProperty();
       tp.setVerbatimKey(rec.getId());
       tp.setProperty(rec.get(property));
       tp.setValue(getFormattedText(rec, value));
-      tp.setPage(rec.get(page));
-      tp.setOrdinal(rec.getInt(ordinal, Issue.ORDINAL_INVALID));
-      tp.setRemarks(getFormattedText(rec, remarks));
-
+      if (page != null) {
+        tp.setPage(rec.get(page));
+      }
+      if (ordinal != null) {
+        tp.setOrdinal(rec.getInt(ordinal, Issue.ORDINAL_INVALID));
+      }
+      if (remarks != null) {
+        tp.setRemarks(getFormattedText(rec, remarks));
+      }
       addReference.accept(tp, rec);
 
       return Lists.newArrayList(tp);
@@ -223,7 +229,8 @@ public class InterpreterBase {
   }
 
   protected List<VernacularName> interpretVernacular(VerbatimRecord rec, BiConsumer<VernacularName, VerbatimRecord> addReference,
-                                                     Term name, Term translit, Term preferred, Term lang, Term sex, Term remarks, Term area, Term... countryTerms) {
+                                                     Term name, @Nullable Term translit, @Nullable Term preferred, @Nullable Term lang, @Nullable Term sex,
+                                                     @Nullable Term remarks, @Nullable Term area, @Nullable Term... countryTerms) {
     String vname = rec.get(name);
     if (vname != null) {
       VernacularName vn = new VernacularName();
@@ -246,8 +253,10 @@ public class InterpreterBase {
       if (area != null) {
         vn.setArea(rec.get(area));
       }
-      vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull(Issue.VERNACULAR_COUNTRY_INVALID, rec));
-  
+      if (countryTerms != null) {
+        vn.setCountry(SafeParser.parse(CountryParser.PARSER, rec.getFirst(countryTerms)).orNull(Issue.VERNACULAR_COUNTRY_INVALID, rec));
+      }
+
       addReference.accept(vn, rec);
   
       return Lists.newArrayList(vn);
