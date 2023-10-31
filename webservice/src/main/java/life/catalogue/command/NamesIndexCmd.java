@@ -35,6 +35,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
+  private static final String ARG_FILE_ONLY = "file-only";
   private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
@@ -56,6 +57,12 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       .type(Integer.class)
       .required(false)
       .help("number of threads to use for rematching. Defaults to " + threads);
+    subparser.addArgument("--"+ ARG_FILE_ONLY)
+       .dest(ARG_FILE_ONLY)
+       .type(Boolean.class)
+       .required(false)
+       .setDefault(false)
+       .help("If true only rebuild the namesindex file, but do not rematch the database.");
   }
 
   @Override
@@ -80,6 +87,14 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
+    if (ns.getBoolean(ARG_FILE_ONLY)) {
+      rebuildFileOnly();
+    } else {
+      rematchAll();
+    }
+  }
+
+  private void rematchAll() throws Exception {
     if (ns.getInt(ARG_THREADS) != null) {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
@@ -136,6 +151,14 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
+  }
+
+  private void rebuildFileOnly() throws Exception {
+    var nidxF = indexBuildFile(cfg);
+    LOG.info("Rebuild index file at {}", nidxF);
+    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxF, factory, AuthorshipNormalizer.INSTANCE, true);
+    ni.start();
+    LOG.info("Done rebuilding index file at {}", nidxF);
   }
 
   private DatasetMatcher rematchDataset(int key, SqlSessionFactory factory, NameIndex ni) throws RuntimeException {
