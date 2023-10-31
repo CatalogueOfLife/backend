@@ -193,6 +193,7 @@ public class DatasetImportDao {
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));
+    di.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(key)));
     di.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(key)));
     di.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));

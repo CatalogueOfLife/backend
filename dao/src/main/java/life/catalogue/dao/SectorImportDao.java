@@ -84,6 +84,7 @@ public class SectorImportDao {
     si.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(datasetKey, key)));
     si.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(datasetKey, key)));
     si.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(datasetKey, key)));
+    si.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(key)));
     si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
     si.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
     si.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));

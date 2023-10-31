@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-10-31 name match metrics
+```sql
+ALTER TABLE dataset_import ADD COLUMN names_by_match_type_count HSTORE;
+ALTER TABLE sector_import ADD COLUMN names_by_match_type_count HSTORE;
+```
+
 ### 2023-10-26 store no match results
 ```sql
 ALTER TABLE name_match ALTER COLUMN index_id DROP NOT NULL,
