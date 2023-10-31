@@ -42,6 +42,57 @@ ALTER TYPE RANK ADD VALUE 'SUBSECTION_ZOOLOGY' AFTER 'SECTION_ZOOLOGY';
 ALTER TYPE RANK RENAME VALUE 'SUPERSECTION' TO 'SUPERSECTION_BOTANY';
 ALTER TYPE RANK RENAME VALUE 'SECTION' TO 'SECTION_BOTANY';
 ALTER TYPE RANK RENAME VALUE 'SUBSECTION' TO 'SUBSECTION_BOTANY';
+
+-- update dataset metrics
+UPDATE dataset_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', names_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', names_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', names_by_rank_count -> 'SUBSECTION') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE dataset_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', synonyms_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', synonyms_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', synonyms_by_rank_count -> 'SUBSECTION') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE dataset_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', taxa_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', taxa_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', taxa_by_rank_count -> 'SUBSECTION') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE dataset_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', extinct_taxa_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', extinct_taxa_by_rank_count -> 'SUBSECTION') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+
+-- update sector metrics
+UPDATE sector_import SET names_by_rank_count = names_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', names_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', names_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', names_by_rank_count -> 'SUBSECTION') 
+  WHERE names_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE sector_import SET synonyms_by_rank_count = synonyms_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', synonyms_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', synonyms_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', synonyms_by_rank_count -> 'SUBSECTION') 
+  WHERE synonyms_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE sector_import SET taxa_by_rank_count = taxa_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', taxa_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', taxa_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', taxa_by_rank_count -> 'SUBSECTION') 
+  WHERE taxa_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count - ARRAY['SUPERSECTION','SECTION','SUBSECTION'] 
+  || hstore('SUPERSECTION_BOTANY', extinct_taxa_by_rank_count -> 'SUPERSECTION') 
+  || hstore('SECTION_BOTANY', extinct_taxa_by_rank_count -> 'SECTION') 
+  || hstore('SUBSECTION_BOTANY', extinct_taxa_by_rank_count -> 'SUBSECTION') 
+  WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
 ```
 
 ### 2023-10-20 add taxon property table
