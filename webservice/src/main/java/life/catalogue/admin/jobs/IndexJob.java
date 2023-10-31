@@ -19,8 +19,8 @@ public class IndexJob extends BackgroundJob {
   @JsonProperty
   private final RequestScope req;
 
-  public IndexJob(RequestScope req, User user, JobPriority priority, NameUsageIndexService indexService) {
-    super(priority, user.getKey());
+  public IndexJob(RequestScope req, int userKey, JobPriority priority, NameUsageIndexService indexService) {
+    super(priority, userKey);
     this.req = req;
     this.indexService = indexService;
     this.keepLogFile = false;

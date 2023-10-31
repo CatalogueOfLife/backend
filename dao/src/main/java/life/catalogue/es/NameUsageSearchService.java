@@ -41,6 +41,14 @@ public interface NameUsageSearchService extends TaxonCounter {
     return resp.getTotal();
   }
 
+  default int count(int datasetKey) {
+    final Page page = new Page(0,0);
+    NameUsageSearchRequest req = new NameUsageSearchRequest();
+    req.addFilter(NameUsageSearchParameter.DATASET_KEY, datasetKey);
+    var resp = search(req, page);
+    return resp.getTotal();
+  }
+
   /**
    * @return a pass through search service that never returns any results. Good for tests
    */

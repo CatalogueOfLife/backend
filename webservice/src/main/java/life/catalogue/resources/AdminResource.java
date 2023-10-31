@@ -1,8 +1,5 @@
 package life.catalogue.resources;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.RequestScope;
@@ -19,15 +16,11 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
@@ -35,7 +28,7 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
-import life.catalogue.matching.RematchSchedulerJob;
+import life.catalogue.admin.jobs.RematchSchedulerJob;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
@@ -52,7 +45,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +67,7 @@ public class AdminResource {
   private final WsServerConfig cfg;
   private final ImageService imgService;
   private final NameUsageIndexService indexService;
+  private final NameUsageSearchService searchService;
   private boolean maintenance = false;
   private final Validator validator;
   private final DatasetDao ddao;
@@ -87,7 +80,8 @@ public class AdminResource {
   private final ManagedService componedService;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
-                       NameUsageIndexService indexService, ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
+                       NameUsageIndexService indexService, NameUsageSearchService searchService,
+                       ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        JobExecutor executor, IdMap idMap, Validator validator) {
     this.factory = factory;
     this.componedService = managedService;
@@ -98,6 +92,7 @@ public class AdminResource {
     this.cfg = cfg;
     this.downloader = downloader;
     this.indexService = indexService;
+    this.searchService = searchService;
     this.gbifSync = gbifSync;
     this.importManager = importManager;
     this.exec = executor;
@@ -230,7 +225,16 @@ public class AdminResource {
     if (req.getDatasetKey() == null && !req.getAll()) {
       throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    return runJob(new IndexJob(req, user, priority, indexService));
+    return runJob(new IndexJob(req, user.getKey(), priority, indexService));
+  }
+
+  @POST
+  @Path("/reindex/scheduler")
+  /**
+   * Reindex all datasets which have not been fully indexed before.
+   */
+  public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.95") double threshold) {
+    return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService));
   }
 
   @POST
@@ -252,13 +256,13 @@ public class AdminResource {
    * Matches all datasets which have not been fully matched before.
    */
   public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
-    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec::submit));
+    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec));
   }
 
   @GET
   @Path("/rematch/overview")
   public Response rematchOverview(@Auth User user) {
-    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, d -> {});
+    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, exec);
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       job.write(writer);

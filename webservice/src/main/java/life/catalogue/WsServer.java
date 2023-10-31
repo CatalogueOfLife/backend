@@ -385,7 +385,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService,
+      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator)
     );
     j.register(new DataPackageResource());
