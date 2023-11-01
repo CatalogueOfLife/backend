@@ -25,6 +25,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import lombok.val;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +66,7 @@ public class EmlParser {
       boolean isProject = false;
       boolean isAdditionalMetadata = false;
       boolean isBibliography = false;
+      boolean isUrlFormatter = false;
       StringBuilder text = null;
       StringBuilder para = new StringBuilder();
       EmlAgent agent = new EmlAgent();
@@ -81,6 +84,9 @@ public class EmlParser {
                 break;
               case "additionalMetadata":
                 isAdditionalMetadata = true;
+                break;
+              case "urlFormatter":
+                isUrlFormatter = true;
                 break;
               case "bibliography":
                 if (isAdditionalMetadata) {
@@ -169,6 +175,9 @@ public class EmlParser {
                 if (url != null) {
                   d.setLicense(LicenseParser.PARSER.parseOrNull(url.toString()));
                 }
+                break;
+              case "urlFormatter":
+                isUrlFormatter = false;
                 break;
 
               // AGENT PROPS
@@ -278,7 +287,14 @@ public class EmlParser {
               }
             }
             if (isAdditionalMetadata) {
-              switch (parser.getLocalName()) {
+              if (isUrlFormatter) {
+                String entity = parser.getLocalName();
+                String val = text(text);
+                if (val != null) {
+                  d.getUrlFormatter().put(entity, val);
+                }
+              } else {
+                switch (parser.getLocalName()) {
                 case "resourceLogoUrl":
                   d.setLogo(getAbsoluteUri(text));
                   break;
@@ -303,6 +319,7 @@ public class EmlParser {
                 case "bibliography":
                   isBibliography = false;
                   break;
+                }
               }
             }
             break;

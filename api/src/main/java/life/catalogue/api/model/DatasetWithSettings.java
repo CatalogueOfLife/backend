@@ -437,6 +437,14 @@ public class DatasetWithSettings {
     dataset.setUrl(url);
   }
 
+  public Map<String, String> getUrlFormatter() {
+    return dataset.getUrlFormatter();
+  }
+
+  public void setUrlFormatter(Map<String, String> urlFormatter) {
+    dataset.setUrlFormatter(urlFormatter);
+  }
+
   public URI getLogo() {
     return dataset.getLogo();
   }

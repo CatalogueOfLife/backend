@@ -147,6 +147,13 @@
       <@tag name="version" value=version! indent=6 />
       <@tag name="completeness" value=completeness! indent=6 />
       <@tag name="confidence" value=confidence! indent=6 />
+      <#if urlFormatter?has_content>
+       <urlFormatter>
+       <#list urlFormatter?keys as ent>
+        <${ent}>${urlFormatter[ent]}</${ent}>
+       </#list>
+       </urlFormatter>
+      </#if>
     </col>
    </#if>
   </metadata>
