@@ -14,6 +14,19 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-11-01 etymology and urlFormatter
+```sql
+ALTER TABLE name ADD COLUMN etymology TEXT;
+ALTER TABLE name_usage_archive ADD COLUMN n_etymology TEXT;
+
+ALTER TABLE dataset ADD COLUMN url_formatter HSTORE;
+ALTER TABLE dataset_archive ADD COLUMN url_formatter HSTORE;
+ALTER TABLE dataset_source ADD COLUMN url_formatter HSTORE;
+ALTER TABLE dataset_patch ADD COLUMN url_formatter HSTORE;
+
+ALTER TYPE ENTITYTYPE ADD VALUE 'AUTHOR' AFTER 'ANY';
+```
+
 ### 2023-10-31 name match metrics
 ```sql
 ALTER TABLE dataset_import ADD COLUMN names_by_match_type_count HSTORE;

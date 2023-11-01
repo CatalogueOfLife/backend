@@ -154,6 +154,8 @@ public class Dataset extends DataEntity<Integer> {
   private URI url;
   @AbsoluteURI
   private URI logo;
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  private Map<String, String> urlFormatter = new HashMap<>();
   @Valid
   private List<Citation> source = new ArrayList<>();
   private String notes;
@@ -202,6 +204,7 @@ public class Dataset extends DataEntity<Integer> {
     this.license = other.license;
     this.url = other.url;
     this.logo = other.logo;
+    this.urlFormatter = other.urlFormatter;
     this.source = other.source;
   }
 
@@ -737,6 +740,14 @@ public class Dataset extends DataEntity<Integer> {
     this.logo = logo;
   }
 
+  public Map<String, String> getUrlFormatter() {
+    return urlFormatter;
+  }
+
+  public void setUrlFormatter(Map<String, String> urlFormatter) {
+    this.urlFormatter = urlFormatter;
+  }
+
   public List<Citation> getSource() {
     return source;
   }
@@ -821,6 +832,7 @@ public class Dataset extends DataEntity<Integer> {
            && license == dataset.license
            && Objects.equals(url, dataset.url)
            && Objects.equals(logo, dataset.logo)
+           && Objects.equals(urlFormatter, dataset.urlFormatter)
            && Objects.equals(source, dataset.source);
   }
 
@@ -829,7 +841,7 @@ public class Dataset extends DataEntity<Integer> {
     return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator,
-      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, source);
+      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, urlFormatter, source);
   }
 
   @Override

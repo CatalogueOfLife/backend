@@ -170,6 +170,7 @@
     <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
     <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <collection property="source" ofType="Citation" column="{datasetKey=key}" select="life.catalogue.db.mapper.CitationMapper.list" />
   </resultMap>
 

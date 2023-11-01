@@ -76,6 +76,7 @@ CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
 
 CREATE TYPE ENTITYTYPE AS ENUM (
   'ANY',
+  'AUTHOR',
   'NAME',
   'NAME_RELATION',
   'NAME_USAGE',
@@ -739,6 +740,7 @@ CREATE TABLE dataset (
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   license LICENSE,
+  url_formatter HSTORE,
   url TEXT,
   logo TEXT,
   notes TEXT,
@@ -1145,6 +1147,7 @@ CREATE TABLE name_usage_archive (
   n_nomenclatural_note TEXT,
   n_unparsed TEXT,
   n_identifier TEXT[],
+  n_etymology TEXT,
   n_link TEXT,
   n_remarks TEXT,
   -- common with name_usage, keep in sync!
@@ -1305,6 +1308,7 @@ CREATE TABLE name (
   nomenclatural_note TEXT,
   unparsed TEXT,
   identifier TEXT[],
+  etymology TEXT,
   link TEXT,
   remarks TEXT,
   -- additions to name_usage_archive

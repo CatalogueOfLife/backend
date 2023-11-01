@@ -8,14 +8,13 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 
+import life.catalogue.common.text.StringUtils;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -58,6 +57,14 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     d.setIssued(FuzzyDate.now());
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
+    d.setIdentifier(Map.of(
+      "gbif", UUID.randomUUID().toString(),
+      "col", "1001"
+    ));
+    d.setUrlFormatter(Map.of(
+      "name", "http://" + RandomUtils.randomLatinString(8) + ".org/name/{ID}",
+      "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
+    ));
     d.setNotes("my notes");
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);

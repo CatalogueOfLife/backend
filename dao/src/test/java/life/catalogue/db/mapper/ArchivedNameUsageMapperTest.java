@@ -89,6 +89,7 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     n.setOriginalSpelling(true);
     n.setGenderAgreement(false);
     n.setGender(Gender.NEUTER);
+    n.setEtymology("concolor is Latin for of uniform color");
     Taxon t = TestEntityGenerator.newTaxon(n);
     t.addIdentifier("col:DF2R");
     t.addIdentifier("gbif:456789");

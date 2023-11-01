@@ -39,6 +39,10 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
       "gbif", UUID.randomUUID().toString(),
       "col", "1001"
     ));
+    d.setUrlFormatter(Map.of(
+      "name", "https://fishbase.mnhn.fr/summary/{ID}",
+      "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
+    ));
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);

@@ -28,6 +28,7 @@
     d.license,
     d.url,
     d.logo,
+    d.url_formatter,
     d.notes,
     d.created,
     d.created_by,
@@ -58,6 +59,7 @@
     license,
     url,
     logo,
+    url_formatter,
     notes,
     created_by,
     modified_by
@@ -89,6 +91,7 @@
     #{obj.license}::LICENSE,
     #{obj.url},
     #{obj.logo},
+    #{obj.urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{obj.notes},
     #{obj.createdBy},
     #{obj.modifiedBy}

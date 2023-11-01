@@ -191,6 +191,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   private String unparsed;
 
+  private String etymology;
+
   /**
    * Any informal note about the nomenclature of the name
    */
@@ -245,6 +247,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.unparsed = n.unparsed;
     this.nomenclaturalNote = n.nomenclaturalNote;
     this.link = n.link;
+    this.etymology = n.etymology;
     this.remarks = n.remarks;
     this.setCreatedBy(n.getCreatedBy());
     this.setCreated(n.getCreated());
@@ -292,6 +295,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setLink(builder.link);
     setNomenclaturalNote(builder.nomenclaturalNote);
     setUnparsed(builder.unparsed);
+    setEtymology(builder.etymology);
     setRemarks(builder.remarks);
   }
 
@@ -364,6 +368,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.link = copy.getLink();
     builder.nomenclaturalNote = copy.getNomenclaturalNote();
     builder.unparsed = copy.getUnparsed();
+    builder.etymology = copy.getEtymology();
     builder.remarks = copy.getRemarks();
     return builder;
   }
@@ -715,6 +720,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.notho = notho;
   }
 
+  public String getEtymology() {
+    return etymology;
+  }
+
+  public void setEtymology(String etymology) {
+    this.etymology = etymology;
+  }
+
   @Override
   public String getRemarks() {
     return remarks;
@@ -855,12 +868,13 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
            && Objects.equals(link, name.link)
            && Objects.equals(nomenclaturalNote, name.nomenclaturalNote)
            && Objects.equals(unparsed, name.unparsed)
+           && Objects.equals(etymology, name.etymology)
            && Objects.equals(remarks, name.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -950,6 +964,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private URI link;
     private String nomenclaturalNote;
     private String unparsed;
+    private String etymology;
     private String remarks;
 
     private Builder() {
@@ -1147,6 +1162,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder unparsed(String val) {
       unparsed = val;
+      return this;
+    }
+
+    public Builder etymology(String val) {
+      etymology = val;
       return this;
     }
 

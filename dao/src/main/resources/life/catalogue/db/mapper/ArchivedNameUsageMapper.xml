@@ -39,6 +39,7 @@
     n_nomenclatural_note,
     n_unparsed,
     n_identifier,
+    n_etymology,
     n_link,
     n_remarks,
     <!-- NameUsageBase -->
@@ -94,6 +95,7 @@
     #{name.nomenclaturalNote},
     #{name.unparsed},
     #{name.identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
+    #{name.etymology},
     #{name.link},
     #{name.remarks},
     <!-- NameUsageBase -->

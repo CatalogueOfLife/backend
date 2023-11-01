@@ -46,6 +46,7 @@
     #{license}::LICENSE,
     #{url},
     #{logo},
+    #{urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{notes},
     #{createdBy},
     #{modifiedBy}

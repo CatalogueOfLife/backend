@@ -7,6 +7,7 @@ import life.catalogue.coldp.ColdpTerm;
  */
 public enum EntityType {
   ANY(null),
+  AUTHOR(ColdpTerm.Author),
   NAME(ColdpTerm.Name),
   NAME_RELATION(ColdpTerm.NameRelation),
   NAME_USAGE(ColdpTerm.NameUsage),
