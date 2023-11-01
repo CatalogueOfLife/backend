@@ -87,7 +87,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   @Override
   public void execute() throws Exception {
     try (RestClient esClient = new EsClientFactory(cfg.es).createClient()) {
-      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), factory);
+      NameUsageIndexService svc = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("cli-es-tmp"), factory);
       if (ns.getInt(ARG_THREADS) != null) {
         cfg.es.indexingThreads = ns.getInt(ARG_THREADS);
         Preconditions.checkArgument(cfg.es.indexingThreads > 0, "Needs at least one indexing thread");

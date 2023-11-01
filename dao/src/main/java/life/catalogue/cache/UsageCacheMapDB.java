@@ -111,14 +111,15 @@ public class UsageCacheMapDB implements UsageCache {
 
   @Override
   public void close() {
-    stop();
+    try {
+      stop();
+    } finally {
+      FileUtils.deleteQuietly(dbFile);
+    }
   }
 
   private static String dbname(int datasetKey) {
     return "u"+datasetKey;
-  }
-  private static int keyFromDbName(String dbname) {
-    return Integer.parseInt(dbname.substring(1));
   }
 
   private DB.HashMapMaker<String, SimpleNameCached> storeMaker(int datasetKey, boolean expireMutable) {

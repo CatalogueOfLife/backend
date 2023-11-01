@@ -59,10 +59,13 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
 
   @Override
   public void close() {
-    if (db != null) {
-      db.close();
+    try {
+      if (db != null) {
+        db.close();
+      }
+    } finally {
+      FileUtils.deleteQuietly(dbFile);
     }
-    dbFile.delete();
   }
 
 
