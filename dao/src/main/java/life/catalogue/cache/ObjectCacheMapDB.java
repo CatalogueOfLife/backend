@@ -80,24 +80,18 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
   }
 
   @Override
-  public T put(T obj) {
-    return map.put(obj.getId(), obj);
+  public void put(T obj) {
+    map.put(obj.getId(), obj);
   }
 
   @Override
-  public T remove(String id) {
-    return map.remove(id);
+  public void remove(String id) {
+    map.remove(id);
   }
 
   @Override
   public int size() {
     return map.size();
-  }
-
-  @Override
-  public void clear() {
-    LOG.warn("Clearing entire {} cache with {} objects", clazz.getSimpleName(), map.size());
-    map.clear();
   }
 
   @NotNull

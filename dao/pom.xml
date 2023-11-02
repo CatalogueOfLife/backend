@@ -56,6 +56,11 @@
 	</build>
 
 	<dependencies>
+      <dependency>
+        <groupId>org.rocksdb</groupId>
+        <artifactId>rocksdbjni</artifactId>
+        <version>8.5.4</version>
+      </dependency>
 		<!-- CoL & GBIF -->
       <dependency>
         <groupId>org.catalogueoflife</groupId>

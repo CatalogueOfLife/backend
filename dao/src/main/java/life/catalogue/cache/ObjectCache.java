@@ -19,13 +19,11 @@ public interface ObjectCache<T extends HasID<String>> extends AutoCloseable, Ite
 
   T get(String id);
 
-  T put(T obj);
+  void put(T obj);
 
-  T remove(String id);
+  void remove(String id);
 
   int size();
-
-  void clear();
 
   @Override
   void close();
@@ -46,7 +44,6 @@ public interface ObjectCache<T extends HasID<String>> extends AutoCloseable, Ite
 
       @Override
       public void close() {
-        clear();
       }
 
       @Override
@@ -60,23 +57,18 @@ public interface ObjectCache<T extends HasID<String>> extends AutoCloseable, Ite
       }
 
       @Override
-      public T put(T obj) {
-        return data.put(obj.getId(), obj);
+      public void put(T obj) {
+        data.put(obj.getId(), obj);
       }
 
       @Override
-      public T remove(String id) {
-        return data.remove(id);
+      public void remove(String id) {
+        data.remove(id);
       }
 
       @Override
       public int size() {
         return data.size();
-      }
-
-      @Override
-      public void clear() {
-        data.clear();
       }
     };
   }

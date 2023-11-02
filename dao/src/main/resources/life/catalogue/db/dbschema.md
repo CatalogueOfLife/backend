@@ -106,6 +106,20 @@ UPDATE sector_import SET extinct_taxa_by_rank_count = extinct_taxa_by_rank_count
   || hstore('SECTION_BOTANY', extinct_taxa_by_rank_count -> 'SECTION') 
   || hstore('SUBSECTION_BOTANY', extinct_taxa_by_rank_count -> 'SUBSECTION') 
   WHERE extinct_taxa_by_rank_count ?| ARRAY['SUPERSECTION','SECTION','SUBSECTION'];
+
+CREATE INDEX name_section_zoo_rank_idx ON name(rank) WHERE rank IN ( 'SUPERSECTION_BOTANY', 'SECTION_BOTANY', 'SUBSECTION_BOTANY', 'SUPERSECTION_ZOOLOGY', 'SECTION_ZOOLOGY', 'SUBSECTION_ZOOLOGY' ); 
+CREATE INDEX name_usage_archive_section_zoo_rank_idx ON name_usage_archive(n_rank) WHERE n_rank IN ( 'SUPERSECTION_BOTANY', 'SECTION_BOTANY', 'SUBSECTION_BOTANY', 'SUPERSECTION_ZOOLOGY', 'SECTION_ZOOLOGY', 'SUBSECTION_ZOOLOGY' ); 
+  
+UPDATE name SET rank = 'SUPERSECTION_ZOOLOGY' WHERE rank = 'SUPERSECTION_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SECTION_ZOOLOGY' WHERE rank = 'SECTION_BOTANY' AND code = 'ZOOLOGICAL';  
+UPDATE name SET rank = 'SUBSECTION_ZOOLOGY' WHERE rank = 'SUBSECTION_BOTANY' AND code = 'ZOOLOGICAL';  
+
+UPDATE name_usage_archive SET n_rank = 'SUPERSECTION_ZOOLOGY' WHERE n_rank = 'SUPERSECTION_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SECTION_ZOOLOGY' WHERE n_rank = 'SECTION_BOTANY' AND n_code = 'ZOOLOGICAL';  
+UPDATE name_usage_archive SET n_rank = 'SUBSECTION_ZOOLOGY' WHERE n_rank = 'SUBSECTION_BOTANY' AND n_code = 'ZOOLOGICAL';  
+
+DROP INDEX name_section_zoo_rank_idx; 
+DROP INDEX name_usage_archive_section_zoo_rank_idx; 
 ```
 
 ### 2023-10-20 add taxon property table
