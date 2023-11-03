@@ -76,7 +76,7 @@ public class ImageResource {
   @Produces("image/png")
   public BufferedImage sourceLogo(@PathParam("key") int datasetKey, @PathParam("id") int id, @QueryParam("size") @DefaultValue("small") ImgConfig.Scale scale) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (!origin.isManagedOrRelease()) {
+    if (!origin.isProjectOrRelease()) {
       throw new IllegalArgumentException("Dataset "+datasetKey+" is " + origin);
     } else if (origin.isRelease()) {
       return imgService.datasetLogoArchived(id, datasetKey, scale);

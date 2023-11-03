@@ -52,7 +52,7 @@ public class DaoUtils {
    */
   public static void requireProject(int datasetKey, String message) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
-    if (origin == null || !origin.isManagedOrRelease()) {
+    if (origin == null || !origin.isProjectOrRelease()) {
       throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
     }
   }
@@ -60,7 +60,7 @@ public class DaoUtils {
   public static boolean isManagedOrRelease(int datasetKey) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey, true).origin;
     if (origin != null) {
-      return origin.isManagedOrRelease();
+      return origin.isProjectOrRelease();
     }
     return false;
   }

@@ -209,7 +209,7 @@ public class UpdMetricCmd extends AbstractMybatisCmd {
   }
 
   private void updateSectorMetrics(final Dataset d) {
-    if (!d.getOrigin().isManagedOrRelease()) {
+    if (!d.getOrigin().isProjectOrRelease()) {
       LOG.debug("Dataset {} is not a project or release but {}", d.getKey(), d.getOrigin());
       return;
     }

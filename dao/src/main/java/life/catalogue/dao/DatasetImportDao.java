@@ -186,7 +186,13 @@ public class DatasetImportDao {
 
     di.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(key)));
     di.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(key)));
-    di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
+    // issues are stored differently for external and project/release datasets
+    var info = DatasetInfoCache.CACHE.info(key);
+    if (info.origin.isProjectOrRelease()) {
+      di.setIssuesCount(countMap(Issue.class, mapper.countProjectIssues(key)));
+    } else {
+      di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
+    }
     di.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(key)));
     di.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
     di.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(key)));

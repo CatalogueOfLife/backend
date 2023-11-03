@@ -278,6 +278,12 @@
     ) AS dis
     GROUP BY iss
   </select>
+  <select id="countProjectIssues" resultType="StringCount">
+    SELECT iss AS key, count(*) AS count FROM (
+    SELECT unnest(issues) iss FROM verbatim_source WHERE dataset_key = #{key}
+    ) AS dis
+    GROUP BY iss
+  </select>
   <select id="countMediaByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM media WHERE dataset_key = #{key}

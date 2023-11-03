@@ -176,7 +176,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     nm.create(n);
 
     Integer sk = null;
-    if (src.origin.isManagedOrRelease() && tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
+    if (src.origin.isProjectOrRelease() && tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
       sk = Integer.parseInt(tn.infos.get(TxtTreeDataKey.PRIO.name())[0]);
       if (!sectors.contains(sk)) {
         Sector s = new Sector();

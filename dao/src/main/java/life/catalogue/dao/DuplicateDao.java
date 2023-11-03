@@ -170,10 +170,10 @@ public class DuplicateDao {
     var info = DatasetInfoCache.CACHE.info(req.datasetKey);
     Preconditions.checkArgument(req.minSize > 1, "minimum group size must at least be 2");
     if (req.sourceDatasetKey != null){
-      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+      Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
     }
     if (req.sectorKey != null){
-      Preconditions.checkArgument(info.origin.isManagedOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
+      Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
     }
     if (req.withDecision != null) {
       Preconditions.checkArgument(req.projectKey != null, "catalogueKey is required if parameter withDecision is used");
