@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import javax.validation.Validator;
@@ -391,8 +392,9 @@ public class XRelease extends ProjectRelease {
       params.setDatasetKey(newDatasetKey);
       params.setSynonyms(false);
 
-
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
+      LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
+
     } catch (Exception e) {
       LOG.error("Name validation & cleaning failed", e);
     }

@@ -13,6 +13,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;
@@ -50,6 +51,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   private LinneanNameUsage genus;
   private Integer genusYear;
+  private AtomicInteger counter = new AtomicInteger(0);
+  private AtomicInteger flagged = new AtomicInteger(0);
 
   public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
     this.factory = factory;
@@ -97,6 +100,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   @Override
   public void accept(LinneanNameUsage sn) {
+    counter.incrementAndGet();
     final IssueContainer issues = IssueContainer.simple();
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
@@ -104,6 +108,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     try {
       authorYear = NameValidator.parseYear(sn);
     } catch (NumberFormatException e) {
+      // already flagged by name validator above!
     }
 
     if (sn.getRank().isSpeciesOrBelow()) {
@@ -151,7 +156,11 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
     parents.push(sn);
     if (!issues.hasIssues()) {
-      addIssues(sn, issues);
+      try (SqlSession session = factory.openSession(true)) {
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        vsm.addIssues(dsid(sn), issues.getIssues());
+        flagged.incrementAndGet();
+      }
     }
   }
 
@@ -159,11 +168,12 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     return DSID.of(datasetKey, u.getId());
   }
 
-  void addIssues(LinneanNameUsage sn, IssueContainer issues) {
-    try (SqlSession session = factory.openSession(true)) {
-      var vsm = session.getMapper(VerbatimSourceMapper.class);
-      vsm.addIssues(dsid(sn), issues.getIssues());
-    }
+  public int getCounter() {
+    return counter.get();
+  }
+
+  public int getFlagged() {
+    return flagged.get();
   }
 
   @Override

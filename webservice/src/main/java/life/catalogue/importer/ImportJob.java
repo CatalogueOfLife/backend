@@ -313,9 +313,10 @@ public class ImportJob implements Runnable {
         LOG.info("Fetching logo for {}", datasetKey);
         LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, cfg.normalizer::scratchFile, imgService, req.createdBy);
         
-        LOG.info("Writing {} to Postgres!", datasetKey);
+        LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
+        // this does write to both pg and elastic!
         new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService).call();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
