@@ -1,7 +1,7 @@
 package life.catalogue.api.model;
 
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -11,7 +11,9 @@ import static life.catalogue.api.vocab.Datasets.COL;
  * DatasetScopedID: Entity with an ID property scoped within a single dataset.
  */
 public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
-  
+  Pattern keyPattern = Pattern.compile("(\\d+):(.+)");
+  Pattern keyIntPattern = Pattern.compile("(\\d+):(\\d+)");
+
   K getId();
   
   void setId(K id);
@@ -67,25 +69,6 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
   }
 
   /**
-   * Parses a colon concatenated version of both dataset key and id
-   */
-  static <K> DSID<K> parse(String key, Function<String, K> parser) {
-    if (key == null) return null;
-    String[] parts = key.split(":", 2);
-    if (parts.length == 1) return null;
-    int datasetKey = Integer.parseInt(parts[0]);
-    return of(datasetKey, parser.apply(parts[1]));
-  }
-
-  static DSID<Integer> parseInt(String key) {
-    return parse(key, Integer::parseInt);
-  }
-
-  static DSID<String> parseStr(String key) {
-    return parse(key, x -> x);
-  }
-
-  /**
    * @return a dataset scoped id using the verbatimKey of the supplied src
    */
   static DSIDValue<Integer> vkey(VerbatimEntity src) {
@@ -98,6 +81,26 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
 
   static <K> DSIDValue<K> of(int datasetKey, K id) {
     return new DSIDValue<K>(datasetKey, id);
+  }
+
+  static DSIDValue<String> ofStr(String key) {
+    var m = keyPattern.matcher(key);
+    if (m.find()) {
+      // NumberFormatException cannot happen as we have a pattern
+      return new DSIDValue<>(Integer.parseInt(m.group(1)), m.group(2));
+    } else {
+      throw new IllegalArgumentException("DSID key not prefixed by dataset key");
+    }
+  }
+
+  static DSIDValue<Integer> ofInt(String key) {
+    var m = keyIntPattern.matcher(key);
+    if (m.find()) {
+      // NumberFormatException cannot happen as we have a pattern
+      return new DSIDValue<>(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+    } else {
+      throw new IllegalArgumentException("DSID key not prefixed by dataset key");
+    }
   }
 
   /**

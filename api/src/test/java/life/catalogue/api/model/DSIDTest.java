@@ -27,11 +27,11 @@ public class DSIDTest {
 
   @Test
   public void parse() {
-    assertEquals(DSID.of(73, "1234"), DSID.parseStr("73:1234"));
-    assertEquals(DSID.of(73, "-1Gtsjh )."), DSID.parseStr("73:-1Gtsjh )."));
-    assertEquals(DSID.of(73, ":"), DSID.parseStr("73::"));
-    assertEquals(DSID.of(73, ""), DSID.parseStr("73:"));
-    assertEquals(DSID.of(-1, "13:4:15.6"), DSID.parseStr("-1:13:4:15.6"));
+    assertEquals(DSID.of(73, "1234"), DSID.ofStr("73:1234"));
+    assertEquals(DSID.of(73, "-1Gtsjh )."), DSID.ofStr("73:-1Gtsjh )."));
+    assertEquals(DSID.of(73, ":"), DSID.ofStr("73::"));
+    assertEquals(DSID.of(73, ""), DSID.ofStr("73:"));
+    assertEquals(DSID.of(-1, "13:4:15.6"), DSID.ofStr("-1:13:4:15.6"));
   }
 
 }

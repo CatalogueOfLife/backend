@@ -2,6 +2,8 @@ package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
@@ -36,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -240,10 +243,16 @@ public class AdminResource {
   @POST
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
+                               @QueryParam("sectorKey") List<String> sectorKeys,
                                @Auth User user
   ) {
     if (datasetKeys != null && !datasetKeys.isEmpty()) {
-      return runJob(RematchJob.some(user.getKey(),factory, namesIndex, datasetKeys.stream().mapToInt(i->i).toArray()));
+      var keys = datasetKeys.stream().mapToInt(i -> i).toArray();
+      return runJob(RematchJob.some(user.getKey(), factory, namesIndex, keys));
+
+    } if (sectorKeys != null && !sectorKeys.isEmpty()) {
+      var keys = sectorKeys.stream().map(DSID::ofInt).collect(Collectors.toList());
+      return runJob(RematchJob.sector(user.getKey(),factory, namesIndex, keys));
 
     } else {
       throw new IllegalArgumentException("At least one datasetKey parameter is required or unmatched=true");

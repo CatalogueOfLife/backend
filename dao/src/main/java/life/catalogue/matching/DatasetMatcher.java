@@ -1,10 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
@@ -12,40 +8,28 @@ import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
-import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Rematches an entire dataset, using 2 separate db connections for read & write
+ * Rematches entire datasets, using 2 separate db connections for read & write
  * In case of projects being matched it will also match any archived name usages.
  */
-public class DatasetMatcher {
+public class DatasetMatcher extends BaseMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
-  private final SqlSessionFactory factory;
-  private final NameIndex ni;
-  private int total = 0;
-  private int updated = 0;
-  private int nomatch = 0;
   private int archived = 0;
   private int datasets = 0;
 
   public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
-    this.factory = factory;
-    this.ni = ni.assertOnline();
+    super(factory, ni);
   }
 
   /**
    * Matches all names of an entire dataset and updates its name index id and issues in postgres
    *
    * @param allowInserts if true allows inserts into the names index
-   * @return number of names which have a changed match to before
    */
   public void match(int datasetKey, boolean allowInserts) throws RuntimeException {
     final int totalBefore = total;
@@ -60,6 +44,7 @@ public class DatasetMatcher {
     ) {
       NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
+      ArchivedNameUsageMapper anum = session.getMapper(ArchivedNameUsageMapper.class);
 
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
@@ -68,10 +53,7 @@ public class DatasetMatcher {
       // also match archived names
       if (isProject) {
         final int totalBeforeArchive = total;
-        PgUtils.consume(
-          () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedNames(datasetKey),
-          hu
-        );
+        PgUtils.consume(() -> anum.processArchivedNames(datasetKey), hu);
         archived = archived + total - totalBeforeArchive;
       }
     } catch (RuntimeException e) {
@@ -83,8 +65,8 @@ public class DatasetMatcher {
         updated - updatedBefore, total - totalBefore, nomatch - nomatchBefore, archived - archivedBefore, datasetKey);
     }
 
-    try (SqlSession session = factory.openSession(false)) {
-      if (update) {
+    if (update) {
+      try (SqlSession session = factory.openSession(false)) {
         int del = session.getMapper(NameMatchMapper.class).deleteOrphans(datasetKey);
         if (del > 0) {
           LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
@@ -97,104 +79,8 @@ public class DatasetMatcher {
     }
   }
 
-  public int getTotal() {
-    return total;
-  }
-
-  public int getUpdated() {
-    return updated;
-  }
-
-  public int getNomatch() {
-    return nomatch;
-  }
-
   public int getDatasets() {
     return datasets;
   }
 
-  class BulkMatchHandlerNames extends BulkMatchHandler {
-    NameMatchMapper nmm;
-
-    BulkMatchHandlerNames(int datasetKey, boolean allowInserts) {
-      super(datasetKey, allowInserts);
-      nmm = batchSession.getMapper(NameMatchMapper.class);
-    }
-
-    @Override
-    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
-      if (oldType == null) {
-        nmm.create(n, n.getSectorKey(), n.getNamesIndexId(), m.getType());
-      } else {
-        nmm.update(n, n.getNamesIndexId(), m.getType());
-      }
-    }
-  }
-
-  class BulkMatchHandlerArchivedUsages extends BulkMatchHandler {
-    ArchivedNameUsageMatchMapper nmm;
-
-    BulkMatchHandlerArchivedUsages(int datasetKey, boolean allowInserts) {
-      super(datasetKey, allowInserts);
-      nmm = batchSession.getMapper(ArchivedNameUsageMatchMapper.class);
-    }
-
-    @Override
-    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
-      if (oldType == null) {
-        nmm.create(n, n.getNamesIndexId(), m.getType());
-      } else {
-        nmm.update(n, n.getNamesIndexId(), m.getType());
-      }
-    }
-  }
-
-  abstract class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
-    private final int datasetKey;
-    private final boolean allowInserts;
-    final SqlSession batchSession;
-    private int _total = 0;
-    private int _updated = 0;
-    private int _nomatch = 0;
-
-    BulkMatchHandler(int datasetKey, boolean allowInserts) {
-      this.datasetKey = datasetKey;
-      this.allowInserts = allowInserts;
-      this.batchSession = factory.openSession(ExecutorType.BATCH, false);
-    }
-
-    @Override
-    public void accept(Name n) {
-      _total++;
-      final Integer oldId = n.getNamesIndexId();
-      final MatchType oldType = n.getNamesIndexType();
-      NameMatch m = ni.match(n, allowInserts, false);
-      if (!m.hasMatch()) {
-        _nomatch++;
-        LOG.debug("No match for {} from dataset {} with {} alternatives: {}", n.toStringComplete(), datasetKey,
-          m.getAlternatives() == null ? 0 : m.getAlternatives().size(),
-          m.getAlternatives() == null ? "" : m.getAlternatives().stream().map(IndexName::getLabelWithRank).collect(Collectors.joining("; "))
-        );
-      }
-      Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
-      if (oldType == null || !Objects.equals(oldId, newKey)) {
-        persist(n, m, oldType, oldId);
-        if (_updated++ % 10000 == 0) {
-          batchSession.commit();
-          LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
-        }
-      }
-    }
-
-    abstract void persist(Name n, NameMatch m, MatchType oldType, Integer oldId);
-
-    @Override
-    public void close() throws RuntimeException {
-      batchSession.commit();
-      batchSession.close();
-      total += _total;
-      updated += _updated;
-      nomatch += _nomatch;
-    }
-  }
 }
