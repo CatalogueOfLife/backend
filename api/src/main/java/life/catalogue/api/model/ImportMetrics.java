@@ -277,7 +277,12 @@ public class ImportMetrics implements ImportAttempt {
 
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public Integer getNameMatchesMissingCount() {
-    return getNameCount() - getNameMatchesCount();
+    var nc = getNameCount();
+    var nmc = getNameMatchesCount();
+    if (nc != null && nmc != null) {
+      return nc - nmc;
+    }
+    return null;
   }
 
   public Map<NameType, Integer> getNamesByTypeCount() {
