@@ -409,7 +409,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, coljersey.getCache()));
+    j.register(new NameUsageResource(searchService, suggestService, coljersey.getCache(), tdao));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));

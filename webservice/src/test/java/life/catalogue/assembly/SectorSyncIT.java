@@ -226,7 +226,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertEquals(Origin.SOURCE, vogelii.getOrigin());
     assertHasVerbatimSource(sp, "5175");
 
-    TaxonInfo ti = tdao.getTaxonInfo(sp);
+    UsageInfo ti = tdao.getUsageInfo(sp);
 
     Reference r = ti.getReference(sp.getName().getPublishedInId());
     assertEquals(sp.getDatasetKey(), r.getDatasetKey());
@@ -237,7 +237,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     Taxon t = getDraftTaxonBySourceID(srcKey1, "13287");
     assertEquals(Datasets.COL, (int) t.getDatasetKey());
     // 19 vernaculars, 5 distinct refs
-    ti = tdao.getTaxonInfo(t);
+    ti = tdao.getUsageInfo(t);
     assertEquals(19, ti.getVernacularNames().size());
     Set<String> keys = new HashSet<>();
     for (VernacularName vn : ti.getVernacularNames()) {

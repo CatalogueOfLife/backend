@@ -178,27 +178,26 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   }
 
-  public TaxonInfo getTaxonInfo(DSID<String> key) {
+  public UsageInfo getUsageInfo(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      return getTaxonInfo(session, tm.get(key));
+      return getUsageInfo(session, tm.get(key));
     }
   }
   
-  public TaxonInfo getTaxonInfo(final Taxon taxon) {
+  public UsageInfo getUsageInfo(final Taxon taxon) {
     try (SqlSession session = factory.openSession(false)) {
-      return getTaxonInfo(session, taxon);
+      return getUsageInfo(session, taxon);
     }
   }
 
-  public TaxonInfo getTaxonInfo(final SqlSession session, final Taxon taxon) {
+  public UsageInfo getUsageInfo(final SqlSession session, final Taxon taxon) {
     // main taxon object
     if (taxon == null) {
       return null;
     }
-    TaxonInfo info = new TaxonInfo();
-    info.setTaxon(taxon);
-    fillTaxonInfo(session, info, null, true, true, true, true, true, true,
+    UsageInfo info = new UsageInfo(taxon);
+    fillUsageInfo(session, info, null, true, true, true, true, true, true,
       true, true, true, true, true);
     return info;
   }
@@ -209,30 +208,34 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   }
 
-  public void fillTaxonInfo(final SqlSession session, final TaxonInfo info,
-                                   LoadingCache<String, Reference> refCache,
-                                   boolean loadSource,
-                                   boolean loadSynonyms,
-                                   boolean loadDistributions,
-                                   boolean loadVernacular,
-                                   boolean loadMedia,
-                                   boolean loadTypeMaterial,
-                                   boolean loadTreatments,
-                                   boolean loadNameRelations,
-                                   boolean loadProperties,
-                                   boolean loadConceptRelations,
-                                   boolean loadSpeciesInteractions) {
-    Taxon taxon = info.getTaxon();
+  /**
+   * @param info existing usage info with at least the usage property given so we can load the rest.
+   */
+  public void fillUsageInfo(final SqlSession session, final UsageInfo info,
+                            LoadingCache<String, Reference> refCache,
+                            boolean loadSource,
+                            boolean loadSynonyms,
+                            boolean loadDistributions,
+                            boolean loadVernacular,
+                            boolean loadMedia,
+                            boolean loadTypeMaterial,
+                            boolean loadTreatments,
+                            boolean loadNameRelations,
+                            boolean loadProperties,
+                            boolean loadConceptRelations,
+                            boolean loadSpeciesInteractions) {
+    var usage = info.getUsage();
+    final boolean isTaxon = usage.isTaxon();
 
     // all reference, name and taxon keys so we can select their details at the end
     Set<String> taxonIds = new HashSet<>();
     Set<String> nameIds = new HashSet<>();
-    Set<String> refIds = new HashSet<>(taxon.getReferenceIds());
-    refIds.add(taxon.getName().getPublishedInId());
+    Set<String> refIds = new HashSet<>(usage.getReferenceIds());
+    refIds.add(usage.getName().getPublishedInId());
 
     // synonyms
-    if (loadSynonyms) {
-      var syns = getSynonymy(taxon);
+    if (isTaxon && loadSynonyms) {
+      var syns = getSynonymy((Taxon)usage);
       info.setSynonyms(syns);
       info.getSynonyms().forEach(s -> {
         refIds.add(s.getName().getPublishedInId());
@@ -242,67 +245,24 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     // source
     if (loadSource) {
-      var d = DatasetInfoCache.CACHE.info(taxon.getDatasetKey());
+      var d = DatasetInfoCache.CACHE.info(usage.getDatasetKey());
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
-        info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(taxon));
+        info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
       }
     }
 
     // treatment
     if (loadTreatments) {
       TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
-      info.setTreatment(trm.get(taxon));
+      info.setTreatment(trm.get(usage));
     }
 
-    // add all supplementary taxon infos
-    if (loadDistributions) {
-      DistributionMapper dim = session.getMapper(DistributionMapper.class);
-      info.setDistributions(
-        dim.listByTaxon(taxon).stream()
-           // replace will enums so we also get titles and other props - this is too hard to do in mybatis
-           .map(d -> {
-             if (d.getArea().getGazetteer() == Gazetteer.ISO) {
-               Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
-                 d.setArea(new AreaImpl(c))
-               );
-
-             } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
-               d.setArea(TdwgArea.of(d.getArea().getId()));
-
-             } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
-               d.setArea(LonghurstArea.of(d.getArea().getId()));
-             }
-             return d;
-           })
-           .filter(d -> d.getArea() != null)
-           .collect(Collectors.toList())
-      );
-      info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
-    }
-
-    if (loadMedia) {
-      MediaMapper mm = session.getMapper(MediaMapper.class);
-      info.setMedia(mm.listByTaxon(taxon));
-      info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
-    }
-
-    if (loadVernacular) {
-      VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
-      info.setVernacularNames(vm.listByTaxon(taxon));
-      info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
-    }
-
-    if (loadProperties) {
-      var mapper = session.getMapper(TaxonPropertyMapper.class);
-      info.setProperties(mapper.listByTaxon(taxon));
-      info.getProperties().forEach(p -> refIds.add(p.getReferenceId()));
-    }
-
+    // usage name relations
     if (loadNameRelations) {
       NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-      info.setNameRelations(mapper.listByName(taxon.getName()));
-      info.getNameRelations().addAll(mapper.listByRelatedName(taxon.getName()));
+      info.setNameRelations(mapper.listByName(usage.getName()));
+      info.getNameRelations().addAll(mapper.listByRelatedName(usage.getName()));
       info.getNameRelations().forEach(r -> {
         refIds.add(r.getReferenceId());
         nameIds.add(r.getNameId());
@@ -310,40 +270,86 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       });
     }
 
-    if (loadConceptRelations) {
-      TaxonConceptRelationMapper mapper = session.getMapper(TaxonConceptRelationMapper.class);
-      info.setConceptRelations(mapper.listByTaxon(taxon));
-      info.getConceptRelations().addAll(mapper.listByRelatedTaxon(taxon));
-      info.getConceptRelations().forEach(r -> {
-        refIds.add(r.getReferenceId());
-        taxonIds.add(r.getTaxonId());
-        taxonIds.add(r.getRelatedTaxonId());
-      });
-    }
-
-    if (loadSpeciesInteractions) {
-      SpeciesInteractionMapper mapper = session.getMapper(SpeciesInteractionMapper.class);
-      info.setSpeciesInteractions(mapper.listByTaxon(taxon));
-      info.getSpeciesInteractions().addAll(mapper.listByRelatedTaxon(taxon));
-      info.getSpeciesInteractions().forEach(r -> {
-        refIds.add(r.getReferenceId());
-        taxonIds.add(r.getTaxonId());
-        taxonIds.add(r.getRelatedTaxonId());
-      });
-    }
-
     // add all type material
     if (loadTypeMaterial) {
       TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
-      info.getTypeMaterial().put(taxon.getName().getId(), tmm.listByName(taxon.getName()));
+      info.getTypeMaterial().put(usage.getName().getId(), tmm.listByName(usage.getName()));
       if (info.getSynonyms() != null) {
         info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
       }
       info.getTypeMaterial().values().forEach(
-              types -> types.forEach(
-                      t -> refIds.add(t.getReferenceId())
-              )
+        types -> types.forEach(
+          t -> refIds.add(t.getReferenceId())
+        )
       );
+    }
+
+    // add all supplementary taxon infos
+    if (isTaxon) {
+      if (loadDistributions) {
+        DistributionMapper dim = session.getMapper(DistributionMapper.class);
+        info.setDistributions(
+          dim.listByTaxon(usage).stream()
+             // replace will enums so we also get titles and other props - this is too hard to do in mybatis
+             .map(d -> {
+               if (d.getArea().getGazetteer() == Gazetteer.ISO) {
+                 Country.fromIsoCode(d.getArea().getId()).ifPresent(c ->
+                   d.setArea(new AreaImpl(c))
+                 );
+
+               } else if (d.getArea().getGazetteer() == Gazetteer.TDWG) {
+                 d.setArea(TdwgArea.of(d.getArea().getId()));
+
+               } else if (d.getArea().getGazetteer() == Gazetteer.LONGHURST) {
+                 d.setArea(LonghurstArea.of(d.getArea().getId()));
+               }
+               return d;
+             })
+             .filter(d -> d.getArea() != null)
+             .collect(Collectors.toList())
+        );
+        info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+      }
+
+      if (loadMedia) {
+        MediaMapper mm = session.getMapper(MediaMapper.class);
+        info.setMedia(mm.listByTaxon(usage));
+        info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+      }
+
+      if (loadVernacular) {
+        VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
+        info.setVernacularNames(vm.listByTaxon(usage));
+        info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+      }
+
+      if (loadProperties) {
+        var mapper = session.getMapper(TaxonPropertyMapper.class);
+        info.setProperties(mapper.listByTaxon(usage));
+        info.getProperties().forEach(p -> refIds.add(p.getReferenceId()));
+      }
+
+      if (loadConceptRelations) {
+        TaxonConceptRelationMapper mapper = session.getMapper(TaxonConceptRelationMapper.class);
+        info.setConceptRelations(mapper.listByTaxon(usage));
+        info.getConceptRelations().addAll(mapper.listByRelatedTaxon(usage));
+        info.getConceptRelations().forEach(r -> {
+          refIds.add(r.getReferenceId());
+          taxonIds.add(r.getTaxonId());
+          taxonIds.add(r.getRelatedTaxonId());
+        });
+      }
+
+      if (loadSpeciesInteractions) {
+        SpeciesInteractionMapper mapper = session.getMapper(SpeciesInteractionMapper.class);
+        info.setSpeciesInteractions(mapper.listByTaxon(usage));
+        info.getSpeciesInteractions().addAll(mapper.listByRelatedTaxon(usage));
+        info.getSpeciesInteractions().forEach(r -> {
+          refIds.add(r.getReferenceId());
+          taxonIds.add(r.getTaxonId());
+          taxonIds.add(r.getRelatedTaxonId());
+        });
+      }
     }
 
     // make sure we did not add null by accident
@@ -354,7 +360,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     if (!refIds.isEmpty()) {
       if (refCache == null) {
         ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
-        List<Reference> refs = rm.listByIds(taxon.getDatasetKey(), refIds);
+        List<Reference> refs = rm.listByIds(usage.getDatasetKey(), refIds);
         info.addReferences(refs);
       } else {
         info.setReferences(refCache.getAll(refIds));
@@ -363,13 +369,13 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
     if (!nameIds.isEmpty()) {
       NameMapper mapper = session.getMapper(NameMapper.class);
-      List<Name> names = mapper.listByIds(taxon.getDatasetKey(), nameIds);
+      List<Name> names = mapper.listByIds(usage.getDatasetKey(), nameIds);
       info.addNames(names);
     }
 
     if (!taxonIds.isEmpty()) {
       TaxonMapper mapper = session.getMapper(TaxonMapper.class);
-      List<Taxon> taxa = mapper.listByIds(taxon.getDatasetKey(), taxonIds);
+      List<Taxon> taxa = mapper.listByIds(usage.getDatasetKey(), taxonIds);
       info.addTaxa(taxa);
     }
   }

@@ -104,11 +104,10 @@ public class PortalPageRenderer {
       final var key = new DSIDValue<>(datasetKey, id);
       //TODO: check if we had the id in a previous release...
       Taxon t = tdao.getOr404(key);
-      TaxonInfo info = new TaxonInfo();
+      UsageInfo info = new UsageInfo(t);
       data.put("info", info);
-      info.setTaxon(t);
       try (SqlSession session = tdao.getFactory().openSession()) {
-        tdao.fillTaxonInfo(session, info, null,
+        tdao.fillUsageInfo(session, info, null,
           true,
           true,
           false,

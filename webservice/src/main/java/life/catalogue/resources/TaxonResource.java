@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
@@ -83,9 +85,11 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
+  @Hidden
+  @Deprecated // use NameUsageResource instead
   @Path("{id}/info")
-  public TaxonInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    TaxonInfo info = dao.getTaxonInfo(DSID.of(datasetKey, id));
+  public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
     if (info == null) {
       throw NotFoundException.notFound(Taxon.class, datasetKey, id);
     }

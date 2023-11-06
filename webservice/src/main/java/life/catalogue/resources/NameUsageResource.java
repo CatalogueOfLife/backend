@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -7,6 +8,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -42,11 +44,13 @@ public class NameUsageResource {
   private final NameUsageSearchService searchService;
   private final NameUsageSuggestionService suggestService;
   private final LatestDatasetKeyCache datasetKeyCache;
+  private final TaxonDao dao;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
     this.searchService = search;
     this.suggestService = suggest;
     this.datasetKeyCache = datasetKeyCache;
+    this.dao = dao;
   }
 
   @GET
@@ -113,6 +117,16 @@ public class NameUsageResource {
   @Path("{id}/source")
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     return session.getMapper(VerbatimSourceMapper.class).getWithSources(DSID.of(datasetKey, id));
+  }
+
+  @GET
+  @Path("{id}/info")
+  public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
+    if (info == null) {
+      throw NotFoundException.notFound(NameUsage.class, datasetKey, id);
+    }
+    return info;
   }
 
   @GET

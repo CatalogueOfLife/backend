@@ -5,18 +5,19 @@ import java.util.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * Aggregated taxon information
+ * Aggregated usage information, mostly for taxa, but also for synonyms
  */
-public class TaxonInfo {
+public class UsageInfo {
   
-  private Taxon taxon;
-  private Treatment treatment;
+  private final NameUsageBase usage;
   private VerbatimSource source;
+  private Treatment treatment;
+  private List<NameRelation> nameRelations;
+  // taxa only
   private Synonymy synonyms;
   private List<Distribution> distributions;
   private List<VernacularName> vernacularNames;
   private List<Media> media;
-  private List<NameRelation> nameRelations;
   private List<TaxonProperty> properties;
   private List<TaxonConceptRelation> conceptRelations;
   private List<SpeciesInteraction> speciesInteractions;
@@ -42,24 +43,22 @@ public class TaxonInfo {
    */
   private Map<String, Taxon> taxa = new HashMap<>();
 
-  public TaxonInfo() {
-  }
-
-  public TaxonInfo(Taxon taxon) {
-    this.taxon = taxon;
+  public UsageInfo(NameUsageBase usage) {
+    this.usage = usage;
   }
 
   @JsonIgnore
   public String getId() {
-    return taxon.getId();
+    return usage.getId();
   }
 
-  public Taxon getTaxon() {
-    return taxon;
+  public NameUsageBase getUsage() {
+    return usage;
   }
-  
-  public void setTaxon(Taxon taxon) {
-    this.taxon = taxon;
+
+  @Deprecated
+  public NameUsageBase getTaxon() {
+    return usage;
   }
 
   public VerbatimSource getSource() {
@@ -116,7 +115,7 @@ public class TaxonInfo {
 
   @JsonIgnore
   public Reference getPublishedInReference() {
-    return references.getOrDefault(taxon.getName().getPublishedInId(), null);
+    return references.getOrDefault(usage.getName().getPublishedInId(), null);
   }
 
   public Map<String, Reference> getReferences() {
@@ -220,9 +219,9 @@ public class TaxonInfo {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof TaxonInfo)) return false;
-    TaxonInfo taxonInfo = (TaxonInfo) o;
-    return Objects.equals(taxon, taxonInfo.taxon)
+    if (!(o instanceof UsageInfo)) return false;
+    UsageInfo taxonInfo = (UsageInfo) o;
+    return Objects.equals(usage, taxonInfo.usage)
            && Objects.equals(treatment, taxonInfo.treatment)
            && Objects.equals(source, taxonInfo.source)
            && Objects.equals(synonyms, taxonInfo.synonyms)
@@ -241,6 +240,6 @@ public class TaxonInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(taxon, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
+    return Objects.hash(usage, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
   }
 }

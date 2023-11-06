@@ -146,7 +146,7 @@ public class PgImportIT extends PgImportITBase {
       Taxon tax = tdao.get(key(dataset.getKey(), "1000"));
       assertEquals("Crepis pulchra", tax.getName().getScientificName());
       
-      TaxonInfo info = tdao.getTaxonInfo(tax);
+      UsageInfo info = tdao.getUsageInfo(tax);
       // check vernaculars
       Map<String, String> expV = Maps.newHashMap();
       expV.put("deu", "Schöner Pippau");
@@ -214,7 +214,7 @@ public class PgImportIT extends PgImportITBase {
       Synonym s = (Synonym) syns.get(0);
       assertEquals("Astracantha arnacantha", s.getAccepted().getName().getScientificName());
       
-      TaxonInfo t = tdao.getTaxonInfo(s.getAccepted());
+      UsageInfo t = tdao.getUsageInfo(s.getAccepted());
       
       assertEquals(1, t.getVernacularNames().size());
       assertEquals(2, t.getDistributions().size());
@@ -243,7 +243,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals("(Kunth) H.M.Hern.", t.getName().getAuthorship());
       assertEquals(Rank.SPECIES, t.getName().getRank());
       
-      TaxonInfo info = tdao.getTaxonInfo(t);
+      UsageInfo info = tdao.getUsageInfo(t);
       // distributions
       assertEquals(3, info.getDistributions().size());
       Set<String> areas = Sets.newHashSet("AGE-BA", "BZC-MS", "BZC-MT");
@@ -321,7 +321,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals("Latrodectus mactans", t.getName().getScientificName());
       assertEquals("(Fabricius, 1775)", t.getName().getAuthorship());
   
-      TaxonInfo info = tdao.getTaxonInfo(t);
+      UsageInfo info = tdao.getUsageInfo(t);
       // Walckenaer1805;Walckenaer, CA;1805;Table of the aranid or essential characters of the
       // tribes, genera, families and races contained in the genus Aranea of ​​Linnaeus, with the
       // designation of the species included in each of these divisions . Paris, 88 pp;;
@@ -363,7 +363,7 @@ public class PgImportIT extends PgImportITBase {
       Taxon annua = tdao.get(key(dataset.getKey(), "4"));
       assertEquals("Poa annua L.", annua.getName().getLabel());
       
-      TaxonInfo info = tdao.getTaxonInfo(annua);
+      UsageInfo info = tdao.getUsageInfo(annua);
       Reference pubIn = info.getReference(annua.getName().getPublishedInId());
       assertEquals("Sp. Pl. 1: 68 (1753).", pubIn.getCitation());
       
@@ -579,7 +579,7 @@ public class PgImportIT extends PgImportITBase {
   public void coldpProperties() throws Exception {
     normalizeAndImport(COLDP, 40);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var t = tdao.getTaxonInfo(key(dataset.getKey(), "1"));
+      var t = tdao.getUsageInfo(key(dataset.getKey(), "1"));
       var n = t.getTaxon().getName();
       assertEquals("Toleria aegerides", n.getScientificName());
       assertEquals("(Strand, 1916)", n.getAuthorship());
