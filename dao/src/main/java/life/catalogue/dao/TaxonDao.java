@@ -180,23 +180,23 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
 
   public UsageInfo getUsageInfo(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      return getUsageInfo(session, tm.get(key));
+      NameUsageMapper um = session.getMapper(NameUsageMapper.class);
+      return getUsageInfo(session, um.get(key));
     }
   }
   
-  public UsageInfo getUsageInfo(final Taxon taxon) {
+  public UsageInfo getUsageInfo(final NameUsageBase usage) {
     try (SqlSession session = factory.openSession(false)) {
-      return getUsageInfo(session, taxon);
+      return getUsageInfo(session, usage);
     }
   }
 
-  public UsageInfo getUsageInfo(final SqlSession session, final Taxon taxon) {
+  public UsageInfo getUsageInfo(final SqlSession session, final NameUsageBase usage) {
     // main taxon object
-    if (taxon == null) {
+    if (usage == null) {
       return null;
     }
-    UsageInfo info = new UsageInfo(taxon);
+    UsageInfo info = new UsageInfo(usage);
     fillUsageInfo(session, info, null, true, true, true, true, true, true,
       true, true, true, true, true);
     return info;
