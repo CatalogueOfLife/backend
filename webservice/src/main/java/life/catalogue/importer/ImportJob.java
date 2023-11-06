@@ -317,10 +317,12 @@ public class ImportJob implements Runnable {
         updateState(ImportState.INSERTING);
         store = NeoDbFactory.open(datasetKey, getAttempt(), cfg.normalizer);
         // this does write to both pg and elastic!
-        new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService).call();
+        var pgImport = new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, cfg.importer, dDao, indexService);
+        pgImport.call();
 
         LOG.info("Build import metrics for dataset {}", datasetKey);
         updateState(ImportState.ANALYZING);
+        di.setMaxClassificationDepth(pgImport.getMaxDepth());
         dao.updateMetrics(di, datasetKey);
 
         bus.post(new DatasetDataChanged(datasetKey));

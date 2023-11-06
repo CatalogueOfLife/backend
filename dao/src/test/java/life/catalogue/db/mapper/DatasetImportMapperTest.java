@@ -87,6 +87,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
     d.setDownload(LocalDateTime.now());
     d.setVerbatimCount(5748923);
+    d.setMaxClassificationDepth(31);
     Map<Term, Integer> vcnt = new HashMap<>();
     vcnt.put(AcefTerm.AcceptedSpecies, 10);
     d.setVerbatimByTermCount(vcnt);

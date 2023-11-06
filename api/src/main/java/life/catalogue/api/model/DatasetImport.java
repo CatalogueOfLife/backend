@@ -19,6 +19,11 @@ public class DatasetImport extends ImportMetrics {
 
 
   /**
+   * Maximum number of taxa nested in the classification tree, excluding synonyms.
+   */
+  private int maxClassificationDepth;
+
+  /**
    * The URI the data was downloaded from before its been imported.
    * In case of uploads this is NULL!
    */
@@ -117,6 +122,14 @@ public class DatasetImport extends ImportMetrics {
     this.verbatimByRowTypeCount = verbatimByRowTypeCount;
   }
 
+  public int getMaxClassificationDepth() {
+    return maxClassificationDepth;
+  }
+
+  public void setMaxClassificationDepth(int maxClassificationDepth) {
+    this.maxClassificationDepth = maxClassificationDepth;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -124,18 +137,19 @@ public class DatasetImport extends ImportMetrics {
     if (!super.equals(o)) return false;
     DatasetImport that = (DatasetImport) o;
     return Objects.equals(downloadUri, that.downloadUri) &&
+           maxClassificationDepth == that.maxClassificationDepth &&
         origin == that.origin &&
         format == that.format &&
-        Objects.equals(download, that.download) &&
-        Objects.equals(md5, that.md5) &&
-        Objects.equals(verbatimCount, that.verbatimCount) &&
-        Objects.equals(verbatimByTermCount, that.verbatimByTermCount) &&
-        Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount);
+           Objects.equals(download, that.download) &&
+           Objects.equals(md5, that.md5) &&
+           Objects.equals(verbatimCount, that.verbatimCount) &&
+           Objects.equals(verbatimByTermCount, that.verbatimByTermCount) &&
+           Objects.equals(verbatimByRowTypeCount, that.verbatimByRowTypeCount);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
+    return Objects.hash(super.hashCode(), maxClassificationDepth, downloadUri, origin, format, download, md5, verbatimCount, verbatimByTermCount, verbatimByRowTypeCount);
   }
 
   @Override

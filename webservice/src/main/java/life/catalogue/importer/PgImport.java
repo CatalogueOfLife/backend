@@ -83,6 +83,7 @@ public class PgImport implements Callable<Boolean> {
   private final AtomicInteger vCounter = new AtomicInteger(0);
   private final AtomicInteger tmCounter = new AtomicInteger(0);
   private final AtomicInteger eCounter = new AtomicInteger(0);
+  private final AtomicInteger maxDepth = new AtomicInteger(0);
   private int nRelCounter;
   private int tRelCounter;
   private int sRelCounter;
@@ -385,7 +386,7 @@ public class PgImport implements Callable<Boolean> {
         MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
         TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
-        TaxonPropertyMapper proeprtyMapper = session.getMapper(TaxonPropertyMapper.class);
+        TaxonPropertyMapper propertyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
@@ -399,7 +400,9 @@ public class PgImport implements Callable<Boolean> {
             Set<Integer> vKeys = new HashSet<>();
 
             NeoUsage u = fillNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
-
+            if (maxDepth.get() < parents.size()) {
+              maxDepth.set(parents.size());
+            }
             // insert taxon or synonym
             if (u.isSynonym()) {
               if (NeoDbUtils.isProParteSynonym(n)) {
@@ -460,7 +463,7 @@ public class PgImport implements Callable<Boolean> {
               for (var tp : u.properties) {
                 updateVerbatimUserEntity(tp, vKeys);
                 updateReferenceKey(tp);
-                proeprtyMapper.create(tp, acc.getId());
+                propertyMapper.create(tp, acc.getId());
                 tpCounter.incrementAndGet();
               }
 
@@ -631,5 +634,10 @@ public class PgImport implements Callable<Boolean> {
     return total;
   }
 
-
+  /**
+   * @return maximum depth of classification tree - after it was iterated through when PgImport was executed.
+   */
+  public int getMaxDepth() {
+    return maxDepth.get();
+  }
 }

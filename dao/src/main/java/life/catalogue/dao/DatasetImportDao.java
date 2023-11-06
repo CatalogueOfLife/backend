@@ -148,6 +148,8 @@ public class DatasetImportDao {
    * The key is given explicitly because it might deviate from the datasetKey of the DatasetImport
    * in case of releases, where we store the release metrics in the mother project (which is the DatasetImport.datasetKey).
    *
+   * DatasetImport.maxClassificationDepth is not calculated as its very resource intensive and can be done before much more efficient!
+   *
    * @param di import to update
    * @param key the dataset key to analyze the data from. Should be the release datasetKey for releases
    */

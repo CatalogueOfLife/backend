@@ -51,8 +51,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   private LinneanNameUsage genus;
   private Integer genusYear;
-  private AtomicInteger counter = new AtomicInteger(0);
-  private AtomicInteger flagged = new AtomicInteger(0);
+  private final AtomicInteger counter = new AtomicInteger(0);
+  private final AtomicInteger flagged = new AtomicInteger(0);
+  private int maxDepth = 0;
 
   public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
     this.factory = factory;
@@ -155,6 +156,10 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       genusYear = authorYear;
     }
     parents.push(sn);
+    // track maximum depth of accepted taxa
+    if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.size()) {
+      maxDepth = parents.size();
+    }
     if (!issues.hasIssues()) {
       try (SqlSession session = factory.openSession(true)) {
         var vsm = session.getMapper(VerbatimSourceMapper.class);
@@ -174,6 +179,10 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   public int getFlagged() {
     return flagged.get();
+  }
+
+  public int getMaxDepth() {
+    return maxDepth;
   }
 
   @Override

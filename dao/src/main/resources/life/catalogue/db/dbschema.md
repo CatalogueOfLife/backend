@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-10-31 classification max depth metrics
+```sql
+ALTER TABLE dataset_import ADD COLUMN max_classification_depth INTEGER;
+```
+
 ### 2023-11-01 etymology and urlFormatter
 ```sql
 ALTER TABLE name ADD COLUMN etymology TEXT;

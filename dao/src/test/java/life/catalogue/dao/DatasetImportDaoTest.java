@@ -4,6 +4,8 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.*;
 
+import org.apache.ibatis.session.SqlSession;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
@@ -11,6 +13,8 @@ import org.gbif.nameparser.api.Rank;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,8 +29,7 @@ public class DatasetImportDaoTest extends DaoTestBase {
   }
 
   @Test
-  public void generateDatasetImport() {
-    
+  public void generateDatasetImport() throws SQLException {
     DatasetImport d = dao.generateMetrics(TestEntityGenerator.DATASET11.getKey(), Users.TESTER);
   
     assertEquals((Integer) 0, d.getTreatmentCount());

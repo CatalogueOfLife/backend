@@ -16,6 +16,7 @@
     download,
     format,
     origin,
+    max_classification_depth,
     verbatim_count,
     verbatim_by_term_count,
     verbatim_by_row_type_count
@@ -71,6 +72,7 @@
     download,
     format,
     origin,
+    max_classification_depth,
     verbatim_count,
     verbatim_by_term_count,
     verbatim_by_row_type_count
@@ -124,6 +126,7 @@
     #{imp.download},
     #{imp.format}::DATAFORMAT,
     #{imp.origin}::DATASETORIGIN,
+    #{imp.maxClassificationDepth},
     #{imp.verbatimCount},
     #{imp.verbatimByTermCount},
     #{imp.verbatimByRowTypeCount, typeHandler=life.catalogue.db.type2.NestedTermMapTypeHandler}::jsonb

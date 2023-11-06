@@ -218,6 +218,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       session.getMapper(DatasetPartitionMapper.class).updateUsageCounter(datasetKey);
     }
     // create new dataset "import" metrics in mother project
+    // metrics.maxClassificationDepth needs to be set before!
     diDao.updateMetrics(metrics, newDatasetKey);
     diDao.update(metrics);
   }

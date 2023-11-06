@@ -393,6 +393,7 @@ public class XRelease extends ProjectRelease {
       params.setSynonyms(false);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
+      metrics.setMaxClassificationDepth(consumer.getMaxDepth());
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
 
     } catch (Exception e) {
