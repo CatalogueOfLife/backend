@@ -228,12 +228,14 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   private void consumeUsage(NameUsageBase u){
-    if (!fullDataset && u.isTaxon()) {
-      taxonIDs.add(u.getId());
-      nameIDs.add(u.getName().getId());
+    if (!fullDataset) {
       refIDs.add(u.getName().getPublishedInId());
-      refIDs.add(u.getAccordingToId());
       refIDs.addAll(u.getReferenceIds());
+      refIDs.add(u.getAccordingToId());
+      nameIDs.add(u.getName().getId());
+      if (u.isTaxon()) {
+        taxonIDs.add(u.getId());
+      }
     }
     // metrics
     counter.inc(u);
