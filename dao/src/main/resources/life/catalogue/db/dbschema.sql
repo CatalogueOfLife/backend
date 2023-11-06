@@ -1840,8 +1840,7 @@ CREATE AGGREGATE array_cat_agg(anycompatiblearray) (
   STYPE=anycompatiblearray
 );
 
-CREATE OR REPLACE
-N array_reverse(anyarray) RETURNS anyarray AS $$
+CREATE OR REPLACE FUNCTION array_reverse(anyarray) RETURNS anyarray AS $$
 SELECT ARRAY(
     SELECT $1[i]
     FROM generate_subscripts($1,1) AS s(i)

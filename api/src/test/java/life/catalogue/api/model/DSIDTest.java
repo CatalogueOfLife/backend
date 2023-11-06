@@ -26,12 +26,27 @@ public class DSIDTest {
   }
 
   @Test
-  public void parse() {
+  public void ofStr() {
+    assertEquals(DSID.of(1234, "x"), DSID.ofStr("1234:x"));
     assertEquals(DSID.of(73, "1234"), DSID.ofStr("73:1234"));
     assertEquals(DSID.of(73, "-1Gtsjh )."), DSID.ofStr("73:-1Gtsjh )."));
     assertEquals(DSID.of(73, ":"), DSID.ofStr("73::"));
-    assertEquals(DSID.of(73, ""), DSID.ofStr("73:"));
     assertEquals(DSID.of(-1, "13:4:15.6"), DSID.ofStr("-1:13:4:15.6"));
+    assertEquals(DSID.of(1234, "http://no.com/ñö|x?q=löäki#edrft-s"), DSID.ofStr("1234:http://no.com/ñö|x?q=löäki#edrft-s"));
+
+    assertNull(DSID.ofStr(null));
+    assertNull(DSID.ofStr(""));
+
+    assertIAE("73:");
+    assertIAE("73");
   }
 
+  void assertIAE(String x) {
+    try {
+      DSID.ofStr(x);
+      fail("should have failed to parse: " + x);
+    } catch (IllegalArgumentException e) {
+      // all fine
+    }
+  }
 }

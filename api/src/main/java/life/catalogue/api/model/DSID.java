@@ -5,14 +5,16 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.commons.lang3.StringUtils;
+
 import static life.catalogue.api.vocab.Datasets.COL;
 
 /**
  * DatasetScopedID: Entity with an ID property scoped within a single dataset.
  */
 public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
-  Pattern keyPattern = Pattern.compile("(\\d+):(.+)");
-  Pattern keyIntPattern = Pattern.compile("(\\d+):(\\d+)");
+  Pattern keyPattern = Pattern.compile("^(-?\\d+):(.+)$");
+  Pattern keyIntPattern = Pattern.compile("^(-?\\d+):(\\d+)$");
 
   K getId();
   
@@ -84,6 +86,7 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
   }
 
   static DSIDValue<String> ofStr(String key) {
+    if (StringUtils.isBlank(key)) return null;
     var m = keyPattern.matcher(key);
     if (m.find()) {
       // NumberFormatException cannot happen as we have a pattern
@@ -94,6 +97,7 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
   }
 
   static DSIDValue<Integer> ofInt(String key) {
+    if (StringUtils.isBlank(key)) return null;
     var m = keyIntPattern.matcher(key);
     if (m.find()) {
       // NumberFormatException cannot happen as we have a pattern
