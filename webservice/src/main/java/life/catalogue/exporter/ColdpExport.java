@@ -115,6 +115,7 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.scientificName, n.getScientificName());
     writer.set(ColdpTerm.authorship, n.getAuthorship());
     writer.set(ColdpTerm.rank, n.getRank());
+    // parsed name
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(ColdpTerm.uninomial, n.getUninomial());
     writer.set(ColdpTerm.genericName, n.getGenus());
@@ -122,15 +123,31 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.specificEpithet, n.getSpecificEpithet());
     writer.set(ColdpTerm.infraspecificEpithet, n.getInfraspecificEpithet());
     writer.set(ColdpTerm.cultivarEpithet, n.getCultivarEpithet());
+    // parsed authorship
+    var a = n.getCombinationAuthorship();
+    if (a != null) {
+      writer.set(ColdpTerm.combinationAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.combinationExAuthorship, a.getExAuthors(), "|");
+      writer.set(ColdpTerm.combinationAuthorshipYear, a.getYear());
+    }
+    a = n.getBasionymAuthorship();
+    if (a != null) {
+      writer.set(ColdpTerm.basionymAuthorship, a.getAuthors(), "|");
+      writer.set(ColdpTerm.basionymExAuthorship, a.getExAuthors(), "|");
+      writer.set(ColdpTerm.basionymAuthorshipYear, a.getYear());
+    }
+    // other
     writer.set(ColdpTerm.originalSpelling, n.isOriginalSpelling());
     writer.set(ColdpTerm.genderAgreement, n.hasGenderAgreement());
     writer.set(ColdpTerm.gender, n.getGender());
+    writer.set(ColdpTerm.etymology, n.getEtymology());
     writer.set(ColdpTerm.nameReferenceID, n.getPublishedInId());
     writer.set(ColdpTerm.publishedInYear, n.getPublishedInYear());
     writer.set(ColdpTerm.publishedInPage, n.getPublishedInPage());
     writer.set(ColdpTerm.publishedInPageLink, n.getPublishedInPageLink());
     writer.set(ColdpTerm.code, n.getCode());
     writer.set(ColdpTerm.nameStatus, n.getNomStatus());
+    writer.set(ColdpTerm.link, n.getLink());
     writer.set(ColdpTerm.remarks, n.getRemarks());
   }
 
@@ -173,6 +190,7 @@ public class ColdpExport extends ArchiveExport {
     writer.set(ColdpTerm.ID, r.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
+    writer.set(ColdpTerm.remarks, r.getRemarks());
     if (r.getCsl() != null) {
       var csl = r.getCsl();
       writer.set(ColdpTerm.type, csl.getType());
