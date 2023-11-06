@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import life.catalogue.db.TestDataRule;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,14 +18,16 @@ import static org.junit.Assert.*;
 public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMapper> {
 
   int datasetKey = testDataRule.testData.key;
+  String uid = "u100";
+  DSID<String> key = DSID.of(datasetKey,uid);
 
   public VerbatimSourceMapperTest() {
-    super(VerbatimSourceMapper.class);
+    super(VerbatimSourceMapper.class, TestDataRule.fish());
   }
 
-  static VerbatimSource create(){
+  VerbatimSource create(){
     VerbatimSource v = new VerbatimSource();
-    v.setKey(TestEntityGenerator.TAXON1);
+    v.setKey(key);
     v.setSourceId("source77");
     v.setSourceDatasetKey(77);
     v.addIssues(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE, Issue.BASIONYM_DERIVED);
@@ -71,7 +75,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     assertEquals(iss, issues);
 
     // now without a pre-existing record
-    DSID<String> key = DSID.of(datasetKey, "s2");
+    DSID<String> key = DSID.of(datasetKey, "u1");
     mapper().addIssue(key, Issue.BASIONYM_DERIVED);
     iss = mapper().getIssues(key).getIssues();
     assertEquals(iss, Set.of(Issue.BASIONYM_DERIVED));
@@ -79,8 +83,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
   @Test
   public void delete() {
-    int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
-    Taxon t = new Taxon(TestEntityGenerator.TAXON1);
+    Taxon t = new Taxon(mapper(TaxonMapper.class).get(key));
 
     VerbatimSource v1 = new VerbatimSource();
     v1.setKey(t);
@@ -92,7 +95,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     assertNotNull(mapper().get(v1));
 
     // non existing sector
-    mapper().deleteBySector(DSID.of(datasetKey, 1));
+    mapper().deleteBySector(DSID.of(datasetKey, 789456));
     assertNotNull(mapper().get(v1));
 
     Sector s = new Sector();
@@ -122,8 +125,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
   @Test
   public void secondarySources() {
-    int datasetKey = TestEntityGenerator.TAXON1.getDatasetKey();
-    Taxon t = new Taxon(TestEntityGenerator.TAXON1);
+    Taxon t = new Taxon(mapper(TaxonMapper.class).get(key));
 
     VerbatimSource v1 = create();
     mapper().create(v1);
