@@ -2,6 +2,7 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.TaxonCounter;
 
@@ -14,9 +15,10 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-public class ColdpPrinter extends RowTermPrinter{
-  public ColdpPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
-    super(params, ranks, countRank, taxonCounter, factory, writer, ColdpTerm.NameUsage, List.of(
+public abstract class ColdpPrinter extends RowTermPrinter{
+
+  private ColdpPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
+    super(params, ranks, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, List.of(
       ColdpTerm.ID,
       ColdpTerm.parentID,
       ColdpTerm.status,
@@ -26,8 +28,19 @@ public class ColdpPrinter extends RowTermPrinter{
     ));
   }
 
+  static public class TSV extends ColdpPrinter{
+    public TSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
+    }
+  }
+  static public class CSV extends ColdpPrinter{
+    public CSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
+    }
+  }
+
   @Override
-  void write(SimpleName sn) throws IOException {
+  void write(SimpleName sn) {
     tw.set(ColdpTerm.ID, sn.getId());
     tw.set(ColdpTerm.parentID, sn.getParentId());
     tw.set(ColdpTerm.status, sn.getStatus());

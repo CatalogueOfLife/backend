@@ -2,6 +2,8 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.DataFormat;
 
+import life.catalogue.api.vocab.TabularFormat;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
@@ -9,15 +11,18 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ExportRequest {
+  // filters
   private Integer datasetKey;
-  private DataFormat format;
-  private boolean excel;
   private SimpleName root;
-  private boolean simple = true;
   private boolean synonyms = true;
   private Boolean extinct = null;
   private boolean bareNames = false;
   private Rank minRank;
+  // output format
+  private DataFormat format;
+  private TabularFormat tabFormat = TabularFormat.TSV;
+  private boolean excel;
+  private boolean simple = true;
   private boolean force; // this makes sure we run a new export
 
   public ExportRequest() {
@@ -42,6 +47,14 @@ public class ExportRequest {
 
   public void setFormat(DataFormat format) {
     this.format = format;
+  }
+
+  public TabularFormat getTabFormat() {
+    return tabFormat;
+  }
+
+  public void setTabFormat(TabularFormat tabFormat) {
+    this.tabFormat = tabFormat;
   }
 
   public boolean isExcel() {
@@ -132,6 +145,7 @@ public class ExportRequest {
            && force == that.force
            && Objects.equals(datasetKey, that.datasetKey)
            && format == that.format
+           && tabFormat == that.tabFormat
            && Objects.equals(root, that.root)
            && Objects.equals(extinct, that.extinct)
            && minRank == that.minRank;
@@ -139,7 +153,7 @@ public class ExportRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, excel, root, simple, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, format, tabFormat, excel, root, simple, synonyms, extinct, bareNames, minRank, force);
   }
 
   @Override

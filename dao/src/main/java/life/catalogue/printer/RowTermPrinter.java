@@ -2,6 +2,8 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.vocab.TabularFormat;
+import life.catalogue.common.io.CsvWriter;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.dao.TaxonCounter;
@@ -17,18 +19,21 @@ import java.util.Set;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
- * Prints simple names as TSV rows.
+ * Prints simple names as TSV or CSV rows.
  */
 public abstract class RowTermPrinter extends AbstractPrinter {
   protected final TermWriter tw;
 
-  public RowTermPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer,
-                        Term rowType, List<Term> columns
+  public RowTermPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory,
+                        Writer writer, TabularFormat format, Term rowType, List<Term> columns
   ) throws IOException {
     super(false, params, ranks, countRank, taxonCounter, factory, writer);
-    tw = new TermWriter(new TabWriter(writer), rowType, columns);
+    if (format == TabularFormat.CSV) {
+      tw = new TermWriter(new CsvWriter(writer), rowType, columns);
+    } else {
+      tw = new TermWriter(new TabWriter(writer), rowType, columns);
+    }
   }
-
 
   @Override
   public void print(SimpleName u) {

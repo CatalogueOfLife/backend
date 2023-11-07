@@ -4,6 +4,7 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.img.ImageService;
 import life.catalogue.printer.ColdpPrinter;
 
@@ -16,7 +17,11 @@ import java.util.List;
 
 public class SimpleDwcaExport extends PrinterExport {
 
-  public SimpleDwcaExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(DwcaPrinter.class, "DwCA", "tsv", DataFormat.DWCA, req, userKey, factory, cfg, imageService);
+  private SimpleDwcaExport(Class<? extends DwcaPrinter> clazz, ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    super(clazz, "DwCA", "tsv", DataFormat.DWCA, req, userKey, factory, cfg, imageService);
+  }
+
+  public static SimpleDwcaExport build(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    return new SimpleDwcaExport(req.getTabFormat() == TabularFormat.CSV ? DwcaPrinter.CSV.class : DwcaPrinter.TSV.class, req, userKey, factory, cfg, imageService);
   }
 }

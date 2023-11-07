@@ -75,14 +75,12 @@ public class ExportManager {
     DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = req.isSimple() ?
-          new ColdpExport(req, userKey, factory, cfg, imageService) :
-          new SimpleColdpExport(req, userKey, factory, cfg, imageService);
+        job = req.isSimple() ? SimpleColdpExport.build(req, userKey, factory, cfg, imageService) :
+                                new ColdpExport(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
-        job = req.isSimple() ?
-          new DwcaExport(req, userKey, factory, cfg, imageService) :
-          new SimpleDwcaExport(req, userKey, factory, cfg, imageService);
+        job = req.isSimple() ? SimpleDwcaExport.build(req, userKey, factory, cfg, imageService) :
+                                new DwcaExport(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
         job = new AcefExport(req, userKey, factory, cfg, imageService);

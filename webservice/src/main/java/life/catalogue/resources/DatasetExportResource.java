@@ -16,6 +16,8 @@ import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.printer.*;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -24,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.validation.Valid;
@@ -56,10 +59,6 @@ public class DatasetExportResource {
   private final NameUsageSearchService searchService;
   private final ExportManager exportManager;
   private final WsServerConfig cfg;
-  private static final Object[][] EXPORT_HEADERS = new Object[1][];
-  static {
-    EXPORT_HEADERS[0] = new Object[]{"ID", "parentID", "status", "rank", "scientificName", "authorship", "label"};
-  }
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
@@ -138,6 +137,17 @@ public class DatasetExportResource {
     }
   }
 
+  <T extends AbstractPrinter> Response printerExport(Class<T> printerClass, int key, ExportQueryParams params, Consumer<T> modifier) {
+    params.init();
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      AbstractPrinter printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
+      printer.print();
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
   @GET
   @VaryAccept
   @Produces(MediaType.TEXT_PLAIN)
@@ -145,15 +155,9 @@ public class DatasetExportResource {
                            @BeanParam ExportQueryParams params,
                            @QueryParam("showID") boolean showID,
                            @Context SqlSession session) {
-    params.init();
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
+    return printerExport(TextTreePrinter.class, key, params, printer -> {
       if (showID) printer.showIDs();
-      printer.print();
-      writer.flush();
-    };
-    return Response.ok(stream).build();
+    });
   }
 
   @GET
@@ -163,62 +167,26 @@ public class DatasetExportResource {
                              @QueryParam("flat") boolean flat,
                              @BeanParam ExportQueryParams params,
                              @Context SqlSession session) {
-    params.init();
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      AbstractPrinter printer;
-      if (flat) {
-        printer = PrinterFactory.dataset(JsonFlatPrinter.class, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
-      } else {
-        printer = PrinterFactory.dataset(JsonTreePrinter.class, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
-      }
-      printer.print();
-      writer.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  @GET
-  @Deprecated
-  @VaryAccept
-  @Produces(MediaType.APPLICATION_JSON)
-  @Path("{id}")
-  public Response simpleNameLegacy(@PathParam("key") int key,
-                             @PathParam("id") String taxonID,
-                             @QueryParam("flat") boolean flat,
-                             @BeanParam ExportQueryParams params,
-                             @Context SqlSession session) {
-    params.init();
-    params.taxonID = taxonID;
-    return simpleName(key, flat, params, session);
+    Class<? extends AbstractPrinter> printerClass = flat ? JsonFlatPrinter.class : JsonTreePrinter.class;
+    return printerExport(printerClass, key, params, p->{});
   }
 
   @GET
   @VaryAccept
-  @Produces({MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV})
-  public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
+  @Produces(MoreMediaTypes.TEXT_TSV)
+  public Response exportTsv(@PathParam("key") int key,
                                     @BeanParam ExportQueryParams params,
                                     @Context SqlSession session) {
-    params.init();
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return Stream.concat(
-      Stream.of(EXPORT_HEADERS),
-      Streams.stream(num.processTreeSimple(params.toTreeTraversalParameter(datasetKey)))
-             .map(this::map)
-    );
+    return printerExport(ColdpPrinter.TSV.class, key, params, p->{});
   }
 
-  private Object[] map(SimpleName sn){
-    return new Object[]{
-      sn.getId(),
-      sn.getParent(),
-      sn.getStatus(),
-      sn.getRank(),
-      sn.getName(),
-      sn.getAuthorship(),
-      sn.getPhrase(),
-      sn.getLabel()
-    };
+  @GET
+  @VaryAccept
+  @Produces({MoreMediaTypes.TEXT_CSV})
+  public Response exportCsv(@PathParam("key") int key,
+                                    @BeanParam ExportQueryParams params,
+                                    @Context SqlSession session) {
+    return printerExport(ColdpPrinter.CSV.class, key, params, p->{});
   }
 
 }

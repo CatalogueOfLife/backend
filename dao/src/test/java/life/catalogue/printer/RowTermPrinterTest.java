@@ -28,12 +28,12 @@ public class RowTermPrinterTest {
   
   @Test
   public void coldp() throws IOException {
-    print(ColdpPrinter.class);
+    print(ColdpPrinter.TSV.class);
   }
 
   @Test
   public void dwca() throws IOException {
-    print(DwcaPrinter.class);
+    print(DwcaPrinter.CSV.class);
   }
 
   public void print(Class<? extends AbstractPrinter> clazz) throws IOException {
