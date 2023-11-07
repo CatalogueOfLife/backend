@@ -1,11 +1,10 @@
 package life.catalogue.common.io;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.input.ReaderInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,8 +18,12 @@ import com.univocity.parsers.csv.CsvParserSettings;
 public class TabReader implements IterableResult<String[], ParsingContext>, AutoCloseable {
   protected static Logger LOG = LoggerFactory.getLogger(TabReader.class);
 
+  public static TabReader csv(Reader reader, int skip) throws IOException  {
+    return csv(new ReaderInputStream(reader, StandardCharsets.UTF_8), StandardCharsets.UTF_8, skip, 2);
+  }
+
   public static TabReader csv(File file, Charset charset, int skip) throws IOException  {
-    return csv(file, charset, skip, Integer.MAX_VALUE);
+    return csv(file, charset, skip, 2);
   }
 
   public static TabReader csv(File file, Charset charset, int skip, int minColumns) throws IOException  {
@@ -31,8 +34,12 @@ public class TabReader implements IterableResult<String[], ParsingContext>, Auto
     return custom(stream, charset, ',', '"', skip, minColumns);
   }
 
+  public static TabReader tab(Reader reader, int skip) throws IOException  {
+    return tab(new ReaderInputStream(reader, StandardCharsets.UTF_8), StandardCharsets.UTF_8, skip, 2);
+  }
+
   public static TabReader tab(File file, Charset charset, int skip) throws IOException  {
-    return tab(file, charset, skip, Integer.MAX_VALUE);
+    return tab(file, charset, skip, 2);
   }
 
   public static TabReader tab(File file, Charset charset, int skip, int minColumns) throws IOException {

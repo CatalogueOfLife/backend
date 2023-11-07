@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class TermWriter implements AutoCloseable {
+public class TermWriter implements AutoCloseable {
   private static Logger LOG = LoggerFactory.getLogger(TermWriter.class);
   protected final Term rowType;
   protected final Map<Term, Integer> cols;
@@ -38,7 +38,12 @@ public abstract class TermWriter implements AutoCloseable {
       File f = new File(dir, filename(rowType));
       return TabWriter.fromFile(f);
     }
+
+    public static String filename(Term rowType) {
+      return rowType.simpleName() + ".tsv";
+    }
   }
+
 
   public TermWriter(RowWriter writer, Term rowType, List<? extends Term> cols) throws IOException {
     this.writer = writer;
@@ -57,10 +62,6 @@ public abstract class TermWriter implements AutoCloseable {
     }
     next();
     counter=0;
-  }
-
-  public static String filename(Term rowType) {
-    return rowType.simpleName() + ".tsv";
   }
 
   public void next() throws IOException {

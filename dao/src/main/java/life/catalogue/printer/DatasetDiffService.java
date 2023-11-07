@@ -1,4 +1,4 @@
-package life.catalogue.db.tree;
+package life.catalogue.printer;
 
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.Dataset;

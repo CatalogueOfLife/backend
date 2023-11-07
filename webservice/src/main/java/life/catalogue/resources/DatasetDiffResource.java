@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.User;
-import life.catalogue.db.tree.DatasetDiffService;
+import life.catalogue.printer.DatasetDiffService;
 
 import org.gbif.nameparser.api.Rank;
 

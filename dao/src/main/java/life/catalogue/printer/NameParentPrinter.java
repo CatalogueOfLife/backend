@@ -1,4 +1,4 @@
-package life.catalogue.db.tree;
+package life.catalogue.printer;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;

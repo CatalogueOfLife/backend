@@ -5,7 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.printer.TextTreePrinter;
 
 import java.io.*;
 import java.util.Set;

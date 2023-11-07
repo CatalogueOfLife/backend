@@ -10,7 +10,7 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.tree.TxtTreeDataRule;
+import life.catalogue.printer.TxtTreeDataRule;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;

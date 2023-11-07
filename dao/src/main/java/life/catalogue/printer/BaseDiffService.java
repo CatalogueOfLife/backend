@@ -1,4 +1,4 @@
-package life.catalogue.db.tree;
+package life.catalogue.printer;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.TimeoutException;

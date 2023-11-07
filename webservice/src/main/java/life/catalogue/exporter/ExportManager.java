@@ -5,7 +5,6 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -13,7 +12,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.img.ImageService;
 
 import java.util.UUID;

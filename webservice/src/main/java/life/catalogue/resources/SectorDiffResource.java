@@ -1,7 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.db.tree.SectorDiffService;
+import life.catalogue.printer.SectorDiffService;
 
 import javax.ws.rs.Path;
 

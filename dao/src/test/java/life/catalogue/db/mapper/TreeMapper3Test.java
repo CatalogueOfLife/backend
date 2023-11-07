@@ -2,15 +2,10 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.db.tree.TxtTreeDataRule;
-
-import org.apache.commons.collections4.ListUtils;
-
-import org.gbif.nameparser.api.Rank;
+import life.catalogue.printer.TxtTreeDataRule;
 
 import org.junit.ClassRule;
 import org.junit.Test;

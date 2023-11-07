@@ -1,6 +1,7 @@
 package life.catalogue.common.io;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,11 +19,7 @@ public class TabWriter implements AutoCloseable, RowWriter {
   private Writer writer;
 
   public static TabWriter fromStream(OutputStream stream) {
-    try {
-      return new TabWriter(new BufferedWriter(new OutputStreamWriter(stream, "UTF8")));
-    } catch (UnsupportedEncodingException e) {
-      throw new IllegalStateException(e);
-    }
+    return new TabWriter(new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8)));
   }
   
   public static TabWriter fromFile(File file) {

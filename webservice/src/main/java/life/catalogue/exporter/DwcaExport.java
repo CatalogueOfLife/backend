@@ -259,7 +259,7 @@ public class DwcaExport extends ArchiveExport {
     af.setEncoding("utf-8");
     af.setIgnoreHeaderLines(1);
     af.setRowType(def[0]);
-    af.addLocation(TermWriter.filename(af.getRowType()));
+    af.addLocation(TermWriter.TSV.filename(af.getRowType()));
     af.setId(field(def[1], 0));
 
     int idx=1;

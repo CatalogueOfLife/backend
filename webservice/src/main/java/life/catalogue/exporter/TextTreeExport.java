@@ -4,8 +4,8 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 import life.catalogue.img.ImageService;
 
 import java.io.File;

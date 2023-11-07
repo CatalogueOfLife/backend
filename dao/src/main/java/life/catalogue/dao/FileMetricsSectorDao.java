@@ -1,8 +1,8 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import java.io.File;
 import java.io.Writer;

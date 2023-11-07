@@ -10,11 +10,11 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.tree.*;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
+import life.catalogue.printer.*;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
@@ -166,7 +166,7 @@ public class DatasetExportResource {
     params.init();
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      AbstractTreePrinter printer;
+      AbstractPrinter printer;
       if (flat) {
         printer = PrinterFactory.dataset(JsonFlatPrinter.class, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
       } else {

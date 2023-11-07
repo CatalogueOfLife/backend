@@ -8,8 +8,8 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameValidator;
 

@@ -16,7 +16,7 @@ import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.tree.TxtTreeDataRule;
+import life.catalogue.printer.TxtTreeDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;

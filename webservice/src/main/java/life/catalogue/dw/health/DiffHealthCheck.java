@@ -1,7 +1,7 @@
 package life.catalogue.dw.health;
 
 
-import life.catalogue.db.tree.BaseDiffService;
+import life.catalogue.printer.BaseDiffService;
 
 import com.codahale.metrics.health.HealthCheck;
 

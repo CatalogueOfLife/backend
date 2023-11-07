@@ -8,8 +8,8 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.*;
-import life.catalogue.db.tree.PrinterFactory;
-import life.catalogue.db.tree.TextTreePrinter;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

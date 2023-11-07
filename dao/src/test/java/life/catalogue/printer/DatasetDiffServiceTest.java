@@ -1,4 +1,4 @@
-package life.catalogue.db.tree;
+package life.catalogue.printer;
 
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.FileMetricsDatasetDao;

@@ -2,7 +2,7 @@ package life.catalogue.resources;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.db.tree.BaseDiffService;
+import life.catalogue.printer.BaseDiffService;
 
 import java.io.IOException;
 import java.io.Reader;
