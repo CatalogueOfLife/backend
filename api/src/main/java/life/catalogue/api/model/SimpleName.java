@@ -156,6 +156,11 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return status;
   }
 
+  @JsonIgnore
+  public boolean isSynonym() {
+    return status == null || status.isSynonym();
+  }
+
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
   }

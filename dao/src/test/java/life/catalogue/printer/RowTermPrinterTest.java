@@ -33,7 +33,7 @@ public class RowTermPrinterTest {
 
   @Test
   public void dwca() throws IOException {
-    print(DwcaPrinter.CSV.class);
+    print(DwcaPrinter.TSV.class);
   }
 
   public void print(Class<? extends AbstractPrinter> clazz) throws IOException {

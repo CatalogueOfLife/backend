@@ -8,6 +8,7 @@ import life.catalogue.dao.TaxonCounter;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -17,22 +18,23 @@ import java.util.Set;
 
 public abstract class DwcaPrinter extends RowTermPrinter{
   private DwcaPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
-    super(params, ranks, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, List.of(
-      ColdpTerm.ID,
-      ColdpTerm.parentID,
-      ColdpTerm.status,
-      ColdpTerm.rank,
-      ColdpTerm.scientificName,
-      ColdpTerm.authorship
+    super(params, ranks, countRank, taxonCounter, factory, writer, tabFormat, DwcTerm.Taxon, List.of(
+      DwcTerm.taxonID,
+      DwcTerm.parentNameUsageID,
+      DwcTerm.acceptedNameUsageID,
+      DwcTerm.taxonomicStatus,
+      DwcTerm.taxonRank,
+      DwcTerm.scientificName,
+      DwcTerm.scientificNameAuthorship
     ));
   }
 
-  static public class TSV extends DwcaPrinter{
+  public static class TSV extends DwcaPrinter{
     public TSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
       super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
     }
   }
-  static public class CSV extends DwcaPrinter{
+  public static class CSV extends DwcaPrinter{
     public CSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
       super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
     }
@@ -40,11 +42,15 @@ public abstract class DwcaPrinter extends RowTermPrinter{
 
   @Override
   void write(SimpleName sn) {
-    tw.set(ColdpTerm.ID, sn.getId());
-    tw.set(ColdpTerm.parentID, sn.getParentId());
-    tw.set(ColdpTerm.status, sn.getStatus());
-    tw.set(ColdpTerm.rank, sn.getRank());
-    tw.set(ColdpTerm.scientificName, sn.getName());
-    tw.set(ColdpTerm.authorship, sn.getAuthorship());
+    tw.set(DwcTerm.taxonID, sn.getId());
+    if (sn.isSynonym()) {
+      tw.set(DwcTerm.acceptedNameUsageID, sn.getParentId());
+    } else {
+      tw.set(DwcTerm.parentNameUsageID, sn.getParentId());
+    }
+    tw.set(DwcTerm.taxonomicStatus, sn.getStatus());
+    tw.set(DwcTerm.taxonRank, sn.getRank());
+    tw.set(DwcTerm.scientificName, sn.getName());
+    tw.set(DwcTerm.scientificNameAuthorship, sn.getAuthorship());
   }
 }

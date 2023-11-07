@@ -28,12 +28,12 @@ public abstract class ColdpPrinter extends RowTermPrinter{
     ));
   }
 
-  static public class TSV extends ColdpPrinter{
+  public static class TSV extends ColdpPrinter{
     public TSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
       super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
     }
   }
-  static public class CSV extends ColdpPrinter{
+  public static class CSV extends ColdpPrinter{
     public CSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
       super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
     }
