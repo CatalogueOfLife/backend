@@ -15,22 +15,10 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TextTreeExport extends DatasetExportJob {
+public class TextTreeExport extends PrinterExport {
   private static final Logger LOG = LoggerFactory.getLogger(TextTreeExport.class);
 
   public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(req, userKey, DataFormat.TEXT_TREE, false, factory, cfg, imageService);
+    super(TextTreePrinter.class, "text tree", "txtree", DataFormat.TEXT_TREE, req, userKey, factory, cfg, imageService);
   }
-
-  @Override
-  protected void export() throws Exception {
-    File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+".txt");
-    try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, req.toTreeTraversalParameter(), factory, writer);
-      int cnt = printer.print();
-      LOG.info("Written {} taxa to text tree for dataset {}", cnt, req.getDatasetKey());
-      counter.set(printer.getCounter());
-    }
-  }
-
 }
