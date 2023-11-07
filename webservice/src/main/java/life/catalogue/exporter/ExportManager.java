@@ -5,6 +5,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -12,6 +13,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.tree.TextTreePrinter;
 import life.catalogue.img.ImageService;
 
 import java.util.UUID;
@@ -75,10 +77,14 @@ public class ExportManager {
     DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = new ColdpExport(req, userKey, factory, cfg, imageService);
+        job = req.isSimple() ?
+          new ColdpExport(req, userKey, factory, cfg, imageService) :
+          new SimpleColdpExport(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
-        job = new DwcaExport(req, userKey, factory, cfg, imageService);
+        job = req.isSimple() ?
+          new DwcaExport(req, userKey, factory, cfg, imageService) :
+          new SimpleDwcaExport(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
         job = new AcefExport(req, userKey, factory, cfg, imageService);

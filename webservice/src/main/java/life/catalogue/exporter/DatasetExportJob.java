@@ -54,6 +54,7 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   DatasetExportJob(ExportRequest req, int userKey, DataFormat requiredFormat, List<SimpleName> classification, SqlSessionFactory factory,
                    WsServerConfig cfg, ImageService imageService) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
+    Preconditions.checkNotNull(requiredFormat, "format required");
     if (req.getFormat() == null) {
       req.setFormat(requiredFormat);
     } else if (req.getFormat() != requiredFormat) {

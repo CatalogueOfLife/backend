@@ -13,6 +13,7 @@ public class ExportRequest {
   private DataFormat format;
   private boolean excel;
   private SimpleName root;
+  private boolean simple = true;
   private boolean synonyms = true;
   private Boolean extinct = null;
   private boolean bareNames = false;
@@ -62,6 +63,14 @@ public class ExportRequest {
   @JsonIgnore
   public String getTaxonID() {
     return root == null ? null : root.getId();
+  }
+
+  public boolean isSimple() {
+    return simple;
+  }
+
+  public void setSimple(boolean simple) {
+    this.simple = simple;
   }
 
   public boolean isSynonyms() {
@@ -117,6 +126,7 @@ public class ExportRequest {
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
     return excel == that.excel
+           && simple == that.simple
            && synonyms == that.synonyms
            && bareNames == that.bareNames
            && force == that.force
@@ -129,13 +139,14 @@ public class ExportRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, excel, root, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, format, excel, root, simple, synonyms, extinct, bareNames, minRank, force);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(format + " export of " + datasetKey);
     sb.append(" [excel=").append(excel)
+      .append(", simple=").append(simple)
       .append(", synonyms=").append(synonyms)
       .append(", extinct=").append(extinct)
       .append(", bareNames=").append(bareNames);
