@@ -333,6 +333,12 @@
     WHERE t.dataset_key = #{key} AND NOT is_synonym(t.status)
     GROUP BY n.rank
   </select>
+  <select id="countTaxaByScrutinizer" resultType="StringCount">
+    SELECT t.scrutinizer AS key, count(*) AS count
+    FROM name_usage t
+    WHERE t.dataset_key = #{key} AND NOT is_synonym(t.status)
+    GROUP BY t.scrutinizer
+  </select>
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t JOIN name n ON n.dataset_key=t.dataset_key AND  t.name_id=n.id

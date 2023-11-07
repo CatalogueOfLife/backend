@@ -10,9 +10,12 @@ import life.catalogue.basgroup.HomotypicConsolidationJob;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
@@ -24,6 +27,7 @@ import java.util.*;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -193,6 +197,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     try (SqlSession session = factory.openSession()) {
       return session.getMapper(NameMatchMapper.class).count(datasetKey);
     }
+  }
+
+  @GET
+  @Hidden
+  @Path("{id}/scrutinizer")
+  public Map<String, Integer> scrutinizer(@PathParam("id") int datasetKey, @Context SqlSession session) {
+    var dim = session.getMapper(DatasetImportMapper.class);
+    var list = dim.countTaxaByScrutinizer(datasetKey);
+    return DatasetImportDao.countMap(list);
   }
 
   @POST

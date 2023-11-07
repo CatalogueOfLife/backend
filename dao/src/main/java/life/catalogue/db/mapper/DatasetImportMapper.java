@@ -86,6 +86,7 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   List<StringCount> countSpeciesInteractionsByType(@Param("key") int datasetKey);
   List<StringCount> countSynonymsByRank(@Param("key") int datasetKey);
   List<StringCount> countTaxaByRank(@Param("key") int datasetKey);
+  List<StringCount> countTaxaByScrutinizer(@Param("key") int datasetKey);
   List<StringCount> countTaxonConceptRelationsByType(@Param("key") int datasetKey);
   List<StringCount> countTypeMaterialByStatus(@Param("key") int datasetKey);
   List<StringCount> countUsagesByOrigin(@Param("key") int datasetKey);

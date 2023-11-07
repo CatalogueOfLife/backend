@@ -18,6 +18,7 @@ import com.google.common.base.Preconditions;
 public class Taxon extends NameUsageBase {
   private Integer ordinal;
   private String scrutinizer;
+  private String scrutinizerID;
   private FuzzyDate scrutinizerDate;
   private Boolean extinct;
   private String temporalRangeStart;
@@ -39,6 +40,7 @@ public class Taxon extends NameUsageBase {
     super(other);
     this.ordinal = other.ordinal;
     this.scrutinizer = other.scrutinizer;
+    this.scrutinizerID = other.scrutinizerID;
     this.scrutinizerDate = other.scrutinizerDate;
     this.extinct = other.extinct;
     this.temporalRangeStart = other.temporalRangeStart;
@@ -87,6 +89,14 @@ public class Taxon extends NameUsageBase {
 
   public void setScrutinizer(String scrutinizer) {
     this.scrutinizer = scrutinizer;
+  }
+
+  public String getScrutinizerID() {
+    return scrutinizerID;
+  }
+
+  public void setScrutinizerID(String scrutinizerID) {
+    this.scrutinizerID = scrutinizerID;
   }
 
   public FuzzyDate getScrutinizerDate() {
@@ -145,6 +155,7 @@ public class Taxon extends NameUsageBase {
     Taxon taxon = (Taxon) o;
     return Objects.equals(ordinal, taxon.ordinal)
            && Objects.equals(scrutinizer, taxon.scrutinizer)
+           && Objects.equals(scrutinizerID, taxon.scrutinizerID)
            && Objects.equals(scrutinizerDate, taxon.scrutinizerDate)
            && Objects.equals(extinct, taxon.extinct)
            && Objects.equals(temporalRangeStart, taxon.temporalRangeStart)
@@ -154,6 +165,6 @@ public class Taxon extends NameUsageBase {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), ordinal, scrutinizer, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, environments);
+    return Objects.hash(super.hashCode(), ordinal, scrutinizer, scrutinizerID, scrutinizerDate, extinct, temporalRangeStart, temporalRangeEnd, environments);
   }
 }

@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-11-06 scrutinizer_id
+```sql
+ALTER TABLE name_usage ADD COLUMN scrutinizer_id TEXT;
+```
+
 ### 2023-10-31 classification max depth metrics
 ```sql
 ALTER TABLE dataset_import ADD COLUMN max_classification_depth INTEGER;

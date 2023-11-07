@@ -264,6 +264,14 @@
     WHERE t.dataset_key=#{datasetKey} AND NOT is_synonym(t.status) AND t.sector_key=#{sectorKey}
     GROUP BY n.rank
   </select>
+
+  <select id="countTaxaByScrutinizer" resultType="StringCount">
+    SELECT t.scrutinizer AS key, count(*) AS count
+    FROM name_usage t
+    WHERE t.dataset_key=#{datasetKey} AND NOT is_synonym(t.status) AND t.sector_key=#{sectorKey}
+    GROUP BY t.scrutinizer
+  </select>
+
   <select id="countExtinctTaxaByRank" resultType="StringCount">
     SELECT n.rank AS key, count(*) AS count
     FROM name_usage t

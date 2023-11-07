@@ -1439,6 +1439,7 @@ CREATE TABLE name_usage (
   -- additions to name_usage_archive
   according_to_id TEXT,
   scrutinizer TEXT,
+  scrutinizer_id TEXT,
   scrutinizer_date TEXT,
   reference_ids TEXT[] DEFAULT '{}',
   temporal_range_start TEXT,

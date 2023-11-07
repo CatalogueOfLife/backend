@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -17,6 +19,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -116,6 +119,15 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public void delete(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
     LOG.info("Remove orphaned sector imports and metrics from project {} by user {}", datasetKey, user.getName());
     sid.removeOrphanedImports(datasetKey);
+  }
+
+  @GET
+  @Hidden
+  @Path("{id}/scrutinizer")
+  public Map<String, Integer> scrutinizer(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
+    var sm = session.getMapper(SectorImportMapper.class);
+    var list = sm.countTaxaByScrutinizer(datasetKey, id);
+    return DatasetImportDao.countMap(list);
   }
 
   @DELETE

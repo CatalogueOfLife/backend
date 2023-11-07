@@ -75,7 +75,7 @@ public class ColdpExport extends ArchiveExport {
     if (!u.isSynonym()) {
       Taxon t = (Taxon) u;
       writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
-      //writer.set(ColdpTerm.scrutinizerID, null);
+      writer.set(ColdpTerm.scrutinizerID, t.getScrutinizerID());
       writer.set(ColdpTerm.scrutinizerDate, t.getScrutinizerDate());
       writer.set(ColdpTerm.extinct, t.isExtinct());
       writer.set(ColdpTerm.temporalRangeStart, t.getTemporalRangeStart());
