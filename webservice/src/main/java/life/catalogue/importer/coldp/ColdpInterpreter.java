@@ -301,6 +301,11 @@ public class ColdpInterpreter extends InterpreterBase {
     return Collections.emptyList();
   }
 
+  Optional<VerbatimEntity> interpretAuthor(VerbatimRecord v) {
+    //TODO: create model class, implement interpreter & persistence layer
+    return Optional.empty();
+  }
+
   Optional<NeoName> interpretName(VerbatimRecord v) {
     Term nomStatusTerm = ColdpTerm.status;
     Term genusNameTerm = ColdpTerm.genus;

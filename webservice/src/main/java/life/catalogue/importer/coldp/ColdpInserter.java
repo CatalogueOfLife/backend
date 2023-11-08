@@ -68,6 +68,12 @@ public class ColdpInserter extends NeoCsvInserter {
       u -> store.createNameAndUsage(u) != null
     );
 
+    // TODO: authors
+    insertEntities(reader, ColdpTerm.Author,
+      inter::interpretAuthor,
+      a -> false
+    );
+
     // name & relations
     insertEntities(reader, ColdpTerm.Name,
         inter::interpretName,
