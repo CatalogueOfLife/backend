@@ -413,6 +413,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new ReferenceResource(rdao));
+    j.register(new ResolverResource(doiResolver));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, siDao, syncManager));
     j.register(new SynonymResource(sdao));

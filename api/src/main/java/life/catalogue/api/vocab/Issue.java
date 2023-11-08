@@ -448,6 +448,9 @@ public enum Issue {
 
   VERNACULAR_PREFERRED(VERNACULAR, Level.WARNING,
     "The vernacular name preferred property could not be interpreted as a boolean"),
+
+  DOI_INVALID(ANY, Level.WARNING,
+    "The given DOI is syntactically invalid."),
   ;
 
   /**

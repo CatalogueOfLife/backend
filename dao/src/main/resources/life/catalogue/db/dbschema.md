@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+
+### 2023-11-08 scrutinizer_id
+```sql
+ALTER TYPE ISSUE ADD VALUE 'DOI_INVALID';
+```
+
 ### 2023-11-06 scrutinizer_id
 ```sql
 ALTER TABLE name_usage ADD COLUMN scrutinizer_id TEXT;
