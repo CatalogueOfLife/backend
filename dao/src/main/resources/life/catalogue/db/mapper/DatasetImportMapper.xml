@@ -54,6 +54,7 @@
     ${alias}species_interactions_by_type_count,
     ${alias}synonyms_by_rank_count,
     ${alias}taxa_by_rank_count,
+    ${alias}taxa_by_scrutinizer_count,
     ${alias}taxon_concept_relations_by_type_count,
     ${alias}type_material_by_status_count,
     ${alias}usages_by_origin_count,
@@ -110,6 +111,7 @@
     #{imp.speciesInteractionsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreSpeciesInteractionCountTypeHandler}::hstore,
     #{imp.synonymsByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
+    #{imp.taxaByScrutinizerCount, typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
     #{imp.taxonConceptRelationsByTypeCount, typeHandler=life.catalogue.db.type2.HstoreTaxonConceptRelCountTypeHandler}::hstore,
     #{imp.typeMaterialByStatusCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.usagesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
@@ -182,6 +184,7 @@
     <result property="speciesInteractionsByTypeCount" column="species_interactions_by_type_count" typeHandler="life.catalogue.db.type2.HstoreSpeciesInteractionCountTypeHandler"/>
     <result property="synonymsByRankCount" column="synonyms_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
+    <result property="taxaByScrutinizerCount" column="taxa_by_scrutinizer_count" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
     <result property="taxonConceptRelationsByTypeCount" column="taxon_concept_relations_by_type_count" typeHandler="life.catalogue.db.type2.HstoreTaxonConceptRelCountTypeHandler"/>
     <result property="typeMaterialByStatusCount" column="type_material_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTypeStatusCountTypeHandler"/>
     <result property="usagesByOriginCount" column="usages_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>

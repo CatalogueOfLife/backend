@@ -88,6 +88,7 @@ public class SectorImportDao {
     si.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(datasetKey, key)));
     si.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(datasetKey, key)));
     si.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(datasetKey, key)));
+    si.setTaxaByScrutinizerCount(countMap(mapper.countTaxaByScrutinizer(datasetKey, key)));
     si.setTaxonConceptRelationsByTypeCount(countMap(TaxonConceptRelType.class, mapper.countTaxonConceptRelationsByType(datasetKey, key)));
     si.setTypeMaterialByStatusCount(countMap(TypeStatus.class, mapper.countTypeMaterialByStatus(datasetKey, key)));
     si.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));

@@ -77,6 +77,7 @@ public class ImportMetrics implements ImportAttempt {
   private Map<SpeciesInteractionType, Integer> speciesInteractionsByTypeCount = new HashMap<>();
   private Map<Rank, Integer> synonymsByRankCount = new HashMap<>();
   private Map<Rank, Integer> taxaByRankCount = new HashMap<>();
+  private Map<String, Integer> taxaByScrutinizerCount = new HashMap<>();
   private Map<TaxonConceptRelType, Integer> taxonConceptRelationsByTypeCount = new HashMap<>();
   private Map<TypeStatus, Integer> typeMaterialByStatusCount = new HashMap<>();
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = new HashMap<>();
@@ -410,6 +411,14 @@ public class ImportMetrics implements ImportAttempt {
     this.taxaByRankCount = taxaByRankCount;
   }
 
+  public Map<String, Integer> getTaxaByScrutinizerCount() {
+    return taxaByScrutinizerCount;
+  }
+
+  public void setTaxaByScrutinizerCount(Map<String, Integer> taxaByScrutinizerCount) {
+    this.taxaByScrutinizerCount = taxaByScrutinizerCount;
+  }
+
   public Map<Rank, Integer> getExtinctTaxaByRankCount() {
     return extinctTaxaByRankCount;
   }
@@ -498,6 +507,7 @@ public class ImportMetrics implements ImportAttempt {
       namesByMatchTypeCount = sum(namesByMatchTypeCount, m.namesByMatchTypeCount);
       synonymsByRankCount = sum(synonymsByRankCount, m.synonymsByRankCount);
       taxaByRankCount = sum(taxaByRankCount, m.taxaByRankCount);
+      taxaByScrutinizerCount = sum(taxaByScrutinizerCount, m.taxaByScrutinizerCount);
       taxonConceptRelationsByTypeCount = sum(taxonConceptRelationsByTypeCount, m.taxonConceptRelationsByTypeCount);
       speciesInteractionsByTypeCount = sum(speciesInteractionsByTypeCount, m.speciesInteractionsByTypeCount);
       typeMaterialByStatusCount = sum(typeMaterialByStatusCount, m.typeMaterialByStatusCount);
@@ -569,6 +579,7 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(namesByMatchTypeCount, that.namesByMatchTypeCount) &&
       Objects.equals(synonymsByRankCount, that.synonymsByRankCount) &&
       Objects.equals(taxaByRankCount, that.taxaByRankCount) &&
+      Objects.equals(taxaByScrutinizerCount, that.taxaByScrutinizerCount) &&
       Objects.equals(taxonConceptRelationsByTypeCount, that.taxonConceptRelationsByTypeCount) &&
       Objects.equals(speciesInteractionsByTypeCount, that.speciesInteractionsByTypeCount) &&
       Objects.equals(typeMaterialByStatusCount, that.typeMaterialByStatusCount) &&
@@ -587,7 +598,8 @@ public class ImportMetrics implements ImportAttempt {
       namesByMatchTypeCount, namesByTypeCount, namesByStatusCount, namesByCodeCount, namesByRankCount,
       nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
-      taxaByRankCount, extinctTaxaByRankCount, synonymsByRankCount, taxonConceptRelationsByTypeCount, speciesInteractionsByTypeCount, issuesCount);
+      taxaByRankCount, taxaByScrutinizerCount, extinctTaxaByRankCount, synonymsByRankCount,
+      taxonConceptRelationsByTypeCount, speciesInteractionsByTypeCount, issuesCount);
   }
 
   @Override

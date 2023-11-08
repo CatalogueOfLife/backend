@@ -17,6 +17,8 @@ and done it manually. So we can as well log changes here.
 ### 2023-11-06 scrutinizer_id
 ```sql
 ALTER TABLE name_usage ADD COLUMN scrutinizer_id TEXT;
+ALTER TABLE dataset_import ADD COLUMN taxa_by_scrutinizer_count HSTORE;
+ALTER TABLE sector_import ADD COLUMN taxa_by_scrutinizer_count HSTORE;
 ```
 
 ### 2023-10-31 classification max depth metrics
