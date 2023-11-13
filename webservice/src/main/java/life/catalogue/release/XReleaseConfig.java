@@ -79,6 +79,14 @@ public class XReleaseConfig {
   public Set<String> blockedNames = new HashSet<>();
 
   /**
+   * List of regular expression patterns for scientific names that are globally blocked from any source.
+   * Patterns are case insensitive and must not be anchored at the front. Any match will block the name.
+   */
+  @NotNull
+  @Valid
+  public Set<String> blockedNamePatterns = new HashSet<>();
+
+  /**
    * List of higher wrong homonyms that should be removed, regardless of which source they came from.
    * Map of a canonical name to its direct parent.
    * All other names with the same canonical name, but different parent, are kept.

@@ -11,9 +11,12 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.release.XReleaseConfig;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.NameType;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,6 +31,7 @@ public class TreeMergeHandlerConfig {
   public final int datasetKey;
   public final int user;
   private final Set<String> blockedNames = new HashSet<>();
+  private final List<Pattern> blockedNamePatterns = new ArrayList<>();
 
   public TreeMergeHandlerConfig(SqlSessionFactory factory, XReleaseConfig xcfg, int datasetKey, int user) {
     this.factory = factory;
@@ -39,6 +43,18 @@ public class TreeMergeHandlerConfig {
     if (xcfg.blockedNames != null) {
       for (var bn : xcfg.blockedNames) {
         blockedNames.add(bn.trim().toUpperCase());
+      }
+    }
+    if (xcfg.blockedNamePatterns != null) {
+      for (var bnp : xcfg.blockedNamePatterns) {
+        if (!StringUtils.isBlank(bnp)){
+          try {
+            var p = Pattern.compile(bnp.trim(), Pattern.CASE_INSENSITIVE);
+            blockedNamePatterns.add(p);
+          } catch (IllegalArgumentException e) {
+            LOG.warn("Invalid name pattern: " + bnp, e);
+          }
+        }
       }
     }
   }
@@ -100,11 +116,30 @@ public class TreeMergeHandlerConfig {
    * @param n name to test for. Case insensitive!
    */
   public boolean isBlocked(FormattableName n) {
-    return blockedNames.contains(n.getLabel().trim().toUpperCase())
+    var blocked = blockedNames.contains(n.getLabel().trim().toUpperCase())
            || blockedNames.contains(n.getScientificName().trim().toUpperCase());
+    if (!blocked && !blockedNamePatterns.isEmpty()) {
+      for (var p : blockedNamePatterns) {
+        var m = p.matcher(n.getLabel());
+        if (m.find()) {
+          return true;
+        }
+      }
+    }
+    return blocked;
   }
 
   public boolean hasIncertae() {
     return incertae != null;
+  }
+
+  public static void main(String[] args){
+    try {
+      var p = Pattern.compile("bnp.trim()", Pattern.CASE_INSENSITIVE);
+      p = Pattern.compile("bnp(gh+$$", Pattern.CASE_INSENSITIVE);
+    } catch (IllegalArgumentException e) {
+      System.out.println(e);
+    }
+
   }
 }
