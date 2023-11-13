@@ -45,8 +45,9 @@ public interface NameMatchMapper extends CopyDataset, DatasetProcessable<NameMat
 
   /**
    * @param key the name key
+   * @return the number of records updated
    */
-  void update(@Param("key") DSID<String> key,
+  int update(@Param("key") DSID<String> key,
               @Param("nidx") Integer nidx,
               @Param("type") MatchType type
   );
@@ -62,8 +63,9 @@ public interface NameMatchMapper extends CopyDataset, DatasetProcessable<NameMat
 
   /**
    * @param key the name key
+   * @return the number of records deleted
    */
-  void delete(@Param("key") DSID<String> key);
+  int delete(@Param("key") DSID<String> key);
 
   /**
    * Count all matches for the given dataset

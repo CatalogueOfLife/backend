@@ -59,10 +59,15 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   public void updateMatches() throws Exception {
     NameMapper nm = mapper(NameMapper.class);
     Integer nidx = 1;
-    mapper().update(NAME1, nidx, MatchType.EXACT);
+    var cnt = mapper().update(NAME1, nidx, MatchType.EXACT);
     Name n = nm.get(NAME1);
+    assertEquals(1, cnt);
     assertEquals(MatchType.EXACT, n.getNamesIndexType());
     assertEquals(nidx, n.getNamesIndexId());
+
+    // try to update a non existing name
+    cnt = mapper().update(DSID.of(NAME1.getDatasetKey(), "2345678sedrftzh"), nidx, MatchType.EXACT);
+    assertEquals(0, cnt);
 
     IndexName in = new IndexName(TestEntityGenerator.NAME4);
     mapper(NamesIndexMapper.class).create(in);

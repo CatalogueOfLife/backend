@@ -38,13 +38,13 @@ public class DatasetMatcher extends BaseMatcher {
     final int archivedBefore = archived;
 
     boolean update = false;
-    try (SqlSession session = factory.openSession(false);
+    try (SqlSession readOnlySession = factory.openSession(true);
          BulkMatchHandler hn = new BulkMatchHandlerNames(datasetKey, allowInserts);
          BulkMatchHandler hu = new BulkMatchHandlerArchivedUsages(datasetKey, allowInserts)
     ) {
-      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
-      NameMapper nm = session.getMapper(NameMapper.class);
-      ArchivedNameUsageMapper anum = session.getMapper(ArchivedNameUsageMapper.class);
+      NameMatchMapper nmm = readOnlySession.getMapper(NameMatchMapper.class);
+      NameMapper nm = readOnlySession.getMapper(NameMapper.class);
+      ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
 
       update = nmm.exists(datasetKey);
       final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
