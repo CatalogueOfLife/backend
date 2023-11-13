@@ -14,6 +14,8 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.parser.*;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import org.gbif.dwc.terms.Term;
 
 import java.util.Collections;
@@ -98,8 +100,10 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
       if (v.hasTerm(ColdpTerm.extinct)) {
         t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
-      } else {
+      } else if (n.pnu.isExtinct()){
         t.setExtinct(n.pnu.isExtinct());
+      } else if (settings.containsKey(Setting.EXTINCT)) {
+        t.setExtinct(settings.getBool(Setting.EXTINCT));
       }
       // geotime
       t.setTemporalRangeStart(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeStart)).orNull(Issue.GEOTIME_INVALID, v));
@@ -110,6 +114,9 @@ public class ColdpInterpreter extends InterpreterBase {
       }
       // environment
       setEnvironment(t, v, ColdpTerm.environment);
+      if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
+        t.setEnvironments(settings.getEnum(Setting.ENVIRONMENT));
+      }
     }
     // flat classification for any usage
     u.classification = interpretClassification(v);
@@ -176,7 +183,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return interpretRelations(rec, SpeciesInteractionTypeParser.PARSER, RelType::from);
   }
 
-  <T extends Enum> Optional<NeoRel> interpretRelations(VerbatimRecord rec, EnumParser<T> parser, Function<T, RelType> typeFunction) {
+  <T extends Enum > Optional < NeoRel > interpretRelations(VerbatimRecord rec, EnumParser < T > parser, Function < T, RelType > typeFunction) {
     NeoRel rel = new NeoRel();
     SafeParser<T> type = SafeParser.parse(parser, rec.get(ColdpTerm.type));
     if (type.isPresent()) {

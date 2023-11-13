@@ -426,7 +426,7 @@ public class InterpreterBase {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orNull();
   }
 
-  protected boolean bool(VerbatimRecord v, boolean defaultValue, Term... terms) {
+  protected boolean bool(VerbatimRecord v, Issue invalidIssue, boolean defaultValue, Term... terms) {
     return parse(BooleanParser.PARSER, v.getFirst(terms)).orElse(defaultValue);
   }
 
@@ -468,6 +468,8 @@ public class InterpreterBase {
       var t = (Taxon) u.usage;
       if (pnu.isExtinct()) {
         t.setExtinct(true);
+      } else if (settings.containsKey(Setting.EXTINCT)) {
+        t.setExtinct(settings.getBool(Setting.EXTINCT));
       }
       if (pnu.isDoubtful()) {
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);

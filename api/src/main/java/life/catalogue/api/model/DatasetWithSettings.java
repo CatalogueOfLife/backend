@@ -104,6 +104,22 @@ public class DatasetWithSettings {
     settings.put(Setting.NOMENCLATURAL_CODE, code);
   }
 
+  public Boolean getExtinct() {
+    return settings.getBool(Setting.EXTINCT);
+  }
+
+  public void setExtinct(Boolean extinct){
+    settings.put(Setting.EXTINCT, extinct);
+  }
+
+  public Environment getEnvironment() {
+    return settings.getEnum(Setting.ENVIRONMENT);
+  }
+
+  public void setEnvironment(Environment env){
+    settings.put(Setting.ENVIRONMENT, env);
+  }
+
   public DataFormat getDataFormat() {
     return settings.getEnum(Setting.DATA_FORMAT);
   }

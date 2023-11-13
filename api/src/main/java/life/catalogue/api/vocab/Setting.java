@@ -50,6 +50,16 @@ public enum Setting {
   NOMENCLATURAL_CODE(NomCode.class, EXTERNAL, PROJECT),
 
   /**
+   * Default value for the extinct flag in case it is not given explicitly.
+   */
+  EXTINCT(Boolean.class, EXTERNAL, PROJECT),
+
+  /**
+   * Default value for the environment field in case it is not given explicitly.
+   */
+  ENVIRONMENT(Environment.class, EXTERNAL, PROJECT),
+
+  /**
    * Setting that will inform the importer to rematch all decisions (decisions sensu strictu but also sectors and estimates)
    * Defaults to false
    */

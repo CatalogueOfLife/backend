@@ -105,7 +105,7 @@ public class DwcInterpreter extends InterpreterBase {
 
   private void addEnv(VerbatimRecord v, GbifTerm term, Environment env, Set<Environment> envs) {
     if (v.hasTerm(term)) {
-      if (bool(v, false, term)) {
+      if (bool(v, Issue.ENVIRONMENT_INVALID, false, term)) {
         envs.add(env);
       }
     }
