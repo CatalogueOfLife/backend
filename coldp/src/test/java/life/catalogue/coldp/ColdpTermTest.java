@@ -8,6 +8,7 @@ import static life.catalogue.coldp.ColdpTerm.*;
 import static org.junit.Assert.*;
 
 public class ColdpTermTest {
+
   @Test
   public void isClass() {
     for (ColdpTerm t : ColdpTerm.values()) {
@@ -15,6 +16,15 @@ public class ColdpTermTest {
         assertTrue(ColdpTerm.RESOURCES.containsKey(t));
       } else {
         assertFalse(ColdpTerm.RESOURCES.containsKey(t));
+      }
+    }
+  }
+
+  @Test
+  public void remarks() {
+    for (ColdpTerm cl : ColdpTerm.RESOURCES.keySet()) {
+      if (cl != Treatment) {
+        assertTrue(cl + " has no remarks", ColdpTerm.RESOURCES.get(cl).contains(remarks));
       }
     }
   }

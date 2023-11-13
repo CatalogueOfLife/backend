@@ -153,6 +153,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //sourceID,
   //type,
   //referenceID,
+  //page,
   //remarks,
 
   TypeMaterial((Class) null),
@@ -174,6 +175,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
   date,
   collector,
   //referenceID,
+  //page,
   //link,
   //remarks,
 
@@ -340,6 +342,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       sourceID,
       type,
       referenceID,
+      page,
       remarks
     )), Map.entry(TypeMaterial, List.of(
       ID,
@@ -348,6 +351,7 @@ public enum ColdpTerm implements Term, AlternativeNames {
       citation,
       status,
       referenceID,
+      page,
       country,
       locality,
       latitude,
@@ -551,7 +555,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
       created,
       creator,
       license,
-      link
+      link,
+      remarks
     )), Map.entry(VernacularName, List.of(
       taxonID,
       sourceID,
@@ -562,7 +567,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
       country,
       area,
       sex,
-      referenceID
+      referenceID,
+      remarks
     )), Map.entry(SpeciesEstimate, List.of(
       taxonID,
       sourceID,
