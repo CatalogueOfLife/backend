@@ -95,8 +95,10 @@ public class JobResult extends DataEntity<UUID> {
 
   public void calculateSizeAndMd5() throws IOException {
     File f = getFile();
-    this.size = Files.size(f.toPath());
-    this.md5 = ChecksumUtils.getMD5Checksum(f);
+    if (f.exists()) {
+      this.size = Files.size(f.toPath());
+      this.md5 = ChecksumUtils.getMD5Checksum(f);
+    }
   }
 
 
