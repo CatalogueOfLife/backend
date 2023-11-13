@@ -210,7 +210,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // if issues are to be excluded we need to load the verbatim records
       if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
         var issues = vrm.getIssues(vKey.id(u.getName().getVerbatimKey()));
-        if (CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
+        if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
           LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
           return true;
         }
