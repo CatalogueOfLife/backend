@@ -106,7 +106,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
     }
     w.close();
     // sort file
-    UnixCmdUtils.sort(f);
+    UnixCmdUtils.sortUTF8(f, 30);
     return f;
   }
 

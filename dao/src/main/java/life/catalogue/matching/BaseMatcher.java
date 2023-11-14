@@ -57,7 +57,7 @@ public class BaseMatcher {
       } else {
         // the update might not have found a record (e.g. because we did not store NONE matches before)
         // create a record if it wasnt updated
-        if (nmm.update(n, n.getNamesIndexId(), m.getType()) < 1) {
+        if (nmm.update(n, n.getNamesIndexId(), m.getType()) == 0) {
           nmm.create(n, n.getSectorKey(), n.getNamesIndexId(), m.getType());
         }
       }
@@ -77,7 +77,11 @@ public class BaseMatcher {
       if (oldType == null) {
         nmm.create(n, n.getNamesIndexId(), m.getType());
       } else {
-        nmm.update(n, n.getNamesIndexId(), m.getType());
+        // the update might not have found a record (e.g. because we did not store NONE matches before)
+        // create a record if it wasnt updated
+        if (nmm.update(n, n.getNamesIndexId(), m.getType()) == 0) {
+          nmm.create(n, n.getNamesIndexId(), m.getType());
+        }
       }
     }
   }

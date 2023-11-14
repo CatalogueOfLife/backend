@@ -68,8 +68,8 @@ public final class VocabularyUtils {
   }
 
   /**
-   * Generic method to toEnum an enumeration value for a given string based on the name of the enum member.
-   * The toEnum is case insensitive and ignore whitespaces, underscores and dashes.
+   * Generic method to lookup an enumeration value for a given string based on the name of the enum member.
+   * The lookup is case insensitive and ignore whitespaces, underscores and dashes.
    *
    * @param name  the enum members name to toEnum
    * @param vocab the enumeration class

@@ -48,11 +48,15 @@ public abstract class CmdTestBase {
   //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("col", "postgres", "postgres");
 
   @Rule
-  public final TestDataRule testDataRule = TestDataRule.empty();
+  public final TestDataRule testDataRule;
 
   private Cli cli;
-  
+
   public CmdTestBase(Supplier<Command> cmdSupply) {
+    this(cmdSupply, TestDataRule.empty());
+  }
+  public CmdTestBase(Supplier<Command> cmdSupply, TestDataRule rule) {
+    this.testDataRule = rule;
     this.cmdSupply = cmdSupply;
     cfg = new TempFile("col-cfg", ".yaml");
     // prepare config file

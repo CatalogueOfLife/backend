@@ -37,7 +37,7 @@ public interface ArchivedNameUsageMatchMapper extends DatasetProcessable<NameMat
   /**
    * @param key the name key
    */
-  void update(@Param("key") DSID<String> key,
+  int update(@Param("key") DSID<String> key,
               @Param("nidx") Integer nidx,
               @Param("type") MatchType type
   );
@@ -53,7 +53,7 @@ public interface ArchivedNameUsageMatchMapper extends DatasetProcessable<NameMat
   /**
    * @param key the name key
    */
-  void delete(@Param("key") DSID<String> key);
+  int delete(@Param("key") DSID<String> key);
 
   int count(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
 
