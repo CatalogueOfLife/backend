@@ -24,6 +24,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Null;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -517,6 +520,9 @@ public class InterpreterBase {
           t.getEnvironments().add(lz);
         }
       }
+    }
+    if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
+      t.setEnvironments(Set.of(settings.getEnum(Setting.ENVIRONMENT)));
     }
   }
   

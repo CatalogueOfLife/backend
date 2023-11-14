@@ -114,9 +114,6 @@ public class ColdpInterpreter extends InterpreterBase {
       }
       // environment
       setEnvironment(t, v, ColdpTerm.environment);
-      if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
-        t.setEnvironments(settings.getEnum(Setting.ENVIRONMENT));
-      }
     }
     // flat classification for any usage
     u.classification = interpretClassification(v);

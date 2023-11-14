@@ -26,8 +26,8 @@ import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -111,9 +111,9 @@ public class Normalizer implements Callable<Boolean> {
       // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
       checkIfCancelled();
       store.sync();
-      // verify, derive issues and fail before we do expensive matching or even db imports
+      // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
       checkIfCancelled();
-      validate();
+      validateAndDefaults();
       // matches names and taxon concepts and builds metrics per name/taxon
       checkIfCancelled();
       matchAndCount();
@@ -148,11 +148,21 @@ public class Normalizer implements Callable<Boolean> {
 
   /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail,
-   * but also does further issue flagging.
+   * but also does further issue flagging and applying of missing dataset defaults.
    */
-  private void validate() throws InterruptedException {
+  private void validateAndDefaults() throws InterruptedException {
+    final NomCode defaultCode = dataset.getCode();
+    final Boolean defaultExtinct = dataset.getExtinct();
+    final Set<Environment> defaultEnvironment = dataset.getEnvironment() == null ? null : Set.of(dataset.getEnvironment());
+
     store.names().all().forEach(nn -> {
       Name n = nn.getName();
+
+      // dataset defaults
+      if (defaultCode != null && n.getCode() == null) {
+        n.setCode(defaultCode);
+        store.names().update(nn);
+      }
       require(n, n.getId(), "name id");
 
       // is it a source with verbatim data?
@@ -189,6 +199,21 @@ public class Normalizer implements Callable<Boolean> {
 
         } else {
           Taxon t = u.asTaxon();
+
+          // dataset defaults
+          boolean updateNeeded = false;
+          if (defaultExtinct != null && t.isExtinct() == null) {
+            t.setExtinct(defaultExtinct);
+            updateNeeded = true;
+          }
+          if (defaultEnvironment != null && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
+            t.setEnvironments(defaultEnvironment);
+            updateNeeded = true;
+          }
+          if (updateNeeded) {
+            store.usages().update(u);
+          }
+
           require(t, t.getId(), "id");
           require(t, t.getOrigin(), "origin");
           require(t, t.getStatus(), "status");
@@ -776,11 +801,15 @@ public class Normalizer implements Callable<Boolean> {
     n.setUninomial(eName.name);
     n.setRank(rank);
     n.rebuildScientificName();
+    n.setCode(dataset.getCode());
     // determine type - can e.g. be placeholders
     n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
     t.usage.setName(n);
-    if (eName.extinct) {
+    if (eName.extinct || Boolean.TRUE.equals(dataset.getExtinct())) {
       t.asTaxon().setExtinct(true);
+    }
+    if (dataset.getEnvironment() != null) {
+      t.asTaxon().setEnvironments(Set.of(dataset.getEnvironment()));
     }
     // store both, which creates a single new neo node
     store.createNameAndUsage(t);
