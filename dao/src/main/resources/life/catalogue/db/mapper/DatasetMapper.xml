@@ -76,7 +76,7 @@
         AND d.alias = #{req.alias}
       </if>
       <if test="req.code != null">
-        AND d.settings @> jsonb_build_object('NOMENCLATURAL_CODE', #{req.code})
+        AND d.settings @> jsonb_build_object('nomenclatural code', lower(#{req.code}))
       </if>
       <if test="req.type != null and !req.type.isEmpty()">
         AND d.type IN <foreach item="o" collection="req.type" open="(" separator="," close=")">#{o}::DATASETTYPE</foreach>
