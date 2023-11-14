@@ -19,7 +19,9 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -36,8 +38,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import org.gbif.nameparser.api.*;
 
+import org.neo4j.register.Register;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +56,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String ARG_FILE_ONLY = "file-only";
+  private static final String ARG_FILE = "file";
+  private static final String ARG_LIMIT = "limit";
   private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
@@ -81,6 +88,19 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .required(false)
        .setDefault(false)
        .help("If true only rebuild the namesindex file, but do not rematch the database.");
+    subparser.addArgument("-f", "--"+ ARG_FILE)
+       .dest(ARG_FILE)
+       .type(File.class)
+       .required(false)
+       .setDefault(false)
+       .help("Names file location. If already existing it will be reused instead of redumping from PG.");
+    subparser.addArgument("--"+ ARG_LIMIT)
+       .dest(ARG_LIMIT)
+       .type(Integer.class)
+       .required(false)
+       .setDefault(false)
+       .help("Optional limit of names to export for tests");
+
   }
 
   @Override
@@ -138,15 +158,35 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE, false);
     ni.start();
 
-    File out = new File(buildDir(), FILENAME_NAMES);
-    LOG.info("Dumping all names to {}", out);
+    File out;
+    if (ns.getString(ARG_FILE) != null) {
+      out = new File(ns.getString(ARG_FILE));
+    } else {
+      out = new File(buildDir(), FILENAME_NAMES);
+    }
     long total;
-    try (Connection c = dataSource.getConnection()) {
-      var pgc = c.unwrap(PgConnection.class);
-      total = PgCopyUtils.dumpTSVNoHeader(pgc, "SELECT " + NAME_COLS + " FROM name LIMIT 2500", out);
+    if (out.exists()) {
+      LOG.info("Use names from existing file {}", out);
+      try(LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(out))) {
+        //Skip to last line
+        lineNumberReader.skip(Long.MAX_VALUE);
+        total = lineNumberReader.getLineNumber() + 1;
+      }
+    } else {
+      String limit = "";
+      if (ns.getInt(ARG_LIMIT) != null) {
+        limit = " LIMIT " + ns.getInt(ARG_LIMIT);
+        LOG.info("Dumping {} names to {}", limit, out);
+      } else {
+        LOG.info("Dumping all names to {}", out);
+      }
+      try (Connection c = dataSource.getConnection()) {
+        var pgc = c.unwrap(PgConnection.class);
+        total = PgCopyUtils.dumpTSVNoHeader(pgc, "SELECT " + NAME_COLS + " FROM name" + limit, out);
+      }
     }
 
-    LOG.info("Sorting file {}", out);
+    LOG.info("Sorting file with {} records: {}", total, out);
     UnixCmdUtils.sortC(out, 0);
 
     LOG.info("Splitting {} with {} records into {} parts", out, total, threads);
@@ -290,7 +330,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   static Integer intVal(String x) {
     return x == null || x.isEmpty() ? null : Integer.parseInt(x);
   }
-  static <T extends Enum<?>> T enumVal(Class<T> clazz, String x) {
+  static <T extends Enum<?>> T enumVal(Class < T > clazz, String x) {
     return x == null || x.isEmpty() ? null : VocabularyUtils.lookupEnum(x, clazz);
   }
   static Authorship authors(String auth, String ex, String year) {
