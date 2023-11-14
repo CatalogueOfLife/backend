@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 
 import life.catalogue.postgres.PgCopyUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
@@ -173,6 +174,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
         total = lineNumberReader.getLineNumber() + 1;
       }
     } else {
+      // assert parent dir exists
+      FileUtils.createParentDirectories(out);
       String limit = "";
       if (ns.getInt(ARG_LIMIT) != null) {
         limit = " LIMIT " + ns.getInt(ARG_LIMIT);
