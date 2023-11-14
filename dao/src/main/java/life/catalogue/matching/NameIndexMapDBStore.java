@@ -68,6 +68,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
       kryo.register(HashSet.class);
       kryo.register(int[].class);
       kryo.register(ObjectArrayList.class, new FastUtilsSerializers.ArrayListSerializer());
+      try {
+        kryo.register(Class.forName("java.util.Arrays$ArrayList"));
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
       return kryo;
     }
   }

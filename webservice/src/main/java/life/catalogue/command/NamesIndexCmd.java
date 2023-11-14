@@ -1,5 +1,7 @@
 package life.catalogue.command;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
@@ -20,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -247,33 +251,34 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
         throw new RuntimeException(e);
       }
     }
+  }
 
-    // 0 scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,
-    // 9 basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,
-    // 16 type,code,notho,candidatus,dataset_key,id";
-    private Name buildName(String[] row) {
-      Name n = Name.newBuilder()
-         .scientificName(str(row[0]))
-         .authorship(str(row[1]))
-         .rank(enumVal(Rank.class, row[2]))
-         .uninomial(str(row[3]))
-         .genus(str(row[4]))
-         .infragenericEpithet(str(row[5]))
-         .specificEpithet(str(row[6]))
-         .infraspecificEpithet(str(row[7]))
-         .cultivarEpithet(str(row[8]))
-         .basionymAuthorship(authors(row[9],row[10],row[11]))
-         .combinationAuthorship(authors(row[12],row[13],row[14]))
-         .sanctioningAuthor(str(row[15]))
-         .type(enumVal(NameType.class, row[16]))
-         .code(enumVal(NomCode.class, row[17]))
-         .notho(enumVal(NamePart.class, row[18]))
-         .candidatus(bool(row[19]))
-         .datasetKey(intVal(row[20]))
-         .id(str(row[21]))
-         .build();
-      return n;
-    }
+  // 0 scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,
+  // 9 basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,
+  // 16 type,code,notho,candidatus,dataset_key,id";
+  @VisibleForTesting
+  protected static Name buildName(String[] row) {
+    Name n = Name.newBuilder()
+                 .scientificName(str(row[0]))
+                 .authorship(str(row[1]))
+                 .rank(enumVal(Rank.class, row[2]))
+                 .uninomial(str(row[3]))
+                 .genus(str(row[4]))
+                 .infragenericEpithet(str(row[5]))
+                 .specificEpithet(str(row[6]))
+                 .infraspecificEpithet(str(row[7]))
+                 .cultivarEpithet(str(row[8]))
+                 .basionymAuthorship(authors(row[9],row[10],row[11]))
+                 .combinationAuthorship(authors(row[12],row[13],row[14]))
+                 .sanctioningAuthor(str(row[15]))
+                 .type(enumVal(NameType.class, row[16]))
+                 .code(enumVal(NomCode.class, row[17]))
+                 .notho(enumVal(NamePart.class, row[18]))
+                 .candidatus(bool(row[19]))
+                 .datasetKey(intVal(row[20]))
+                 .id(str(row[21]))
+                 .build();
+    return n;
   }
 
   static boolean bool(String x) {
@@ -293,7 +298,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   }
   static List<String> authList(String auth) {
     if (auth != null && auth.length() > 2) {
-      return List.of(StringUtils.split(auth.substring(1, auth.length()-1), ','));
+      return Arrays.asList(StringUtils.split(auth.substring(1, auth.length() - 1), ','));
     }
     return null;
   }
