@@ -41,6 +41,10 @@ public class DatasetSearchRequest {
   @QueryParam("code")
   private NomCode code;
 
+  @Deprecated
+  @QueryParam("codeIsNull")
+  private boolean codeIsNull;
+
   /**
    * Filters by private flag.
    */
@@ -194,7 +198,15 @@ public class DatasetSearchRequest {
   public void setCode(NomCode code) {
     this.code = code;
   }
-  
+
+  public boolean isCodeIsNull() {
+    return codeIsNull;
+  }
+
+  public void setCodeIsNull(boolean codeIsNull) {
+    this.codeIsNull = codeIsNull;
+  }
+
   public Integer getContributesTo() {
     return contributesTo;
   }
