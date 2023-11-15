@@ -57,7 +57,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String ARG_FILE_ONLY = "file-only";
-  private static final String ARG_FILE = "file";
+  private static final String ARG_FILE = "outfile";
   private static final String ARG_LIMIT = "limit";
   private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
@@ -89,7 +89,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .required(false)
        .setDefault(false)
        .help("If true only rebuild the namesindex file, but do not rematch the database.");
-    subparser.addArgument("-f", "--"+ ARG_FILE)
+    subparser.addArgument("--"+ ARG_FILE, "-f")
        .dest(ARG_FILE)
        .type(File.class)
        .required(false)
