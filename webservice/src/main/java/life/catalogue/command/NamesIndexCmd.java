@@ -68,9 +68,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,dataset_key,id";
 
   int threads = 4;
+  File nidxFile;
 
   public NamesIndexCmd() {
-    super("nidx", false, "Rebuilt names index and rematch all datasets");
+    super("nidx", false, "Rebuilt names index and rematch all names");
 
   }
 
@@ -89,17 +90,15 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .required(false)
        .setDefault(false)
        .help("If true only rebuild the namesindex file, but do not rematch the database.");
-    subparser.addArgument("--"+ ARG_FILE, "-f")
+    subparser.addArgument("--"+ ARG_FILE)
        .dest(ARG_FILE)
-       .type(File.class)
+       .type(String.class)
        .required(false)
-       .setDefault(false)
        .help("Names file location. If already existing it will be reused instead of redumping from PG.");
     subparser.addArgument("--"+ ARG_LIMIT)
        .dest(ARG_LIMIT)
        .type(Integer.class)
        .required(false)
-       .setDefault(false)
        .help("Optional limit of names to export for tests");
 
   }
@@ -109,14 +108,14 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s.\n", BUILD_SCHEMA, cfg.db.database);
   }
 
-  private static File indexBuildFile(WsServerConfig cfg){
+  private static File indexBuildFile(WsServerConfig cfg) throws IOException {
     File f = null;
     if (cfg.namesIndexFile != null) {
       f = new File(cfg.namesIndexFile.getParent(), "nidx-build");
       if (f.exists()) {
         throw new IllegalStateException("NamesIndex file already exists: " + f.getAbsolutePath());
       }
-      f.getParentFile().mkdirs();
+      FileUtils.createParentDirectories(f);
       System.out.println("Creating new names index at " + f.getAbsolutePath());
     } else {
       System.out.println("Creating new in memory names index");
@@ -126,6 +125,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
+    nidxFile = indexBuildFile(cfg);
     if (ns.getBoolean(ARG_FILE_ONLY)) {
       rebuildFileOnly();
     } else {
@@ -134,11 +134,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   }
 
   private void rebuildFileOnly() throws Exception {
-    var nidxF = indexBuildFile(cfg);
-    LOG.info("Rebuild index file at {}", nidxF);
-    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxF, factory, AuthorshipNormalizer.INSTANCE, true);
+    LOG.info("Rebuild index file at {}", nidxFile);
+    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, true);
     ni.start();
-    LOG.info("Done rebuilding index file at {}", nidxF);
+    LOG.info("Done rebuilding index file at {}", nidxFile);
   }
 
   private void rematchAll() throws Exception {
@@ -146,7 +145,13 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
-    LOG.warn("Rebuilt names index and rematch all datasets with data in pg schema {} with {} threads", BUILD_SCHEMA, threads);
+    File out;
+    if (ns.getString(ARG_FILE) != null) {
+      out = new File(ns.getString(ARG_FILE));
+    } else {
+      out = new File(buildDir(), FILENAME_NAMES);
+    }
+    LOG.warn("Rebuilt names index at {} and rematch all names with {} threads using build folder {} and pg schema {}", nidxFile, threads, out, BUILD_SCHEMA);
     // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
@@ -156,15 +161,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
     }
 
-    NameIndex ni = NameIndexFactory.persistentOrMemory(indexBuildFile(cfg), factory, AuthorshipNormalizer.INSTANCE, false);
+    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, false);
     ni.start();
 
-    File out;
-    if (ns.getString(ARG_FILE) != null) {
-      out = new File(ns.getString(ARG_FILE));
-    } else {
-      out = new File(buildDir(), FILENAME_NAMES);
-    }
     long total;
     if (out.exists()) {
       LOG.info("Use names from existing file {}", out);
