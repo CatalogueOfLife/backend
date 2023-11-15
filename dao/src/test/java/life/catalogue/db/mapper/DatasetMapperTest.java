@@ -718,6 +718,29 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     return ds.getKey();
   }
 
+  @Test
+  public void searchNull() throws Exception {
+    final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
+    final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");
+    final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+    commit();
+
+    DatasetSettings ds = new DatasetSettings();
+    ds.put(Setting.EXTINCT, true);
+    ds.put(Setting.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
+    mapper().updateSettings(d1, ds, Users.TESTER);
+
+    DatasetSearchRequest query = new DatasetSearchRequest();
+    query.setCode(NomCode.ZOOLOGICAL);
+    assertEquals(1, mapper().search(query, null, new Page()).size());
+    assertEquals(d1, mapper().search(query, null, new Page()).get(0).getKey());
+
+    query = new DatasetSearchRequest();
+    query.setCodeIsNull(true);
+    var resp = mapper().search(query, null, new Page());
+    assertEquals(5, resp.size()); // 2+3 from apple.sql
+  }
+
   @Override
   Dataset createTestEntity(int dkey) {
     return create();
