@@ -57,7 +57,6 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String ARG_FILE_ONLY = "file-only";
-  private static final String ARG_FILE = "outfile";
   private static final String ARG_LIMIT = "limit";
   private static final String BUILD_SCHEMA = "nidx";
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
@@ -69,6 +68,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   int threads = 4;
   File nidxFile;
+  File buildDir;
 
   public NamesIndexCmd() {
     super("nidx", false, "Rebuilt names index and rematch all names");
@@ -90,17 +90,11 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .required(false)
        .setDefault(false)
        .help("If true only rebuild the namesindex file, but do not rematch the database.");
-    subparser.addArgument("--"+ ARG_FILE)
-       .dest(ARG_FILE)
-       .type(String.class)
-       .required(false)
-       .help("Names file location. If already existing it will be reused instead of redumping from PG.");
     subparser.addArgument("--"+ ARG_LIMIT)
        .dest(ARG_LIMIT)
        .type(Integer.class)
        .required(false)
        .help("Optional limit of names to export for tests");
-
   }
 
   @Override
@@ -126,6 +120,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   @Override
   public void execute() throws Exception {
     nidxFile = indexBuildFile(cfg);
+    buildDir = cfg.normalizer.scratchDir("nidx-build");
+    FileUtils.deleteQuietly(nidxFile);
+
     if (ns.getBoolean(ARG_FILE_ONLY)) {
       rebuildFileOnly();
     } else {
@@ -145,12 +142,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
-    File out;
-    if (ns.getString(ARG_FILE) != null) {
-      out = new File(ns.getString(ARG_FILE));
-    } else {
-      out = new File(buildDir(), FILENAME_NAMES);
-    }
+    File out = new File(buildDir, FILENAME_NAMES);
     LOG.warn("Rebuilt names index at {} and rematch all names with {} threads using build folder {} and pg schema {}", nidxFile, threads, out, BUILD_SCHEMA);
     // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
@@ -161,17 +153,18 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_SETUP));
     }
 
-    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, false);
+    // setup new nidx using the session factory with the nidx schema - which has no names yet
+    final NameIndex ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, false);
     ni.start();
 
     long total;
     if (out.exists()) {
-      LOG.info("Use names from existing file {}", out);
       try(LineNumberReader lineNumberReader = new LineNumberReader(new FileReader(out))) {
         //Skip to last line
         lineNumberReader.skip(Long.MAX_VALUE);
         total = lineNumberReader.getLineNumber() + 1;
       }
+      LOG.info("Use {} names from existing file {}", total, out);
     } else {
       // assert parent dir exists
       FileUtils.createParentDirectories(out);
@@ -191,8 +184,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Sorting file with {} records: {}", total, out);
     UnixCmdUtils.sortC(out, 0);
 
-    LOG.info("Splitting {} with {} records into {} parts", out, total, threads);
-    long size = total / threads;
+    long size = (total / threads) +1;
+    LOG.info("Splitting {} with {} records into {} parts with {} each", out, total, threads, size);
     UnixCmdUtils.split(out, size, 3);
 
     LOG.info("Matching all names from {}", out);
@@ -233,11 +226,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
   }
 
-  private File buildDir() {
-    return cfg.normalizer.scratchDir("nidx-build");
-  }
   private File part(String name, int part) {
-    return new File(buildDir(), String.format(name+"%03d", part));
+    return new File(buildDir, String.format(name+"%03d", part));
   }
 
   private static class FileMatcher {
@@ -245,6 +235,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     private final File in;
     private final File out;
     private int counter = 0;
+    private int error = 0;
+    private int cached = 0;
     private int nomatch = 0;
     public FileMatcher(NameIndex ni, File in, File out) {
       this.ni = ni;
@@ -267,28 +259,34 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
         writer.write(new String[]{"dataset_key", "name_id", "type", "index_id"});
         for (String[] row : reader) {
           counter++;
-          Name n = buildName(row);
-          // matched the same name before already? the input file is sorted!
-          NameMatch m;
-          if (lastRank == n.getRank() && Objects.equals(lastLabel, n.getLabel())) {
-            m = lastMatch;
-          } else {
-            m = ni.match(n, true, false);
-            lastMatch = m;
-            lastLabel=n.getLabel();
-            lastRank = n.getRank();
-          }
-          String[] result = new String[]{str(n.getDatasetKey()), n.getId(), str(m.getType()), str(m.getNameKey())};
-          writer.write(result);
+          try {
+            Name n = buildName(row);
+            // matched the same name before already? the input file is sorted!
+            NameMatch m;
+            if (lastRank == n.getRank() && Objects.equals(lastLabel, n.getLabel())) {
+              m = lastMatch;
+              cached++;
+            } else {
+              m = ni.match(n, true, false);
+              lastMatch = m;
+              lastLabel=n.getLabel();
+              lastRank = n.getRank();
+            }
+            String[] result = new String[]{str(n.getDatasetKey()), n.getId(), str(m.getType()), str(m.getNameKey())};
+            writer.write(result);
 
-          if (!m.hasMatch()) {
-            nomatch++;
+            if (!m.hasMatch()) {
+              nomatch++;
+            }
+          } catch (Exception e) {
+            error++;
+            LOG.error("Failed to match name {} from {}. {} total errors", counter, in, error, e);
           }
           if (counter % 100000 == 0) {
-            LOG.info("Matched {} names from {}. {} have no match", counter, in, nomatch);
+            LOG.info("Matched {} names from {}. {} cached, {} errors, {} have no match", counter, in, cached, error, nomatch);
           }
         }
-        LOG.info("Matched all {} names from {}. {} have no match", counter, in, nomatch);
+        LOG.info("Matched all {} names from {}. {} cached, {} errors, {} have no match", counter, in, cached, error, nomatch);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

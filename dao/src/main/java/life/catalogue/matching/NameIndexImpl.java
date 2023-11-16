@@ -299,15 +299,15 @@ public class NameIndexImpl implements NameIndex {
    */
   private int addOrRemove(int score, IndexName n, int bestScore, List<IndexName> matches) {
     if (score < bestScore) {
-      //LOG.debug("Worse match {}<{}: {}", score, bestScore, n.canonicalNameComplete());
+      LOG.trace("Worse match {}<{}: {}", score, bestScore, n.getLabel());
       return bestScore;
     }
     
     if (score > bestScore) {
-      //LOG.debug("Better match {}>{}: {}", score, bestScore, n.canonicalNameComplete());
+      LOG.trace("Better match {}>{}: {}", score, bestScore, n.getLabel());
       matches.clear();
     } else {
-      //LOG.debug("Same match {}={}: {}", score, bestScore, n.canonicalNameComplete());
+      LOG.trace("Same match {}={}: {}", score, bestScore, n.getLabel());
     }
     matches.add(n);
     return score;
@@ -363,10 +363,10 @@ public class NameIndexImpl implements NameIndex {
    * This method assumes the name is well formatted and tested to be eligable to be inserted
    */
   private synchronized NameMatch tryToAdd(Name orig, NameMatch match, boolean verbose) {
-    LOG.debug("{} match, try to add {}", match.getType(), orig.getLabel());
+    LOG.trace("{} match, try to add {}", match.getType(), orig.getLabel());
     var match2 = match(orig, false, verbose);
     if (needsInsert(match2, orig)) {
-      LOG.info("{} match, adding {}", match.getType(), orig.getLabel());
+      LOG.debug("{} match, adding {}", match.getType(), orig.getLabel());
       // verified we still do not have that name - insert the original match for real!
       IndexName n = new IndexName(orig);
       add(n);
