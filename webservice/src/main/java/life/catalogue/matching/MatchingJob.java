@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.CharsetDetectingStream;
+import life.catalogue.common.io.TabReader;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
@@ -252,8 +253,8 @@ public class MatchingJob extends DatasetBlockingJob {
   private Stream<IssueName> streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
     final AbstractParser<?> parser = req.getUpload().getName().endsWith("csv") ?
-                               CsvReader.newParser(CsvReader.csvSetting()) :
-                               CsvReader.newParser(CsvReader.tsvSetting());
+                               TabReader.newParser(CsvReader.csvSetting()) :
+                               TabReader.newParser(CsvReader.tsvSetting());
 
     BufferedReader reader  = CharsetDetectingStream.createReader(data);
     parser.beginParsing(reader);

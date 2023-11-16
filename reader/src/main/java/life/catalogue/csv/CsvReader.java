@@ -40,11 +40,10 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.univocity.parsers.common.*;
-import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import com.univocity.parsers.tsv.TsvParser;
 import com.univocity.parsers.tsv.TsvParserSettings;
 
+import static life.catalogue.common.io.TabReader.newParser;
 /**
  * A reader giving access to a set of delimited text files in a folder
  * by offering verbatim values as standard TermRecords.
@@ -353,13 +352,6 @@ public class CsvReader {
   
   private static int nullsafeLength(String x) {
     return x == null ? 0 : x.length();
-  }
-
-  public static AbstractParser<?> newParser(CommonParserSettings<?> cfg) {
-    if (cfg instanceof TsvParserSettings) {
-      return new TsvParser((TsvParserSettings)cfg);
-    }
-    return new CsvParser((CsvParserSettings) cfg);
   }
 
   private Schema buildSchema(Path df, @Nullable String termPrefix) {
