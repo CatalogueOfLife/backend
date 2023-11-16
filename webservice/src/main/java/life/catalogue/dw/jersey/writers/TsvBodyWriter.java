@@ -56,7 +56,7 @@ public class TsvBodyWriter implements MessageBodyWriter<Stream<Object[]>> {
     }
   }
 
-  private static String toTsv(Object[] row) {
+  static String toTsv(Object[] row) {
     StringBuilder sb = new StringBuilder();
     for (Object col : row) {
       if (sb.length() > 0) {

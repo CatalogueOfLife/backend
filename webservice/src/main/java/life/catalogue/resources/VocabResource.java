@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -8,6 +10,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.parser.AreaParser;
 import life.catalogue.parser.UnparsableException;
@@ -224,6 +227,7 @@ public class VocabResource {
 
   @GET
   @Path("{vocab}")
+  @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.TEXT_TSV, MediaType.TEXT_PLAIN})
   public List<Map<String, Object>> values(@PathParam("vocab") String vocab) throws IllegalAccessException {
     if (vocab != null && vocabs.containsKey(vocab.toLowerCase())) {
       return enumList(vocabs.get(vocab.toLowerCase()));
@@ -289,7 +293,8 @@ public class VocabResource {
     return map;
   }
 
-  private static List<Map<String, Object>> enumList(Class<? extends Enum> clazz) throws IllegalAccessException {
+  @VisibleForTesting
+  public static List<Map<String, Object>> enumList(Class<? extends Enum> clazz) throws IllegalAccessException {
     List<Map<String, Object>> values = new ArrayList<>();
     for (Enum entry : clazz.getEnumConstants()) {
       Map<String, Object> map = enumFields(entry);

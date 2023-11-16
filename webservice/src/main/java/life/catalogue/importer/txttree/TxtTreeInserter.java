@@ -98,7 +98,7 @@ public class TxtTreeInserter implements NeoInserter {
   public static Optional<Path> findReadable(Path folder) {
     try {
       for (Path f : PathUtils.listFiles(folder, Set.of("txtree", "tree", "txt", "text", "archive"))) {
-        if (Tree.verify(Files.newInputStream(f))) {
+        if (!f.getFileName().toString().startsWith("expected") && Tree.verify(Files.newInputStream(f))) {
           LOG.info("Found readable tree file {}", f);
           return Optional.of(f);
         }

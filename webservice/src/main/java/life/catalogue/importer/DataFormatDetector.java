@@ -8,9 +8,11 @@ import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,15 @@ public class DataFormatDetector {
   public static DataFormat detectFormat(Path folder) {
     if (!Files.isDirectory(folder)) {
       throw new IllegalArgumentException("Not a directory: " + folder);
+    }
+
+    // shortcut to detect dwca - meta.xml
+    if (Files.isRegularFile(folder.resolve(DwcaReader.META_FN))) {
+      return DataFormat.DWCA;
+    }
+    // shortcut to detect coldp - default.yaml
+    if (Files.isRegularFile(folder.resolve(ColdpReader.DEFAULT_FN))) {
+      return DataFormat.COLDP;
     }
 
     LOG.debug("Try TextTree format");

@@ -1,0 +1,51 @@
+{
+	"identifier": {
+		"plazi": "D624E936FFA3FFDFF745B92AFFE6C066"
+	},
+	"title": "Dracula immunda (Orchidaceae: Pleurothallidinae), a new species from Panama",
+	"version": "1698996492580",
+	"issued": "2023-11-03",
+	"creator": [
+		{
+			"given": "Alfonso",
+			"family": "Doucette"
+		}
+	],
+	"editor": [
+	],
+	"publisher": {
+		"organisation": "Plazi",
+		"city": "Bern",
+		"country": "CH",
+		"email": "info@plazi.org",
+		"url": "https://plazi.org/"
+	},
+	"contact": {
+		"family": "Sautter",
+		"given": "Guido",
+		"organisation": "Plazi",
+		"email": "sautter@plazi.org",
+		"url": "https://plazi.org"
+	},
+	"description": "This dataset contains the digitized treatments in Plazi based on the original journal article Doucette, Alfonso (2011): Dracula immunda (Orchidaceae: Pleurothallidinae), a new species from Panama. Phytotaxa 16: 37-44, DOI: 10.11646/phytotaxa.16.1.2, URL: http://biotaxa.org/Phytotaxa/article/view/phytotaxa.16.1.2",
+	"url": "https://tb.plazi.org/GgServer/summary/D624E936FFA3FFDFF745B92AFFE6C066",
+	"license": "CC0",
+	"source": [
+		{
+			"author": [
+				{
+					"given": "Alfonso",
+					"family": "Doucette"
+				}
+			],
+			"type": "article-journal",
+			"containerTitle": "Phytotaxa",
+			"volume": "16",
+			"page": "37-44",
+			"issued": "2011-02-04",
+			"doi": "10.11646/phytotaxa.16.1.2",
+			"id": "10.11646/phytotaxa.16.1.2",
+			"title": "Dracula immunda (Orchidaceae: Pleurothallidinae), a new species from Panama"
+		}
+	]
+}

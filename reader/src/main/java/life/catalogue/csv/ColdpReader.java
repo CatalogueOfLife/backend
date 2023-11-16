@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public class ColdpReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpReader.class);
   private static final String TERM_PREFIX = "col";
+  public static final String DEFAULT_FN = "default.yaml";
   // Synonym and TypeMaterial also have IDs but do not require them as there is no foreign key to them
   private static final Set<ColdpTerm> ID_SCHEMAS = Set.of(ColdpTerm.NameUsage, ColdpTerm.Reference, ColdpTerm.Name, ColdpTerm.Taxon);
   private static final Set<ColdpTerm> NAMEID_SCHEMAS;
@@ -108,9 +109,9 @@ public class ColdpReader extends CsvReader {
     }
 
     // read default values
-    Path dfn = dir.resolve("default.yaml");
+    Path dfn = dir.resolve(DEFAULT_FN);
     if (Files.exists(dfn)) {
-      LOG.info("Reading default values from default.yaml");
+      LOG.info("Reading default values from {}", DEFAULT_FN);
       final var TF = TermFactory.instance();
       final var def = YamlUtils.read(Map.class, dfn.toFile());
       for (Object key : def.keySet()) {

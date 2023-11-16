@@ -42,7 +42,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
  */
 public class DwcaReader extends CsvReader {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaReader.class);
-  private static final String META_FN = "meta.xml";
+  public static final String META_FN = "meta.xml";
   private static final String EML_FN = "eml.xml";
   private static final List<Term> PREFERRED_CORE_TYPES = List.of(DwcTerm.Taxon, DwcTerm.Event, DwcTerm.Occurrence);
   private static final XMLInputFactory2 factory;
