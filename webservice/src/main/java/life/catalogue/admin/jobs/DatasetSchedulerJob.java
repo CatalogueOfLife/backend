@@ -44,7 +44,9 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     }
 
     public double percentage() {
-      return ((double) done / (double) usages);
+      if (done == 0) return 0;
+      if (usages == 0) return done;
+      return ((double) done * 100 / (double) usages);
     }
 
     public void write(Writer writer) throws IOException {
