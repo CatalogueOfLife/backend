@@ -268,7 +268,7 @@ public class TestDataGenerator {
     if (releaseCOL) {
       System.out.print("Release COL project");
       final ReleaseConfig cfg = new ReleaseConfig();
-      cfg.restart = false;
+      cfg.restart = null;
       final WsServerConfig wcfg = new WsServerConfig();
       wcfg.release = cfg;
 

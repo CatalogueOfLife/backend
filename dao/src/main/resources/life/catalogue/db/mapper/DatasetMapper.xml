@@ -393,6 +393,9 @@
     WHERE source_key = #{key} AND deleted IS NULL
       <if test="origin != null">AND origin = #{origin}::DATASETORIGIN</if>
       <if test="public">AND NOT private</if>
+      <if test="ignore != null and !ignore.isEmpty()">
+        AND key NOT IN <foreach item="k" collection="ignore" open="(" separator="," close=")">#{k}</foreach>
+      </if>
     ORDER BY created DESC
     LIMIT 1
   </select>
@@ -426,13 +429,6 @@
     <if test="limit">
       WHERE key &lt; #{limit}
     </if>
-  </select>
-
-  <select id="getKeyGaps" parameterType="map" resultType="integer">
-    SELECT key
-    FROM generate_series(#{min}, (SELECT max(key) FROM dataset)) AS key
-    LEFT JOIN dataset d USING (key)
-    WHERE d.key IS NULL LIMIT #{limit}
   </select>
 
   <select id="getKeyByGBIF" resultType="integer">

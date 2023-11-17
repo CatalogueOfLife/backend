@@ -104,7 +104,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
 
   private ProjectRelease buildRelease() {
     ReleaseConfig cfg = new ReleaseConfig();
-    cfg.restart = false;
+    cfg.restart = null;
     return projectCopyFactory.buildRelease(projectKey, Users.TESTER);
   }
   

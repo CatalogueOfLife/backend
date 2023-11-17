@@ -246,7 +246,7 @@
       LEFT JOIN idmap_name_usage_${datasetKey} m ON m.id=s.target_id
     </if>
     WHERE dataset_key=#{datasetKey}
-      AND EXISTS (SELECT true FROM name_usage WHERE dataset_key=#{datasetKey} AND sector_key=s.id LIMIT 1)
+      AND EXISTS (SELECT true FROM name WHERE dataset_key=#{datasetKey} AND sector_key=s.id LIMIT 1)
   </insert>
 
   <update id="update" parameterType="Sector">

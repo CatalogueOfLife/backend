@@ -9,6 +9,7 @@ import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -195,9 +196,18 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param key the project key
    * @param publicOnly if true only include public releases
    * @param origin the kind of release, can be null to allow any
+   * @param ignore list of dataset key to ignore as the latest release
    * @return dataset key of the latest release or null if no release exists
    */
-  Integer latestRelease(@Param("key") int key, @Param("public") boolean publicOnly, @Nullable @Param("origin") DatasetOrigin origin);
+  Integer latestRelease(@Param("key") int key,
+                        @Param("public") boolean publicOnly,
+                        @Nullable @Param("ignore") List<Integer> ignore,
+                        @Nullable @Param("origin") DatasetOrigin origin
+  );
+
+  default Integer latestRelease(int key, boolean publicOnly, DatasetOrigin origin) {
+    return latestRelease(key, publicOnly, null, origin);
+  }
 
   /**
    * This looks up the public release just before the given one, ignoring any intermediate private releases.
@@ -239,12 +249,5 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *              If null the global maximum is returned, if existing the maximum key below the given limit
    */
   Integer getMaxKey(@Param("limit") Integer limit);
-
-  /**
-   * List unused dataset keys (gaps) the are above a given maximum and below the current maximum dataset key
-   * @param min
-   * @param limit limit of gap keys to return
-   */
-  List<Integer> getKeyGaps(@Param("min") Integer min, @Param("limit") Integer limit);
 
 }

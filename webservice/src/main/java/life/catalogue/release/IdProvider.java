@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.IdReportType;
@@ -76,6 +77,8 @@ public class IdProvider {
   private final ReleaseConfig cfg;
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntBiMap dataset2attempt = new Int2IntBiMap();
+  private final List<Integer> ignoredReleases;
+  private final List<Integer> additionalReleases;
   private final AtomicInteger keySequence = new AtomicInteger();
   private final File reportDir;
   // id changes in this release
@@ -97,8 +100,20 @@ public class IdProvider {
     reportDir = cfg.reportDir(projectKey, attempt);
     reportDir.mkdirs();
     dataset2attempt.put(releaseDatasetKey, attempt);
+
+    if (cfg.ignoredReleases != null && cfg.ignoredReleases.containsKey(projectKey)) {
+      ignoredReleases = cfg.ignoredReleases.get(projectKey);
+    } else {
+      ignoredReleases = List.of();
+    }
+    if (cfg.additionalReleases != null && cfg.additionalReleases.containsKey(projectKey)) {
+      additionalReleases = cfg.additionalReleases.get(projectKey);
+    } else {
+      additionalReleases = List.of();
+    }
+
     try (SqlSession session = factory.openSession(true)) {
-      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, DatasetOrigin.RELEASE);
+      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, DatasetOrigin.RELEASE);
     }
   }
 
@@ -334,15 +349,17 @@ public class IdProvider {
     dir.mkdirs();
     // load a map of all releases to their attempts
     loadReleaseAttempts();
-    if (cfg.restart) {
-      LOG.info("Use ID provider with no previous IDs");
-      // populate ids from db
+    if (cfg.restart != null) {
+      LOG.info("Use ID provider with no previous IDs. Start ID sequence with {} ({})", cfg.restart, encode(cfg.restart));
+      keySequence.set(cfg.restart);
+
     } else {
+      // populate ids from db
       loadPreviousReleaseIds();
       LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.maxAttemptIdCount());
+      keySequence.set(ids.maxKey());
+      LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
     }
-    keySequence.set(Math.max(cfg.start, ids.maxKey()));
-    LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
   }
 
   private void loadReleaseAttempts() {
@@ -350,9 +367,14 @@ public class IdProvider {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.listReleases(projectKey).forEach(d -> {
         if (d.getKey() != releaseDatasetKey && d.getAttempt() != null) {
-          dataset2attempt.put(d.getKey(), d.getAttempt());
+          if (ignoredReleases.contains(d.getKey())) {
+            LOG.info("Configured to ignore release {}", d.getKey());
+          } else {
+            dataset2attempt.put(d.getKey(), d.getAttempt());
+          }
         }
       });
+      LOG.info("Found {} relevant past releases", dataset2attempt.size());
     }
   }
 
@@ -374,12 +396,12 @@ public class IdProvider {
    */
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
-    try (SqlSession session = factory.openSession(true)) {
-      if (lastReleaseKey == null) {
-        LOG.info("There have been no previous releases, start without existing ids");
-        return;
-      }
+    if (lastReleaseKey == null) {
+      LOG.info("There have been no previous releases, start without existing ids");
+      return;
+    }
 
+    try (SqlSession session = factory.openSession(true)) {
       final LoadStats stats = new LoadStats();
 
       // load entire last release
@@ -389,7 +411,16 @@ public class IdProvider {
       );
       LOG.info("Read {} from last release {}. Total ids={}", stats, lastReleaseKey, ids.size());
 
-      // also include the archived names if they have not been processed before yet
+      // load additional releases if configured
+      for (int dk : additionalReleases) {
+        PgUtils.consume(
+          () -> session.getMapper(NameUsageMapper.class).processNxIds(dk),
+          sn -> addReleaseId(dk, sn, stats)
+        );
+        LOG.info("Read {} from past release {}. Total ids={}", stats, lastReleaseKey, ids.size());
+      }
+
+      // always also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
       ids.log();
       PgUtils.consume(

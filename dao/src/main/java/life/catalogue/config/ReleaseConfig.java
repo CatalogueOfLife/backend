@@ -1,6 +1,8 @@
 package life.catalogue.config;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,13 +14,19 @@ import org.slf4j.LoggerFactory;
  */
 public class ReleaseConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseConfig.class);
-  public boolean restart = false;
-  // id start
-  public int start = 0;
+  // id to restart with - keep null unless you know what to do
+  public Integer restart;
   // nidx deduplication workaround - should be fixed by now so not enabled by default
   public boolean nidxDeduplication = false;
 
   public boolean deleteOnError = true;
+
+  // project -> list of dataset keys of releases to ignore (e.g. they contain bad ids)
+  public Map<Integer, List<Integer>> ignoredReleases;
+
+
+  // project -> list of dataset keys of releases to also include as a "backup" of the last release
+  public Map<Integer, List<Integer>> additionalReleases;
 
   @NotNull
   public File reportDir = new File("/tmp/col/release");

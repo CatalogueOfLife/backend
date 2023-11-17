@@ -5,6 +5,7 @@ import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.doi.DoiUpdater;
@@ -30,7 +31,8 @@ import static org.mockito.Mockito.mock;
 
 public abstract class ProjectBaseIT {
   
-  final static PgSetupRule pg = new PgSetupRule();
+  //final static SqlSessionFactoryRule pg = new PgSetupRule();
+  final static SqlSessionFactoryRule pg = new PgConnectionRule("clb", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
