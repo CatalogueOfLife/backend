@@ -15,7 +15,7 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 
-### 2023-11-08 scrutinizer_id
+### 2023-11-08 invalid DOI issue
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'DOI_INVALID';
 ```

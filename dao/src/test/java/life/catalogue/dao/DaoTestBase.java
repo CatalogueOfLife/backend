@@ -2,6 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
+import life.catalogue.db.PgConnectionRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
@@ -22,8 +23,9 @@ public abstract class DaoTestBase {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+  public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
+
   @Rule
   public TestDataRule testDataRule;
   

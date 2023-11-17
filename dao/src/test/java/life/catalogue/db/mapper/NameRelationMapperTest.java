@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.NameUsageRelation;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
@@ -68,6 +69,27 @@ public class NameRelationMapperTest extends MapperTestBase<NameRelationMapper> {
 
     assertEquals(1, nameRelationMapper.listByName(NAME2).size());
     assertEquals(3, nameRelationMapper.listByRelatedName(NAME2).size());
+
+    var res = nameRelationMapper.listUsageRelByName(NAME2);
+    assertEquals(1, res.size());
+    assertUsageIdsExist(res, true);
+
+    res = nameRelationMapper.listUsageRelByRelatedName(NAME2);
+    assertEquals(3, res.size());
+    assertUsageIdsExist(res, false);
+  }
+
+  void assertUsageIdsExist(List<NameUsageRelation> rels, boolean related) {
+    for (var r : rels) {
+      assertNotNull(r.getType());
+      assertNotNull(r.getNameId());
+      assertNotNull(r.getRelatedNameId());
+      if (related) {
+        assertNotNull(r.getRelatedUsageId());
+      } else {
+        assertNotNull(r.getUsageId());
+      }
+    }
   }
 
   @Test

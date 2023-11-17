@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
@@ -106,6 +107,26 @@ public class TaxonDaoTest extends DaoTestBase {
         default:
           fail("Unexpected distribution");
       }
+    }
+
+    // create relations and check them
+    var rm = mapper(NameRelationMapper.class);
+    var nr = new NameRelation();
+    nr.applyUser(TAXON1.getCreatedBy());
+    nr.setDatasetKey(TAXON1.getDatasetKey());
+    nr.setNameId(TAXON1.getName().getId());
+    nr.setRelatedNameId(TAXON2.getName().getId());
+    nr.setType(NomRelType.REPLACEMENT_NAME);
+    rm.create(nr);
+    commit();
+
+    info = tDao.getUsageInfo(DSID.of(datasetKey, TAXON1.getId()));
+    for (var rel : info.getNameRelations()) {
+      assertNotNull(rel.getType());
+      assertNotNull(rel.getNameId());
+      assertNotNull(rel.getRelatedNameId());
+      assertNotNull(rel.getUsageId());
+      assertNotNull(rel.getRelatedUsageId());
     }
   }
 

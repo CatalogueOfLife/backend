@@ -97,6 +97,7 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Extens
   /**
    * @return true if publishedIn or remarks are present
    */
+  @JsonIgnore
   public boolean isRich() {
     return referenceId != null || remarks != null;
   }

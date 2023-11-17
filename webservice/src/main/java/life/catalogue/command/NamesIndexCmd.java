@@ -283,10 +283,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
             LOG.error("Failed to match name {} from {}. {} total errors", counter, in, error, e);
           }
           if (counter % 100000 == 0) {
-            LOG.info("Matched {} names from {}. {} cached, {} errors, {} have no match", counter, in, cached, error, nomatch);
+            LOG.info("Matched {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
           }
         }
-        LOG.info("Matched all {} names from {}. {} cached, {} errors, {} have no match", counter, in, cached, error, nomatch);
+        LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
