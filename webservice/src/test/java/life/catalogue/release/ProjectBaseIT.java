@@ -34,7 +34,8 @@ public abstract class ProjectBaseIT {
   //final static SqlSessionFactoryRule pg = new PgSetupRule();
   final static SqlSessionFactoryRule pg = new PgConnectionRule("clb", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
-  final static NameMatchingRule matchingRule = new NameMatchingRule();
+  // this contains the names index being used by syncs and project jobs / releases - use only this instance !!!
+  final static NameMatchingRule matchingRule = new NameMatchingRule(true);
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
   @ClassRule

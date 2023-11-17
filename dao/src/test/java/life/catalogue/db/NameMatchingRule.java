@@ -22,26 +22,30 @@ public class NameMatchingRule extends ExternalResource {
   private static NameIndex nidx;
   private final Supplier<SqlSessionFactory> factorySupplier;
   private final boolean matchAll;
+  private final boolean reuseNidx;
 
   public NameMatchingRule() {
-    this(SqlSessionFactoryRule::getSqlSessionFactory, true);
+    this(SqlSessionFactoryRule::getSqlSessionFactory, true, false);
   }
 
-  public NameMatchingRule(boolean matchAll) {
-    this(SqlSessionFactoryRule::getSqlSessionFactory, matchAll);
+  public NameMatchingRule(boolean reuseNidx) {
+    this(SqlSessionFactoryRule::getSqlSessionFactory, true, reuseNidx);
   }
 
-  public NameMatchingRule(Supplier<SqlSessionFactory> sqlSessionFactorySupplier, boolean matchAll) {
+  public NameMatchingRule(Supplier<SqlSessionFactory> sqlSessionFactorySupplier, boolean matchAll, boolean reuseNidx) {
     this.factorySupplier = sqlSessionFactorySupplier;
     this.matchAll = matchAll;
+    this.reuseNidx = reuseNidx;
   }
 
   @Override
   public void before() throws Throwable {
     SqlSessionFactory factory = factorySupplier.get();
     LOG.info("Setup in-memory names index");
-    nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
-    nidx.start();
+    if (nidx == null || !reuseNidx) {
+      nidx = NameIndexFactory.memory(factory, AuthorshipNormalizer.INSTANCE);
+      nidx.start();
+    }
     if (matchAll) {
       LOG.info("Rematch all names");
       rematchAll();
@@ -62,10 +66,12 @@ public class NameMatchingRule extends ExternalResource {
 
   @Override
   public void after() {
-    try {
-      nidx.close();
-    } catch (Exception e) {
-      LOG.error("Failed to close NameMatch rule", e);
+    if (!reuseNidx) {
+      try {
+        nidx.close();
+      } catch (Exception e) {
+        LOG.error("Failed to close NameMatch rule", e);
+      }
     }
   }
 }

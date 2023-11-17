@@ -1725,9 +1725,9 @@ CREATE INDEX ON taxon_property (dataset_key, property);
 --
 CREATE TABLE name_usage_archive_match (
   dataset_key INTEGER NOT NULL,
-  index_id INTEGER NOT NULL REFERENCES names_index,
+  index_id INTEGER REFERENCES names_index,
   usage_id TEXT NOT NULL,
-  type MATCHTYPE,
+  type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, usage_id)
 );
 CREATE INDEX ON name_usage_archive_match (dataset_key, index_id);

@@ -57,8 +57,8 @@ public class BaseMatcher {
       } else {
         // the update might not have found a record (e.g. because we did not store NONE matches before)
         // create a record if it wasnt updated
-        if (nmm.update(n, n.getNamesIndexId(), m.getType()) == 0) {
-          nmm.create(n, n.getSectorKey(), n.getNamesIndexId(), m.getType());
+        if (nmm.update(n, m.getNameKey(), m.getType()) < 1) {
+          nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
         }
       }
     }

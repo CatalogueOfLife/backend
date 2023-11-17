@@ -30,8 +30,6 @@ import static org.junit.Assert.assertTrue;
 public class ProjectReleaseIT extends ProjectBaseIT {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectReleaseIT.class);
 
-  NameMatchingRule matchingRule = new NameMatchingRule();
-
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(IdProviderIT.PROJECT_DATA))

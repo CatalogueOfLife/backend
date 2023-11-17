@@ -33,14 +33,15 @@ public class RematchJob extends BackgroundJob {
 
   public static RematchJob all(int userKey, SqlSessionFactory factory, NameIndex ni){
     // load dataset keys to rematch
+    IntSet keys;
     try (SqlSession session = factory.openSession(true)) {
-      IntSet keys = DaoUtils.listDatasetWithNames(session);
+      keys = DaoUtils.listDatasetWithNames(session);
       keys.addAll(
         session.getMapper(ArchivedNameUsageMapper.class).listProjects()
       );
-      LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), ni.size());
-      return new RematchJob(userKey, factory, ni, keys.toIntArray());
     }
+    LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), ni.size());
+    return new RematchJob(userKey, factory, ni, keys.toIntArray());
   }
 
   public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, int datasetKey){

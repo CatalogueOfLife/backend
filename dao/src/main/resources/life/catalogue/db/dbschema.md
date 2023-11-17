@@ -55,6 +55,8 @@ ALTER TABLE sector_import ADD COLUMN names_by_match_type_count HSTORE;
 ```sql
 ALTER TABLE name_match ALTER COLUMN index_id DROP NOT NULL,
                        ALTER COLUMN type SET NOT NULL;
+ALTER TABLE name_usage_archive_match ALTER COLUMN index_id DROP NOT NULL,
+                       ALTER COLUMN type SET NOT NULL;                       
 ```
 
 ### 2023-10-25 section ranks
