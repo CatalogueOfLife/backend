@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.NameUsageRelation;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.db.*;
 
@@ -20,6 +21,16 @@ public interface NameRelationMapper extends Create<NameRelation>,
    * Returns the list of name relations for a single name on the other side of the relation (relatedNameId).
    */
   List<NameRelation> listByRelatedName(@Param("key") DSID<String> key);
+
+  /**
+   * Returns the list of name relations for a single name, including usage ids.
+   */
+  List<NameUsageRelation> listUsageRelByName(@Param("key") DSID<String> key);
+  /**
+   * Returns the list of name relations for a single name on the other side of the relation (relatedNameId),
+   * including usages ids.
+   */
+  List<NameUsageRelation> listUsageRelByRelatedName(@Param("key") DSID<String> key);
 
   /**
    * Returns the list of related names of a given type for a single name on the nameId side of the relation only.

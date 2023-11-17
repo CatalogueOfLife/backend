@@ -12,7 +12,7 @@ public class UsageInfo {
   private final NameUsageBase usage;
   private VerbatimSource source;
   private Treatment treatment;
-  private List<NameRelation> nameRelations;
+  private List<NameUsageRelation> nameRelations;
   // taxa only
   private Synonymy synonyms;
   private List<Distribution> distributions;
@@ -184,11 +184,11 @@ public class UsageInfo {
     this.typeMaterial = typeMaterial;
   }
 
-  public List<NameRelation> getNameRelations() {
+  public List<NameUsageRelation> getNameRelations() {
     return nameRelations;
   }
 
-  public void setNameRelations(List<NameRelation> nameRelations) {
+  public void setNameRelations(List<NameUsageRelation> nameRelations) {
     this.nameRelations = nameRelations;
   }
 

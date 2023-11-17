@@ -189,7 +189,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     UnixCmdUtils.split(out, size, 3);
 
     LOG.info("Matching all names from {}", out);
-    ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("dataset-matcher"));
+    ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher"));
     for (int p = 0; p < threads; p++) {
       final int part = p;
       CompletableFuture.supplyAsync(() -> matchFile(part, ni), exec)

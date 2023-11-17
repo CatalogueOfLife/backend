@@ -261,8 +261,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // usage name relations
     if (loadNameRelations) {
       NameRelationMapper mapper = session.getMapper(NameRelationMapper.class);
-      info.setNameRelations(mapper.listByName(usage.getName()));
-      info.getNameRelations().addAll(mapper.listByRelatedName(usage.getName()));
+      var urels = mapper.listUsageRelByName(usage.getName());
+      if (urels != null) {
+        urels.forEach(urel -> urel.setUsageId(usage.getId()));
+        info.setNameRelations(urels);
+      }
+      urels = mapper.listUsageRelByRelatedName(usage.getName());
+      if (urels != null) {
+        urels.forEach(urel -> urel.setRelatedUsageId(usage.getId()));
+        info.getNameRelations().addAll(urels);
+      }
       info.getNameRelations().forEach(r -> {
         refIds.add(r.getReferenceId());
         nameIds.add(r.getNameId());

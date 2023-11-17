@@ -57,11 +57,22 @@
     <id property="id" column="id"/>
   </resultMap>
 
+  <resultMap id="usageRelResultMap" type="NameUsageRelation" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+
   <select id="listByName" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
-    ORDER BY nr.id
+  </select>
+
+  <select id="listUsageRelByName" resultMap="usageRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    LEFT JOIN name_usage u ON u.dataset_key=nr.dataset_key AND u.name_id=nr.related_name_id
+    WHERE nr.dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
   </select>
 
   <delete id="deleteByName" parameterType="map">
@@ -79,7 +90,13 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE dataset_key = #{key.datasetKey} AND nr.related_name_id = #{key.id}
-    ORDER BY nr.id
+  </select>
+
+  <select id="listUsageRelByRelatedName" resultMap="usageRelResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      LEFT JOIN name_usage u ON u.dataset_key=nr.dataset_key AND u.name_id=nr.name_id
+    WHERE nr.dataset_key = #{key.datasetKey} AND nr.related_name_id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
@@ -94,7 +111,6 @@
     WHERE nr.dataset_key = #{key.datasetKey}
       AND nr.type=#{type}::NOMRELTYPE
       AND nr.name_id = #{key.id}
-    ORDER BY nr.id
   </select>
 
   <select id="listByTypeReverse" resultMap="nameRelResultMap">
@@ -103,7 +119,6 @@
     WHERE nr.dataset_key = #{key.datasetKey}
       AND nr.type=#{type}::NOMRELTYPE
       AND nr.related_name_id = #{key.id}
-    ORDER BY nr.id
   </select>
 
   <select id="listRelatedNameIDs" resultType="string">
