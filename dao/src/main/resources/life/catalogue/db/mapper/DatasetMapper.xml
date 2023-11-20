@@ -89,11 +89,13 @@
       </if>
       <if test="req.contributesTo != null">
         AND exists(
-          SELECT 1 FROM sector s JOIN dataset pr ON pr.key=s.dataset_key
+          SELECT 1 FROM sector s
+            JOIN dataset pr ON pr.key=s.dataset_key
+            LEFT JOIN dataset proj ON proj.key=coalesce(pr.source_key,pr.key)
           WHERE s.dataset_key=#{req.contributesTo} AND s.subject_dataset_key=d.key
           <include refid="PRIVATE">
-            <property name="alias" value="pr"/>
-            <property name="projAlias" value="pr"/>
+            <property name="alias" value="d"/>
+            <property name="projAlias" value="proj"/>
           </include>
         )
       </if>
