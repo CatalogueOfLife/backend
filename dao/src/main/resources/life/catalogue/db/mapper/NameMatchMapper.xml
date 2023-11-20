@@ -88,7 +88,7 @@
     WHERE dataset_key=#{key.datasetKey} AND name_id = #{key.id}
   </delete>
 
-  <select id="count" resultType="integer">
+  <select id="countByDataset" resultType="integer">
     SELECT count(*)
     FROM name_match
     WHERE dataset_key = #{datasetKey}

@@ -4,10 +4,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
@@ -33,7 +30,8 @@ public class IdProviderIT {
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
-  public static PgSetupRule pgSetupRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
+  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
 
   IdProvider provider;
   NameMatchingRule matchingRule = new NameMatchingRule();

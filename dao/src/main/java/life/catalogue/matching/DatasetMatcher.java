@@ -39,8 +39,8 @@ public class DatasetMatcher extends BaseMatcher {
 
     boolean update = false;
     try (SqlSession readOnlySession = factory.openSession(true);
-         BulkMatchHandler hn = new BulkMatchHandlerNames(datasetKey, allowInserts);
-         BulkMatchHandler hu = new BulkMatchHandlerArchivedUsages(datasetKey, allowInserts)
+         BulkMatchHandler hn = new BulkMatchHandler(datasetKey, allowInserts, NameMatchMapper.class);
+         BulkMatchHandler hu = new BulkMatchHandler(datasetKey, allowInserts, ArchivedNameUsageMatchMapper.class);
     ) {
       NameMatchMapper nmm = readOnlySession.getMapper(NameMatchMapper.class);
       NameMapper nm = readOnlySession.getMapper(NameMapper.class);
@@ -71,7 +71,7 @@ public class DatasetMatcher extends BaseMatcher {
         if (del > 0) {
           LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
         }
-        del = session.getMapper(ArchivedNameUsageMatchMapper.class).deleteOrphaned(datasetKey);
+        del = session.getMapper(ArchivedNameUsageMatchMapper.class).deleteOrphans(datasetKey);
         if (del > 0) {
           LOG.info("Removed {} orphaned name archive matches for {}", del, datasetKey);
         }

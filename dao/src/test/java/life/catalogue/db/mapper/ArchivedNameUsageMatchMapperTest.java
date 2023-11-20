@@ -47,7 +47,7 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   @Test
   public void deleteOrphaned() throws Exception {
     // no real data to delete but tests valid SQL
-    mapper().deleteOrphaned(datasetKey);
+    mapper().deleteOrphans(datasetKey);
   }
 
   @Test

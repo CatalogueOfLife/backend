@@ -50,7 +50,7 @@
     WHERE dataset_key=#{key.datasetKey} AND usage_id = #{key.id}
   </delete>
 
-  <select id="count" resultType="integer">
+  <select id="countNidx" resultType="integer">
     SELECT count(*)
     FROM name_usage_archive_match nm JOIN names_index ni ON ni.id=nm.index_id
     WHERE ni.id=#{nidx} OR ni.canonical_id=#{nidx}

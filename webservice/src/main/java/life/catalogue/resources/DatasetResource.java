@@ -15,7 +15,6 @@ import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
@@ -195,7 +194,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("{key}/matches/count")
   public int count(@PathParam("key") int datasetKey) {
     try (SqlSession session = factory.openSession()) {
-      return session.getMapper(NameMatchMapper.class).count(datasetKey);
+      return session.getMapper(NameMatchMapper.class).countByDataset(datasetKey);
     }
   }
 

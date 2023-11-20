@@ -5,6 +5,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
+import life.catalogue.db.mapper.MatchMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
 import org.apache.ibatis.session.ExecutorType;
@@ -42,62 +43,20 @@ public class BaseMatcher {
     return nomatch;
   }
 
-  class BulkMatchHandlerNames extends BulkMatchHandler {
-    NameMatchMapper nmm;
-
-    BulkMatchHandlerNames(int datasetKey, boolean allowInserts) {
-      super(datasetKey, allowInserts);
-      nmm = batchSession.getMapper(NameMatchMapper.class);
-    }
-
-    @Override
-    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
-      if (oldType == null) {
-        nmm.create(n, n.getSectorKey(), n.getNamesIndexId(), m.getType());
-      } else {
-        // the update might not have found a record (e.g. because we did not store NONE matches before)
-        // create a record if it wasnt updated
-        if (nmm.update(n, m.getNameKey(), m.getType()) < 1) {
-          nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
-        }
-      }
-    }
-  }
-
-  class BulkMatchHandlerArchivedUsages extends BulkMatchHandler {
-    ArchivedNameUsageMatchMapper nmm;
-
-    BulkMatchHandlerArchivedUsages(int datasetKey, boolean allowInserts) {
-      super(datasetKey, allowInserts);
-      nmm = batchSession.getMapper(ArchivedNameUsageMatchMapper.class);
-    }
-
-    @Override
-    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
-      if (oldType == null) {
-        nmm.create(n, n.getNamesIndexId(), m.getType());
-      } else {
-        // the update might not have found a record (e.g. because we did not store NONE matches before)
-        // create a record if it wasnt updated
-        if (nmm.update(n, n.getNamesIndexId(), m.getType()) == 0) {
-          nmm.create(n, n.getNamesIndexId(), m.getType());
-        }
-      }
-    }
-  }
-
-  abstract class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
+  class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
     private final int datasetKey;
     private final boolean allowInserts;
     final SqlSession batchSession;
+    MatchMapper nmm;
     private int _total = 0;
     private int _updated = 0;
     private int _nomatch = 0;
 
-    BulkMatchHandler(int datasetKey, boolean allowInserts) {
+    BulkMatchHandler(int datasetKey, boolean allowInserts, Class<? extends MatchMapper> mapperClass) {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
       this.batchSession = factory.openSession(ExecutorType.BATCH, false);
+      this.nmm = batchSession.getMapper(mapperClass);
     }
 
     @Override
@@ -123,7 +82,17 @@ public class BaseMatcher {
       }
     }
 
-    abstract void persist(Name n, NameMatch m, MatchType oldType, Integer oldId);
+    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
+      if (oldType == null) {
+        nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+      } else {
+        // the update might not have found a record (e.g. because we did not store NONE matches before)
+        // create a record if it wasnt updated
+        if (nmm.update(n, m.getNameKey(), m.getType()) < 1) {
+          nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
+        }
+      }
+    }
 
     @Override
     public void close() throws RuntimeException {

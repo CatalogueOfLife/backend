@@ -9,8 +9,6 @@ import life.catalogue.matching.RematchJob;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class RematchSchedulerJob extends DatasetSchedulerJob {
   private final NameIndex ni;
@@ -23,7 +21,7 @@ public class RematchSchedulerJob extends DatasetSchedulerJob {
 
   @Override
   public int countDone(int datasetKey) {
-    return nmm.count(datasetKey);
+    return nmm.countByDataset(datasetKey);
   }
 
   @Override
