@@ -313,6 +313,52 @@ public class StringUtils {
   }
 
   /**
+   * Escapes \t \r \n and the backslash itself using a backslash
+   */
+  public static String escapeBackslash(String text, boolean trim) {
+    if(text == null || (trim && text.isEmpty())) {
+      return null;
+    }
+
+    int stackedSpace = 0;
+    int numChars = text.length();
+    char ch;
+    StringBuffer sb = new StringBuffer();
+    for(int i = 0; i < numChars; i++) {
+      ch = text.charAt(i);
+
+      if (ch == ' ') {
+        stackedSpace++;
+        continue;
+      }
+
+      if (stackedSpace > 0 && (!trim || sb.length()>0)) {
+        while(stackedSpace > 0) {
+          sb.append(' ');
+          stackedSpace--;
+        }
+      }
+      switch(ch) {
+        case '\\':  { sb.append("\\\\"); break; }
+        case '\r':  { sb.append("\\r"); break; }
+        case '\t':  { sb.append("\\t"); break; }
+        case '\n':  { sb.append("\\n"); break; }
+        default: {
+          sb.append(ch);
+          break;
+        }
+      }
+    }
+    if (stackedSpace > 0 && !trim) {
+      while(stackedSpace > 0) {
+        sb.append(' ');
+        stackedSpace--;
+      }
+    }
+    return trim && sb.length() == 0 ? null : sb.toString();
+  }
+
+  /**
    * Human readable size using binary units based on 1024
    */
   public static String byteWithUnitBinary(long bytes) {

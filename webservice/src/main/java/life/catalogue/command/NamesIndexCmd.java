@@ -64,7 +64,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String SCHEMA_POST_CONSTRAINTS = "nidx/rebuild-post-constraints.sql";
   private static final String FILENAME_NAMES = "names.tsv";
   private static final String FILENAME_MATCHES = "matches.tsv";
-  private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,dataset_key,id";
+  private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,sector_key,dataset_key,id";
 
   int threads = 4;
   File nidxFile;
@@ -256,7 +256,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
         Rank lastRank=null;
         NameMatch lastMatch=null;
         // header row
-        writer.write(new String[]{"dataset_key", "name_id", "type", "index_id"});
+        writer.write(new String[]{"dataset_key", "sector_key", "name_id", "type", "index_id"});
         for (String[] row : reader) {
           counter++;
           try {
@@ -272,7 +272,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
               lastLabel=n.getLabel();
               lastRank = n.getRank();
             }
-            String[] result = new String[]{str(n.getDatasetKey()), n.getId(), str(m.getType()), str(m.getNameKey())};
+            String[] result = new String[]{str(n.getDatasetKey()), str(n.getSectorKey()), n.getId(), str(m.getType()), str(m.getNameKey())};
             writer.write(result);
 
             if (!m.hasMatch()) {
@@ -295,7 +295,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   // 0 scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,
   // 9 basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,
-  // 16 type,code,notho,candidatus,dataset_key,id";
+  // 16 type,code,notho,candidatus,sector_key,dataset_key,id";
   @VisibleForTesting
   protected static Name buildName(String[] row) {
     Name n = Name.newBuilder()
@@ -315,8 +315,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
                  .code(enumVal(NomCode.class, row[17]))
                  .notho(enumVal(NamePart.class, row[18]))
                  .candidatus(bool(row[19]))
-                 .datasetKey(intVal(row[20]))
-                 .id(str(row[21]))
+                 .sectorKey(intVal(row[20]))
+                 .datasetKey(intVal(row[21]))
+                 .id(str(row[22]))
                  .build();
     return n;
   }

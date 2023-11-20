@@ -7,9 +7,10 @@ import java.util.regex.Pattern;
 import com.univocity.parsers.csv.CsvWriter;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 /**
- * Basic TAB delimited file writer that escapes tab and newline characters.
+ * Basic TAB delimited file writer that escapes tab and newline characters using a backslash.
  * If desired the number of columns can be verified to be the same for every record.
  */
 public class TabWriter implements AutoCloseable, RowWriter {
@@ -69,7 +70,7 @@ public class TabWriter implements AutoCloseable, RowWriter {
     for (int i = 0; i < columns.length; i++) {
       if (columns[i] != null) {
         empty = false;
-        columns[i] = StringUtils.trimToNull(escapeChars.matcher(columns[i]).replaceAll(" "));
+        columns[i] = life.catalogue.common.text.StringUtils.escapeBackslash(columns[i], true);
       }
     }
     if (empty) {

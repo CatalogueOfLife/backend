@@ -17,6 +17,23 @@ public class StringUtilsTest {
 
 
   @Test
+  public void escapeBackslash() {
+    assertEquals("", StringUtils.escapeBackslash("", false));
+    assertEquals(" ", StringUtils.escapeBackslash(" ", false));
+    assertEquals("my\\npferd", StringUtils.escapeBackslash("my\npferd", false));
+    assertEquals("my\\npferd", StringUtils.escapeBackslash("my\npferd ", true));
+    assertEquals("my\\\\npferd", StringUtils.escapeBackslash("my\\npferd ", true));
+    assertEquals("my\\tpferd\\tno", StringUtils.escapeBackslash("my\tpferd\tno ", true));
+    assertEquals("user@domain.com", StringUtils.escapeBackslash("user@domain.com", false));
+
+    assertNull(StringUtils.escapeBackslash(null, false));
+    assertNull(StringUtils.escapeBackslash(null, true));
+    assertNull(StringUtils.escapeBackslash("", true));
+    assertNull(StringUtils.escapeBackslash(" ", true));
+    assertNull(StringUtils.escapeBackslash("   ", true));
+  }
+
+  @Test
   public void extractEmail() {
     assertEquals("user@domain.com", StringUtils.extractEmail("user@domain.com"));
     assertEquals("user@domain.co.in", StringUtils.extractEmail("user@domain.co.in"));
