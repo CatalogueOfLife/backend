@@ -8,6 +8,7 @@ import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,9 +44,8 @@ public class IdProviderIT {
   private ReleaseConfig cfg;
 
 
-  @Before
-  public void init() throws IOException {
-    cfg = new ReleaseConfig();
+  public void init(ReleaseConfig cfg) throws IOException {
+    this.cfg = cfg;
     provider = new IdProvider(projectKey, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -66,6 +66,7 @@ public class IdProviderIT {
 
   @Test
   public void run() throws Exception {
+    init(new ReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
@@ -98,6 +99,38 @@ public class IdProviderIT {
       assertEquals("B2", idm.getUsage(projectKey, "14"));
       // baileyi -> baileii
       assertEquals("F", idm.getUsage(projectKey, "15"));
+    }
+  }
+
+  @Test
+  public void ignoreLastRelease() throws Exception {
+    var cfg = new ReleaseConfig();
+    cfg.ignoredReleases = Map.of(projectKey, List.of(13));
+    cfg.additionalReleases = Map.of(projectKey, List.of(11));
+    init(cfg);
+
+    provider.run();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      IdMapMapper idm = session.getMapper(IdMapMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      NameMatchMapper nmm = session.getMapper(NameMatchMapper.class);
+      // report
+      AtomicInteger maxID = new AtomicInteger();
+      num.processDataset(projectKey, null, null).forEach(nu -> {
+        System.out.print(nu);
+        var ni = nmm.get(nu).getName();
+        var id = idm.getUsage(projectKey, nu.getId());
+        System.out.println("  -> " + id + " nidx:" + ni);
+        int val = IdConverter.LATIN29.decode(id);
+        maxID.set(Math.max(val, maxID.get()));
+      });
+      // largest id issued is:
+      assertEquals("35", IdConverter.LATIN29.encode(maxID.get()));
+
+      // assert
+      assertEquals(25, idm.countUsage(projectKey));
+      assertEquals("M", idm.getUsage(projectKey, "21"));
+      assertEquals("D", idm.getUsage(projectKey, "13"));
     }
   }
 
