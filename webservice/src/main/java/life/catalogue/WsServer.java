@@ -279,10 +279,14 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img);
 
     // name index
-    ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
-    // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
-    managedService.manage(Component.NamesIndex, ni);
-    env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
+    if (cfg.namesIndexFile != null) {
+      ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
+      // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
+      managedService.manage(Component.NamesIndex, ni);
+      env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
+    } else {
+      ni = NameIndexFactory.passThru();
+    }
 
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
     final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
