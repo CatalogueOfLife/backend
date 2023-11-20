@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobConfig;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -20,17 +21,18 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.eventbus.EventBus;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class DatasetDaoTest extends DaoTestBase {
 
+  final ImporterConfig iCfg = new ImporterConfig();
   DatasetDao dao;
 
   @Before
@@ -39,7 +41,7 @@ public class DatasetDaoTest extends DaoTestBase {
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(factory(),
-      new NormalizerConfig(), new ReleaseConfig(),
+      new NormalizerConfig(), new ReleaseConfig(), iCfg,
       null,
       ImageService.passThru(),
       diDao, exDao,
@@ -74,6 +76,33 @@ public class DatasetDaoTest extends DaoTestBase {
     var d2 = dao.get(d1.getKey());
     //printDiff(u1, u2);
     assertEquals(d1, d2);
+  }
+
+  @Test
+  public void publisherAlias() throws Exception {
+    final UUID publisher = UUID.randomUUID();
+    iCfg.publisherAlias.put(publisher, "plazi");
+    Dataset d = DatasetMapperTest.create();
+    d.setGbifPublisherKey(publisher);
+    dao.create(d, Users.TESTER);
+    commit();
+    assertEquals("plazi1000", d.getAlias());
+
+    // keep existing alias
+    d = DatasetMapperTest.create();
+    d.setGbifPublisherKey(publisher);
+    d.setAlias("myPersonalAli");
+    dao.create(d, Users.TESTER);
+    commit();
+    assertEquals("myPersonalAli", d.getAlias());
+
+    // keep null if unkown publisher
+    d = DatasetMapperTest.create();
+    d.setGbifPublisherKey(UUID.randomUUID());
+    d.setAlias(null);
+    dao.create(d, Users.TESTER);
+    commit();
+    assertNull(d.getAlias());
   }
 
   @Test

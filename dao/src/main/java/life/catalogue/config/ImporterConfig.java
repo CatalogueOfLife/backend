@@ -5,6 +5,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
  *
  */
@@ -49,6 +53,11 @@ public class ImporterConfig {
   @Valid
   @NotNull
   public ContinuousImportConfig continuous = new ContinuousImportConfig();
+
+  /**
+   * Map of GBIF publisher keys to short alias prefixed to be used in combination with the dataset key when a dataset is created.
+   */
+  public Map<UUID, String> publisherAlias = new HashMap<>();
 
   /**
    * Makes sure all configured directories do actually exist and create them if missing

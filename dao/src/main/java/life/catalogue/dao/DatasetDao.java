@@ -14,6 +14,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -74,6 +76,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
+  private final ImporterConfig iCfg;
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
@@ -86,7 +89,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
   public DatasetDao(SqlSessionFactory factory,
-                    NormalizerConfig nCfg, ReleaseConfig rCfg,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg, ImporterConfig iCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -98,6 +101,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.nCfg = nCfg;
     this.rCfg = rCfg;
+    this.iCfg = iCfg;
+    if (iCfg.publisherAlias == null) iCfg.publisherAlias = new HashMap<>(); // avoids many null checks below
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -113,7 +118,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   public Dataset get(UUID gbifKey) {
@@ -518,6 +523,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         cm.create(obj.getKey(), c);
       }
     }
+    // update alias for publisher based datasets - we need the generated key for it
+    if (obj.getAlias() == null && obj.getGbifPublisherKey() != null && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
+      obj.setAlias(iCfg.publisherAlias.get(obj.getGbifPublisherKey()) + obj.getKey());
+      mapper.update(obj);
+    }
+
     // sequences for mutable projects - releases and external datasets do not need persistent sequences. Imports generate them on the fly temporarily
     if (obj.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(DatasetPartitionMapper.class).createSequences(obj.getKey());
