@@ -34,10 +34,10 @@ public class InitDbUtils {
 
   public static void insertDatasets(PgConnection pgc, InputStream csv) throws SQLException, IOException {
     LOG.info("Insert known datasets");
-    PgCopyUtils.copy(pgc, "dataset", csv, ImmutableMap.<String, Object>builder()
+    PgCopyUtils.copyCSV(pgc, "dataset", csv, ImmutableMap.<String, Object>builder()
       .put("created_by", Users.DB_INIT)
       .put("modified_by", Users.DB_INIT)
-      .build(), null, "");
+      .build(), null);
     try (Statement st = pgc.createStatement()) {
       st.execute("SELECT setval('dataset_key_seq', (SELECT max(key) FROM dataset))");
       pgc.commit();

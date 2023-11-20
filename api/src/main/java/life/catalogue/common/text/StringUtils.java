@@ -313,9 +313,11 @@ public class StringUtils {
   }
 
   /**
-   * Escapes \t \r \n and the backslash itself using a backslash
+   * Escapes \t \r \n, the backslash itself and some more characters using a backslash
+   * as compatible with Postgress COPY command.
+   * See https://www.postgresql.org/docs/16/sql-copy.html#id-1.9.3.55.9.2
    */
-  public static String escapeBackslash(String text, boolean trim) {
+  public static String escapePgCopy(String text, boolean trim) {
     if(text == null || (trim && text.isEmpty())) {
       return null;
     }
@@ -340,9 +342,12 @@ public class StringUtils {
       }
       switch(ch) {
         case '\\':  { sb.append("\\\\"); break; }
+        case '\b':  { sb.append("\\b"); break; }
+        case '\f':  { sb.append("\\f"); break; }
+        case '\n':  { sb.append("\\n"); break; }
         case '\r':  { sb.append("\\r"); break; }
         case '\t':  { sb.append("\\t"); break; }
-        case '\n':  { sb.append("\\n"); break; }
+        case '\u000b':  { sb.append("\\v"); break; }
         default: {
           sb.append(ch);
           break;

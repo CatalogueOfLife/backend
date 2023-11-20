@@ -467,7 +467,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         defaults = new HashMap<>(defaults);
         defaults.putAll(testData.defaultValues.get(table));
       }
-      PgCopyUtils.copy(pgc, table, resource, defaults, funcs);
+      PgCopyUtils.copyCSV(pgc, table, resource, defaults, funcs);
       return true;
     }
     return false;

@@ -4,10 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-import com.univocity.parsers.csv.CsvWriter;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 /**
  * Basic TAB delimited file writer that escapes tab and newline characters using a backslash.
@@ -70,7 +67,7 @@ public class TabWriter implements AutoCloseable, RowWriter {
     for (int i = 0; i < columns.length; i++) {
       if (columns[i] != null) {
         empty = false;
-        columns[i] = life.catalogue.common.text.StringUtils.escapeBackslash(columns[i], true);
+        columns[i] = life.catalogue.common.text.StringUtils.escapePgCopy(columns[i], true);
       }
     }
     if (empty) {

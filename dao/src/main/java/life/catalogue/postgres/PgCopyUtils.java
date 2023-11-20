@@ -31,51 +31,44 @@ public class PgCopyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgCopyUtils.class);
   private static final Joiner HEADER_JOINER = Joiner.on(",");
   private static final String[] EMPTY_ARRAY = new String[0];
-  private final static String CSV = "NULL '' ENCODING 'UTF8'";
-  private final static String TSV = "NULL '' DELIMITER E'\t' QUOTE E'\f' ENCODING 'UTF8'";
+  private final static String CSV = "CSV %s NULL '' ENCODING 'UTF8'";
+  private final static String TSV = "NULL '' DELIMITER E'\t' ENCODING 'UTF8'";
 
 
-  public static long copy(PgConnection con, String table, String resourceName) throws IOException, SQLException {
-    return copy(con, table, resourceName, Collections.emptyMap(), null, CSV);
+  public static long copyCSV(PgConnection con, String table, String resourceName) throws IOException, SQLException {
+    return copyCSV(con, table, resourceName, Collections.emptyMap(), null);
   }
   
-  public static long copy(PgConnection con, String table, String resourceName, Map<String, Object> defaults) throws IOException, SQLException {
-    return copy(con, table, resourceName, defaults, null, CSV);
+  public static long copyCSV(PgConnection con, String table, String resourceName, Map<String, Object> defaults) throws IOException, SQLException {
+    return copyCSV(con, table, resourceName, defaults, null);
   }
   
-  public static long copy(PgConnection con, String table, String resourceName,
-                          Map<String, Object> defaults,
-                          Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    return copy(con, table, resourceName, defaults, funcs, CSV);
-  }
-
-  public static long copy(PgConnection con, String table, String resourceName,
-                          Map<String, Object> defaults,
-                          Map<String, Function<String[], String>> funcs,
-                          String with) throws IOException, SQLException {
-    return copy(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs, with);
+  public static long copyCSV(PgConnection con, String table, String resourceName,
+                             Map<String, Object> defaults,
+                             Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+    return copyCSV(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
   }
 
   public static long copyTSV(PgConnection con, String table, File csv) throws IOException, SQLException {
     HeadlessStreamTSV in = new HeadlessStreamTSV(new FileInputStream(csv));
-    return copy(con, table, in, TSV);
+    return copyCSV(con, table, in, TSV);
   }
 
   /**
    * @param csv input stream of CSV file with header rows being the column names in the postgres table
    */
-  public static long copy(PgConnection con, String table, InputStream csv,
-                          Map<String, Object> defaults,
-                          Map<String, Function<String[], String>> funcs,
-                          String with) throws IOException, SQLException {
+  public static long copyCSV(PgConnection con, String table, InputStream csv,
+                             Map<String, Object> defaults,
+                             Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
     HeadlessStreamCSV in = new HeadlessStreamCSV(csv, defaults, funcs);
-    return copy(con, table, in, with);
+
+    return copyCSV(con, table, in, String.format(CSV, ""));
   }
 
   /**
    * @param in input stream of CSV/TSV file with header rows removed and being the column names in the postgres table
    */
-  private static <T extends InputStream & HeaderStream> long copy(PgConnection con, String table, T in, String with) throws IOException, SQLException {
+  private static <T extends InputStream & HeaderStream> long copyCSV(PgConnection con, String table, T in, String with) throws IOException, SQLException {
     con.setAutoCommit(false);
     CopyManager copy = ((PGConnection)con).getCopyAPI();
     con.commit();
@@ -83,7 +76,7 @@ public class PgCopyUtils {
     LOG.info("Copy to table {}", table);
     // use quotes to avoid problems with reserved words, e.g. group
     String header = HEADER_JOINER.join(in.getHeader().stream().map(h -> "\"" + h + "\"").collect(Collectors.toList()));
-    long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH CSV "+with, in);
+    long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH "+with, in);
 
     con.commit();
     return cnt;
@@ -263,7 +256,7 @@ public class PgCopyUtils {
    * @return total number of records dumped
    */
   public static long dumpCSV(PgConnection con, String sql, File out) throws IOException, SQLException {
-    return dump(con, sql, out, "CSV HEADER " + CSV);
+    return dump(con, sql, out, String.format(CSV, "HEADER") );
   }
 
   /**
@@ -273,7 +266,7 @@ public class PgCopyUtils {
    * @return total number of records dumped
    */
   public static long dumpCSVNoHeader(PgConnection con, String sql, File out) throws IOException, SQLException {
-    return dump(con, sql, out, "CSV " + CSV);
+    return dump(con, sql, out, String.format(CSV, ""));
   }
 
   /**
@@ -283,7 +276,7 @@ public class PgCopyUtils {
    * @return total number of records dumped
    */
   public static long dumpTSV(PgConnection con, String sql, File out) throws IOException, SQLException {
-    return dump(con, sql, out, "CSV HEADER " + TSV);
+    return dump(con, sql, out, "HEADER " + TSV);
   }
   /**
    * Uses pg copy to write a select statement to a TSV file without headers encoded in UTF8 using an empty string for NULL values
@@ -292,7 +285,7 @@ public class PgCopyUtils {
    * @return total number of records dumped
    */
   public static long dumpTSVNoHeader(PgConnection con, String sql, File out) throws IOException, SQLException {
-    return dump(con, sql, out, "CSV " + TSV);
+    return dump(con, sql, out, TSV);
   }
   /**
    * Uses pg copy to write a select statement to a UTF8 text file.
