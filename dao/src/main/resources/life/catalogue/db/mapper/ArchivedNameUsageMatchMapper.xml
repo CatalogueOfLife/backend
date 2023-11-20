@@ -22,7 +22,7 @@
     WHERE dataset_key = #{datasetKey}
   </select>
 
-  <delete id="deleteOrphaned" parameterType="map">
+  <delete id="deleteOrphans" parameterType="map">
     DELETE FROM name_usage_archive_match nm
     WHERE dataset_key=#{datasetKey} AND NOT EXISTS (
       SELECT NULL FROM name_usage_archive n

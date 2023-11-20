@@ -31,8 +31,8 @@ public class IdProviderIT {
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
-  //public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
-  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
+  public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
 
   IdProvider provider;
   NameMatchingRule matchingRule = new NameMatchingRule();
