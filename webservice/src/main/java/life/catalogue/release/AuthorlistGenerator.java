@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -27,10 +29,14 @@ public class AuthorlistGenerator {
   /**
    * Appends a list of unique and sorted source authors to the creator list of a given dataset.
    * @param d dataset to append authors to and to take contributors from
-   * @param sources the sources to take creators & editors from
+   * @param sourceSupplier supplier of the sources to take creators & editors from
    * @param ds settings to consider for appending
    */
-  public void appendSourceAuthors(Dataset d, List<Dataset> sources, DatasetSettings ds) {
+  public void appendSourceAuthors(Dataset d, DatasetSettings ds, Supplier<List<Dataset>> sourceSupplier) {
+    if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
+      return;
+    }
+    var sources = sourceSupplier.get();
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {

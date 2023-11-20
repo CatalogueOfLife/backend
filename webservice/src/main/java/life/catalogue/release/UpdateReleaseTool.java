@@ -238,7 +238,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     // reset to project creator and then append sources & contributors
     release.setCreator(List.copyOf(project.getCreator()));
     release.setContributor(List.copyOf(project.getContributor()));
-    authGen.appendSourceAuthors(release, srcDao.list(release.getKey(), null, false), settings);
+    authGen.appendSourceAuthors(release, settings, () -> srcDao.list(release.getKey(), null, false));
     System.out.println("\n\nUPDATED RELEASE:");
     showAgents(release.getCreator());
     // store changes to release metadata

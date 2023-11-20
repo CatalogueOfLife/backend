@@ -110,7 +110,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setAlias(alias);
 
     // append authors for release?
-    authGen.appendSourceAuthors(d, srcDao.list(datasetKey, null, false), ds);
+    authGen.appendSourceAuthors(d, ds, () -> srcDao.list(datasetKey, null, false));
 
     // all releases are private candidate releases first
     d.setPrivat(true);

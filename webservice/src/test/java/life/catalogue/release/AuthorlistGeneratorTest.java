@@ -41,14 +41,14 @@ public class AuthorlistGeneratorTest {
     var ds = new DatasetSettings();
     ds.enable(Setting.RELEASE_ADD_SOURCE_AUTHORS);
     ds.enable(Setting.RELEASE_ADD_CONTRIBUTORS);
-    gen.appendSourceAuthors(d, sources, ds);
+    gen.appendSourceAuthors(d, ds, () -> sources);
     assertEquals(7, d.getCreator().size());
     assertEquals(markus, d.getCreator().get(0));
     assertEquals(0, d.getContributor().size());
 
     d = new Dataset(proj);
     ds.disable(Setting.RELEASE_ADD_CONTRIBUTORS);
-    gen.appendSourceAuthors(d, sources, ds);
+    gen.appendSourceAuthors(d, ds, () -> sources);
     assertEquals(6, d.getCreator().size());
     assertEquals(proj.getContributor().size(), d.getContributor().size());
 
@@ -57,7 +57,7 @@ public class AuthorlistGeneratorTest {
     sources.add(s3);
 
     d = new Dataset(proj);
-    gen.appendSourceAuthors(d, sources, ds);
+    gen.appendSourceAuthors(d, ds, () -> sources);
     assertEquals(6, d.getCreator().size());
 
     assertEquals("Drummer; Vegan", d.getCreator().get(0).getNote());
