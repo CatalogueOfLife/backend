@@ -221,7 +221,7 @@ public class XRelease extends ProjectRelease {
     flagLoops();
     // update sector metrics. The entire releases metrics are done later by the superclass
     buildSectorMetrics();
-    // finally also call the shared part
+    // finally also call the shared part which e.g. archives metadata
     super.finalWork();
   }
 

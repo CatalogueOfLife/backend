@@ -14,6 +14,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-11-20 publisher aliases
+```sql
+UPDATE dataset SET alias='Plazi' || key WHERE deleted is null and alias is null and gbif_publisher_key=plaziGbifKey();
+UPDATE dataset SET alias='ZooKey' || key WHERE deleted is null and alias is null and gbif_publisher_key='bb922300-7ddb-11de-a300-90ac77aa923f';
+UPDATE dataset SET alias='BDJ' || key WHERE deleted is null and alias is null and gbif_publisher_key='750a8724-fa66-4c27-b645-bd58ac5ee010';
+UPDATE dataset SET alias='ISSG' || key WHERE deleted is null and alias is null and gbif_publisher_key='cdef28b1-db4e-4c58-aa71-3c5238c2d0b5';
+UPDATE dataset SET alias='SNSB' || key WHERE deleted is null and alias is null and gbif_publisher_key='0674aea0-a7e1-11d8-9534-b8a03c50a862';
+```
 
 ### 2023-11-08 invalid DOI issue
 ```sql

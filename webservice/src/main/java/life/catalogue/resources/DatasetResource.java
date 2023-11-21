@@ -50,12 +50,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final JobExecutor exec;
   private final ProjectCopyFactory jobFactory;
 
-  private final AuthorlistGenerator authGen = new AuthorlistGenerator();
+  private final AuthorlistGenerator authGen;
 
   public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
+    this.authGen = new AuthorlistGenerator(sourceDao);
     this.assembly = assembly;
     this.jobFactory = jobFactory;
     this.exec = exec;
@@ -155,10 +156,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   public Dataset preview(@PathParam("key") Integer key) {
     Dataset d = super.get(key);
     if (d.getOrigin() != DatasetOrigin.PROJECT) {
-      throw new IllegalArgumentException("Release metadata preview required a managed project");
+      throw new IllegalArgumentException("Release metadata preview requires a project");
     }
 
-    ProjectRelease.modifyDataset(key, d, dao.getSettings(key), sourceDao, authGen);
+    var ds = dao.getSettings(key);
+    ProjectRelease.modifyDataset(key, d, ds, sourceDao);
     return d;
   }
 

@@ -53,6 +53,11 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     mapper().listReleaseSources(Datasets.COL);
   }
 
+  @Test
+  public void listReleaseSourcesAuthorsOnly() throws Exception {
+    mapper().listReleaseSourcesAuthorsOnly(Datasets.COL);
+  }
+
   void persistDatasetCitations(Dataset d){
     var cm = mapper(CitationMapper.class);
     for (var c : d.getSource()) {

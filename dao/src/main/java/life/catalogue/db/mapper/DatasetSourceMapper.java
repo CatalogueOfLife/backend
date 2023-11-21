@@ -44,6 +44,8 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    */
   List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey);
 
+  List<Dataset> listReleaseSourcesAuthorsOnly(@Param("datasetKey") int datasetKey);
+
   /**
    * Lists all project or release sources retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.

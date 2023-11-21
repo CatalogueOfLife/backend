@@ -58,6 +58,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
+  private Integer prevReleaseKey;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -94,10 +95,10 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
-    modifyDataset(datasetKey, d, ds, srcDao, new AuthorlistGenerator(validator));
+    modifyDataset(datasetKey, d, ds, srcDao);
   }
 
-  public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao, AuthorlistGenerator authGen) {
+  public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao) {
     d.setOrigin(DatasetOrigin.RELEASE);
 
     final FuzzyDate today = FuzzyDate.now();
@@ -108,9 +109,6 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
-
-    // append authors for release?
-    authGen.appendSourceAuthors(d, ds, () -> srcDao.list(datasetKey, null, false));
 
     // all releases are private candidate releases first
     d.setPrivat(true);
@@ -129,47 +127,12 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void prepWork() throws Exception {
     LocalDateTime start = LocalDateTime.now();
+
     if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
       removeOrphans(datasetKey);
     }
 
-    final Integer prevReleaseKey = createReleaseDOI();
-
-    try (SqlSession session = factory.openSession(true)) {
-      // treat source. Archive dataset metadata & logos & assign a potentially new DOI
-      updateState(ImportState.ARCHIVING);
-      DatasetSourceDao dao = new DatasetSourceDao(factory);
-
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      var cm = session.getMapper(CitationMapper.class);
-      final AtomicInteger counter = new AtomicInteger(0);
-      dao.list(datasetKey, newDataset, true).forEach(d -> {
-        if (cfg.doi != null) {
-          // can we reuse a previous DOI for the source?
-          DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
-          if (srcDOI == null) {
-            srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
-            d.setDoi(srcDOI);
-            LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
-            var srcAttr = doiUpdater.buildSourceMetadata(d, newDataset, true);
-            doiService.createSilently(srcAttr);
-          }
-          d.setDoi(srcDOI);
-        }
-
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), attempt, newDatasetKey);
-        psm.create(newDatasetKey, d);
-        cm.createRelease(d.getKey(), newDatasetKey, attempt);
-        // archive logos
-        try {
-          imageService.datasetLogoArchived(newDatasetKey, d.getKey());
-        } catch (IOException e) {
-          LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
-        }
-        counter.incrementAndGet();
-      });
-      LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
-    }
+    prevReleaseKey = createReleaseDOI();
     DateUtils.logDuration(LOG, "Preparing release", start);
 
     // map ids
@@ -253,7 +216,53 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void finalWork() throws Exception {
     checkIfCancelled();
+    updateState(ImportState.ARCHIVING);
+    LocalDateTime start = LocalDateTime.now();
+    try (SqlSession session = factory.openSession(true)) {
+      // treat source. Archive dataset metadata & logos & assign a potentially new DOI
+
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      var cm = session.getMapper(CitationMapper.class);
+      final AtomicInteger counter = new AtomicInteger(0);
+      for (var d : srcDao.list(datasetKey, newDataset, true)) {
+        if (cfg.doi != null) {
+          // can we reuse a previous DOI for the source?
+          DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
+          if (srcDOI == null) {
+            srcDOI = cfg.doi.datasetSourceDOI(newDatasetKey, d.getKey());
+            d.setDoi(srcDOI);
+            LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
+            var srcAttr = doiUpdater.buildSourceMetadata(d, newDataset, true);
+            doiService.createSilently(srcAttr);
+          }
+          d.setDoi(srcDOI);
+        }
+
+        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), attempt, newDatasetKey);
+        psm.create(newDatasetKey, d);
+        cm.createRelease(d.getKey(), newDatasetKey, attempt);
+        // archive logos
+        try {
+          imageService.datasetLogoArchived(newDatasetKey, d.getKey());
+        } catch (IOException e) {
+          LOG.warn("Failed to archive logo for source dataset {} of release {}", d.getKey(), newDatasetKey, e);
+        }
+        counter.incrementAndGet();
+        checkIfCancelled();
+      }
+      LOG.info("Archived metadata for {} source datasets of release {}", counter.get(), newDatasetKey);
+    }
+    DateUtils.logDuration(LOG, "Archiving sources", start);
+
+    // aggregate authors for release from sources
+    checkIfCancelled();
+    var authGen = new AuthorlistGenerator(validator, srcDao);
+    if (authGen.appendSourceAuthors(dataset, settings)) {
+      dDao.update(dataset, user);
+    }
+
     // update both the projects and release datasets import attempt pointer
+    checkIfCancelled();
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateLastImport(datasetKey, attempt);

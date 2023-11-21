@@ -72,6 +72,13 @@
     WHERE d.dataset_key = #{datasetKey}
   </select>
 
+  <select id="listReleaseSourcesAuthorsOnly" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="500" resultSetType="FORWARD_ONLY">
+    SELECT d.dataset_key, d.key, d.source_key, d.doi, d.attempt, d.origin, d.type, d.title, d.alias, d.issued, d.version,
+      d.contact, d.creator, d.editor, d.publisher, d.contributor, d.license
+    FROM dataset_source d
+    WHERE d.dataset_key = #{datasetKey}
+  </select>
+
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">
     WITH src AS (
       SELECT max(s.dataset_attempt) AS attempt

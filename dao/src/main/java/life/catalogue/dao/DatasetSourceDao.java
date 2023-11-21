@@ -93,6 +93,18 @@ public class DatasetSourceDao {
   }
 
   /**
+   * List the source datasets for a release, but only map alias,title,origin,type and authors (creator, editor, contributor, publisher).
+   * @param releaseKey dataset key of the release
+   */
+  public List<Dataset> listReleaseAuthors(int releaseKey){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(releaseKey).requireOrigin(RELEASE, XRELEASE);
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      return psm.listReleaseSourcesAuthorsOnly(releaseKey);
+    }
+  }
+
+  /**
    * List the source datasets for a project or release.
    * If the key points to a release the patched and archived source metadata is returned.
    * If it points to a live project, the metadata is taken from the dataset archive at the time of the last successful sync attempt

@@ -4,6 +4,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.dao.DatasetSourceDao;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,26 +18,28 @@ import javax.validation.Validator;
 
 public class AuthorlistGenerator {
   private final Validator validator;
-
-  public AuthorlistGenerator() {
-    this.validator = Validation.buildDefaultValidatorFactory().getValidator();
+  private final DatasetSourceDao dao;
+  public AuthorlistGenerator(DatasetSourceDao dao) {
+    this(Validation.buildDefaultValidatorFactory().getValidator(), dao);
   }
 
-  public AuthorlistGenerator(Validator validator) {
+  public AuthorlistGenerator(Validator validator, DatasetSourceDao dao) {
     this.validator = validator;
+    this.dao = dao;
   }
 
   /**
-   * Appends a list of unique and sorted source authors to the creator list of a given dataset.
+   * Appends a list of unique and sorted source authors to the creator list of a given release dataset.
+   * Sources are taken from the project.
    * @param d dataset to append authors to and to take contributors from
-   * @param sourceSupplier supplier of the sources to take creators & editors from
    * @param ds settings to consider for appending
+   * @return true if source authors were added
    */
-  public void appendSourceAuthors(Dataset d, DatasetSettings ds, Supplier<List<Dataset>> sourceSupplier) {
+  public boolean appendSourceAuthors(Dataset d, DatasetSettings ds) {
     if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
-      return;
+      return false;
     }
-    var sources = sourceSupplier.get();
+    var sources = dao.listReleaseAuthors(d.getKey());
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
@@ -93,7 +96,9 @@ public class AuthorlistGenerator {
         uniq.addAll(0, d.getCreator());
       }
       d.setCreator(uniq);
+      return true;
     }
+    return false;
   }
 
   private static List<Agent> addSourceNote(Dataset d, List<Agent> agents) {
