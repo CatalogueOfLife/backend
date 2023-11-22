@@ -1,6 +1,5 @@
 package life.catalogue.postgres;
 
-import de.bytefish.pgbulkinsert.pgsql.PgBinaryWriter;
 import de.bytefish.pgbulkinsert.pgsql.constants.DataType;
 import de.bytefish.pgbulkinsert.pgsql.constants.ObjectIdentifier;
 import de.bytefish.pgbulkinsert.pgsql.handlers.BaseValueHandler;
@@ -15,16 +14,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-public class PgBinaryXWriter extends PgBinaryWriter {
+public class PgBinaryWriter extends de.bytefish.pgbulkinsert.pgsql.PgBinaryWriter {
   final ValueHandlerProvider provider = new ValueHandlerProvider();
   ;
   final EnumValueHandler enumValueHandler = new EnumValueHandler();
 
-  public PgBinaryXWriter(OutputStream out) {
+  public PgBinaryWriter(OutputStream out) {
     super(out);
   }
 
-  public PgBinaryXWriter(OutputStream out, int bufferSize) {
+  public PgBinaryWriter(OutputStream out, int bufferSize) {
     super(out, bufferSize);
   }
 

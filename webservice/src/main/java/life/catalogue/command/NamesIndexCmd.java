@@ -14,7 +14,7 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.postgres.PgBinaryXWriter;
+import life.catalogue.postgres.PgBinaryWriter;
 import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.*;
@@ -176,12 +176,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       }
       try (Connection c = dataSource.getConnection()) {
         var pgc = c.unwrap(PgConnection.class);
-        total = PgCopyUtils.dumpTSVNoHeader(pgc, "SELECT " + NAME_COLS + " FROM name" + limit, out);
+        total = PgCopyUtils.dumpBinary(pgc, "SELECT " + NAME_COLS + " FROM name ORDER BY scientific_name, rank" + limit, out);
       }
     }
-
-    LOG.info("Sorting file with {} records: {}", total, out);
-    UnixCmdUtils.sortC(out, 0);
 
     final long size = (total / threads) +1;
     // calc exact number of files. With small numbers we can have the case that the last part is missing
@@ -252,7 +249,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     public void matchAll() {
       try (TabReader reader = TabReader.tab(in, StandardCharsets.UTF_8, 0);
-           var writer = new PgBinaryXWriter(new FileOutputStream(out))
+           var writer = new PgBinaryWriter(new FileOutputStream(out))
       ) {
         String lastLabel=null;
         Rank lastRank=null;
