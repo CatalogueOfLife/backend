@@ -928,9 +928,11 @@ CREATE TABLE dataset_export (
   -- request
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   format DATAFORMAT NOT NULL,
+  extended BOOLEAN NOT NULL,
   excel BOOLEAN NOT NULL,
   root SIMPLE_NAME,
   synonyms BOOLEAN NOT NULL,
+  bare_names BOOLEAN NOT NULL,
   min_rank RANK,
   created_by INTEGER NOT NULL REFERENCES "user",
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,

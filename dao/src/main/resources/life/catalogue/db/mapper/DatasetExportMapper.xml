@@ -8,9 +8,11 @@
     de.key,
     de.dataset_key,
     de.format,
+    de.extended,
     de.excel,
     de.root,
     de.synonyms,
+    de.bare_names,
     de.min_rank,
     de.created_by,
     de.modified_by,
@@ -35,9 +37,11 @@
     key,
     dataset_key,
     format,
+    extended,
     excel,
     root,
     synonyms,
+    bare_names,
     min_rank,
     created_by,
     modified_by,
@@ -60,9 +64,11 @@
     #{key},
     #{request.datasetKey},
     #{request.format}::DATAFORMAT,
+    #{request.extended},
     #{request.excel},
     #{request.root, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
     #{request.synonyms},
+    #{request.bareNames},
     #{request.minRank}::RANK,
     #{createdBy},
     #{modifiedBy},
@@ -144,8 +150,10 @@
       <if test="req.format != null">AND de.format = #{req.format}::DATAFORMAT</if>
       AND <if test="req.taxonID == null">de.root IS NULL</if><if test="req.taxonID != null">(de.root).id = #{req.taxonID}</if>
       AND de.min_rank <if test="req.minRank == null">IS NULL</if><if test="req.minRank != null">= #{req.minRank}::RANK</if>
-      <if test="req.excel != null">AND de.excel = #{req.excel}</if>
       <if test="req.synonyms != null">AND de.synonyms = #{req.synonyms}</if>
+      <if test="req.bareNames != null">AND de.bare_names = #{req.bareNames}</if>
+      <if test="req.excel != null">AND de.excel = #{req.excel}</if>
+      <if test="req.extended != null">AND de.extended = #{req.extended}</if>
     </where>
   </sql>
 

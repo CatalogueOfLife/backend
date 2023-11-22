@@ -30,11 +30,17 @@ public class ExportSearchRequest {
   @QueryParam("minRank")
   private Rank minRank;
 
+  @QueryParam("synonyms")
+  private Boolean synonyms;
+
+  @QueryParam("bareNames")
+  private Boolean bareNames;
+
   @QueryParam("excel")
   private Boolean excel;
 
-  @QueryParam("synonyms")
-  private Boolean synonyms;
+  @QueryParam("extended")
+  private Boolean extended;
 
   @QueryParam("synonyms")
   private Boolean extinct;
@@ -47,6 +53,7 @@ public class ExportSearchRequest {
     ExportSearchRequest req = new ExportSearchRequest();
     req.setDatasetKey(datasetKey);
     req.setSynonyms(true);
+
     req.setExtinct(null);
     req.setExcel(false);
     req.setMinRank(null);
@@ -68,6 +75,8 @@ public class ExportSearchRequest {
     }
     minRank = req.getMinRank();
     excel = req.isExcel();
+    bareNames = req.isBareNames();
+    extended = req.isExtended();
     synonyms = req.isSynonyms();
     extinct = req.getExtinct();
   }
@@ -124,6 +133,22 @@ public class ExportSearchRequest {
     this.minRank = minRank;
   }
 
+  public Boolean getBareNames() {
+    return bareNames;
+  }
+
+  public void setBareNames(Boolean bareNames) {
+    this.bareNames = bareNames;
+  }
+
+  public Boolean getExtended() {
+    return extended;
+  }
+
+  public void setExtended(Boolean extended) {
+    this.extended = extended;
+  }
+
   public Boolean getExcel() {
     return excel;
   }
@@ -151,21 +176,13 @@ public class ExportSearchRequest {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof ExportSearchRequest)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     ExportSearchRequest that = (ExportSearchRequest) o;
-    return Objects.equals(datasetKey, that.datasetKey)
-           && Objects.equals(createdBy, that.createdBy)
-           && Objects.equals(status, that.status)
-           && format == that.format
-           && Objects.equals(taxonID, that.taxonID)
-           && minRank == that.minRank
-           && Objects.equals(excel, that.excel)
-           && Objects.equals(synonyms, that.synonyms)
-           && Objects.equals(extinct, that.extinct);
+    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(createdBy, that.createdBy) && Objects.equals(status, that.status) && format == that.format && Objects.equals(taxonID, that.taxonID) && minRank == that.minRank && Objects.equals(synonyms, that.synonyms) && Objects.equals(bareNames, that.bareNames) && Objects.equals(excel, that.excel) && Objects.equals(extended, that.extended) && Objects.equals(extinct, that.extinct);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, createdBy, status, format, taxonID, minRank, excel, synonyms, extinct);
+    return Objects.hash(datasetKey, createdBy, status, format, taxonID, minRank, synonyms, bareNames, excel, extended, extinct);
   }
 }

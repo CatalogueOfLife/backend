@@ -14,6 +14,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-11-22 missing export filter props
+```sql
+ALTER TABLE dataset_export ADD COLUMN bare_names BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE dataset_export ADD COLUMN extended BOOLEAN NOT NULL DEFAULT FALSE;
+-- we put the simple feature live on that day
+UPDATE dataset_export SET extended=TRUE WHERE created < '2023-11-07';  
+```
+
 ### 2023-11-20 publisher aliases
 ```sql
 UPDATE dataset SET alias='PLZ' || key WHERE deleted is null and (alias is null OR alias LIKE 'Plazi%') and gbif_publisher_key=plaziGbifKey();

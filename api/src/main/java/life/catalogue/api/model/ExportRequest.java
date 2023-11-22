@@ -23,7 +23,7 @@ public class ExportRequest {
   private DataFormat format;
   private TabularFormat tabFormat = TabularFormat.TSV;
   private boolean excel;
-  private boolean simple = true;
+  private boolean extended;
   private boolean force; // this makes sure we run a new export
 
   public ExportRequest() {
@@ -66,6 +66,14 @@ public class ExportRequest {
     this.tabFormat = tabFormat;
   }
 
+  public boolean isExtended() {
+    return extended;
+  }
+
+  public void setExtended(boolean extended) {
+    this.extended = extended;
+  }
+
   public boolean isExcel() {
     return excel;
   }
@@ -85,14 +93,6 @@ public class ExportRequest {
   @JsonIgnore
   public String getTaxonID() {
     return root == null ? null : root.getId();
-  }
-
-  public boolean isSimple() {
-    return simple;
-  }
-
-  public void setSimple(boolean simple) {
-    this.simple = simple;
   }
 
   public boolean isSynonyms() {
@@ -148,7 +148,7 @@ public class ExportRequest {
     if (!(o instanceof ExportRequest)) return false;
     ExportRequest that = (ExportRequest) o;
     return excel == that.excel
-           && simple == that.simple
+           && extended == that.extended
            && synonyms == that.synonyms
            && bareNames == that.bareNames
            && force == that.force
@@ -163,14 +163,14 @@ public class ExportRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, sectorKey, format, tabFormat, excel, root, simple, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, sectorKey, format, tabFormat, excel, root, extended, synonyms, extinct, bareNames, minRank, force);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(format + " export of " + datasetKey);
     sb.append(" [excel=").append(excel)
-      .append(", simple=").append(simple)
+      .append(", extended=").append(extended)
       .append(", synonyms=").append(synonyms)
       .append(", extinct=").append(extinct)
       .append(", bareNames=").append(bareNames);
