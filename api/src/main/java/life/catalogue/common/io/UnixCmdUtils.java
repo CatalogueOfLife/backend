@@ -61,10 +61,6 @@ public class UnixCmdUtils {
   }
 
   public static void split(File f, long lines, int suffixLength) {
-    split(f, f.getParentFile(), lines, suffixLength);
-  }
-
-  public static void split(File f, File dir, long lines, int suffixLength) {
     try {
       String cmd = String.format("split -d -a %s -l %s %s %s", suffixLength, lines, f.getAbsolutePath(), f.getAbsolutePath());
       LOG.info("Split {} with: {}", f, cmd);

@@ -86,19 +86,23 @@
         <artifactId>text-tree</artifactId>
       </dependency>
 
-		<!-- mybatis / DB -->
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.mybatis</groupId>
-			<artifactId>mybatis</artifactId>
-		</dependency>
+      <!-- mybatis / DB -->
+      <dependency>
+          <groupId>org.postgresql</groupId>
+          <artifactId>postgresql</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>com.zaxxer</groupId>
+          <artifactId>HikariCP</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.mybatis</groupId>
+          <artifactId>mybatis</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>de.bytefish</groupId>
+        <artifactId>pgbulkinsert</artifactId>
+      </dependency>
 
       <!-- mapdb & kryo -->
       <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->

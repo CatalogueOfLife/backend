@@ -1,13 +1,10 @@
 package life.catalogue.command;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.TabReader;
-import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.UnixCmdUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
@@ -17,39 +14,34 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.postgres.PgBinaryXWriter;
+import life.catalogue.postgres.PgCopyUtils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.LineNumberReader;
+import org.gbif.nameparser.api.*;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import life.catalogue.postgres.PgCopyUtils;
+import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
-
-import org.apache.poi.ss.formula.functions.T;
-
-import org.gbif.nameparser.api.*;
-
-import org.neo4j.register.Register;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
+import de.bytefish.pgbulkinsert.row.SimpleRowWriter;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
@@ -63,8 +55,15 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
   private static final String SCHEMA_POST_CONSTRAINTS = "nidx/rebuild-post-constraints.sql";
   private static final String FILENAME_NAMES = "names.tsv";
-  private static final String FILENAME_MATCHES = "matches.tsv";
+  private static final String FILENAME_MATCHES = "matches";
   private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,sector_key,dataset_key,id";
+  private static final SimpleRowWriter.Table MATCH_TABLE = new SimpleRowWriter.Table(BUILD_SCHEMA, "name_match", new String[] {
+    "dataset_key",
+      "sector_key",
+      "name_id",
+      "type",
+      "index_id"
+  });
 
   int threads = 4;
   File nidxFile;
@@ -184,13 +183,16 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Sorting file with {} records: {}", total, out);
     UnixCmdUtils.sortC(out, 0);
 
-    long size = (total / threads) +1;
-    LOG.info("Splitting {} with {} records into {} parts with {} each", out, total, threads, size);
+    final long size = (total / threads) +1;
+    // calc exact number of files. With small numbers we can have the case that the last part is missing
+    // e.g. total=6, threads=4, 3 files only as size cannot be 1.5 but is 2 instead
+    final int parts = size * (threads-1) >= total ? threads-1 : threads;
+    LOG.info("Splitting {} with {} records into {} parts with {} each", out, total, parts, size);
     UnixCmdUtils.split(out, size, 3);
 
     LOG.info("Matching all names from {}", out);
-    ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher"));
-    for (int p = 0; p < threads; p++) {
+    ExecutorService exec = Executors.newFixedThreadPool(parts, new NamedThreadFactory("matcher"));
+    for (int p = 0; p < parts; p++) {
       final int part = p;
       CompletableFuture.supplyAsync(() -> matchFile(part, ni), exec)
                        .exceptionally(ex -> {
@@ -207,10 +209,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Inserting matches into postgres");
     try (Connection c = dataSource.getConnection()) {
       var pgc = c.unwrap(PgConnection.class);
-      for (int p = 1; p < threads; p++) {
+      for (int p = 1; p < parts; p++) {
         File mf = part(FILENAME_MATCHES, p);
         LOG.info("  copy matches {}: {}", p, mf);
-        PgCopyUtils.copyTSV(pgc, BUILD_SCHEMA+".name_match", mf);
+        PgCopyUtils.copyBinary(pgc, MATCH_TABLE.getTable(), Arrays.asList(MATCH_TABLE.getColumns()), mf);
         c.commit();
       }
     }
@@ -250,13 +252,12 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     public void matchAll() {
       try (TabReader reader = TabReader.tab(in, StandardCharsets.UTF_8, 0);
-           var writer = TabWriter.fromFile(out)
+           var writer = new PgBinaryXWriter(new FileOutputStream(out))
       ) {
         String lastLabel=null;
         Rank lastRank=null;
         NameMatch lastMatch=null;
-        // header row
-        writer.write(new String[]{"dataset_key", "sector_key", "name_id", "type", "index_id"});
+        final Function<String, String> nullCharacterHandler = (val) -> val;
         for (String[] row : reader) {
           counter++;
           try {
@@ -272,8 +273,12 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
               lastLabel=n.getLabel();
               lastRank = n.getRank();
             }
-            String[] result = new String[]{str(n.getDatasetKey()), str(n.getSectorKey()), n.getId(), str(m.getType()), str(m.getNameKey())};
-            writer.write(result);
+            writer.startRow(MATCH_TABLE.getColumns().length);
+            writer.writeInt(n.getDatasetKey());
+            writer.writeInteger(n.getSectorKey());
+            writer.writeText(n.getId());
+            writer.writeEnum(m.getType());
+            writer.writeInteger(m.getNameKey());
 
             if (!m.hasMatch()) {
               nomatch++;

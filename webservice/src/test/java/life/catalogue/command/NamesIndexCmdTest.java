@@ -24,7 +24,7 @@ public class NamesIndexCmdTest {
     var n = NamesIndexCmd.buildName(new String[]{
       "scientific_name","authorship","SPECIES","uninomial","genus","infrageneric_epithet","specific_epithet","infraspecific_epithet","cultivar_epithet",
       "{Müller,Perkins E.I.}","","1999","{Geraldine}","{A.Stephano}","","sanctioning_author",
-      "SCIENTIFIC","BOTANICAL","","f","1234","idid"
+      "SCIENTIFIC","BOTANICAL","","f","1234","23","idid"
     });
     assertNotNull(n);
 
