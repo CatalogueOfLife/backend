@@ -5,6 +5,8 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import com.google.common.collect.Lists;
 
+import life.catalogue.pgcopy.PgCopyUtils;
+
 public class AuthorshipNormFunc {
   private final int startIdx;
   

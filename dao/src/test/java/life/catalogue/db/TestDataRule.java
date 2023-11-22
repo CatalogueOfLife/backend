@@ -12,8 +12,8 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.postgres.AuthorshipNormFunc;
-import life.catalogue.postgres.PgCopyUtils;
 
 import org.gbif.nameparser.api.NameType;
 
@@ -467,7 +467,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         defaults = new HashMap<>(defaults);
         defaults.putAll(testData.defaultValues.get(table));
       }
-      PgCopyUtils.copyCSV(pgc, table, resource, defaults, funcs);
+      PgCopyUtils.loadCSV(pgc, table, resource, defaults, funcs);
       return true;
     }
     return false;

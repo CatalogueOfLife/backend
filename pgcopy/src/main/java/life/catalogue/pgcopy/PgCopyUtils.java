@@ -1,14 +1,9 @@
-package life.catalogue.postgres;
-
-import life.catalogue.common.io.UTF8IoUtils;
+package life.catalogue.pgcopy;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -20,8 +15,6 @@ import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriter;
@@ -29,27 +22,26 @@ import com.univocity.parsers.csv.CsvWriterSettings;
 
 public class PgCopyUtils {
   private static final Logger LOG = LoggerFactory.getLogger(PgCopyUtils.class);
-  private static final Joiner HEADER_JOINER = Joiner.on(",");
   private static final String[] EMPTY_ARRAY = new String[0];
   private final static String CSV = "CSV %s NULL '' ENCODING 'UTF8'";
   private final static String TSV = "NULL '' DELIMITER E'\t' ENCODING 'UTF8'";
   private final static String BINARY = "BINARY ENCODING 'UTF8'";
 
-  public static long copyCSV(PgConnection con, String table, String resourceName) throws IOException, SQLException {
-    return copyCSV(con, table, resourceName, Collections.emptyMap(), null);
+  public static long loadCSV(PgConnection con, String table, String resourceName) throws IOException, SQLException {
+    return loadCSV(con, table, resourceName, Collections.emptyMap(), null);
   }
   
-  public static long copyCSV(PgConnection con, String table, String resourceName, Map<String, Object> defaults) throws IOException, SQLException {
-    return copyCSV(con, table, resourceName, defaults, null);
+  public static long loadCSV(PgConnection con, String table, String resourceName, Map<String, Object> defaults) throws IOException, SQLException {
+    return loadCSV(con, table, resourceName, defaults, null);
   }
   
-  public static long copyCSV(PgConnection con, String table, String resourceName,
+  public static long loadCSV(PgConnection con, String table, String resourceName,
                              Map<String, Object> defaults,
                              Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
-    return copyCSV(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
+    return loadCSV(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
   }
 
-  public static long copyTSV(PgConnection con, String table, File csv) throws IOException, SQLException {
+  public static long loadTSV(PgConnection con, String table, File csv) throws IOException, SQLException {
     HeadlessStreamTSV in = new HeadlessStreamTSV(new FileInputStream(csv));
     return load(con, table, in.getHeader(), in, TSV);
   }
@@ -57,7 +49,7 @@ public class PgCopyUtils {
   /**
    * @param csv input stream of CSV file with header rows being the column names in the postgres table
    */
-  public static long copyCSV(PgConnection con, String table, InputStream csv,
+  public static long loadCSV(PgConnection con, String table, InputStream csv,
                              Map<String, Object> defaults,
                              Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
     HeadlessStreamCSV in = new HeadlessStreamCSV(csv, defaults, funcs);
@@ -65,7 +57,7 @@ public class PgCopyUtils {
     return load(con, table, in.getHeader(), in, String.format(CSV, ""));
   }
 
-  public static long copyBinary(PgConnection con, String table, List<String> columns, File f) throws IOException, SQLException {
+  public static long loadBinary(PgConnection con, String table, List<String> columns, File f) throws IOException, SQLException {
     return load(con, table, columns, new FileInputStream(f), BINARY);
   }
 
@@ -79,7 +71,7 @@ public class PgCopyUtils {
 
     LOG.info("Copy to table {}", table);
     // use quotes to avoid problems with reserved words, e.g. group
-    String header = HEADER_JOINER.join(columns.stream().map(h -> "\"" + h + "\"").collect(Collectors.toList()));
+    String header = columns.stream().map(h -> "\"" + h + "\"").collect(Collectors.joining(","));
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH "+with, in);
 
     con.commit();
@@ -97,7 +89,8 @@ public class PgCopyUtils {
     if (x == null) {
       return null;
     }
-    return "{" + HEADER_JOINER.join(x) + "}";
+    String values = Arrays.stream(x).collect(Collectors.joining(","));
+    return "{" + values + "}";
   }
 
   interface HeaderStream {
@@ -114,7 +107,7 @@ public class PgCopyUtils {
     private byte[] bytes;
     private int idx;
 
-    public HeadlessStreamCSV(InputStream in, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException {
+    HeadlessStreamCSV(InputStream in, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException {
       CsvParserSettings cfg = new CsvParserSettings();
       cfg.setDelimiterDetectionEnabled(false);
       cfg.setQuoteDetectionEnabled(false);
@@ -129,8 +122,8 @@ public class PgCopyUtils {
       CsvWriterSettings cfg2 = new CsvWriterSettings();
       cfg2.setQuoteEscapingEnabled(true);
       writer = new CsvWriter(cfg2);
-      
-      header        = Lists.newArrayList(parser.parseNext());
+
+      header        = new ArrayList<>(List.of(parser.parseNext()));
       defaultValues = parseDefaults(defaults);
       this.funcs = parseFuncs(funcs);
       next();

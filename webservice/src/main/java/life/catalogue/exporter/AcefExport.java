@@ -12,7 +12,7 @@ import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImgConfig;
-import life.catalogue.postgres.PgCopyUtils;
+import life.catalogue.pgcopy.PgCopyUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

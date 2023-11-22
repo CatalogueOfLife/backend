@@ -202,6 +202,7 @@
     <module>doi</module>
     <module>metadata</module>
     <module>parser</module>
+    <module>pgcopy</module>
     <module>reader</module>
     <module>reader-xls</module>
     <module>webservice</module>
@@ -256,6 +257,11 @@
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
+        <artifactId>pgcopy</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
         <artifactId>dao</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -280,6 +286,11 @@
         <groupId>org.catalogueoflife</groupId>
         <artifactId>newick-io</artifactId>
         <version>${newick-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>apianalytics</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <!-- Dropwizard -->
       <dependency>

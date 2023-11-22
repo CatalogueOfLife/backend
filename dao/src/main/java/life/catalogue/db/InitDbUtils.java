@@ -1,13 +1,14 @@
 package life.catalogue.db;
 
 import life.catalogue.api.vocab.Users;
-import life.catalogue.postgres.PgCopyUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import life.catalogue.pgcopy.PgCopyUtils;
 
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class InitDbUtils {
 
   public static void insertDatasets(PgConnection pgc, InputStream csv) throws SQLException, IOException {
     LOG.info("Insert known datasets");
-    PgCopyUtils.copyCSV(pgc, "dataset", csv, ImmutableMap.<String, Object>builder()
+    PgCopyUtils.loadCSV(pgc, "dataset", csv, ImmutableMap.<String, Object>builder()
       .put("created_by", Users.DB_INIT)
       .put("modified_by", Users.DB_INIT)
       .build(), null);

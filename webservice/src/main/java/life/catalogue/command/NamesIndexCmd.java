@@ -4,7 +4,6 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.common.io.TabReader;
 import life.catalogue.common.io.UnixCmdUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.util.LoggingUtils;
@@ -14,13 +13,15 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.postgres.PgBinaryWriter;
-import life.catalogue.postgres.PgCopyUtils;
+
+import life.catalogue.pgcopy.PgBinaryReader;
+import life.catalogue.pgcopy.PgBinarySplitter;
+import life.catalogue.pgcopy.PgBinaryWriter;
+import life.catalogue.pgcopy.PgCopyUtils;
 
 import org.gbif.nameparser.api.*;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Function;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +55,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String SCHEMA_SETUP = "nidx/rebuild-schema.sql";
   private static final String SCHEMA_POST = "nidx/rebuild-post.sql";
   private static final String SCHEMA_POST_CONSTRAINTS = "nidx/rebuild-post-constraints.sql";
-  private static final String FILENAME_NAMES = "names.tsv";
+  private static final String FILENAME_NAMES = "names.pg";
   private static final String FILENAME_MATCHES = "matches";
   private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,sector_key,dataset_key,id";
   private static final SimpleRowWriter.Table MATCH_TABLE = new SimpleRowWriter.Table(BUILD_SCHEMA, "name_match", new String[] {
@@ -181,15 +182,17 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     }
 
     final long size = (total / threads) +1;
-    // calc exact number of files. With small numbers we can have the case that the last part is missing
-    // e.g. total=6, threads=4, 3 files only as size cannot be 1.5 but is 2 instead
-    final int parts = size * (threads-1) >= total ? threads-1 : threads;
-    LOG.info("Splitting {} with {} records into {} parts with {} each", out, total, parts, size);
-    UnixCmdUtils.split(out, size, 3);
+    final int parts;
+    LOG.info("Splitting {} with {} records into files with {} each", out, total, size);
+    try(var in = new FileInputStream(out)) {
+      AtomicInteger cnt = new AtomicInteger(1);
+      var splitter = new PgBinarySplitter(in, size, () -> part(FILENAME_NAMES, cnt.getAndIncrement()));
+      parts = splitter.split();
+    }
 
-    LOG.info("Matching all names from {}", out);
+    LOG.info("Matching all names from {} parts of {}", parts, out);
     ExecutorService exec = Executors.newFixedThreadPool(parts, new NamedThreadFactory("matcher"));
-    for (int p = 0; p < parts; p++) {
+    for (int p = 1; p <= parts; p++) {
       final int part = p;
       CompletableFuture.supplyAsync(() -> matchFile(part, ni), exec)
                        .exceptionally(ex -> {
@@ -206,10 +209,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Inserting matches into postgres");
     try (Connection c = dataSource.getConnection()) {
       var pgc = c.unwrap(PgConnection.class);
-      for (int p = 1; p < parts; p++) {
+      for (int p = 1; p <= parts; p++) {
         File mf = part(FILENAME_MATCHES, p);
         LOG.info("  copy matches {}: {}", p, mf);
-        PgCopyUtils.copyBinary(pgc, MATCH_TABLE.getTable(), Arrays.asList(MATCH_TABLE.getColumns()), mf);
+        PgCopyUtils.loadBinary(pgc, MATCH_TABLE.getTable(), Arrays.asList(MATCH_TABLE.getColumns()), mf);
         c.commit();
       }
     }
@@ -243,22 +246,17 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       this.out = out;
     }
 
-    private static String str(Object obj) {
-      return obj == null ? null : obj.toString();
-    }
-
     public void matchAll() {
-      try (TabReader reader = TabReader.tab(in, StandardCharsets.UTF_8, 0);
+      try (var reader = new PgBinaryReader(new FileInputStream(in));
            var writer = new PgBinaryWriter(new FileOutputStream(out))
       ) {
         String lastLabel=null;
         Rank lastRank=null;
         NameMatch lastMatch=null;
-        final Function<String, String> nullCharacterHandler = (val) -> val;
-        for (String[] row : reader) {
+        Name n ;
+        while ((n = nextName(reader)) != null) {
           counter++;
           try {
-            Name n = buildName(row);
             // matched the same name before already? the input file is sorted!
             NameMatch m;
             if (lastRank == n.getRank() && Objects.equals(lastLabel, n.getLabel())) {
@@ -271,9 +269,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
               lastRank = n.getRank();
             }
             writer.startRow(MATCH_TABLE.getColumns().length);
-            writer.writeInt(n.getDatasetKey());
+            writer.writeInteger(n.getDatasetKey());
             writer.writeInteger(n.getSectorKey());
-            writer.writeText(n.getId());
+            writer.writeString(n.getId());
             writer.writeEnum(m.getType());
             writer.writeInteger(m.getNameKey());
 
@@ -289,7 +287,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
           }
         }
         LOG.info("Matched all {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
-      } catch (IOException e) {
+      } catch (Exception e) {
         throw new RuntimeException(e);
       }
     }
@@ -299,51 +297,30 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   // 9 basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,
   // 16 type,code,notho,candidatus,sector_key,dataset_key,id";
   @VisibleForTesting
-  protected static Name buildName(String[] row) {
-    Name n = Name.newBuilder()
-                 .scientificName(str(row[0]))
-                 .authorship(str(row[1]))
-                 .rank(enumVal(Rank.class, row[2]))
-                 .uninomial(str(row[3]))
-                 .genus(str(row[4]))
-                 .infragenericEpithet(str(row[5]))
-                 .specificEpithet(str(row[6]))
-                 .infraspecificEpithet(str(row[7]))
-                 .cultivarEpithet(str(row[8]))
-                 .basionymAuthorship(authors(row[9],row[10],row[11]))
-                 .combinationAuthorship(authors(row[12],row[13],row[14]))
-                 .sanctioningAuthor(str(row[15]))
-                 .type(enumVal(NameType.class, row[16]))
-                 .code(enumVal(NomCode.class, row[17]))
-                 .notho(enumVal(NamePart.class, row[18]))
-                 .candidatus(bool(row[19]))
-                 .sectorKey(intVal(row[20]))
-                 .datasetKey(intVal(row[21]))
-                 .id(str(row[22]))
-                 .build();
-    return n;
-  }
+  protected static Name nextName(PgBinaryReader r) throws IOException {
+    if (!r.startRow()) return null;
 
-  static boolean bool(String x) {
-    return x != null && x.equals("t");
-  }
-  static String str(String x) {
-    return x == null || x.isEmpty() ? null : x;
-  }
-  static Integer intVal(String x) {
-    return x == null || x.isEmpty() ? null : Integer.parseInt(x);
-  }
-  static <T extends Enum<?>> T enumVal(Class < T > clazz, String x) {
-    return x == null || x.isEmpty() ? null : VocabularyUtils.lookupEnum(x, clazz);
-  }
-  static Authorship authors(String auth, String ex, String year) {
-    return new Authorship(authList(auth), authList(ex), str(year));
-  }
-  static List<String> authList(String auth) {
-    if (auth != null && auth.length() > 2) {
-      return Arrays.asList(StringUtils.split(auth.substring(1, auth.length() - 1), ','));
-    }
-    return null;
+    return Name.newBuilder()
+                 .scientificName(r.readString())
+                 .authorship(r.readString())
+                 .rank(r.readEnum(Rank.class))
+                 .uninomial(r.readString())
+                 .genus(r.readString())
+                 .infragenericEpithet(r.readString())
+                 .specificEpithet(r.readString())
+                 .infraspecificEpithet(r.readString())
+                 .cultivarEpithet(r.readString())
+                 .basionymAuthorship(new Authorship(r.readStringArray(),r.readStringArray(),r.readString()))
+                 .combinationAuthorship(new Authorship(r.readStringArray(),r.readStringArray(),r.readString()))
+                 .sanctioningAuthor(r.readString())
+                 .type(r.readEnum(NameType.class))
+                 .code(r.readEnum(NomCode.class))
+                 .notho(r.readEnum(NamePart.class))
+                 .candidatus(r.readBoolean())
+                 .sectorKey(r.readInteger())
+                 .datasetKey(r.readInteger())
+                 .id(r.readString())
+                 .build();
   }
 
   private FileMatcher matchFile(int part, NameIndex ni) throws RuntimeException {

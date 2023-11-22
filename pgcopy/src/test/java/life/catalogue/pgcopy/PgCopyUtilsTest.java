@@ -1,11 +1,9 @@
-package life.catalogue.postgres;
-
-import de.bytefish.pgbulkinsert.row.SimpleRowWriter;
+package life.catalogue.pgcopy;
 
 import life.catalogue.common.io.TabReader;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.db.PgConnectionRule;
-import life.catalogue.db.PgSetupRule;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -16,31 +14,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import life.catalogue.db.SqlSessionFactoryRule;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.postgresql.jdbc.PgConnection;
 
-import com.google.common.collect.ImmutableMap;
-
 import static org.junit.Assert.assertEquals;
 
 public class PgCopyUtilsTest {
-  
+
   PgConnection con;
-  
+
   @ClassRule
-  public static PgSetupRule pgRule = new PgSetupRule();
-  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
+  public static PgRule pg = new PgRule();
 
   @Before
   public void init() throws SQLException {
-    con = pgRule.connect();
+    con = pg.connect();
     try (Statement st = con.createStatement()) {
       for (String tbl : List.of("person", "test_name", "test_name2")) {
         st.execute("DROP TABLE IF EXISTS " + tbl);
@@ -57,22 +48,22 @@ public class PgCopyUtilsTest {
   public void buildNsplit() throws Exception {
     assertEquals("{Duméril,Bibron}", PgCopyUtils.buildPgArray( PgCopyUtils.splitPgArray("{Duméril,Bibron}")) );
   }
-  
+
   @Test
   public void copy() throws Exception {
     try (Statement st = con.createStatement()) {
       st.execute("CREATE TABLE person (key serial primary key, name text, age int, town text, norm text, size int)");
     }
-    PgCopyUtils.copyCSV(con, "person", "/test.csv", null, null);
+    PgCopyUtils.loadCSV(con, "person", "/test.csv", null, null);
 
-    Map<String, Object> defs = ImmutableMap.of(
-        "town", "Berlin"
+    Map<String, Object> defs = Map.of(
+      "town", "Berlin"
     );
-    Map<String, Function<String[], String>> funcs = ImmutableMap.of(
-        "size", row -> String.valueOf(row[0].length()),
-        "norm", row -> row[0].toLowerCase()
+    Map<String, Function<String[], String>> funcs = Map.of(
+      "size", row -> String.valueOf(row[0].length()),
+      "norm", row -> row[0].toLowerCase()
     );
-    PgCopyUtils.copyCSV(con, "person", "/test.csv", defs, funcs);
+    PgCopyUtils.loadCSV(con, "person", "/test.csv", defs, funcs);
   }
 
   @Test
@@ -81,7 +72,7 @@ public class PgCopyUtilsTest {
       st.execute("CREATE TABLE p (key serial primary key, name text)");
       st.execute("INSERT INTO p (name) select md5(random()::text) from generate_series(1, 1000)");
     }
-  
+
     File tmp = File.createTempFile("colplus", "csv");
     System.out.println(tmp.getAbsolutePath());
     try {
@@ -102,7 +93,7 @@ public class PgCopyUtilsTest {
     try (TempFile tf = new TempFile()) {
       System.out.println(tf.file);
       PgCopyUtils.dumpTSV(con, "SELECT key,name,rank FROM test_name", tf.file);
-      PgCopyUtils.copyTSV(con, "test_name2", tf.file);
+      PgCopyUtils.loadTSV(con, "test_name2", tf.file);
 
       // verify TSV
       TabReader r = TabReader.tab(tf.file, StandardCharsets.UTF_8,0);
@@ -136,6 +127,8 @@ public class PgCopyUtilsTest {
     );
 
     try (Statement st = con.createStatement()) {
+      st.execute("DROP TYPE IF EXISTS RANK");
+      st.execute("CREATE TYPE RANK AS ENUM ('KINGDOM','PHYLUM','CLASS','ORDER','FAMILY','GENUS','SPECIES')");
       st.execute("CREATE TABLE test_name (key int, name text, rank rank)");
       st.execute("CREATE TABLE test_name2 (key int, name text, rank rank)");
     }
@@ -190,7 +183,7 @@ public class PgCopyUtilsTest {
     try (TempFile tf = new TempFile()) {
       System.out.println(tf.file);
       PgCopyUtils.dumpBinary(con, "SELECT key,name,rank FROM test_name", tf.file);
-      PgCopyUtils.copyBinary(con, "test_name2", List.of("key","name","rank"), tf.file);
+      PgCopyUtils.loadBinary(con, "test_name2", List.of("key","name","rank"), tf.file);
     }
 
     verifyData(values.size());

@@ -19,7 +19,7 @@ and done it manually. So we can as well log changes here.
 ALTER TABLE dataset_export ADD COLUMN bare_names BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE dataset_export ADD COLUMN extended BOOLEAN NOT NULL DEFAULT FALSE;
 -- we put the simple feature live on that day
-UPDATE dataset_export SET extended=TRUE WHERE created < '2023-11-07';  
+UPDATE dataset_export SET extended=TRUE WHERE created < '2023-11-07' AND format IN ('DWCA','COLDP');  
 ```
 
 ### 2023-11-20 publisher aliases

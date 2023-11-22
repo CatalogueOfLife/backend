@@ -20,7 +20,7 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
-import life.catalogue.postgres.PgCopyUtils;
+import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.release.ProjectCopyFactory;
 
 import org.gbif.nameparser.api.NomCode;
