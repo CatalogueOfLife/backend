@@ -95,10 +95,10 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   protected void modifyDataset(Dataset d, DatasetSettings ds) {
     super.modifyDataset(d, ds);
-    modifyDataset(datasetKey, d, ds, srcDao);
+    modifyDatasetForRelease(d, ds);
   }
 
-  public static void modifyDataset(int datasetKey, Dataset d, DatasetSettings ds, DatasetSourceDao srcDao) {
+  public static void modifyDatasetForRelease(Dataset d, DatasetSettings ds) {
     d.setOrigin(DatasetOrigin.RELEASE);
 
     final FuzzyDate today = FuzzyDate.now();
@@ -257,8 +257,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     // aggregate authors for release from sources
     checkIfCancelled();
     var authGen = new AuthorlistGenerator(validator, srcDao);
-    if (authGen.appendSourceAuthors(dataset, settings)) {
-      dDao.update(dataset, user);
+    if (authGen.appendSourceAuthors(newDataset, settings)) {
+      dDao.update(newDataset, user);
     }
 
     // update both the projects and release datasets import attempt pointer

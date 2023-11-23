@@ -160,7 +160,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     }
 
     var ds = dao.getSettings(key);
-    ProjectRelease.modifyDataset(key, d, ds, sourceDao);
+    ProjectRelease.modifyDatasetForRelease(d, ds);
     return d;
   }
 
