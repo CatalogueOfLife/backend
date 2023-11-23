@@ -14,6 +14,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-11-23 adjust deferrable constraints
+some constraints need to be deferrable to delete orphans. These have gone in the live dbs, so this will make sure they are all deferrable:
+```sql
+ALTER TABLE name_match ALTER CONSTRAINT name_match_dataset_key_name_id_fkey DEFERRABLE;
+ALTER TABLE type_material ALTER CONSTRAINT type_material_dataset_key_name_id_fkey DEFERRABLE;
+ALTER TABLE name_rel ALTER CONSTRAINT name_rel_dataset_key_name_id_fkey DEFERRABLE;
+ALTER TABLE name_rel ALTER CONSTRAINT name_rel_dataset_key_related_name_id_fkey DEFERRABLE;
+```
+
 ### 2023-11-22 missing export filter props
 ```sql
 ALTER TABLE dataset_export ADD COLUMN bare_names BOOLEAN NOT NULL DEFAULT FALSE;
