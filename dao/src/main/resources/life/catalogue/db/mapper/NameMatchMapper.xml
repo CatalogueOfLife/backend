@@ -14,7 +14,10 @@
       SELECT name_id
       FROM name_match
       WHERE dataset_key = #{datasetKey}
-      LIMIT 1
+    <if test="sectorKey != null">
+      AND sector_key = #{sectorKey}
+    </if>
+    LIMIT 1
     )
   </select>
 

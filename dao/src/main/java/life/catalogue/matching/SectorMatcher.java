@@ -35,8 +35,13 @@ public class SectorMatcher extends BaseMatcher {
     final int updatedBefore = updated;
     final int nomatchBefore = nomatch;
 
+    final boolean doUpdate;
+    try (SqlSession session = factory.openSession(true)) {
+      doUpdate = session.getMapper(NameMatchMapper.class).exists(sectorKey.getDatasetKey(), sectorKey.getId());
+    }
+
     try (SqlSession session = factory.openSession(false);
-         BulkMatchHandler hn = new BulkMatchHandler(sectorKey.getDatasetKey(), allowInserts, NameMatchMapper.class);
+         BulkMatchHandler hn = new BulkMatchHandler(sectorKey.getDatasetKey(), allowInserts, NameMatchMapper.class, doUpdate);
     ) {
       LOG.info("Create name matches for sector {}", sectorKey);
       NameMapper nm = session.getMapper(NameMapper.class);

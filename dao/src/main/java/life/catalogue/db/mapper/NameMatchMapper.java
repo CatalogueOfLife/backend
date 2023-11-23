@@ -22,9 +22,10 @@ import org.apache.ibatis.cursor.Cursor;
 public interface NameMatchMapper extends MatchMapper, CopyDataset, DatasetProcessable<NameMatch>, SectorProcessable<Integer>, TempNameUsageRelated {
 
   /**
-   * @return true if at least one name match for the given dataset exists
+   * @return true if at least one name match for the given dataset & sector exists
    */
-  boolean exists(@Param("datasetKey") int datasetKey);
+  boolean exists(@Param("datasetKey") int datasetKey,
+                 @Param("sectorKey") @Nullable Integer sectorKey);
 
   /**
    * Lists all distinct index ids from the name match table.

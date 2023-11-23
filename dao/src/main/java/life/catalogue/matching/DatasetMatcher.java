@@ -40,21 +40,24 @@ public class DatasetMatcher extends BaseMatcher {
       final int nomatchBefore = nomatch;
       final int archivedBefore = archived;
 
-      boolean update = false;
+      final boolean doUpdate;
+      try (SqlSession session = factory.openSession(true)) {
+        doUpdate = session.getMapper(NameMatchMapper.class).exists(datasetKey, null);
+      }
+
       try (SqlSession readOnlySession = factory.openSession(true);
-           BulkMatchHandler hn = new BulkMatchHandler(datasetKey, allowInserts, NameMatchMapper.class);
-           BulkMatchHandler hu = new BulkMatchHandler(datasetKey, allowInserts, ArchivedNameUsageMatchMapper.class);
+           BulkMatchHandler hn = new BulkMatchHandler(datasetKey, allowInserts, NameMatchMapper.class, doUpdate);
+           BulkMatchHandler hu = new BulkMatchHandler(datasetKey, allowInserts, ArchivedNameUsageMatchMapper.class, true);
       ) {
-        NameMatchMapper nmm = readOnlySession.getMapper(NameMatchMapper.class);
         NameMapper nm = readOnlySession.getMapper(NameMapper.class);
         ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
 
-        update = nmm.exists(datasetKey);
         final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
-        LOG.info("{} name matches for {}{}", update ? "Update" : "Create", isProject ? "project " : "", datasetKey);
+        LOG.info("{} name matches for {}{}", doUpdate ? "Update" : "Create", isProject ? "project " : "", datasetKey);
         PgUtils.consume(() -> nm.processDataset(datasetKey), hn);
         // also match archived names
         if (isProject) {
+          LOG.info("{} name archive matches for project {}", doUpdate ? "Update" : "Create", datasetKey);
           final int totalBeforeArchive = total;
           PgUtils.consume(() -> anum.processArchivedNames(datasetKey), hu);
           archived = archived + total - totalBeforeArchive;
@@ -64,11 +67,11 @@ public class DatasetMatcher extends BaseMatcher {
         throw e;
       } finally {
         datasets++;
-        LOG.info("{} {} name matches for {} names and {} not matching, {} being archived names, for dataset {}", update ? "Updated" : "Created",
+        LOG.info("{} {} name matches for {} names and {} not matching, {} being archived names, for dataset {}", doUpdate ? "Updated" : "Created",
           updated - updatedBefore, total - totalBefore, nomatch - nomatchBefore, archived - archivedBefore, datasetKey);
       }
 
-      if (update) {
+      if (doUpdate) {
         try (SqlSession session = factory.openSession(false)) {
           int del = session.getMapper(NameMatchMapper.class).deleteOrphans(datasetKey);
           if (del > 0) {

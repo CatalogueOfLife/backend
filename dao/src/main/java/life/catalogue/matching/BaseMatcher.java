@@ -46,16 +46,21 @@ public class BaseMatcher {
   class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
     private final int datasetKey;
     private final boolean allowInserts;
-    final SqlSession batchSession;
+    private final boolean update;
+
+    final SqlSession batchSession; // this is only a true batch session if we are NOT in UPDATE mode
     MatchMapper nmm;
     private int _total = 0;
     private int _updated = 0;
     private int _nomatch = 0;
 
-    BulkMatchHandler(int datasetKey, boolean allowInserts, Class<? extends MatchMapper> mapperClass) {
+    BulkMatchHandler(int datasetKey, boolean allowInserts, Class<? extends MatchMapper> mapperClass, boolean update) {
       this.datasetKey = datasetKey;
       this.allowInserts = allowInserts;
-      this.batchSession = factory.openSession(ExecutorType.BATCH, false);
+      this.update = update;
+      this.batchSession = update ? // in update mode we also need to read to make sure we update or insert correctly
+        factory.openSession(true) :
+        factory.openSession(ExecutorType.BATCH, false);
       this.nmm = batchSession.getMapper(mapperClass);
     }
 
@@ -72,31 +77,34 @@ public class BaseMatcher {
           m.getAlternatives() == null ? "" : m.getAlternatives().stream().map(IndexName::getLabelWithRank).collect(Collectors.joining("; "))
         );
       }
-      Integer newKey = m.hasMatch() ? m.getName().getKey() : null;
-      if (oldType == null || !Objects.equals(oldId, newKey)) {
-        persist(n, m, oldType, oldId);
+      if (!Objects.equals(oldType, m.getType()) || !Objects.equals(oldId, m.getNameKey())) {
+        persist(n, m, oldType);
         if (_updated++ % 10000 == 0) {
-          batchSession.commit();
+          if (!update) {
+            batchSession.commit();
+          }
           LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
         }
       }
     }
 
-    void persist(Name n, NameMatch m, MatchType oldType, Integer oldId) {
-      if (oldType == null) {
-        nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
-      } else {
+    void persist(Name n, NameMatch m, MatchType oldType) {
+      if (update && oldType != null) {
         // the update might not have found a record (e.g. because we did not store NONE matches before)
         // create a record if it wasnt updated
         if (nmm.update(n, m.getNameKey(), m.getType()) < 1) {
           nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
         }
+      } else {
+        nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
       }
     }
 
     @Override
     public void close() throws RuntimeException {
-      batchSession.commit();
+      if (!update) {
+        batchSession.commit();
+      }
       batchSession.close();
       total += _total;
       updated += _updated;
