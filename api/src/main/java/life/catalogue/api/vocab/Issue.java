@@ -441,16 +441,19 @@ public enum Issue {
     "The gender valid of the name could not be interpreted."),
 
   GENDER_AGREEMENT_NOT_APPLICABLE(NAME, Level.WARNING,
-    "The gender agreement flag can only be given to bi- or trinomials with a terminal epithet"),
+    "The gender agreement flag can only be given to bi- or trinomials with a terminal epithet."),
 
   NOTHO_NOT_APPLICABLE(NAME, Level.WARNING,
-    "The notho name property refers to a non existing part of the name"),
+    "The notho name property refers to a non existing part of the name."),
 
   VERNACULAR_PREFERRED(VERNACULAR, Level.WARNING,
-    "The vernacular name preferred property could not be interpreted as a boolean"),
+    "The vernacular name preferred property could not be interpreted as a boolean."),
 
   DOI_INVALID(ANY, Level.WARNING,
     "The given DOI is syntactically invalid."),
+
+  RANK_NAME_SUFFIX_CONFLICT(NAME, Level.WARNING,
+    "The name ending does suggest a different rank than given for the name."),
   ;
 
   /**

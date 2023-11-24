@@ -1,11 +1,15 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+
+import org.gbif.nameparser.util.RankUtils;
 
 import org.junit.Test;
 
@@ -76,14 +80,14 @@ public class NameValidatorTest {
     verify(n);
     
     for (Rank r : Rank.values()) {
-      if (r.isSuprageneric()) {
+      if (r.isSuprageneric() && r != Rank.FAMILY && !r.isUncomparable()) {
         n.setRank(r);
-        verify(n);
+        verify(n, Issue.RANK_NAME_SUFFIX_CONFLICT);
       }
     }
     
     n.setRank(Rank.GENUS);
-    verify(n);
+    verify(n, Issue.RANK_NAME_SUFFIX_CONFLICT);
     
     n.setUninomial("Abies");
     verify(n);
@@ -212,5 +216,32 @@ public class NameValidatorTest {
 
     n.setUninomial("mArmorana");
     verify(n, Issue.WRONG_MONOMIAL_CASE);
+  }
+
+  @Test
+  public void suffixBad() throws Exception {
+    var nb = Name.newBuilder().type(NameType.SCIENTIFIC);
+
+    // all no issues cause name is unranked
+    verify(nb.uninomial("Chamberlinini").build());
+    nb.code(NomCode.BOTANICAL);
+    verify(nb.uninomial("Chamberlinini").build());
+    nb.code(NomCode.ZOOLOGICAL);
+    verify(nb.uninomial("Chamberlinini").build());
+
+    nb.rank(Rank.GENUS);
+    verify(nb.uninomial("Chamberlinini").build(), Issue.RANK_NAME_SUFFIX_CONFLICT);
+    // botanical ones dont have such an ending
+    nb.code(NomCode.BOTANICAL);
+    verify(nb.uninomial("Chamberlinini").build());
+
+    nb.code(NomCode.ZOOLOGICAL);
+    nb.rank(Rank.TRIBE);
+    verify(nb.uninomial("Chamberlinini").build());
+
+    nb.code(NomCode.BOTANICAL);
+    verify(nb.uninomial("Asteraceae").build(), Issue.RANK_NAME_SUFFIX_CONFLICT);
+    nb.rank(Rank.FAMILY);
+    verify(nb.uninomial("Asteraceae").build());
   }
 }

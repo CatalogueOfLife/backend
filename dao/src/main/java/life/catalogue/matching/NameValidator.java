@@ -13,6 +13,9 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,6 +150,13 @@ public class NameValidator {
       if (n.getGenus() != null || n.getInfragenericEpithet() != null || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null){
         LOG.info("Uninomial with further epithets in name {}", n.getLabel());
         issues.addIssue(Issue.INCONSISTENT_NAME);
+      }
+      Rank inferred = RankUtils.inferRank(n);
+      if (n.getRank() != null && !n.getRank().isUncomparable()
+        && !inferred.isUncomparable() && inferred.isSuprageneric()
+        && n.getRank() != inferred
+      ) {
+        issues.addIssue(Issue.RANK_NAME_SUFFIX_CONFLICT);
       }
 
     } else if (n.getGenus() == null && n.getSpecificEpithet() != null) {
