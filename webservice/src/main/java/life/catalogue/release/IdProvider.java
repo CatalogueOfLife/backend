@@ -422,13 +422,13 @@ public class IdProvider {
 
       // always also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
-      ids.log();
+      LOG.info("Add archived names");
       PgUtils.consume(
         () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey),
         sn -> addReleaseId(sn.getLastReleaseKey(), sn, stats)
       );
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
-      ids.log();
+      //ids.log();
     }
   }
 
@@ -437,7 +437,7 @@ public class IdProvider {
     stats.counter.incrementAndGet();
     if (sn.getNamesIndexId() == null) {
       stats.nomatches.incrementAndGet();
-      LOG.info("Existing release id {}:{} without a names index id. Skip!", releaseDatasetKey, sn.getId());
+      LOG.info("Existing release id {}:{} without a names index id. Skip {}", releaseDatasetKey, sn.getId(), sn.getLabel());
     } else {
       try {
         var rl = ReleasedId.create(sn, dataset2attempt.getValue(releaseDatasetKey));
@@ -496,6 +496,7 @@ public class IdProvider {
     // ids remaining from the current attempt will be deleted
     deleted = ids.maxAttemptIds();
     reused = lastRelIds - deleted.size();
+    LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
   }
 
   private void mapCanonicalGroup(List<SimpleNameWithNidx> group, Writer nomatchWriter) throws IOException {

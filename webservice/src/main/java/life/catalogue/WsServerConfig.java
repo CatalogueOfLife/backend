@@ -125,7 +125,8 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public int diffTimeout = 30;
 
   /**
-   * Names index kvp file to persist map on disk. If empty will use a volatile memory index.
+   * Names index kvp file to persist map on disk.
+   * If empty will use a passthrough index that always returns no matches
    */
   public File namesIndexFile;
 

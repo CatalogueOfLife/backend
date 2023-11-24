@@ -78,6 +78,11 @@ public class ProjectCopyFactory {
     return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
+  @Deprecated
+  public ProjectRelease buildPrepRelease(final int projectKey, final int userKey) {
+    return new ProjectRelease.IdPreviewRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+  }
+
   /**
    * Creates a duplicate of a managed project
    * @param projectKey the managed dataset to be copied

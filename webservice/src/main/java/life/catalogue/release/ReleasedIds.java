@@ -122,8 +122,8 @@ public class ReleasedIds {
   void add (ReleasedId id) {
     if (byId.containsKey(id.id)) {
       // ignore already existing ids, but make sure the existing attempt is more recent, i.e. higher!
-      if (byId.get(id.id).attempt >= id.attempt) {
-        throw new IllegalStateException("releases need to be sorted by attempt before adding");
+      if (byId.get(id.id).attempt < id.attempt) {
+        throw new IllegalStateException("Cannot add a newer ReleaseId "+ id.attempt + ":" + id.id +" than existing attempt " + byId.get(id.id).attempt);
       }
       return;
     }

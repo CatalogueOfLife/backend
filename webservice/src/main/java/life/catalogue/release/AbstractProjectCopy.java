@@ -46,7 +46,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected final Dataset newDataset;
   protected final int newDatasetKey;
   private final DatasetOrigin newDatasetOrigin;
-  protected final boolean mapIds;
+  protected boolean mapIds;
   protected DatasetSettings settings;
   private final boolean deleteOnError;
 

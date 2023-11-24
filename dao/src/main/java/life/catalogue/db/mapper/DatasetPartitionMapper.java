@@ -27,10 +27,7 @@ import com.google.common.collect.Lists;
 public interface DatasetPartitionMapper {
   Logger LOG = LoggerFactory.getLogger(DatasetPartitionMapper.class);
 
-  List<String> IDMAP_TABLES = Lists.newArrayList(
-    "idmap_name",
-    "idmap_name_usage"
-  );
+  List<String> IDMAP_TABLES = Lists.newArrayList(IdMapMapper.NAME_TBL, IdMapMapper.USAGE_TBL);
 
   // order is important !!!
   List<String> PARTITIONED_TABLES = Lists.newArrayList(

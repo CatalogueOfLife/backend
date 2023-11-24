@@ -231,6 +231,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @POST
+  @Hidden
+  @Path("/{key}/preprelease")
+  @RolesAllowed({Roles.ADMIN})
+  public void preprelease(@PathParam("key") int key, @Auth User user) {
+    var job = jobFactory.buildPrepRelease(key, user.getKey());
+    exec.submit(job);
+  }
+
+  @POST
   @Path("/{key}/xrelease")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void xRelease(@PathParam("key") int key, @Auth User user) {

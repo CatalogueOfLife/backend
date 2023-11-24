@@ -280,7 +280,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     if (cfg.namesIndexFile != null) {
-      ni = NameIndexFactory.persistentOrMemory(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
+      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
       // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
       managedService.manage(Component.NamesIndex, ni);
       env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
