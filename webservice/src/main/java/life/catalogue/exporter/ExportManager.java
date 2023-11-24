@@ -75,12 +75,12 @@ public class ExportManager {
     DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:
-        job = req.isExtended() ? new ColdpExport(req, userKey, factory, cfg, imageService) :
-                                SimpleColdpExport.build(req, userKey, factory, cfg, imageService);
+        job = req.isExtended() ? new ColdpExtendedExport(req, userKey, factory, cfg, imageService) :
+                                ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
-        job = req.isExtended() ? new DwcaExport(req, userKey, factory, cfg, imageService) :
-                                SimpleDwcaExport.build(req, userKey, factory, cfg, imageService);
+        job = req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
+                                DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
         job = new AcefExport(req, userKey, factory, cfg, imageService);
@@ -144,6 +144,11 @@ public class ExportManager {
         throwIfTooLarge(ColdpTerm.SpeciesInteraction, imp.getSpeciesInteractionsCount());
         throwIfTooLarge(ColdpTerm.Media, imp.getMediaCount());
       }
+    }
+
+    // set extended to false (the default) for formats that make no difference
+    if (!req.getFormat().hasExtendedContent()) {
+      req.setExtended(false);
     }
   }
 

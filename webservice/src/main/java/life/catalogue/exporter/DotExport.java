@@ -8,7 +8,7 @@ import life.catalogue.printer.DotPrinter;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-public class DotExport extends PrinterExport {
+public class DotExport extends PrinterExport<DotPrinter> {
 
   public DotExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(DotPrinter.class, "DOT", "gv", DataFormat.DOT, req, userKey, factory, cfg, imageService);

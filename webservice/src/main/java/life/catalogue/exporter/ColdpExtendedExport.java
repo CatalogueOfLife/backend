@@ -26,14 +26,14 @@ import org.slf4j.LoggerFactory;
 /**
  * ColDP exporter using a merged NameUsage entity and usageIDs instead of nameIDs for linking.
  */
-public class ColdpExport extends ArchiveExport {
-  private static final Logger LOG = LoggerFactory.getLogger(ColdpExport.class);
+public class ColdpExtendedExport extends ArchiveExport {
+  private static final Logger LOG = LoggerFactory.getLogger(ColdpExtendedExport.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   private Writer cslWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
 
-  public ColdpExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+  public ColdpExtendedExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
   }
 

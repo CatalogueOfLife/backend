@@ -15,14 +15,14 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.Writer;
 
-public abstract class PrinterExport extends DatasetExportJob {
+public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(PrinterExport.class);
 
-  private final Class<? extends AbstractPrinter> printerClass;
+  private final Class<T> printerClass;
   private final String printerName;
   private final String fileSuffix;
 
-  PrinterExport(Class<? extends AbstractPrinter> printerClass, String printerName, String fileSuffix, DataFormat requiredFormat,
+  PrinterExport(Class<T> printerClass, String printerName, String fileSuffix, DataFormat requiredFormat,
                 ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService
   ) {
     super(req, userKey, requiredFormat, false, factory, cfg, imageService);
@@ -35,7 +35,7 @@ public abstract class PrinterExport extends DatasetExportJob {
   protected void export() throws Exception {
     File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+"."+fileSuffix);
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      AbstractPrinter printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), factory, writer);
+      T printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), factory, writer);
       modifyPrinter(printer);
       int cnt = printer.print();
       LOG.info("Written {} taxa to {} for dataset {}", cnt, printerName, req.getDatasetKey());
@@ -43,7 +43,7 @@ public abstract class PrinterExport extends DatasetExportJob {
     }
   }
 
-  void modifyPrinter(AbstractPrinter printer) {
+  void modifyPrinter(T printer) {
     // nothing by default
   }
 

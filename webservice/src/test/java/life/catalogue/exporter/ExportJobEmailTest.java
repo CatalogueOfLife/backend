@@ -28,6 +28,6 @@ public class ExportJobEmailTest extends EmailNotificationTemplateTest {
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(dataRule.testData.key);
     req.setRoot(SimpleName.sn(Rank.FAMILY, "Asteraceae"));
-    return new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig(), null);
+    return new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), new WsServerConfig(), null);
   }
 }

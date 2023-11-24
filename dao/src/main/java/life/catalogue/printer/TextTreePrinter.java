@@ -90,11 +90,11 @@ public class TextTreePrinter extends AbstractTreePrinter {
    */
   private List<String> infos(SimpleName u){
     List<String> infos = new ArrayList<>();
-    if (countRank != null) {
-      infos.add(JsonTreePrinter.countRankPropertyName(countRank) + "=" + taxonCount);
-    }
     if (showIDs) {
       infos.add("ID=" + u.getId());
+    }
+    if (countRank != null) {
+      infos.add("NUM_"+countRank.name() + "=" + taxonCount);
     }
     return infos;
   }

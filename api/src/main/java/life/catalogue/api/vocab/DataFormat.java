@@ -1,5 +1,7 @@
 package life.catalogue.api.vocab;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Various external data formats supported by the application
  */
@@ -72,5 +74,12 @@ public enum DataFormat {
 
   public String getFilename() {
     return filename;
+  }
+
+  /**
+   * Advertises if the format supports a download with the extended option turned on.
+   */
+  public boolean hasExtendedContent() {
+    return this == DWCA || this == COLDP || this == TEXT_TREE || this == NEWICK;
   }
 }

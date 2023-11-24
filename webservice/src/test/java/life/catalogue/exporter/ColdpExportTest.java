@@ -42,7 +42,7 @@ public class ColdpExportTest extends ExportTest {
 
   @Test
   public void dataset() {
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -51,7 +51,7 @@ public class ColdpExportTest extends ExportTest {
   @Test
   public void bareName() {
     req.setBareNames(true);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());
@@ -60,7 +60,7 @@ public class ColdpExportTest extends ExportTest {
   @Test
   public void excel() {
     req.setExcel(true);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertTrue(exp.getArchive().exists());

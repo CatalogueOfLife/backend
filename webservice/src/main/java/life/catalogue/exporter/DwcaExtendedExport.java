@@ -30,14 +30,14 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DwcaExport extends ArchiveExport {
-  private static final Logger LOG = LoggerFactory.getLogger(DwcaExport.class);
+public class DwcaExtendedExport extends ArchiveExport {
+  private static final Logger LOG = LoggerFactory.getLogger(DwcaExtendedExport.class);
   private static final String EML_FILENAME = "eml.xml";
   private TermWriter writer2;
   private final Archive arch = new Archive();
   private final AtomicInteger bareNameID = new AtomicInteger(1);
 
-  public DwcaExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+  public DwcaExtendedExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(DataFormat.DWCA, userKey, req, factory, cfg, imageService);
   }
 

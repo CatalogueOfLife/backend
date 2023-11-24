@@ -282,6 +282,7 @@ public class ProjectRelease extends AbstractProjectCopy {
         req.setDatasetKey(newDatasetKey);
         req.setFormat(df);
         req.setExcel(false);
+        req.setExtended(true);
         exportManager.submit(req, user);
       }
     }

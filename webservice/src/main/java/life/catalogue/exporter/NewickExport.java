@@ -17,7 +17,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NewickExport extends PrinterExport {
+public class NewickExport extends PrinterExport<NewickPrinter> {
 
   public NewickExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(NewickPrinter.class, "Newick", "nhx", DataFormat.NEWICK, req, userKey, factory, cfg, imageService);
@@ -27,7 +27,9 @@ public class NewickExport extends PrinterExport {
   }
 
   @Override
-  void modifyPrinter(AbstractPrinter printer) {
-    ((NewickPrinter)printer).useExtendedFormat();
+  void modifyPrinter(NewickPrinter printer) {
+    if (req.isExtended()) {
+      printer.useExtendedFormat();
+    }
   }
 }

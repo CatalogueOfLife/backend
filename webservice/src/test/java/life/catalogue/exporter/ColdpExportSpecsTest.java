@@ -49,7 +49,7 @@ public class ColdpExportSpecsTest {
   public void coldpSpecsExport() {
     MetricRegistry registry = new MetricRegistry();
     ExportRequest req = new ExportRequest(importRule.datasetKey(0, DataFormat.COLDP), DataFormat.COLDP);
-    ColdpExport exp = new ColdpExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     System.out.println(exp.getArchive());
     assertTrue(exp.getArchive().exists());
