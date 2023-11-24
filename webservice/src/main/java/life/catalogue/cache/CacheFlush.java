@@ -6,6 +6,8 @@ import java.net.URI;
 
 import javax.ws.rs.core.UriBuilder;
 
+import life.catalogue.api.event.FlushDatasetCache;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.common.eventbus.Subscribe;
@@ -25,6 +27,11 @@ public class CacheFlush {
     this.projectUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}LR");
     this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/");
     this.colseo = UriBuilder.fromUri(api).path("colseo").build();
+  }
+
+  @Subscribe
+  public void flushDatasetEvent(FlushDatasetCache event){
+    VarnishUtils.ban(client, datasetUrlBuilder.build(event.datasetKey));
   }
 
   @Subscribe

@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
@@ -8,6 +10,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
+import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -81,12 +84,14 @@ public class AdminResource {
   private final NameIndex namesIndex;
   private final JobExecutor exec;
   private final ManagedService componedService;
+  private final EventBus bus;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, Validator validator) {
+                       JobExecutor executor, IdMap idMap, Validator validator, EventBus bus) {
     this.factory = factory;
+    this.bus = bus;
     this.componedService = managedService;
     this.ddao = ddao;
     this.assembly = assembly;
@@ -248,14 +253,14 @@ public class AdminResource {
   ) {
     if (datasetKeys != null && !datasetKeys.isEmpty()) {
       var keys = datasetKeys.stream().mapToInt(i -> i).toArray();
-      return runJob(RematchJob.some(user.getKey(), factory, namesIndex, keys));
+      return runJob(RematchJob.some(user.getKey(), factory, namesIndex, bus, keys));
 
     } if (sectorKeys != null && !sectorKeys.isEmpty()) {
       var keys = sectorKeys.stream().map(DSID::ofInt).collect(Collectors.toList());
       return runJob(RematchJob.sector(user.getKey(),factory, namesIndex, keys));
 
     } else {
-      throw new IllegalArgumentException("At least one datasetKey parameter is required or unmatched=true");
+      throw new IllegalArgumentException("At least one datasetKey or sectorKey parameter is required");
     }
   }
 
@@ -265,13 +270,13 @@ public class AdminResource {
    * Matches all datasets which have not been fully matched before.
    */
   public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
-    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec));
+    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, bus));
   }
 
   @GET
   @Path("/rematch/overview")
   public Response rematchOverview(@Auth User user) {
-    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, exec);
+    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, exec, null);
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
       job.write(writer);

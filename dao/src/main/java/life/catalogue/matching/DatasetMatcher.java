@@ -1,5 +1,9 @@
 package life.catalogue.matching;
 
+import com.google.common.eventbus.EventBus;
+
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.FlushDatasetCache;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetInfoCache;
@@ -14,17 +18,21 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Rematches entire datasets, using 2 separate db connections for read & write
  * In case of projects being matched it will also match any archived name usages.
  */
 public class DatasetMatcher extends BaseMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
+  private final EventBus bus;
   private int archived = 0;
   private int datasets = 0;
 
-  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni) {
+  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBus bus) {
     super(factory, ni);
+    this.bus = bus;
   }
 
   /**
@@ -76,14 +84,19 @@ public class DatasetMatcher extends BaseMatcher {
           int del = session.getMapper(NameMatchMapper.class).deleteOrphans(datasetKey);
           if (del > 0) {
             LOG.info("Removed {} orphaned name matches for {}", del, datasetKey);
+            session.commit();
           }
           del = session.getMapper(ArchivedNameUsageMatchMapper.class).deleteOrphans(datasetKey);
           if (del > 0) {
             LOG.info("Removed {} orphaned name archive matches for {}", del, datasetKey);
           }
+          session.commit();
         }
       }
     } finally {
+      if (bus != null) {
+        bus.post(new FlushDatasetCache(datasetKey));
+      }
       LoggingUtils.removeDatasetMDC();
     }
   }

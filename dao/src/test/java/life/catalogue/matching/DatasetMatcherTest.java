@@ -21,15 +21,15 @@ public class DatasetMatcherTest {
   public void rematchApple() throws Exception {
     NameIndex nidx = NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
     // we only have one verbatim record. If we dont insert into the names index this will be a no match with an issue
-    DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx);
+    DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
     m.match(11, false);
 
     // again, now also insert new names into the index
-    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx);
+    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
     m.match(11, true);
 
     // dont update issues
-    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx);
+    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
     m.match(11, true);
   }
 }

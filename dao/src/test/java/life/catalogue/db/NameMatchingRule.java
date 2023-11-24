@@ -1,13 +1,18 @@
 package life.catalogue.db;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.dao.DaoUtils;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.RematchJob;
 
 import java.util.function.Supplier;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
@@ -53,11 +58,21 @@ public class NameMatchingRule extends ExternalResource {
   }
 
   public void rematchAll() {
-    RematchJob.all(Users.MATCHER, factorySupplier.get(), nidx).run();
+    // load dataset keys to rematch
+    IntSet keys;
+    var factory = factorySupplier.get();
+    try (SqlSession session = factory.openSession(true)) {
+      keys = DaoUtils.listDatasetWithNames(session);
+      keys.addAll(
+        session.getMapper(ArchivedNameUsageMapper.class).listProjects()
+      );
+    }
+    LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), nidx.size());
+    RematchJob.some(Users.MATCHER, factory, nidx, null, keys.toIntArray()).run();
   }
 
   public void rematch(int datasetKey) {
-    RematchJob.one(Users.MATCHER, factorySupplier.get(), nidx, datasetKey).run();
+    RematchJob.one(Users.MATCHER, factorySupplier.get(), nidx, null, datasetKey).run();
   }
 
   public static NameIndex getIndex() {

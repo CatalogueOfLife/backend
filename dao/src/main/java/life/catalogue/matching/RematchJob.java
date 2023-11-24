@@ -1,5 +1,8 @@
 package life.catalogue.matching;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.eventbus.EventBus;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.dao.DaoUtils;
@@ -23,47 +26,37 @@ public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);
   private final SqlSessionFactory factory;
   private final NameIndex ni;
+  private final EventBus bus;
 
   @JsonProperty
   private final int[] datasetKeys;
   @JsonProperty
   private final List<? extends DSID<Integer>> sectorKeys;
 
-  public static RematchJob all(int userKey, SqlSessionFactory factory, NameIndex ni){
-    // load dataset keys to rematch
-    IntSet keys;
-    try (SqlSession session = factory.openSession(true)) {
-      keys = DaoUtils.listDatasetWithNames(session);
-      keys.addAll(
-        session.getMapper(ArchivedNameUsageMapper.class).listProjects()
-      );
-    }
-    LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), ni.size());
-    return new RematchJob(userKey, factory, ni, keys.toIntArray());
+  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int datasetKey){
+    return new RematchJob(userKey, factory, ni, bus, datasetKey);
   }
 
-  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, int datasetKey){
-    return new RematchJob(userKey, factory, ni, datasetKey);
-  }
-
-  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, int... datasetKeys){
-    return new RematchJob(userKey, factory, ni, datasetKeys);
+  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int... datasetKeys){
+    return new RematchJob(userKey, factory, ni, bus, datasetKeys);
   }
 
   public static RematchJob sector(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys){
-    return new RematchJob(userKey, factory, ni, sectorKeys);
+    return new RematchJob(userKey, factory, ni, sectorKeys, null);
   }
 
-  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys) {
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys, EventBus bus) {
     super(userKey);
+    this.bus = bus;
     this.datasetKeys = null;
     this.sectorKeys = Preconditions.checkNotNull(sectorKeys);
     this.factory = factory;
     this.ni = ni.assertOnline();
   }
 
-  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, int... datasetKeys) {
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int... datasetKeys) {
     super(userKey);
+    this.bus = bus;
     this.datasetKeys = Preconditions.checkNotNull(datasetKeys);
     this.sectorKeys = null;
     this.factory = factory;
@@ -91,7 +84,7 @@ public class RematchJob extends BackgroundJob {
   void matchDatasets() {
     LOG.info("Rematching {} datasets with data. Triggered by {}", datasetKeys.length, getUserKey());
 
-    DatasetMatcher matcher = new DatasetMatcher(factory, ni);
+    DatasetMatcher matcher = new DatasetMatcher(factory, ni, bus);
     for (int key : datasetKeys) {
       matcher.match(key, true);
     }
