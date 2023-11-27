@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
-  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA, DataFormat.ACEF);
+  public static Set<DataFormat> EXPORT_FORMATS = Set.of(DataFormat.TEXT_TREE, DataFormat.COLDP, DataFormat.DWCA);
   private static final String DEFAULT_ALIAS_TEMPLATE = "{aliasOrTitle}-{date}";
   private static final String DEFAULT_VERSION_TEMPLATE = "{date}";
 

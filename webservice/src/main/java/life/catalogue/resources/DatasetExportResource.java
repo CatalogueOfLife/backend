@@ -88,13 +88,16 @@ public class DatasetExportResource {
     MediaType.APPLICATION_OCTET_STREAM,
     MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
   })
-  public Response download(@PathParam("key") int key, @QueryParam("format") DataFormat format) {
+  public Response download(@PathParam("key") int key,
+                           @QueryParam("format") DataFormat format,
+                           @QueryParam("extended") boolean extended) {
     if (format == null) {
       throw new IllegalArgumentException("Format parameter is required");
     }
 
     // an already existing export in the given format
     ExportRequest req = new ExportRequest(key, format);
+    req.setExtended(extended);
     UUID exportKey = exportManager.exists(req);
     if (exportKey != null) {
       return Redirect.temporary(cfg.job.downloadURI(exportKey));
