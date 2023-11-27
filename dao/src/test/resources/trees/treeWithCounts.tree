@@ -1,5 +1,5 @@
-Canidae [family] {species=1|ID=t5}
-  Canis [genus] {species=2|ID=t20}
-Felidae [family] {species=3|ID=t6}
-  Lynx [genus] {species=4|ID=t10}
-Urocyon [genus] {species=5|ID=t30}
+Canidae [family] {ID=t5|NUM_SPECIES=1}
+  Canis [genus] {ID=t20|NUM_SPECIES=2}
+Felidae [family] {ID=t6|NUM_SPECIES=3}
+  Lynx [genus] {ID=t10|NUM_SPECIES=4}
+Urocyon [genus] {ID=t30|NUM_SPECIES=5}
