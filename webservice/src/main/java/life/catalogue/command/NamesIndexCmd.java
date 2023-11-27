@@ -1,5 +1,7 @@
 package life.catalogue.command;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.io.Files;
 
 import life.catalogue.WsServerConfig;
@@ -32,6 +34,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -229,7 +232,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       var pgc = c.unwrap(PgConnection.class);
       total = PgCopyUtils.dumpBinary(pgc, "SELECT " + (archived ? ARCHIVED_NAME_COLS : NAME_COLS) +
         " FROM " + (archived ? "name_usage_archive" : "name") +
-        " ORDER BY " + (archived ? "n_scientific_name, n_rank" : "scientific_name, rank") +
+        " ORDER BY " + (archived ? "n_scientific_name, n_rank, n_authorship" : "scientific_name, rank, authorship") +
         limit, out
       );
     }
@@ -274,6 +277,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     private int error = 0;
     private int cached = 0;
     private int nomatch = 0;
+    private final Cache<String, NameMatch> cache = Caffeine.newBuilder()
+      .maximumSize(100)
+      .build();
+
     public FileMatcher(boolean archived, NameIndex ni, File in, File out) {
       this.archived = archived;
       this.ni = ni;
@@ -285,9 +292,6 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       try (var reader = new PgBinaryReader(new FileInputStream(in));
            var writer = new PgBinaryWriter(new FileOutputStream(out))
       ) {
-        String lastLabel=null;
-        Rank lastRank=null;
-        NameMatch lastMatch=null;
         Name n ;
         final int cols = (archived ? ARCHIVED_MATCH_TABLE_COLUMNS : MATCH_TABLE_COLUMNS).size();
         while ((n = nextName(reader)) != null) {
@@ -295,14 +299,13 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
           try {
             // matched the same name before already? the input file is sorted!
             NameMatch m;
-            if (lastRank == n.getRank() && Objects.equals(lastLabel, n.getLabel())) {
-              m = lastMatch;
+            final String cacheKey = n.getRank().name() + "-" + n.getLabel();
+            m = cache.getIfPresent(cacheKey);
+            if (m != null) {
               cached++;
             } else {
               m = ni.match(n, true, false);
-              lastMatch = m;
-              lastLabel=n.getLabel();
-              lastRank = n.getRank();
+              cache.put(cacheKey, m);
             }
             writer.startRow(cols);
             writer.writeInteger(n.getDatasetKey());
