@@ -20,10 +20,15 @@ import org.slf4j.LoggerFactory;
 public class NewickExport extends PrinterExport<NewickPrinter> {
 
   public NewickExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(NewickPrinter.class, "Newick", "nhx", DataFormat.NEWICK, req, userKey, factory, cfg, imageService);
+    super(NewickPrinter.class, "Newick", DataFormat.NEWICK, req, userKey, factory, cfg, imageService);
     if (req.isSynonyms()) {
       throw new IllegalArgumentException("The Newick format does not support synonyms");
     }
+  }
+
+  @Override
+  protected String filename() {
+    return "dataset-"+req.getDatasetKey()+".nhx";
   }
 
   @Override

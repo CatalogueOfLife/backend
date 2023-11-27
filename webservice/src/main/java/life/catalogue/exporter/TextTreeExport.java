@@ -18,7 +18,12 @@ import org.slf4j.LoggerFactory;
 
 public class TextTreeExport extends PrinterExport<TextTreePrinter> {
   public TextTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    super(TextTreePrinter.class, "text tree", "txtree", DataFormat.TEXT_TREE, req, userKey, factory, cfg, imageService);
+    super(TextTreePrinter.class, "text tree", DataFormat.TEXT_TREE, req, userKey, factory, cfg, imageService);
+  }
+
+  @Override
+  protected String filename() {
+    return "dataset-"+req.getDatasetKey()+".txtree";
   }
 
   @Override

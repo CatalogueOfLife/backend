@@ -20,20 +20,18 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
 
   private final Class<T> printerClass;
   private final String printerName;
-  private final String fileSuffix;
 
-  PrinterExport(Class<T> printerClass, String printerName, String fileSuffix, DataFormat requiredFormat,
+  PrinterExport(Class<T> printerClass, String printerName, DataFormat requiredFormat,
                 ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService
   ) {
     super(req, userKey, requiredFormat, false, factory, cfg, imageService);
-    this.fileSuffix = fileSuffix;
     this.printerClass = printerClass;
     this.printerName = printerName;
   }
 
   @Override
   protected void export() throws Exception {
-    File f = new File(tmpDir, "dataset-"+req.getDatasetKey()+"."+fileSuffix);
+    File f = new File(tmpDir, filename());
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       T printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), factory, writer);
       modifyPrinter(printer);
@@ -42,6 +40,8 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
       counter.set(printer.getCounter());
     }
   }
+
+  abstract protected String filename();
 
   void modifyPrinter(T printer) {
     // nothing by default
