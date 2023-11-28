@@ -214,6 +214,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       ScriptRunner runner = PgConfig.scriptRunner(c, false);
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST));
       // keep match constraints separate from indices so indices stay and do not rollback in case users have modified data since we started the command
+      LOG.info("Building postgres constraints for new names index");
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");

@@ -67,6 +67,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"issues", null, List.of("bad")},
       {"subgenera", null, List.of("carabcat", "2021")},
       {"subgenera", Rank.FAMILY, List.of("carabcat", "2021")},
       {"proparte", Rank.ORDER, List.of("3i")},

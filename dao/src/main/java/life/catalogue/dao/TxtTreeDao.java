@@ -54,6 +54,10 @@ public class TxtTreeDao {
     writer.flush();
   }
 
+  private static NomCode code(NameUsage u) {
+    return u == null ? null : (u.getName() == null ? null : u.getName().getCode());
+  }
+
   public int insertTxtree(int datasetKey, String id, User user, InputStream txtree, boolean replace) throws IOException {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin != DatasetOrigin.PROJECT) {
@@ -61,7 +65,7 @@ public class TxtTreeDao {
     }
 
     final var key = DSID.of(datasetKey, id);
-    Taxon parent;
+    Taxon parent; // must exist!
     Taxon grandparent;
     LinkedList<SimpleName> classification;
     try (SqlSession session = factory.openSession(true)) {
@@ -76,7 +80,7 @@ public class TxtTreeDao {
       classification.addLast(new SimpleName(parent));
     }
     // propagate the existing code to all inserted names
-    final NomCode code = ObjectUtils.coalesce(parent.getName().getCode(), grandparent.getName().getCode());
+    final NomCode code = ObjectUtils.coalesce(code(parent), code(grandparent));
     final var tree = Tree.simple(txtree);
 
     if (replace) {
