@@ -116,7 +116,12 @@ public class JobAppender extends AppenderBase<ILoggingEvent> {
   protected void append(ILoggingEvent log) {
     final String key = log.getMDCPropertyMap().get(LoggingUtils.MDC_KEY_JOB);
     Appender<ILoggingEvent> a;
-    if (hasMarker(log, LoggingUtils.END_JOB_LOG_MARKER)) {
+
+    if (hasMarker(log, LoggingUtils.START_JOB_LOG_MARKER)) {
+      a = appender.computeIfAbsent(key, this::newAppender);
+      a.doAppend(log);
+
+    } else if (hasMarker(log, LoggingUtils.END_JOB_LOG_MARKER)) {
       a = appender.remove(key);
       if (a != null) {
         a.doAppend(log);
@@ -126,9 +131,12 @@ public class JobAppender extends AppenderBase<ILoggingEvent> {
           copyToDownloads(log, key);
         }
       }
+
     } else {
-      a = appender.computeIfAbsent(key, this::newAppender);
-      a.doAppend(log);
+      a = appender.get(key);
+      if (a != null) {
+        a.doAppend(log);
+      }
     }
 
     // copy job logs also to release dir?
@@ -185,6 +193,10 @@ public class JobAppender extends AppenderBase<ILoggingEvent> {
     encoder.start();
     fa.setEncoder(encoder);
     fa.start();
+    // check number of cached appender and warn if high
+    if (appender.size() > 100) {
+      LOG.warn("{} job log appenders cached, suspicously high!", appender.size());
+    }
     return fa;
   }
 
