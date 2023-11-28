@@ -13,6 +13,7 @@ import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -144,16 +145,11 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   @Override
-  protected void copyLogFile(File log) {
-    super.copyLogFile(log);
-    // copy job logs also to release dir
-    File reportDir = cfg.release.reportDir(datasetKey, attempt);
-    var target = new File(reportDir, "job.log.gz");
-    try {
-      FileUtils.copyFile(log, target);
-    } catch (IOException e) {
-      LOG.error("Failed to copy job logs from {} to {}", log, target, e);
-    }
+  protected void onLogAppenderClose() {
+    // set MDC again just to make sure we copy the logs correctly in case some other code has changed the MDC wrongly
+    LoggingUtils.setDatasetMDC(datasetKey, attempt, getClass());
+    LOG.info(LoggingUtils.COPY_RELEASE_LOGS_MARKER, "Copy release logs for {} {}", getJobName(), getKey());
+    super.onLogAppenderClose();
   }
 
   /**

@@ -69,7 +69,7 @@ public class PgCopyUtils {
     CopyManager copy = ((PGConnection)con).getCopyAPI();
     con.commit();
 
-    LOG.info("Copy to table {}", table);
+    LOG.debug("Copy to table {}", table);
     // use quotes to avoid problems with reserved words, e.g. group
     String header = columns.stream().map(h -> "\"" + h + "\"").collect(Collectors.joining(","));
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH "+with, in);

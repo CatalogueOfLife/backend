@@ -34,12 +34,19 @@ public class ReleaseConfig {
   // the COL download directory with monthly and annual subfolder
   public File colDownloadDir = new File("/tmp/col");
 
+  public static File reportDir(File reportRoot, int datasetKey, int attempt) {
+    return new File(reportDir(reportRoot, datasetKey), String.valueOf(attempt));
+  }
+  private static File reportDir(File reportRoot, int datasetKey) {
+    return new File(reportRoot, String.valueOf(datasetKey));
+  }
+
   public File reportDir(int datasetKey, int attempt) {
     return new File(reportDir(datasetKey), String.valueOf(attempt));
   }
 
   public File reportDir(int datasetKey) {
-    return new File(reportDir, String.valueOf(datasetKey));
+    return reportDir(reportDir, datasetKey);
   }
 
   /**

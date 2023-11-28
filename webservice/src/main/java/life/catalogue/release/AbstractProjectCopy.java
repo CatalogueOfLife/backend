@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.common.lang.Exceptions;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DaoUtils;
@@ -72,6 +73,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     newDataset = dDao.copy(datasetKey, userKey, this::modifyDataset);
     newDatasetKey = newDataset.getKey();
     newDatasetOrigin = newDataset.getOrigin();
+    LoggingUtils.setDatasetMDC(datasetKey, attempt, getClass());
   }
 
   protected void modifyDataset(Dataset d, DatasetSettings ds) {

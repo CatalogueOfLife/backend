@@ -86,11 +86,18 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
-  private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
-    Stats stats = new Stats();
-    boolean setMDC = false;
+  private Stats indexDatasetWithMDC(int datasetKey, boolean clearIndex) {
     try {
-      setMDC = LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      var stats = indexDatasetInternal(datasetKey, clearIndex);
+      return stats;
+    } finally {
+      LoggingUtils.removeDatasetMDC();
+    }
+  }
+  private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
+    try {
+      Stats stats = new Stats();
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       if (clearIndex) {
         LOG.info("Remove dataset {} from index", datasetKey);
@@ -119,12 +126,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
     } catch (IOException e) {
       throw new EsException(e);
-
-    } finally {
-      // only remove from MDC if we set it in this method before
-      if (setMDC) {
-        LoggingUtils.removeDatasetMDC();
-      }
     }
   }
 
@@ -247,8 +248,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
   @Override
   public void indexSubtree(DSID<String> taxonId) {
-    boolean setMDC = false;
-    setMDC = LoggingUtils.setDatasetMDC(taxonId.getDatasetKey(), getClass());
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
       LOG.info("Indexing usages from taxon {}", taxonId);
@@ -257,10 +256,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     EsUtil.refreshIndex(client, esConfig.nameUsage.name);
 
     LOG.info("Successfully indexed {} documents from subtree of taxon {}", indexer.documentsIndexed(), taxonId);
-    // only remove from MDC if we set it in this method before
-    if (setMDC) {
-      LoggingUtils.removeDatasetMDC();
-    }
   }
 
   @Override
@@ -293,7 +288,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, false), exec)
+      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, false), exec)
           .exceptionally(ex -> {
             counter.incrementAndGet();
             LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());

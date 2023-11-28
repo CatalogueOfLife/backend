@@ -1,11 +1,7 @@
 package life.catalogue.matching;
 
-import com.google.common.eventbus.EventBus;
-
-import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.FlushDatasetCache;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
@@ -13,12 +9,14 @@ import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import com.google.common.eventbus.EventBus;
 
 /**
  * Rematches entire datasets, using 2 separate db connections for read & write
@@ -42,7 +40,6 @@ public class DatasetMatcher extends BaseMatcher {
    */
   public void match(int datasetKey, boolean allowInserts) throws RuntimeException {
     try {
-      LoggingUtils.setDatasetMDC(datasetKey, getClass());
       final int totalBefore = total;
       final int updatedBefore = updated;
       final int nomatchBefore = nomatch;
@@ -97,7 +94,6 @@ public class DatasetMatcher extends BaseMatcher {
       if (bus != null) {
         bus.post(new FlushDatasetCache(datasetKey));
       }
-      LoggingUtils.removeDatasetMDC();
     }
   }
 

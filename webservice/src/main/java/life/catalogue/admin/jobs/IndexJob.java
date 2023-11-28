@@ -2,6 +2,7 @@ package life.catalogue.admin.jobs;
 
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.es.NameUsageIndexService;
@@ -10,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.slf4j.MDC;
 
 public class IndexJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(IndexJob.class);
@@ -41,9 +44,11 @@ public class IndexJob extends BackgroundJob {
     try {
       if (req.getDatasetKey() != null) {
         if (req.getSectorKey() != null) {
+          LoggingUtils.setSectorAndDatasetMDC(req.getSectorKeyAsDSID(), null, getClass());
           LOG.info("Reindex sector {} by {}", req.getDatasetKey(), getUserKey());
           indexService.indexSector(req.getSectorKeyAsDSID());
         } else {
+          LoggingUtils.setDatasetMDC(req.getDatasetKey(), getClass());
           LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
           indexService.indexDataset(req.getDatasetKey());
         }
@@ -55,6 +60,8 @@ public class IndexJob extends BackgroundJob {
       }
     } catch (RuntimeException e){
       LOG.error("Error reindexing", e);
+    } finally {
+      MDC.clear();
     }
   }
 }

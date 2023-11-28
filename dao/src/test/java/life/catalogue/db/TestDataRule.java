@@ -405,7 +405,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
-    System.out.format("Copy dataset %s\n", key);
+    LOG.debug("Copy dataset {}", key);
     copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
     copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
     copyPartitionedTable(pgc, "name", key,

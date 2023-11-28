@@ -55,6 +55,8 @@ import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.UnmodifiableIterator;
 
+import org.slf4j.MDC;
+
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
 /**

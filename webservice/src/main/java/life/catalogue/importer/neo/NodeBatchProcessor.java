@@ -1,9 +1,8 @@
 package life.catalogue.importer.neo;
 
-import life.catalogue.common.util.LoggingUtils;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -11,6 +10,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 public interface NodeBatchProcessor {
   
@@ -33,6 +33,7 @@ public interface NodeBatchProcessor {
     private final GraphDatabaseService neo;
     private final NodeBatchProcessor callback;
     private final BlockingQueue<List<Node>> queue;
+    private final Map<String, String> parentMDC;
     private int batchCounter = 0;
     private int recordCounter = 0;
     private RuntimeException error = null;
@@ -45,10 +46,13 @@ public interface NodeBatchProcessor {
       this.callback = callback;
       this.queue = queue;
       this.parentThread = parentThread;
+      this.parentMDC = MDC.getCopyOfContextMap();
     }
     
     @Override
     public void run() {
+      // reuse MDC from parent thread
+      MDC.setContextMap(parentMDC);
       while (!(Thread.currentThread().interrupted())) {
         try {
           final List<Node> batch = queue.take();
@@ -58,7 +62,6 @@ public interface NodeBatchProcessor {
           
           batchCounter++;
           try (Transaction tx = neo.beginTx()) {
-            LoggingUtils.setDatasetMDC(datasetKey, attempt, NodeBatchProcessor.class);
             LOG.debug("Start new neo processing batch {} with {} nodes, first={}", batchCounter, batch.size(), batch.get(0));
             for (Node n : batch) {
               callback.process(n);
@@ -66,9 +69,6 @@ public interface NodeBatchProcessor {
             }
             tx.success();
             callback.commitBatch(recordCounter);
-            
-          } finally {
-            LoggingUtils.removeDatasetMDC();
           }
           
         } catch (InterruptedException ex) {

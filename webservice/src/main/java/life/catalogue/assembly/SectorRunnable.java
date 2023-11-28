@@ -117,7 +117,9 @@ abstract class SectorRunnable implements Runnable {
   
   @Override
   public void run() {
-    LoggingUtils.setSectorMDC(sectorKey, state.getAttempt(), getClass());
+    LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
+    LoggingUtils.setSourceMDC(sector.getSubjectDatasetKey());
+
     boolean failed = true;
     try {
       state.setStarted(LocalDateTime.now());
@@ -168,6 +170,7 @@ abstract class SectorRunnable implements Runnable {
         }
       }
       LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(state.getDuration(), "HH:mm:ss"));
+      LoggingUtils.removeSourceMDC();
       LoggingUtils.removeSectorMDC();
     }
   }

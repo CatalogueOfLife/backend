@@ -6,21 +6,20 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.config.MailConfig;
 
-import java.io.File;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.slf4j.MDC;
 
 public abstract class BackgroundJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(BackgroundJob.class);
@@ -135,7 +134,7 @@ public abstract class BackgroundJob implements Runnable {
       LoggingUtils.setJobMDC(key, getClass());
       status = JobStatus.RUNNING;
       started = LocalDateTime.now();
-      LOG.info("Started {} job {}", getClass().getSimpleName(), key);
+      LOG.info(LoggingUtils.JOB_STARTING_MARKER, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
       LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
@@ -177,38 +176,19 @@ public abstract class BackgroundJob implements Runnable {
         }
       }
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
-      LOG.info(LoggingUtils.FINALIZE_SESSION_MARKER, "About to end {} {}", getJobName(), key);
-      LoggingUtils.removeJobMDC();
-      clearMDC();
-      // copy job logs to download directory
-      if (keepLogFile && cfg != null) {
-        File log = cfg.jobLog(key);
-        if (log.exists()) {
-          LOG.info("Copy logs for job {} from {}", key, log);
-          copyLogFile(log);
-        } else {
-          LOG.warn("Logs for job {} missing", key);
-        }
-      }
+      LOG.info(LoggingUtils.JOB_FINISHED_MARKER, "About to end {} {}", getJobName(), key);
+      onLogAppenderClose();
+      MDC.clear();
     }
   }
 
   /**
-   * Override to clear any MDC log values at the end of the job!
+   * Override to clear any MDC log values or copy log files just after the log appender has been closed
+   * and before all MDC properties are cleared.
+   * The job was marked as finished already, so logs should be on the filesystem.
    */
-  protected void clearMDC() {
+  protected void onLogAppenderClose() {
 
-  }
-
-  /**
-   * @param log Gzipped log file from appender log.gz
-   */
-  protected void copyLogFile(File log) {
-    try {
-      FileUtils.copyFile(log, cfg.downloadJobLog(key));
-    } catch (IOException e) {
-      LOG.error("Failed to copy job logs from {}", log, e);
-    }
   }
 
   @JsonProperty("job")

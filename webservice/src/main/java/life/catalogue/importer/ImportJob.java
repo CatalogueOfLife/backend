@@ -150,7 +150,7 @@ public class ImportJob implements Runnable {
   
   @Override
   public void run() {
-    LoggingUtils.setDatasetMDC(datasetKey, -1, getClass());
+    LoggingUtils.setDatasetMDC(datasetKey, getClass());
     try {
       notifier.started();
       importDataset();

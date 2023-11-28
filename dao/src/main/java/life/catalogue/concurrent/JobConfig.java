@@ -79,25 +79,8 @@ public class JobConfig {
     return downloadURI.resolve(JobResult.downloadFilePath(key));
   }
 
-  /**
-   * @return the jobs log file as created by the JobAppenderFactory
-   */
-  public File jobLog(UUID key) {
-    return jobLog(logDir, key);
-  }
-
-  public static File jobLog(File directory, UUID key) {
-    return jobLog(directory, key.toString());
-  }
   public static File jobLog(File directory, String key) {
     return new File(directory, "job-" + key + ".log.gz");
-  }
-
-  /**
-   * @return the jobs log file exposed for downloads
-   */
-  public File downloadJobLog(UUID key) {
-    return new File(downloadDir, JobResult.downloadFilePath(key, "log.gz"));
   }
 
   /**

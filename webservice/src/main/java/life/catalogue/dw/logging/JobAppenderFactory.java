@@ -1,8 +1,5 @@
 package life.catalogue.dw.logging;
 
-import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.JobConfig;
-
 import java.io.File;
 
 import org.slf4j.Logger;
@@ -12,28 +9,34 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.sift.MDCBasedDiscriminator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.sift.AppenderFactory;
 import io.dropwizard.logging.AbstractAppenderFactory;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
 import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
 
 /**
- * A sifting file appender that writes logs separated by their MDC job key to individual files
+ * A file appender that writes logs separated by their MDC job key to individual files
  */
 @JsonTypeName("job-appender")
 public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
   private static final Logger LOG = LoggerFactory.getLogger(JobAppenderFactory.class);
 
-  private static final String PATTERN = "%d %X{task}: %msg%n";
 
-  File directory;
+  private String pattern;
+  private File directory;
+  private File downloadDir;
+  private File reportDir;
+
+  @JsonProperty
+  public String getPattern() {
+    return pattern;
+  }
+
+  public void setPattern(String pattern) {
+    this.pattern = pattern;
+  }
 
   @JsonProperty
   public File getDirectory() {
@@ -44,48 +47,40 @@ public class JobAppenderFactory extends AbstractAppenderFactory<ILoggingEvent> {
     this.directory = directory;
   }
 
+  @JsonProperty
+  public File getDownloadDir() {
+    return downloadDir;
+  }
+
+  public void setDownloadDir(File downloadDir) {
+    this.downloadDir = downloadDir;
+  }
+
+  @JsonProperty
+  public File getReportDir() {
+    return reportDir;
+  }
+
+  public void setReportDir(File reportDir) {
+    this.reportDir = reportDir;
+  }
+
   @Override
   public Appender<ILoggingEvent> build(LoggerContext context, String applicationName, LayoutFactory<ILoggingEvent> layoutFactory, LevelFilterFactory<ILoggingEvent> levelFilterFactory, AsyncAppenderFactory<ILoggingEvent> asyncAppenderFactory) {
-    var sift = new ClosingSiftingAppender();
-    sift.setName("job-appender");
-    sift.setContext(context);
+    var app = new JobAppender(directory, downloadDir, reportDir, pattern);
+    app.setName("job-appender");
+    app.setContext(context);
+
     var filter = new MDCJobFilter();
     filter.start();
-    sift.addFilter(filter);
+    app.addFilter(filter);
 
-    var discrimiator = new MDCBasedDiscriminator();
-    discrimiator.setKey(LoggingUtils.MDC_KEY_JOB);
-    discrimiator.setDefaultValue("none");
-    discrimiator.start();
-    sift.setDiscriminator(discrimiator);
+    app.addFilter(levelFilterFactory.build(threshold));
+    getFilterFactories().forEach(f -> app.addFilter(f.build()));
+    app.start();
 
-    sift.setAppenderFactory(new AppenderFactory<ILoggingEvent>() {
-      @Override
-      public Appender<ILoggingEvent> buildAppender(Context context, String discriminatingValue) throws JoranException {
-        var fa = new GZipFileAppender<ILoggingEvent>();
-        var dir = JobConfig.jobLog(directory, discriminatingValue).getAbsolutePath();
-        LOG.debug("Starting new job log appender at {}", dir);
-        fa.setFile(dir);
-        fa.setContext(context);
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setPattern(PATTERN);
-        encoder.setContext(context);
-        encoder.start();
-        fa.setEncoder(encoder);
-        fa.start();
-        return fa;
-      }
-    });
-
-    sift.addFilter(levelFilterFactory.build(threshold));
-    getFilterFactories().forEach(f -> sift.addFilter(f.build()));
-    sift.start();
-
-    if (!directory.exists() && !directory.mkdirs()) {
-      LOG.error("Failed to create missing job log directory {}", directory);
-    }
-
-    LOG.info("Created asynchroneous job appender for directory {}", directory);
-    return wrapAsync(sift, asyncAppenderFactory);
+    LOG.info("Created job appender for directory {}", directory);
+    return app;
   }
+
 }

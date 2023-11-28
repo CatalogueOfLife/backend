@@ -22,7 +22,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
 
   protected final int datasetKey;
   protected Dataset dataset;
-  private int attempt = 0;
+  private int retry = 0;
 
   public DatasetBlockingJob(int datasetKey, int userKey, @Nullable JobPriority priority) {
     super(priority, userKey);
@@ -37,8 +37,8 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
     return dataset;
   }
 
-  public int getAttempt() {
-    return attempt;
+  public int getRetry() {
+    return retry;
   }
 
   protected abstract void runWithLock() throws Exception;
@@ -59,15 +59,15 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   @Override
   public final void execute() throws Exception {
     // we track attempts to run this job - it can be blocked
-    attempt++;
+    retry++;
     // did we try several times already so it seems there is a longer running job blocking and the executor is rather idle
-    if (attempt>25) {
+    if (retry >25) {
       TimeUnit.MINUTES.sleep(5);
-    } else if (attempt>10) {
+    } else if (retry >10) {
       TimeUnit.MINUTES.sleep(1);
-    } else if (attempt>5) {
+    } else if (retry >5) {
       TimeUnit.SECONDS.sleep(10);
-    } else if (attempt>2) {
+    } else if (retry >2) {
       TimeUnit.SECONDS.sleep(1);
     } else {
       TimeUnit.MILLISECONDS.sleep(100);
@@ -79,7 +79,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
       LoggingUtils.setDatasetMDC(datasetKey, getClass());
       runWithLock();
     } else {
-      LOG.info("Failed to acquire lock for dataset {} from {} job {} #{}. Blocked by currently running job {}", datasetKey, this.getClass().getSimpleName(), getKey(), attempt, proc);
+      LOG.info("Failed to acquire lock for dataset {} from {} job {} #{}. Blocked by currently running job {}", datasetKey, this.getClass().getSimpleName(), getKey(), retry, proc);
       throw new DatasetBlockedException(proc, datasetKey);
     }
   }
@@ -94,8 +94,8 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   }
 
   @Override
-  protected void clearMDC() {
-    super.clearMDC();
+  protected void onLogAppenderClose() {
+    super.onLogAppenderClose();
     LoggingUtils.removeDatasetMDC();
   }
 

@@ -1,12 +1,5 @@
 package life.catalogue.concurrent;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
 import life.catalogue.api.exception.TooManyRequestsException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
@@ -15,16 +8,13 @@ import life.catalogue.common.Managed;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.UserDao;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.NotAllowedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,7 +126,7 @@ public class JobExecutor implements Managed, Idle {
         if (e.getCause() instanceof DatasetBlockedException && job instanceof DatasetBlockingJob) {
           DatasetBlockedException be = (DatasetBlockedException) e.getCause();
           DatasetBlockingJob bj = (DatasetBlockingJob) job;
-          LOG.info("Resubmit job {} #{} which requires a lock on dataset {} and is blocked by {}", job.getKey(), bj.getAttempt(), be.datasetKey, be.blockedBy);
+          LOG.info("Resubmit job {} #{} which requires a lock on dataset {} and is blocked by {}", job.getKey(), bj.getRetry(), be.datasetKey, be.blockedBy);
           JobExecutor.this.submit(job);
         }
       }
