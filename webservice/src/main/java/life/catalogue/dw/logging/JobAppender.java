@@ -117,7 +117,7 @@ public class JobAppender extends AppenderBase<ILoggingEvent> {
     final String key = log.getMDCPropertyMap().get(LoggingUtils.MDC_KEY_JOB);
     Appender<ILoggingEvent> a;
     if (hasMarker(log, LoggingUtils.JOB_FINISHED_MARKER)) {
-      a = appender.get(key);
+      a = appender.remove(key);
       if (a != null) {
         a.doAppend(log);
         a.stop();
