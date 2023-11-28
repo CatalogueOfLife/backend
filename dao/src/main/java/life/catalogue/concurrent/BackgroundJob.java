@@ -39,7 +39,7 @@ public abstract class BackgroundJob implements Runnable {
   private User user;
   private Timer timer;
   // if true copies job logs into the results directory
-  protected boolean keepLogFile = true;
+  protected boolean logToFile;
 
   protected BackgroundJob(int userKey) {
     this(JobPriority.MEDIUM, userKey);
@@ -134,7 +134,8 @@ public abstract class BackgroundJob implements Runnable {
       LoggingUtils.setJobMDC(key, getClass());
       status = JobStatus.RUNNING;
       started = LocalDateTime.now();
-      LOG.info(LoggingUtils.JOB_STARTING_MARKER, "Started {} job {}", getClass().getSimpleName(), key);
+      var marker = logToFile ? LoggingUtils.START_JOB_LOG_MARKER : null;
+      LOG.info(marker, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
       LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
@@ -176,7 +177,8 @@ public abstract class BackgroundJob implements Runnable {
         }
       }
       // will cause the dataset sifting appender reach end-of-life. It will linger for a few seconds.
-      LOG.info(LoggingUtils.JOB_FINISHED_MARKER, "About to end {} {}", getJobName(), key);
+      var marker = logToFile ? LoggingUtils.END_JOB_LOG_MARKER : null;
+      LOG.info(marker, "About to end {} {}", getJobName(), key);
       onLogAppenderClose();
       MDC.clear();
     }

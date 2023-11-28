@@ -1,7 +1,6 @@
 package life.catalogue.admin.jobs;
 
 import life.catalogue.api.model.RequestScope;
-import life.catalogue.api.model.User;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobPriority;
@@ -26,7 +25,6 @@ public class IndexJob extends BackgroundJob {
     super(priority, userKey);
     this.req = req;
     this.indexService = indexService;
-    this.keepLogFile = false;
   }
 
   @Override

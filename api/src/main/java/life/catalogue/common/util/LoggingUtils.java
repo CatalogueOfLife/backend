@@ -13,9 +13,10 @@ public class LoggingUtils {
   /**
    * Marks finished jobs, e.g. for job log appenders.
    */
-  public static final Marker JOB_STARTING_MARKER = MarkerFactory.getMarker("JOB_STARTING");
-  public static final Marker JOB_FINISHED_MARKER = MarkerFactory.getMarker("JOB_FINISHED");
+  public static final Marker START_JOB_LOG_MARKER = MarkerFactory.getMarker("START_JOB_LOG");
+  public static final Marker END_JOB_LOG_MARKER = MarkerFactory.getMarker("END_JOB_LOG");
   public static final Marker COPY_RELEASE_LOGS_MARKER = MarkerFactory.getMarker("COPY_RELEASE_LOGS");
+
   public static final String MDC_KEY_JOB = "job";
   public static final String MDC_KEY_TASK = "task";
   public static final String MDC_KEY_DATASET = "dataset";

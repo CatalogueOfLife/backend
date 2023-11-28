@@ -75,6 +75,7 @@ public class MatchingJob extends DatasetBlockingJob {
 
   public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, WsServerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
+    this.logToFile = true;
     this.cfg = cfg;
     this.matcher = matcher;
     this.factory = factory;

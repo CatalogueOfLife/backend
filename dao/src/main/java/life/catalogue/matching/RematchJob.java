@@ -52,6 +52,7 @@ public class RematchJob extends BackgroundJob {
     this.sectorKeys = Preconditions.checkNotNull(sectorKeys);
     this.factory = factory;
     this.ni = ni.assertOnline();
+    this.logToFile = true;
   }
 
   private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int... datasetKeys) {

@@ -56,6 +56,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
                              int userKey, int datasetKey, boolean mapIds, boolean deleteOnError) {
     super(datasetKey, userKey, JobPriority.HIGH);
     DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
+    this.logToFile = true;
     this.deleteOnError = deleteOnError;
     this.actionName = actionName;
     this.factory = factory;

@@ -24,13 +24,21 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidationJob.class);
   private final HomotypicConsolidator hc;
 
-  public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey) {
+  private HomotypicConsolidationJob(int datasetKey, int userKey, HomotypicConsolidator hc) {
     super(datasetKey, userKey, JobPriority.MEDIUM);
-    hc = HomotypicConsolidator.entireDataset(factory, datasetKey);
+    this.hc = hc;
+    this.logToFile = true;
+  }
+
+  public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey) {
+    this(datasetKey, userKey, HomotypicConsolidator.entireDataset(factory, datasetKey));
   }
 
   public HomotypicConsolidationJob(SqlSessionFactory factory, int datasetKey, int userKey, String taxonID) {
-    super(datasetKey, userKey, JobPriority.MEDIUM);
+    this(datasetKey, userKey, buildHC(factory, datasetKey, taxonID));
+  }
+
+  private static HomotypicConsolidator buildHC(SqlSessionFactory factory, int datasetKey, String taxonID) {
     List<SimpleName> families = new ArrayList<>();
     SimpleName root;
     try (SqlSession session = factory.openSession()) {
@@ -53,7 +61,7 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
       });
     }
     LOG.info("Found {} families to consolidate for root taxon {}", families.size(), root);
-    hc = HomotypicConsolidator.forTaxa(factory, datasetKey, families);
+    return HomotypicConsolidator.forTaxa(factory, datasetKey, families);
   }
 
   @Override
