@@ -10,6 +10,8 @@ import life.catalogue.doi.datacite.model.EventType;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.NotFoundException;
@@ -186,27 +188,44 @@ public class DataCiteService implements DoiService {
     update(attr);
   }
 
+  LocalDateTime lastErrorMail;
+  int errorsSince;
+
   @Override
   public void notifyException(DOI doi, String action, Exception e) {
     if (mailer != null) {
-      StringWriter sw = new StringWriter();
-      sw.write(action);
-      sw.write(" for DOI " + doi + " has failed.");
-      if (e != null) {
-        sw.write(" " + e.getClass().getSimpleName()+":\n\n");
-        PrintWriter pw = new PrintWriter(sw);
-        e.printStackTrace(pw);
-      } else {
-        sw.write(".\n");
-      }
+      // avoid spamming thousands of mails and do only one mail per minute
+      long secs = lastErrorMail == null ? Long.MAX_VALUE : ChronoUnit.SECONDS.between(lastErrorMail, LocalDateTime.now());
+      if (secs <= 60) {
+        errorsSince++;
 
-      Email mail = EmailBuilder.startingBlank()
-        .to(onErrorTo)
-        .from(onErrorFrom)
-        .withSubject(String.format("DOI error %s", doi))
-        .withPlainText(sw.toString())
-        .buildEmail();
-      mailer.sendMail(mail, true);
+      } else {
+        StringWriter sw = new StringWriter();
+        sw.write(action);
+        sw.write(" for DOI " + doi + " has failed.");
+        if (errorsSince > 0) {
+          sw.write("\nWarning! There were "+errorsSince+" more DOI errors since " + lastErrorMail +
+            " that were not reported via email, please consult the logs."
+          );
+        }
+        if (e != null) {
+          sw.write(" " + e.getClass().getSimpleName()+":\n\n");
+          PrintWriter pw = new PrintWriter(sw);
+          e.printStackTrace(pw);
+        } else {
+          sw.write(".\n");
+        }
+
+        Email mail = EmailBuilder.startingBlank()
+          .to(onErrorTo)
+          .from(onErrorFrom)
+          .withSubject(String.format("DOI error %s", doi))
+          .withPlainText(sw.toString())
+          .buildEmail();
+        mailer.sendMail(mail, true);
+        lastErrorMail = LocalDateTime.now();
+        errorsSince = 0;
+      }
     }
   }
 }
