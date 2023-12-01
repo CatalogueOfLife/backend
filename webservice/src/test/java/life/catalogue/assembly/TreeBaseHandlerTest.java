@@ -67,13 +67,13 @@ public class TreeBaseHandlerTest {
     EditorialDecision d = new EditorialDecision();
     d.setMode(EditorialDecision.Mode.UPDATE);
 
-    assertEquals(orig, h.applyDecision(u, d));
+    assertEquals(orig, h.applyDecision(u, d).usage);
 
     d.setStatus(TaxonomicStatus.ACCEPTED);
     var updtd = h.applyDecision(u, d);
     assertNotEquals(orig, updtd);
-    assertTrue(updtd instanceof Taxon);
-    assertEquals(TaxonomicStatus.ACCEPTED, updtd.getStatus());
+    assertTrue(updtd.usage instanceof Taxon);
+    assertEquals(TaxonomicStatus.ACCEPTED, updtd.usage.getStatus());
   }
 
   private static final Sector SECTOR = Sector.newBuilder()
