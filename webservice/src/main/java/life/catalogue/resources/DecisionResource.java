@@ -55,6 +55,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
   }
 
   @GET
+  @Path("/stale")
   public List<EditorialDecision> listStaleAmbiguousUpdateDecisions(@PathParam("key") int projectKey, @QueryParam("subjectDatasetKey") Integer subjectDatasetKey) {
     return dao.listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
   }
