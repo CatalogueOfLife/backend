@@ -358,4 +358,14 @@
     UPDATE sector SET priority = priority+1
     WHERE dataset_key=#{datasetKey} AND priority &gt;= #{priority}
   </update>
+
+  <delete id="deleteOrphans" parameterType="map">
+    DELETE FROM sector s WHERE dataset_key = #{datasetKey} AND NOT EXISTS (
+      SELECT NULL FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    ) AND NOT EXISTS (
+      SELECT NULL FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    ) AND NOT EXISTS (
+      SELECT NULL FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    )
+  </delete>
 </mapper>

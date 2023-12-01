@@ -10,6 +10,9 @@ import life.catalogue.matching.NameIndex;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,28 +123,36 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   private void process(NameUsageBase u) throws InterruptedException {
-    processCommon(u);
+    var mod = processCommon(u);
 
-    if (ignoreUsage(u, decisions.get(u.getId()))) {
-      // skip this taxon, but include children
+    if (ignoreUsage(mod.usage, decisions.get(u.getId()))) {
+      // skip this taxon, bmod.usaget include children
       // use taxons parent also as the parentID for this so children link one level up
-      ids.put(u.getId(), ids.getOrDefault(u.getParentId(), targetUsage));
+      ids.put(mod.usage.getId(), ids.getOrDefault(mod.usage.getParentId(), targetUsage));
       return;
     }
 
     // all non root nodes have newly created parents
-    Usage parent = ids.getOrDefault(u.getParentId(), targetUsage);
-    // make sure we have a genus for species and a species for infraspecific taxa
-    if (u.isTaxon() && u.getName().getRank().isSpeciesOrBelow()) {
-      parent = createImplicit(parent, (Taxon) u);
+    Usage parent = ids.getOrDefault(mod.usage.getParentId(), targetUsage);
+    // do we have to relink the taxon to a sensible parent?
+    if (mod.relink) {
+      // make sure the parent has a higher rank
+      LOG.warn("usage relinking not yet supported. Likely misplacement of {}", mod.usage.getLabel());
+      //while (parent.rank.lowerOrEqualsTo(mod.usage.getRank())) {
+      //  parent = ids.getOrDefault(parent.getParentId(), targetUsage);
+      //}
     }
-    String origNameID= u.getName().getId();
-    final var orig = DSID.copy(u);
-    create(u, parent);
+    // make sure we have a genus for species and a species for infraspecific taxa
+    if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow()) {
+      parent = createImplicit(parent, (Taxon) mod.usage);
+    }
+    String origNameID= mod.usage.getName().getId();
+    final var orig = DSID.copy(mod.usage);
+    create(mod.usage, parent);
 
     // remember old to new id mappings
-    ids.put(orig.getId(), usage(u));
-    nameIds.put(origNameID, u.getName().getId());
+    ids.put(orig.getId(), usage(mod.usage));
+    nameIds.put(origNameID, mod.usage.getName().getId());
 
     // commit in batches
     if ((sCounter + tCounter) % 1000 == 0) {

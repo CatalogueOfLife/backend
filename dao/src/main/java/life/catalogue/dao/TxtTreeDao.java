@@ -139,6 +139,7 @@ public class TxtTreeDao {
     for (SimpleTreeNode st : t.synonyms){
       final Name sn = tree2name(parent.getDatasetKey(), st, code);
       final Synonym syn = new Synonym(sn);
+      syn.setAccepted(tax);
       sdao.create(syn, user.getKey());
       if (st.basionym) {
         try (SqlSession session = factory.openSession(true)) {

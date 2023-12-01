@@ -87,4 +87,11 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    * @return number of changed sectors
    */
   int incLowerPriorities(@Param("datasetKey") Integer datasetKey, @Param("priority") Integer priority);
+
+  /**
+   * Delete sectors that are not referenced from any usage, name or reference records
+   * @param datasetKey project or release
+   * @return number of deleted sectors
+   */
+  int deleteOrphans(@Param("datasetKey") Integer datasetKey);
 }

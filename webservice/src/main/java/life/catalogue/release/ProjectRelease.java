@@ -18,6 +18,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -212,6 +213,12 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   void finalWork() throws Exception {
     checkIfCancelled();
+    // remove orphan sectors and decisions not used in the data, e.g. merge sectors from the XCOL
+    try (SqlSession session = factory.openSession(true)) {
+      int del = session.getMapper(SectorMapper.class).deleteOrphans(newDatasetKey);
+      LOG.info("Removed {} unused sectors", del);
+    }
+
     updateState(ImportState.ARCHIVING);
     LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true)) {

@@ -7,6 +7,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
@@ -293,5 +294,181 @@ public class Sector extends DatasetScopedEntity<Integer> {
         ", subjectDatasetKey=" + getSubjectDatasetKey() +
         ", subject=" + getSubject() +
         '}';
+  }
+
+  public static Sector.Builder newBuilder() {
+    return new Sector.Builder();
+  }
+
+  public static final class Builder {
+    private LocalDateTime created;
+    private Integer createdBy;
+    private LocalDateTime modified;
+    private Integer modifiedBy;
+    private Integer datasetKey;
+    private Integer id;
+    private SimpleNameLink target;
+    private Integer subjectDatasetKey;
+    private SimpleNameLink subject;
+    private String originalSubjectId;
+    private Rank placeholderRank;
+    private Mode mode;
+    private Integer priority;
+    private Integer syncAttempt;
+    private Integer datasetAttempt;
+    private NomCode code;
+    private Set<Rank> ranks;
+    private Set<EntityType> entities;
+    private Set<NameType> nameTypes;
+    private Set<NomStatus> nameStatusExclusion;
+    private boolean copyAccordingTo;
+    private String note;
+    private Integer size;
+
+    private Builder() {
+    }
+
+    public Builder created(LocalDateTime created) {
+      this.created = created;
+      return this;
+    }
+
+    public Builder createdBy(Integer createdBy) {
+      this.createdBy = createdBy;
+      return this;
+    }
+
+    public Builder modified(LocalDateTime modified) {
+      this.modified = modified;
+      return this;
+    }
+
+    public Builder modifiedBy(Integer modifiedBy) {
+      this.modifiedBy = modifiedBy;
+      return this;
+    }
+
+    public Builder datasetKey(Integer datasetKey) {
+      this.datasetKey = datasetKey;
+      return this;
+    }
+
+    public Builder id(Integer id) {
+      this.id = id;
+      return this;
+    }
+
+    public Builder target(SimpleNameLink target) {
+      this.target = target;
+      return this;
+    }
+
+    public Builder subjectDatasetKey(Integer subjectDatasetKey) {
+      this.subjectDatasetKey = subjectDatasetKey;
+      return this;
+    }
+
+    public Builder subject(SimpleNameLink subject) {
+      this.subject = subject;
+      return this;
+    }
+
+    public Builder originalSubjectId(String originalSubjectId) {
+      this.originalSubjectId = originalSubjectId;
+      return this;
+    }
+
+    public Builder placeholderRank(Rank placeholderRank) {
+      this.placeholderRank = placeholderRank;
+      return this;
+    }
+
+    public Builder mode(Mode mode) {
+      this.mode = mode;
+      return this;
+    }
+
+    public Builder priority(Integer priority) {
+      this.priority = priority;
+      return this;
+    }
+
+    public Builder syncAttempt(Integer syncAttempt) {
+      this.syncAttempt = syncAttempt;
+      return this;
+    }
+
+    public Builder datasetAttempt(Integer datasetAttempt) {
+      this.datasetAttempt = datasetAttempt;
+      return this;
+    }
+
+    public Builder code(NomCode code) {
+      this.code = code;
+      return this;
+    }
+
+    public Builder ranks(Set<Rank> ranks) {
+      this.ranks = ranks;
+      return this;
+    }
+
+    public Builder entities(Set<EntityType> entities) {
+      this.entities = entities;
+      return this;
+    }
+
+    public Builder nameTypes(Set<NameType> nameTypes) {
+      this.nameTypes = nameTypes;
+      return this;
+    }
+
+    public Builder nameStatusExclusion(Set<NomStatus> nameStatusExclusion) {
+      this.nameStatusExclusion = nameStatusExclusion;
+      return this;
+    }
+
+    public Builder copyAccordingTo(boolean copyAccordingTo) {
+      this.copyAccordingTo = copyAccordingTo;
+      return this;
+    }
+
+    public Builder note(String note) {
+      this.note = note;
+      return this;
+    }
+
+    public Builder size(Integer size) {
+      this.size = size;
+      return this;
+    }
+
+    public Sector build() {
+      Sector sector = new Sector();
+      sector.setCreated(created);
+      sector.setCreatedBy(createdBy);
+      sector.setModified(modified);
+      sector.setModifiedBy(modifiedBy);
+      sector.setDatasetKey(datasetKey);
+      sector.setId(id);
+      sector.setTarget(target);
+      sector.setSubjectDatasetKey(subjectDatasetKey);
+      sector.setSubject(subject);
+      sector.setOriginalSubjectId(originalSubjectId);
+      sector.setPlaceholderRank(placeholderRank);
+      sector.setMode(mode);
+      sector.setPriority(priority);
+      sector.setSyncAttempt(syncAttempt);
+      sector.setDatasetAttempt(datasetAttempt);
+      sector.setCode(code);
+      sector.setRanks(ranks);
+      sector.setEntities(entities);
+      sector.setNameTypes(nameTypes);
+      sector.setNameStatusExclusion(nameStatusExclusion);
+      sector.setCopyAccordingTo(copyAccordingTo);
+      sector.setNote(note);
+      sector.size = this.size;
+      return sector;
+    }
   }
 }

@@ -25,6 +25,7 @@ public class Synonym extends NameUsageBase implements Comparable<Synonym> {
 
   public Synonym(Name n) {
     super(n);
+    this.setStatus(TaxonomicStatus.SYNONYM);
   }
 
   public Synonym(NameUsageBase other) {

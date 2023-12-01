@@ -76,7 +76,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.targetDatasetKey = targetDatasetKey;
     this.targetKey = DSID.root(targetDatasetKey);
     this.user = user;
-    this.sector = sector;
+    this.sector = Preconditions.checkNotNull(sector, "Sector required");
     this.state = state;
     this.decisions = decisions;
     this.nameIndex = nameIndex;
@@ -125,7 +125,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
     nmm= batchSession.getMapper(NameMatchMapper.class);
   }
 
-  protected void processCommon(NameUsageBase nu) {
+  protected ModifiedUsage processCommon(NameUsageBase nu) {
+    ModifiedUsage mod;
     // make rank non null
     if (nu.getName().getRank() == null) nu.getName().setRank(Rank.UNRANKED);
     // sector defaults before we apply a specific decision
@@ -138,16 +139,19 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
     // decisions
     if (decisions.containsKey(nu.getId())) {
-      applyDecision(nu, decisions.get(nu.getId()));
+      mod = applyDecision(nu, decisions.get(nu.getId()));
+      nu = mod.usage;
     } else {
       // apply general rules otherwise
       SyncNameUsageRules.applyAlways(nu);
+      mod = new ModifiedUsage(nu, false);
     }
     // rematch to nidx?
     if (forceMatch) {
       var match = nameIndex.match(nu.getName(), true, false);
       nu.getName().applyMatch(match);
     }
+    return mod;
   }
 
   protected Usage usage(NameUsageBase u) {
@@ -410,7 +414,18 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     return false;
   }
-  protected void applyDecision(NameUsageBase u, EditorialDecision ed) {
+
+  public static class ModifiedUsage {
+    final NameUsageBase usage;
+    final boolean relink;
+
+    ModifiedUsage(NameUsageBase usage, boolean relink) {
+      this.usage = usage;
+      this.relink = relink;
+    }
+  }
+  protected ModifiedUsage applyDecision(NameUsageBase u, EditorialDecision ed) {
+    boolean linkUp = false;
     try {
       switch (ed.getMode()) {
         case BLOCK:
@@ -480,8 +495,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setType(n2.getType());
             }
           }
+          // this can change a synonym to a taxon, so do it *before* we apply update values only relevant to taxa
           if (ed.getStatus() != null) {
             try {
+              // change a synonym to a Taxon? needs an instance change...
+              if (u.isSynonym() && ed.getStatus().isTaxon()) {
+                u = new Taxon(u);
+                linkUp = true;
+              }
               u.setStatus(ed.getStatus());
             } catch (IllegalArgumentException e) {
               LOG.warn("Cannot convert {} {} from {} to {}: {}", u.getName().getRank(), u.getName().getLabel(), u.getStatus(), ed.getStatus(), e.getMessage());
@@ -508,6 +529,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       Thread.currentThread().interrupt();  // set interrupt flag back
       throw new InterruptedRuntimeException(e);
     }
+    return new ModifiedUsage(u, linkUp);
   }
 
   protected boolean incIgnored(IgnoreReason reason, NameUsageBase u) {
