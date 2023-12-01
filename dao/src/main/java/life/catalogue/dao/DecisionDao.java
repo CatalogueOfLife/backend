@@ -10,6 +10,7 @@ import life.catalogue.es.NameUsageIndexService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
@@ -96,7 +97,11 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    */
   public List<EditorialDecision> listStaleAmbiguousUpdateDecisions(int projectKey, Integer subjectDatasetKey) {
     try (SqlSession session = factory.openSession()) {
-      return session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
+      var ids = session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
+      return ids.stream()
+        .map(id -> DSID.of(projectKey, id))
+        .map(this::get)
+        .collect(Collectors.toList());
     }
   }
 }

@@ -135,6 +135,13 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
   }
 
   @Test
+  public void listStaleAmbiguousUpdateDecisions(){
+    // just test valid sql rather than expected outcomes
+    mapper().listStaleAmbiguousUpdateDecisions(appleKey, null);
+    mapper().listStaleAmbiguousUpdateDecisions(appleKey, 1);
+  }
+
+  @Test
   public void process(){
     // processing
     CountHandler handler = new CountHandler();

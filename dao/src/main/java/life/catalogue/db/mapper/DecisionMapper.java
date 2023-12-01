@@ -38,5 +38,8 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
    */
   List<Integer> listProjectKeys(@Param("subjectDatasetKey") int subjectDatasetKey);
 
-  List<EditorialDecision> listStaleAmbiguousUpdateDecisions(@Param("datasetKey") int projectKey, @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey);
+  /**
+   * @return decision ids for stale ambiguous decisions
+   */
+  List<Integer> listStaleAmbiguousUpdateDecisions(@Param("datasetKey") int projectKey, @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey);
 }

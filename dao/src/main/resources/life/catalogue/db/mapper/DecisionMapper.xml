@@ -235,12 +235,8 @@
     </if>
   </select>
 
-  <select id="listStaleAmbiguousUpdateDecisions" resultMap="decisionResultMap">
-    SELECT
-    <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
-      <property name="alias" value="ed."/>
-      <property name="prefix" value=""/>
-    </include>
+  <select id="listStaleAmbiguousUpdateDecisions" resultType="integer">
+    SELECT ed.id
     FROM decision ed JOIN name n ON n.dataset_key=ed.subject_dataset_key
       AND n.rank = ed.subject_rank
       AND lower(n.scientific_name) = lower(ed.subject_name)
