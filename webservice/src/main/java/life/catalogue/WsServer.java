@@ -215,11 +215,10 @@ public class WsServer extends Application<WsServerConfig> {
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
 
-    // http client pool is managed via DW lifecycle already
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
       .using(cfg.client)
-      .build(getUserAgent(cfg));
+      .build(getUserAgent(cfg)); // http client pool is managed via DW lifecycle inside this build call
 
     // reuse the same http client pool also for jersey clients!
     JerseyClientBuilder builder = new JerseyClientBuilder(env)

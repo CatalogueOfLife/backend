@@ -21,6 +21,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import org.simplejavamail.api.email.Email;
@@ -60,15 +61,15 @@ public class DataCiteService implements DoiService {
     this.onErrorFrom = onErrorFrom;
   }
 
-  Invocation.Builder request(){
+  private Invocation.Builder request(){
     return request(dois);
   }
 
-  Invocation.Builder request(DOI doi){
+  private Invocation.Builder request(DOI doi){
     return request(dois.path(doi.getDoiName()));
   }
 
-  Invocation.Builder request(WebTarget uri){
+  private Invocation.Builder request(WebTarget uri){
     return uri
       .request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, auth);
@@ -100,10 +101,11 @@ public class DataCiteService implements DoiService {
   @Override
   public void create(DoiAttributes attr) throws DoiException {
     LOG.info("create new draft DOI {}", attr.getDoi());
+    Response resp = null;
     try {
       DataCiteWrapper data = new DataCiteWrapper(attr);
       LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
-      var resp = request().post(Entity.json(data));
+      resp = request().post(Entity.json(data));
       if (resp.getStatus() != 201) {
         if (resp.getEntity() != null) {
           String message = resp.readEntity(String.class);
@@ -111,9 +113,15 @@ public class DataCiteService implements DoiService {
         }
         throw new DoiHttpException(resp.getStatus(), attr.getDoi());
       }
+      resp.close();
 
     } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);
+
+    } finally {
+      if (resp != null) {
+        resp.close();
+      }
     }
   }
 
@@ -122,11 +130,12 @@ public class DataCiteService implements DoiService {
     Preconditions.checkNotNull(doi);
     Preconditions.checkArgument(doi.isComplete(), "DOI suffix required");
     LOG.info("delete DOI {}", doi);
+    Response resp = null;
     try {
       var attr = resolve(doi);
       if (attr != null) {
         if (DoiState.DRAFT == attr.getState()) {
-          var resp = request(doi).delete();
+          resp = request(doi).delete();
           if (resp.getStatus() != 200 && resp.getStatus() != 204) {
             if (resp.getEntity() != null) {
               String message = resp.readEntity(String.class);
@@ -145,6 +154,11 @@ public class DataCiteService implements DoiService {
 
     } catch (RuntimeException e) {
       throw new DoiException(doi, e);
+
+    } finally {
+      if (resp != null) {
+        resp.close();
+      }
     }
     return true;
   }
@@ -163,10 +177,11 @@ public class DataCiteService implements DoiService {
     Preconditions.checkArgument(attr.getDoi().isComplete(), "DOI suffix required");
 
     LOG.info("update metadata for DOI {}", attr);
+    Response resp = null;
     try {
       DataCiteWrapper data = new DataCiteWrapper(attr);
       LOG.debug("DOI {} JSON: {}", attr.getDoi(), ApiModule.MAPPER.writeValueAsString(data));
-      var resp = request(attr.getDoi()).put(Entity.json(data));
+      resp = request(attr.getDoi()).put(Entity.json(data));
 
       if (resp.getStatus() != 200 && resp.getStatus() != 204) {
         if (resp.getEntity() != null) {
@@ -178,7 +193,12 @@ public class DataCiteService implements DoiService {
 
     } catch (RuntimeException | JsonProcessingException e) {
       throw new DoiException(attr.getDoi(), e);
-    }
+
+    } finally {
+        if (resp!= null) {
+          resp.close();
+        }
+      }
   }
 
   @Override
