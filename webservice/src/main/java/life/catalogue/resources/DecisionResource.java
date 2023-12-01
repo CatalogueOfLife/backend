@@ -13,9 +13,11 @@ import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.RematcherBase;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.security.RolesAllowed;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -50,6 +52,11 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
       req.setDatasetKey(datasetKey);
     }
     return dao.search(req, page);
+  }
+
+  @GET
+  public List<EditorialDecision> listStaleAmbiguousUpdateDecisions(@PathParam("key") int projectKey, @QueryParam("subjectDatasetKey") Integer subjectDatasetKey) {
+    return dao.listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
   }
 
   @DELETE

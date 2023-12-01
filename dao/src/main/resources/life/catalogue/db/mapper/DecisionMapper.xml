@@ -235,6 +235,25 @@
     </if>
   </select>
 
+  <select id="listStaleAmbiguousUpdateDecisions" resultMap="decisionResultMap">
+    SELECT
+    <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+      <property name="alias" value="ed."/>
+      <property name="prefix" value=""/>
+    </include>
+    FROM decision ed JOIN name n ON n.dataset_key=ed.subject_dataset_key
+      AND n.rank = ed.subject_rank
+      AND lower(n.scientific_name) = lower(ed.subject_name)
+    WHERE ed.dataset_key = #{datasetKey}
+      AND ed.mode = 'UPDATE'::EDITORIALDECISION_MODE
+      AND ed.status = 'AMBIGUOUS_SYNONYM'::TAXONOMICSTATUS
+    <if test="subjectDatasetKey!=null">
+      AND ed.subject_dataset_key = #{subjectDatasetKey}
+    </if>
+    GROUP BY ed.id
+    HAVING count(*) = 1
+  </select>
+
   <select id="listProjectKeys" parameterType="map" resultType="integer">
     SELECT DISTINCT x.dataset_key
     FROM decision x JOIN dataset d ON d.key=x.dataset_key

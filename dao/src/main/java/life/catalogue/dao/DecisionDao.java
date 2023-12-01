@@ -88,4 +88,15 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
     return false;
   }
 
+  /**
+   * We need a way to report ambiguous synonym update decisions that have only one name left in the project.
+   * Ambiguous synonyms should have at least 2 names (accepted or synonym) which share the same canonical name & rank, but can differ in authorship.
+   * This method lists those decisions only, so they can manually be fixed or removed.
+   * @param projectKey
+   */
+  public List<EditorialDecision> listStaleAmbiguousUpdateDecisions(int projectKey, Integer subjectDatasetKey) {
+    try (SqlSession session = factory.openSession()) {
+      return session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
+    }
+  }
 }
