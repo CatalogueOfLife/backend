@@ -268,13 +268,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
     
     NameUsageBase src = getByID(d4key, "12");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null);
+    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null, null);
   
     src = getByID(d4key, "11");
     Name newName = new Name();
     newName.setScientificName("Euplectus cavicollis");
     newName.setAuthorship("LeConte, J. L., 1878");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName);
+    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName, null);
     
     syncAll();
     assertTree("cat4.txt");
@@ -282,6 +282,31 @@ public class SectorSyncIT extends SectorSyncTestBase {
     NameUsageBase eucav = getByName(Datasets.COL, Rank.SPECIES, "Euplectus cavicollis");
     assertEquals("Euplectus cavicollis", eucav.getName().getScientificName());
     assertEquals(NameType.SCIENTIFIC, eucav.getName().getType());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/593#issuecomment-1833491252
+   */
+  @Test
+  public void syn2accDecision() throws Exception {
+    final int dkey = 102;
+    print(dkey);
+
+    NameUsageBase subject = getByName(dkey, Rank.FAMILY, "Fabaceae");
+    NameUsageBase target = getByName(Datasets.COL, Rank.PHYLUM, "Tracheophyta");
+    createSector(Sector.Mode.ATTACH, subject, target);
+
+    NameUsageBase src = getByName(dkey, Rank.SPECIES, "Acacia riparioides");
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+
+    src = getByName(dkey, Rank.SUBSPECIES, "Astragalus caprinus subsp. lanigerus");
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+
+    src = getByName(dkey, Rank.VARIETY, "Astragalus caprinus var. hirsutus");
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+
+    syncAll();
+    assertTree("cat1.txt");
   }
 
   /**

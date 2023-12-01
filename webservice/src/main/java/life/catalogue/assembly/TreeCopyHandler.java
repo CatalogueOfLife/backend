@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CatCopy;
@@ -10,8 +11,6 @@ import life.catalogue.matching.NameIndex;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.util.RankUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
 
   private String lastParentID;
+  private DSID<String> targetDSID;
   private final List<NameUsageBase> lastUsages = new ArrayList<>();
   private final Map<String, Usage> ids = new HashMap<>();
   private final Map<String, String> nameIds = new HashMap<>();
@@ -32,6 +32,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR);
+    targetDSID = DSID.root(targetDatasetKey);
   }
 
   @Override
@@ -137,10 +138,12 @@ public class TreeCopyHandler extends TreeBaseHandler {
     // do we have to relink the taxon to a sensible parent?
     if (mod.relink) {
       // make sure the parent has a higher rank
-      LOG.warn("usage relinking not yet supported. Likely misplacement of {}", mod.usage.getLabel());
-      //while (parent.rank.lowerOrEqualsTo(mod.usage.getRank())) {
-      //  parent = ids.getOrDefault(parent.getParentId(), targetUsage);
-      //}
+      batchSession.commit();
+      while (parent != null && !Objects.equals(targetUsage, parent) && parent.rank.lowerOrEqualsTo(mod.usage.getRank())) {
+        var p = num.getSimpleParent(targetDSID.id(parent.id));
+        parent = p == null ? null : ids.getOrDefault(p.getId(), targetUsage);
+      }
+      LOG.info("Relinking {} to new parent {}", mod.usage.getLabel(), parent);
     }
     // make sure we have a genus for species and a species for infraspecific taxa
     if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow()) {

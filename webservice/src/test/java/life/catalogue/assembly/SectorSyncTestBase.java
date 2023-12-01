@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
@@ -128,7 +129,7 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name) {
+  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -136,6 +137,7 @@ public abstract class SectorSyncTestBase {
       ed.setSubjectDatasetKey(datasetKey);
       ed.setSubject(src);
       ed.setName(name);
+      ed.setStatus(status);
       ed.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(ed);
       return ed;
