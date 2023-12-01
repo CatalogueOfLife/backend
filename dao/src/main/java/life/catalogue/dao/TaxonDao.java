@@ -198,7 +198,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
     UsageInfo info = new UsageInfo(usage);
     fillUsageInfo(session, info, null, true, true, true, true, true, true,
-      true, true, true, true, true);
+      true, true, true, true, true, true);
     return info;
   }
 
@@ -223,7 +223,8 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
                             boolean loadNameRelations,
                             boolean loadProperties,
                             boolean loadConceptRelations,
-                            boolean loadSpeciesInteractions) {
+                            boolean loadSpeciesInteractions,
+                            boolean loadDecisions) {
     var usage = info.getUsage();
     final boolean isTaxon = usage.isTaxon();
 
@@ -294,6 +295,20 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           t -> refIds.add(t.getReferenceId())
         )
       );
+    }
+
+    if (loadDecisions) {
+      var dm = session.getMapper(DecisionMapper.class);
+      var ed = dm.getByReleasedUsage(usage);
+      if (ed != null) {
+        info.getDecisions().put(usage.getId(), ed);
+      }
+      info.getSynonyms().forEach(s -> {
+        var eds = dm.getByReleasedUsage(s);
+        if (eds != null) {
+          info.getDecisions().put(s.getId(), eds);
+        }
+      });
     }
 
     // add all supplementary taxon infos

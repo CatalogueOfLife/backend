@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.search.DecisionSearchRequest;
 
@@ -15,6 +16,12 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
   EditorialDecision getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("subjectDatasetKey") int subjectDatasetKey,
                       @Param("id") String id);
+
+  /**
+   * Select a decision in a release by its released usage id.
+   * @param key taxon or synonym usage id in the release, not the subject one
+   */
+  EditorialDecision getByReleasedUsage(@Param("key") DSID<String> key);
 
   /**
    * Process all decisions for a given subject dataset, optionally filtered by a project

@@ -184,6 +184,17 @@
     AND ed.subject_id = #{id}
   </select>
 
+  <select id="getByReleasedUsage" resultMap="decisionResultMap">
+    SELECT false AS subject_broken,
+    <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+      <property name="alias" value="d."/>
+      <property name="prefix" value=""/>
+    </include>
+    FROM verbatim_source v
+      JOIN decision d ON d.dataset_key=v.dataset_key AND d.subject_id=v.source_id AND d.subject_dataset_key=v.source_dataset_key
+    WHERE v.dataset_key=#{key.datasetKey} AND v.id=#{key.id};
+  </select>
+
   <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="id">
     INSERT INTO decision (id, <include refid="COLS"/>, original_subject_id, created_by )
     VALUES (nextval('decision_${datasetKey}_id_seq'), <include refid="PROPS"/>, #{subject.id}, #{createdBy} )

@@ -118,6 +118,7 @@ public class PortalPageRenderer {
           true,
           false,
           false,
+          false,
           false
         );
         // put source dataset title into the ID field so we can show a real title

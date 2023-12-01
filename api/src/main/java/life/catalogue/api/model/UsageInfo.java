@@ -43,6 +43,11 @@ public class UsageInfo {
    */
   private Map<String, Taxon> taxa = new HashMap<>();
 
+  /**
+   * Lookup of usageID to list of decisions that were applied to form the given usage in a release
+   */
+  private Map<String, EditorialDecision> decisions = new HashMap<>();
+
   public UsageInfo(NameUsageBase usage) {
     this.usage = usage;
   }
@@ -170,6 +175,14 @@ public class UsageInfo {
 
   public void setTaxa(Map<String, Taxon> taxa) {
     this.taxa = taxa;
+  }
+
+  public Map<String, EditorialDecision> getDecisions() {
+    return decisions;
+  }
+
+  public void setDecisions(Map<String, EditorialDecision> decisions) {
+    this.decisions = decisions;
   }
 
   public List<TypeMaterial> getTypeMaterial(String nameID) {
