@@ -20,7 +20,16 @@ public class RankParser extends EnumParser<Rank> {
     Rank.SUPERDIVISION, Rank.SUPERPHYLUM,
     Rank.DIVISION, Rank.PHYLUM,
     Rank.SUBDIVISION, Rank.SUBPHYLUM,
-    Rank.INFRADIVISION, Rank.INFRAPHYLUM
+    Rank.INFRADIVISION, Rank.INFRAPHYLUM,
+
+    Rank.SUPERSECTION_ZOOLOGY, Rank.SUPERSECTION_BOTANY,
+    Rank.SECTION_ZOOLOGY, Rank.SECTION_BOTANY,
+    Rank.SUBSECTION_ZOOLOGY, Rank.SUBSECTION_BOTANY
+  );
+  private static final Map<Rank, Rank> ZOOLOGY_MAP = ImmutableMap.of(
+    Rank.SUPERSECTION_BOTANY, Rank.SUPERSECTION_ZOOLOGY,
+    Rank.SECTION_BOTANY, Rank.SECTION_ZOOLOGY,
+    Rank.SUBSECTION_BOTANY, Rank.SUBSECTION_ZOOLOGY
   );
 
   public RankParser() {
@@ -40,7 +49,12 @@ public class RankParser extends EnumParser<Rank> {
    */
   public Optional<Rank> parse(@Nullable NomCode code, String value) throws UnparsableException {
     var rank = super.parse(value);
-    if (code != NomCode.ZOOLOGICAL) {
+    if (code == NomCode.ZOOLOGICAL) {
+      Optional<Rank> mapped = rank.map(ZOOLOGY_MAP::get);
+      if (mapped.isPresent()) {
+        return mapped;
+      }
+    } else {
       Optional<Rank> mapped = rank.map(BOTANY_MAP::get);
       if (mapped.isPresent()) {
         return mapped;
