@@ -99,6 +99,11 @@ public enum Setting {
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, PROJECT),
 
   /**
+   * If true a release will issue new DOIs to changed sources.
+   */
+  RELEASE_ISSUE_SOURCE_DOIS(Boolean.class, PROJECT),
+
+  /**
    * If true a release will first delete all bare names from the project before it copies data.
    */
   RELEASE_REMOVE_BARE_NAMES(Boolean.class, PROJECT),

@@ -227,8 +227,9 @@ public class ProjectRelease extends AbstractProjectCopy {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
+      final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
       for (var d : srcDao.list(datasetKey, newDataset, true)) {
-        if (cfg.doi != null) {
+        if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
           if (srcDOI == null) {
