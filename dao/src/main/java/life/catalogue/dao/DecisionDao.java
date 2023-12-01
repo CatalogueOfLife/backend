@@ -95,13 +95,15 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    * This method lists those decisions only, so they can manually be fixed or removed.
    * @param projectKey
    */
-  public List<EditorialDecision> listStaleAmbiguousUpdateDecisions(int projectKey, Integer subjectDatasetKey) {
+  public ResultPage<EditorialDecision> listStaleAmbiguousUpdateDecisions(int projectKey, Integer subjectDatasetKey) {
+    final int limit = 1000;
     try (SqlSession session = factory.openSession()) {
-      var ids = session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey);
-      return ids.stream()
+      var ids = session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey, limit);
+      var eds = ids.subList(0, Math.min(limit, ids.size())).stream()
         .map(id -> DSID.of(projectKey, id))
         .map(this::get)
         .collect(Collectors.toList());
+      return new ResultPage(new Page(0, limit), eds, () -> ids.size());
     }
   }
 }
