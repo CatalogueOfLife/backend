@@ -96,9 +96,9 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
    * @param projectKey
    */
   public ResultPage<EditorialDecision> listStaleAmbiguousUpdateDecisions(int projectKey, Integer subjectDatasetKey) {
-    final int limit = 1000;
+    final int limit = 100;
     try (SqlSession session = factory.openSession()) {
-      var ids = session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey, limit);
+      var ids = session.getMapper(DecisionMapper.class).listStaleAmbiguousUpdateDecisions(projectKey, subjectDatasetKey, Integer.MAX_VALUE);
       var eds = ids.subList(0, Math.min(limit, ids.size())).stream()
         .map(id -> DSID.of(projectKey, id))
         .map(this::get)
