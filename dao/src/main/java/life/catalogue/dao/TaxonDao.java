@@ -290,11 +290,24 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       if (info.getSynonyms() != null) {
         info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
       }
+      // extract all refs
       info.getTypeMaterial().values().forEach(
         types -> types.forEach(
           t -> refIds.add(t.getReferenceId())
         )
       );
+      // aggregate types for all homotypic names
+      if (!info.getTypeMaterial().isEmpty()) {
+        final List<String> nids = new ArrayList<>();
+        nids.add(usage.getName().getId());
+        info.getSynonyms().getHomotypic().forEach(s -> nids.add(s.getName().getId()));
+        aggregateTypes(info, nids); // homotypic group of accepted name
+        // now add homotypic groups from heterotypic synonyms
+        for (var hg : info.getSynonyms().getHeterotypicGroups()) {
+          var nids2 = hg.stream().map(s -> s.getName().getId()).collect(Collectors.toList());
+          aggregateTypes(info, nids2);
+        }
+      }
     }
 
     if (loadDecisions) {
@@ -407,6 +420,31 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     }
   }
 
+  private String typeContent(TypeMaterial tm) {
+    return List.of(tm.getCitation(), tm.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
+        tm.getLocality(), tm.getCountry(), tm.getSex(), tm.getAssociatedSequences(), tm.getHost(), tm.getDate(), tm.getCollector(),
+        tm.getLatitude(), tm.getLongitude(), tm.getCoordinate(), tm.getAltitude(), tm.getRemarks())
+      .stream()
+      .map(Object::toString)
+      .map(String::toLowerCase)
+      .map(StringUtils::trimToEmpty)
+      .collect(Collectors.joining("|"));
+  }
+  private void aggregateTypes(UsageInfo info, List<String> homotypicNameIds) {
+    if (homotypicNameIds != null && !homotypicNameIds.isEmpty()) {
+      List<TypeMaterial> agg = homotypicNameIds.stream()
+        .map(info::getTypeMaterial)
+        .flatMap(List::stream)
+        .collect(Collectors.groupingBy(this::typeContent))
+        .values()
+        .stream()
+        .map(l -> l.get(0))
+        .collect(Collectors.toList());
+      for (var nid : homotypicNameIds) {
+        info.getTypeMaterial().put(nid, agg);
+      }
+    }
+  }
   /**
    * Creates a new Taxon including a name instance if no name id is already given.
    *
