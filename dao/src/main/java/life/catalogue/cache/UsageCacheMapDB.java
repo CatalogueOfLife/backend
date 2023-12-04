@@ -98,6 +98,7 @@ public class UsageCacheMapDB implements UsageCache {
 
   @Override
   public void stop() {
+    datasets.clear();
     if (db != null) {
       db.close();
       db = null;
