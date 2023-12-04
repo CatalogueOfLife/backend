@@ -45,10 +45,10 @@ public interface CacheLoader {
     }
   }
 
-  class MybatisFactory implements CacheLoader {
+  class MybatisLoader implements CacheLoader {
     private final SqlSessionFactory factory;
 
-    public MybatisFactory(SqlSessionFactory factory) {
+    public MybatisLoader(SqlSessionFactory factory) {
       this.factory = factory;
     }
 

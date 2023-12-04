@@ -5,7 +5,6 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.assembly.TaxGroupAnalyzer;
@@ -77,7 +76,7 @@ public class UsageMatcherGlobal {
     }
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = uCache;
-    this.defaultLoader = new CacheLoader.MybatisFactory(factory);
+    this.defaultLoader = new CacheLoader.MybatisLoader(factory);
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 

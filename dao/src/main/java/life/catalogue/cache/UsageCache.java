@@ -120,7 +120,7 @@ public interface UsageCache extends AutoCloseable, Managed {
         if (visitedIDs.contains(p.getParent())) {
           LOG.warn("Bad classification tree with parent circles involving {}", p);
         } else {
-          addParents(classification, parentKey.id(p.getParent()), loader);
+          addParents(classification, parentKey.id(p.getParent()), loader, visitedIDs);
         }
       }
     }
