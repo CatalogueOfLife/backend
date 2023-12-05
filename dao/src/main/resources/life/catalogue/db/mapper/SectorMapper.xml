@@ -118,7 +118,7 @@
     <if test="req != null">
       <where>
         <if test="req.broken">
-          (tt.id IS NULL OR ts.id IS NULL)
+          ((coalesce(s.subject_id, s.subject_name) IS NOT NULL AND ts.id IS NULL) OR (coalesce(s.target_id, s.target_name) IS NOT NULL AND tt.id IS NULL))
         </if>
         <if test="req.id != null">
           AND (s.subject_id = #{req.id} OR s.target_id = #{req.id})
