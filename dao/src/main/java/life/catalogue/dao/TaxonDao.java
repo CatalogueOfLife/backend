@@ -237,7 +237,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     // synonyms
     if (isTaxon && loadSynonyms) {
       var syns = getSynonymy((Taxon)usage);
-      info.setSynonyms(syns);
+      info.setSynonyms(syns); // never NULL, but only set for accepted Taxon usages!!!
       info.getSynonyms().forEach(s -> {
         refIds.add(s.getName().getPublishedInId());
         refIds.addAll(s.getReferenceIds());
@@ -287,7 +287,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     if (loadTypeMaterial) {
       TypeMaterialMapper tmm = session.getMapper(TypeMaterialMapper.class);
       info.getTypeMaterial().put(usage.getName().getId(), tmm.listByName(usage.getName()));
-      if (info.getSynonyms() != null) {
+      if (info.getSynonyms() != null) { // can be null for synonym usages
         info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
         // aggregate types for all homotypic names
         if (!info.getTypeMaterial().isEmpty()) {
@@ -316,12 +316,14 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       if (ed != null) {
         info.getDecisions().put(usage.getId(), ed);
       }
-      info.getSynonyms().forEach(s -> {
-        var eds = dm.getByReleasedUsage(s);
-        if (eds != null) {
-          info.getDecisions().put(s.getId(), eds);
-        }
-      });
+      if (info.getSynonyms() != null) { // can be null for synonym usages
+        info.getSynonyms().forEach(s -> {
+          var eds = dm.getByReleasedUsage(s);
+          if (eds != null) {
+            info.getDecisions().put(s.getId(), eds);
+          }
+        });
+      }
     }
 
     // add all supplementary taxon infos
