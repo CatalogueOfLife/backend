@@ -289,6 +289,18 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       info.getTypeMaterial().put(usage.getName().getId(), tmm.listByName(usage.getName()));
       if (info.getSynonyms() != null) {
         info.getSynonyms().forEach(s -> info.getTypeMaterial().put(s.getName().getId(), tmm.listByName(s.getName())));
+        // aggregate types for all homotypic names
+        if (!info.getTypeMaterial().isEmpty()) {
+          final List<String> nids = new ArrayList<>();
+          nids.add(usage.getName().getId());
+          info.getSynonyms().getHomotypic().forEach(s -> nids.add(s.getName().getId()));
+          aggregateTypes(info, nids); // homotypic group of accepted name
+          // now add homotypic groups from heterotypic synonyms
+          for (var hg : info.getSynonyms().getHeterotypicGroups()) {
+            var nids2 = hg.stream().map(s -> s.getName().getId()).collect(Collectors.toList());
+            aggregateTypes(info, nids2);
+          }
+        }
       }
       // extract all refs
       info.getTypeMaterial().values().forEach(
@@ -296,18 +308,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
           t -> refIds.add(t.getReferenceId())
         )
       );
-      // aggregate types for all homotypic names
-      if (!info.getTypeMaterial().isEmpty()) {
-        final List<String> nids = new ArrayList<>();
-        nids.add(usage.getName().getId());
-        info.getSynonyms().getHomotypic().forEach(s -> nids.add(s.getName().getId()));
-        aggregateTypes(info, nids); // homotypic group of accepted name
-        // now add homotypic groups from heterotypic synonyms
-        for (var hg : info.getSynonyms().getHeterotypicGroups()) {
-          var nids2 = hg.stream().map(s -> s.getName().getId()).collect(Collectors.toList());
-          aggregateTypes(info, nids2);
-        }
-      }
     }
 
     if (loadDecisions) {
