@@ -15,10 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.EnumSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -180,8 +177,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // only add a new name if we do not have already multiple names that we cannot clearly match
       // track if we are outside of the sector target
       Issue[] issues;
-      if (sector.getTarget() != null && !parents.containsMatch(sector.getTarget().getId())) {
-        //TODO: this is wrong. we need to check the actual parents of the parent usage.
+      if (sector.getTarget() != null && parent != null
+        && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), sector.getTarget().getId())) {
         issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
       } else {
         issues = new Issue[0];
@@ -198,6 +195,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
       session.commit();
       batchSession.commit();
     }
+  }
+
+  private static boolean containsID(List<SimpleNameCached> usages,  String id){
+    return usages != null && usages.stream().anyMatch(u -> u.getId().equals(id));
   }
 
   @Override
@@ -269,7 +270,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
-      targetKey.id(existing.usage.getId());
+      final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
       // patch classification of accepted names if direct parent adds to it
       if (existing.usage.getStatus().isTaxon()) {
         var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
@@ -284,7 +285,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
               batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
               if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                 LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-                num.updateParentId(targetKey, parent.getId(), user.getKey());
+                num.updateParentId(existingUsageKey, parent.getId(), user.getKey());
                 updated.add(InfoGroup.PARENT);
               }
             }
@@ -328,7 +329,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        vsm.insertSources(targetKey, nu, updated);
+        vsm.insertSources(existingUsageKey, nu, updated);
         return true;
       }
     } else {
