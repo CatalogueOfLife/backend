@@ -160,7 +160,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.size()) {
       maxDepth = parents.size();
     }
-    if (!issues.hasIssues()) {
+    if (issues.hasIssues()) {
       try (SqlSession session = factory.openSession(true)) {
         var vsm = session.getMapper(VerbatimSourceMapper.class);
         vsm.addIssues(dsid(sn), issues.getIssues());
