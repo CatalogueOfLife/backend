@@ -285,7 +285,7 @@
         <if test="sortBy != 'RELEVANCE'">
           <choose>
             <when test="rev">DESC NULLs LAST</when>
-            <otherwise>ASC NULLs FIRST</otherwise>
+            <otherwise>ASC NULLs LAST</otherwise>
           </choose>
         </if>
       </otherwise>
