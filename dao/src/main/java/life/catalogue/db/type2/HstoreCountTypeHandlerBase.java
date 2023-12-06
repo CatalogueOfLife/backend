@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.postgresql.util.HStoreConverter;
@@ -56,16 +57,18 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTy
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {
-        try {
-          int val = Integer.parseInt(entry.getValue());
-          if (val > 0) {
-            if (!Strings.isNullOrEmpty(entry.getKey())) {
-              typedMap.put(toKey(entry.getKey()), val);
+        if (StringUtils.isBlank(entry.getValue())) { // for some reason we see null values - just ignore these count entries
+          try {
+            int val = Integer.parseInt(entry.getValue().trim());
+            if (val > 0) {
+              if (!Strings.isNullOrEmpty(entry.getKey())) {
+                typedMap.put(toKey(entry.getKey()), val);
+              }
             }
+          } catch (IllegalArgumentException e) {
+            // ignore this entry
+            LOG.warn("Illegal {} value found in hstore: {}", getClass().getSimpleName(), entry.getKey());
           }
-        } catch (IllegalArgumentException e) {
-          // ignore this entry
-          LOG.warn("Illegal {} value found in hstore: {}", getClass().getSimpleName(), entry.getKey());
         }
       }
     }
