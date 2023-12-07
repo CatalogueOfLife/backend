@@ -460,7 +460,6 @@ public class TestEntityGenerator {
     n.setRank(rank);
     n.setOrigin(Origin.SOURCE);
     n.setType(NameType.SCIENTIFIC);
-    n.setNamesIndexType(MatchType.NONE);
 
     n.rebuildScientificName();
     n.rebuildAuthorship();
