@@ -40,8 +40,6 @@ public class TaxonResourceTest extends ResourceTestBase {
     RULE.startNamesIndex();
     Taxon t = createTaxon();
     t.setId( adminCreds(base).post(json(t), String.class) );
-    t.getName().setNamesIndexId(5);
-    t.getName().setNamesIndexType(MatchType.EXACT);
 
     Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
     assertNotNull(t2);
@@ -50,7 +48,9 @@ public class TaxonResourceTest extends ResourceTestBase {
     assertEquals(t.getId(), t2.getId());
 
     TestEntityGenerator.nullifyUserDate(t2);
-
+    // remove match type for object comparison, but make sure its none
+    assertEquals(MatchType.NONE, t2.getName().getNamesIndexType());
+    t2.getName().setNamesIndexType(null);
 
     prepareEquals(t);
     prepareEquals(t2);
