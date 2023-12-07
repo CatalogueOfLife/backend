@@ -2,6 +2,7 @@ package life.catalogue.exporter;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.common.io.Resources;
@@ -36,6 +37,7 @@ public class DwcaSimpleExport<T extends DwcaPrinter> extends PrinterExport<T> {
     super.export();
     // include a meta.xml file
     File meta = new File(tmpDir, "meta.xml");
-    Resources.copy("/export/dwca/simple-meta-"+ req.getTabFormat().name().toLowerCase() +".xml", meta);
+    TabularFormat format = ObjectUtils.coalesce(req.getTabFormat(), TabularFormat.TSV);
+    Resources.copy("/export/dwca/simple-meta-"+ format.name().toLowerCase() +".xml", meta);
   }
 }
