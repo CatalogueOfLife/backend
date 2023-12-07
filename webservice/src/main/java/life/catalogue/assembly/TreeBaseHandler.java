@@ -357,12 +357,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
    */
   protected NameMatch matchName(Name n) {
     NameMatch m = nameIndex.match(n, true, false);
-    if (m.hasMatch()) {
-      n.setNamesIndexType(m.getType());
-      n.setNamesIndexId(m.getNameKey());
-    } else {
-      n.setNamesIndexType(MatchType.NONE);
-    }
+    n.setNamesIndexType(m.getType());
+    n.setNamesIndexId(m.getNameKey());
     return m;
   }
 

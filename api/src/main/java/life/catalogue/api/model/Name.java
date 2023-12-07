@@ -413,7 +413,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
         setNamesIndexType(match.getType());
         setNamesIndexId(match.getName().getKey());
       } else {
-        setNamesIndexType(MatchType.NONE);
+        setNamesIndexType(null);
         setNamesIndexId(null);
       }
     }
