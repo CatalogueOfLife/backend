@@ -80,7 +80,7 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
 
     mapper().delete(NAME1);
     n = nm.get(NAME1);
-    assertEquals(MatchType.NONE, n.getNamesIndexType());
+    assertNull(n.getNamesIndexType());
     assertNull(n.getNamesIndexId());
   }
   
