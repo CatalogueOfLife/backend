@@ -489,7 +489,6 @@ public class TestEntityGenerator {
     n.setOrigin(Origin.SOURCE);
     n.setDatasetKey(datasetKey);
     n.applyUser(Users.TESTER);
-    n.setNamesIndexType(MatchType.NONE);
 
     n.rebuildScientificName();
     n.rebuildAuthorship();

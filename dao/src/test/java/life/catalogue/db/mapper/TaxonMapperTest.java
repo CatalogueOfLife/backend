@@ -26,9 +26,7 @@ import com.google.common.collect.Lists;
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.*;
 
-/**
- *
- */
+
 public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, TaxonMapper> {
   
   private static int userKey = TestEntityGenerator.USER_EDITOR.getKey();
