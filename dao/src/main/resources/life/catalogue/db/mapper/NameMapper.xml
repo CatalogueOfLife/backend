@@ -56,7 +56,7 @@
   <sql id="nameColsNidx">
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols"/>,
     ${aliasNI}.index_id AS ${prefix}namesIndexId,
-    coalesce(${aliasNI}.type,'NONE') AS ${prefix}namesIndexType
+    ${aliasNI}.type AS ${prefix}namesIndexType
   </sql>
 
   <sql id="SELECT">
@@ -330,14 +330,34 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="listUnmatch" parameterType="map" resultMap="nameResultMap">
+  <select id="search" parameterType="map" resultMap="nameResultMap">
     SELECT <include refid="SELECT_NIDX"/>
     FROM <include refid="FROM_NIDX"/>
-    WHERE n.dataset_key=#{datasetKey} AND nm.name_id IS NULL
-    <if test="types!=null">
-      AND n.type IN <foreach item="t" collection="types" open="(" separator="," close=")">#{t}::NAMETYPE</foreach>
+    WHERE n.dataset_key=#{datasetKey}
+    <if test="req != null">
+      <if test="req.sectorKey != null">
+        AND n.sector_key = #{req.sectorKey}
+      </if>
+      <if test="req.status != null">
+        AND n.nom_status = #{req.status}::NOMSTATUS
+      </if>
+      <if test="req.rank != null">
+        AND n.rank = #{req.rank}::RANK
+      </if>
+      <if test="req.type != null">
+        AND n.type = #{req.type}::NAMETYPE
+      </if>
+      <if test="req.matchType != null">
+        AND nm.type = #{req.matchType}::MATCHTYPE
+      </if>
+      <if test="req.hasMatch != null">
+        AND nm.type IS <if test="req.hasMatch">NOT</if> NULL
+      </if>
+      <if test="req.name != null">
+        AND n.scientific_name ~ '^${req.name}'
+      </if>
     </if>
-    LIMIT #{limit}
+    <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
   <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

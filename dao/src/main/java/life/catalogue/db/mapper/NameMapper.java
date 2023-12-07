@@ -3,8 +3,12 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.*;
 
+import org.gbif.api.vocabulary.NomenclaturalStatus;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -14,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.QueryParam;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
@@ -86,11 +91,17 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                          @Param("before") @Nullable LocalDateTime before,
                          @Param("page") Page page);
 
-  /**
-   * List names of given name types, which have no names index match.
-   * @param datasetKey
-   * @param limit
-   */
-  List<Name> listUnmatch(@Param("datasetKey") int datasetKey, @Param("types") Set<NameType> types, @Param("limit") int limit);
-
+  class NameSearchRequest {
+    @QueryParam("sectorKey") Integer sectorKey;
+    @QueryParam("status") NomenclaturalStatus status;
+    @QueryParam("rank") Rank rank;
+    @QueryParam("type") NameType type;
+    @QueryParam("name") String namePrefix;
+    @QueryParam("matchType") MatchType matchType;
+    @QueryParam("hasMatch") Boolean hasMatch;
+  }
+  List<Name> search(@Param("datasetKey") int datasetKey,
+                    @Param("req") NameSearchRequest filter,
+                    @Param("page") Page page
+  );
 }

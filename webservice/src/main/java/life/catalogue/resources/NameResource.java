@@ -1,13 +1,16 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.NameDao;
+import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.dw.auth.Roles;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -23,7 +26,7 @@ import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
 
 @Path("/dataset/{key}/name")
 @Produces(MediaType.APPLICATION_JSON)
-public class NameResource extends AbstractDatasetScopedResource<String, Name, Page> {
+public class NameResource extends AbstractDatasetScopedResource<String, Name, NameMapper.NameSearchRequest> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameResource.class);
 
@@ -32,6 +35,16 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Pa
   public NameResource(NameDao dao) {
     super(Name.class, dao);
     this.dao = dao;
+  }
+
+  @Override
+  ResultPage<Name> searchImpl(int datasetKey, NameMapper.NameSearchRequest req, Page page) {
+    Page p = page == null ? new Page() : page;
+    try (SqlSession session = dao.getFactory().openSession()) {
+      NameMapper mapper = session.getMapper(NameMapper.class);
+      List<Name> result = mapper.search(datasetKey, req, p);
+      return new ResultPage<>(p, result, () -> -1);
+    }
   }
   
   @GET
