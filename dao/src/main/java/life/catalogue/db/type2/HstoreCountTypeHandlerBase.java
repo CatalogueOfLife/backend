@@ -57,7 +57,7 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTy
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {
-        if (StringUtils.isBlank(entry.getValue())) { // for some reason we see null values - just ignore these count entries
+        if (!StringUtils.isBlank(entry.getValue())) { // for some reason we see null values - just ignore these count entries
           try {
             int val = Integer.parseInt(entry.getValue().trim());
             if (val > 0) {
