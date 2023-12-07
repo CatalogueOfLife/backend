@@ -117,7 +117,7 @@ public class NameDaoTest extends DaoTestBase {
 
   static List<Name> rmMatch(List<Name> names) {
     names.forEach(n -> {
-      n.setNamesIndexType(MatchType.NONE);
+      n.setNamesIndexType(null);
       n.setNamesIndexId(null);
     });
     return names;
