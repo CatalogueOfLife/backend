@@ -20,29 +20,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper> {
-  private static final Logger LOG = LoggerFactory.getLogger(SynonymDao.class);
-  private final NameUsageIndexService indexService;
-
-  public SynonymDao(SqlSessionFactory factory, NameUsageIndexService indexService, Validator validator) {
-    super(false, factory, Synonym.class, SynonymMapper.class, validator);
-    this.indexService = indexService;
-  }
-  
-  private static String devNull(Reference r) {
-    return null;
-  }
-
-  /**
-   * Creates a new Taxon including a name instance if no name id is already given.
-   *
-   * @param syn
-   * @param user
-   * @return newly created taxon id
-   */
-  @Override
-  public DSID create(Synonym syn, int user) {
-    return create(syn, user, true);
+public class SynonymDao extends NameUsageDao<Synonym, SynonymMapper> {
+  public SynonymDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
+    super(Synonym.class, SynonymMapper.class, factory, nameDao, indexService, validator);
   }
 
   /**
@@ -58,59 +38,7 @@ public class SynonymDao extends DatasetEntityDao<String, Synonym, SynonymMapper>
     if (!syn.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Synonym cannot have an accepted status");
     }
-
-    try (SqlSession session = factory.openSession(false)) {
-      final int datasetKey = syn.getDatasetKey();
-      Name n = syn.getName();
-      NameMapper nm = session.getMapper(NameMapper.class);
-      if (n.getId() == null) {
-        if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
-          throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
-        }
-        newKey(n);
-        n.setOrigin(Origin.USER);
-        n.applyUser(user);
-        // make sure we use the same dataset
-        n.setDatasetKey(datasetKey);
-        // does the name need parsing?
-        TaxonDao.parseName(n);
-        nm.create(n);
-      } else {
-        Name nExisting = nm.get(n);
-        if (nExisting == null) {
-          throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
-        }
-      }
-      
-      newKey(syn);
-      syn.setOrigin(Origin.USER);
-      syn.applyUser(user);
-      session.getMapper(SynonymMapper.class).create(syn);
-      
-      session.commit();
-
-      // create taxon in ES
-      if (indexImmediately) {
-        indexService.update(syn.getDatasetKey(), List.of(syn.getId()));
-      }
-      return syn;
-    }
-  }
-  
-  @Override
-  protected boolean updateAfter(Synonym t, Synonym old, int user, SynonymMapper mapper, SqlSession session, boolean keepSessionOpen) {
-    //TODO: update ES
-    if (!keepSessionOpen) {
-      session.close();
-    }
-    return keepSessionOpen;
-  }
- 
-  @Override
-  protected boolean deleteAfter(DSID id, Synonym old, int user, SynonymMapper mapper, SqlSession session) {
-    //TODO: update ES
-    session.close();
-    return false;
+    return super.create(syn, user, indexImmediately);
   }
   
 }

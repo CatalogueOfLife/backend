@@ -319,7 +319,7 @@ public class WsServer extends Application<WsServerConfig> {
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), indexService, validator);
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
     TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService);
 

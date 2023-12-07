@@ -34,10 +34,8 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
+public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
-  private final NameUsageIndexService indexService;
-  private final NameDao nameDao;
   private SectorDao sectorDao;
 
   /**
@@ -45,17 +43,16 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
   public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
-    super(true, factory, Taxon.class, TaxonMapper.class, validator);
-    this.indexService = indexService;
-    this.nameDao = nameDao;
+    super(Taxon.class, TaxonMapper.class, factory, nameDao, indexService, validator);
+  }
+
+  // dependency loop :( so cant populate this in the constructor
+  public void setSectorDao(SectorDao sectorDao) {
+    this.sectorDao = sectorDao;
   }
 
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user) {
     copyTaxon(session, t, target, user, Collections.emptySet());
-  }
-
-  public void setSectorDao(SectorDao sectorDao) {
-    this.sectorDao = sectorDao;
   }
 
   /**
@@ -200,12 +197,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     fillUsageInfo(session, info, null, true, true, true, true, true, true,
       true, true, true, true, true, true);
     return info;
-  }
-
-  public VerbatimSource getSource(final DSID<String> key) {
-    try (SqlSession session = factory.openSession(false)) {
-      return session.getMapper(VerbatimSourceMapper.class).getWithSources(key);
-    }
   }
 
   /**
@@ -447,17 +438,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       }
     }
   }
-  /**
-   * Creates a new Taxon including a name instance if no name id is already given.
-   *
-   * @param t
-   * @param user
-   * @return newly created taxon id
-   */
-  @Override
-  public DSID<String> create(Taxon t, int user) {
-    return create(t, user, true);
-  }
 
   /**
    * Creates a new Taxon including a name instance if no name id is already given.
@@ -467,75 +447,13 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
    * @param indexImmediately if true the search index is also updated
    * @return newly created taxon id
    */
+  @Override
   public DSID<String> create(Taxon t, int user, boolean indexImmediately) {
     t.setStatusIfNull(TaxonomicStatus.ACCEPTED);
     if (t.getStatus().isSynonym()) {
       throw new IllegalArgumentException("Taxa cannot have a synonym status");
     }
-
-    try (SqlSession session = factory.openSession(false)) {
-      final int datasetKey = t.getDatasetKey();
-      Name n = t.getName();
-      if (n.getId() == null) {
-        if (!n.isParsed() && StringUtils.isBlank(n.getScientificName())) {
-          throw new IllegalArgumentException("Existing nameId, scientificName or atomized name field required");
-        }
-        newKey(n);
-        n.setOrigin(Origin.USER);
-        n.applyUser(user);
-        // make sure we use the same dataset
-        n.setDatasetKey(datasetKey);
-        // does the name need parsing?
-        parseName(n);
-        nameDao.create(n, user);
-      } else {
-        Name nExisting = nameDao.get(DSID.of(datasetKey, n.getId()));
-        if (nExisting == null) {
-          throw new IllegalArgumentException("No name exists with ID " + n.getId() + " in dataset " + datasetKey);
-        }
-      }
-      
-      newKey(t);
-      t.setOrigin(Origin.USER);
-      t.applyUser(user);
-      session.getMapper(TaxonMapper.class).create(t);
-      
-      session.commit();
-
-      // create taxon in ES
-      if (indexImmediately) {
-        indexService.update(t.getDatasetKey(), List.of(t.getId()));
-      }
-      return t;
-
-    }
-  }
-  
-  static void parseName(Name n) {
-    if (!n.isParsed()) {
-      try {
-        NameParser.PARSER.parse(n, VerbatimRecord.VOID);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt(); // reset flag
-      }
-
-    } else {
-      if (n.getType() == null) {
-        n.setType(NameType.SCIENTIFIC);
-      }
-      n.rebuildScientificName();
-      if (n.getAuthorship() == null) {
-        n.rebuildAuthorship();
-      }
-    }
-  }
-
-  @Override
-  protected void updateBefore(Taxon obj, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
-    // only allow parent changes if they are not part of a sector
-    if (!Objects.equals(old.getParentId(), obj.getParentId()) && old.getSectorKey() != null) {
-      throw new IllegalArgumentException("You cannot move a taxon which is part of sector " + obj.getSectorKey());
-    }
+    return super.create(t, user, indexImmediately);
   }
 
   @Override
@@ -544,13 +462,7 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
       updatedParentCacheUpdate(tm, t, t.getParentId(), old.getParentId());
     }
-    session.commit();
-    if (!keepSessionOpen) {
-      session.close();
-    }
-    // update single taxon in ES
-    indexService.update(t.getDatasetKey(), List.of(t.getId()));
-    return keepSessionOpen;
+    return super.updateAfter(t, old, user, tm, session, keepSessionOpen);
   }
 
   /**
@@ -631,18 +543,6 @@ public class TaxonDao extends DatasetEntityDao<String, Taxon, TaxonMapper> {
       int count = session.getMapper(m).deleteByTaxon(did);
       LOG.info("Deleted {} associated {}s for taxon {}", count, m.getSimpleName().replaceAll("Mapper", ""), did);
     }
-  }
-  
-  @Override
-  protected boolean deleteAfter(DSID<String> did, Taxon old, int user, TaxonMapper mapper, SqlSession session) {
-    NameUsageWrapper bare = old == null ? null : session.getMapper(NameUsageWrapperMapper.class).getBareName(did.getDatasetKey(), old.getName().getId());
-    session.close();
-    // update ES. there is probably a bare name now to be indexed!
-    indexService.delete(did);
-    if (bare != null) {
-      indexService.add(List.of(bare));
-    }
-    return false;
   }
   
   /**

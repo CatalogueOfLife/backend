@@ -131,7 +131,7 @@ public class TxtTreeDao {
     final Name n = tree2name(parent.getDatasetKey(), t, code);
     final Taxon tax = new Taxon(n);
     tax.setParentId(parent.getId());
-    tdao.create(tax, user.getKey(), false);
+    tdao.create(tax, user.getKey(), false); // this also does name matching
     addDoc(docs, tax, classification);
     counter++;
 
