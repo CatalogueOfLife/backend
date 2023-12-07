@@ -75,8 +75,8 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
   @Test
   public void roundtrip2() {
     Name n = TestEntityGenerator.newName();
-    nameDao.create(n, user);
-    
+    nameDao.create(n, user); // this does store a None match!
+
     Name an = TestEntityGenerator.newName();
     nameDao.create(an, user);
     Taxon t = TestEntityGenerator.newTaxon(an.getDatasetKey(), RandomUtils.randomLatinString(25));
