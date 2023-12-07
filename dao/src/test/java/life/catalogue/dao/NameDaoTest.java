@@ -1,10 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameRelation;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
@@ -109,17 +106,17 @@ public class NameDaoTest extends DaoTestBase {
 
     System.out.println("Prepared");
 
-    assertEquals(Set.of(names.get(2), names.get(3), names.get(4)), Set.copyOf(rmMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n1")))));
-    assertEquals(Set.of(names.get(1), names.get(3), names.get(4)), Set.copyOf(rmMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n2")))));
-    assertEquals(Set.of(names.get(6)), Set.copyOf(rmMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n5")))));
-    assertEquals(Collections.emptySet(), Set.copyOf(rmMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n7")))));
+    assertEquals(Set.of(names.get(2), names.get(3), names.get(4)), Set.copyOf(upMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n1")))));
+    assertEquals(Set.of(names.get(1), names.get(3), names.get(4)), Set.copyOf(upMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n2")))));
+    assertEquals(Set.of(names.get(6)), Set.copyOf(upMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n5")))));
+    assertEquals(Collections.emptySet(), Set.copyOf(upMatch(dao.homotypicGroup(DSID.of(n.getDatasetKey(), "n7")))));
   }
 
-  static List<Name> rmMatch(List<Name> names) {
-    names.forEach(n -> {
-      n.setNamesIndexType(null);
-      n.setNamesIndexId(null);
-    });
+  static List<Name> upMatch(List<Name> names) {
+    var nm = new NameMatch();
+    nm.setName(match);
+    nm.setType(MatchType.VARIANT);
+    names.forEach(n -> n.applyMatch(nm));
     return names;
   }
 
