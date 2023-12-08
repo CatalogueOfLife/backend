@@ -14,12 +14,15 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2023-12-07 global id index
+```sql
+CREATE INDEX ON name_usage(id);
+```
 
 ### 2023-11-24 RANK_NAME_SUFFIX_CONFLICT issue
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'RANK_NAME_SUFFIX_CONFLICT';
 ```
-
 
 ### 2023-11-23 adjust deferrable constraints
 some constraints need to be deferrable to delete orphans. These have gone in the live dbs, so this will make sure they are all deferrable:

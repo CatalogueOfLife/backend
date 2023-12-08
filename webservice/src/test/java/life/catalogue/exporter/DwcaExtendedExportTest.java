@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class DwcaExportTest extends ExportTest {
+public class DwcaExtendedExportTest extends ExportTest {
 
   @Test
   public void dataset() {

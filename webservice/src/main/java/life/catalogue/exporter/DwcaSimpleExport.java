@@ -38,6 +38,6 @@ public class DwcaSimpleExport<T extends DwcaPrinter> extends PrinterExport<T> {
     // include a meta.xml file
     File meta = new File(tmpDir, "meta.xml");
     TabularFormat format = ObjectUtils.coalesce(req.getTabFormat(), TabularFormat.TSV);
-    Resources.copy("/export/dwca/simple-meta-"+ format.name().toLowerCase() +".xml", meta);
+    Resources.copy("export/dwca/simple-meta-"+ format.name().toLowerCase() +".xml", meta);
   }
 }
