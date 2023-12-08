@@ -6,11 +6,11 @@
     </files>
     <id index="0" />
     <field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
-    <field index="3" term="http://rs.tdwg.org/dwc/terms/parentNameUsageID"/>
+    <field index="1" term="http://rs.tdwg.org/dwc/terms/parentNameUsageID"/>
     <field index="2" term="http://rs.tdwg.org/dwc/terms/acceptedNameUsageID"/>
-    <field index="20" term="http://rs.tdwg.org/dwc/terms/taxonomicStatus"/>
-    <field index="11" term="http://rs.tdwg.org/dwc/terms/taxonRank"/>
-    <field index="12" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
-    <field index="13" term="http://rs.tdwg.org/dwc/terms/scientificNameAuthorship" />
+    <field index="3" term="http://rs.tdwg.org/dwc/terms/taxonomicStatus"/>
+    <field index="4" term="http://rs.tdwg.org/dwc/terms/taxonRank"/>
+    <field index="5" term="http://rs.tdwg.org/dwc/terms/scientificName"/>
+    <field index="6" term="http://rs.tdwg.org/dwc/terms/scientificNameAuthorship" />
   </core>
 </archive>

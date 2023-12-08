@@ -69,6 +69,7 @@ public class XColResource {
     var req = new ExportRequest();
     req.setDatasetKey(cache.getLatestReleaseCandidate(Datasets.COL, true));
     req.setFormat(DataFormat.DWCA);
+    req.setExtended(true);
     req.setForce(false);
     return req;
   }
