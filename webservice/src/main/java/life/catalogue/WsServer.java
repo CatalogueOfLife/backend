@@ -428,6 +428,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());
     j.register(new VocabResource());
+    j.register(new XColResource(coljersey.getCache(), exportManager, cfg));
 
     // parsers
     j.register(new HomotypicGroupingResource());
