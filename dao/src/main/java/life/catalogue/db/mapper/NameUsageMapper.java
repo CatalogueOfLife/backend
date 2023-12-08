@@ -133,6 +133,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   List<NameUsageBase> listByNamesIndexIDGlobal(@Param("nidx") int nidx, @Param("page") Page page);
 
+  List<NameUsageBase> listByUsageID(@Param("id") String id, @Param("page") Page page);
+
   /**
    * List all usages linked to an index name with the given canonical nidx.
    * The parent property is filled with the parent ID, not the name!
@@ -143,6 +145,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Warning, this does not count bare names, only true usages!
    */
   Integer countByNamesIndexID(@Param("nidx") int nidx, @Nullable @Param("datasetKey") Integer datasetKey);
+  Integer countByUsageID(@Param("id") String id);
 
   List<NameUsageBase> listByName(@Param("datasetKey") int datasetKey,
                          @Param("name") String sciname,

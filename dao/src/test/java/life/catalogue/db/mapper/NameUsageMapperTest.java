@@ -112,6 +112,12 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     var res = mapper().listByNamesIndexOrCanonicalID(testDataRule.testData.key, 3, new Page());
     res = mapper().listByNamesIndexIDGlobal(3, new Page());
   }
+  @Test
+  public void listByIdGlobal() throws Exception {
+    var res = mapper().listByUsageID("root-1", new Page());
+    assertEquals(1, res.size());
+    assertEquals("root-1", res.get(0).getId());
+  }
 
   @Test
   public void listRelated() throws Exception {

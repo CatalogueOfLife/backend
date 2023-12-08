@@ -419,6 +419,14 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listByUsageID" resultMap="usageResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE u.id=#{id}
+    ORDER BY u.dataset_key
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
   <select id="countByNamesIndexID" resultType="integer">
     SELECT count(*)
     FROM names_index ni
@@ -429,6 +437,12 @@
     <if test="datasetKey != null">
       AND nm.dataset_key = #{datasetKey}
     </if>
+  </select>
+
+  <select id="countByUsageID" resultType="integer">
+    SELECT count(*)
+    FROM name_usage
+    WHERE id=#{id}
   </select>
 
   <select id="listRelated" resultMap="usageResultMap">

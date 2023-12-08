@@ -48,15 +48,21 @@ public class NameUsageSearchResource {
 
   @GET
   public ResultPage<NameUsageBase> list(@QueryParam("nidx") Integer namesIndexID,
+                                        @QueryParam("id") String id,
                                         @Valid @BeanParam Page page,
                                         @Context SqlSession session) {
     Page p = page == null ? new Page() : page;
-    if (namesIndexID == null) {
-      throw new IllegalArgumentException("nidx parameter required");
+    if (namesIndexID == null && id == null) {
+      throw new IllegalArgumentException("nidx or id parameter required");
     }
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    List<NameUsageBase> result = num.listByNamesIndexIDGlobal(namesIndexID, page);
-    return new ResultPage<>(p, result, () -> num.countByNamesIndexID(namesIndexID, null));
+    List<NameUsageBase> result = id != null ?
+      num.listByUsageID(id, page) :
+      num.listByNamesIndexIDGlobal(namesIndexID, page);
+    return new ResultPage<>(p, result, () -> id != null ?
+      num.countByUsageID(id) :
+      num.countByNamesIndexID(namesIndexID, null)
+    );
   }
 
   @GET
