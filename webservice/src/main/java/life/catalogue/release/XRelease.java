@@ -91,7 +91,6 @@ public class XRelease extends ProjectRelease {
       xCfg = loadConfig(ds.getURI(Setting.XRELEASE_CONFIG));
     }
     d.setOrigin(DatasetOrigin.XRELEASE);
-    d.appendNotes(String.format("Base release %s.", baseReleaseKey));
     if (xCfg.alias != null) {
       String alias = CitationUtils.fromTemplate(d, xCfg.alias);
       d.setAlias(alias);
@@ -221,8 +220,18 @@ public class XRelease extends ProjectRelease {
     flagLoops();
     // update sector metrics. The entire releases metrics are done later by the superclass
     buildSectorMetrics();
+    // update metadata
+    updateMetadata();
     // finally also call the shared part which e.g. archives metadata
     super.finalWork();
+  }
+
+  private void updateMetadata() {
+    newDataset.appendNotes(String.format("Base release %s.", baseReleaseKey));
+    //TODO: add aggregated metrics to descriptions???
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetMapper.class).update(newDataset);
+    }
   }
 
   /**
