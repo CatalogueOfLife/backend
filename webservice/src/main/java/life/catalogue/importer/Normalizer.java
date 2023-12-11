@@ -155,6 +155,7 @@ public class Normalizer implements Callable<Boolean> {
     final Boolean defaultExtinct = dataset.getExtinct();
     final Set<Environment> defaultEnvironment = dataset.getEnvironment() == null ? null : Set.of(dataset.getEnvironment());
 
+    LOG.info("Start name validation");
     store.names().all().forEach(nn -> {
       Name n = nn.getName();
 
@@ -183,6 +184,7 @@ public class Normalizer implements Callable<Boolean> {
 
     });
 
+    LOG.info("Apply dataset defaults");
     store.usages().all().forEach(u -> {
       try {
         // taxon or synonym
@@ -236,6 +238,7 @@ public class Normalizer implements Callable<Boolean> {
     });
 
     // flag PARENT_NAME_MISMATCH, PUBLISHED_BEFORE_GENUS, PARENT_SPECIES_MISSING & CLASSIFICATION_RANK_ORDER_INVALID for accepted names
+    LOG.info("Flag classification issues");
     store.process(Labels.TAXON, store.batchSize, new NodeBatchProcessor() {
       @Override
       public void process(Node n) {
@@ -300,11 +303,13 @@ public class Normalizer implements Callable<Boolean> {
     // Issue.POTENTIAL_VARIANT;
 
     // verify reference truncation
+    LOG.info("Validate references");
     for (Reference r : store.references()) {
       if (NameValidator.hasUnmatchedBrackets(r.getCitation())) {
         store.addIssues(r, Issue.UNMATCHED_REFERENCE_BRACKETS);
       }
     }
+    LOG.info("All validations completed");
   }
 
   private void check(VerbatimEntity ent, boolean assertion, String msg) {
