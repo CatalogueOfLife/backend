@@ -35,6 +35,6 @@ public class RematchSchedulerJob extends DatasetSchedulerJob {
 
   @Override
   public BackgroundJob buildJob(int datasetKey) {
-    return RematchJob.one(getUserKey(), factory, ni, bus, datasetKey);
+    return RematchJob.one(getUserKey(), factory, ni, bus, false, datasetKey);
   }
 }

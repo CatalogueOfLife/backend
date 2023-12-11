@@ -249,15 +249,20 @@ public class AdminResource {
   @Path("/rematch")
   public BackgroundJob rematch(@QueryParam("datasetKey") List<Integer> datasetKeys,
                                @QueryParam("sectorKey") List<String> sectorKeys,
+                               @QueryParam("missingOnly") boolean missingOnly,
                                @Auth User user
   ) {
     if (datasetKeys != null && !datasetKeys.isEmpty()) {
       var keys = datasetKeys.stream().mapToInt(i -> i).toArray();
-      return runJob(RematchJob.some(user.getKey(), factory, namesIndex, bus, keys));
+      return runJob(RematchJob.some(user.getKey(), factory, namesIndex, bus, missingOnly, keys));
 
     } if (sectorKeys != null && !sectorKeys.isEmpty()) {
       var keys = sectorKeys.stream().map(DSID::ofInt).collect(Collectors.toList());
       return runJob(RematchJob.sector(user.getKey(),factory, namesIndex, keys));
+
+    } else if (missingOnly) {
+      // rematch all missing
+      return runJob(RematchJob.allMissing(user.getKey(), factory, namesIndex, bus));
 
     } else {
       throw new IllegalArgumentException("At least one datasetKey or sectorKey parameter is required");

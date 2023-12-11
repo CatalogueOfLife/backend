@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import life.catalogue.db.mapper.DatasetMapper;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -27,18 +29,26 @@ public class RematchJob extends BackgroundJob {
   private final SqlSessionFactory factory;
   private final NameIndex ni;
   private final EventBus bus;
+  private final boolean missingOnly;
 
   @JsonProperty
   private final int[] datasetKeys;
   @JsonProperty
   private final List<? extends DSID<Integer>> sectorKeys;
 
-  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int datasetKey){
-    return new RematchJob(userKey, factory, ni, bus, datasetKey);
+  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int datasetKey){
+    return new RematchJob(userKey, factory, ni, bus, missingOnly, datasetKey);
   }
 
-  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int... datasetKeys){
-    return new RematchJob(userKey, factory, ni, bus, datasetKeys);
+  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int... datasetKeys){
+    return new RematchJob(userKey, factory, ni, bus, missingOnly, datasetKeys);
+  }
+
+  public static RematchJob allMissing(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus){
+    try (SqlSession session = factory.openSession(true)) {
+      int[] datasetKeys = session.getMapper(DatasetMapper.class).keys().stream().mapToInt(Integer::intValue).toArray();;
+      return new RematchJob(userKey, factory, ni, bus, true, datasetKeys);
+    }
   }
 
   public static RematchJob sector(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys){
@@ -53,22 +63,26 @@ public class RematchJob extends BackgroundJob {
     this.factory = factory;
     this.ni = ni.assertOnline();
     this.logToFile = true;
+    this.missingOnly = false; // not supported yet
   }
 
-  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, int... datasetKeys) {
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int... datasetKeys) {
     super(userKey);
     this.bus = bus;
     this.datasetKeys = Preconditions.checkNotNull(datasetKeys);
     this.sectorKeys = null;
     this.factory = factory;
     this.ni = ni.assertOnline();
+    this.missingOnly = missingOnly;
   }
 
   @Override
   public boolean isDuplicate(BackgroundJob other) {
     if (other instanceof RematchJob) {
       RematchJob job = (RematchJob) other;
-      return Arrays.equals(datasetKeys, job.datasetKeys) && Objects.equals(sectorKeys, job.sectorKeys);
+      return Arrays.equals(datasetKeys, job.datasetKeys)
+        && Objects.equals(sectorKeys, job.sectorKeys)
+        && missingOnly == job.missingOnly;
     }
     return false;
   }
@@ -87,7 +101,7 @@ public class RematchJob extends BackgroundJob {
 
     DatasetMatcher matcher = new DatasetMatcher(factory, ni, bus);
     for (int key : datasetKeys) {
-      matcher.match(key, true, false);
+      matcher.match(key, true, missingOnly);
     }
 
     LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",

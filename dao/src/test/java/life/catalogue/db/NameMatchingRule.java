@@ -68,11 +68,11 @@ public class NameMatchingRule extends ExternalResource {
       );
     }
     LOG.warn("Rematch all {} datasets with data using a names index of size {}", keys.size(), nidx.size());
-    RematchJob.some(Users.MATCHER, factory, nidx, null, keys.toIntArray()).run();
+    RematchJob.some(Users.MATCHER, factory, nidx, null, false, keys.toIntArray()).run();
   }
 
   public void rematch(int datasetKey) {
-    RematchJob.one(Users.MATCHER, factorySupplier.get(), nidx, null, datasetKey).run();
+    RematchJob.one(Users.MATCHER, factorySupplier.get(), nidx, null, false, datasetKey).run();
   }
 
   public static NameIndex getIndex() {
