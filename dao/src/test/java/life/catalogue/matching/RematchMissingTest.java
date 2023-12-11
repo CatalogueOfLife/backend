@@ -9,7 +9,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class DatasetMatcherTest {
+import static org.junit.Assert.*;
+
+public class RematchMissingTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -18,18 +20,10 @@ public class DatasetMatcherTest {
   public TestDataRule testDataRule = TestDataRule.apple();
 
   @Test
-  public void rematchApple() throws Exception {
+  public void run() {
     NameIndex nidx = NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
-    // we only have one verbatim record. If we dont insert into the names index this will be a no match with an issue
     DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
-    m.match(11, false, false);
-
-    // again, now also insert new names into the index
-    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
-    m.match(11, true, false);
-
-    // dont update issues
-    m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
-    m.match(11, true, false);
+    var task = new RematchMissing(m, testDataRule.testData.key);
+    task.run();
   }
 }

@@ -15,6 +15,24 @@ public class ExecutorUtils {
   public static final int MILLIS_TO_DIE = 12000;
 
 
+  /**
+   * @return an already started non daemon thread running the given task
+   */
+  public static Thread runInNewThread(Runnable task) {
+    return runInNewThread(task, (r) -> {
+      Thread t = new Thread(r);
+      t.setName(task.getClass().getSimpleName() + "-Runner");
+      t.setDaemon(false);
+      t.setPriority(Thread.NORM_PRIORITY);
+      return t;
+    });
+  }
+  public static Thread runInNewThread(Runnable task, ThreadFactory threadFactory) {
+    var t = threadFactory.newThread(task);
+    t.start();
+    return t;
+  }
+
   public static ExecutorService newCachedThreadPool(int maximumPoolSize, ThreadFactory threadFactory) {
     return newCachedThreadPool(maximumPoolSize,2*maximumPoolSize, threadFactory);
   }

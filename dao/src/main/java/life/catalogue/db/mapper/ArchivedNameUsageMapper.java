@@ -35,8 +35,11 @@ public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedName
   /**
    * Process all archived name usages as Name instances with names index match infos.
    * Not the "Name" key is exceptionally a usage key!
+   * @param onlyMissingMatches if true only names without an existing matching record will be re-matched
    */
-  Cursor<Name> processArchivedNames(@Param("datasetKey") int datasetKey);
+  Cursor<Name> processArchivedNames(@Param("datasetKey") int datasetKey,
+                                    @Param("onlyMissing") boolean onlyMissingMatches
+  );
 
 
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {

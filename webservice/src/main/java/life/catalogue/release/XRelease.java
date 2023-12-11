@@ -13,6 +13,7 @@ import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.YamlUtils;
+import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.PgUtils;
@@ -22,10 +23,7 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.DatasetMatcher;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexImpl;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -132,6 +130,11 @@ public class XRelease extends ProjectRelease {
       }
     }
 
+    // make sure the base release is fully matched
+    // runs in parallel to the rest of the prep phase below
+    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
+    final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
+
     if (xCfg.sourcePublisher != null) {
       // create missing sectors from publishers for compatible licenses only
       for (UUID pubKey : xCfg.sourcePublisher) {
@@ -162,6 +165,9 @@ public class XRelease extends ProjectRelease {
       }
     }
     createReleaseDOI();
+
+    // make sure the missing matching is completed before we deal with the real data
+    thread.join();
   }
 
   @VisibleForTesting

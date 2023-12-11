@@ -388,6 +388,13 @@
     ORDER BY rank, scientific_name
   </select>
 
+  <select id="processDatasetWithoutMatches" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE n.dataset_key = #{datasetKey}
+      AND NOT EXISTS (SELECT TRUE FROM name_match m WHERE m.dataset_key = #{datasetKey} AND m.name_id=n.id)
+  </select>
+
   <delete id="deleteByTemp" parameterType="map">
     DELETE FROM name
     USING _tmp_nu tmp

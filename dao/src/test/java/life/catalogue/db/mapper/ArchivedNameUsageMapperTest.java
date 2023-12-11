@@ -55,8 +55,8 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
 
   @Test
   public void nidxProcessing() throws Exception {
-    mapper().processArchivedNames(999).forEach(o -> fail("should never reach here"));
-    mapper().processArchivedNames(3).forEach(n -> {
+    mapper().processArchivedNames(999, false).forEach(o -> fail("should never reach here"));
+    mapper().processArchivedNames(3, false).forEach(n -> {
       assertEquals(orig.getId(), n.getId()); // we expose usage ids only and use those in the archived match table too
       assertEquals(nidx.getKey(), n.getNamesIndexId());
       assertEquals(MatchType.EXACT, n.getNamesIndexType());

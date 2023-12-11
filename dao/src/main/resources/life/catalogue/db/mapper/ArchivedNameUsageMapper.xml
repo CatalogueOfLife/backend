@@ -230,6 +230,7 @@
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
       LEFT JOIN names_index ni ON m.index_id=ni.id
     WHERE u.dataset_key=#{datasetKey}
+    <if test="onlyMissing">AND m.type IS NULL</if>
   </select>
 
 </mapper>

@@ -37,8 +37,9 @@ public class DatasetMatcher extends BaseMatcher {
    * Matches all names of an entire dataset and updates its name index id and issues in postgres
    *
    * @param allowInserts if true allows inserts into the names index
+   * @param onlyMissingMatches if true only names without an existing matching record will be re-matched
    */
-  public void match(int datasetKey, boolean allowInserts) throws RuntimeException {
+  public void match(int datasetKey, boolean allowInserts, boolean onlyMissingMatches) throws RuntimeException {
     try {
       final int totalBefore = total;
       final int updatedBefore = updated;
@@ -47,7 +48,7 @@ public class DatasetMatcher extends BaseMatcher {
 
       final boolean doUpdate;
       try (SqlSession session = factory.openSession(true)) {
-        doUpdate = session.getMapper(NameMatchMapper.class).exists(datasetKey, null);
+        doUpdate = !onlyMissingMatches && session.getMapper(NameMatchMapper.class).exists(datasetKey, null);
       }
 
       try (SqlSession readOnlySession = factory.openSession(true);
@@ -55,16 +56,19 @@ public class DatasetMatcher extends BaseMatcher {
            BulkMatchHandler hu = new BulkMatchHandler(datasetKey, allowInserts, ArchivedNameUsageMatchMapper.class, true);
       ) {
         NameMapper nm = readOnlySession.getMapper(NameMapper.class);
-        ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
 
         final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
-        LOG.info("{} name matches for {}{}", doUpdate ? "Update" : "Create", isProject ? "project " : "", datasetKey);
-        PgUtils.consume(() -> nm.processDataset(datasetKey), hn);
+        LOG.info("{} {}name matches for {}{}", doUpdate ? "Update" : "Create", onlyMissingMatches?"missing ":"", isProject ? "project " : "", datasetKey);
+        PgUtils.consume(() -> onlyMissingMatches ?
+            nm.processDatasetWithoutMatches(datasetKey) :
+            nm.processDataset(datasetKey), hn
+        );
         // also match archived names
         if (isProject) {
-          LOG.info("{} name archive matches for project {}", doUpdate ? "Update" : "Create", datasetKey);
+          ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
+          LOG.info("{} {}name archive matches for project {}", doUpdate ? "Update" : "Create", onlyMissingMatches?"missing ":"", datasetKey);
           final int totalBeforeArchive = total;
-          PgUtils.consume(() -> anum.processArchivedNames(datasetKey), hu);
+          PgUtils.consume(() -> anum.processArchivedNames(datasetKey, onlyMissingMatches), hu);
           archived = archived + total - totalBeforeArchive;
         }
       } catch (RuntimeException e) {

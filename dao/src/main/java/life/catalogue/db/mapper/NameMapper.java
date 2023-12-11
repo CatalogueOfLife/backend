@@ -57,6 +57,11 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   int deleteBySectorAndRank(@Param("key") DSID<Integer> key, @Param("rank") Rank rank, @Param("nameIds") Collection<String> excludeNameIds);
 
   /**
+   * Iterates over the names that are missing a name match record of a given dataset.
+   */
+  Cursor<Name> processDatasetWithoutMatches(@Param("datasetKey") int datasetKey);
+
+  /**
    * Iterates over all names returning the concatenation of scientific name and authorship from the names table.
    */
   Cursor<String> processNameStrings(@Param("datasetKey") int datasetKey,

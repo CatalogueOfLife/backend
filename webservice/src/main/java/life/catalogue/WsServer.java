@@ -204,10 +204,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // update model configs
     JobResult.setDownloadConfigs(cfg.job.downloadURI, cfg.job.downloadDir);
-    if (cfg.rematchSyncSources) {
-      TreeBaseHandler.forceMatch = cfg.rematchSyncSources;
-      LOG.info("Enforce rematching of source usages in all syncs");
-    }
 
     // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
     final ManagedService managedService = new ManagedService(env.lifecycle());
