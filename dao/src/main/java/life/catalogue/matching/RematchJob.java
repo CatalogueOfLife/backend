@@ -29,6 +29,7 @@ public class RematchJob extends BackgroundJob {
   private final SqlSessionFactory factory;
   private final NameIndex ni;
   private final EventBus bus;
+  @JsonProperty
   private final boolean missingOnly;
 
   @JsonProperty
@@ -63,7 +64,7 @@ public class RematchJob extends BackgroundJob {
     this.factory = factory;
     this.ni = ni.assertOnline();
     this.logToFile = true;
-    this.missingOnly = false; // not supported yet
+    this.missingOnly = false; // not supported for sectors
   }
 
   private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int... datasetKeys) {
@@ -97,7 +98,7 @@ public class RematchJob extends BackgroundJob {
   }
 
   void matchDatasets() {
-    LOG.info("Rematching {} datasets with data. Triggered by {}", datasetKeys.length, getUserKey());
+    LOG.info("Rematching {}{} datasets with data. Triggered by {}", missingOnly ? "missing names from ":"", datasetKeys.length, getUserKey());
 
     DatasetMatcher matcher = new DatasetMatcher(factory, ni, bus);
     for (int key : datasetKeys) {
