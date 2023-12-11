@@ -45,13 +45,6 @@ public class RematchJob extends BackgroundJob {
     return new RematchJob(userKey, factory, ni, bus, missingOnly, datasetKeys);
   }
 
-  public static RematchJob allMissing(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus){
-    try (SqlSession session = factory.openSession(true)) {
-      int[] datasetKeys = session.getMapper(DatasetMapper.class).keys().stream().mapToInt(Integer::intValue).toArray();;
-      return new RematchJob(userKey, factory, ni, bus, true, datasetKeys);
-    }
-  }
-
   public static RematchJob sector(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys){
     return new RematchJob(userKey, factory, ni, sectorKeys, null);
   }

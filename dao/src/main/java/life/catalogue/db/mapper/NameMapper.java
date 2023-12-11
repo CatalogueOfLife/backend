@@ -59,7 +59,7 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   /**
    * Iterates over the names that are missing a name match record of a given dataset.
    */
-  Cursor<Name> processDatasetWithoutMatches(@Param("datasetKey") int datasetKey);
+  Cursor<Name> processDatasetWithoutMatches(@Nullable @Param("datasetKey") Integer datasetKey);
 
   /**
    * Iterates over all names returning the concatenation of scientific name and authorship from the names table.

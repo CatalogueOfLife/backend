@@ -12,6 +12,8 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
 
+import javax.annotation.Nullable;
+
 /**
  * Mapper for archived name usages of a project. Dataset keys are expected to always be PROJECT, never releases.
  */
@@ -37,7 +39,7 @@ public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedName
    * Not the "Name" key is exceptionally a usage key!
    * @param onlyMissingMatches if true only names without an existing matching record will be re-matched
    */
-  Cursor<Name> processArchivedNames(@Param("datasetKey") int datasetKey,
+  Cursor<Name> processArchivedNames(@Nullable @Param("datasetKey") Integer datasetKey,
                                     @Param("onlyMissing") boolean onlyMissingMatches
   );
 

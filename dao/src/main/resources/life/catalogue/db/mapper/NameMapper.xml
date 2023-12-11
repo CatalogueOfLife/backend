@@ -391,8 +391,10 @@
   <select id="processDatasetWithoutMatches" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE n.dataset_key = #{datasetKey}
-      AND NOT EXISTS (SELECT TRUE FROM name_match m WHERE m.dataset_key = #{datasetKey} AND m.name_id=n.id)
+    WHERE NOT EXISTS (SELECT TRUE FROM name_match m WHERE m.dataset_key = n.dataset_key AND m.name_id=n.id)
+    <if test="datasetKey != null">
+      AND n.dataset_key = #{datasetKey}
+    </if>
   </select>
 
   <delete id="deleteByTemp" parameterType="map">

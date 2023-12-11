@@ -31,6 +31,7 @@ import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.admin.jobs.RematchSchedulerJob;
@@ -260,22 +261,18 @@ public class AdminResource {
       var keys = sectorKeys.stream().map(DSID::ofInt).collect(Collectors.toList());
       return runJob(RematchJob.sector(user.getKey(),factory, namesIndex, keys));
 
-    } else if (missingOnly) {
-      // rematch all missing
-      return runJob(RematchJob.allMissing(user.getKey(), factory, namesIndex, bus));
-
     } else {
       throw new IllegalArgumentException("At least one datasetKey or sectorKey parameter is required");
     }
   }
 
   @POST
-  @Path("/rematch/scheduler")
+  @Path("/rematch/missing")
   /**
    * Matches all datasets which have not been fully matched before.
    */
-  public BackgroundJob rematchUnmatched(@Auth User user, @QueryParam("threshold") @DefaultValue("0.4") double threshold) {
-    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, bus));
+  public BackgroundJob rematchUnmatched(@Auth User user) {
+    return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
   @GET

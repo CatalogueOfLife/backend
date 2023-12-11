@@ -52,8 +52,8 @@ public class DatasetMatcher extends BaseMatcher {
       }
 
       try (SqlSession readOnlySession = factory.openSession(true);
-           BulkMatchHandler hn = new BulkMatchHandler(datasetKey, allowInserts, NameMatchMapper.class, doUpdate);
-           BulkMatchHandler hu = new BulkMatchHandler(datasetKey, allowInserts, ArchivedNameUsageMatchMapper.class, true);
+           BulkMatchHandler hn = new BulkMatchHandler(allowInserts, NameMatchMapper.class, doUpdate);
+           BulkMatchHandler hu = new BulkMatchHandler(allowInserts, ArchivedNameUsageMatchMapper.class, true);
       ) {
         NameMapper nm = readOnlySession.getMapper(NameMapper.class);
 

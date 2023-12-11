@@ -1,5 +1,8 @@
 package life.catalogue.matching;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
@@ -44,7 +47,6 @@ public class BaseMatcher {
   }
 
   class BulkMatchHandler implements Consumer<Name>, AutoCloseable {
-    private final int datasetKey;
     private final boolean allowInserts;
     private final boolean update;
 
@@ -53,9 +55,9 @@ public class BaseMatcher {
     private int _total = 0;
     private int _updated = 0;
     private int _nomatch = 0;
+    private IntSet datasets = new IntOpenHashSet();
 
-    BulkMatchHandler(int datasetKey, boolean allowInserts, Class<? extends MatchMapper> mapperClass, boolean update) {
-      this.datasetKey = datasetKey;
+    BulkMatchHandler(boolean allowInserts, Class<? extends MatchMapper> mapperClass, boolean update) {
       this.allowInserts = allowInserts;
       this.update = update;
       this.batchSession = update ? // in update mode we also need to read to make sure we update or insert correctly
@@ -72,7 +74,8 @@ public class BaseMatcher {
       NameMatch m = ni.match(n, allowInserts, false);
       if (!m.hasMatch()) {
         _nomatch++;
-        LOG.debug("No match for {} from dataset {} with {} alternatives: {}", n.toStringComplete(), datasetKey,
+        // we only log here, but persist below
+        LOG.debug("No match for {} from dataset {} with {} alternatives: {}", n.toStringComplete(), n.getDatasetKey(),
           m.getAlternatives() == null ? 0 : m.getAlternatives().size(),
           m.getAlternatives() == null ? "" : m.getAlternatives().stream().map(IndexName::getLabelWithRank).collect(Collectors.joining("; "))
         );
@@ -83,12 +86,13 @@ public class BaseMatcher {
           if (!update) {
             batchSession.commit();
           }
-          LOG.debug("Updated {} name matches for {} names with {} no matches for dataset {}", _updated, _total, _nomatch, datasetKey);
+          LOG.debug("Updated {} name matches for {} names with {} no matches", _updated, _total, _nomatch);
         }
       }
     }
 
     void persist(Name n, NameMatch m, MatchType oldType) {
+      datasets.add(n.getDatasetKey());
       if (update && oldType != null) {
         // the update might not have found a record (e.g. because we did not store NONE matches before)
         // create a record if it wasnt updated
@@ -98,6 +102,10 @@ public class BaseMatcher {
       } else {
         nmm.create(n, n.getSectorKey(), m.getNameKey(), m.getType());
       }
+    }
+
+    public IntSet getDatasets() {
+      return datasets;
     }
 
     @Override

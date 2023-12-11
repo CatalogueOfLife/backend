@@ -223,14 +223,15 @@
       u.n_link AS link,
       u.n_remarks AS remarks,
       <!-- name match -->
-      ni.id AS namesIndexId,
+      m.index_id AS namesIndexId,
       m.type AS namesIndexType
 
     FROM name_usage_archive u
       LEFT JOIN name_usage_archive_match m ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
-      LEFT JOIN names_index ni ON m.index_id=ni.id
-    WHERE u.dataset_key=#{datasetKey}
-    <if test="onlyMissing">AND m.type IS NULL</if>
+    <where>
+      <if test="datasetKey != null">u.dataset_key=#{datasetKey}</if>
+      <if test="onlyMissing">AND m.type IS NULL</if>
+    </where>
   </select>
 
 </mapper>
