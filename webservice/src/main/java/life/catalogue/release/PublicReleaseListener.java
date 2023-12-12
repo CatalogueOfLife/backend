@@ -144,11 +144,11 @@ public class PublicReleaseListener {
         // sources
         DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
-        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
+        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey(), null).stream()
           .map(Dataset::getDoi)
           .filter(java.util.Objects::nonNull)
           .collect(Collectors.toSet());
-        for (var src : psm.listReleaseSources(lastReleaseKey)) {
+        for (var src : psm.listReleaseSources(lastReleaseKey, null)) {
           if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {
             var url = converter.sourceURI(lastReleaseKey, src.getKey(), false);
             LOG.info("Update source DOI {} from previous release {} to target {}", src.getDoi(), lastReleaseKey, url);

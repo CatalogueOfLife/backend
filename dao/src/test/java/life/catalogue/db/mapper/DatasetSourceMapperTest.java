@@ -45,12 +45,14 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
   @Test
   public void listProjectSources() throws Exception {
-    mapper().listProjectSources(Datasets.COL);
+    mapper().listProjectSources(Datasets.COL, null);
+    mapper().listProjectSources(Datasets.COL, 10);
   }
 
   @Test
   public void listReleaseSources() throws Exception {
-    mapper().listReleaseSources(Datasets.COL);
+    mapper().listReleaseSources(Datasets.COL, null);
+    mapper().listReleaseSources(Datasets.COL, 10);
   }
 
   @Test
@@ -135,7 +137,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     assertEquals(rs2, rs);
 
     // now try to list sources
-    mapper().listReleaseSources(Datasets.COL);
+    mapper().listReleaseSources(Datasets.COL, null);
 
     // limit container authors to just 2 and verify
     DatasetSettings ds = dm.getSettings(Datasets.COL);

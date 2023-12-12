@@ -64,12 +64,14 @@
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
 
     ORDER BY 1
+    <if test="limit != null">LIMIT #{limit}</if>
   </select>
 
   <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceReleaseResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
+    <if test="limit != null">LIMIT #{limit}</if>
   </select>
 
   <select id="listReleaseSourcesAuthorsOnly" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="500" resultSetType="FORWARD_ONLY">

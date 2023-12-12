@@ -119,7 +119,7 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease() && !rebuild) {
-        sources = psm.listReleaseSources(datasetKey);
+        sources = psm.listReleaseSources(datasetKey, 1000); // TODO: remove limit when UI can deal with it
 
       } else {
         // get latest version with patch applied
@@ -127,7 +127,7 @@ public class DatasetSourceDao {
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
-        sources = psm.listProjectSources(datasetKey);
+        sources = psm.listProjectSources(datasetKey, 1000); // TODO: remove limit when UI can deal with it
         sources.forEach(d -> patch(d, projectKey, project, pm));
       }
     }
