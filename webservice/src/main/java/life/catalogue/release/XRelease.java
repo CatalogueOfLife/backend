@@ -246,16 +246,16 @@ public class XRelease extends ProjectRelease {
   private void flagLoops() {
     // cut potential cycles in the tree?
     try (SqlSession session = factory.openSession(true)) {
-      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(datasetKey);
+      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);
       if (cycles != null && !cycles.isEmpty()) {
-        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),datasetKey);
+        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),newDatasetKey);
         var tm = session.getMapper(TaxonMapper.class);
         var num = session.getMapper(NameUsageMapper.class);
         var vsm = session.getMapper(VerbatimSourceMapper.class);
 
         Name n = Name.newBuilder()
                      .id("cycleParentPlaceholder")
-                     .datasetKey(datasetKey)
+                     .datasetKey(newDatasetKey)
                      .scientificName("Cycle parent holder")
                      .rank(Rank.UNRANKED)
                      .type(NameType.PLACEHOLDER)
@@ -267,12 +267,12 @@ public class XRelease extends ProjectRelease {
         cycleParent.setParentId(mergeCfg.incertae.getId());
         tm.create(cycleParent);
 
-        final DSID<String> key = DSID.root(datasetKey);
+        final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : cycles) {
           vsm.addIssue(key.id(id), Issue.PARENT_CYCLE);
           num.updateParentId(key, cycleParent.getId(), user);
         }
-        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(),datasetKey);
+        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
       }
     }
 
@@ -280,7 +280,7 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var vsm = session.getMapper(VerbatimSourceMapper.class);
-      var missing = num.listMissingParentIds(datasetKey);
+      var missing = num.listMissingParentIds(newDatasetKey);
       if (missing != null && !missing.isEmpty()) {
         LOG.error("{} usages found with a non existing parentID", missing.size());
         final String parent;
@@ -289,12 +289,12 @@ public class XRelease extends ProjectRelease {
         } else {
           parent = null;
         }
-        final DSID<String> key = DSID.root(datasetKey);
+        final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : missing) {
           vsm.addIssue(key.id(id), Issue.PARENT_ID_INVALID);
           num.updateParentId(key, parent, user);
         }
-        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),datasetKey);
+        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
       }
     }
   }

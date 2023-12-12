@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
@@ -10,12 +11,11 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.printer.TxtTreeDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -87,6 +89,9 @@ public class XReleaseIT extends SectorSyncTestBase {
     biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
 
     return Arrays.asList(new Object[][] {
+      {"inverse_ranks", cfg(biotaSedis), List.of(
+        tax("repdb")
+      )},
       {"abronia", cfg(biotaSedis), List.of(
         tax("itis"),
         tax("wcvp"),
@@ -257,6 +262,23 @@ public class XReleaseIT extends SectorSyncTestBase {
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree
     assertTree(xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
+
+    conditionalChecks(project, xrel);
+  }
+
+  private void conditionalChecks(String project, XRelease xrel) {
+    if (project.equals("inverse_ranks")) {
+      // wrong rank order issue
+      final DSID<String> key = DSID.root(xrel.newDatasetKey);
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+        var num = session.getMapper(NameUsageMapper.class);
+        var vm = session.getMapper(VerbatimSourceMapper.class);
+        var res = num.findOne(xrel.newDatasetKey, Rank.FAMILY, "Anguidae");
+        assertNotNull(res);
+        var v = vm.get(key.id(res.getId()));
+        assertTrue(v.getIssues().contains(Issue.CLASSIFICATION_RANK_ORDER_INVALID));
+      }
+    }
   }
 
   @After

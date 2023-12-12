@@ -58,6 +58,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                               @Param("name") String name
   );
 
+  default SimpleName findOne(int datasetKey, Rank rank, String name) {
+    var list = findSimple(datasetKey, null, null, rank, name);
+    if (list.size()==1) return list.get(0);
+    return null;
+  }
+
   default List<SimpleName> findSimpleSN(int datasetKey, SimpleName sn){
     return findSimple(datasetKey, null, sn.getStatus(), sn.getRank(), sn.getName());
   }

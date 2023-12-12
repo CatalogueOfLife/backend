@@ -819,7 +819,7 @@
   <select id="listMissingParentIds" parameterType="map" resultType="string">
     SELECT u.id
     FROM name_usage u
-    WHERE u.dataset_key=#{datasetKey} AND NOT EXISTS (
+    WHERE u.dataset_key=#{datasetKey} AND u.parent_id IS NOT NULL AND NOT EXISTS (
       SELECT TRUE FROM name_usage p WHERE p.dataset_key=#{datasetKey} AND p.id=u.parent_id
     )
   </select>
