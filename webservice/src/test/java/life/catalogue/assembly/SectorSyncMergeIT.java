@@ -4,6 +4,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.TreeRepoRule;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
@@ -12,9 +13,13 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.printer.TxtTreeDataRule;
 
+import org.apache.ibatis.io.Resources;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
@@ -59,42 +64,36 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   int testNum = 0;
   String project;
-  String expectedFN;
-  Set<Rank> ranks;
   List<String> trees;
   List<Sector> sectors = new ArrayList<>();
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      {"issues", null, List.of("bad")},
-      {"subgenera", null, List.of("carabcat", "2021")},
-      {"subgenera", Rank.FAMILY, List.of("carabcat", "2021")},
-      {"proparte", Rank.ORDER, List.of("3i")},
-      {"homonyms", null, List.of("worms", "itis", "wcvp", "taxref", "ala", "ipni", "irmng")},
-      {"convulatum", null, List.of("dyntaxa")},
-      {"unranked", null, List.of("palaeo")},
-      {"circular", null, List.of("src1", "src2", "src3")},
-      {"biota2", null, List.of("ipni")},
-      {"biota", null, List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
-      {"saccolomataceae", null, List.of("orthiopteris")}
+      {"clavaria", List.of("unite")},
+      {"issues", List.of("bad")},
+      {"subgenera", List.of("carabcat", "2021")},
+      {"subgenera-fam", List.of("carabcat", "2021")},
+      {"proparte", List.of("3i")},
+      {"homonyms", List.of("worms", "itis", "wcvp", "taxref", "ala", "ipni", "irmng")},
+      {"convulatum", List.of("dyntaxa")},
+      {"unranked", List.of("palaeo")},
+      {"circular", List.of("src1", "src2", "src3")},
+      {"biota2", List.of("ipni")},
+      {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
+      {"saccolomataceae", List.of("orthiopteris")}
     });
   }
 
-  public SectorSyncMergeIT(String project, Rank maxRank, List<String> trees) {
+  public SectorSyncMergeIT(String project, List<String> trees) {
     this.project = project.toLowerCase();
-    this.ranks = maxRank == null ? null : Set.copyOf(RankUtils.maxRanks(maxRank));
     this.trees = trees;
-    this.expectedFN = "expected";
-    if (maxRank != null) {
-      this.expectedFN = this.expectedFN + "-" + maxRank.name().toLowerCase();
-    }
   }
 
   @Before
   public void init () throws Throwable {
     System.out.printf("\n\n*** Project %s ***\n\n", project);
-    LOG.info("Project {}. {} trees: {}", project, ranks, trees);
+    LOG.info("Project {}. Trees: {}", project, trees);
     testNum++;
     // load text trees & create sectors
     List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
@@ -104,16 +103,21 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
     int dkey = 100;
     for (String tree : trees) {
+      String resource = "txtree/"+project + "/" + tree.toLowerCase();
       data.add(
-        new TxtTreeDataRule.TreeDataset(dkey, "txtree/"+project + "/" + tree.toLowerCase()+".txtree", tree, DatasetOrigin.EXTERNAL)
+        new TxtTreeDataRule.TreeDataset(dkey, resource + ".txtree", tree, DatasetOrigin.EXTERNAL)
       );
-      Sector s = new Sector();
+      Sector s;
+      // do we have a config file?
+      try {
+        s = YamlUtils.read(Sector.class, Resources.getResourceAsStream(resource + ".yaml"));
+      } catch (IOException e) {
+        s = new Sector(); // use defaults
+      }
+
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
-      if (ranks != null) {
-        s.setRanks(ranks);
-      }
       s.setPriority(dkey-99);
       s.setNote(tree);
       sectors.add(s);
@@ -138,7 +142,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Test
   public void syncAndCompare() throws Exception {
     syncAll();
-    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/" + expectedFN + ".txtree"));
+    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
   }
 
 }

@@ -1,0 +1,12 @@
+ranks:
+  - order
+  - suborder
+  - infraorder
+  - superfamily
+  - family
+  - subfamily
+  - tribe
+  - genus
+  - subgenus
+  - species
+
