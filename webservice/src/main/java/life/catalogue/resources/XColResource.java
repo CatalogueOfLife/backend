@@ -6,14 +6,16 @@ import io.swagger.v3.oas.annotations.Hidden;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -24,6 +26,7 @@ import life.catalogue.printer.*;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.api.model.checklistbank.DatasetMetrics;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -55,12 +58,14 @@ public class XColResource {
   private final ExportManager exportManager;
   private final WsServerConfig cfg;
   private final LatestDatasetKeyCache cache;
+  private final DatasetSourceDao sourceDao;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(XColResource.class);
 
-  public XColResource(LatestDatasetKeyCache cache, ExportManager exportManager, WsServerConfig cfg) {
+  public XColResource(DatasetSourceDao sourceDao, LatestDatasetKeyCache cache, ExportManager exportManager, WsServerConfig cfg) {
     this.exportManager = exportManager;
+    this.sourceDao = sourceDao;
     this.cache = cache;
     this.cfg = cfg;
   }
@@ -97,6 +102,16 @@ public class XColResource {
     }
 
     throw new NotFoundException(req.getDatasetKey(), req.getFormat().getName() + " archive for dataset " + req.getDatasetKey() + " not found");
+  }
+
+  @GET
+  @Path("metrics")
+  @VaryAccept
+  public ImportMetrics metrics(@QueryParam("mode") Sector.Mode mode,
+                               @QueryParam("publisher") UUID publisher
+  ) {
+    int relKey = cache.getLatestReleaseCandidate(Datasets.COL, true);
+    return sourceDao.releaseMetrics(relKey, mode, publisher);
   }
 
 }

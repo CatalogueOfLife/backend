@@ -1,10 +1,14 @@
 package life.catalogue.release;
 
+import com.google.common.collect.ImmutableList;
+
 import life.catalogue.api.model.NameUsageCore;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -75,11 +79,33 @@ public class ParentStack<T extends NameUsageCore> {
   }
 
   public T secondLast() {
-    return parents.isEmpty() ? null : parents.get(parents.size()-2).usage;
+    return parents.size() >= 2 ? parents.get(parents.size()-2).usage : null;
   }
 
   public T last() {
     return parents.isEmpty() ? null : parents.getLast().usage;
+  }
+
+  public List<SNC<T>> getParents(boolean skipLast) {
+    var ps = ImmutableList.copyOf(parents);
+    if (skipLast && !ps.isEmpty()) {
+      return ps.subList(0, parents.size()-1);
+    }
+    return ps;
+  }
+
+  public Optional<Rank> getLowestConcreteRank(boolean skipLast) {
+    var iter = parents.descendingIterator();
+    if (skipLast && iter.hasNext()) {
+      iter.next(); // skip
+    }
+    while (iter.hasNext()) {
+      var p = iter.next();
+      if (!p.usage.getRank().isUncomparable()) {
+        return Optional.of(p.usage.getRank());
+      }
+    }
+    return Optional.empty();
   }
 
   public void push(T nu) {

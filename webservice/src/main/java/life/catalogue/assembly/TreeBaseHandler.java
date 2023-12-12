@@ -280,10 +280,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // did we sync the name before in the same sector?
         Usage existing = findExisting(n, parent);
         if (existing != null) {
-          LOG.debug("Found implicit {} {} in project", r, n.getLabel());
+          LOG.debug("Found implicit {} {} [{}] in project", r, n.getLabel(), existing.id);
           if (existing.status.isSynonym()) {
             // use accepted instead
-            var acc = num.getSimpleParent(targetKey.id(existing.id));
+            var acc = getSimpleParent(existing.id);
+            if (acc == null) {
+              LOG.warn("Could not use synonym {} {} as implicit name, the accepted name is missing!", r, n.getLabel());
+              continue;
+            }
             LOG.debug("Implicit {} {} is a synonym, use accepted name {} as parent and mark new name {} as provisional", r, n.getLabel(), acc, origName);
             parent = usage(acc);
             taxon.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
@@ -321,6 +325,18 @@ public abstract class TreeBaseHandler implements TreeHandler {
       }
     }
     return parent;
+  }
+
+  protected SimpleName getSimpleParent(String id) {
+    var p = num.getSimpleParent(targetKey.id(id));
+    if (p == null) {
+      batchSession.commit();
+      p = num.getSimpleParent(targetKey.id(id));
+      if (p == null) {
+        LOG.warn("Parent not found for {}", target);
+      }
+    }
+    return p;
   }
 
   protected Usage findUninomial(NomCode code, Rank rank, String uninomial, Usage parent) {

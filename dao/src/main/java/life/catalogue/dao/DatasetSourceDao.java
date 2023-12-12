@@ -3,9 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.*;
 import life.catalogue.db.mapper.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
@@ -204,6 +202,39 @@ public class DatasetSourceDao {
     public int getAttempt() {
       return super.getAttempt();
     }
+  }
+
+  public ImportMetrics releaseMetrics(int datasetKey, @Nullable Sector.Mode mode, @Nullable UUID publisher) {
+    final var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (!info.origin.isRelease()) {
+      throw new IllegalArgumentException("dataset has to be a release");
+    }
+
+    // aggregate metrics based on sector syncs/imports
+    ImportMetrics m = new ImportMetrics();
+    m.setDatasetKey(datasetKey);
+    try (SqlSession session = factory.openSession()) {
+      SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
+      AtomicInteger sectorCounter = new AtomicInteger(0);
+      Integer projectKey = info.sourceKey;
+      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, null)){
+        if (s.getSyncAttempt() != null) {
+          if (publisher != null) {
+            var src = DatasetInfoCache.CACHE.info(s.getSubjectDatasetKey());
+            if (!Objects.equals(publisher, src.publisherKey)) {
+              continue;
+            }
+          }
+          if (mode != null && s.getMode() != mode) continue;
+          // matches. Add!
+          SectorImport si = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
+          m.add(si);
+          sectorCounter.incrementAndGet();
+        }
+      }
+      m.setSectorCount(sectorCounter.get());
+    }
+    return m;
   }
 
   public ImportMetrics projectSourceMetrics(int datasetKey, int sourceKey) {

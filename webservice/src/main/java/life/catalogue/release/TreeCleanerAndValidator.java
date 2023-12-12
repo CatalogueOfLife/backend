@@ -18,6 +18,9 @@ import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,10 +159,19 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       genusYear = authorYear;
     }
     parents.push(sn);
+    // validate next higher concrete parent rank
+    if (!sn.getRank().isUncomparable()) {
+      parents.getLowestConcreteRank(true).ifPresent(r -> {
+        if (r.lowerOrEqualsTo(sn.getRank())) {
+          issues.addIssue(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
+        }
+      });
+    }
     // track maximum depth of accepted taxa
     if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.size()) {
       maxDepth = parents.size();
     }
+    // persist if we have flagged issues
     if (issues.hasIssues()) {
       try (SqlSession session = factory.openSession(true)) {
         var vsm = session.getMapper(VerbatimSourceMapper.class);
