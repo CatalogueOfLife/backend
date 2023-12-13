@@ -6,7 +6,7 @@ import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.assembly.TaxGroupAnalyzer;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;

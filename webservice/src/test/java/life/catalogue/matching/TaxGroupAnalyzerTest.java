@@ -1,7 +1,8 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import life.catalogue.api.vocab.TaxGroup;
 
+import life.catalogue.matching.TaxGroupAnalyzer;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 

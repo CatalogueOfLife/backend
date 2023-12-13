@@ -7,7 +7,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.assembly.TaxGroupAnalyzer;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.tax.AuthorshipNormalizer;

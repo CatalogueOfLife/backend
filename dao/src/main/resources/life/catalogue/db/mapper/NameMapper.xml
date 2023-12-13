@@ -191,6 +191,11 @@
     </association>
   </resultMap>
 
+  <resultMap id="simpleResultMap" type="SimpleNameInDataset" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="name" column="scientific_name"/>
+  </resultMap>
+
   <select id="count" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key=#{datasetKey}
   </select>
@@ -402,4 +407,11 @@
     USING _tmp_nu tmp
     WHERE dataset_key=#{datasetKey} AND id = tmp.nid
   </delete>
+
+  <select id="processAll" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT id, dataset_key, scientific_name, authorship, rank, code
+    FROM name
+    <if test="rank != null">WHERE rank &lt; #{rank}</if>
+  </select>
+
 </mapper>

@@ -1,4 +1,4 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.TaxGroup;

@@ -1,9 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.*;
@@ -66,6 +63,12 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   Cursor<String> processNameStrings(@Param("datasetKey") int datasetKey,
                                  @Nullable @Param("sectorKey") Integer sectorKey);
+
+  /**
+   * SimpleName.id = Name.id
+   * @param rank highest rank to exclude. Filters out all itself and all lower ranks
+   */
+  Cursor<SimpleNameInDataset> processAll(@Nullable @Param("rank") Rank rank);
 
   /**
    * Returns the list of names published in the same reference.
