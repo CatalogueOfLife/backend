@@ -205,6 +205,7 @@ spec,SPECIES
 special form,FORMA_SPECIALIS
 species complex,SPECIES_AGGREGATE
 species group,SPECIES_AGGREGATE
+species hypothesis,UNRANKED
 species subgroup,SPECIES_AGGREGATE
 speciesaggregate,SPECIES_AGGREGATE
 speciescomplex,SPECIES_AGGREGATE
