@@ -38,7 +38,8 @@ import static org.junit.Assert.*;
 
 public class DuplicateMapperTest {
   
-  final static int datasetKey = 1000;
+  final static int datasetKey = 1000; // project
+  final static int sourceDatasetKey = 1001;
   DuplicateMapper mapper;
   SqlSession session;
 
@@ -64,7 +65,7 @@ public class DuplicateMapperTest {
   @Test
   public void usagesWithDecisions() {
     List<String> ids = Lists.immutableListOf("55", "46");
-    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
+    List<Duplicate.UsageDecision> res = mapper.usagesByIds(datasetKey, datasetKey, ids);
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
@@ -75,51 +76,33 @@ public class DuplicateMapperTest {
     DecisionMapper dm = session.getMapper(DecisionMapper.class);
   
     EditorialDecision d1 = TestEntityGenerator.setUser(new EditorialDecision());
-    d1.setDatasetKey(Datasets.COL);
-    d1.setSubjectDatasetKey(datasetKey);
-    d1.setSubject(TreeMapperTest.nameref("45"));
+    d1.setDatasetKey(datasetKey);
+    d1.setSubjectDatasetKey(sourceDatasetKey);
+    d1.setSubject(TreeMapperTest.nameref("X45"));
     d1.setMode(EditorialDecision.Mode.UPDATE);
     dm.create(d1);
     
-    res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
+    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
     assertEquals(2, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
+      assertNull(u.getDecision());
     }
 
     ids = Lists.immutableListOf("45");
-    res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
+    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
     EditorialDecision d = res.get(0).getDecision();
     assertNotNull(d);
     assertNotNull(d.getKey());
     printDiff(DecisionMapperTest.removeCreatedProps(d), d1);
     assertEquals(DecisionMapperTest.removeCreatedProps(d), d1);
 
-    // now with project duplicates without decisions
-    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
+    // now pointing decisions at an empty project
+    res = mapper.usagesByIds(datasetKey, Datasets.COL, ids);
     assertEquals(1, res.size());
     for (Duplicate.UsageDecision u : res) {
       assertFalse(u.getClassification().isEmpty());
       assertNull(u.getDecision());
-    }
-
-    // project dupe with decision
-    EditorialDecision d2 = TestEntityGenerator.setUser(new EditorialDecision());
-    d2.setDatasetKey(datasetKey);
-    d2.setSubjectDatasetKey(1001);
-    d2.setSubject(TreeMapperTest.nameref("X45"));
-    d2.setMode(EditorialDecision.Mode.UPDATE);
-    dm.create(d2);
-
-    res = mapper.usagesByIds(datasetKey, datasetKey, ids);
-    assertEquals(1, res.size());
-    for (Duplicate.UsageDecision u : res) {
-      assertFalse(u.getClassification().isEmpty());
-      d = u.getDecision();
-      assertNotNull(d);
-      assertNotNull(d.getKey());
-      printDiff(DecisionMapperTest.removeCreatedProps(d), d2);
-      assertEquals(DecisionMapperTest.removeCreatedProps(d), d2);
     }
   }
 

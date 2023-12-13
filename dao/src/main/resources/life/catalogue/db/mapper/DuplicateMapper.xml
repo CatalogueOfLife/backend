@@ -76,7 +76,7 @@
       <property name="prefix" value="ed_"/>
     </include>,
     <choose>
-      <when test="datasetKey == projectKey">
+      <when test="addSrc">
         v.source_id,
         v.source_dataset_key
       </when>
@@ -92,8 +92,8 @@
       LEFT JOIN name an ON an.dataset_key=#{datasetKey} AND a.name_id=an.id
       LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
     <choose>
-      <when test="datasetKey == projectKey">
-        LEFT JOIN verbatim_source v ON v.dataset_key=#{projectKey} AND v.id=u.id
+      <when test="addSrc">
+        LEFT JOIN verbatim_source v ON v.dataset_key=#{datasetKey} AND v.id=u.id
         LEFT JOIN decision ed ON ed.subject_id=v.source_id AND ed.subject_dataset_key=v.source_dataset_key AND ed.dataset_key=#{projectKey}
       </when>
       <otherwise>

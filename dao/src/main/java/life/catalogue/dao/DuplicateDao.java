@@ -66,7 +66,6 @@ public class DuplicateDao {
     // the dataset to be analyzed
     int datasetKey;
     String query;
-    DatasetInfoCache.DatasetInfo info;
     // if true compare names only, if false usages
     boolean compareNames;
     // the matching mode to detect duplicates - strict or fuzzy

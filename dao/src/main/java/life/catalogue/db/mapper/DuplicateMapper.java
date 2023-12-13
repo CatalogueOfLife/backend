@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.dao.DatasetInfoCache;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
@@ -99,10 +101,11 @@ public interface DuplicateMapper {
    * @param ids usage ids to return usage decisions for
    */
   default List<Duplicate.UsageDecision> usagesByIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey, Collection<String> ids) {
-    LOG.info("Query {} duplicate usages by id in dataset {}", ids.size(), datasetKey);
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    LOG.info("Query {} duplicate usages by id in {} dataset {}", ids.size(), info.origin, datasetKey);
     createIdTable();
     Iterables.partition(ids, 10000).forEach(this::insertTableIdBatch);
-    var res = usagesByTableIds(datasetKey, projectKey);
+    var res = usagesByTableIds(datasetKey, projectKey, info.origin.isProjectOrRelease());
     dropIdTable();
     return res;
   }
@@ -114,7 +117,10 @@ public interface DuplicateMapper {
   @Deprecated
   List<Duplicate.UsageDecision> namesByTableIds(@Param("datasetKey") int datasetKey);
   @Deprecated
-  List<Duplicate.UsageDecision> usagesByTableIds(@Param("datasetKey") int datasetKey, @Param("projectKey") Integer projectKey);
+  List<Duplicate.UsageDecision> usagesByTableIds(@Param("datasetKey") int datasetKey,
+                                                 @Param("projectKey") Integer projectKey,
+                                                 @Param("addSrc") boolean addSrc
+  );
   @Deprecated
   void createIdTable();
   @Deprecated
