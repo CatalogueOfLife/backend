@@ -60,7 +60,7 @@ public class EmailNotification {
           .from(cfg.fromName, cfg.from)
           .withReplyTo(cfg.replyTo)
           .bccAddresses(cfg.bcc)
-          .withSubject(String.format("ChecklistBank %s %s %s", job.getJobName(), job.getKey(), job.getStatus().name().toLowerCase()))
+          .withSubject(String.format("%s %s %s %s", cfg.subjectPrefix, job.getJobName(), job.getKey(), job.getStatus().name().toLowerCase()))
           .withPlainText(text)
           .buildEmail();
 
@@ -131,6 +131,8 @@ public class EmailNotification {
     private final String from;
     private final String fromName;
     private final String replyTo;
+    private final String domain;
+    private final String subjectPrefix;
 
     public EmailData(BackgroundJob job, User user, MailConfig cfg) {
       this.job = job;
@@ -140,10 +142,14 @@ public class EmailNotification {
         this.from = cfg.from;
         this.fromName = cfg.fromName;
         this.replyTo = cfg.replyTo;
+        this.domain = cfg.domain;
+        this.subjectPrefix = cfg.subjectPrefix;
       } else {
         this.from = null;
         this.fromName = null;
         this.replyTo = null;
+        this.domain = null;
+        this.subjectPrefix = null;
       }
     }
 
@@ -171,5 +177,12 @@ public class EmailNotification {
       return user;
     }
 
+    public String getDomain() {
+      return domain;
+    }
+
+    public String getSubjectPrefix() {
+      return subjectPrefix;
+    }
   }
 }

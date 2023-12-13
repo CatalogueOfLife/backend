@@ -62,4 +62,16 @@ public class MailConfig {
    */
   public boolean block = false;
 
+  /**
+   * The prefix to be used for email subject lines.
+   * Can be used to indicate a specific environment.
+   */
+  public String subjectPrefix = "ChecklistBank";
+
+  /**
+   * The domain both website and API are running under.
+   * Used to build links.
+   */
+  public String domain = "checklistbank.org";
+
 }
