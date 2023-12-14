@@ -411,7 +411,7 @@
   <select id="processAll" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT id, dataset_key, scientific_name, authorship, rank, code
     FROM name
-    <if test="rank != null">WHERE rank &lt; #{rank}</if>
+    <if test="rank != null">WHERE rank &lt; #{rank}::RANK</if>
   </select>
 
 </mapper>
