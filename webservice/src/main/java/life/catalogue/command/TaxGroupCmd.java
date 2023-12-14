@@ -101,7 +101,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
          var stmt = con.createStatement();
     ) {
       stmt.execute("DROP TABLE IF EXISTS tax_groups");
-      stmt.execute("DROP TYPE tax_group IF EXISTS");
+      stmt.execute("DROP TYPE IF EXISTS tax_group");
       StringBuilder sb = new StringBuilder();
       sb.append("CREATE TYPE TAX_GROUP AS ENUM (");
       boolean first = true;
