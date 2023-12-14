@@ -360,6 +360,7 @@ public class PgImport implements Callable<Boolean> {
    */
   private void insertUsages() throws InterruptedException {
     try (var indexer = indexService.buildDatasetIndexingHandler(dataset.getKey())) {
+      // load all decisions so we can include them in the ES usage index later
       final Map<String, List<SimpleDecision>> decisions = new HashMap<>();
       try (SqlSession session = sessionFactory.openSession(true)) {
         AtomicInteger cnt = new AtomicInteger(0);

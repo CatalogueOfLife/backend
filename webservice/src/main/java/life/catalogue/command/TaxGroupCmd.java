@@ -106,15 +106,16 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       sb.append("CREATE TYPE TAX_GROUP AS ENUM (");
       boolean first = true;
       for (TaxGroup tg : TaxGroup.values()) {
-        if (first) {
+        if (!first) {
           sb.append(",");
-          first = false;
         }
+        first = false;
         sb.append("'");
         sb.append(tg.name());
         sb.append("'");
       }
       sb.append(")");
+      LOG.info(sb.toString());
       stmt.execute(sb.toString());
       stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, group TAX_GROUP)");
     }

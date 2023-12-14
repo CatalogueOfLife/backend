@@ -102,20 +102,20 @@ public class Normalizer implements Callable<Boolean> {
     try {
       // batch import verbatim records
       insertData();
-      // create new id generator being aware of existing ids we inserted up to now
       checkIfCancelled();
+      // make id generator aware of existing ids we inserted up to now
       store.updateIdGenerators();
+      checkIfCancelled();
       // insert normalizer db relations, create implicit nodes if needed and parse names
-      checkIfCancelled();
       normalize();
+      checkIfCancelled();
       // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
-      checkIfCancelled();
       store.sync();
+      checkIfCancelled();
       // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
-      checkIfCancelled();
       validateAndDefaults();
-      // matches names and taxon concepts and builds metrics per name/taxon
       checkIfCancelled();
+      // matches names and taxon concepts and builds metrics per name/taxon
       matchAndCount();
       LOG.info("Normalization succeeded");
 
