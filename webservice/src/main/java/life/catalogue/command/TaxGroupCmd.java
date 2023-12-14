@@ -77,7 +77,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
     @Override
     public void run() {
       try (var con = cfg.db.connect();
-           PreparedStatement pStmt = con.prepareStatement("INSERT INTO tax_groups (dataset_key, id, group) VALUES (?, ?, ?::TAX_GROUP)")
+           PreparedStatement pStmt = con.prepareStatement("INSERT INTO tax_groups (dataset_key, id, tg) VALUES (?, ?, ?::TAX_GROUP)")
       ) {
         con.setAutoCommit(false);
         for (var sn : names) {
@@ -117,7 +117,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       sb.append(")");
       LOG.info(sb.toString());
       stmt.execute(sb.toString());
-      stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, group TAX_GROUP)");
+      stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, tg TAX_GROUP)");
     }
   }
 
