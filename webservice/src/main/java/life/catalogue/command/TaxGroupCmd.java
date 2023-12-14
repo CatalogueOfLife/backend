@@ -65,6 +65,8 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
     }
     LOG.info("Waiting for all {} analysis jobs to complete", COUNTER.get());
     ExecutorUtils.shutdown(exec);
+
+    addIndices();
     LOG.info("Tax group analysis complete");
   }
 
@@ -126,6 +128,17 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       LOG.info(sb.toString());
       stmt.execute(sb.toString());
       stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, tg TAX_GROUP)");
+    }
+  }
+
+  private void addIndices() throws SQLException {
+    LOG.info("Adding pg indices");
+    try (var con = cfg.db.connect();
+         var stmt = con.createStatement();
+    ) {
+      stmt.execute("CREATE INDEX ON tax_groups (dataset_key, id)");
+      stmt.execute("CREATE INDEX ON tax_groups (dataset_key, tg)");
+      stmt.execute("CREATE INDEX ON tax_groups (tg)");
     }
   }
 
