@@ -91,6 +91,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
           pStmt.setInt(1, sn.getDatasetKey());
           pStmt.setString(2, sn.getId());
           pStmt.setObject(3, tg == null ? null : tg.name());
+          pStmt.execute();
         }
         con.commit();
         LOG.info("Finished analyzer {}/{} with {} names", id, COUNTER.get(), names.size());
