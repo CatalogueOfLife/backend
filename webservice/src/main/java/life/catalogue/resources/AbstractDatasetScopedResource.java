@@ -12,6 +12,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +57,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
   @POST
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public K create(@PathParam("key") int datasetKey, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
@@ -78,6 +81,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   
   @PUT
   @Path("{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") int datasetKey, @PathParam("id") K id, @Valid T obj, @Auth User user) {
     obj.setDatasetKey(datasetKey);
@@ -90,6 +94,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
 
   @DELETE
   @Path("{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") K id, @Context UriInfo uri, @Auth User user) {
     DSIDValue<K> key = new DSIDValue<>(datasetKey, id);

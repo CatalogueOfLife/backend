@@ -9,6 +9,7 @@ import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.RematcherBase;
@@ -61,6 +62,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
   }
 
   @DELETE
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int deleteByDataset(@PathParam("key") int projectKey,
                               @QueryParam("datasetKey") Integer datasetKey,
@@ -78,7 +80,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
         }
       }
     );
-    LOG.info("Deleted {}{} decisions for dataset {} in catalogue {}", counter, broken ? " broken" : "", datasetKey, projectKey);
+    LOG.info("Deleted {}{} decisions for dataset {} in project {}", counter, broken ? " broken" : "", datasetKey, projectKey);
     return counter.get();
   }
 

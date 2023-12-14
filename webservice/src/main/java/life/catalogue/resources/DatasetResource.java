@@ -16,6 +16,7 @@ import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;
@@ -233,6 +234,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @POST
   @Hidden
   @Path("/{key}/preprelease")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN})
   public void preprelease(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildPrepRelease(key, user.getKey());
@@ -241,6 +243,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @POST
   @Path("/{key}/xrelease")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void xRelease(@PathParam("key") int key, @Auth User user) {
     Integer releaseKey;
@@ -290,6 +293,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @PUT
   @Path("/{key}/source/{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateProjectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, Dataset obj, @Auth User user) {

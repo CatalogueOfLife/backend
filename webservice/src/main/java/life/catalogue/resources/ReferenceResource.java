@@ -5,6 +5,7 @@ import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import javax.annotation.security.RolesAllowed;
@@ -56,6 +57,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
    */
   @POST
   @Consumes(MoreMediaTypes.APP_JSON_CSL)
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public String createCsl(@PathParam("key") int datasetKey, @Valid CslData csl, @Auth User user) {
     return dao.create(datasetKey, csl, user.getKey()).getId();
@@ -71,6 +73,7 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
 
   @DELETE
   @Path("orphans")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int delete(@PathParam("key") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,

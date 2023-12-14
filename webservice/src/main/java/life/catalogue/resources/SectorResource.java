@@ -11,6 +11,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.matching.decision.RematcherBase;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
@@ -73,6 +74,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   }
 
   @DELETE
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@PathParam("key") int catalogueKey,
                               @QueryParam("datasetKey") int datasetKey,
@@ -107,6 +109,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("sync")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
@@ -115,6 +118,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @DELETE
   @Path("sync/orphans")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @Auth User user) throws IOException {
     LOG.info("Remove orphaned sector imports and metrics from project {} by user {}", datasetKey, user.getName());
@@ -133,6 +137,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @DELETE
   @Override
   @Path("{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
@@ -142,6 +147,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @POST
   @Path("{id}/sync")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void runSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
     RequestScope req = RequestScope.sector(DSID.of(datasetKey, id));
@@ -150,6 +156,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
 
   @DELETE
   @Path("{id}/sync")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
     DaoUtils.requireManaged(datasetKey);
@@ -213,6 +220,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   }
 
   @POST
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("/createFromPublisher")
   public int createFromPublisher(@PathParam("key") int projectKey, @QueryParam("publisherKey") UUID publisherKey, @QueryParam("ranks") Set<Rank> ranks, @Auth User user) throws Exception {
     return dao.createMissingMergeSectorsFromPublisher(projectKey, user.getKey(), ranks, publisherKey, Set.of());

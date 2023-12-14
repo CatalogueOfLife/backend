@@ -28,7 +28,6 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   private static final Logger LOG = LoggerFactory.getLogger(CacheControlResponseFilter.class);
   private static final long AGE1 = TimeUnit.HOURS.toSeconds(1);
   private static final long AGE24 = TimeUnit.HOURS.toSeconds(24);
-  private static final Pattern DATASET_PATH  = Pattern.compile("dataset/(\\d+)");
   private static final Pattern STATIC_PATH  = Pattern.compile("^(vocab|openapi|version)");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
   private final IntSet releases = new IntOpenHashSet();
@@ -40,11 +39,9 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
         allowCaching(resp, AGE1);
         return;
       }
-      Matcher m = DATASET_PATH.matcher(req.getUriInfo().getPath());
-      if (m.find()) {
-        // parsing cannot fail, we have a pattern
-        int datasetKey = Integer.parseInt(m.group(1));
-        if (releases.contains(datasetKey)) {
+      Integer datasetKey = FilterUtils.datasetKeyOrNull(req.getUriInfo());
+      if (datasetKey != null) {
+        if (releases.contains((int)datasetKey)) {
           // its a release, we can cache it!
           allowCaching(resp, AGE24);
           return;

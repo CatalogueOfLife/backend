@@ -17,6 +17,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +85,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
 
   @DELETE
   @Path("orphans")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int delete(@PathParam("key") int datasetKey,
                     @QueryParam("before") LocalDateTimeParam before,

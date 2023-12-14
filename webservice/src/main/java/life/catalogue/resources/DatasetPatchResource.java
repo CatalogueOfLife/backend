@@ -9,6 +9,7 @@ import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetPatchMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.provider.DatasetPatch;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class DatasetPatchResource {
    */
   @POST
   @DatasetPatch
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public DSID<Integer> create(@PathParam("key") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.applyUser(user);
@@ -68,6 +70,7 @@ public class DatasetPatchResource {
   @PUT
   @Path("{id}")
   @DatasetPatch
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, Dataset obj, @Auth User user, @Context SqlSession session) {
     if (obj.getKey() != null && !obj.getKey().equals(id)) {
@@ -85,6 +88,7 @@ public class DatasetPatchResource {
 
   @DELETE
   @Path("{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Auth User user, @Context SqlSession session) {
     int i = session.getMapper(DatasetPatchMapper.class).delete(datasetKey, id);

@@ -24,6 +24,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -171,6 +173,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @POST
   @Path("{id}/tree")
   @Consumes(MediaType.TEXT_PLAIN)
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public int insertTxtree(@PathParam("key") int datasetKey,
                           @PathParam("id") String id,

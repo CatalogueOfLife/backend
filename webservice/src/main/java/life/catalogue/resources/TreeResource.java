@@ -7,6 +7,8 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
 import life.catalogue.dw.auth.Roles;
 
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
@@ -70,6 +72,7 @@ public class TreeResource {
 
   @DELETE
   @Path("{id}")
+  @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteRecursively(@PathParam("key") int datasetKey,
                                 @PathParam("id") String id,
