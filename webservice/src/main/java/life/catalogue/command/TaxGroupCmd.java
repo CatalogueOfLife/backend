@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 
 public class TaxGroupCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(TaxGroupCmd.class);
+  private final static AtomicInteger COUNTER = new AtomicInteger(1);
   private static final String ARG_THREADS = "t";
   int threads = 8;
 
@@ -61,21 +63,25 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       });
       exec.submit(new AnalysisJob(names));
     }
-    LOG.info("Waiting for analysis jobs to complete");
+    LOG.info("Waiting for all {} analysis jobs to complete", COUNTER.get());
     ExecutorUtils.shutdown(exec);
     LOG.info("Tax group analysis complete");
   }
 
   class AnalysisJob implements Runnable {
+    private final int id;
     private final List<SimpleNameInDataset> names;
     private final TaxGroupAnalyzer tga = new TaxGroupAnalyzer();
 
     AnalysisJob(List<SimpleNameInDataset> names) {
       this.names = ImmutableList.copyOf(names);
+      id = COUNTER.getAndIncrement();
+      LOG.info("Created analyzer {} with {} names", id, names.size());
     }
 
     @Override
     public void run() {
+      LOG.info("Starting analyzer {}", id);
       try (var con = cfg.db.connect();
            PreparedStatement pStmt = con.prepareStatement("INSERT INTO tax_groups (dataset_key, id, tg) VALUES (?, ?, ?::TAX_GROUP)")
       ) {
@@ -87,6 +93,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
           pStmt.setObject(3, tg == null ? null : tg.name());
         }
         con.commit();
+        LOG.info("Finished analyzer {}/{} with {} names", id, COUNTER.get(), names.size());
 
       } catch (Exception e) {
         LOG.error("Error analyzing tax groups", e);
@@ -101,7 +108,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
          var stmt = con.createStatement();
     ) {
       stmt.execute("DROP TABLE IF EXISTS tax_groups");
-      stmt.execute("DROP TYPE IF EXISTS tax_group");
+      stmt.execute("DROP TYPE IF EXISTS TAX_GROUP");
       StringBuilder sb = new StringBuilder();
       sb.append("CREATE TYPE TAX_GROUP AS ENUM (");
       boolean first = true;
