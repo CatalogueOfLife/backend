@@ -44,6 +44,9 @@ public enum TaxGroup {
       Crustacean(Arthropods),
       OtherArthropods(Arthropods),
     Molluscs(Animals),
+      Gastropods(Molluscs),//
+      Bivalves(Molluscs),
+      OtherMolluscs(Molluscs),
     Chordates(Animals),
       Amphibians(Chordates),
       Birds(Chordates),

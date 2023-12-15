@@ -481,7 +481,6 @@ Eubleptidae
 Eubulidini
 Eucaenidae
 Euchomenellini
-Euchomenellini
 Eudermaptera
 Eudohrniinae
 Eudohrninae
@@ -890,7 +889,6 @@ Neraphidiidae
 Nesameletidae
 Nesogastrinae
 Nestorembiinae
-Neuroptera
 Neuroptera
 Neurostigmatidae
 Nevrorthidae

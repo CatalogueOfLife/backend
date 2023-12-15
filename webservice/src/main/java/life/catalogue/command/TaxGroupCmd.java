@@ -29,7 +29,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(TaxGroupCmd.class);
   private final static AtomicInteger COUNTER = new AtomicInteger(1);
   private static final String ARG_THREADS = "t";
-  int threads = 8;
+  int threads = 4;
 
   public TaxGroupCmd() {
     super("taxgroup", "Creates a table for all names and fills it with the analyzed tax group for local db querying");
@@ -125,7 +125,6 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
         sb.append("'");
       }
       sb.append(")");
-      LOG.info(sb.toString());
       stmt.execute(sb.toString());
       stmt.execute("CREATE TABLE tax_groups (dataset_key INTEGER, id TEXT, tg TAX_GROUP)");
     }

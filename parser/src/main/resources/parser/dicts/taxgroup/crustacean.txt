@@ -773,7 +773,6 @@ Leperditellidae
 Leperditelloidea
 Leperditicopa
 Leperditiidae
-Leperditiidae
 Lepidepecreellidae
 Lepidocharontidae
 Lepidomysidae
@@ -1179,7 +1178,6 @@ Potamoidea
 Potamonautidae
 Poupiniidae
 Pribylitidae
-Primitiidae
 Primitiidae
 Primitiopsidae
 Priscillinidae

@@ -10,3 +10,7 @@ Dolichopodinae
 Phymatidae
 Tettigoniae
 Tettigoniidae
+Insecta
+Insects
+Entomida
+Ectognatha

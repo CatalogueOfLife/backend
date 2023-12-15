@@ -393,7 +393,6 @@ Diplomaragnoidea
 Diplopauropodidae
 Diplopoda
 Diplura
-Diplura
 Dirivultidae
 Dischizopetalini
 Discoidae
@@ -487,7 +486,6 @@ Euxinopetalinae
 Euxinopetalini
 Evalljapyginae
 Eviulisomatinae
-Eviulisomatini
 Eviulisomatini
 Faginini
 Falcigonopodini
@@ -959,8 +957,6 @@ Paradiaptominae
 Paradoxididae
 Paradoxidoidea
 Paradoxosomatidae
-Paradoxosomatidae
-Paradoxosomatinae
 Paradoxosomatinae
 Paradoxosomatini
 Parafontariinae
@@ -1103,7 +1099,6 @@ Protoglomeridae
 Protoiulidae
 Protolatiremidae
 Protolenidae
-Protura
 Protura
 Provalljapyginae
 Psammocyclopinidae
