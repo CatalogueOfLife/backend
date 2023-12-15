@@ -1,5 +1,5 @@
-Pilze
-Fungi
-Yeast
-Holomycota
 Eumycota
+Fungi
+Holomycota
+Pilze
+Yeast

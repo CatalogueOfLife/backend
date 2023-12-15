@@ -1,9 +1,9 @@
-Tracheophyta
+Archephyta
+Chlorobiota
+Cormobionta
+Embryophyta
 Plantae
 Plants
-Chlorobiota
-Archephyta
 Regnum Vegetabile
+Tracheophyta
 Vegetabile
-Embryophyta
-Cormobionta
