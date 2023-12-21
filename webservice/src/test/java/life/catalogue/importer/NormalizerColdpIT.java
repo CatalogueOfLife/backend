@@ -80,6 +80,9 @@ public class NormalizerColdpIT extends NormalizerITBase {
         } else if (n.getName().getId().equals("fake")){
           assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+        } else if (n.getName().getScientificName().equals("Viridae")){
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.RANK_NAME_SUFFIX_CONFLICT));
         } else {
           assertEquals(0, v.getIssues().size());
         }
@@ -415,6 +418,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         } else if(u.getId().equals("cult")) {
           assertEquals(1, v.getIssues().size());
           assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+
+        } else if (u.getId().equals("2")){
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.hasIssue(Issue.RANK_NAME_SUFFIX_CONFLICT));
 
         } else {
           assertEquals(0, v.getIssues().size());

@@ -95,7 +95,7 @@ public class NameIndexImpl implements NameIndex {
   }
 
   @Override
-  public NameMatch match(Name name, boolean allowInserts, boolean verbose) {
+  public NameMatch match(Name name, boolean allowInserts, boolean verbose) throws MatchingException {
     NameMatch m = null;
     try {
       List<IndexName> candidates = store.get(key(name));

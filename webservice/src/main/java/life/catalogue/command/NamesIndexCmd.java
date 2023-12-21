@@ -13,6 +13,7 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
+import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.pgcopy.PgBinaryReader;
@@ -83,7 +84,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     "usage_id"
   );
 
-  int threads = 4;
+  int threads = 6;
   File nidxFile;
   File buildDir;
   private NameIndex ni;
@@ -289,6 +290,17 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       this.out = out;
     }
 
+    private void writeMatch(PgBinaryWriter writer, int cols, Name n, NameMatch m) throws IOException {
+      writer.startRow(cols);
+      writer.writeInteger(n.getDatasetKey());
+      writer.writeEnum(m.getType());
+      writer.writeInteger(m.getNameKey());
+      writer.writeString(n.getId());
+      if (!archived) {
+        writer.writeInteger(n.getSectorKey());
+      }
+    }
+
     public void matchAll() {
       try (var reader = new PgBinaryReader(new FileInputStream(in));
            var writer = new PgBinaryWriter(new FileOutputStream(out))
@@ -308,21 +320,14 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
               m = ni.match(n, true, false);
               cache.put(cacheKey, m);
             }
-            writer.startRow(cols);
-            writer.writeInteger(n.getDatasetKey());
-            writer.writeEnum(m.getType());
-            writer.writeInteger(m.getNameKey());
-            writer.writeString(n.getId());
-            if (!archived) {
-              writer.writeInteger(n.getSectorKey());
-            }
-
+            writeMatch(writer, cols, n, m);
             if (!m.hasMatch()) {
               nomatch++;
             }
-          } catch (Exception e) {
+          } catch (MatchingException e) {
             error++;
             LOG.error("Failed to match name {} from {}. {} total errors", counter, in, error, e);
+            writeMatch(writer, cols, n, NameMatch.noMatch());
           }
           if (counter % 100000 == 0) {
             LOG.info("Matched {} names from {}. {}% cached, {} errors, {} have no match", counter, in, 100*cached/counter, error, nomatch);
