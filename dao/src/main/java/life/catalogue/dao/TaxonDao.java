@@ -1,5 +1,7 @@
 package life.catalogue.dao;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -413,11 +415,13 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
   }
 
-  private String typeContent(TypeMaterial tm) {
-    return List.of(tm.getCitation(), tm.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
+  @VisibleForTesting
+  protected static String typeContent(TypeMaterial tm) {
+    return Arrays.stream(new Object[]{tm.getCitation(), tm.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
         tm.getLocality(), tm.getCountry(), tm.getSex(), tm.getAssociatedSequences(), tm.getHost(), tm.getDate(), tm.getCollector(),
-        tm.getLatitude(), tm.getLongitude(), tm.getCoordinate(), tm.getAltitude(), tm.getRemarks())
-      .stream()
+        tm.getLatitude(), tm.getLongitude(), tm.getCoordinate(), tm.getAltitude(), tm.getRemarks()}
+      )
+      .filter(Objects::nonNull)
       .map(Object::toString)
       .map(String::toLowerCase)
       .map(StringUtils::trimToEmpty)
@@ -428,7 +432,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       List<TypeMaterial> agg = homotypicNameIds.stream()
         .map(info::getTypeMaterial)
         .flatMap(List::stream)
-        .collect(Collectors.groupingBy(this::typeContent))
+        .collect(Collectors.groupingBy(TaxonDao::typeContent))
         .values()
         .stream()
         .map(l -> l.get(0))

@@ -52,7 +52,9 @@ public interface NodeBatchProcessor {
     @Override
     public void run() {
       // reuse MDC from parent thread
-      MDC.setContextMap(parentMDC);
+      if (parentMDC != null) {
+        MDC.setContextMap(parentMDC);
+      }
       while (!(Thread.currentThread().interrupted())) {
         try {
           final List<Node> batch = queue.take();
