@@ -194,7 +194,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     if (prevReleaseKey != null) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
-      if (prevSrc != null && prevSrc.getDoi() != null) {
+      if (prevSrc != null && prevSrc.getDoi() != null && prevSrc.getDoi().isCOL()) {
         // compare basic metrics
         var metrics = srcDao.projectSourceMetrics(datasetKey, sourceKey);
         var prevMetrics = srcDao.projectSourceMetrics(prevReleaseKey, sourceKey);
