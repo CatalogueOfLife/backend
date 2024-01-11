@@ -684,12 +684,12 @@
 
   <sql id="DEPTH_FIRST_ROOT">
     <if test="depthFirst">
-      ,concat_ws('|',<if test="orderByName">n.scientific_name, n.authorship,</if> u.id) AS path
+      ,concat_ws('|',<if test="orderByName">n.scientific_name, n.authorship,</if> u.id) || '|' AS path
     </if>
   </sql>
   <sql id="DEPTH_FIRST">
     <if test="depthFirst">
-      ,concat_ws('|', x.path, <if test="orderByName">not is_synonym(u.status),n.scientific_name, n.authorship,</if> u.id) AS path
+      ,concat_ws('|', x.path, <if test="orderByName">not is_synonym(u.status),n.scientific_name, n.authorship,</if> u.id) || '|' AS path
     </if>
   </sql>
 
