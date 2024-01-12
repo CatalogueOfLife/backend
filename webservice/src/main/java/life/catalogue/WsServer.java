@@ -421,11 +421,13 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
+    j.register(new ValidatorResource(importManager, ddao));
     j.register(new VerbatimResource());
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());
     j.register(new VocabResource());
     j.register(new XColResource(dsdao, coljersey.getCache(), exportManager, cfg));
+
 
     // parsers
     j.register(new HomotypicGroupingResource());

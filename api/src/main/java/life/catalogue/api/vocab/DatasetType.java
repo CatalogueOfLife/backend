@@ -41,6 +41,6 @@ public enum DatasetType {
    * A dataset with the focus on being a species identification resource, e.g. keys.
    */
   IDENTIFICATION,
-  
+
   OTHER;
 }
