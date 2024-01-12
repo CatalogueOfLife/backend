@@ -68,10 +68,9 @@ public class ValidatorResource {
     d.setTitle("Archive Validation "+fn);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setPrivat(true);
-    d.setGbifPublisherKey(Datasets.TEMP_PUBLISHER); // this identifies the dataset as temporary for cleanup
     d.setType(DatasetType.OTHER);
     d.setLicense(License.CC0);
-    int key = ddao.create(d, user.getKey());
+    int key = ddao.createTemp(d, user.getKey());
     // validate uploaded archive
     importManager.upload(key, archive, false, fn, null, user);
     return d;

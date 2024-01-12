@@ -476,6 +476,11 @@
     </if>
   </sql>
 
+  <select id="keysAbove" resultType="integer">
+    SELECT key FROM dataset WHERE key >= #{min}
+    <if test="olderThan != null"> AND created &lt; #{olderThan}</if>
+  </select>
+
   <select id="getSettings" resultMap="settingsResultMap">
     SELECT key, settings
     FROM dataset

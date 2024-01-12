@@ -14,6 +14,7 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -120,6 +121,14 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
     assertEquals(d1.getContact(), d2.getContact());
     assertEquals(d1, d2);
+  }
+
+  @Test
+  public void keysAbove() throws Exception {
+    assertEquals(3, mapper().keysAbove(1, null).size());
+    assertEquals(3, mapper().keysAbove(1, LocalDateTime.now()).size());
+    assertEquals(0, mapper().keysAbove(1, LocalDateTime.MIN).size());
+    assertEquals(0, mapper().keysAbove(10000, null).size());
   }
 
   @Test

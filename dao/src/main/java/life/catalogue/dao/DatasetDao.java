@@ -1,15 +1,15 @@
 package life.catalogue.dao;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
@@ -29,10 +29,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -73,7 +70,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
-
+  private static final int TEMP_KEY_START = 100_000_000;
+  private static final int TEMP_EXPIRY_DAYS = 7;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
   private final ImporterConfig iCfg;
@@ -84,6 +82,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
   private final EventBus bus;
+  private final TempIdProvider tempIds;
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
@@ -110,6 +109,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.exportDao = exportDao;
     this.indexService = indexService;
     this.bus = bus;
+    this.tempIds = new TempIdProvider();
   }
 
   /**
@@ -481,7 +481,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // track who did the deletion in modified_by and remove all access rights
     mapper.clearACL(key, user);
+
+    // physically delete dataset if its temporary
+    if (key >= TEMP_KEY_START) {
+      mapper.deletePhysically(key);
+    }
     session.close();
+
     // clear search index asynchroneously
     CompletableFuture.supplyAsync(() -> indexService.deleteDataset(key))
       .exceptionally(e -> {
@@ -514,6 +520,20 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return key;
   }
 
+  /**
+   * Create a temporary dataset which will be fully deleted and does not use the id sequence of postgresql for its key.
+   * Instead we assign a free key in the higher range manually.
+   */
+  public Integer createTemp(Dataset d, int user) {
+    d.applyUser(user);
+    d.setKey(tempIds.newKey());
+
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(mapperClass);
+      dm.createWithID(d);
+    }
+    return d.getKey();
+  }
   @Override
   protected boolean createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
     // persist source citations
@@ -676,6 +696,54 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return true;
       }
       return false;
+    }
+  }
+
+  public int deleteTempDatasets() {
+    List<Integer> toDelete;
+    LocalDateTime expiryDate = LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS);
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      toDelete = dm.keysAbove(TEMP_KEY_START, expiryDate);
+    }
+    LOG.info("Deleting {} expired temporary datasets...", toDelete.size());
+    for (var key : toDelete) {
+      delete(key, Users.IMPORTER);
+    }
+    LOG.info("Deleted {} expired temporary datasets", toDelete.size());
+    return toDelete.size();
+  }
+
+
+  private class TempIdProvider {
+    private static final int fetchSize = 100;
+    private final IntSet keys = new IntOpenHashSet();
+
+    private void loadKeys() {
+      LOG.info("Fetching {} unused temporary dataset keys...", fetchSize);
+      IntSet used = new IntOpenHashSet();
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetMapper dm = session.getMapper(DatasetMapper.class);
+        for (var k : dm.keysAbove(TEMP_KEY_START, null)) {
+          used.add(k);
+        }
+      }
+      int idx = TEMP_KEY_START;
+      while (keys.size() < fetchSize) {
+        if (!used.contains(idx)) {
+          keys.add(idx);
+        }
+        idx++;
+      }
+    }
+
+    private synchronized int newKey() {
+      if (keys.isEmpty()) {
+        loadKeys();
+      }
+      int k = keys.intIterator().nextInt();
+      keys.remove(k);
+      return k;
     }
   }
 }

@@ -1,11 +1,12 @@
 package life.catalogue;
 
+import life.catalogue.admin.jobs.cron.CronExecutor;
+import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
-import life.catalogue.assembly.TreeBaseHandler;
 import life.catalogue.cache.CacheFlush;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
@@ -242,6 +243,10 @@ public class WsServer extends Application<WsServerConfig> {
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
+
+    // cron jobs
+    var cron = CronExecutor.startWith(new TempDatasetCleanup());
+    env.lifecycle().manage(cron);
 
     // name parser
     ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());

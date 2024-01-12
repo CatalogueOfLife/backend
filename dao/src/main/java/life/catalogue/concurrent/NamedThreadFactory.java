@@ -29,6 +29,10 @@ public class NamedThreadFactory implements ThreadFactory {
     this(poolName, Thread.NORM_PRIORITY, false, null);
   }
 
+  public NamedThreadFactory(String poolName, int priority, boolean daemon) {
+    this(poolName, priority, daemon, null);
+  }
+
   /**
    * Creates a new named user thread factory using a normal priority.
    *

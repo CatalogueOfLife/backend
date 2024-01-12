@@ -35,6 +35,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   void createWithID(Dataset obj);
 
+  /**
+   * List all keys equal or above the given minimum.
+   * Includes deleted and private datasets.
+   */
+  List<Integer> keysAbove(@Param("min") int minID, @Nullable @Param("olderThan") LocalDateTime olderThan);
+
   DatasetSettings getSettings(@Param("key") int key);
 
   /**
