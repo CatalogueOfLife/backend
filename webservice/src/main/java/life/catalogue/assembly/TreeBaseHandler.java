@@ -136,6 +136,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (!sector.isCopyAccordingTo()) {
       nu.setAccordingToId(null);
     }
+    if (sector.isRemoveOrdinals() && nu.isTaxon()) {
+      ((Taxon)nu).setOrdinal(null);
+    }
     // decisions
     if (decisions.containsKey(nu.getId())) {
       mod = applyDecision(nu, decisions.get(nu.getId()));

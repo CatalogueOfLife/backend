@@ -214,6 +214,9 @@ abstract class SectorRunnable implements Runnable {
         if (ds.has(Setting.SECTOR_COPY_ACCORDING_TO)) {
           s.setCopyAccordingTo(ds.getBool(Setting.SECTOR_COPY_ACCORDING_TO));
         }
+        if (ds.has(Setting.SECTOR_REMOVE_ORDINALS)) {
+          s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
+        }
         addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
         addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
         addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);

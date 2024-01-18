@@ -44,6 +44,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
   private boolean copyAccordingTo = false;
+
+  private boolean removeOrdinals = false;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -254,6 +256,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.copyAccordingTo = copyAccordingTo;
   }
 
+  public boolean isRemoveOrdinals() {
+    return removeOrdinals;
+  }
+
+  public void setRemoveOrdinals(boolean removeOrdinals) {
+    this.removeOrdinals = removeOrdinals;
+  }
+
   public Integer getSize() {
     return size;
   }
@@ -322,6 +332,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private Set<NameType> nameTypes;
     private Set<NomStatus> nameStatusExclusion;
     private boolean copyAccordingTo;
+    private boolean removeOrdinals;
     private String note;
     private Integer size;
 
@@ -433,6 +444,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder removeOrdinals(boolean removeOrdinals) {
+      this.removeOrdinals = removeOrdinals;
+      return this;
+    }
+
     public Builder note(String note) {
       this.note = note;
       return this;
@@ -466,6 +482,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setNameTypes(nameTypes);
       sector.setNameStatusExclusion(nameStatusExclusion);
       sector.setCopyAccordingTo(copyAccordingTo);
+      sector.setRemoveOrdinals(removeOrdinals);
       sector.setNote(note);
       sector.size = this.size;
       return sector;

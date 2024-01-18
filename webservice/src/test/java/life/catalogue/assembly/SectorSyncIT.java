@@ -99,7 +99,10 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
     NameUsageBase src = getByName(srcKey, Rank.ORDER, "Diptera");
     NameUsageBase trg = getByName(Datasets.COL, Rank.CLASS, "Insecta");
-    final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> s.setCopyAccordingTo(false));
+    final var sid = createSector(Sector.Mode.ATTACH, src, trg, s -> {
+      s.setCopyAccordingTo(false);
+      s.setRemoveOrdinals(true);
+    });
 
     syncAll();
     assertTree("cat14b.txt");
