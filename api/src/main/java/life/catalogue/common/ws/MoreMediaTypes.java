@@ -38,13 +38,14 @@ public class MoreMediaTypes {
   public final static String TEXT_YAML  = "text/yaml";
   public final static MediaType TEXT_YAML_TYPE = new MediaType("text", "yaml");
   public final static String TEXT_CSV   = "text/csv";
+  public final static String TEXT_CSV_ALT1 = "text/comma-separated-values";
+  public final static String TEXT_CSV_ALT2 = "application/csv";
   public final static MediaType TEXT_CSV_TYPE = new MediaType("text", "csv");
   public final static String TEXT_TSV   = "text/tsv";
   public final static MediaType TEXT_TSV_TYPE = new MediaType("text", "tsv");
+  public final static String TEXT_TSV_ALT1 = "text/tab-separated-values";
   public final static String TEXT_MARKDOWN   = "text/markdown";
   public final static MediaType TEXT_MARKDOWN_TYPE = new MediaType("text", "markdown");
-  public final static String TEXT_COMMA_SEP = "text/comma-separated-values";
-  public final static String TEXT_TAB_SEP   = "text/tab-separated-values";
   public final static String TEXT_CSS      = "text/css";
   public final static String TEXT_WILDCARD = "text/*";
   

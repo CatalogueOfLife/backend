@@ -22,6 +22,8 @@ import java.nio.file.StandardCopyOption;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
@@ -106,9 +108,9 @@ public class NameUsageMatchingResource {
     return job;
   }
 
-  private File upload(InputStream data, User user, String format) throws IOException {
-    File local = cfg.normalizer.uploadFile(user.getUsername().replaceAll("\\s+", "_"), "." + format);
-    if (!local.getParentFile().exists()) {
+  private File upload(InputStream data, User user, String suffix) throws IOException {
+    File local = cfg.normalizer.uploadFile(user.getUsername().replaceAll("\\s+", "_"), suffix == null ? "" : "." + suffix);
+    if (!local.getParentFile().exists()) { 
       local.getParentFile().mkdirs();
     }
     Files.copy(data, local.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -129,25 +131,14 @@ public class NameUsageMatchingResource {
 
   @POST
   @Path("job")
-  @Consumes({MoreMediaTypes.TEXT_CSV})
-  public MatchingJob matchCsvJob(@PathParam("key") int datasetKey,
-                                 @BeanParam @Valid MatchingRequest req,
-                                 InputStream data,
-                                 @Auth User user) throws IOException {
-    req.setDatasetKey(datasetKey);
-    req.setUpload(upload(data, user, "csv"));
-    return submit(req, user);
-  }
-
-  @POST
-  @Path("job")
-  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV})
+  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2, MoreMediaTypes.TEXT_WILDCARD})
   public MatchingJob matchTsvJob(@PathParam("key") int datasetKey,
                                  @BeanParam @Valid MatchingRequest req,
+                                 @Context HttpHeaders headers,
                                   InputStream data,
                                   @Auth User user) throws IOException {
     req.setDatasetKey(datasetKey);
-    req.setUpload(upload(data, user, "tsv"));
+    req.setUpload(upload(data, user, ImporterResource.contentType2Suffix(headers)));
     return submit(req, user);
   }
 

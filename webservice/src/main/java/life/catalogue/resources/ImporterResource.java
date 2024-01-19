@@ -145,7 +145,7 @@ public class ImporterResource {
 
   @POST
   @Path("{key}")
-  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV,
+  @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2,
       MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_YAML,
       MoreMediaTypes.TEXT_WILDCARD})
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
@@ -168,15 +168,16 @@ public class ImporterResource {
     importManager.cancel(datasetKey, user.getKey());
   }
 
-  private static String contentType2Suffix(HttpHeaders h) {
+  static String contentType2Suffix(HttpHeaders h) {
     if (h != null && h.getRequestHeaders() != null) {
       String ctype = Strings.nullToEmpty(h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).toLowerCase();
       switch (ctype) {
         case MoreMediaTypes.TEXT_CSV:
-        case MoreMediaTypes.TEXT_COMMA_SEP:
+        case MoreMediaTypes.TEXT_CSV_ALT1:
+        case MoreMediaTypes.TEXT_CSV_ALT2:
           return "csv";
         case MoreMediaTypes.TEXT_TSV:
-        case MoreMediaTypes.TEXT_TAB_SEP:
+        case MoreMediaTypes.TEXT_TSV_ALT1:
           return "tsv";
         case MoreMediaTypes.TEXT_YAML:
         case MoreMediaTypes.APP_YAML:
