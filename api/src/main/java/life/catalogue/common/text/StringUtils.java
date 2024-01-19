@@ -414,4 +414,14 @@ public class StringUtils {
     return null;
   }
 
+  public static String removeLast(String s, int n) {
+    if (null != s && !s.isEmpty()) {
+      if (s.length() > n) {
+        s = s.substring(0, s.length()-n);
+      } else {
+        s = "";
+      }
+    }
+    return s;
+  }
 }

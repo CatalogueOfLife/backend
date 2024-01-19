@@ -34,6 +34,14 @@ public class StringUtilsTest {
   }
 
   @Test
+  public void removeLast() {
+    assertEquals("user@domain.com", StringUtils.removeLast("user@domain.com", 0));
+    assertEquals("user@domain", StringUtils.removeLast("user@domain.com", 4));
+    assertEquals("", StringUtils.removeLast("user", 4));
+    assertEquals("", StringUtils.removeLast("user", 13));
+  }
+
+  @Test
   public void extractEmail() {
     assertEquals("user@domain.com", StringUtils.extractEmail("user@domain.com"));
     assertEquals("user@domain.co.in", StringUtils.extractEmail("user@domain.co.in"));
