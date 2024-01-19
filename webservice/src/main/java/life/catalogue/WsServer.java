@@ -317,6 +317,7 @@ public class WsServer extends Application<WsServerConfig> {
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
@@ -417,6 +418,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameUsageResource(searchService, suggestService, coljersey.getCache(), tdao));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
+    j.register(new PublisherResource(pdao));
     j.register(new ReferenceResource(rdao));
     j.register(new ResolverResource(doiResolver));
     j.register(new SectorDiffResource(sDiff));

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.PublisherMapper">
+
+  <sql id="SELECT">
+    p.id,
+    p.dataset_key,
+    p.alias,
+    p.title,
+    p.description,
+    p.modified,
+    p.modified_by,
+    p.created,
+    p.created_by
+  </sql>
+
+  <sql id="COLS">
+    dataset_key,
+    <include refid="COLS_NO_DATASETKEY"/>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY">
+    alias,
+    title,
+    description,
+    modified,
+    modified_by
+  </sql>
+
+  <sql id="PROPS">
+    #{datasetKey},
+    #{alias},
+    #{title},
+    #{description},
+    now(),
+    #{modifiedBy}
+  </sql>
+
+  <sql id="FROM">
+    sector_publisher p
+  </sql>
+
+  <resultMap id="publisherResultMap" type="Publisher" autoMapping="true">
+    <id property="id" column="id"/>
+  </resultMap>
+
+
+  <select id="get" resultMap="publisherResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE p.id = #{key.id} AND p.dataset_key = #{key.datasetKey}
+  </select>
+
+  <select id="list" resultMap="publisherResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE p.dataset_key = #{datasetKey}
+  </select>
+
+  <delete id="deleteByDataset" parameterType="map">
+    DELETE FROM sector_publisher WHERE dataset_key = #{datasetKey}
+  </delete>
+
+  <insert id="create" parameterType="Publisher" useGeneratedKeys="false" keyProperty="id">
+    INSERT INTO sector_publisher (id, <include refid="COLS"/>, created_by )
+    VALUES (#{id}, <include refid="PROPS"/>, #{createdBy} )
+  </insert>
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO sector_publisher (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, created, created_by )
+    SELECT p.id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, created, created_by
+    FROM sector_publisher p
+    WHERE p.dataset_key=#{datasetKey}
+  </insert>
+
+  <update id="update" parameterType="Publisher">
+    UPDATE sector_publisher
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE id = #{id} AND dataset_key=#{datasetKey}
+  </update>
+
+  <delete id="delete" parameterType="map">
+    DELETE FROM sector_publisher
+    WHERE id = #{key.id} AND dataset_key=#{key.datasetKey}
+  </delete>
+
+  <select id="processDataset" parameterType="map" resultMap="publisherResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE p.dataset_key=#{datasetKey}
+  </select>
+
+</mapper>

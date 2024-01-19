@@ -23,11 +23,12 @@ import static org.junit.Assert.assertEquals;
  *
  */
 abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M extends CRUD<DSID<K>, T> & DatasetPageable<T> & DatasetProcessable<T>>
-    extends CRUDEntityTestBase<DSID<K>, T, M> {
+  extends CRUDEntityTestBase<DSID<K>, T, M> {
 
   public CRUDPageableTestBase(Class<M> mapperClazz) {
     super(mapperClazz);
   }
+
 
   public int newDataset(){
     Dataset d = new Dataset();
@@ -65,7 +66,7 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     // now the real thing we wanna test
     mapper().deleteByDataset(datasetKey);
   }
-  
+
   @Test
   public void countAndList() throws Exception {
     final int dkey = newDataset();
@@ -106,7 +107,7 @@ abstract class CRUDPageableTestBase<K, T extends DatasetScopedEntity<K>, M exten
     assertEquals(in.get(2), out.get(0));
     assertEquals(in.get(3), out.get(1));
   }
-  
+
   abstract T createTestEntityIncId(int datasetKey);
 
 }

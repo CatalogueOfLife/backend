@@ -14,6 +14,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2024-01-19 publisher
+```sql
+CREATE TABLE sector_publisher (
+id UUID NOT NULL,
+dataset_key INTEGER NOT NULL REFERENCES dataset,
+alias TEXT,
+title TEXT,
+description TEXT,
+created_by INTEGER NOT NULL,
+modified_by INTEGER NOT NULL,
+created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+PRIMARY KEY (dataset_key, id)
+);
+CREATE INDEX ON sector_publisher (dataset_key);
+```
+
 ### 2023-12-07 global id index
 ```sql
 CREATE INDEX ON name_usage(id);

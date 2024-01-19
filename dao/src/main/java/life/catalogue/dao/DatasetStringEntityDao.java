@@ -9,9 +9,11 @@ import java.util.UUID;
 
 import javax.validation.Validator;
 
+import life.catalogue.db.DatasetProcessable;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 
-public class DatasetStringEntityDao<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T>>
+public class DatasetStringEntityDao<T extends DatasetScopedEntity<String>, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>>
   extends DatasetEntityDao<String, T, M> {
 
   public DatasetStringEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {

@@ -33,7 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T>> extends DatasetEntityDao<String, T, M> {
+abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends DatasetEntityDao<String, T, M> {
   protected final NameUsageIndexService indexService;
   protected final NameDao nameDao;
 
