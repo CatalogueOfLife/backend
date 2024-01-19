@@ -57,6 +57,12 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE p.dataset_key = #{datasetKey}
+    ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="count" resultType="integer">
+    SELECT count(*) FROM sector_publisher WHERE dataset_key=#{datasetKey}
   </select>
 
   <delete id="deleteByDataset" parameterType="map">
