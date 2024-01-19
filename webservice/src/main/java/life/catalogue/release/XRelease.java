@@ -347,10 +347,11 @@ public class XRelease extends ProjectRelease {
       // create only if missing
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        if (sm.get(DSID.of(newDatasetKey, s.getId())) == null) {
-          Sector s2 = new Sector(s);
-          s2.setDatasetKey(newDatasetKey);
-          sm.createWithID(s2);
+        Sector sRel = sm.get(DSID.of(newDatasetKey, s.getId()));
+        if (sRel == null) {
+          sRel = new Sector(s);
+          sRel.setDatasetKey(newDatasetKey);
+          sm.createWithID(sRel);
         }
       }
       checkIfCancelled();
@@ -362,8 +363,13 @@ public class XRelease extends ProjectRelease {
           failedSyncs++;
           LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError());
         } else {
-          // copy sync attempt to local instances as it finished successfully
+          // copy attempts to local instances as it finished successfully
           s.setSyncAttempt(ss.getState().getAttempt());
+          // and also update our release copy!
+          try (SqlSession session = factory.openSession(true)) {
+            SectorMapper sm = session.getMapper(SectorMapper.class);
+            sm.updateReleaseAttempts(DSID.of(datasetKey, s.getId()), newDatasetKey);
+          }
         }
       } catch (NotFoundException e) {
         failedSyncs++;

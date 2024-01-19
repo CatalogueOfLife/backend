@@ -348,6 +348,14 @@
       AND d.key=s.subject_dataset_key
   </update>
 
+  <update id="updateReleaseAttempts" parameterType="integer">
+    UPDATE sector s
+    SET sync_attempt = p.sync_attempt, dataset_attempt = p.dataset_attempt
+    FROM sector p
+    WHERE s.id = #{key.id} AND s.dataset_key=#{rkey}
+    AND p.id = #{key.id} AND p.dataset_key=#{key.datasetKey}
+  </update>
+
   <select id="getByPriority" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

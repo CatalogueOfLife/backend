@@ -237,7 +237,13 @@ public class DatasetSourceDao {
     return m;
   }
 
-  public ImportMetrics projectSourceMetrics(int datasetKey, int sourceKey) {
+  /**
+   * Retrieve the metrics for a single source of a project or release
+   * @param datasetKey of the project or release
+   * @param sourceKey dataset key of the source in the project/release
+   * @return
+   */
+  public ImportMetrics sourceMetrics(int datasetKey, int sourceKey) {
     SourceMetrics metrics = new SourceMetrics(datasetKey, sourceKey);
 
     try (SqlSession session = factory.openSession()) {

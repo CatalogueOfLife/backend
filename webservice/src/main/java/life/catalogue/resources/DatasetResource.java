@@ -323,6 +323,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{key}/source/{id}/metrics")
   public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    return sourceDao.projectSourceMetrics(datasetKey, id);
+    return sourceDao.sourceMetrics(datasetKey, id);
   }
 }

@@ -72,6 +72,15 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   int updateLastSync(@Param("key") DSID<Integer> key, @Param("attempt") int attempt);
 
   /**
+   * Updates the sync and dataset_attempt column of the given sector in the release
+   * with attempt values from the project.
+   * @param key sector key in the project
+   * @param releaseKey release dataset key
+   * @return number of changed records
+   */
+  int updateReleaseAttempts(@Param("key") DSID<Integer> key, @Param("rkey") int releaseKey);
+
+  /**
    * Checks whether we already have a sector in the given dataset with the given priority
    * @param datasetKey project or release
    * @param priority priority to test
