@@ -233,6 +233,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(Sector.class, SectorMapper.class, session);
       copyTable(EditorialDecision.class, DecisionMapper.class, session);
       copyTable(SpeciesEstimate.class, EstimateMapper.class, session);
+      copyTable(Publisher.class, PublisherMapper.class, session);
 
       copyTable(VerbatimRecord.class, VerbatimRecordMapper.class, session);
 
