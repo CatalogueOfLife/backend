@@ -101,7 +101,7 @@ public class EntityDao<K, T extends Entity<K>, M extends CRUD<K, T>> {
     return obj;
   }
 
-  private void validate(T obj) throws ConstraintViolationException {
+  protected void validate(T obj) throws ConstraintViolationException {
     var violations = validator.validate(obj);
     if (!violations.isEmpty()) {
       throw new ConstraintViolationException(violations);

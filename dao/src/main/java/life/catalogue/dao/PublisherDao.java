@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Validator;
 
 import java.util.*;
@@ -34,4 +35,12 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
     super(false, factory, Publisher.class, PublisherMapper.class, validator);
   }
 
+  @Override
+  protected void validate(Publisher p) throws ConstraintViolationException {
+    // require a UUID key!
+    if (p.getId() == null || p.getDatasetKey() == null) {
+      throw new IllegalArgumentException("ID and datasetKey are required");
+    }
+    super.validate(p);
+  }
 }

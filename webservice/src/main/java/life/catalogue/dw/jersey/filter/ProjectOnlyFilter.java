@@ -9,6 +9,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -19,6 +20,7 @@ import java.lang.reflect.Method;
  * Looks at method annotations @ProjectOnly to determine if the request is potentially changing data
  * and returns a 405 response if the request is aborted.
  */
+@Provider
 @ProjectOnly
 public class ProjectOnlyFilter implements ContainerRequestFilter {
 
