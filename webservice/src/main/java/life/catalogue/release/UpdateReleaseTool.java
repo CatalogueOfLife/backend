@@ -135,7 +135,7 @@ public class UpdateReleaseTool implements AutoCloseable {
   public void updateNotCurrentSourceMetadataFromLatest(){
     System.out.printf("Update all non current source metadata for %s: %s\n\n", release.getKey(), release.getTitle());
     AtomicInteger counter = new AtomicInteger(0);
-    srcDao.list(release.getKey(), release, false).forEach(d -> {
+    srcDao.list(release.getKey(), release, false, true).forEach(d -> {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         var dsm = session.getMapper(DatasetSourceMapper.class);
@@ -161,7 +161,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     System.out.printf("Publish all source DOIs for %s: %s\n\n", release.getKey(), release.getTitle());
     AtomicInteger updated = new AtomicInteger(0);
     AtomicInteger published = new AtomicInteger(0);
-    srcDao.list(release.getKey(), release, false).forEach(d -> {
+    srcDao.list(release.getKey(), release, false, true).forEach(d -> {
       if (d.getDoi() != null) {
         final DOI doi = d.getDoi();
         try {
@@ -195,7 +195,7 @@ public class UpdateReleaseTool implements AutoCloseable {
     final boolean publish = !release.isPrivat();
     try (SqlSession session = factory.openSession(true)) {
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
-        srcDao.list(release.getKey(), release, false).forEach(d -> {
+        srcDao.list(release.getKey(), release, false, true).forEach(d -> {
         if (d.getDoi() == null) {
           final DOI doi = doiCfg.datasetSourceDOI(release.getKey(), d.getKey());
           System.out.printf("Creating new DOI %s for source %s %s\n", doi, d.getKey(), d.getCitation());
@@ -267,7 +267,7 @@ public class UpdateReleaseTool implements AutoCloseable {
       System.out.printf("Deleted %s old source metadata records\n", cnt);
 
       AtomicInteger counter = new AtomicInteger(0);
-      srcDao.list(release.getKey(), release, true).forEach(d -> {
+      srcDao.list(release.getKey(), release, true, true).forEach(d -> {
         counter.incrementAndGet();
         if (addMissingDOIs && d.getDoi() == null) {
           DOI doi = doiCfg.datasetSourceDOI(release.getKey(), d.getKey());
