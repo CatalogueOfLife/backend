@@ -259,8 +259,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source")
-  public List<Dataset> projectSources(@PathParam("key") int datasetKey, @QueryParam("notCurrentOnly") boolean notCurrentOnly) {
-    var ds = sourceDao.list(datasetKey, null, false, true);
+  public List<Dataset> projectSources(@PathParam("key") int datasetKey,
+                                      @QueryParam("showPublisherSources") boolean showPublisherSources,
+                                      @QueryParam("notCurrentOnly") boolean notCurrentOnly
+  ) {
+    var ds = sourceDao.list(datasetKey, null, false, !showPublisherSources);
     if (notCurrentOnly) {
       List<Dataset> notCurrent = new ArrayList<>();
       for (Dataset d : ds) {

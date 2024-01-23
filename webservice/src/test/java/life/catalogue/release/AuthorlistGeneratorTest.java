@@ -37,7 +37,7 @@ public class AuthorlistGeneratorTest {
     s2.setEditor(List.of(person("A.F.", "Beril", null, frankOrcid)));
     sources.add(s2);
 
-    doReturn(sources).when(dao).list(anyInt(), any(), anyBoolean());
+    doReturn(sources).when(dao).list(anyInt(), any(), anyBoolean(), anyBoolean());
 
     var gen = new AuthorlistGenerator(dao);
 
