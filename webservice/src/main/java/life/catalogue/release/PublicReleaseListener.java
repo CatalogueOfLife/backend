@@ -98,7 +98,7 @@ public class PublicReleaseListener {
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
     try {
-      dao.list(release.getKey(), release, false).forEach(d -> {
+      dao.list(release.getKey(), release, false, false).forEach(d -> {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {
@@ -144,11 +144,11 @@ public class PublicReleaseListener {
         // sources
         DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
-        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey(), null).stream()
+        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey(), false, null).stream()
           .map(Dataset::getDoi)
           .filter(java.util.Objects::nonNull)
           .collect(Collectors.toSet());
-        for (var src : psm.listReleaseSources(lastReleaseKey, null)) {
+        for (var src : psm.listReleaseSources(lastReleaseKey, false, null)) {
           if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {
             var url = converter.sourceURI(lastReleaseKey, src.getKey(), false);
             LOG.info("Update source DOI {} from previous release {} to target {}", src.getDoi(), lastReleaseKey, url);
