@@ -89,7 +89,7 @@ public class ExportSourcesCmd extends AbstractPromptCmd {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       System.out.print("Export sources:\n");
-      for (var src : psm.listProjectSources(project.getKey(), null)) {
+      for (var src : psm.listProjectSources(project.getKey(), true, null)) {
         File srcFolder = new File(expFolder, ObjectUtils.coalesce(src.getAlias(), src.getKey().toString()));
         System.out.printf("  %s (%s): %s\n", src.getKey(), src.getAlias(), srcFolder.getAbsoluteFile());
         final String prefix = src.getKey() + "-";

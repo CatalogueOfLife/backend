@@ -46,12 +46,13 @@ import java.util.stream.Stream;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class PublisherResource extends AbstractDatasetScopedResource<UUID, Publisher, QuerySearchRequest> {
-
+  private final PublisherDao pdao;
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(PublisherResource.class);
 
   public PublisherResource(PublisherDao dao) {
     super(Publisher.class, dao);
+    this.pdao = dao;
   }
 
   @Override
@@ -66,4 +67,9 @@ public class PublisherResource extends AbstractDatasetScopedResource<UUID, Publi
     dao.deleteByDataset(datasetKey);
   }
 
+  @GET
+  @Path("{id}/metrics")
+  public ImportMetrics publisherMetrics(@PathParam("key") int datasetKey, @PathParam("id") UUID id) {
+    return pdao.sourceMetrics(datasetKey, id);
+  }
 }

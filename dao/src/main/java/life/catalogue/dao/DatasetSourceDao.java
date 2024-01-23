@@ -110,14 +110,16 @@ public class DatasetSourceDao {
    * @param datasetKey project or release key
    * @param projectForPatching optional dataset used for building the source citations, if null master project is used
    * @param rebuild if true force to rebuild source metadata and not take it from the source archive. Only relevant for release.
+   * @param hidePublisherSources if true hides the source datasets that are published by the configured sector publisher in the given project or release
    */
-  public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild){
+  public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild, boolean hidePublisherSources){
+    final int maxSize = 1000; // give a limit we should notmally not reach but to safeguard us
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease() && !rebuild) {
-        sources = psm.listReleaseSources(datasetKey, 1000); // TODO: remove limit when UI can deal with it
+        sources = psm.listReleaseSources(datasetKey, hidePublisherSources, maxSize);
 
       } else {
         // get latest version with patch applied
@@ -125,7 +127,7 @@ public class DatasetSourceDao {
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
-        sources = psm.listProjectSources(datasetKey, 1000); // TODO: remove limit when UI can deal with it
+        sources = psm.listProjectSources(datasetKey, hidePublisherSources, maxSize);
         sources.forEach(d -> patch(d, projectKey, project, pm));
       }
     }

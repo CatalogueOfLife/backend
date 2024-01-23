@@ -199,6 +199,13 @@
     </where>
   </select>
 
+  <select id="listByDatasetPublisher" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN dataset d ON d.key = s.subject_dataset_key
+    WHERE d.publisher_key = #{publisherKey}
+  </select>
+
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM sector WHERE dataset_key = #{datasetKey}
   </delete>

@@ -13,7 +13,7 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     DatasetSourceDao dao = new DatasetSourceDao(factory());
-    dao.list(TestDataRule.FISH.key, null, true).forEach(d -> {
+    dao.list(TestDataRule.FISH.key, null, true, false).forEach(d -> {
       System.out.println(d.getTitle());
     });
   }

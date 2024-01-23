@@ -44,6 +44,7 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * @param limit the max number of datasets to be returned
    */
   List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey,
+                                   @Param("hidePublisher") boolean hidePublisherSources,
                                    @Param("limit") Integer limit
   );
 
@@ -55,6 +56,7 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * @param limit the max number of datasets to be returned
    */
   List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey,
+                                   @Param("hidePublisher") boolean hidePublisherSources,
                                    @Param("limit") Integer limit
   );
 

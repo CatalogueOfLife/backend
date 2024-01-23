@@ -5,6 +5,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -20,6 +21,9 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
 
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey);
+
+  List<Sector> listByDatasetPublisher(@Param("datasetKey") Integer datasetKey,
+                                      @Param("publisherKey") UUID publisherKey);
 
   /**
    * List all distinct project dataset keys that have at least one decision on the given subject dataset key.

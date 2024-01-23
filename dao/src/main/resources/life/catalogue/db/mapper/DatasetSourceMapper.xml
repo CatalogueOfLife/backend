@@ -41,7 +41,13 @@
     WITH src AS (
       SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
       FROM sector s
+        <if test="hidePublisher">
+          JOIN dataset d ON d.key=s.subject_dataset_key
+        </if>
       WHERE s.dataset_key=#{datasetKey}
+        <if test="hidePublisher">
+          AND EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+        </if>
       GROUP BY s.subject_dataset_key
     )
     <!-- archived dataset metadata -->
