@@ -28,6 +28,32 @@ UPDATE dataset d SET last_import_attempt = di.finished
   AND li.attempt=di.attempt
 ;
 DROP TABLE _last_imports;
+DELETE from dataset_import where state='UNCHANGED';
+
+
+ALTER TABLE dataset_import ALTER COLUMN state TYPE text;
+ALTER TABLE sector_import ALTER COLUMN state TYPE text;
+DROP TYPE IMPORTSTATE;
+CREATE TYPE IMPORTSTATE AS ENUM (
+  'WAITING',
+  'PREPARING',
+  'DOWNLOADING',
+  'PROCESSING',
+  'DELETING',
+  'INSERTING',
+  'MATCHING',
+  'INDEXING',
+  'ANALYZING',
+  'ARCHIVING',
+  'EXPORTING',
+  'FINISHED',
+  'CANCELED',
+  'FAILED'
+);
+ALTER TABLE dataset_import ALTER COLUMN state TYPE IMPORTSTATE using state::IMPORTSTATE;
+ALTER TABLE sector_import ALTER COLUMN state TYPE IMPORTSTATE using state::IMPORTSTATE;
+
+
 
 ALTER TABLE dataset_archive
  ADD COLUMN gbif_key UUID,
