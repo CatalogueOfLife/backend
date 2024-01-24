@@ -2,6 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetDataChanged;
+import life.catalogue.api.event.FlushDatasetCache;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
@@ -387,6 +388,8 @@ public class ImportJob implements Runnable {
       } catch (IOException e) {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);
       }
+      // flush dataset in varnish
+      bus.post(new FlushDatasetCache(datasetKey));
     }
   }
 
