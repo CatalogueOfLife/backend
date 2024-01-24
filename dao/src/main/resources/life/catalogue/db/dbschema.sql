@@ -756,6 +756,7 @@ CREATE TABLE dataset (
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   deleted TIMESTAMP WITHOUT TIME ZONE,
+  last_import_attempt TIMESTAMP WITHOUT TIME ZONE,
 
   doc tsvector GENERATED ALWAYS AS (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||

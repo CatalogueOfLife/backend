@@ -407,6 +407,11 @@
     WHERE dataset_key=#{imp.datasetKey} AND attempt=#{imp.attempt}
   </update>
 
+  <delete id="delete" parameterType="map">
+    DELETE FROM dataset_import
+    WHERE dataset_key=#{datasetKey} AND attempt=#{attempt}
+  </delete>
+
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM dataset_import
     WHERE dataset_key=#{datasetKey}

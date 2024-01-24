@@ -332,4 +332,11 @@ public class DatasetImportDao {
     }
     return metrics;
   }
+
+  public void delete(int datasetKey, int attempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetImportMapper dim = session.getMapper(DatasetImportMapper.class);
+      dim.delete(datasetKey, attempt);
+    }
+  }
 }

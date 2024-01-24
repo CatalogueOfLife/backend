@@ -9,7 +9,6 @@ import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -152,7 +151,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *
    * @param limit maximum of datasets to return
    */
-  List<DatasetDI> listNeverImported(@Param("limit") int limit);
+  List<DatasetAttempt> listNeverImported(@Param("limit") int limit);
 
   /**
    * list datasets which have already been imported before, but need a refresh. The dataset.importFrequency is respected for rescheduling an
@@ -162,26 +161,53 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param limit maximum of datasets to return
    * @param defaultFrequency number in days to between import attempts when no explicit frequency is configured
    */
-  List<DatasetDI> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
+  List<DatasetAttempt> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
 
-  class DatasetDI extends Dataset {
-    private ImportState state;
-    private LocalDateTime finished;
+  class DatasetAttempt {
+    private int key;
+    private String alias;
+    private String title;
+    private boolean failed;
+    private LocalDateTime lastImportAttempt;
 
-    public ImportState getState() {
-      return state;
+    public int getKey() {
+      return key;
     }
 
-    public void setState(ImportState state) {
-      this.state = state;
+    public void setKey(int key) {
+      this.key = key;
     }
 
-    public LocalDateTime getFinished() {
-      return finished;
+    public String getAlias() {
+      return alias;
     }
 
-    public void setFinished(LocalDateTime finished) {
-      this.finished = finished;
+    public void setAlias(String alias) {
+      this.alias = alias;
+    }
+
+    public String getTitle() {
+      return title;
+    }
+
+    public void setTitle(String title) {
+      this.title = title;
+    }
+
+    public boolean isFailed() {
+      return failed;
+    }
+
+    public void setFailed(boolean failed) {
+      this.failed = failed;
+    }
+
+    public LocalDateTime getLastImportAttempt() {
+      return lastImportAttempt;
+    }
+
+    public void setLastImportAttempt(LocalDateTime lastImportAttempt) {
+      this.lastImportAttempt = lastImportAttempt;
     }
   }
 
@@ -249,6 +275,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   Integer lastImportAttempt(@Param("key") int datasetKey);
   
   int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
+
+  /**
+   * Sets the datasets LastImportAttempt to now
+   * @param key dataset key
+   */
+  int updateLastImportAttempt(@Param("key") int key);
 
   /**
    * @param limit optional limit to consider when looking for the maximum.

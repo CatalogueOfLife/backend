@@ -81,7 +81,7 @@ public class ContinuousImporter implements Managed {
             LOG.debug("Importer busy, sleep for {} minutes", cfg.polling);
             TimeUnit.MINUTES.sleep(cfg.polling);
           }
-          List<DatasetMapper.DatasetDI> datasets = fetch();
+          List<DatasetMapper.DatasetAttempt> datasets = fetch();
           if (datasets.isEmpty()) {
             LOG.debug("No datasets eligable to be imported. Sleep for {} hour", WAIT_TIME_IN_HOURS);
             TimeUnit.HOURS.sleep(WAIT_TIME_IN_HOURS);
@@ -102,25 +102,24 @@ public class ContinuousImporter implements Managed {
       MDC.remove(LoggingUtils.MDC_KEY_TASK);
     }
 
-    private void scheduleImport(DatasetMapper.DatasetDI d) {
-      boolean force = d.getState() == ImportState.FAILED;
+    private void scheduleImport(DatasetMapper.DatasetAttempt d) {
       try {
-        if (force) {
-          LOG.info("Schedule a forced import of dataset {} which failed the last time on {}: {}", d.getFinished() ,d.getKey(), d.getTitle());
+        if (d.isFailed()) {
+          LOG.info("Schedule a forced import of dataset {} which failed the last time on {}: {}", d.getKey(), d.getLastImportAttempt(), d.getTitle());
         }
-        manager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER, force));
+        manager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER, d.isFailed()));
       } catch (IllegalArgumentException e) {
-        LOG.warn("Failed to schedule a {}dataset import {}: {}", force? "forced ":"", d.getKey(), d.getTitle(), e);
+        LOG.warn("Failed to schedule a {}dataset import {}: {}", d.isFailed()? "forced ":"", d.getKey(), d.getTitle(), e);
       }
     }
 
     /**
      * Find the next batch of datasets eligable for importing
      */
-    private List<DatasetMapper.DatasetDI> fetch() {
+    private List<DatasetMapper.DatasetAttempt> fetch() {
       // check never crawled datasets first
       try (SqlSession session = factory.openSession(true)) {
-        List<DatasetMapper.DatasetDI> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.batchSize);
+        List<DatasetMapper.DatasetAttempt> datasets = session.getMapper(DatasetMapper.class).listNeverImported(cfg.batchSize);
         removeRunningImports(datasets);
         if (datasets.isEmpty()) {
           // now check for eligable datasets based on import frequency
@@ -131,7 +130,7 @@ public class ContinuousImporter implements Managed {
       }
     }
 
-    private void removeRunningImports(List<DatasetMapper.DatasetDI> datasets) {
+    private void removeRunningImports(List<DatasetMapper.DatasetAttempt> datasets) {
       datasets.removeIf(d -> manager.isRunning(d.getKey()));
     }
   }

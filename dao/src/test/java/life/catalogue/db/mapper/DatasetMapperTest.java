@@ -8,8 +8,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 
-import life.catalogue.common.text.StringUtils;
-
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -443,10 +441,10 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     }
     commit();
 
-    List<DatasetMapper.DatasetDI> tobe = mapper().listToBeImported(3, 7);
+    List<DatasetMapper.DatasetAttempt> tobe = mapper().listToBeImported(3, 7);
     assertEquals(0, tobe.size());
 
-    List<DatasetMapper.DatasetDI> never = mapper().listNeverImported(3);
+    List<DatasetMapper.DatasetAttempt> never = mapper().listNeverImported(3);
     assertEquals(3, never.size());
 
     // we only have 3 with URLs

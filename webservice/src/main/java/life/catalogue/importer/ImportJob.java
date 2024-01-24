@@ -21,6 +21,7 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -348,9 +349,7 @@ public class ImportJob implements Runnable {
   
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
-        di.setFinished(LocalDateTime.now());
-        di.setError(null);
-        updateState(ImportState.UNCHANGED);
+        dao.delete(datasetKey, di.getAttempt());
       }
   
       if (cfg.importer.wait > 0) {
@@ -387,6 +386,10 @@ public class ImportJob implements Runnable {
         FileUtils.deleteDirectory(scratchDir);
       } catch (IOException e) {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);
+      }
+      // update last contact
+      try (SqlSession session = factory.openSession(true)) {
+        session.getMapper(DatasetMapper.class).updateLastImportAttempt(datasetKey);
       }
       // flush dataset in varnish
       bus.post(new FlushDatasetCache(datasetKey));

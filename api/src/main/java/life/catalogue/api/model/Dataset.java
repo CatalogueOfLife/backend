@@ -107,6 +107,7 @@ public class Dataset extends DataEntity<Integer> {
   private DatasetOrigin origin;
   private Integer attempt;
   private LocalDateTime imported; // from import table
+  private LocalDateTime lastImportAttempt; // last try to import the dataset, will be set even for unchanged attempts
   private LocalDateTime deleted;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -173,6 +174,7 @@ public class Dataset extends DataEntity<Integer> {
     this.type = other.type;
     this.origin = other.origin;
     this.attempt = other.attempt;
+    this.lastImportAttempt = other.lastImportAttempt;
     this.imported = other.imported;
     this.deleted = other.deleted;
     this.gbifKey = other.gbifKey;
@@ -395,6 +397,14 @@ public class Dataset extends DataEntity<Integer> {
 
   public void setAttempt(Integer attempt) {
     this.attempt = attempt;
+  }
+
+  public LocalDateTime getLastImportAttempt() {
+    return lastImportAttempt;
+  }
+
+  public void setLastImportAttempt(LocalDateTime lastImportAttempt) {
+    this.lastImportAttempt = lastImportAttempt;
   }
 
   public DOI getDoi() {
@@ -801,6 +811,7 @@ public class Dataset extends DataEntity<Integer> {
            && type == dataset.type
            && origin == dataset.origin
            && Objects.equals(attempt, dataset.attempt)
+           && Objects.equals(lastImportAttempt, dataset.lastImportAttempt)
            && Objects.equals(imported, dataset.imported)
            && Objects.equals(deleted, dataset.deleted)
            && Objects.equals(gbifKey, dataset.gbifKey)
@@ -838,7 +849,8 @@ public class Dataset extends DataEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, imported, deleted, gbifKey, gbifPublisherKey, size, notes,
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, lastImportAttempt, imported, deleted,
+      gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator,
       geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, urlFormatter, source);

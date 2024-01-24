@@ -16,6 +16,19 @@ and done it manually. So we can as well log changes here.
 
 ### 2024-01-24 keep gbif keys on dataset source archive
 ```sql
+ALTER TABLE dataset ADD COLUMN last_import_attempt TIMESTAMP WITHOUT TIME ZONE;
+
+CREATE TABLE _last_imports AS (
+  SELECT dataset_key, MAX(attempt) AS attempt FROM dataset_import GROUP BY dataset_key
+)
+UPDATE dataset d SET last_import_attempt = di.finished 
+ FROM _last_imports li, dataset_import di 
+ WHERE li.dataset_key = d.key
+  AND di.dataset_key=d.key
+  AND li.attempt=di.attempt
+;
+DROP TABLE _last_imports;
+
 ALTER TABLE dataset_archive
  ADD COLUMN gbif_key UUID,
  ADD COLUMN gbif_publisher_key UUID;

@@ -8,6 +8,7 @@
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     d.deleted,
     d.private,
+    d.last_import_attempt,
     <include refid="size"/> AS size
   </sql>
 
@@ -173,7 +174,7 @@
     <collection property="source" ofType="Citation" column="{datasetKey=key}" select="life.catalogue.db.mapper.CitationMapper.list" />
   </resultMap>
 
-  <resultMap id="datasetDIResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetDI" autoMapping="true" extends="datasetResultMap">
+  <resultMap id="datasetAttResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetAttempt" autoMapping="true">
     <id property="key" column="key"/>
   </resultMap>
 
@@ -335,32 +336,36 @@
     AND coalesce((d.settings ->> 'import frequency')::int, 0) >= 0
   </sql>
 
-  <select id="listNeverImported" resultMap="datasetDIResultMap">
-    SELECT <include refid="SELECT"/>
+  <sql id="SELECT_ATT">
+    key,
+    alias,
+    title,
+    last_import_attempt
+  </sql>
+
+  <select id="listNeverImported" resultMap="datasetAttResultMap">
+    SELECT <include refid="SELECT_ATT"/>, FALSE as failed
     FROM dataset d
-      LEFT JOIN dataset_import di ON di.dataset_key=d.key
-      LEFT JOIN usage_count uc ON uc.dataset_key=d.key
     WHERE <include refid="importable"/>
-      AND di.attempt IS NULL
+      AND d.last_import_attempt IS NULL
     ORDER BY d.key ASC
     LIMIT #{limit}
   </select>
 
-  <select id="listToBeImported" resultMap="datasetDIResultMap">
+  <select id="listToBeImported" resultMap="datasetAttResultMap">
     WITH last_imports AS (
       SELECT dataset_key, MAX(attempt) AS attempt FROM dataset_import GROUP BY dataset_key
     )
-    SELECT <include refid="SELECT"/>, di.state, di.finished
+    SELECT <include refid="SELECT_ATT"/>, di.state = 'FAILED' as failed
     FROM dataset d
       LEFT JOIN last_imports li ON li.dataset_key=d.key
       LEFT JOIN dataset_import di ON di.dataset_key=d.key AND di.attempt = li.attempt
-      LEFT JOIN usage_count uc ON uc.dataset_key=d.key
     WHERE <include refid="importable"/>
       AND coalesce((d.settings ->> 'import frequency')::int, #{defaultFrequency}) > 0
-      AND state != 'WAITING'::importstate
-      AND (finished + coalesce((d.settings ->> 'import frequency')::int, #{defaultFrequency}) * interval '1 day') &lt; now()
-      AND di.finished IS NOT NULL
-    ORDER BY di.finished ASC, d.key
+      AND di.state != 'WAITING'::importstate
+      AND (d.last_import_attempt + coalesce((d.settings ->> 'import frequency')::int, #{defaultFrequency}) * interval '1 day') &lt; now()
+      AND d.last_import_attempt IS NOT NULL
+    ORDER BY d.last_import_attempt ASC, d.key
     LIMIT #{limit}
   </select>
 
@@ -564,6 +569,12 @@
   <update id="updateLastImport" parameterType="integer">
     UPDATE dataset
     SET attempt = #{attempt}
+    WHERE key = #{key}
+  </update>
+
+  <update id="updateLastImportAttempt">
+    UPDATE dataset
+    SET last_import_attempt = now()
     WHERE key = #{key}
   </update>
 

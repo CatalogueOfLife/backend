@@ -59,6 +59,8 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   
   void update(@Param("imp") DatasetImport datasetImport);
 
+  void delete(@Param("key") int datasetKey, @Param("attempt") int attempt);
+
   Integer countBareName(@Param("key") int datasetKey);
   Integer countDistribution(@Param("key") int datasetKey);
   Integer countEstimate(@Param("key") int datasetKey);

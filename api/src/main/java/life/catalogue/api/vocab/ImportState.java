@@ -66,11 +66,6 @@ public enum ImportState {
   EXPORTING(true),
 
   /**
-   * Sources have not been changed since last import. Imported stopped.
-   */
-  UNCHANGED,
-  
-  /**
    * Successfully completed the import/release/duplication job.
    */
   FINISHED,
