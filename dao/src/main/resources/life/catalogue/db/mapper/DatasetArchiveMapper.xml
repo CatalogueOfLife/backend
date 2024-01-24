@@ -6,6 +6,8 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.SELECT"/>,
+    d.gbif_key,
+    d.gbif_publisher_key,
     d.attempt,
     d.origin,
     d.type,
@@ -15,11 +17,15 @@
 
   <sql id="COLS">
     type,
+    gbif_key,
+    gbif_publisher_key,
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.COLS"/>
   </sql>
 
   <sql id="PROPS">
     #{type}::datasettype,
+    #{gbifKey},
+    #{gbifPublisherKey},
     <!--
     DatasetPatchMapper.PROPS uses obj. prefix so we cannot share the list
     But we need to make sure we have the same order so the COLS match up!

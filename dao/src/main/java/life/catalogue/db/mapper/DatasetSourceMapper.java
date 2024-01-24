@@ -47,6 +47,9 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
                                    @Param("hidePublisher") boolean hidePublisherSources,
                                    @Param("limit") Integer limit
   );
+  List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey,
+                                         @Param("hidePublisher") boolean hidePublisherSources
+  );
 
   List<Dataset> listReleaseSourcesAuthorsOnly(@Param("datasetKey") int datasetKey);
 
@@ -58,6 +61,10 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
   List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey,
                                    @Param("hidePublisher") boolean hidePublisherSources,
                                    @Param("limit") Integer limit
+  );
+
+  List<Dataset> listProjectSourcesSimple(@Param("datasetKey") int datasetKey,
+                                         @Param("hidePublisher") boolean hidePublisherSources
   );
 
   /**

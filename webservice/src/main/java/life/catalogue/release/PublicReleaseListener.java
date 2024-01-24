@@ -98,7 +98,7 @@ public class PublicReleaseListener {
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
     try {
-      dao.list(release.getKey(), release, false, false).forEach(d -> {
+      for (Dataset d : dao.list(release.getKey(), release, false, false)) {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {
@@ -112,7 +112,7 @@ public class PublicReleaseListener {
             LOG.error("Error publishing DOI {} for COL source {} {}", doi, d.getKey(), d.getAlias(), e);
           }
         }
-      });
+      }
 
     } catch (Exception e) {
       LOG.error("Failed to publish {} draft source DOIs for COL release {}: {}", published, release.getKey(), release.getVersion(), e);

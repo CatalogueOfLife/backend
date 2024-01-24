@@ -58,6 +58,20 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   }
 
   @Test
+  public void listProjectSourcesSimple() throws Exception {
+    mapper().listProjectSourcesSimple(Datasets.COL, false);
+    mapper().listProjectSourcesSimple(Datasets.COL, false);
+    mapper().listProjectSourcesSimple(Datasets.COL, true);
+  }
+
+  @Test
+  public void listReleaseSourcesSimple() throws Exception {
+    mapper().listReleaseSourcesSimple(Datasets.COL, false);
+    mapper().listReleaseSourcesSimple(Datasets.COL, false);
+    mapper().listReleaseSourcesSimple(Datasets.COL, true);
+  }
+
+  @Test
   public void listReleaseSourcesAuthorsOnly() throws Exception {
     mapper().listReleaseSourcesAuthorsOnly(Datasets.COL);
   }

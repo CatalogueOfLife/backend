@@ -263,13 +263,16 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
                                       @QueryParam("showPublisherSources") boolean showPublisherSources,
                                       @QueryParam("notCurrentOnly") boolean notCurrentOnly
   ) {
-    var ds = sourceDao.list(datasetKey, null, false, !showPublisherSources);
+    var ds = sourceDao.listSimple(datasetKey, !showPublisherSources);
     if (notCurrentOnly) {
       List<Dataset> notCurrent = new ArrayList<>();
-      for (Dataset d : ds) {
-        Dataset curr = dao.get(d.getKey());
-        if (curr != null && !Objects.equals(curr.getAttempt(), d.getAttempt())) {
-          notCurrent.add(d);
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        for (Dataset d : ds) {
+          Integer currAttempt = dm.lastImportAttempt(d.getKey());
+          if (currAttempt != null && !Objects.equals(currAttempt, d.getAttempt())) {
+            notCurrent.add(d);
+          }
         }
       }
       return notCurrent;

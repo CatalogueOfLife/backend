@@ -14,6 +14,26 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2024-01-24 keep gbif keys on dataset source archive
+```sql
+ALTER TABLE dataset_archive
+ ADD COLUMN gbif_key UUID,
+ ADD COLUMN gbif_publisher_key UUID;
+
+ALTER TABLE dataset_source
+ ADD COLUMN gbif_key UUID,
+ ADD COLUMN gbif_publisher_key UUID;
+ 
+ 
+UPDATE dataset_archive a SET gbif_key = d.gbif_key, gbif_publisher_key = d.gbif_publisher_key
+  FROM dataset d
+  WHERE d.key=a.key;
+
+UPDATE dataset_source a SET gbif_key = d.gbif_key, gbif_publisher_key = d.gbif_publisher_key
+  FROM dataset d
+  WHERE d.key=a.key;
+```
+
 ### 2024-01-19 publisher
 ```sql
 CREATE TABLE sector_publisher (

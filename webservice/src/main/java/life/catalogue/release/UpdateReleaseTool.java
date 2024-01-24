@@ -139,7 +139,6 @@ public class UpdateReleaseTool implements AutoCloseable {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         var dsm = session.getMapper(DatasetSourceMapper.class);
-        var cm = session.getMapper(CitationMapper.class);
         var global = dm.get(d.getKey());
         if (global.getAttempt() > d.getAttempt()) {
           System.out.printf("Update source %s %s from attempt %s to %s:\n", d.getKey(), d.getAlias(), d.getAttempt(), global.getAttempt());

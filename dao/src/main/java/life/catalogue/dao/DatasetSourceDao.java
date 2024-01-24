@@ -103,6 +103,37 @@ public class DatasetSourceDao {
   }
 
   /**
+   * Returns simple source datasets like the main list method but without
+   * - description
+   * - container dataset
+   * - bibliography
+   * - contributors
+   *
+   * @param datasetKey
+   * @param hidePublisherSources
+   * @return
+   */
+  public List<Dataset> listSimple(int datasetKey, boolean hidePublisherSources){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    List<Dataset> sources;
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      if (info.origin.isRelease()) {
+        sources = psm.listReleaseSourcesSimple(datasetKey, hidePublisherSources);
+
+      } else {
+        // a project, get latest version with patch applied
+        final Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
+        DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
+
+        sources = psm.listProjectSourcesSimple(datasetKey, hidePublisherSources);
+        sources.forEach(d -> patch(d, datasetKey, project, pm));
+      }
+    }
+    return sources;
+  }
+
+  /**
    * List the source datasets for a project or release.
    * If the key points to a release the patched and archived source metadata is returned.
    * If it points to a live project, the metadata is taken from the dataset archive at the time of the last successful sync attempt
@@ -113,7 +144,7 @@ public class DatasetSourceDao {
    * @param hidePublisherSources if true hides the source datasets that are published by the configured sector publisher in the given project or release
    */
   public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild, boolean hidePublisherSources){
-    final int maxSize = 1000; // give a limit we should notmally not reach but to safeguard us
+    final int maxSize = 1000; // give a limit we should normally not reach but to safeguard us
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {

@@ -7,8 +7,6 @@
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     d.deleted,
-    d.gbif_key,
-    d.gbif_publisher_key,
     d.private,
     <include refid="size"/> AS size
   </sql>
@@ -18,8 +16,6 @@
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>,
     deleted,
-    gbif_key,
-    gbif_publisher_key,
     private
   </sql>
 
@@ -27,8 +23,6 @@
   <sql id="PROPS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.PROPS"/>,
     #{deleted},
-    #{gbifKey},
-    #{gbifPublisherKey},
     #{privat}
   </sql>
 

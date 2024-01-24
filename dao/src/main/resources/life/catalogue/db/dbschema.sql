@@ -825,8 +825,6 @@ ALTER TABLE dataset_archive
   DROP COLUMN doc,
   DROP COLUMN acl_editor,
   DROP COLUMN acl_reviewer,
-  DROP COLUMN gbif_key,
-  DROP COLUMN gbif_publisher_key,
   DROP COLUMN private,
   DROP COLUMN settings;
 ALTER TABLE dataset_archive ADD FOREIGN KEY (key) REFERENCES dataset;
@@ -857,6 +855,8 @@ ALTER TABLE dataset_patch
   DROP COLUMN source_key,
   DROP COLUMN attempt,
   DROP COLUMN type,
+  DROP COLUMN gbif_key,
+  DROP COLUMN gbif_publisher_key,
   DROP COLUMN origin;
 ALTER TABLE dataset_patch
   ALTER COLUMN title DROP NOT NULL;

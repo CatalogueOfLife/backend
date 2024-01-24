@@ -11,20 +11,76 @@
     con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
   </sql>
 
+  <!--
+      d.description,
+      d.contributor,
+    -->
+  <sql id="SELECT_SIMPLE">
+    d.key,
+    d.doi,
+    d.identifier,
+    d.title,
+    d.alias,
+    d.issued,
+    d.version,
+    d.issn,
+    d.contact,
+    d.creator,
+    d.editor,
+    d.publisher,
+    d.keyword,
+    d.geographic_scope,
+    d.taxonomic_scope,
+    d.temporal_scope,
+    d.confidence,
+    d.completeness,
+    d.license,
+    d.url,
+    d.logo,
+    d.url_formatter,
+    d.notes,
+    d.created,
+    d.created_by,
+    d.modified,
+    d.modified_by,
+
+    d.attempt,
+    d.origin,
+    d.type,
+    d.source_key
+  </sql>
+
   <sql id="COLS">
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.COLS"/>
   </sql>
 
   <sql id="PROPS">
     #{obj.type}::datasettype,
+    #{obj.gbifKey},
+    #{obj.gbifPublisherKey},
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.PROPS"/>
   </sql>
 
   <sql id="FROM">
     dataset_source d
-      LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
-      LEFT JOIN dataset con ON con.key = #{datasetKey}
+    LEFT JOIN dataset_import di ON d.attempt=di.attempt AND d.key=di.dataset_key
+    LEFT JOIN dataset con ON con.key = #{datasetKey}
   </sql>
+
+  <sql id="FROM_SIMPLE">
+    dataset_source d
+  </sql>
+
+  <resultMap id="datasetSimpleResultMap" type="Dataset" autoMapping="true">
+    <id property="key" column="key"/>
+    <result property="privat" column="private"/>
+    <result property="contact" column="contact" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="creator" column="creator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+  </resultMap>
 
   <resultMap id="datasetSourceReleaseResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     <id property="key" column="key"/>
@@ -37,19 +93,23 @@
     <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
   </resultMap>
 
-  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <sql id="SECTOR_SUBJECT_DATASETS">
     WITH src AS (
       SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
       FROM sector s
-        <if test="hidePublisher">
-          JOIN dataset d ON d.key=s.subject_dataset_key
-        </if>
+      <if test="hidePublisher">
+        JOIN dataset d ON d.key=s.subject_dataset_key
+      </if>
       WHERE s.dataset_key=#{datasetKey}
-        <if test="hidePublisher">
-          AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
-        </if>
+      <if test="hidePublisher">
+        AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+      </if>
       GROUP BY s.subject_dataset_key
     )
+  </sql>
+
+  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT"/>
     FROM src
@@ -73,17 +133,41 @@
     <if test="limit != null">LIMIT #{limit}</if>
   </select>
 
+  <select id="listProjectSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    <include refid="SECTOR_SUBJECT_DATASETS"/>
+    <!-- archived dataset metadata -->
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM src
+      JOIN dataset d2 ON d2.key = src.key
+      LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
+    WHERE src.attempt != d2.attempt
+
+    UNION
+
+    <!-- latest dataset metadata -->
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM src
+      JOIN dataset d ON d.key = src.key
+    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+
+    ORDER BY 1
+  </select>
+
   <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceReleaseResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    <if test="hidePublisher">
-      JOIN dataset dp ON dp.key=d.key
-    </if>
     WHERE d.dataset_key = #{datasetKey}
     <if test="hidePublisher">
-      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=dp.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
     </if>
     <if test="limit != null">LIMIT #{limit}</if>
+  </select>
+
+  <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+    SELECT d.dataset_key, <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE d.dataset_key = #{datasetKey}
+      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
   </select>
 
   <select id="listReleaseSourcesAuthorsOnly" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="500" resultSetType="FORWARD_ONLY">
