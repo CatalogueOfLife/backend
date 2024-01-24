@@ -13,6 +13,9 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.HttpHeaders;
 
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.DatasetInfoCache;
+
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +28,10 @@ import it.unimi.dsi.fastutil.ints.IntSet;
  * The following headers are added or replaced if they existed:
  */
 public class CacheControlResponseFilter implements ContainerResponseFilter {
-  private static final Logger LOG = LoggerFactory.getLogger(CacheControlResponseFilter.class);
   private static final long AGE1 = TimeUnit.HOURS.toSeconds(1);
   private static final long AGE24 = TimeUnit.HOURS.toSeconds(24);
   private static final Pattern STATIC_PATH  = Pattern.compile("^(vocab|openapi|version)");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
-  private final IntSet releases = new IntOpenHashSet();
 
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
@@ -41,24 +42,19 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
       }
       Integer datasetKey = FilterUtils.datasetKeyOrNull(req.getUriInfo());
       if (datasetKey != null) {
-        if (releases.contains((int)datasetKey)) {
-          // its a release, we can cache it!
+        var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+        if (info.origin.isRelease()) {
+          // its a release, we can cache it for longer!
           allowCaching(resp, AGE24);
+          return;
+        } else if (info.origin == DatasetOrigin.EXTERNAL) {
+          // thats also rather static information, but allow it to change more often
+          allowCaching(resp, AGE1);
           return;
         }
       }
     }
     preventCaching(resp);
-  }
-
-  public boolean add(int key) {
-    LOG.info("Added release {}", key);
-    return releases.add(key);
-  }
-
-  public boolean addAll(@NotNull Collection<? extends Integer> keys) {
-    LOG.info("Added {} release keys", keys.size());
-    return releases.addAll(keys);
   }
 
   private void allowCaching(ContainerResponseContext resp, long ageInSeconds){
@@ -69,7 +65,4 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
     resp.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, "must-revalidate,no-cache,no-store");
   }
 
-  public void addRelease(int datasetKey){
-    add(datasetKey);
-  }
 }

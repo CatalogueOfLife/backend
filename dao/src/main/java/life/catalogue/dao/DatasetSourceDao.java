@@ -24,7 +24,7 @@ public class DatasetSourceDao {
   private final SqlSessionFactory factory;
   // MD5 hash by datasetKey & attempt
   private final LoadingCache<DSID<Integer>, String> md5s = Caffeine.newBuilder()
-                                                              .maximumSize(1000)
+                                                              .maximumSize(10000)
                                                               .build(this::getDatasetImportMD5);
 
   public DatasetSourceDao(SqlSessionFactory factory) {

@@ -44,6 +44,8 @@
     d.modified,
     d.modified_by,
 
+    d.gbif_key,
+    d.gbif_publisher_key,
     d.attempt,
     d.origin,
     d.type,
