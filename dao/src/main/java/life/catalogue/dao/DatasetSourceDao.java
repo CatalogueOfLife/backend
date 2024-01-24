@@ -22,19 +22,9 @@ import static life.catalogue.api.vocab.DatasetOrigin.*;
 public class DatasetSourceDao {
   private final static Logger LOG = LoggerFactory.getLogger(DatasetSourceDao.class);
   private final SqlSessionFactory factory;
-  // MD5 hash by datasetKey & attempt
-  private final LoadingCache<DSID<Integer>, String> md5s = Caffeine.newBuilder()
-                                                              .maximumSize(10000)
-                                                              .build(this::getDatasetImportMD5);
 
   public DatasetSourceDao(SqlSessionFactory factory) {
     this.factory = factory;
-  }
-
-  private String getDatasetImportMD5(DSID<Integer> attempt){
-    try (SqlSession session = factory.openSession()) {
-      return session.getMapper(DatasetImportMapper.class).getMD5(attempt.getDatasetKey(), attempt.getId());
-    }
   }
 
   /**
@@ -183,9 +173,6 @@ public class DatasetSourceDao {
     // current attempt of the imported dataset
     private Integer latestAttempt;
     private Integer latestUsagesCount;
-    private String latestMd5;
-    // the set of dataset import attempts and MD5 hashes used in all the aggregated syncs - they can be based on different dataset imports!
-    private final Set<String> datasetMd5 = new TreeSet<>();
     private final Set<Integer> datasetAttempt = new TreeSet<>();
 
     public SourceMetrics(int datasetKey, int sourceKey) {
@@ -211,18 +198,6 @@ public class DatasetSourceDao {
 
     public void setLatestUsagesCount(Integer latestUsagesCount) {
       this.latestUsagesCount = latestUsagesCount;
-    }
-
-    public String getLatestMd5() {
-      return latestMd5;
-    }
-
-    public void setLatestMd5(String latestMd5) {
-      this.latestMd5 = latestMd5;
-    }
-
-    public Set<String> getDatasetMd5() {
-      return datasetMd5;
     }
 
     public Set<Integer> getDatasetAttempt() {
@@ -286,12 +261,6 @@ public class DatasetSourceDao {
       var source = session.getMapper(DatasetMapper.class).getOrThrow(sourceKey, Dataset.class);
       metrics.setLatestAttempt(source.getAttempt());
       metrics.setLatestUsagesCount(source.getSize());
-      if (source.getAttempt() != null) {
-        var latestImport = session.getMapper(DatasetImportMapper.class).get(sourceKey, source.getAttempt());
-        if (latestImport != null) {
-          metrics.setLatestMd5(latestImport.getMd5());
-        }
-      }
 
       // aggregate metrics based on sector syncs/imports
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
@@ -323,10 +292,6 @@ public class DatasetSourceDao {
       // track attempts & md5
       if (si.getDatasetAttempt() != null) {
         m.datasetAttempt.add(si.getDatasetAttempt());
-        var md5 = md5s.get(DSID.of(m.getSourceKey(), si.getDatasetAttempt()));
-        if (md5 != null) {
-          m.datasetMd5.add(md5);
-        }
       }
     }
   }
