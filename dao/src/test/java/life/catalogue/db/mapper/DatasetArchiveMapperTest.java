@@ -31,8 +31,6 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     commit();
     // reload to also get the creation/modified dates,
     d1 = dmapper().get(d1.getKey());
-    d1.setGbifKey(null);
-    d1.setGbifPublisherKey(null);
     d1.setSize(null); // we populate size by counting usages - ignore it in comparison
 
     Dataset d2 = mapper().get(d1.getKey(), d1.getAttempt());
