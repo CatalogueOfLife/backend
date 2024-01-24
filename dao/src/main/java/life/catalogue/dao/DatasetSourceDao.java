@@ -144,13 +144,12 @@ public class DatasetSourceDao {
    * @param hidePublisherSources if true hides the source datasets that are published by the configured sector publisher in the given project or release
    */
   public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild, boolean hidePublisherSources){
-    final int maxSize = 1000; // give a limit we should normally not reach but to safeguard us
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease() && !rebuild) {
-        sources = psm.listReleaseSources(datasetKey, hidePublisherSources, maxSize);
+        sources = psm.listReleaseSources(datasetKey, hidePublisherSources);
 
       } else {
         // get latest version with patch applied
@@ -158,7 +157,7 @@ public class DatasetSourceDao {
         final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
         DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
 
-        sources = psm.listProjectSources(datasetKey, hidePublisherSources, maxSize);
+        sources = psm.listProjectSources(datasetKey, hidePublisherSources);
         sources.forEach(d -> patch(d, projectKey, project, pm));
       }
     }

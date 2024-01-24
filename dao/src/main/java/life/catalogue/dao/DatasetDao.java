@@ -348,7 +348,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
-    psm.listReleaseSources(datasetKey, false, null).stream()
+    psm.listReleaseSources(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
       .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
   }
@@ -409,7 +409,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       session.getMapper(IdReportMapper.class).deleteByDataset(key);
     }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
-    Set<DOI> dois = psm.listReleaseSources(key, false, null).stream()
+    Set<DOI> dois = psm.listReleaseSources(key, false).stream()
         .map(Dataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());

@@ -149,7 +149,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     try (SqlSession session = factory.openSession()) {
       LOG.info("Updating DOIs for {}release {} {}", isLatest ? "latest " : "", release.getKey(), release.getAlias());
       var dsm = session.getMapper(DatasetSourceMapper.class);
-      for (Dataset source : dsm.listReleaseSources(release.getKey(), false, null)) {
+      for (Dataset source : dsm.listReleaseSources(release.getKey(), false)) {
         final DOI srcDoi = source.getDoi();
         if (srcDoi != null && srcDoi.isCOL()) {
           try {

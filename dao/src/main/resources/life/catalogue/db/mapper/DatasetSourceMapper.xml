@@ -130,7 +130,6 @@
     WHERE src.attempt = d.attempt OR src.attempt IS NULL
 
     ORDER BY 1
-    <if test="limit != null">LIMIT #{limit}</if>
   </select>
 
   <select id="listProjectSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
@@ -160,7 +159,6 @@
     <if test="hidePublisher">
       AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
     </if>
-    <if test="limit != null">LIMIT #{limit}</if>
   </select>
 
   <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">

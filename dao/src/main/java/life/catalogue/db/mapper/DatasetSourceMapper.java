@@ -41,11 +41,9 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
 
   /**
    * @param datasetKey the release dataset key
-   * @param limit the max number of datasets to be returned
    */
   List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey,
-                                   @Param("hidePublisher") boolean hidePublisherSources,
-                                   @Param("limit") Integer limit
+                                   @Param("hidePublisher") boolean hidePublisherSources
   );
   List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey,
                                          @Param("hidePublisher") boolean hidePublisherSources
@@ -56,11 +54,9 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
   /**
    * Lists all project or release sources retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
-   * @param limit the max number of datasets to be returned
    */
   List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey,
-                                   @Param("hidePublisher") boolean hidePublisherSources,
-                                   @Param("limit") Integer limit
+                                   @Param("hidePublisher") boolean hidePublisherSources
   );
 
   List<Dataset> listProjectSourcesSimple(@Param("datasetKey") int datasetKey,
