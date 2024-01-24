@@ -100,6 +100,8 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     add2Sectors();
     assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey).size());
     assertEquals(0, mapper().listByDataset(targetDatasetKey,-432).size());
+    // no results, but make sure sql works
+    assertEquals(0, mapper().listByDatasetPublisher(targetDatasetKey,UUID.randomUUID()).size());
   }
 
   @Test
