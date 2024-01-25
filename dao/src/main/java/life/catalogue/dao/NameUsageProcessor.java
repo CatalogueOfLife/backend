@@ -77,11 +77,23 @@ public class NameUsageProcessor {
     processTree(sectorKey.getDatasetKey(), sectorKey.getId(), consumer);
   }
 
+  static class SectorProps {
+    int datasetKey;
+    UUID publisherKey;
+    Sector.Mode mode;
+
+    public SectorProps(Sector s, DatasetMapper dm) {
+      this.mode = s.getMode();
+      this.datasetKey = s.getSubjectDatasetKey();
+      this.publisherKey = dm.getPublisherKey(datasetKey);
+    }
+  }
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
     try (SqlSession session = factory.openSession()) {
       final NameUsageWrapperMapper nuwm = session.getMapper(NameUsageWrapperMapper.class);
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
+      final var dm = session.getMapper(DatasetMapper.class);
       final CacheLoader loader = new CacheLoader.Mybatis(session, false);
 
       // reusable dsids for this dataset
@@ -90,11 +102,11 @@ public class NameUsageProcessor {
       // we exclude some rather static info from our already massive joins and set them manually in code:
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       // we prefetch sectorKey to the sectors subject dataset key depending whether we process a sector or entire dataset
-      final Map<Integer, Integer> sectorDatasetKeys = new HashMap<>();
+      final Map<Integer, SectorProps> sectors = new HashMap<>();
       if (sectorKey != null) {
-        sectorDatasetKeys.put(sectorKey, sm.get(sKey.id(sectorKey)).getSubjectDatasetKey());
+        sectors.put(sectorKey, new SectorProps(sm.get(sKey.id(sectorKey)), dm));
       } else {
-        sm.listByDataset(datasetKey, null).forEach(s -> sectorDatasetKeys.put(s.getId(), s.getSubjectDatasetKey()));
+        sm.listByDataset(datasetKey, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
       }
 
       // build temporary table collecting issues from all usage related tables
@@ -110,7 +122,9 @@ public class NameUsageProcessor {
           // set preloaded infos excluded in sql results as they are very repetitive
           nuw.setPublisherKey(publisher);
           if (nuw.getUsage().getName().getSectorKey() != null) {
-            nuw.setSectorDatasetKey(sectorDatasetKeys.get(nuw.getUsage().getName().getSectorKey()));
+            nuw.setSectorDatasetKey(sectors.get(nuw.getUsage().getName().getSectorKey()).datasetKey);
+            nuw.setSectorPublisherKey(sectors.get(nuw.getUsage().getName().getSectorKey()).publisherKey);
+            nuw.setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
           }
 
           if (nuw.getUsage().isTaxon()) {

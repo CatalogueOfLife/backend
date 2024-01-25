@@ -218,6 +218,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     Name name = nuw.getUsage().getName();
     doc.setDatasetKey(name.getDatasetKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
+    doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
+    doc.setSectorMode(nuw.getSectorMode());
     doc.setNameId(name.getId());
     doc.setNomCode(name.getCode());
     doc.setNomStatus(name.getNomStatus());
@@ -229,6 +231,10 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setUsageId(nuw.getUsage().getId());
     doc.setType(name.getType());
     doc.setNameFields(getNonNullNameFields(nuw.getUsage()));
+    if (nuw.getSecondarySources() != null) {
+      doc.setSecondarySourceGroup(nuw.getSecondarySources().keySet());
+      doc.setSecondarySourceKey(Set.copyOf(nuw.getSecondarySources().values()));
+    }
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
       doc.setSectorKey(t.getSectorKey());

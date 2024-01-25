@@ -1,5 +1,7 @@
 package life.catalogue.es;
 
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
 import life.catalogue.es.ddl.*;
 
@@ -7,10 +9,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import static life.catalogue.es.ddl.Analyzer.*;
 
@@ -29,6 +28,15 @@ public class EsNameUsage {
   private Integer sectorKey;
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorDatasetKey;
+  @MapToType(ESDataType.KEYWORD)
+  private UUID sectorPublisherKey;
+  @MapToType(ESDataType.KEYWORD)
+  private Sector.Mode sectorMode;
+  @Analyzers(KEYWORD)
+  private Set<InfoGroup> secondarySourceGroup;
+  @Analyzers(KEYWORD)
+  private Set<Integer> secondarySourceKey;
+
   @Analyzers({KEYWORD, SCINAME_IGNORE_CASE, SCINAME_WHOLE_WORDS, SCINAME_AUTO_COMPLETE})
   private String scientificName;
   private NameStrings nameStrings;
@@ -306,52 +314,48 @@ public class EsNameUsage {
     this.decisions = decisions;
   }
 
+  public UUID getSectorPublisherKey() {
+    return sectorPublisherKey;
+  }
+
+  public void setSectorPublisherKey(UUID sectorPublisherKey) {
+    this.sectorPublisherKey = sectorPublisherKey;
+  }
+
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
+  public Set<InfoGroup> getSecondarySourceGroup() {
+    return secondarySourceGroup;
+  }
+
+  public void setSecondarySourceGroup(Set<InfoGroup> secondarySourceGroup) {
+    this.secondarySourceGroup = secondarySourceGroup;
+  }
+
+  public Set<Integer> getSecondarySourceKey() {
+    return secondarySourceKey;
+  }
+
+  public void setSecondarySourceKey(Set<Integer> secondarySourceKey) {
+    this.secondarySourceKey = secondarySourceKey;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    EsNameUsage that = (EsNameUsage) o;
+    return Objects.equals(documentId, that.documentId) && Objects.equals(usageId, that.usageId) && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(secondarySourceGroup, that.secondarySourceGroup) && Objects.equals(secondarySourceKey, that.secondarySourceKey) && Objects.equals(scientificName, that.scientificName) && Objects.equals(nameStrings, that.nameStrings) && Objects.equals(authorship, that.authorship) && Objects.equals(authorshipYear, that.authorshipYear) && Objects.equals(authorshipComplete, that.authorshipComplete) && Objects.equals(nameId, that.nameId) && Objects.equals(publishedInId, that.publishedInId) && Objects.equals(publisherKey, that.publisherKey) && rank == that.rank && origin == that.origin && type == that.type && nomCode == that.nomCode && nomStatus == that.nomStatus && Objects.equals(nameFields, that.nameFields) && status == that.status && Objects.equals(issues, that.issues) && Objects.equals(environments, that.environments) && Objects.equals(extinct, that.extinct) && Objects.equals(classificationIds, that.classificationIds) && Objects.equals(classification, that.classification) && Objects.equals(decisions, that.decisions) && Objects.equals(acceptedName, that.acceptedName) && Objects.equals(payload, that.payload);
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(acceptedName, authorship, authorshipComplete, authorshipYear, classification, classificationIds, datasetKey,
-        decisions, documentId, extinct, issues, nameFields, nameId, nameStrings, nomCode, nomStatus, payload,
-        publishedInId, publisherKey, rank, origin, scientificName, sectorDatasetKey, sectorKey, status, type, usageId);
+    return Objects.hash(documentId, usageId, datasetKey, sectorKey, sectorDatasetKey, sectorPublisherKey, sectorMode, secondarySourceGroup, secondarySourceKey, scientificName, nameStrings, authorship, authorshipYear, authorshipComplete, nameId, publishedInId, publisherKey, rank, origin, type, nomCode, nomStatus, nameFields, status, issues, environments, extinct, classificationIds, classification, decisions, acceptedName, payload);
   }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    EsNameUsage other = (EsNameUsage) obj;
-    return Objects.equals(acceptedName, other.acceptedName)
-        && Objects.equals(authorship, other.authorship)
-        && Objects.equals(authorshipComplete, other.authorshipComplete)
-        && Objects.equals(authorshipYear, other.authorshipYear)
-        && Objects.equals(classification, other.classification)
-        && Objects.equals(classificationIds, other.classificationIds)
-        && Objects.equals(datasetKey, other.datasetKey)
-        && Objects.equals(decisions, other.decisions)
-        && Objects.equals(documentId, other.documentId)
-        && Objects.equals(extinct, other.extinct)
-        && Objects.equals(issues, other.issues)
-        && Objects.equals(environments, other.environments)
-        && Objects.equals(nameFields, other.nameFields)
-        && Objects.equals(nameId, other.nameId)
-        && Objects.equals(nameStrings, other.nameStrings)
-        && nomCode == other.nomCode
-        && nomStatus == other.nomStatus
-        && Objects.equals(payload, other.payload)
-        && Objects.equals(publishedInId, other.publishedInId)
-        && Objects.equals(publisherKey, other.publisherKey)
-        && rank == other.rank
-        && origin == other.origin
-        && Objects.equals(scientificName, other.scientificName)
-        && Objects.equals(sectorDatasetKey, other.sectorDatasetKey)
-        && Objects.equals(sectorKey, other.sectorKey)
-        && status == other.status && type == other.type
-        && Objects.equals(usageId, other.usageId);
-  }
-
 }

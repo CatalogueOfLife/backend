@@ -46,6 +46,10 @@ public class NameUsageFieldLookup extends EnumMap<NameUsageSearchParameter, Stri
     putSingle(STATUS, "status");
     putSingle(SECTOR_DATASET_KEY, "sectorDatasetKey");
     putSingle(SECTOR_KEY, "sectorKey");
+    putSingle(SECTOR_PUBLISHER_KEY, "sectorPublisherKey");
+    putSingle(SECTOR_MODE, "sectorMode");
+    putSingle(SECONDARY_SOURCE, "secondarySourceKey");
+    putSingle(SECONDARY_SOURCE_GROUP, "secondarySourceGroup");
     putSingle(TAXON_ID, "classificationIds");
     putSingle(NAME_TYPE, "type");
     putSingle(USAGE_ID, "usageId");

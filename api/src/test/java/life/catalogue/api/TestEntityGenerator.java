@@ -655,9 +655,10 @@ public class TestEntityGenerator {
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
     nuw.setUsage(TAXON1);
-    EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
-        Issue.DISTRIBUTION_AREA_INVALID);
-    nuw.setIssues(issues);
+    nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
+    nuw.setSectorPublisherKey(UUID.randomUUID());
+    nuw.setSectorMode(Sector.Mode.MERGE);
+    nuw.setSecondarySources(Map.of(InfoGroup.AUTHORSHIP, 1010,  InfoGroup.PUBLISHED_IN, 2123));
     return copy(nuw);
   }
 

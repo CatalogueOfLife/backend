@@ -1,6 +1,7 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
 
 import org.gbif.nameparser.api.NameType;
@@ -75,6 +76,30 @@ public enum NameUsageSearchParameter {
    * the key on the Synonym instance itself.
    */
   SECTOR_DATASET_KEY(Integer.class),
+
+  /**
+   * The publisher key of the subject dataset of the corresponding sector attached to a name usage.
+   */
+  SECTOR_PUBLISHER_KEY(UUID.class),
+
+  /**
+   * The mode of the corresponding sector attached to a name usage.
+   * Can be used to look for "extended" records from MERGE sectors only in XReleases.
+   */
+  SECTOR_MODE(Sector.Mode.class),
+
+  /**
+   * Dataset key of the secondary source linked to a name usage.
+   * Only exists in XReleases.
+   */
+  SECONDARY_SOURCE(Integer.class),
+
+  /**
+   * InfoGroup of a secondary source that must exist for a name usage.
+   * Not that if combined with secondary source parameter there is no guarantee the secondary source is for that exact info group.
+   * Only exists in XReleases.
+   */
+  SECONDARY_SOURCE_GROUP(InfoGroup.class),
 
   /**
    * TaxonomicStatus

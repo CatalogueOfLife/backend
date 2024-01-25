@@ -1,10 +1,7 @@
 package life.catalogue.es.nu.search;
 
-import life.catalogue.api.model.BareName;
+import life.catalogue.api.model.*;
 import life.catalogue.api.model.EditorialDecision.Mode;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.es.EsNameUsage;
@@ -243,6 +240,65 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     assertEquals(expected, search(query).getResult());
 
     countdown(PUBLISHER_KEY);
+  }
+
+  @Test
+  public void testSectorPublisherKey() {
+    UUID uuid1 = UUID.randomUUID();
+    UUID uuid2 = UUID.randomUUID();
+
+    NameUsageWrapper nuw1 = minimalTaxon();
+    nuw1.setSectorPublisherKey(uuid1);
+
+    NameUsageWrapper nuw2 = minimalTaxon();
+    nuw2.setSectorPublisherKey(uuid1);
+
+    NameUsageWrapper nuw3 = minimalTaxon();
+    nuw3.setSectorPublisherKey(uuid2);
+
+    NameUsageWrapper nuw4 = minimalTaxon();
+    nuw4.setSectorPublisherKey(null);
+
+    index(nuw1, nuw2, nuw3, nuw4);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(SECTOR_PUBLISHER_KEY, IS_NOT_NULL);
+
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
+    assertEquals(expected, search(query).getResult());
+
+    countdown(SECTOR_PUBLISHER_KEY);
+  }
+
+  @Test
+  public void testSectorMode() {
+    NameUsageWrapper nuw1 = minimalTaxon();
+    nuw1.setSectorMode(Sector.Mode.ATTACH);
+
+    NameUsageWrapper nuw2 = minimalTaxon();
+    nuw2.setSectorMode(Sector.Mode.ATTACH);
+
+    NameUsageWrapper nuw3 = minimalTaxon();
+    nuw3.setSectorMode(Sector.Mode.MERGE);
+
+    NameUsageWrapper nuw4 = minimalTaxon();
+    nuw4.setSectorMode(null);
+
+    index(nuw1, nuw2, nuw3, nuw4);
+
+    NameUsageSearchRequest query = new NameUsageSearchRequest();
+    query.addFilter(SECTOR_MODE, IS_NOT_NULL);
+
+    List<NameUsageWrapper> expected = Arrays.asList(nuw1, nuw2, nuw3);
+    assertEquals(expected, search(query).getResult());
+
+    query = new NameUsageSearchRequest();
+    query.addFilter(SECTOR_MODE, Sector.Mode.MERGE);
+
+    expected = Arrays.asList(nuw3);
+    assertEquals(expected, search(query).getResult());
+
+    countdown(SECTOR_MODE);
   }
 
   @Test
