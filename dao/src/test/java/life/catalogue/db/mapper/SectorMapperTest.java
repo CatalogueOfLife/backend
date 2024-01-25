@@ -151,6 +151,19 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     req = SectorSearchRequest.byProject(targetDatasetKey);
     req.setMinSize(10);
     assertEquals(2, mapper().search(req, new Page()).size());
+
+    req.setMode(Set.of(Sector.Mode.ATTACH));
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    req.setMode(Set.of(Sector.Mode.ATTACH, Sector.Mode.MERGE));
+    assertEquals(2, mapper().search(req, new Page()).size());
+
+    req.setMode(Set.of(Sector.Mode.UNION, Sector.Mode.MERGE));
+    assertEquals(0, mapper().search(req, new Page()).size());
+
+    req.setMode(null);
+    req.setPublisherKey(UUID.randomUUID());
+    assertEquals(0, mapper().search(req, new Page()).size());
   }
 
   @Test

@@ -409,7 +409,7 @@
 
   <delete id="delete" parameterType="map">
     DELETE FROM dataset_import
-    WHERE dataset_key=#{datasetKey} AND attempt=#{attempt}
+    WHERE dataset_key=#{key} AND attempt=#{attempt}
   </delete>
 
   <delete id="deleteByDataset" parameterType="map">

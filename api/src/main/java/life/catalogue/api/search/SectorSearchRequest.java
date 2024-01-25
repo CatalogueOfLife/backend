@@ -4,6 +4,8 @@ import life.catalogue.api.model.Sector;
 
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.validation.constraints.Min;
 import javax.ws.rs.QueryParam;
@@ -17,7 +19,7 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   private LocalDate lastSync;
 
   @QueryParam("mode")
-  private Sector.Mode mode;
+  private Set<Sector.Mode> mode;
 
   @QueryParam("subject")
   private boolean subject = false;
@@ -28,6 +30,9 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
 
   @QueryParam("withoutData")
   private boolean withoutData = false;
+
+  @QueryParam("publisherKey")
+  private UUID publisherKey;
 
   public static SectorSearchRequest byProject(int datasetKey){
     SectorSearchRequest req = new SectorSearchRequest();
@@ -57,11 +62,11 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.lastSync = lastSync;
   }
 
-  public Sector.Mode getMode() {
+  public Set<Sector.Mode> getMode() {
     return mode;
   }
 
-  public void setMode(Sector.Mode mode) {
+  public void setMode(Set<Sector.Mode> mode) {
     this.mode = mode;
   }
 
@@ -89,22 +94,25 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.minSize = minSize;
   }
 
+  public UUID getPublisherKey() {
+    return publisherKey;
+  }
+
+  public void setPublisherKey(UUID publisherKey) {
+    this.publisherKey = publisherKey;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof SectorSearchRequest)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject &&
-      withoutData == that.withoutData &&
-      Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
-      Objects.equals(lastSync, that.lastSync) &&
-      mode == that.mode &&
-      Objects.equals(minSize, that.minSize);
+    return subject == that.subject && withoutData == that.withoutData && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, minSize, withoutData);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, minSize, withoutData, publisherKey);
   }
 }

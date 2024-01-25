@@ -116,9 +116,15 @@
 
   <sql id="WHERE">
     <if test="req != null">
+      <if test="req.publisherKey != null">
+        JOIN dataset d ON d.key=s.subject_dataset_key
+      </if>
       <where>
+        <if test="req.publisherKey != null">
+          d.gbif_publisher_key=#{req.publisherKey}
+        </if>
         <if test="req.broken">
-          ((coalesce(s.subject_id, s.subject_name) IS NOT NULL AND ts.id IS NULL) OR (coalesce(s.target_id, s.target_name) IS NOT NULL AND tt.id IS NULL))
+          AND ((coalesce(s.subject_id, s.subject_name) IS NOT NULL AND ts.id IS NULL) OR (coalesce(s.target_id, s.target_name) IS NOT NULL AND tt.id IS NULL))
         </if>
         <if test="req.id != null">
           AND (s.subject_id = #{req.id} OR s.target_id = #{req.id})
@@ -138,8 +144,8 @@
         <if test="req.lastSync != null">
           AND (si.finished IS NULL OR si.finished &lt; #{req.lastSync})
         </if>
-        <if test="req.mode != null">
-          AND s.mode = #{req.mode}::SECTOR_MODE
+        <if test="req.mode != null and !req.mode.isEmpty()">
+          AND s.mode IN <foreach item="m" collection="req.mode" open="(" separator="," close=")">#{m}::SECTOR_MODE</foreach>
         </if>
         <if test="req.modifiedBy != null">
           AND s.modified_by = #{req.modifiedBy}
