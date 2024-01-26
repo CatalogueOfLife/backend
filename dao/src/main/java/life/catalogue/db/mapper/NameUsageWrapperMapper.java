@@ -39,7 +39,7 @@ public interface NameUsageWrapperMapper {
    * that should be catered for by the consumer.
    *
    * WARNING!
-   * This method requires a temporary session bound table "tmp_usage_issues" to exist.
+   * This method requires 2 temporary session bound tables "tmp_usage_issues" and "tmp_usage_sources" to exist.
    * Create it before using the VerbatimRecordMapper.createTmpIssuesTable method.
    *
    * @param datasetKey the dataset, e.g. catalogue, to process

@@ -111,7 +111,9 @@ public class NameUsageProcessor {
 
       // build temporary table collecting issues from all usage related tables
       // we do this in a separate step to not overload postgres with gigantic joins later on
-      session.getMapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, sectorKey);
+      var vm = session.getMapper(VerbatimRecordMapper.class);
+      vm.createTmpIssuesTable(datasetKey, sectorKey);
+      vm.createTmpVSourcesTable(datasetKey, sectorKey);
 
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
            UsageCache usageCache = buildUsageCache()

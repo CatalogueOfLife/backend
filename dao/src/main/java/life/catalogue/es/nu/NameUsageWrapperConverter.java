@@ -231,10 +231,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setUsageId(nuw.getUsage().getId());
     doc.setType(name.getType());
     doc.setNameFields(getNonNullNameFields(nuw.getUsage()));
-    if (nuw.getSecondarySources() != null) {
-      doc.setSecondarySourceGroup(nuw.getSecondarySources().keySet());
-      doc.setSecondarySourceKey(Set.copyOf(nuw.getSecondarySources().values()));
-    }
+    doc.setSecondarySourceGroup(nuw.getSecondarySourceGroups());
+    doc.setSecondarySourceKey(nuw.getSecondarySourceKeys());
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
       doc.setSectorKey(t.getSectorKey());

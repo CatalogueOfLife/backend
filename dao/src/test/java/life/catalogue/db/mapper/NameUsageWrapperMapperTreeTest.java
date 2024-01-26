@@ -137,6 +137,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     // build temporary table collecting issues from all usage related tables
     // we do this in a separate step to not overload postgres with gigantic joins later on
     mapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, null);
+    mapper(VerbatimRecordMapper.class).createTmpVSourcesTable(datasetKey, null);
 
     final Set<String> ids = new HashSet<>();
     try (var c = mapper().processWithoutClassification(datasetKey, null)) {

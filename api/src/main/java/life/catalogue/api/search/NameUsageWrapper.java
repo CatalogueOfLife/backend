@@ -18,7 +18,8 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private UUID sectorPublisherKey;
   private Sector.Mode sectorMode;
   private UUID publisherKey;
-  private Map<InfoGroup, Integer> secondarySources = new EnumMap<>(InfoGroup.class);
+  private Set<InfoGroup> secondarySourceGroups;
+  private Set<Integer> secondarySourceKeys;
 
   @Override
   public void setId(String id) {
@@ -91,12 +92,20 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.sectorMode = sectorMode;
   }
 
-  public Map<InfoGroup, Integer> getSecondarySources() {
-    return secondarySources;
+  public Set<InfoGroup> getSecondarySourceGroups() {
+    return secondarySourceGroups;
   }
 
-  public void setSecondarySources(Map<InfoGroup, Integer> secondarySources) {
-    this.secondarySources = secondarySources;
+  public void setSecondarySourceGroups(Set<InfoGroup> secondarySourceGroups) {
+    this.secondarySourceGroups = secondarySourceGroups;
+  }
+
+  public Set<Integer> getSecondarySourceKeys() {
+    return secondarySourceKeys;
+  }
+
+  public void setSecondarySourceKeys(Set<Integer> secondarySourceKeys) {
+    this.secondarySourceKeys = secondarySourceKeys;
   }
 
   @Override
@@ -105,12 +114,12 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySources, that.secondarySources);
+    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySources);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySourceGroups, secondarySourceKeys);
   }
 
   @Override

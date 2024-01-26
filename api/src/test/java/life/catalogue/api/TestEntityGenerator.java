@@ -1,5 +1,8 @@
 package life.catalogue.api;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
@@ -658,7 +661,8 @@ public class TestEntityGenerator {
     nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
     nuw.setSectorPublisherKey(UUID.randomUUID());
     nuw.setSectorMode(Sector.Mode.MERGE);
-    nuw.setSecondarySources(Map.of(InfoGroup.AUTHORSHIP, 1010,  InfoGroup.PUBLISHED_IN, 2123));
+    nuw.setSecondarySourceGroups(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN));
+    nuw.setSecondarySourceKeys(Set.of(1010,  2123));
     return copy(nuw);
   }
 

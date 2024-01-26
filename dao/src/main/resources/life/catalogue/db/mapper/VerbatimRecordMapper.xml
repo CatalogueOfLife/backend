@@ -214,6 +214,23 @@
     ANALYZE tmp_usage_issues;
   </update>
 
+  <update id="createTmpVSourcesTable" parameterType="map">
+    SELECT v.id, array_cat_agg(v.type) AS groups, array_cat_agg(v.source_dataset_key) AS sources
+    INTO TEMPORARY TABLE tmp_usage_sources
+    FROM verbatim_source_secondary v
+    <if test="sectorKey != null">
+      JOIN name_usage u ON u.dataset_key = v.dataset_key AND u.id = v.id
+    </if>
+    WHERE v.dataset_key=#{datasetKey}
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    GROUP BY v.id;
+
+    CREATE INDEX ON tmp_usage_sources (id);
+    ANALYZE tmp_usage_sources;
+  </update>
+
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import javax.validation.constraints.NotNull;
+
 import java.util.Objects;
 import java.util.UUID;
 
@@ -7,7 +9,9 @@ import java.util.UUID;
  * GBIF UUID based publisher to be used in projects and releases as sector publishers.
  */
 public class Publisher extends DatasetScopedEntity<UUID> {
+  @NotNull
   private String alias;
+  @NotNull
   private String title;
   private String description;
 

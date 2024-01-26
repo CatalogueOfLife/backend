@@ -80,6 +80,8 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
    */
   void createTmpIssuesTable(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
 
+  void createTmpVSourcesTable(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
+
   /**
    * Process all dataset issues of the temporary table tmp_usage_issues that needs to be existing for the given session.
    */
