@@ -11,7 +11,7 @@
 
   <resultMap id="usageResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
     <id column="uid"/>
-    <result property="secondarySourceGroups" column="groups" typeHandler="life.catalogue.db.type.InfoGroupSetTypeHandler"/>
+    <result property="secondarySourceGroups" column="groups" typeHandler="life.catalogue.db.type2.InfoGroupSetTypeHandler"/>
     <result property="secondarySourceKeys" column="sources" typeHandler="life.catalogue.db.type2.IntegerSetTypeHandler"/>
     <association property="usage">
       <discriminator column="is_synonym" javaType="boolean">
