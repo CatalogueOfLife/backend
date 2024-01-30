@@ -20,12 +20,13 @@ import com.google.common.collect.Maps;
 /**
  * Parser for geochronological time spans.
  *
- * Official times included from the following sources:
+ * TODO: Include translations and synonyms from the following sources:
  *
- * GeoSciML version of ISC 2017: http://resource.geosciml.org/vocabulary/timescale/isc2017.jsonld
+ * WikiData: https://www.wikidata.org/wiki/Q43521
+ * ICS translated: https://vocabs.ardc.edu.au/viewById/196
  * INSPIRE: http://inspire.ec.europa.eu/codelist/GeochronologicEraValue
  * German stratigraphy comission: https://www.geokartieranleitung.de/Fachliche-Grundlagen/Stratigraphie-Kartiereinheiten/Stratigraphie-der-Bundesrepublik/Chronostratigraphische-Einheiten
- * PalaeoBiologyDB (missing units): https://paleobiodb.org/data1.2/intervals/list.json?scale=1..4
+ * PalaeoBiologyDB (missing units): https://paleobiodb.org/data1.2/intervals/list.json?scale=all
  *
  * If the same time period occurs in several sources above the first determines the properties, e.g. year bounderies
  */
