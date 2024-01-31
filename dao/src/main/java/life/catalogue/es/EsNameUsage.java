@@ -30,9 +30,7 @@ public class EsNameUsage {
   private Integer sectorDatasetKey;
   @MapToType(ESDataType.KEYWORD)
   private UUID sectorPublisherKey;
-  @MapToType(ESDataType.KEYWORD)
   private Sector.Mode sectorMode;
-  @Analyzers(KEYWORD)
   private Set<InfoGroup> secondarySourceGroup;
   @Analyzers(KEYWORD)
   private Set<Integer> secondarySourceKey;
