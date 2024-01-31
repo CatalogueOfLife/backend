@@ -30,6 +30,7 @@ public class FacetsTranslatorTest {
     request.addFacet(RANK);
     request.addFacet(STATUS);
     request.addFacet(ORIGIN);
+    request.addFacet(SECTOR_MODE);
 
     request.addFilter(ISSUE, Issue.ACCEPTED_ID_INVALID);
     request.addFilter(ISSUE, Issue.BASIONYM_ID_INVALID);

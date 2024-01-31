@@ -1,10 +1,7 @@
 package life.catalogue.es.nu.search;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.es.EsModule;
@@ -23,6 +20,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import static life.catalogue.api.search.NameUsageSearchParameter.SECTOR_MODE;
 import static org.junit.Assert.assertEquals;
 
 public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
@@ -113,30 +111,43 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
 
     doc = newDocument();
     doc.setRank(Rank.GENUS);
+    doc.setSectorMode(Sector.Mode.MERGE);
     indexRaw(doc);
 
     doc = newDocument();
     doc.setRank(Rank.GENUS);
+    doc.setSectorMode(Sector.Mode.MERGE);
     indexRaw(doc);
 
     // 1 species
     doc = newDocument();
     doc.setRank(Rank.SPECIES);
+    doc.setSectorMode(Sector.Mode.ATTACH);
     indexRaw(doc);
 
     NameUsageSearchResponse result = svc.search(indexName(), request, page);
 
     Map<NameUsageSearchParameter, Set<FacetValue<?>>> expected = new HashMap<>();
-    Set<FacetValue<?>> rankFacet = new TreeSet<>();
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
-    rankFacet.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
-    expected.put(NameUsageSearchParameter.RANK, rankFacet);
+    Set<FacetValue<?>> facetValues = new TreeSet<>();
+    facetValues.add(FacetValue.forEnum(Rank.class, Rank.KINGDOM.ordinal(), 4));
+    facetValues.add(FacetValue.forEnum(Rank.class, Rank.PHYLUM.ordinal(), 4));
+    facetValues.add(FacetValue.forEnum(Rank.class, Rank.GENUS.ordinal(), 3));
+    facetValues.add(FacetValue.forEnum(Rank.class, Rank.CLASS.ordinal(), 2));
+    facetValues.add(FacetValue.forEnum(Rank.class, Rank.SPECIES.ordinal(), 1));
+    expected.put(NameUsageSearchParameter.RANK, facetValues);
 
     assertEquals(expected, result.getFacets());
 
+    // try new sector mode
+    request = new NameUsageSearchRequest();
+    request.addFacet(SECTOR_MODE);
+    result = svc.search(indexName(), request, page);
+    expected = new HashMap<>();
+    facetValues = new TreeSet<>();
+    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.MERGE.ordinal(), 2));
+    facetValues.add(FacetValue.forEnum(Sector.Mode.class, Sector.Mode.ATTACH.ordinal(), 1));
+    expected.put(SECTOR_MODE, facetValues);
+    assertEquals(expected, result.getFacets());
   }
 
   @Test
