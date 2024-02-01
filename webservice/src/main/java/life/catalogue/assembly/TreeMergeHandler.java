@@ -268,7 +268,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 
-      Set<InfoGroup> updated = EnumSet.noneOf(InfoGroup.class);
+      Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
       // patch classification of accepted names if direct parent adds to it
@@ -286,7 +286,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
               if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                 LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
                 num.updateParentId(existingUsageKey, parent.getId(), user.getKey());
-                updated.add(InfoGroup.PARENT);
+                upd.add(InfoGroup.PARENT);
               }
             }
           }
@@ -297,7 +297,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       Name pn = null;
       if (nu.getName().hasAuthorship() && !existing.usage.hasAuthorship()) {
         pn = loadFromDB(existing.usage.getId());
-        updated.add(InfoGroup.AUTHORSHIP);
+        upd.add(InfoGroup.AUTHORSHIP);
         pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
         pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
         pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
@@ -314,7 +314,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
       if (existing.usage.getPublishedInID() == null && nu.getName().getPublishedInId() != null) {
         pn = pn != null ? pn : loadFromDB(existing.usage.getId());
-        updated.add(InfoGroup.PUBLISHED_IN);
+        upd.add(InfoGroup.PUBLISHED_IN);
         Reference ref = rm.get(DSID.of(nu.getDatasetKey(), nu.getName().getPublishedInId()));
         pn.setPublishedInId(lookupReference(ref));
         pn.setPublishedInPage(nu.getName().getPublishedInPage());
@@ -324,12 +324,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with publishedIn", pn);
       }
       // TODO: implement updates basionym, vernaculars, etc
-      if (!updated.isEmpty()) {
+      if (!upd.isEmpty()) {
         this.updated++;
         // update name
         nm.update(pn);
         // track source
-        vsm.insertSources(existingUsageKey, nu, updated);
+        vsm.insertSources(existingUsageKey, nu, upd);
         return true;
       }
     } else {

@@ -68,9 +68,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   }
 
   default void insertSources(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups) {
-    for (var group : groups) {
-      insertSource(key, secondarySource, group);
-    }
+    deleteSourceGroups(key, groups);
+    insertSource(key, secondarySource, groups);
   }
 
   class SecondarySource implements DSID<String> {
@@ -110,7 +109,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   @MapKey("type")
   Map<InfoGroup, SecondarySource> getSources(@Param("key") DSID<String> key);
 
-  void insertSource(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("group") InfoGroup group);
+  void insertSource(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
+  void deleteSourceGroups(@Param("key") DSID<String> key, @Param("groups") Set<InfoGroup> groups);
 
   void deleteSources(@Param("key") DSID<String> key);
 

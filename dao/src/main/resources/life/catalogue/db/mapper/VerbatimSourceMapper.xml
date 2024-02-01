@@ -116,9 +116,17 @@
   </update>
 
   <update id="insertSource" parameterType="map">
-    INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id)
-    VALUES (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id})
+    INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id) VALUES
+    <foreach item="group" collection="groups" separator=",">
+    (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id})
+    </foreach>
   </update>
+
+  <delete id="deleteSourceGroups" parameterType="map">
+    DELETE FROM verbatim_source_secondary
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+      AND type IN <foreach item="group" collection="groups" open="(" separator="," close=")">#{group}::INFOGROUP</foreach>
+  </delete>
 
   <delete id="deleteSources" parameterType="map">
     DELETE FROM verbatim_source_secondary
