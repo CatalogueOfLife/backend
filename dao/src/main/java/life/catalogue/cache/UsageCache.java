@@ -77,6 +77,7 @@ public interface UsageCache extends AutoCloseable, Managed {
    * @return
    */
   default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage, CacheLoader loader) throws NotFoundException {
+    //TODO: do we need to create new instances???
     SimpleNameClassified<SimpleNameCached> sncl = new SimpleNameClassified<>(usage);
     sncl.setClassification(new ArrayList<>());
     if (usage.getParent() != null) {

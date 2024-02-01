@@ -93,6 +93,10 @@ public class UsageMatcherGlobal {
     return uCache;
   }
 
+  public LoadingCache<DSID<Integer>, List<SimpleNameCached>> getUsageCache() {
+    return usages;
+  }
+
   public NameIndex getNameIndex() {
     return nameIndex;
   }
@@ -186,6 +190,10 @@ public class UsageMatcherGlobal {
       return new SimpleNameWithNidx(nu, canonNidx.getId());
     }
     return null;
+  }
+
+  public void invalidate(int targetDatasetKey, Integer canonicalId) {
+    usages.invalidate(new CanonNidxMatch(targetDatasetKey, canonicalId, MatchType.EXACT));
   }
 
   private static class CanonNidxMatch extends DSIDValue<Integer> {

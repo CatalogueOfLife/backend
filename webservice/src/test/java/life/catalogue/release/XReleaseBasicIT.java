@@ -122,11 +122,18 @@ public class XReleaseBasicIT {
       var names = num.listByRegex(xrel.newDatasetKey, xrel.datasetKey, "^Urocyon citrinus", null, null, null, null, new Page());
       assertEquals(1, names.size());
       var dsid = names.get(0).toDSID(xrel.newDatasetKey);
+
+      // 2 sectors from dataset 101 & 102 have an authorship update for that name
+      // make sure we only have one as the secondary source
+      var all = vsm.list(dsid);
+      assertEquals(1, all.size());
+
       var src = vsm.getWithSources(dsid);
       assertEquals(100, (int)src.getSourceDatasetKey());
       assertEquals("srcX", src.getSourceId());
       assertEquals(1, src.getSecondarySources().size());
-      assertTrue(DSID.equals(DSID.of(101, "831"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
+      // sector from dataset 102 has prio over the 101 one, so the author update comes from that
+      assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
     }
   }
 

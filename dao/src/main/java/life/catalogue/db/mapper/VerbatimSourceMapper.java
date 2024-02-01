@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,6 +109,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   @MapKey("type")
   Map<InfoGroup, SecondarySource> getSources(@Param("key") DSID<String> key);
+
+  List<SecondarySource> list(@Param("key") DSID<String> key);
 
   void insertSource(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
   void deleteSourceGroups(@Param("key") DSID<String> key, @Param("groups") Set<InfoGroup> groups);

@@ -330,6 +330,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         nm.update(pn);
         // track source
         vsm.insertSources(existingUsageKey, nu, upd);
+        batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
+        matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
         return true;
       }
     } else {

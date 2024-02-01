@@ -6,3 +6,5 @@ id,parent_id,status,name_id
 5,4,ACCEPTED,5
 6,5,ACCEPTED,6
 7,6,ACCEPTED,7
+x1,2,ACCEPTED,x1
+x2,x1,ACCEPTED,x2

@@ -6,3 +6,5 @@ id,scientific_name,authorship,basionym_authors,basionym_year,combination_authors
 5,Xenisthmidae,,,,,,Xenisthmidae,,,,FAMILY
 6,Xenisthmus,,,,,,Xenisthmus,,,,GENUS
 7,Xenisthmus nigrolateralis,"Chen, Harefa, Jiang, & Chang, 2022",,,"{Chen, Harefa, Jiang, Chang}",2022,,Xenisthmus,nigrolateralis,,SPECIES
+x1,Carnivora,,,,,,Carnivora,,,,ORDER
+x2,Urocyon citrinus,"Stoker, 1887",,,"{Stoker}",1887,,Urocyon,citrinus,,SPECIES
