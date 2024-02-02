@@ -21,6 +21,6 @@ import java.util.UUID;
 
 public interface PublisherMapper extends CRUD<DSID<UUID>, Publisher>, DatasetProcessable<Publisher>, DatasetPageable<Publisher>, CopyDataset {
 
-  List<Publisher> list(@Param("datasetKey") int datasetKey);
+  List<Publisher> listAll(@Param("datasetKey") int datasetKey);
 
 }

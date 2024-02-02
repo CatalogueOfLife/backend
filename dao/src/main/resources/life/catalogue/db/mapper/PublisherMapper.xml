@@ -58,6 +58,14 @@
     FROM <include refid="FROM"/>
     WHERE p.dataset_key = #{datasetKey}
     ORDER BY id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="listAll" resultMap="publisherResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE p.dataset_key = #{datasetKey}
+    ORDER BY id
   </select>
 
   <select id="count" resultType="integer">

@@ -137,7 +137,7 @@ public class XRelease extends ProjectRelease {
 
     try (SqlSession session = factory.openSession(true)) {
       var pm = session.getMapper(PublisherMapper.class);
-      var publisher = pm.list(datasetKey);
+      var publisher = pm.listAll(datasetKey);
       // create missing sectors from publishers for compatible licenses only
       for (var p : publisher) {
         int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), p.getId(), xCfg.sourceDatasetExclusion);
