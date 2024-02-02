@@ -33,11 +33,6 @@ public class XReleaseConfig {
   public String description;
 
   /**
-   * GBIF publisher keys to follow and create sectors for if missing
-   */
-  public Set<UUID> sourcePublisher;
-
-  /**
    * Selected list of CLB dataset keys to exclude as sectors being created for aboves source publisher keys
    */
   public Set<Integer> sourceDatasetExclusion;

@@ -135,11 +135,13 @@ public class XRelease extends ProjectRelease {
     Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
     final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
 
-    if (xCfg.sourcePublisher != null) {
+    try (SqlSession session = factory.openSession(true)) {
+      var pm = session.getMapper(PublisherMapper.class);
+      var publisher = pm.list(datasetKey);
       // create missing sectors from publishers for compatible licenses only
-      for (UUID pubKey : xCfg.sourcePublisher) {
-        int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), pubKey, xCfg.sourceDatasetExclusion);
-        LOG.info("Created {} newly published merge sectors from publisher {}", newSectors, pubKey);
+      for (var p : publisher) {
+        int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), p.getId(), xCfg.sourceDatasetExclusion);
+        LOG.info("Created {} newly published merge sectors from publisher {} {}", newSectors, p.getAlias(), p.getId());
       }
     }
 
