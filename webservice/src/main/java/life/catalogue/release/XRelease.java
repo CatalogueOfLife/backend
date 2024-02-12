@@ -150,6 +150,20 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
+      // make sure dataset still exists for MERGE sectors
+      var iter = sectors.iterator();
+      while(iter.hasNext()){
+        var s = iter.next();
+        if (s.getMode() == Sector.Mode.MERGE) {
+          var src = DatasetInfoCache.CACHE.info(s.getSubjectDatasetKey(), true);
+          if (src.deleted) {
+            // remove sector
+            LOG.warn("Removed merge sector {} as underlying dataset {} was deleted", s, src.key);
+            sm.delete(s);
+            iter.remove();
+          }
+        }
+      }
       // match targets to base release
       for (var s : sectors) {
         if (s.getTarget() != null){
