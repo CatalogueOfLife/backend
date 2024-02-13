@@ -144,7 +144,8 @@ public class DatasetExportResource {
     params.init();
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      AbstractPrinter printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
+      T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
+      modifier.accept(printer);
       printer.print();
       writer.flush();
     };
@@ -156,8 +157,7 @@ public class DatasetExportResource {
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
                            @BeanParam ExportQueryParams params,
-                           @QueryParam("showID") boolean showID,
-                           @Context SqlSession session) {
+                           @QueryParam("showID") boolean showID) {
     return printerExport(TextTreePrinter.class, key, params, printer -> {
       if (showID) printer.showIDs();
     });
@@ -168,8 +168,7 @@ public class DatasetExportResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response simpleName(@PathParam("key") int key,
                              @QueryParam("flat") boolean flat,
-                             @BeanParam ExportQueryParams params,
-                             @Context SqlSession session) {
+                             @BeanParam ExportQueryParams params) {
     Class<? extends AbstractPrinter> printerClass = flat ? JsonFlatPrinter.class : JsonTreePrinter.class;
     return printerExport(printerClass, key, params, p->{});
   }

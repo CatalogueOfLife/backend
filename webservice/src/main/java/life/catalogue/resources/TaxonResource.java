@@ -12,8 +12,7 @@ import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.dw.auth.Roles;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -25,6 +24,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import life.catalogue.dw.jersey.filter.ProjectOnly;
+
+import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -68,12 +71,31 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
   @GET
   @Override
+  @VaryAccept
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     var key = new DSIDValue<>(datasetKey, id);
     return dao.getOr404(key);
   }
-  
+
+  @GET
+  @VaryAccept
+  @Path("{id}")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Response getTxt(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    final var ttp = TreeTraversalParameter.dataset(datasetKey);
+    ttp.setTaxonID(id);
+    ttp.setSynonyms(true);
+
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, dao.getFactory(), writer);
+      printer.print();
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
   @GET
   @Path("{id}/synonyms")
   public Synonymy synonyms(@PathParam("key") int datasetKey, @PathParam("id") String id) {
