@@ -320,8 +320,15 @@ public class XRelease extends ProjectRelease {
    */
   @Override
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) {
-    int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
-    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
+    // we copy some entities from the project, not the base release though
+    if (entity.equals(Publisher.class) || entity.equals(EditorialDecision.class)) {
+      //TODO: editorial decisions are tricky. We want all from the base release AND new ones for the merge sectors only from the project!!!
+      super.copyTable(entity,mapperClass,session);
+
+    } else {
+      int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
+      LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
+    }
   }
 
   /**

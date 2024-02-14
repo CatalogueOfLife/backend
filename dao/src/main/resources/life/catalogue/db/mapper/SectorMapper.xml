@@ -209,7 +209,8 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
       JOIN dataset d ON d.key = s.subject_dataset_key
-    WHERE d.gbif_publisher_key = #{publisherKey}
+    WHERE s.dataset_key = #{datasetKey}
+    AND d.gbif_publisher_key = #{publisherKey}
   </select>
 
   <delete id="deleteByDataset" parameterType="map">

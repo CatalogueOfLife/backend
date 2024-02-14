@@ -15,6 +15,7 @@ import life.catalogue.dw.auth.Roles;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.*;
@@ -31,6 +32,9 @@ import life.catalogue.printer.TextTreePrinter;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,14 +86,14 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @VaryAccept
   @Path("{id}")
   @Produces(MediaType.TEXT_PLAIN)
-  public Response getTxt(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+  public Response getTxt(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("rank") Set<Rank> ranks) {
     final var ttp = TreeTraversalParameter.dataset(datasetKey);
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
 
     StreamingOutput stream = os -> {
       Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, dao.getFactory(), writer);
+      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, dao.getFactory(), writer);
       printer.print();
       writer.flush();
     };
