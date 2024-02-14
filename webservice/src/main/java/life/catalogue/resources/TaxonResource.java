@@ -6,6 +6,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
@@ -92,7 +93,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     ttp.setSynonyms(true);
 
     StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      Writer writer = UTF8IoUtils.writerFromStream(os);
       var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, dao.getFactory(), writer);
       printer.print();
       writer.flush();

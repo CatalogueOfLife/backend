@@ -8,6 +8,7 @@ import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.dw.jersey.Redirect;
@@ -143,7 +144,7 @@ public class DatasetExportResource {
   <T extends AbstractPrinter> Response printerExport(Class<T> printerClass, int key, ExportQueryParams params, Consumer<T> modifier) {
     params.init();
     StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      Writer writer = UTF8IoUtils.writerFromStream(os);
       T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
       modifier.accept(printer);
       printer.print();

@@ -31,7 +31,7 @@ public class PrinterFactory {
   /**
    * @param ranks can be given explicitly to select the ranks to print. If lowestRank is given in params this will be used to ignore any ranks below
    */
-  public static <T extends AbstractPrinter> T dataset(Class<T> clazz, TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public static <T extends AbstractPrinter> T dataset(Class<T> clazz, TreeTraversalParameter params, @Nullable Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     return printer(clazz, params, ranks, countRank, taxonCounter, factory, writer);
   }
 
@@ -46,7 +46,7 @@ public class PrinterFactory {
     }
   }
 
-  public static <T extends AbstractPrinter> T printer(Class<T> clazz, TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public static <T extends AbstractPrinter> T printer(Class<T> clazz, TreeTraversalParameter params, @Nullable Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     try {
       return clazz.getConstructor(TreeTraversalParameter.class, Set.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class)
                   .newInstance(params, ranks, countRank, taxonCounter, factory, writer);

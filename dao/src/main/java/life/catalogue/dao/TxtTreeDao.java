@@ -6,6 +6,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.NomRelType;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.printer.PrinterFactory;
@@ -48,7 +49,8 @@ public class TxtTreeDao {
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
 
-    Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+
+    Writer writer = UTF8IoUtils.writerFromStream(os);
     TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, factory, writer);
     printer.print();
     writer.flush();
