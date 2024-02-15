@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+keep_original_name BOOLEAN,
+### 2024-02-14 add keep_original_name to decisions
+```sql
+ALTER TABLE decision ADD COLUMN keep_original_name BOOLEAN;
+```
+
 ### 2024-01-24 keep gbif keys on dataset source archive
 ```sql
 ALTER TABLE dataset ADD COLUMN last_import_attempt TIMESTAMP WITHOUT TIME ZONE;

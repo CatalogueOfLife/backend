@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 public abstract class TreeBaseHandler implements TreeHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeBaseHandler.class);
@@ -146,7 +147,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     } else {
       // apply general rules otherwise
       SyncNameUsageRules.applyAlways(nu);
-      mod = new ModifiedUsage(nu, false);
+      mod = new ModifiedUsage(nu, false, false, null);
     }
     // match to nidx if no match result exists (NONE matches are fine, but not null)
     if (nu.getName().getNamesIndexType() == null) {
@@ -154,6 +155,20 @@ public abstract class TreeBaseHandler implements TreeHandler {
       nu.getName().applyMatch(match);
     }
     return mod;
+  }
+
+  protected void processEnd(@Nullable SimpleName sn, ModifiedUsage mod) throws InterruptedException {
+    // in case of updates from decisions, track also the original name as a synonym?
+    if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null) {
+      var origAsSyn = new Synonym(mod.originalName);
+      create(origAsSyn, new Usage(sn));
+    }
+    // commit in batches
+    if ((sCounter + tCounter) % 1000 == 0) {
+      interruptIfCancelled();
+      session.commit();
+      batchSession.commit();
+    }
   }
 
   protected Usage usage(NameUsageBase u) {
@@ -432,20 +447,30 @@ public abstract class TreeBaseHandler implements TreeHandler {
   public static class ModifiedUsage {
     final NameUsageBase usage;
     final boolean relink;
+    final boolean keepOriginal;
+    final Name originalName;
 
-    ModifiedUsage(NameUsageBase usage, boolean relink) {
+    ModifiedUsage(NameUsageBase usage, boolean relink, boolean keepOriginal, Name originalName) {
       this.usage = usage;
       this.relink = relink;
+      this.keepOriginal = keepOriginal;
+      this.originalName = originalName;
     }
   }
+
+  /**
+   * Applies the decision to the name usage, potentially modifying the original usage instance.
+   */
   protected ModifiedUsage applyDecision(NameUsageBase u, EditorialDecision ed) {
     boolean linkUp = false;
+    Name originalName = null;
     try {
       switch (ed.getMode()) {
         case BLOCK:
           throw new IllegalStateException("Blocked usage " +u.getLabel() + " [" + u.getId() + "] should not have been traversed");
         case UPDATE:
           decisionCounter++;
+          originalName = new Name(u.getName());
           if (ed.getName() != null) {
             Name n = u.getName();
             Name n2 = ed.getName();
@@ -543,7 +568,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
       Thread.currentThread().interrupt();  // set interrupt flag back
       throw new InterruptedRuntimeException(e);
     }
-    return new ModifiedUsage(u, linkUp);
+    return new ModifiedUsage(u, linkUp,
+      // https://github.com/CatalogueOfLife/backend/issues/1292
+      ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),
+      originalName
+    );
   }
 
   protected boolean incIgnored(IgnoreReason reason, NameUsageBase u) {

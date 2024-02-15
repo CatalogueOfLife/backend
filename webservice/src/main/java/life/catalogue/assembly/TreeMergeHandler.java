@@ -99,7 +99,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   public void acceptThrowsNoCatch(NameUsageBase nu) throws Exception {
     // apply common changes to the usage
-    processCommon(nu);
+    var mod = processCommon(nu);
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
@@ -171,8 +171,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // finally create or update records
+    SimpleNameWithNidx sn = null;
     if (match.isMatch()) {
       update(nu, match);
+      sn = match.usage;
     } else if (match.type != MatchType.AMBIGUOUS) {
       // only add a new name if we do not have already multiple names that we cannot clearly match
       // track if we are outside of the sector target
@@ -183,10 +185,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
       } else {
         issues = new Issue[0];
       }
-      var p = create(nu, parent, issues);
-      parents.setMatch(p);
+      sn = create(nu, parent, issues);
+      parents.setMatch(sn);
       matcher.add(nu);
       created++;
+    }
+
+    processEnd(sn, mod);
+
+    // in case of updates from decisions, track also the original name as a synonym?
+    if (mod.keepOriginal && mod.originalName != null) {
+      var origAsSyn = new Synonym(mod.originalName);
+      create(origAsSyn, new Usage(mod.usage));
     }
 
     // commit in batches

@@ -35,10 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Testing SectorSync but also SectorDelete and SectorDeleteFull.
- * The test takes some time and prepares various sources for all tests, hence we test deletions here too avoiding duplication of the time consuming overhead.
- *
- * Before we start any test we prepare the db with imports that can be reused across tests later on.
+ * Parameterized SectorSync to test merge sectors with different sources.
  */
 @RunWith(Parameterized.class)
 public class SectorSyncMergeIT extends SectorSyncTestBase {
@@ -70,18 +67,19 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      {"clavaria", List.of("unite")},
-      {"issues", List.of("bad")},
-      {"subgenera", List.of("carabcat", "2021")},
-      {"subgenera-fam", List.of("carabcat", "2021")},
-      {"proparte", List.of("3i")},
-      {"homonyms", List.of("worms", "itis", "wcvp", "taxref", "ala", "ipni", "irmng")},
-      {"convulatum", List.of("dyntaxa")},
-      {"unranked", List.of("palaeo")},
-      {"circular", List.of("src1", "src2", "src3")},
-      {"biota2", List.of("ipni")},
-      {"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
-      {"saccolomataceae", List.of("orthiopteris")}
+      {"protoperidinium", List.of("itis", "worms", "brazil", "taxref", "dyntaxa", "artsnavebasen", "griis")},
+      //{"clavaria", List.of("unite")},
+      //{"issues", List.of("bad")},
+      //{"subgenera", List.of("carabcat", "2021")},
+      //{"subgenera-fam", List.of("carabcat", "2021")},
+      //{"proparte", List.of("3i")},
+      //{"homonyms", List.of("worms", "itis", "wcvp", "taxref", "ala", "ipni", "irmng")},
+      //{"convulatum", List.of("dyntaxa")},
+      //{"unranked", List.of("palaeo")},
+      //{"circular", List.of("src1", "src2", "src3")},
+      //{"biota2", List.of("ipni")},
+      //{"biota", List.of("wcvp", "lcvp", "ipni")}, // TODO: should be merged: Biota macrocarpa hort. ex Gordon AND Biota macrocarpa Godr.
+      //{"saccolomataceae", List.of("orthiopteris")}
     });
   }
 

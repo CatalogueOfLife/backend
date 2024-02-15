@@ -1072,6 +1072,7 @@ CREATE TABLE decision (
   subject_status TAXONOMICSTATUS,
   mode EDITORIALDECISION_MODE NOT NULL,
   status TAXONOMICSTATUS,
+  keep_original_name BOOLEAN,
   extinct BOOLEAN,
   environments ENVIRONMENT[] DEFAULT '{}',
   created_by INTEGER NOT NULL,

@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.IgnoreReason;
@@ -40,6 +41,10 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
     }
     Usage(SimpleName sn) {
       this(sn.getId(), sn.getRank(), sn.getStatus());
+    }
+
+    Usage(NameUsage nu) {
+      this(nu.getId(), nu.getRank(), nu.getStatus());
     }
   }
 

@@ -23,6 +23,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   private String originalSubjectId;
   private Integer subjectDatasetKey; // the datasetKey the subject belongs to, not the catalogue!
   private Mode mode;
+  private Boolean keepOriginalName; // when true and mode=UPDATE, creates a synonym with the original name spelling
   private Name name;
   private TaxonomicStatus status;
   private Boolean extinct;
@@ -73,6 +74,7 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     this.originalSubjectId = other.originalSubjectId;
     this.subjectDatasetKey = other.subjectDatasetKey;
     this.mode = other.mode;
+    this.keepOriginalName = other.keepOriginalName;
     this.name = other.name; // should we need to deep copy this too???
     this.status = other.status;
     this.extinct = other.extinct;
@@ -137,7 +139,14 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
   public void setName(Name name) {
     this.name = name;
   }
-  
+
+  public Boolean isKeepOriginalName() {
+    return keepOriginalName;
+  }
+
+  public void setKeepOriginalName(Boolean keepOriginalName) {
+    this.keepOriginalName = keepOriginalName;
+  }
   public Boolean isExtinct() {
     return extinct;
   }
@@ -190,22 +199,12 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     EditorialDecision that = (EditorialDecision) o;
-    return Objects.equals(subject, that.subject) &&
-        Objects.equals(originalSubjectId, that.originalSubjectId) &&
-        Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
-        mode == that.mode &&
-        Objects.equals(name, that.name) &&
-        status == that.status &&
-        Objects.equals(extinct, that.extinct) &&
-        Objects.equals(temporalRangeStart, that.temporalRangeStart) &&
-        Objects.equals(temporalRangeEnd, that.temporalRangeEnd) &&
-        Objects.equals(environments, that.environments) &&
-        Objects.equals(note, that.note);
+    return Objects.equals(subject, that.subject) && Objects.equals(originalSubjectId, that.originalSubjectId) && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && mode == that.mode && Objects.equals(keepOriginalName, that.keepOriginalName) && Objects.equals(name, that.name) && status == that.status && Objects.equals(extinct, that.extinct) && Objects.equals(temporalRangeStart, that.temporalRangeStart) && Objects.equals(temporalRangeEnd, that.temporalRangeEnd) && Objects.equals(environments, that.environments) && Objects.equals(note, that.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subject, originalSubjectId, subjectDatasetKey, mode, name, status, extinct, temporalRangeStart, temporalRangeEnd, environments, note);
+    return Objects.hash(super.hashCode(), subject, originalSubjectId, subjectDatasetKey, mode, keepOriginalName, name, status, extinct, temporalRangeStart, temporalRangeEnd, environments, note);
   }
 
   @Override

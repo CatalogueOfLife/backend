@@ -274,7 +274,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   }
 
   /**
-   * Creates new merge sectors for source datasets published by the given GBIF publisher key unless there is an existing one already.
+   * Creates new merge sectors for source datasets published by the given GBIF publisher key unless there is an existing one already existing
+   * or the license does not allow it to be used.
    * @param projectKey the project to create sectors in
    * @param userKey the creator
    * @param ranks optional set of ranks as sector setting to use
@@ -282,7 +283,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
    * @param datasetExclusion optional set of dataset keys to exclude. No sectors will be created for these
    * @return number of newly created sectors
    */
-  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, UUID publisherKey, @Nullable Set<Integer> datasetExclusion) {
+  public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, UUID publisherKey,
+                                                    @Nullable Set<Integer> datasetExclusion) {
     LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisherKey);
     List<Integer> datasetKeys;
     try (SqlSession session = factory.openSession(true)) {
@@ -300,7 +302,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         final License projectLicense = dm.get(projectKey).getLicense();
         for (int sourceDatasetKey : datasetKeys) {
           var existing = sm.listByDataset(projectKey, sourceDatasetKey);
-          if ((existing == null || existing.isEmpty())) {
+          if (existing == null || existing.isEmpty()) {
             // not yet existing - create a new merge sector!
             // first check if licenses are compatible
             Dataset src = dm.get(sourceDatasetKey);

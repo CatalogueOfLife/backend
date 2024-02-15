@@ -91,6 +91,7 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     d.setSubjectDatasetKey(subjectDatasetKey);
     d.setSubject(TestEntityGenerator.newSimpleName());
     d.setMode(EditorialDecision.Mode.UPDATE);
+    d.setKeepOriginalName(true);
     d.setName(TestEntityGenerator.newName());
     d.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
     d.setExtinct(true);

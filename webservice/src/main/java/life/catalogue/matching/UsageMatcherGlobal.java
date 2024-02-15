@@ -448,10 +448,67 @@ public class UsageMatcherGlobal {
 
     if (existingWithCl.isEmpty()) {
       return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+
     } else {
-      LOG.debug("{} ambiguous names matched for {} in source {}", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.empty(MatchType.AMBIGUOUS, alt, datasetKey);
+      // match to best=lowest rank possible
+      Rank lowest = null;
+      SimpleNameClassified<SimpleNameCached> best = null;
+      for (var ex : existingWithCl) {
+        var lowestMatch = findLowestMatch(ex, parents);
+        if (lowestMatch != null) {
+          if (lowest == null || lowest.higherThan(lowestMatch)) {
+            best = ex;
+            lowest = lowestMatch;
+          } else if (lowest == best.getRank()) {
+            // same ranks, reset best match
+            best = null;
+          }
+        }
+      }
+      if (best != null) {
+        LOG.debug("{} ambiguous matches encountered for {} in source {}, picking closest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), datasetKey, lowest);
+        return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+      }
+
+      // now look for the candidate with the lowest classification - no matter if it matches
+      lowest = null;
+      best = null;
+      for (var ex : existingWithCl) {
+        if (ex.getClassification() != null && !ex.getClassification().isEmpty()) {
+          var lowestMatch = ex.getClassification().get(0).getRank();
+          if (lowestMatch.notOtherOrUnranked()) {
+            if (lowest == null || lowest.higherThan(lowestMatch)) {
+              best = ex;
+              lowest = lowestMatch;
+            } else if (lowest == best.getRank()) {
+              // same ranks, reset best match
+              best = null;
+            }
+          }
+        }
+      }
+      if (best != null) {
+        LOG.debug("{} ambiguous matches encountered for {} in source {}, picking lowest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), datasetKey, lowest);
+        return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+      }
+
+      LOG.debug("{} ambiguous names matched for {} in source {}. Pick randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
+      return UsageMatch.match(MatchType.AMBIGUOUS, existingWithCl.get(0), datasetKey, alt);
     }
+  }
+
+  private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<MatchedParentStack.MatchedUsage> parents) {
+    if (parents != null) {
+      for (var cp : candidate.getClassification()) {
+        // does the exact same usage exist in the parents list?
+        for (var p : parents) {
+          if (p.match != null && p.match.getId().equals(cp.getId())) {
+            return cp.getRank();
+          }
+        }
+      }
+    }
+    return null;
   }
 
   private static boolean contains(Collection<? extends SimpleNameWithNidx> usages, Rank rank) {

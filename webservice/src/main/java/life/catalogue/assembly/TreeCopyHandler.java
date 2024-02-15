@@ -151,18 +151,13 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
     String origNameID= mod.usage.getName().getId();
     final var orig = DSID.copy(mod.usage);
-    create(mod.usage, parent);
+    var sn = create(mod.usage, parent);
 
     // remember old to new id mappings
     ids.put(orig.getId(), usage(mod.usage));
     nameIds.put(origNameID, mod.usage.getName().getId());
 
-    // commit in batches
-    if ((sCounter + tCounter) % 1000 == 0) {
-      interruptIfCancelled();
-      session.commit();
-      batchSession.commit();
-    }
+    processEnd(sn, mod);
   }
 
   @Override

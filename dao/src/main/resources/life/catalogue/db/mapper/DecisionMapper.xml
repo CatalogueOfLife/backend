@@ -25,6 +25,7 @@
     ${alias}name AS ${prefix}name,
     ${alias}status AS ${prefix}status,
     ${alias}extinct AS ${prefix}extinct,
+    ${alias}keep_original_name AS ${prefix}keep_original_name,
     ${alias}temporal_range_start AS ${prefix}temporal_range_start,
     ${alias}temporal_range_end AS ${prefix}temporal_range_end,
     ${alias}environments AS ${prefix}environments
@@ -58,6 +59,7 @@
     name,
     status,
     extinct,
+    keep_original_name,
     temporal_range_start,
     temporal_range_end,
     environments
@@ -80,6 +82,7 @@
     #{name, typeHandler=life.catalogue.db.type2.JsonNameHandler}::jsonb,
     #{status}::TAXONOMICSTATUS,
     #{extinct},
+    #{keepOriginalName},
     #{temporalRangeStart},
     #{temporalRangeEnd},
     #{environments, typeHandler=life.catalogue.db.type.EnvironmentSetTypeHandler}
