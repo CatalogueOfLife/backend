@@ -310,6 +310,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
               LOG.warn("License {} of source {} from publisher {} is not compatible with license {} of project {}. Do not create any sector for: {}", src.getLicense(), src.getKey(), publisherKey, projectLicense, projectKey, src.getTitle());
               continue;
             }
+            // make sure we have imported the dataset at least once
+            if (src.getAttempt() == null || src.getAttempt() < 1) {
+              LOG.debug("Source {} from publisher {} has never been imported before: {}", src.getKey(), publisherKey, src.getTitle());
+              continue;
+            }
             Sector s = new Sector();
             s.setDatasetKey(projectKey);
             s.setSubjectDatasetKey(sourceDatasetKey);
