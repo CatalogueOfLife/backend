@@ -3,7 +3,6 @@ package life.catalogue.api.vocab;
 import org.gbif.nameparser.api.NomCode;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Informal and common broad grouping of large taxonomic groups.
@@ -11,22 +10,29 @@ import java.util.stream.Collectors;
  * and match better the application of the nomenclatural codes, e.g. Algae, Fungi & Plants for the "botanical" code.
  */
 public enum TaxGroup {
+
+  Viruses(NomCode.VIRUS),
   Prokaryotes(NomCode.BACTERIAL),
     Bacteria(Prokaryotes),
     Archaea(Prokaryotes),
 
-  Algae(NomCode.BOTANICAL), // sensu latu incl diatoms, but excluding prokaryotic cyanobacteria
+  /**
+   * Any eukaryote that is not animal, plant (incl algae s.l.) nor fungus
+   * Includes all Protozoa (ciliates, flagellates, and amoebas)
+   */
+  Protists(NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
 
-  Plants(NomCode.BOTANICAL),
-    Bryophytes(Plants), // sensu latu incl liverworts, hornworts and mosses
-    Pteridophytes(Plants), // sensu latu with fern allies incl clubmosses, horsetails and whisk ferns
+  Plants(NomCode.BOTANICAL), // sensu lato incl red algae. More like Archaeplastida
+    Algae(Plants, Protists), // sensu lato incl diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria
+    Bryophytes(Plants), // sensu lato incl liverworts, hornworts and mosses
+    Pteridophytes(Plants), // sensu lato with fern allies incl clubmosses, horsetails and whisk ferns
     Angiosperms(Plants),
     Gymnosperms(Plants),
 
-  Fungi(NomCode.BOTANICAL),
+  Fungi(NomCode.BOTANICAL), // incl lichen
     Ascomycetes(Fungi),
     Basidiomycetes(Fungi),
-    Oomycetes(Fungi, NomCode.BOTANICAL), // traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists
+    Oomycetes(Fungi), // traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists
     OtherFungi(Fungi),
 
   Animals(NomCode.ZOOLOGICAL),
@@ -56,61 +62,28 @@ public enum TaxGroup {
       OtherChordates(Chordates),
     OtherAnimals(Animals),
 
-  Protists, // any eukaryote that is not animal, plant nor fungus
-
-  Viruses(NomCode.VIRUS),
-
   Other;
 
-  public static final Map<NomCode, Set<TaxGroup>> rootGroupsByCode;
-  static {
-    Map<NomCode, Set<TaxGroup>> map = new HashMap<>();
-    for (NomCode code : NomCode.values()) {
-      var groups = byCode(code);
-      for (var g : groups) {
-        if (g.parent == null) {
-          map.computeIfAbsent(code, k -> new HashSet<>()).add(g);
-        }
-      }
-    }
-    rootGroupsByCode = Map.copyOf(map);
-  }
-  public static Set<TaxGroup> byCode(NomCode code) {
-    return Arrays.stream(values())
-          .filter(tg -> tg.getCode() == code)
-          .collect(Collectors.toSet());
-  }
 
-  public static Set<TaxGroup> rootGroupsByCode(NomCode code) {
-    return rootGroupsByCode(code);
-  }
-
-  private final TaxGroup parent;
-  private final NomCode code;
+  final Set<TaxGroup> parents = new HashSet<>();
+  final Set<NomCode> codes = new HashSet<>();
 
   TaxGroup() {
-    this.parent = null;
-    this.code = null;
   }
-  TaxGroup(NomCode code) {
-    this.parent = null;
-    this.code = code;
+  TaxGroup(NomCode... codes) {
+    if (codes != null) {
+      for (var c : codes) {
+        this.codes.add(c);
+      }
+    }
   }
-  TaxGroup(TaxGroup parent) {
-    this.parent = parent;
-    this.code = parent.code;
-  }
-  TaxGroup(TaxGroup parent, NomCode code) {
-    this.parent = parent;
-    this.code = code;
-  }
-
-  public TaxGroup getParent() {
-    return parent;
-  }
-
-  public NomCode getCode() {
-    return code;
+  TaxGroup(TaxGroup... parents) {
+    if (parents != null) {
+      for (var p : parents) {
+        this.parents.add(p);
+        this.codes.addAll(p.codes);
+      }
+    }
   }
 
   /**
@@ -121,7 +94,9 @@ public enum TaxGroup {
       return false;
     }
     var cl1 = classification();
+    cl1.add(this);
     var cl2 = other.classification();
+    cl2.add(other);
     if (cl1.containsAll(cl2) || cl2.containsAll(cl1)) {
       return false;
     }
@@ -129,46 +104,41 @@ public enum TaxGroup {
   }
 
   /**
-   * True if other group is contained in the parent classification of the group or is the same group.
+   * True if other group is contained in this group or is the same group,
+   * i.e. the other groups classification contains this group.
    */
   public boolean contains(TaxGroup other) {
     if (this == other) {
       return true;
     }
-    var p = parent;
-    while (p != null) {
-      if (p == other) return true;
-      p = p.parent;
+    for (var p : other.parents) {
+      if (this.contains(p)) return true;
     }
     return false;
   }
 
-  public TaxGroup root() {
-    var root = this;
-    while (root.parent != null) {
-      root = root.parent;
+  public Set<TaxGroup> roots() {
+    Set<TaxGroup> roots = new HashSet<>();
+    if (parents.isEmpty()) {
+      roots.add(this);
+    } else {
+      for (var p : parents) {
+        roots.addAll(p.roots());
+      }
     }
-    return root;
+    return roots;
   }
 
+  /**
+   * @return set of all groups of the higher parent classification, excluding the group itself
+   */
   public Set<TaxGroup> classification() {
     Set<TaxGroup> cl = new HashSet<>();
-    cl.add(this);
-    var p = parent;
-    while (p != null) {
+    for (var p : parents) {
       cl.add(p);
-      p = p.parent;
+      cl.addAll(p.classification());
     }
     return cl;
   }
 
-  public int level() {
-    int level = 1;
-    var p = parent;
-    while (p != null) {
-      level++;
-      p = p.parent;
-    }
-    return level;
-  }
 }

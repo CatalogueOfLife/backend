@@ -12,6 +12,8 @@ import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -24,6 +26,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import javax.annotation.Nullable;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.
@@ -124,7 +130,19 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       createDataset(x);
       loadTree(x);
       createSequences(x);
+      //printTree(x.key);
     }
+  }
+
+  public static void printTree(int datasetKey) throws IOException {
+    Writer writer = new StringWriter();
+    TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, null);
+    var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    printer.showIDs();
+    printer.print();
+
+    System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
+    System.out.println(writer.toString().trim());
   }
 
   private void createDataset(TreeDataset td) {

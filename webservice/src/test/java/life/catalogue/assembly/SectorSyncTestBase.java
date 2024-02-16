@@ -185,6 +185,14 @@ public abstract class SectorSyncTestBase {
     if (ss.getState().getState() != ImportState.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
+    //try {
+    //  final int projectKey = ss.sectorKey.getDatasetKey();
+    //  String tree = readTree(projectKey, null);
+    //  System.out.println("\n*** DATASET "+projectKey+" TREE ***");
+    //  System.out.println(tree);
+    //} catch (IOException e) {
+    //  throw new RuntimeException(e);
+    //}
     return ss.getState();
   }
   void deleteFull(Sector s) {
@@ -251,7 +259,9 @@ public abstract class SectorSyncTestBase {
   public static String readTree(int datasetKey,@Nullable String rootID) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
-    PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    //printer.showIDs();
+    printer.print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     return tree;

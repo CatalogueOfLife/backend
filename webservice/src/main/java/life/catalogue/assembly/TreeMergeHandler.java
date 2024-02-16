@@ -98,14 +98,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   public void acceptThrowsNoCatch(NameUsageBase nu) throws Exception {
+    counter++;
+    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
+
     // apply common changes to the usage
     var mod = processCommon(nu);
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
     parents.push(nusn);
-    counter++;
-    LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
 
     // ignore doubtfully marked usages in classification, e-g- wrong rank ordering
     if (parents.isDoubtful()) {
@@ -158,10 +159,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
-    // replace accepted taxa with doubtful ones for all nomenclators and for synonym parents
-    // and allow to manually configure a doubtful status
-    // http://dev.gbif.org/issues/browse/POR-2780
-    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL || parent != null && parent.status.isSynonym())) {
+    // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
+    // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
+    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
+      parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
+    ) {
       nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
     if (parent != null && parent.status.isSynonym()) {
@@ -175,7 +177,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (match.isMatch()) {
       update(nu, match);
       sn = match.usage;
-    } else if (match.type != MatchType.AMBIGUOUS) {
+
+    } else if (match.type == MatchType.AMBIGUOUS) {
+      LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
+
+    } else {
       // only add a new name if we do not have already multiple names that we cannot clearly match
       // track if we are outside of the sector target
       Issue[] issues;
@@ -192,19 +198,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     processEnd(sn, mod);
-
-    // in case of updates from decisions, track also the original name as a synonym?
-    if (mod.keepOriginal && mod.originalName != null) {
-      var origAsSyn = new Synonym(mod.originalName);
-      create(origAsSyn, new Usage(mod.usage));
-    }
-
-    // commit in batches
-    if ((sCounter + tCounter + updated) % 1000 == 0) {
-      interruptIfCancelled();
-      session.commit();
-      batchSession.commit();
-    }
   }
 
   private static boolean containsID(List<SimpleNameCached> usages,  String id){

@@ -105,10 +105,11 @@ public class TaxGroupAnalyzer {
     if (code != null && groups.isEmpty()) {
       switch (code) {
         case BACTERIAL:
-          groups.add(TaxGroup.Prokaryotes);
+          groups.add(Prokaryotes);
           break;
         case ZOOLOGICAL:
-          groups.add(TaxGroup.Animals);
+          groups.add(Animals);
+          groups.add(Protists);
           break;
         case BOTANICAL:
           groups.add(Plants);
@@ -125,12 +126,12 @@ public class TaxGroupAnalyzer {
     }
 
     if (!groups.isEmpty()) {
-      // exclude groups which are implicit in parents
+      // keep lowest groups only. Exclude groups which are implicit in parents
       Set<TaxGroup> distinctRoots = new HashSet<>(groups);
       distinctRoots.removeIf(g -> {
         for (var other : groups) {
           if (g==other) continue;
-          if (other.contains(g)) {
+          if (g.contains(other)) {
             return true;
           }
         }
@@ -144,7 +145,9 @@ public class TaxGroupAnalyzer {
         // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
         CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
         for (var g : groups) {
-          counts.inc(g.root());
+          for (var r : g.roots()) {
+            counts.inc(r);
+          }
         }
         return counts.highest();
       }

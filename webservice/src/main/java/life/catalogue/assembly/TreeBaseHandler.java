@@ -533,6 +533,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
             if (n2.getType() != null) {
               n.setType(n2.getType());
             }
+            // update name match
+            var match = nameIndex.match(n, true, false);
+            n.applyMatch(match);
           }
           // this can change a synonym to a taxon, so do it *before* we apply update values only relevant to taxa
           if (ed.getStatus() != null) {

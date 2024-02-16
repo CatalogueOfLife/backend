@@ -459,7 +459,7 @@ public class UsageMatcherGlobal {
           if (lowest == null || lowest.higherThan(lowestMatch)) {
             best = ex;
             lowest = lowestMatch;
-          } else if (lowest == best.getRank()) {
+          } else if (lowest == lowestMatch) {
             // same ranks, reset best match
             best = null;
           }
@@ -480,7 +480,7 @@ public class UsageMatcherGlobal {
             if (lowest == null || lowest.higherThan(lowestMatch)) {
               best = ex;
               lowest = lowestMatch;
-            } else if (lowest == best.getRank()) {
+            } else if (lowest == lowestMatch) {
               // same ranks, reset best match
               best = null;
             }
@@ -624,6 +624,7 @@ public class UsageMatcherGlobal {
    */
   public void clear() {
     usages.invalidateAll();
+    uCache.clear();
     LOG.warn("Cleared entire cache");
   }
 }

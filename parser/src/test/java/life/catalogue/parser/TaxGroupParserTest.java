@@ -47,14 +47,13 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     Set<String> entries = new HashSet<>();
     for (TaxGroup tg : TaxGroup.values()) {
       var res = getClass().getResourceAsStream("/parser/dicts/taxgroup/" + tg.name().toLowerCase() + ".txt");
-      if (res != null) {
-        try (BufferedReader br = UTF8IoUtils.readerFromStream(res)) {
-          br.lines().forEach( name -> {
-            if (!StringUtils.isBlank(name)) {
-              assertTrue(tg + ": " + name, entries.add(name));
-            }
-          });
-        }
+      assertNotNull("missing parser file for " + tg, res);
+      try (BufferedReader br = UTF8IoUtils.readerFromStream(res)) {
+        br.lines().forEach( name -> {
+          if (!StringUtils.isBlank(name)) {
+            assertTrue(tg + ": " + name, entries.add(name));
+          }
+        });
       }
       assertNotNull(tg.name(), res);
     }

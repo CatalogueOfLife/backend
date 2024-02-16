@@ -1,5 +1,7 @@
 package life.catalogue.common.util;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.common.io.UTF8IoUtils;
 
@@ -24,6 +26,13 @@ public class YamlUtils {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MAPPER.registerModule(new ApiModule());
+  }
+
+  /**
+   * Deserializes an object from a yaml input stream.
+   */
+  public static <T> T read(TypeReference<T> valueTypeRef, InputStream configStream) throws IOException {
+    return MAPPER.readValue(configStream, valueTypeRef);
   }
 
   /**
