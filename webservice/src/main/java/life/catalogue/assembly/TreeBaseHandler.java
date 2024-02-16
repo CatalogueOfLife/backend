@@ -505,9 +505,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
               n.setCombinationAuthorship(nn.getCombinationAuthorship());
               n.setBasionymAuthorship(nn.getBasionymAuthorship());
               n.setSanctioningAuthor(nn.getSanctioningAuthor());
+            }
 
-            } else if (n2.getAuthorship() != null) {
-              // no full name, just changing authorship
+            if (n2.getAuthorship() != null) {
+              // just change the authorship, even if it was included in the name already
               n.setAuthorship(n2.getAuthorship());
               ParsedAuthorship an = NameParser.PARSER.parseAuthorship(n2.getAuthorship()).orElseGet(() -> {
                 LOG.warn("Unparsable decision authorship {}", n2.getAuthorship());

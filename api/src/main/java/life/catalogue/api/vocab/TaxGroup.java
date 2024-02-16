@@ -23,7 +23,12 @@ public enum TaxGroup {
   Protists(NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
 
   Plants(NomCode.BOTANICAL), // sensu lato incl red algae. More like Archaeplastida
-    Algae(Plants, Protists), // sensu lato incl diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria
+
+    /**
+     * Sensu lato including names traditionally treated as eukaryotic algae.
+     * Includes diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria
+     */
+    Algae(Plants, Protists),
     Bryophytes(Plants), // sensu lato incl liverworts, hornworts and mosses
     Pteridophytes(Plants), // sensu lato with fern allies incl clubmosses, horsetails and whisk ferns
     Angiosperms(Plants),
