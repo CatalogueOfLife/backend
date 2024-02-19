@@ -63,6 +63,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  */
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
+  private static final CsvWriterSettings CSV = new CsvWriterSettings();
+  static {
+    CSV.setQuotationTriggers('"', ',');
+  }
+
   private final SqlSessionFactory factory;
   private final UsageMatcherGlobal matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
@@ -137,7 +142,7 @@ public class MatchingJob extends DatasetBlockingJob {
         zos.putNextEntry(new ZipEntry(req.resultFileName()));
 
         AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
-                                   new CsvWriter(zos, StandardCharsets.UTF_8, new CsvWriterSettings()) :
+                                   new CsvWriter(zos, StandardCharsets.UTF_8, CSV) :
                                    new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
         // match
         if (req.getUpload() != null) {
