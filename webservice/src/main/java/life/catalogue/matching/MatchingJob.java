@@ -230,8 +230,8 @@ public class MatchingJob extends DatasetBlockingJob {
         none.incrementAndGet();
       }
       writer.writeRow(row);
-      if (counter.incrementAndGet() % 1000 == 0) {
-        LOG.debug("Matched {} out of {} names so far", counter.get()-none.get(), counter);
+      if (counter.incrementAndGet() % 25000 == 0) {
+        LOG.info("Matched {} out of {} names so far", counter.get()-none.get(), counter);
       }
     });
     writer.flush();
