@@ -13,7 +13,10 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.parser.NameParser;
+
+import life.catalogue.parser.TaxGroupParser;
 
 import org.gbif.nameparser.api.NameType;
 
@@ -39,6 +42,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private SectorDao sectorDao;
+  private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
 
   /**
    * Warn: you must set a sector dao manually before using the TaxonDao.
@@ -196,7 +200,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       return null;
     }
     UsageInfo info = new UsageInfo(usage);
-    fillUsageInfo(session, info, null, true, true, true, true, true, true,
+    fillUsageInfo(session, info, null, true, true, true, true, true, true, true,
       true, true, true, true, true, true);
     return info;
   }
@@ -206,6 +210,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
    */
   public void fillUsageInfo(final SqlSession session, final UsageInfo info,
                             LoadingCache<String, Reference> refCache,
+                            boolean loadClassification,
                             boolean loadSource,
                             boolean loadSynonyms,
                             boolean loadDistributions,
@@ -226,6 +231,13 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     Set<String> nameIds = new HashSet<>();
     Set<String> refIds = new HashSet<>(usage.getReferenceIds());
     refIds.add(usage.getName().getPublishedInId());
+
+    // classification & taxgroup
+    if (loadClassification) {
+      info.setClassification(session.getMapper(TaxonMapper.class).classificationSimple(usage));
+      var g = groupAnalyzer.analyze(usage.toSimpleNameLink(), info.getClassification());
+      info.setGroup(g);
+    }
 
     // synonyms
     if (isTaxon && loadSynonyms) {

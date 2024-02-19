@@ -4,12 +4,16 @@ import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import life.catalogue.api.vocab.TaxGroup;
+
 /**
  * Aggregated usage information, mostly for taxa, but also for synonyms
  */
 public class UsageInfo {
   
   private final NameUsageBase usage;
+  private List<SimpleName> classification;
+  private TaxGroup group;
   private VerbatimSource source;
   private Treatment treatment;
   private List<NameUsageRelation> nameRelations;
@@ -59,6 +63,22 @@ public class UsageInfo {
 
   public NameUsageBase getUsage() {
     return usage;
+  }
+
+  public List<SimpleName> getClassification() {
+    return classification;
+  }
+
+  public void setClassification(List<SimpleName> classification) {
+    this.classification = classification;
+  }
+
+  public TaxGroup getGroup() {
+    return group;
+  }
+
+  public void setGroup(TaxGroup group) {
+    this.group = group;
   }
 
   @Deprecated
@@ -232,27 +252,13 @@ public class UsageInfo {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof UsageInfo)) return false;
-    UsageInfo taxonInfo = (UsageInfo) o;
-    return Objects.equals(usage, taxonInfo.usage)
-           && Objects.equals(treatment, taxonInfo.treatment)
-           && Objects.equals(source, taxonInfo.source)
-           && Objects.equals(synonyms, taxonInfo.synonyms)
-           && Objects.equals(distributions, taxonInfo.distributions)
-           && Objects.equals(vernacularNames, taxonInfo.vernacularNames)
-           && Objects.equals(media, taxonInfo.media)
-           && Objects.equals(nameRelations, taxonInfo.nameRelations)
-           && Objects.equals(properties, taxonInfo.properties)
-           && Objects.equals(conceptRelations, taxonInfo.conceptRelations)
-           && Objects.equals(speciesInteractions, taxonInfo.speciesInteractions)
-           && Objects.equals(typeMaterial, taxonInfo.typeMaterial)
-           && Objects.equals(references, taxonInfo.references)
-           && Objects.equals(names, taxonInfo.names)
-           && Objects.equals(taxa, taxonInfo.taxa);
+    if (o == null || getClass() != o.getClass()) return false;
+    UsageInfo usageInfo = (UsageInfo) o;
+    return Objects.equals(usage, usageInfo.usage) && Objects.equals(classification, usageInfo.classification) && group == usageInfo.group && Objects.equals(source, usageInfo.source) && Objects.equals(treatment, usageInfo.treatment) && Objects.equals(nameRelations, usageInfo.nameRelations) && Objects.equals(synonyms, usageInfo.synonyms) && Objects.equals(distributions, usageInfo.distributions) && Objects.equals(vernacularNames, usageInfo.vernacularNames) && Objects.equals(media, usageInfo.media) && Objects.equals(properties, usageInfo.properties) && Objects.equals(conceptRelations, usageInfo.conceptRelations) && Objects.equals(speciesInteractions, usageInfo.speciesInteractions) && Objects.equals(typeMaterial, usageInfo.typeMaterial) && Objects.equals(references, usageInfo.references) && Objects.equals(names, usageInfo.names) && Objects.equals(taxa, usageInfo.taxa) && Objects.equals(decisions, usageInfo.decisions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, treatment, source, synonyms, distributions, vernacularNames, media, nameRelations, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa);
+    return Objects.hash(usage, classification, group, source, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa, decisions);
   }
 }

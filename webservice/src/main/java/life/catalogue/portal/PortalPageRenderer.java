@@ -108,6 +108,7 @@ public class PortalPageRenderer {
       data.put("info", info);
       try (SqlSession session = tdao.getFactory().openSession()) {
         tdao.fillUsageInfo(session, info, null,
+          false,
           true,
           true,
           false,

@@ -161,6 +161,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // in case of updates from decisions, track also the original name as a synonym?
     if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null) {
       var origAsSyn = new Synonym(mod.originalName);
+      origAsSyn.setId(mod.usage.getId());
+      origAsSyn.setRemarks("Original spelling before change by an editorial decision");
       create(origAsSyn, new Usage(sn));
     }
     // commit in batches
