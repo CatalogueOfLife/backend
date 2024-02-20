@@ -187,6 +187,13 @@
     AND ed.subject_id = #{id}
   </select>
 
+  <select id="listBySubject" resultMap="decisionResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE ed.subject_dataset_key = #{subjectDatasetKey}
+    AND ed.subject_id = #{id}
+  </select>
+
   <select id="getByReleasedUsage" resultMap="decisionResultMap">
     SELECT false AS subject_broken,
     <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
