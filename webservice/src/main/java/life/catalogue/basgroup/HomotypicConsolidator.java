@@ -9,11 +9,9 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
@@ -282,8 +280,10 @@ public class HomotypicConsolidator {
 
       // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
       final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
+      final Integer primaryPrio = priorityFunc.apply(primaryAcc);
       try (SqlSession session = factory.openSession(false)) {
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
+        var num = session.getMapper(NameUsageMapper.class);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
@@ -295,12 +295,35 @@ public class HomotypicConsolidator {
             LOG.debug("Exclude parent {} from basionym consolidation of {}", u.getLabel(), primary.getLabel());
 
           } else {
-            convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
+            final Integer prio = priorityFunc.apply(u);
+            if (primaryPrio == null || prio == null || prio > primaryPrio) {
+              convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
+              // delete synonym with identical name? We have moved all children and changed the usage to a synonym, so there are no related records any longer
+              if (u.getLabel().equalsIgnoreCase(primaryAcc.getLabel())) {
+                delete(u, session);
+              } else {
+                // does the accepted already have the exact same synonym?
+                var syns = num.listSimpleSynonyms(dsid.id(primaryAcc.getId()));
+                if (syns.stream().anyMatch(s -> !u.getId().equals(s.getId()) && u.getLabel().equalsIgnoreCase(s.getLabel()))) {
+                  delete(u, session);
+                }
+              }
+            } else {
+              // what shall we do now?
+              System.out.println(u);
+            }
           }
         }
         session.commit();
       }
     }
+  }
+
+  private void delete(LinneanNameUsage u, SqlSession session) {
+    VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    vsm.delete(dsid.id(u.getId()));
+    num.delete(dsid);
   }
 
   /**

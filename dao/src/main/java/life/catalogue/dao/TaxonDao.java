@@ -555,12 +555,17 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
     // delete all associated infos (vernaculars, etc)
     // but keep the name record!
+    deleteAssociatedData(did, session);
+  }
+
+  public static void deleteAssociatedData(DSID<String> did, SqlSession session) {
+    // delete all associated infos (vernaculars, etc)
+    // but keep the name record!
     for (Class<? extends TaxonProcessable<?>> m : TaxonProcessable.MAPPERS) {
       int count = session.getMapper(m).deleteByTaxon(did);
-      LOG.info("Deleted {} associated {}s for taxon {}", count, m.getSimpleName().replaceAll("Mapper", ""), did);
+      LOG.info("Deleted {} associated {}s for usage {}", count, m.getSimpleName().replaceAll("Mapper", ""), did);
     }
   }
-  
   /**
    * Does a recursive delete to remove an entire subtree.
    * Name usage, name and all associated infos are removed.

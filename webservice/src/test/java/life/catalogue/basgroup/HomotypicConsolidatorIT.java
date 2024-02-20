@@ -23,7 +23,6 @@ import org.junit.rules.TestRule;
  * Many consolidation tests in one text tree file.
  * See homconsolidation.md markdown file for expectations.
  */
-@Ignore("work in progress")
 public class HomotypicConsolidatorIT {
   @ClassRule
   public final static PgSetupRule pg = new PgSetupRule();

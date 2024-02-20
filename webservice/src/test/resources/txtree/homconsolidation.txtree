@@ -40,6 +40,11 @@ Enidae [family]
   Brephulopsis pides (Kr., 1833) [species] {PRIO=2}
     *Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=2}
 Eniladae [family]
+  Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=2}
+    *$Bulimus bidens Krynicki, 1833 [species] {PRIO=2}
+  Brephulopsis pides (Kr., 1833) [species] {PRIO=1}
+    *Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
+Enilidae [family]
   Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
     *$Bulimus bidens Krynicki, 1833 [species] {PRIO=1}
   Brephulopsis pides (Kr., 1833) [species] {PRIO=1}

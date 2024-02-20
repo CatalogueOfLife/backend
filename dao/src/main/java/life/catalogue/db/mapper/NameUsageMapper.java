@@ -48,6 +48,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   SimpleName getSimpleParent(@Param("key") DSID<String> key);
 
   /**
+   * Lists all accepted, direct children of a taxon
+   */
+  List<SimpleName> listSimpleChildren(@Param("key") DSID<String> key);
+
+  /**
+   * Lists all synonyms of a taxon
+   */
+  List<SimpleName> listSimpleSynonyms(@Param("key") DSID<String> key);
+
+  /**
    * List simple names for a given dataset by supplying some criteria
    * @param datasetKey required dataset key
    */

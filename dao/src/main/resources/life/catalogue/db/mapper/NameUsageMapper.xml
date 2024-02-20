@@ -291,6 +291,20 @@
     WHERE child.dataset_key = #{key.datasetKey} AND child.id = #{key.id}
   </select>
 
+  <select id="listSimpleChildren" resultMap="simpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.parent_id = #{key.id}
+      AND NOT is_synonym(u.status)
+  </select>
+
+  <select id="listSimpleSynonyms" resultMap="simpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.parent_id = #{key.id}
+      AND is_synonym(u.status)
+  </select>
+
   <select id="findSimple" resultMap="simpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
