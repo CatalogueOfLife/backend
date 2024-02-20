@@ -92,6 +92,10 @@ public interface NameUsageIndexService {
    */
   void update(int datasetKey, Collection<String> taxonIds);
 
+  default void update(int datasetKey, String taxonId) {
+    update(datasetKey, List.of(taxonId));
+  }
+
   /**
    * Adds given usages incl bare names to the index without deleting them beforehand.
    * @return number of successfully added documents

@@ -1,10 +1,14 @@
 package life.catalogue.es.nu;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -12,6 +16,7 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
@@ -22,6 +27,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -308,13 +314,41 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private int indexNameUsages(int datasetKey, Collection<String> usageIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
     try (SqlSession session = factory.openSession()) {
-      final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
+      var dm = session.getMapper(DecisionMapper.class);
+
+      final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
+      final LoadingCache<Integer, NameUsageProcessor.SectorProps> sectors = Caffeine.newBuilder()
+        .maximumSize(1000)
+        .build(id -> this.loadSectorProp(datasetKey, id));
+
       List<NameUsageWrapper> usages = usageIds.stream()
           .map(id -> {
             var nuw = mapper.get(datasetKey, id);
             if (nuw != null) {
               nuw.setPublisherKey(publisher);
+              if (nuw.getUsage().getName().getSectorKey() != null) {
+                var sp = sectors.get(nuw.getUsage().getName().getSectorKey());
+                if (sp!=null) {
+                  nuw.setSectorDatasetKey(sp.datasetKey);
+                  nuw.setSectorPublisherKey(sp.publisherKey);
+                  nuw.setSectorMode(sp.mode);
+                }
+              }
+              //decisions
+              var decisions = dm.listBySubject(datasetKey, id);
+              if (decisions != null && !decisions.isEmpty()) {
+                nuw.setDecisions(
+                  decisions.stream()
+                    .map(ed -> new SimpleDecision(ed.getId(), ed.getDatasetKey(), ed.getMode()))
+                    .collect(toList())
+                );
+              }
+              // TODO: issues
+              nuw.setIssues(null);
+              // TODO: secondary sources
+              nuw.setSecondarySourceKeys(null);
+              nuw.setSecondarySourceGroups(null);
             }
             return nuw;
           })
@@ -334,4 +368,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
+  private NameUsageProcessor.SectorProps loadSectorProp(int datasetKey, Integer sectorKey) {
+    return null;
+  }
 }

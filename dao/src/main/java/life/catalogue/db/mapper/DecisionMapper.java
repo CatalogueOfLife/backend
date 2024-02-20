@@ -17,6 +17,9 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
                       @Param("subjectDatasetKey") int subjectDatasetKey,
                       @Param("id") String id);
 
+  List<EditorialDecision> listBySubject(@Param("subjectDatasetKey") int subjectDatasetKey,
+                                        @Param("id") String id);
+
   /**
    * Select a decision in a release by its released usage id.
    * @param key taxon or synonym usage id in the release, not the subject one

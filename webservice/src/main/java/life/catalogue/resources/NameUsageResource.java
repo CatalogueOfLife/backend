@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
@@ -40,6 +38,8 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.annotation.Timed;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
 public class NameUsageResource {
@@ -47,6 +47,7 @@ public class NameUsageResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageResource.class);
   private final NameUsageSearchService searchService;
+  private final NameUsageIndexService indexService;
   private final NameUsageSuggestionService suggestService;
   private final LatestDatasetKeyCache datasetKeyCache;
   private final TaxonDao dao;
@@ -54,6 +55,7 @@ public class NameUsageResource {
   public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
     this.searchService = search;
     this.suggestService = suggest;
+    this.indexService = null;
     this.datasetKeyCache = datasetKeyCache;
     this.dao = dao;
   }
@@ -103,6 +105,20 @@ public class NameUsageResource {
       }
     }
     return u;
+  }
+
+  @PATCH
+  @Hidden
+  @Path("{id}")
+  @RolesAllowed({Roles.ADMIN})
+  public SimpleName reindex(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    SimpleName sn;
+    try (var session = dao.getFactory().openSession()) {
+      var num = session.getMapper(NameUsageMapper.class);
+      sn = num.getSimple(DSID.of(datasetKey, id));
+    }
+    indexService.update(datasetKey, id);
+    return sn;
   }
 
   @GET

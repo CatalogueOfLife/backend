@@ -34,6 +34,16 @@ Cyclopidae [family]
     Nervus stammeri (Kiefer) [species] {PRIO=5}
     Nervus venustus (Norman & Scott T., 1906) [species] {PRIO=5}
       Nervus venustus venustus [subspecies] {PRIO=5}
+Enidae [family]
+  Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
+    *$Bulimus bidens Krynicki, 1833 [species] {PRIO=1}
+  Brephulopsis pides (Kr., 1833) [species] {PRIO=2}
+    *Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=2}
+Eniladae [family]
+  Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
+    *$Bulimus bidens Krynicki, 1833 [species] {PRIO=1}
+  Brephulopsis pides (Kr., 1833) [species] {PRIO=1}
+    *Brephulopsis bidens (Krynicki, 1833) [species] {PRIO=1}
 Karaceae [family]
   Karus simplex L. [species] {PRIO=1}
     Karus simplex simplex [subspecies]

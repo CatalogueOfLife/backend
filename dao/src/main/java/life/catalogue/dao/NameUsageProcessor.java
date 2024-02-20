@@ -63,11 +63,6 @@ public class NameUsageProcessor {
     processTree(datasetKey, null, consumer);
   }
 
-  public void processSubtree(DSID<String> taxonID, Consumer<NameUsageWrapper> consumer) {
-    LOG.info("Process subtree of taxon {}", taxonID);
-    throw new NotImplementedException();
-  }
-
   /**
    * Process all catalogue usages from a given sector
    * @param sectorKey the sector to process
@@ -77,10 +72,10 @@ public class NameUsageProcessor {
     processTree(sectorKey.getDatasetKey(), sectorKey.getId(), consumer);
   }
 
-  static class SectorProps {
-    int datasetKey;
-    UUID publisherKey;
-    Sector.Mode mode;
+  public static class SectorProps {
+    public int datasetKey;
+    public UUID publisherKey;
+    public Sector.Mode mode;
 
     public SectorProps(Sector s, DatasetMapper dm) {
       this.mode = s.getMode();

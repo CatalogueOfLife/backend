@@ -13,6 +13,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
   private Set<Issue> issues;
+  // decisions about this usage in any number of project or releases
   private List<SimpleDecision> decisions;
   private Integer sectorDatasetKey;
   private UUID sectorPublisherKey;
