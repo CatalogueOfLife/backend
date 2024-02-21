@@ -555,17 +555,12 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
     // delete all associated infos (vernaculars, etc)
     // but keep the name record!
-    deleteAssociatedData(did, session);
-  }
-
-  public static void deleteAssociatedData(DSID<String> did, SqlSession session) {
-    // delete all associated infos (vernaculars, etc)
-    // but keep the name record!
     for (Class<? extends TaxonProcessable<?>> m : TaxonProcessable.MAPPERS) {
       int count = session.getMapper(m).deleteByTaxon(did);
       LOG.info("Deleted {} associated {}s for usage {}", count, m.getSimpleName().replaceAll("Mapper", ""), did);
     }
   }
+
   /**
    * Does a recursive delete to remove an entire subtree.
    * Name usage, name and all associated infos are removed.
@@ -575,23 +570,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
   public void deleteRecursively(DSID<String> id, boolean keepRoot, User user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      List<TaxonProcessable<?>> taxProcMappers = List.of(
-        session.getMapper(DistributionMapper.class),
-        session.getMapper(MediaMapper.class),
-        session.getMapper(VernacularNameMapper.class),
-        session.getMapper(SpeciesInteractionMapper.class),
-        session.getMapper(TaxonConceptRelationMapper.class)
-      );
-      TreatmentMapper trm = session.getMapper(TreatmentMapper.class);
-
-      NameMapper nm = session.getMapper(NameMapper.class);
-      List<NameProcessable<?>> nameProcMappers = List.of(
-        session.getMapper(TypeMaterialMapper.class),
-        session.getMapper(NameRelationMapper.class)
-      );
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       // remember sector count map so we can update parents at the end
       TaxonSectorCountMap delta = tm.getCounts(id);
@@ -600,14 +578,26 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       }
       LOG.info("Recursively delete {}taxon {} and its {} nested sectors from dataset {} by user {}", keepRoot ? "descendants of " : "", id, delta.size(), id.getDatasetKey(), user);
 
+      SectorMapper sm = session.getMapper(SectorMapper.class);
       List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
       if (sectorKeys.size() != delta.size()) {
         LOG.info("Recursive delete of {} detected {} included sectors, but {} are declared in the taxons sector count map", id, sectorKeys.size(), delta.size());
       }
       List<TaxonSectorCountMap> parents = tm.classificationCounts(id);
 
-      // we remove usages, names, verbatim sources and associated infos.
-      // but NOT name_rels or refs
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      NameMapper nm = session.getMapper(NameMapper.class);
+
+      List<TaxonProcessable<?>> taxProcMappers = TaxonProcessable.MAPPERS.stream()
+        .map(m -> session.getMapper(m))
+        .collect(Collectors.toList());
+
+      List<NameProcessable<?>> nameProcMappers = NameProcessable.MAPPERS.stream()
+        .map(m -> session.getMapper(m))
+        .collect(Collectors.toList());
+
+      // we remove usages & associated infos, names & relations and verbatim sources,
+      // but NOT references!
       PgUtils.consume(
         () -> num.processTreeIds(id),
         unid -> {
@@ -616,10 +606,8 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
             final var nuKey = DSID.of(id.getDatasetKey(), unid.usageId);
             // deletes no longer cascade, remove vernacular, distributions, media and treatments manually
             taxProcMappers.forEach(m -> m.deleteByTaxon(nuKey));
-            trm.deleteByTaxon(nuKey);
             // remove usage
             num.delete(nuKey);
-            vsm.delete(nuKey);
             // remove name relations and name
             final var nnKey = nuKey.id(unid.nameId);
             nameProcMappers.forEach(m -> m.deleteByName(nnKey));

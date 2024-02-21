@@ -4,6 +4,8 @@ import life.catalogue.api.model.DSID;
 
 import java.util.List;
 
+import life.catalogue.db.mapper.*;
+
 import org.apache.ibatis.annotations.Param;
 
 /**
@@ -11,6 +13,15 @@ import org.apache.ibatis.annotations.Param;
  * @param <T> entity type
  */
 public interface NameProcessable<T> extends TempNameUsageRelated {
+
+  /**
+   * All NameProcessable mappers.
+   */
+  List<Class<? extends NameProcessable<?>>> MAPPERS = List.of(
+    NameRelationMapper.class,
+    TypeMaterialMapper.class,
+    NameMatchMapper.class
+  );
 
   List<T> listByName(@Param("key") DSID<String> key);
 

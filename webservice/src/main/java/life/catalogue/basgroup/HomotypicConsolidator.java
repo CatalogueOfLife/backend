@@ -347,7 +347,7 @@ public class HomotypicConsolidator {
       LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
       return;
     } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
-      LOG.warn("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
+      LOG.info("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
       return;
     }
 
