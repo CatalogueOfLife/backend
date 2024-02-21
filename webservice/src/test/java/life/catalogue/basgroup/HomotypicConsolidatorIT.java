@@ -38,7 +38,7 @@ public class HomotypicConsolidatorIT {
     .around(matchingRule);
 
   @Test
-  public void ausBus() throws IOException {
+  public void homconsolidation() throws IOException {
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, LinneanNameUsage::getSectorKey);
     hc.consolidate();
     assertNoLoop(datasetKey);
