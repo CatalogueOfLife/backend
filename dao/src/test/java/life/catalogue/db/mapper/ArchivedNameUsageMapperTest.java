@@ -81,6 +81,16 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     });
   }
 
+  @Test
+  public void indexGroupIds() throws Exception {
+    var res = mapper().indexGroupIds(nidx.getKey());
+    assertEquals(1, res.size());
+    assertEquals(orig.getDatasetKey(), res.get(0).getDatasetKey());
+    assertEquals(orig.getId(), res.get(0).getId());
+
+    res = mapper().indexGroupIds(2345678);
+    assertEquals(0, res.size());
+  }
 
   public static ArchivedNameUsage create() {
     Name n = TestEntityGenerator.newName(appleKey);

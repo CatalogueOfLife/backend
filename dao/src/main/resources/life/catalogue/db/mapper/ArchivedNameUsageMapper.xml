@@ -234,4 +234,11 @@
     </where>
   </select>
 
+  <select id="indexGroupIds" resultMap="life.catalogue.db.mapper.NameMapper.dsidResultMap">
+    SELECT u.dataset_key, u.id
+    FROM name_usage_archive_match m
+      JOIN name_usage_archive u ON m.dataset_key=u.dataset_key AND m.usage_id=u.id
+    WHERE m.index_id = #{nidx}
+  </select>
+
 </mapper>

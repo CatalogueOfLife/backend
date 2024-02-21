@@ -386,10 +386,11 @@ public class NameIndexImpl implements NameIndex {
     try (SqlSession s = sqlFactory.openSession(false)) {
       var nim = s.getMapper(NamesIndexMapper.class);
       var nm = s.getMapper(NameMapper.class);
-      var anum = s.getMapper(ArchivedNameUsageMapper.class);
-
       var nmm = s.getMapper(NameMatchMapper.class);
+
+      var anum = s.getMapper(ArchivedNameUsageMapper.class);
       var anm = s.getMapper(ArchivedNameUsageMatchMapper.class);
+
       for (var n : removed) {
         // remove matches
         var matches = nm.indexGroupIds(n.getKey());
