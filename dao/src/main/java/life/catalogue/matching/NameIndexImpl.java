@@ -380,6 +380,8 @@ public class NameIndexImpl implements NameIndex {
   @Override
   public List<IndexName> delete(int key, boolean rematch){
     var removed = store.delete(key, NameIndexImpl::key);
+    // order the canonical last to not break foreign key constraints
+    removed.sort(Comparator.comparing(IndexName::isCanonical));
     // remove from db
     var names = new ArrayList<DSID<String>>();
     var archivedNames = new ArrayList<DSID<String>>();
