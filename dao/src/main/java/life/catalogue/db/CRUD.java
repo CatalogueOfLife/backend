@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 
 public interface CRUD<K, V extends Entity<K>> extends Create<V> {
 
+  boolean exists(@Param("key") K key);
   V get(@Param("key") K key);
 
   default V getOrThrow(@Param("key") K key, Class<V> entity) throws NotFoundException {

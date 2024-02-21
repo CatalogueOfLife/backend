@@ -71,6 +71,16 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   @Test
+  public void exists() {
+    add2Sectors();
+    assertTrue(mapper().exists(s1));
+    assertTrue(mapper().exists(s2));
+    var dsid = DSID.copy(s1);
+    dsid.setId(56789);
+    assertFalse(mapper().exists(dsid));
+  }
+
+  @Test
   public void missingSubject() {
     // create a few draft taxa to attach sectors to
     MybatisTestUtils.populateDraftTree(session());

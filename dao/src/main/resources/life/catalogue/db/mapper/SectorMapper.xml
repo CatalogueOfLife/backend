@@ -177,6 +177,14 @@
     WHERE s.id = #{key.id} AND s.dataset_key = #{key.datasetKey}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE
+      FROM sector s
+      WHERE s.id = #{key.id} AND s.dataset_key = #{key.datasetKey}
+    )
+  </select>
+
   <select id="getBySubject" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

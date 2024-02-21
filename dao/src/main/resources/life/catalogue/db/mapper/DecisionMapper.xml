@@ -179,6 +179,14 @@
     WHERE ed.id = #{key.id} AND ed.dataset_key=#{key.datasetKey}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE
+      FROM decision ed
+      WHERE ed.id = #{key.id} AND ed.dataset_key=#{key.datasetKey}
+    )
+  </select>
+
   <select id="getBySubject" resultMap="decisionResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

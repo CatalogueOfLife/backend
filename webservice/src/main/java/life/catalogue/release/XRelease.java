@@ -138,10 +138,10 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       var pm = session.getMapper(PublisherMapper.class);
       var publisher = pm.listAll(datasetKey);
-      // create missing sectors from publishers for compatible licenses only
+      // create missing sectors in project from publishers for compatible licenses only
       for (var p : publisher) {
         int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), p.getId(), xCfg.sourceDatasetExclusion);
-        LOG.info("Created {} newly published merge sectors from publisher {} {}", newSectors, p.getAlias(), p.getId());
+        LOG.info("Created {} newly published merge sectors in project {} from publisher {} {}", newSectors, datasetKey, p.getAlias(), p.getId());
       }
     }
 
@@ -321,9 +321,26 @@ public class XRelease extends ProjectRelease {
   @Override
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) {
     // we copy some entities from the project, not the base release though
-    if (entity.equals(Publisher.class) || entity.equals(EditorialDecision.class)) {
-      //TODO: editorial decisions are tricky. We want all from the base release AND new ones for the merge sectors only from the project!!!
-      super.copyTable(entity,mapperClass,session);
+    if (entity.equals(Publisher.class)) {
+      super.copyTable(entity, mapperClass, session);
+
+    } else if (entity.equals(Sector.class) || entity.equals(EditorialDecision.class)) {
+      // editorial decisions and sectors are tricky.
+      // We want all from the base release AND new ones for the merge sectors only from the project!!!
+      super.copyTable(entity, mapperClass, session);
+      if (entity.equals(Sector.class)) {
+        var sm = session.getMapper(SectorMapper.class);
+        for (var s : sectors) {
+          s.setDatasetKey(newDatasetKey);
+          if (!sm.exists(s)) {
+            sm.createWithID(s);
+          }
+          // revert sectors as we might use the sectors as project sectors later on again, better don't alter them
+          s.setDatasetKey(datasetKey);
+        }
+      } else {
+        //TODO: copy merge decisions only...
+      }
 
     } else {
       int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
