@@ -1,10 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.FormattableName;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.func.Predicates;
@@ -12,8 +9,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.NameType;
@@ -379,6 +375,53 @@ public class NameIndexImpl implements NameIndex {
       return match;
     }
     return match2;
+  }
+
+  public List<IndexName> delete(int key, boolean rematch){
+    var removed = store.delete(key, NameIndexImpl::key);
+    // remove from db
+    var names = new ArrayList<DSID<String>>();
+    var archivedNames = new ArrayList<DSID<String>>();
+    try (SqlSession s = sqlFactory.openSession(false)) {
+      var nim = s.getMapper(NamesIndexMapper.class);
+      var nm = s.getMapper(NameMapper.class);
+      var anum = s.getMapper(ArchivedNameUsageMapper.class);
+
+      var nmm = s.getMapper(NameMatchMapper.class);
+      var anm = s.getMapper(ArchivedNameUsageMatchMapper.class);
+      for (var n : removed) {
+        // remove matches
+        var matches = nm.indexGroupIds(n.getKey());
+        names.addAll(matches);
+        for (var m : matches) {
+          nmm.delete(m);
+        }
+        // archived matches
+        matches = anum.indexGroupIds(n.getKey());
+        archivedNames.addAll(matches);
+        for (var m : matches) {
+          anm.delete(m);
+        }
+        // remove index name
+        nim.delete(n.getKey());
+      }
+      s.commit();
+      LOG.info("Removed index {} and {} more names from names index", key, removed.size()-1);
+
+      // rematch
+      if (rematch) {
+        LOG.debug("Rematch {} names", names.size());
+        for (var n : names) {
+          match(nm.get(n), true, false);
+        }
+        LOG.debug("Rematch {} archived name usages", archivedNames.size());
+        for (var n : archivedNames) {
+          match(anum.get(n).getName(), true, false);
+        }
+        LOG.info("Rematched {} names and {} archived usages that had been linked to the removed index name {}", names.size(), archivedNames.size(), key);
+      }
+    }
+    return removed;
   }
 
   /**

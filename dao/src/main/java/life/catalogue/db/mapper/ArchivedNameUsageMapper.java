@@ -43,6 +43,12 @@ public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedName
                                     @Param("onlyMissing") boolean onlyMissingMatches
   );
 
+  /**
+   * Lists all name usage identifiers with the same names index key across all datasets.
+   *
+   * @param nidx from the names index!
+   */
+  List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {
     private int lastReleaseKey; // release datasetKey

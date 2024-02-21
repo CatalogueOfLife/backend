@@ -57,6 +57,12 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   }
 
   @Test
+  public void indexGroup() throws Exception {
+    mapper().indexGroup(1);
+    mapper().indexGroupIds(2);
+  }
+
+  @Test
   public void ambiguousRankNameIds() throws Exception {
     // no real data to delete but tests valid SQL
     mapper().unrankedRankNameIds(datasetKey, null);

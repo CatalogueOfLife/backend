@@ -4,10 +4,10 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-
-import javax.annotation.Nullable;
 
 public interface MatchMapper {
 

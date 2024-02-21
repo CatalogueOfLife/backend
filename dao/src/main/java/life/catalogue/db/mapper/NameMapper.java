@@ -78,9 +78,14 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   /**
    * Lists all names with the same names index key across all datasets.
    *
-   * @param nameId from the names index!
+   * @param nidx names index key!
    */
-  List<Name> indexGroup(@Param("id") int nameId);
+  List<Name> indexGroup(@Param("nidx") int nidx);
+
+  /**
+   * Same as indexGroup, but only retrieves the name identifiers
+   */
+  List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
   /**
    * @return true if at least one record for the given dataset exists

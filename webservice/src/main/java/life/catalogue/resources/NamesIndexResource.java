@@ -1,6 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
@@ -74,6 +75,15 @@ public class NamesIndexResource {
   @Path("{key}")
   public IndexName get(@PathParam("key") int key) {
     return ni.get(key);
+  }
+
+  @DELETE
+  @Path("{key}")
+  public List<IndexName> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
+    var n = ni.get(key);
+    if (n == null) throw NotFoundException.notFound(IndexName.class, key);
+
+    return ((NameIndexImpl)ni).delete(key, rematch);
   }
 
   @GET

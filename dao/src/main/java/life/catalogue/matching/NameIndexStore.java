@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.google.common.base.Function;
+
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.Managed;
 
@@ -31,6 +33,12 @@ public interface NameIndexStore extends Managed {
    * Remove all entries of the names index store
    */
   void clear();
+
+  /**
+   * Deletes the names index entry.
+   * If it is a canonical one, it will also remove all qualified entries based on it.
+   */
+  List<IndexName> delete(int id, Function<IndexName, String> keyFunc);
 
   List<IndexName> get(String key);
   

@@ -196,6 +196,11 @@
     <result property="name" column="scientific_name"/>
   </resultMap>
 
+  <resultMap id="dsidResultMap" type="DSIDValue" autoMapping="false">
+    <id property="datasetKey" column="dataset_key"/>
+    <id property="id" column="id"/>
+  </resultMap>
+
   <select id="count" resultType="integer">
     SELECT count(*) FROM name WHERE dataset_key=#{datasetKey}
   </select>
@@ -272,7 +277,14 @@
     SELECT <include refid="SELECT_NIDX"/>
     FROM name_match nm
       JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
-    WHERE nm.index_id = #{id}
+    WHERE nm.index_id = #{nidx}
+  </select>
+
+  <select id="indexGroupIds" resultMap="dsidResultMap">
+    SELECT n.dataset_key, n.id
+    FROM name_match nm
+      JOIN name n ON n.id=nm.name_id AND n.dataset_key=nm.dataset_key
+    WHERE nm.index_id = #{nidx}
   </select>
 
   <insert id="create" parameterType="Name" useGeneratedKeys="false" keyProperty="id">

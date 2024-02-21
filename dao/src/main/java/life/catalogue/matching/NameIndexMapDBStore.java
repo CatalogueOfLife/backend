@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.google.common.base.Function;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.FastUtilsSerializers;
@@ -206,6 +208,40 @@ public class NameIndexMapDBStore implements NameIndexStore {
   public boolean containsKey(String key) {
     avail();
     return names.containsKey(key);
+  }
+
+  @Override
+  public List<IndexName> delete(int id, Function<IndexName, String> keyFunc) {
+    List<IndexName> removed = new ArrayList<>();
+    var n = keys.remove(id);
+    removed.add(n);
+    if (n != null) {
+      final String key = keyFunc.apply(n);
+      // remove all index names for a canonical?
+      if (n.isCanonical()) {
+        var cids = canonical.remove(id);
+        for (var id2 : cids) {
+          removed.addAll(delete(id2, keyFunc));
+        }
+      } else {
+        var cids = canonical.remove(n.getCanonicalId());
+        if (cids != null) {
+          canonical.put(n.getCanonicalId(), remove(cids, id));
+        }
+      }
+      // update names group
+      int[] group = remove(names.get(key), id);
+      names.put(key, group);
+    }
+    return removed;
+  }
+
+  private static int[] remove(int[] ids, int id) {
+    final int pos = ArrayUtils.indexOf(ids, id);
+    if (pos != ArrayUtils.INDEX_NOT_FOUND) {
+      return ArrayUtils.remove(ids, pos);
+    }
+    return ids;
   }
 
   /**

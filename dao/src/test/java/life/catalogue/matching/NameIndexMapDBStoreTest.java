@@ -99,6 +99,31 @@ public class NameIndexMapDBStoreTest {
   }
 
   @Test
+  public void delete() throws Exception {
+    addNameList("a", 4);
+
+    addName("b", 10, 10); // the canonical itself
+    addName("b", 12, 10);
+    addName("b", 13, 10);
+    assertEquals(7, db.count());
+
+    var res = db.byCanonical(10);
+    assertEquals(2, res.size());
+
+    db.delete(12, u -> "b");
+    res = db.byCanonical(10);
+    assertEquals(1, res.size());
+
+    db.delete(10, u -> "b"); // the canonical removes all its qualified names too
+    res = db.byCanonical(10);
+    assertNull(res);
+
+    assertNull(db.get(10));
+    assertNull(db.get(12));
+    assertNull(db.get(13));
+  }
+
+  @Test
   public void compact() throws Exception {
     addNameList("a", 4);
 
