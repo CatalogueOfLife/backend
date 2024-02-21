@@ -82,8 +82,7 @@ public class NamesIndexResource {
   public List<IndexName> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
     var n = ni.get(key);
     if (n == null) throw NotFoundException.notFound(IndexName.class, key);
-
-    return ((NameIndexImpl)ni).delete(key, rematch);
+    return ni.delete(key, rematch);
   }
 
   @GET

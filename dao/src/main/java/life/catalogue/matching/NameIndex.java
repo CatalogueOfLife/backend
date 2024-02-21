@@ -8,6 +8,7 @@ import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +48,16 @@ public interface NameIndex extends Managed, AutoCloseable {
    * @return the number of names in the index
    */
   int size();
-  
+
+  /**
+   * Deletes a name from the index and all name and archived usage matches that link to that index name.
+   * If the index name key points to a canonical name, the entire name group will be removed with the canonical.
+   * @param key names index key
+   * @param rematch if true the names and archived name usages that were linked to the index name will be rematched again
+   * @return list of all index names that were removed
+   */
+  List<IndexName> delete(int key, boolean rematch);
+
   /**
    * Adds a new name to the index, generating a new key and potentially inserting a canonical name record too.
    * It will add a new IndexName even if it exists already.

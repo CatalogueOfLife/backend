@@ -377,6 +377,7 @@ public class NameIndexImpl implements NameIndex {
     return match2;
   }
 
+  @Override
   public List<IndexName> delete(int key, boolean rematch){
     var removed = store.delete(key, NameIndexImpl::key);
     // remove from db

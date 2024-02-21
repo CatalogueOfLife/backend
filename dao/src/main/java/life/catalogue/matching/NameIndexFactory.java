@@ -70,6 +70,11 @@ public class NameIndexFactory {
       }
 
       @Override
+      public List<IndexName> delete(int key, boolean rematch) {
+        return Collections.emptyList();
+      }
+
+      @Override
       public void add(IndexName name) {
       }
 
