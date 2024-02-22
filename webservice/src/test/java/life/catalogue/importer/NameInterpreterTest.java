@@ -132,6 +132,16 @@ public class NameInterpreterTest {
     ParsedNameUsage pnu;
     Name n;
 
+    pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
+    assertTrue(pnu.getName().isOriginalSpelling());
+    assertEquals("Barleeidae", pnu.getName().getScientificName());
+    assertNull(pnu.getName().getAuthorship());
+
+    pnu = ib.interpret(SimpleName.sn(Rank.FAMILY,"Barleeidae", "[sic]"), v).get();
+    assertTrue(pnu.getName().isOriginalSpelling());
+    assertEquals("Barleeidae", pnu.getName().getScientificName());
+    assertNull(pnu.getName().getAuthorship());
+
     // test various ways to supply the authorship
     pnu = ib.interpret(SimpleName.sn("Oenanthe L."), v).get();
     assertOenantheL(pnu);

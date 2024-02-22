@@ -41,6 +41,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
+  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*(sic|corrig\\.?)\\s*[\\])]?\\s*");
+
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
   private static final Pattern COMMA_AT_END = Pattern.compile("\\s*[,;:]\\s*$");
@@ -205,6 +207,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   static String normalizeAuthorship(final String authorship, String taxNote) {
     String name = authorship;
+    // we need to remve the sic/corrig notes which live in originalSpelling flag now
+    name = SIC_CORRIG.matcher(name).replaceFirst("");
+
     // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
     if (taxNote != null) {
       // this is more tricky than it sounds as we altered the taxNote and it may have more/less whitespace in particular
@@ -264,6 +269,10 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     setIfNull(pn.getNomenclaturalNote(), pnu.getName()::getNomenclaturalNote, pnu.getName()::setNomenclaturalNote);
     setIfNull(pn.getPublishedIn(), pnu::getPublishedIn, pnu::setPublishedIn);
     setIfNull(pn.getTaxonomicNote(), pnu::getTaxonomicNote, pnu::setTaxonomicNote);
+    var pnn = (ParsedName) pn; // actually the name parser always returns a full parsed name object and only that contains the original flag up to now !
+    if (pnn.isOriginalSpelling() != null) {
+      pnu.getName().setOriginalSpelling(pnn.isOriginalSpelling());
+    }
     if (pn.getUnparsed() != null) {
       pnu.getName().setUnparsed(pn.getUnparsed());
     }
