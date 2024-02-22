@@ -250,7 +250,6 @@ public class XRelease extends ProjectRelease {
 
   private void updateMetadata() {
     newDataset.appendNotes(String.format("Base release %s.", baseReleaseKey));
-    //TODO: add aggregated metrics to descriptions???
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetMapper.class).update(newDataset);
     }
@@ -332,7 +331,9 @@ public class XRelease extends ProjectRelease {
         var sm = session.getMapper(SectorMapper.class);
         for (var s : sectors) {
           s.setDatasetKey(newDatasetKey);
-          if (!sm.exists(s)) {
+          if (sm.exists(s)) {
+            sm.update(s); // target is matched now and has changed
+          } else {
             sm.createWithID(s);
           }
           // revert sectors as we might use the sectors as project sectors later on again, better don't alter them
