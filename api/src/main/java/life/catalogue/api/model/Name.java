@@ -197,7 +197,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
    * Any informal note about the nomenclature of the name
    */
   private String remarks;
-  
+
+  public static Name build(String name, String authorship, Rank rank) {
+    Name n = new Name();
+    n.setScientificName(name);
+    n.setAuthorship(authorship);
+    n.setRank(rank);
+    return n;
+  }
   public Name() {
   }
 

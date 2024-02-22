@@ -220,8 +220,10 @@ public class NameIndexMapDBStore implements NameIndexStore {
       // remove all index names for a canonical?
       if (n.isCanonical()) {
         var cids = canonical.remove(id);
-        for (var id2 : cids) {
-          removed.addAll(delete(id2, keyFunc));
+        if (cids != null) {
+          for (var id2 : cids) {
+            removed.addAll(delete(id2, keyFunc));
+          }
         }
       } else {
         var cids = canonical.remove(n.getCanonicalId());
