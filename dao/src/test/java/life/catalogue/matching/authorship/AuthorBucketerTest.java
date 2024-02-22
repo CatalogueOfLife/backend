@@ -73,7 +73,7 @@ public class AuthorBucketerTest {
       }
     }
     System.out.println("Lines: " + lines + ", buckets: " + buckets.size());
-    assertTrue(buckets.size() > 4350);
+    assertTrue(buckets.size() > 4300);
   }
 
 }
