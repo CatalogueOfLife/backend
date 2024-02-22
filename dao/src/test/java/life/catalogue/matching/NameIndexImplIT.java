@@ -175,9 +175,9 @@ public class NameIndexImplIT {
       treeRule.before();
     }
     rematchAll();
-    dumpIndex();
+    //dumpIndex();
 
-    int nidxSize = 27;
+    int nidxSize = 25;
     assertEquals(nidxSize, ni.size());
     var m = ni.match(Name.build("Abbella zabinskii", "Novicki, 1936", Rank.SPECIES), false, false);
     var group = ni.byCanonical(m.getCanonicalNameKey());

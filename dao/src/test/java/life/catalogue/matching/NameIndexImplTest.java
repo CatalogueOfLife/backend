@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Ignore("names index work ongoing")
 @RunWith(MockitoJUnitRunner.class)
 public class NameIndexImplTest {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
@@ -201,14 +200,14 @@ public class NameIndexImplTest {
     n.setAuthorship("Nardo");
     n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setType(NameType.SCIENTIFIC);
-    assertNoInsert(n);
+    var quest = assertInsert(n);
 
     n = new Name();
     n.setUninomial("'");
     n.setRank(Rank.FAMILY);
     n.setCode(NomCode.ZOOLOGICAL);
     n.setType(NameType.SCIENTIFIC);
-    assertNoInsert(n);
+    assertMatch(quest.getCanonicalNameKey(), n); // matches the weird canonical "?"
 
     // good infragenerics
     n = new Name();
@@ -241,6 +240,15 @@ public class NameIndexImplTest {
     var idx = ni.match(n, true, true);
 
     assertEquals(MatchType.NONE, idx.getType());
+    assertEquals(origSize, ni.size());
+  }
+
+  private void assertMatch(int key, Name n) {
+    final int origSize = ni.size();
+    n.rebuildScientificName();
+    var idx = ni.match(n, true, true);
+
+    assertEquals(key, (int)idx.getNameKey());
     assertEquals(origSize, ni.size());
   }
 
@@ -322,7 +330,7 @@ public class NameIndexImplTest {
     final int canonID = m.getName().getCanonicalId();
     final int m1Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.VARIETY);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
@@ -344,7 +352,7 @@ public class NameIndexImplTest {
     assertNidx(m, m2Key, canonID);
     final int m4Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.FORM);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
@@ -419,7 +427,7 @@ public class NameIndexImplTest {
     });
     assertNidx(m, m1Key, canonID);
 
-    // we query with a canonical, hence exact
+    // we query with a canonical, but rank is not unranked
     m = matchNameCopy(n1, MatchType.EXACT, n -> {
       n.setRank(Rank.GENUS);
       n.setAuthorship(null);
@@ -427,9 +435,9 @@ public class NameIndexImplTest {
     });
     assertCanonicalNidx(m, canonID);
 
-    // we query with a canonical, but rank differ. Not exact
-    m = matchNameCopy(n1, MatchType.CANONICAL, n -> {
-      n.setRank(Rank.SUBGENUS);
+    // this time its an exact match to the canonical
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+      n.setRank(Rank.UNRANKED);
       n.setAuthorship(null);
       n.setCombinationAuthorship(null);
     });
@@ -538,7 +546,6 @@ public class NameIndexImplTest {
         if (NameIndexImpl.INDEX_NAME_TYPES.contains(n.getType())) {
           assertTrue(m.hasMatch());
           assertNotNull(m.getName().getScientificName());
-          assertFalse(m.getName().isParsed());
           final Integer idx = m.getName().getKey();
           final Integer cidx = m.getName().getCanonicalId();
           if (n.isCanonical()) {
@@ -556,7 +563,7 @@ public class NameIndexImplTest {
     }
 
     dumpIndex();
-    assertEquals(10, ni.size());
+    assertEquals(14, ni.size());
   }
 
   private static IndexName create(String genus, String species){
@@ -682,12 +689,12 @@ public class NameIndexImplTest {
 
     assertMatch(8, "Drusilla zyrasoides", Rank.SPECIES);
     assertCanonMatch(10, "Myrmedonia (Zyras) alternans", Rank.SPECIES);
-    assertCanonMatch(10, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert("Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
-    assertInsert("Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
+    assertMatch(11, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
+    assertMatch(11, "Myrmedonia alternans Cameron, 1925", Rank.SPECIES);
+    assertMatch(11, "Myrmedonia (Larus) alternans Cameron, 1925", Rank.SPECIES);
     assertInsert("Myrmedonia alternans Krill, 1925", Rank.SPECIES);
 
-    assertEquals(22, ni.size());
+    assertEquals(20, ni.size());
   }
 
   @Test

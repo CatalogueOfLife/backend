@@ -8,6 +8,7 @@ import life.catalogue.common.func.Predicates;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.authorship.AuthorComparator;
@@ -142,12 +143,8 @@ public class NameIndexImpl implements NameIndex {
    * But we exclude no names and placeholders
    */
   private static boolean eligable(Name n){
-    //IssueContainer issues = IssueContainer.simple();
-    //NameValidator.flagIssues(n, issues);
-    //if (!issues.hasIssues()) {
-    //  return true;
-    //}
-    return INDEX_NAME_TYPES.contains(n.getType());
+    return INDEX_NAME_TYPES.contains(n.getType())
+      && StringUtils.digitOrAsciiLetters(n.getLabel()) != null;
   }
 
   @Override
