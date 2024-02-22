@@ -1,13 +1,16 @@
 package life.catalogue.matching.similarity;
 
 public class LevenshteinDistance implements StringSimilarity {
-  
+
   @Override
-  public double getSimilarity(String x1, String x2) {
+  public double getSimilarity(String s1, String s2) {
+    return similarity(s1, s2);
+  }
+  public static double similarity(String x1, String x2) {
     return DistanceUtils.convertEditDistanceToSimilarity(getDistance(x1, x2), x1, x2);
   }
   
-  public int getDistance(String s0, String s1) {
+  public static int getDistance(String s0, String s1) {
     int len0 = s0.length() + 1;
     int len1 = s1.length() + 1;
     

@@ -36,9 +36,9 @@ import java.util.Arrays;
  */
 public class JaroWinkler implements StringSimilarity {
   
-  private float threshold = 0.7f;
+  private static float threshold = 0.7f;
   
-  private int[] matches(String s1, String s2) {
+  private static int[] matches(String s1, String s2) {
     String max, min;
     if (s1.length() > s2.length()) {
       max = s1;
@@ -93,9 +93,12 @@ public class JaroWinkler implements StringSimilarity {
     }
     return new int[]{matches, transpositions / 2, prefix, max.length()};
   }
-  
+
   @Override
   public double getSimilarity(String s1, String s2) {
+    return similarity(s1, s2);
+  }
+  public static double similarity(String s1, String s2) {
     int[] mtp = matches(s1, s2);
     float m = (float) mtp[0];
     if (m == 0) {

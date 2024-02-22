@@ -1,5 +1,7 @@
 package life.catalogue.common.tax;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
 
@@ -19,6 +21,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Utility to compare scientific name authorships, i.e. the recombination and basionym author and publishing year.
  * Author strings are normalized to ASCII and then compared. As authors are often abbreviated in all kind of ways a shared common substring is accepted
@@ -33,7 +37,7 @@ public class AuthorshipNormalizer {
 
   private static final Pattern FIL = Pattern.compile("([A-Z][a-z]*)[\\. ]\\s*f(:?il)?\\.?\\b");
   private static final Pattern TRANSLITERATIONS = Pattern.compile("([auo])e", Pattern.CASE_INSENSITIVE);
-  private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( filius)?$");
+  private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
   private final Map<String, String> authorMap;
@@ -178,12 +182,12 @@ public class AuthorshipNormalizer {
     }
     return authors;
   }
-  
-  
+
+
   public static class Author {
-    public final String fullname;
+    public final @NotNull String fullname;
     public final String initials;
-    public final String surname;
+    public final @NotNull String surname;
     public final String suffix;
   
     public Author(String a) {
@@ -192,7 +196,9 @@ public class AuthorshipNormalizer {
       if (m.find()) {
         initials = trim(m.group(1));
         surname = trim(m.group(2));
-        suffix = trim(m.group(3));
+        var suff = trim(m.group(3));
+        // standardize all filius spellings
+        suffix = suff != null && suff.startsWith("f") ? "filius" : suff;
       } else {
         LOG.debug("Cannot parse single author: {}", a);
         initials = "";
@@ -200,7 +206,14 @@ public class AuthorshipNormalizer {
         suffix = "";
       }
     }
-    
+
+    public Author(String fullname, String initials, String surname, String suffix) {
+      this.fullname = Preconditions.checkNotNull(fullname);
+      this.initials = initials;
+      this.surname = Preconditions.checkNotNull(surname);
+      this.suffix = suffix;
+    }
+
     private String trim(String x) {
       return x == null ? null : StringUtils.trimToNull(x);
     }
@@ -208,13 +221,22 @@ public class AuthorshipNormalizer {
     public boolean hasInitials() {
       return initials != null && !initials.isEmpty();
     }
-    
+
+    public boolean initialsOrSuffixDiffer(Author other) {
+      return initialsDiffer(other) || suffixDiffer(other);
+    }
+
+    private boolean suffixDiffer(Author other) {
+      // we only allow very few & selected suffices in the parser regex, so we can be use they mean they are different!
+      return !Objects.equals(suffix, other.suffix);
+    }
+
     /**
      * Gracefully compare initials of the first author only
      *
      * @return true if they differ
      */
-    public boolean firstInitialsDiffer(Author other) {
+    private boolean initialsDiffer(Author other) {
       if (hasInitials() && other.hasInitials()) {
         if (initials.equals(other.initials)) {
           return false;

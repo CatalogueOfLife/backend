@@ -1,10 +1,14 @@
 package life.catalogue.matching.similarity;
 
 public class DamerauLevenshtein implements StringSimilarity {
-  
+
+  public static double similarity(String x1, String x2) {
+    return DistanceUtils.convertEditDistanceToSimilarity(new DamerauLevenshteinDistance(x1, x2).getEditDistance(), x1, x2);
+  }
+
   @Override
   public double getSimilarity(String x1, String x2) {
-    return DistanceUtils.convertEditDistanceToSimilarity(new DamerauLevenshteinDistance(x1, x2).getEditDistance(), x1, x2);
+    return similarity(x1, x2);
   }
   
   static class DamerauLevenshteinDistance {

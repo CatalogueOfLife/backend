@@ -1,8 +1,12 @@
 package life.catalogue.matching.authorship;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
+
+import life.catalogue.matching.similarity.JaroWinkler;
 
 import org.gbif.nameparser.api.Authorship;
 
@@ -29,7 +33,7 @@ public class AuthorComparator {
   private static final Logger LOG = LoggerFactory.getLogger(AuthorComparator.class);
   
   private final AuthorshipNormalizer normalizer;
-  private static final int MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP = 4;
+  static final int MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP = 4;
   private final int minCommonSubstring;
   
   public AuthorComparator(AuthorshipNormalizer normalizer) {
@@ -103,7 +107,7 @@ public class AuthorComparator {
    * 3) do an author lookup and then check for common substring
    */
   private Equality compareAuthorteam(@Nullable Authorship a1, @Nullable Authorship a2, int minCommonSubstring, int maxAuthorLengthWithoutLookup) {
-    // convert to all lower case, no punctuation but commas seperating authors and normed whitespace
+    // convert to all lower case, ascii only, no punctuation but commas seperating authors and normed whitespace
     List<String> authorTeam1 = normalizer.lookup(AuthorshipNormalizer.normalize(a1), maxAuthorLengthWithoutLookup);
     List<String> authorTeam2 = normalizer.lookup(AuthorshipNormalizer.normalize(a2), maxAuthorLengthWithoutLookup);
     if (!authorTeam1.isEmpty() && !authorTeam2.isEmpty()) {
@@ -149,28 +153,38 @@ public class AuthorComparator {
     }
     return Equality.DIFFERENT;
   }
-  
+
+  private static double jaro(final String a1, final String a2) {
+    var sim = JaroWinkler.similarity(a1, a2);
+    // for really short names add some penalty
+    if (a1.length() + a2.length() < 10) {
+      sim = sim - (10 - a1.length() - a2.length()) * 5;
+    }
+    return sim;
+  }
+
   /**
    * compares a single author potentially with initials
    */
-  private Equality compare(final Author a1, final Author a2, final int minCommonStart) {
+  @VisibleForTesting
+  static Equality compare(final Author a1, final Author a2, final int minCommonStart) {
     if (a1.equals(a2.fullname)) {
       // we can stop here, authors are equal, thats enough
       return Equality.EQUAL;
       
     } else {
-      
-      String common = StringUtils.getCommonPrefix(a1. surname, a2.surname);
-      if (a1.surname.equals(a2.surname) || common.length() >= minCommonStart) {
+
+      String common = StringUtils.getCommonPrefix(a1.surname, a2.surname);
+      if (a1.surname.equals(a2.surname) || jaro(a1.surname, a2.surname) > 90 || common.length() >= minCommonStart) {
         // do both names have a single initial which is different?
         // this is often the case when authors are relatives like brothers or son & father
-        if (a1.firstInitialsDiffer(a2)) {
+        if (a1.initialsOrSuffixDiffer(a2)) {
           return Equality.DIFFERENT;
         } else {
           return Equality.EQUAL;
         }
-        
-      } else if (!a1.firstInitialsDiffer(a2) && (a1.surname.equals(common) && (a2.surname.startsWith(common))
+
+      } else if (!a1.initialsOrSuffixDiffer(a2) && (a1.surname.equals(common) && (a2.surname.startsWith(common))
           || a2.surname.equals(common) && (a1.surname.startsWith(common)))
           ) {
         // short common surname, matching in full to one of them

@@ -1,7 +1,9 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.text.StringUtils;
 import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
 
@@ -9,6 +11,7 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,14 +19,17 @@ import org.junit.Test;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class AuthorComparatorTest {
   AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
-  public static Authorship parse(String x) throws InterruptedException {
-    return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
+  public static Authorship parse(String x) {
+    try {
+      return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
   }
   
   public static Authorship parse(String x, String year) throws InterruptedException {
@@ -174,9 +180,89 @@ public class AuthorComparatorTest {
     assertAuth("Pallas, 1771", Equality.DIFFERENT, "1778");
     assertAuth("Pallas", Equality.UNKNOWN, "1771");
   }
-  
+
+  @Test
+  public void compareInternal() throws Exception {
+    // the internal compare method assumes an already normalised single author!
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", null, "novicki", null),
+      Equality.EQUAL,
+      new AuthorshipNormalizer.Author("novicki", null, "novicki", null)
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", null, "novicki", null),
+      Equality.EQUAL,
+      new AuthorshipNormalizer.Author("nowicki", null, "nowicki", null)
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", "a", "novicki", null),
+      Equality.EQUAL,
+      new AuthorshipNormalizer.Author("nowicki", "a", "nowicki", null)
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", "k.", "novicki", null),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("nowicki", "a.", "nowicki", null)
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", null, "novicki", null),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("nowicki", null, "nowicki", "f.")
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("novicki", null, "novicki", null),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("nowa", null, "nowa", null)
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("hirats", null, "hirats", null),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("hirats", null, "hirats", "f.")
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("jones", "f.r.", "jones", "bis"),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("jones", "f.r.", "jones", "ter")
+    );
+    assertAuth(
+      new AuthorshipNormalizer.Author("jones", "f.r.", "jones", "bis"),
+      Equality.DIFFERENT,
+      new AuthorshipNormalizer.Author("jones", "f.r.", "jones", null)
+    );
+  }
+
+  @Test
+  public void compareAuthorFile() throws Exception {
+    final AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
+
+    int equal = 0;
+    System.out.println("Read and parse all authors");
+    List<Authorship> authors = Resources.lines("authors.txt")
+      .map(AuthorComparatorTest::parse)
+      .collect(Collectors.toList());
+    System.out.println("Parsed "+authors.size()+" authors");
+
+    for (var a1 : authors) {
+      for (var a2 : authors) {
+        if (!a1.equals(a2)) {
+          var cp = comp.compare(a1, a2);
+          if (cp == Equality.EQUAL) {
+            equal++;
+            System.out.println("EQUAL: "+a1 + " VS " + a2);
+          }
+        }
+      }
+    }
+    System.out.println("\nTOTAL EQUAL authors: " + equal);
+    assertTrue(equal < 1200);
+  }
+
   @Test
   public void testCompare() throws Exception {
+    // https://github.com/CatalogueOfLife/xcol/issues/113
+    assertAuth("Novicki", "1936", Equality.EQUAL, "Nowicki", "1936");
+    assertAuth("Novicki", "1936", Equality.EQUAL, "Noviçki", "1936");
+
     // https://github.com/gbif/checklistbank/issues/196
     assertAuth("Quél.", null, Equality.EQUAL, "Quel.", null);
 
@@ -250,9 +336,17 @@ public class AuthorComparatorTest {
     assertAuth("Bruand", "1850", Equality.EQUAL, "Bruand", null);
     
     // https://github.com/gbif/checklistbank/issues/2
-    assertAuth("L. f.", null, Equality.EQUAL, "L.", null);
-    assertAuth("L.", null, Equality.EQUAL, "L.fil.", null);
+    assertAuth("L. f.", null, Equality.EQUAL, "L.fil.", null);
+    assertAuth("L.", null, Equality.DIFFERENT, "L.fil.", null);
     assertAuth("L. Bolus", null, Equality.EQUAL, "L. Bol.", null);
+
+    // examples from https://www.indexfungorum.org/Names/AuthorsOfFungalNamesPreface.htm
+    assertAuth("F.R. Jones", null, Equality.DIFFERENT, "F.R. Jones bis", null);
+    assertAuth("F.R. Jones", null, Equality.EQUAL, "Fred Revel Jones", null);
+    assertAuth("Hirats.", null, Equality.DIFFERENT, "Hirats. f.", null);
+
+    assertAuth("A.M.C. Duméril", null, Equality.EQUAL, "A.Duméril", null);
+    assertAuth("A.M.C. Duméril", null, Equality.DIFFERENT, "A.H.A. Duméril", null);
   }
   
   @Test
@@ -508,9 +602,12 @@ public class AuthorComparatorTest {
     assertEquals(Equality.EQUAL, comp.compare(p1, p3));
     assertEquals(Equality.EQUAL, comp.compare(p2, p3));
   }
-  
+
+  private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
+    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP));
+  }
   private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) throws InterruptedException {
-    assertEquals(eq, comp.compare(parse(a1, y1), parse(a2, y2)));
+    assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));
   }
   
   private void assertAuth(String a1, Equality eq, String a2) throws InterruptedException {
@@ -532,4 +629,5 @@ public class AuthorComparatorTest {
     
     assertEquals(eq, comp.compare(p1, p2));
   }
+
 }

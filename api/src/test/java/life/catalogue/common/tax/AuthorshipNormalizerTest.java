@@ -6,7 +6,6 @@ import org.gbif.nameparser.api.Authorship;
 
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -174,7 +173,7 @@ import static org.junit.Assert.*;
     }
     
     private boolean firstInitialsDiffer(String a1, String a2) {
-      return new Author(a1).firstInitialsDiffer(new Author(a2));
+      return new Author(a1).initialsOrSuffixDiffer(new Author(a2));
     }
     
   }
