@@ -20,14 +20,14 @@ import org.junit.ClassRule;
 
 import io.dropwizard.testing.ResourceHelpers;
 
-public class ResourceTestBase {
+public class ResourceITBase {
   
   protected String baseURL;
   protected WebTarget base;
   private final String path;
   private final AuthorizationDao adao;
 
-  public ResourceTestBase(String path) {
+  public ResourceITBase(String path) {
     this.path = path;
     baseURL = String.format("http://localhost:%d"+path, RULE.getLocalPort());
     base = RULE.client().target(baseURL);

@@ -7,17 +7,15 @@ import life.catalogue.api.vocab.MatchType;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import javax.ws.rs.ServiceUnavailableException;
-
 import org.junit.Test;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class NamesIndexResourceTest extends ResourceTestBase {
+public class NamesIndexResourceIT extends ResourceITBase {
 
-  public NamesIndexResourceTest() {
+  public NamesIndexResourceIT() {
     super("/nidx/match");
   }
 

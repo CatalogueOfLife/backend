@@ -12,7 +12,7 @@ import org.junit.Test;
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
-public class TreeResourceTest extends ResourceTestBase {
+public class TreeResourceIT extends ResourceITBase {
 
   public static class TreeNodeProps extends TreeNode {
     private String name;
@@ -52,7 +52,7 @@ public class TreeResourceTest extends ResourceTestBase {
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
   
-  public TreeResourceTest() {
+  public TreeResourceIT() {
     super("/dataset");
   }
   

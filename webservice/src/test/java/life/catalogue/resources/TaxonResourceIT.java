@@ -18,13 +18,13 @@ import static life.catalogue.ApiUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class TaxonResourceTest extends ResourceTestBase {
+public class TaxonResourceIT extends ResourceITBase {
   private final int datasetKey = TestEntityGenerator.DATASET11.getKey();
 
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
   
-  public TaxonResourceTest() {
+  public TaxonResourceIT() {
     super("/dataset/11/taxon");
   }
   

@@ -24,14 +24,14 @@ import static life.catalogue.ApiUtils.*;
 import static life.catalogue.api.TestEntityGenerator.nullifyUserDate;
 import static org.junit.Assert.*;
 
-public class DatasetResourceTest extends ResourceTestBase {
+public class DatasetResourceIT extends ResourceITBase {
   
   static GenericType<ResultPage<Dataset>> RESULT_PAGE = new GenericType<ResultPage<Dataset>>() {};
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.datasetMix();
 
-  public DatasetResourceTest() {
+  public DatasetResourceIT() {
     super("/dataset");
   }
 
@@ -67,6 +67,7 @@ public class DatasetResourceTest extends ResourceTestBase {
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setContact(Agent.parse("me"));
     d.setIssued(FuzzyDate.now());
+    d.setVersion("1.23");
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     
@@ -95,13 +96,13 @@ public class DatasetResourceTest extends ResourceTestBase {
   
   @Test
   public void delete() {
-    Response resp = editorCreds(base.path("1008")).delete();
+    Response resp = userCreds(base.path("1008")).delete();
     // no permission!
     assertEquals(403, resp.getStatus());
 
-    addUserPermission("editor", 1008);
+    addUserPermission("user", 1008);
 
-    resp = editorCreds(base.path("1008")).delete();
+    resp = userCreds(base.path("1008")).delete();
     assertEquals(204, resp.getStatus());
 
     Dataset d = userCreds(base.path("1008")).get(Dataset.class);

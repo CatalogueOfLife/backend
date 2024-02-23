@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class LegacyWebserviceResourceTest {
+public class LegacyWebserviceResourceIT {
 
   @Test
   public void calcLimit() {

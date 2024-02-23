@@ -13,11 +13,11 @@ import org.junit.Test;
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
 
-public class NameParserResourceTest extends ResourceTestBase {
+public class NameParserResourceIT extends ResourceITBase {
 
   GenericType<Name> PARSER_TYPE = new GenericType<Name>() {};
 
-  public NameParserResourceTest() {
+  public NameParserResourceIT() {
     super("/parser/name");
   }
 
