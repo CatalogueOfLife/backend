@@ -60,6 +60,8 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   public void uniqueDataset() throws Exception {
     try {
       Dataset d = DatasetMapperTest.create();
+      d.setGbifKey(null);
+      d.setDoi(null);
       d.setKey(999);
       mapper(DatasetMapper.class).create(d);
       mapper(DatasetMapper.class).create(d);

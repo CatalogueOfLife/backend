@@ -16,6 +16,7 @@ import org.gbif.nameparser.api.Authorship;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 
@@ -165,20 +166,21 @@ public class InterpreterBaseTest {
     VerbatimRecord v = new VerbatimRecord();
 
     Name n = new Name();
-    n.setGenus("[Abies]");
+    n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Miller 1876");
     n.setCombinationAuthorship(Authorship.yearAuthors("1876", "Miller"));
     n.rebuildScientificName();
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);
+    pnu.setDoubtful(true); // gets converted to provisional
     NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
 
     assertTrue(u.usage.isTaxon());
     assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, u.usage.getStatus());
     Taxon t = u.asTaxon();
 
-    assertFalse(t.isExtinct());
+    assertNull(t.isExtinct());
     assertNull(t.getNamePhrase());
 
     n = t.getName();
@@ -190,41 +192,43 @@ public class InterpreterBaseTest {
 
   @Test
   public void yearParser() throws Exception {
-    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear("1678", issues));
-    assertFalse(issues.hasIssues());
-  
-    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear("1678b", issues));
-    assertFalse(issues.hasIssues());
-  
-    assertEquals((Integer) 1678, InterpreterBase.parseNomenYear(" 1678 b", issues));
-    assertFalse(issues.hasIssues());
-    
-    assertEquals((Integer) 999, InterpreterBase.parseNomenYear("999", issues));
-    assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
-    
-    issues.getIssues().clear();
-    assertEquals((Integer) 2112, InterpreterBase.parseNomenYear("2112", issues));
-    assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
-  
-    issues.getIssues().clear();
-    assertEquals((Integer) 2800, InterpreterBase.parseNomenYear("2800", issues));
-    assertTrue(issues.hasIssue(Issue.UNLIKELY_YEAR));
+    for (var x : new String[]{
+      "1099",
+      "1740",
+      "1678",
+      "1678b",
+      " 1678 b",
+      "2100"
+    }) {
+      issues.getIssues().clear();
+      assertNull(x, InterpreterBase.parseNomenYear(x, issues));
+      assertTrue(x, issues.hasIssue(Issue.UNLIKELY_YEAR));
+    }
 
-    issues.getIssues().clear();
-    assertEquals((Integer) 1980, InterpreterBase.parseNomenYear("198?", issues));
-    assertFalse(issues.hasIssues());
-  
-    issues.getIssues().clear();
-    assertNull(InterpreterBase.parseNomenYear("gd2000", issues));
-    assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
-  
-    issues.getIssues().clear();
-    assertNull(InterpreterBase.parseNomenYear("35611", issues));
-    assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
-  
-    issues.getIssues().clear();
-    assertNull(InterpreterBase.parseNomenYear("january", issues));
-    assertTrue(issues.hasIssue(Issue.UNPARSABLE_YEAR));
+    for (var x : Map.of(
+      "1999", 1999,
+      "1999b", 1999,
+      "184?", 1840,
+      " 1999", 1999,
+      " 1778 b", 1778,
+      "1761 D", 1761
+    ).entrySet()) {
+      issues.getIssues().clear();
+      assertEquals(x.getKey(), x.getValue(), InterpreterBase.parseNomenYear(x.getKey(), issues));
+      assertFalse(x.getKey(), issues.hasIssues());
+    }
+
+    for (var x : new String[]{
+      "13",
+      "-1999",
+      "gd2000",
+      "1234199",
+      "january"
+    }) {
+      issues.getIssues().clear();
+      assertNull(x, InterpreterBase.parseNomenYear(x, issues));
+      assertTrue(x, issues.hasIssue(Issue.UNPARSABLE_YEAR));
+    }
   }
 
   @Test

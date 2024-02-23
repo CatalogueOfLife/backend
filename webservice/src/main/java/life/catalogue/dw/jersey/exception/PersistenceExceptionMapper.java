@@ -31,7 +31,10 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
   private static final Pattern RELATION = Pattern.compile("relation \"[a-z_]+_([0-9]+)\" does not exist");
   private static final Pattern UNIQUE = Pattern.compile("unique constraint \"([a-z]+)_");
   private static final Pattern UNIQUE_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) already exists");
+  private static final Pattern EXCLUSION = Pattern.compile("exclusion constraint \"([a-z]+)_");
+  private static final Pattern EXCLUSION_DETAILS = Pattern.compile("Detail: Key \\(([a-z_-]+)\\)=\\((.*)\\) conflicts with existing key");
   public static final String CODE_NOT_FOUND = "42P01";
+  public static final String EXCLUSION_CODE = "23P01";
 
   @Override
   public Response toResponse(PersistenceException e) {
@@ -48,22 +51,11 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
           }
           break;
 
-        case PgUtils.CODE_UNIQUE:
-          m = UNIQUE.matcher(e.getCause().getMessage());
-          String entity = "Entity";
-          if (m.find()) {
-            entity = StringUtils.capitalize(m.group(1));
+        case EXCLUSION_CODE:
+          return parsePgError(pe, EXCLUSION, EXCLUSION_DETAILS);
 
-            Matcher details = UNIQUE_DETAILS.matcher(e.getCause().getMessage());
-            if (details.find()) {
-              String field = details.group(1);
-              String value = details.group(2);
-              LOG.debug("{} with {}='{}' already exists", field, value, entity, pe);
-              return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " with "+field+"='" + value + "' already exists");
-            }
-          }
-          LOG.debug("{} already exists", entity, pe);
-          return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists");
+        case PgUtils.CODE_UNIQUE:
+          return parsePgError(pe, UNIQUE, UNIQUE_DETAILS);
       }
       // All PgSql Error codes starting with 23 are constraint violations.
       if (pgCode.get().startsWith("23")) {
@@ -75,6 +67,24 @@ public class PersistenceExceptionMapper extends LoggingExceptionMapper<Persisten
       LOG.warn("Unhandled Postgres error code {}: {}", pgCode.get(), pe.getMessage());
     }
     return super.toResponse(e);
+  }
+
+  private Response parsePgError(Exception e, Pattern p1, Pattern p2) {
+    Matcher m = p1.matcher(e.getMessage());
+    String entity = "Entity";
+    if (m.find()) {
+      entity = StringUtils.capitalize(m.group(1));
+
+      Matcher details = p2.matcher(e.getMessage());
+      if (details.find()) {
+        String field = details.group(1);
+        String value = details.group(2);
+        LOG.debug("{} with {}='{}' already exists", field, value, entity, e);
+        return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " with "+field+"='" + value + "' already exists");
+      }
+    }
+    LOG.debug("{} already exists", entity, e);
+    return jsonErrorResponse(Response.Status.BAD_REQUEST, entity + " already exists");
   }
 
   /**

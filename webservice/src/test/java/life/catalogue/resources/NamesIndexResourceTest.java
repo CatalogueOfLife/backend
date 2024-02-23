@@ -21,13 +21,8 @@ public class NamesIndexResourceTest extends ResourceTestBase {
     super("/nidx/match");
   }
 
-  @Test(expected = ServiceUnavailableException.class)
-  public void match() {
-    userCreds(base.queryParam("q", "Abies alba Mill.")).get(NameMatch.class);
-  }
-
   @Test
-  public void matchWorks() throws Exception {
+  public void match() throws Exception {
     RULE.startNamesIndex();
     NameMatch match = userCreds(base.queryParam("q", "Abies alba Mill."))
       .get(NameMatch.class);

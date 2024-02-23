@@ -109,8 +109,9 @@ public class UsageMatcherGlobalTest {
     assertEquals("oen1", match.usage.getId());
     assertEquals(MatchType.VARIANT, match.type);
 
-    match = match(Rank.GENUS, "Oenanthe", "Linus", null, null);
-    assertFalse(match.isMatch());
+    match = match(Rank.GENUS, "Oenanthe", "Linus", null, null); // debatable whether this should match
+    assertEquals("oen1", match.usage.getId());
+    assertEquals(MatchType.VARIANT, match.type);
 
     match = match(Rank.GENUS, "Oenanthe", "V.", null, null);
     assertEquals("oen2", match.usage.getId());

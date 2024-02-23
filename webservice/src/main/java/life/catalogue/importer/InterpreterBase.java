@@ -46,7 +46,7 @@ public class InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
   static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
-  private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?$");
+  private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?(?:\\s*[a-zA-Z])?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
   protected final NeoDb store;
   protected final DatasetSettings settings;
@@ -531,7 +531,8 @@ public class InterpreterBase {
   }
 
   /**
-   * Parses the nomenclatural year the name was published and flags issues if the year is unparsable or unliklely.
+   * Parses the nomenclatural year the name was published and flags issues if the year is unparsable
+   * or unliklely, i.e. before 1753 or after next year.
    */
   protected static Integer parseNomenYear(String year, IssueContainer issues) {
     if (!StringUtils.isBlank(year)) {
@@ -549,7 +550,6 @@ public class InterpreterBase {
         } else {
           return y;
         }
-
       } else {
         issues.addIssue(Issue.UNPARSABLE_YEAR);
       }
