@@ -20,13 +20,9 @@
     <tag>HEAD</tag>
   </scm>
 
-  <prerequisites>
-    <maven>${minimumMavenVersion}</maven>
-  </prerequisites>
-
   <properties>
     <!-- build settings -->
-    <minimumMavenVersion>3.3</minimumMavenVersion>
+    <minimumMavenVersion>3.6.3</minimumMavenVersion>
     <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -104,22 +100,22 @@
     <univocity-parsers.version>2.9.1</univocity-parsers.version>
 
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
-    <depgraph-maven-plugin>3.3.0</depgraph-maven-plugin>
-    <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+    <depgraph-maven-plugin>4.0.3</depgraph-maven-plugin>
+    <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
     <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
-    <maven-clean-plugin.version>3.1.0</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>3.1.2</maven-dependency-plugin.version>
-    <maven-enforcer-plugin.version>3.0.0-M3</maven-enforcer-plugin.version>
+    <maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
+    <maven-compiler-plugin.version>3.12.1</maven-compiler-plugin.version>
+    <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
-    <maven-install-plugin.version>3.0.0-M1</maven-install-plugin.version>
-    <maven-jar-plugin.version>3.2.0</maven-jar-plugin.version>
-    <maven-release-plugin.version>3.0.0-M1</maven-release-plugin.version>
-    <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
-    <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
-    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-    <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
-    <versions-maven-plugin.version>2.8.1</versions-maven-plugin.version>
+    <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
+    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+    <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
+    <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+    <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+    <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
     <xjc-guava-plugin.version>0.3</xjc-guava-plugin.version>
 
     <!-- default maven properties to define the postgres server for running tests.
@@ -841,14 +837,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-dependency-plugin</artifactId>
           <version>${maven-dependency-plugin.version}</version>
-          <!-- following is needed until 3.1.2 is released -->
-          <dependencies>
-            <dependency>
-              <groupId>org.apache.maven.shared</groupId>
-              <artifactId>maven-dependency-analyzer</artifactId>
-              <version>1.11.1</version>
-            </dependency>
-          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -955,14 +943,13 @@
           <version>${maven-resources-plugin.version}</version>
         </plugin>
         <plugin>
-          <!-- Note: http://jira.codehaus.org/browse/MSOURCES-45, http://jira.codehaus.org/browse/MSOURCES-50 -->
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-source-plugin</artifactId>
           <version>${maven-source-plugin.version}</version>
           <executions>
             <execution>
               <id>attach-sources</id>
-              <phase>package</phase>
+              <phase>verify</phase>
               <goals>
                 <goal>jar-no-fork</goal>
               </goals>
@@ -1058,16 +1045,22 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${maven-enforcer-plugin.version}</version>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <version>${maven-jar-plugin.version}</version>
       </plugin>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${maven-compiler-plugin.version}</version>
       </plugin>
+      <!--
+      -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>${maven-source-plugin.version}</version>
       </plugin>
@@ -1086,54 +1079,6 @@
   </build>
 
   <profiles>
-    <!-- automatically used by the release plugin -->
-    <profile>
-      <id>col-release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-enforcer-plugin</artifactId>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>enforce</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <rules>
-                <requireMavenVersion>
-                  <version>[${minimumMavenVersion},)</version>
-                </requireMavenVersion>
-                <requireJavaVersion>
-                  <version>[${java.version},)</version>
-                </requireJavaVersion>
-                <requirePluginVersions>
-                  <message>Best Practice is to always define plugin versions!
-                  </message>
-                </requirePluginVersions>
-                <requireReleaseDeps>
-                  <message>No Snapshot dependencies allowed!</message>
-                </requireReleaseDeps>
-              </rules>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-source-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>attach-sources</id>
-                <goals>
-                  <goal>jar-no-fork</goal>
-                  <goal>test-jar-no-fork</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
     <profile>
       <!--
       shows module dependencies as dot and png file in target folder. Use with just
