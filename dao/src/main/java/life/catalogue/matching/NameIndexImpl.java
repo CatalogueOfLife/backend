@@ -479,7 +479,7 @@ public class NameIndexImpl implements NameIndex {
    */
   private static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);
-    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)), '*');
+    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
   }
   
   /**

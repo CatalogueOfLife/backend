@@ -34,6 +34,15 @@ public class SyncNameUsageRules {
         LOG.debug("accepted manuscript name found: {}", u.getLabel());
       }
     }
+    // change tax status of original spelling variations
+    if (Boolean.TRUE.equals(u.getName().isOriginalSpelling())) {
+      if (u.getStatus().isTaxon()) {
+        u.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+        LOG.debug("accepted original spelling found: {}", u.getLabel());
+      } else {
+        // TODO: create orth var name relation
+      }
+    }
     // fix all caps uninomials
     if (n.getType().isParsable() && n.isParsed() && n.getUninomial() != null && StringUtils.isAllUpperCase(n.getUninomial())) {
       n.setUninomial(StringUtils.capitalize(n.getUninomial().trim().toLowerCase()));

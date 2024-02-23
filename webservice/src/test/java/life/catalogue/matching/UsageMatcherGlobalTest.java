@@ -1,4 +1,4 @@
-package life.catalogue.assembly;
+package life.catalogue.matching;
 
 import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;

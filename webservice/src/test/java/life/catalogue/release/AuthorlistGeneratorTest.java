@@ -29,12 +29,21 @@ public class AuthorlistGeneratorTest {
     final List<Dataset> sources = new ArrayList<>();
     final var frankOrcid = "1234-5678-9999-0000";
     var s1 = new Dataset();
-    s1.setCreator(List.of(person("F", "Berril", null, frankOrcid), person("Arri", "Rønsen"), organisation("FAO")));
+    s1.setCreator(List.of(
+      person("F", "Berril", null, frankOrcid),
+      person("Arri", "Rønsen"), organisation("FAO")
+    ));
     sources.add(s1);
 
     var s2 = new Dataset();
-    s2.setCreator(List.of(person("Gerry", "Newman"), person("Arri", "Rønsen"), organisation("GBIF")));
-    s2.setEditor(List.of(person("A.F.", "Beril", null, frankOrcid)));
+    s2.setCreator(List.of(
+      person("Gerry", "Newman"),
+      person("Arri", "Rønsen"),
+      organisation("GBIF")
+    ));
+    s2.setEditor(List.of(
+      person("A.F.", "Beril", null, frankOrcid)
+    ));
     sources.add(s2);
 
     doReturn(sources).when(dao).list(anyInt(), any(), anyBoolean(), anyBoolean());

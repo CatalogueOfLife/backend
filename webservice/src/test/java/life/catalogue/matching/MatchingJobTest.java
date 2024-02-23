@@ -22,8 +22,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class MatchingJobTest extends EmailNotificationTemplateTest {
@@ -40,7 +39,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   public void setUp() throws Exception {
     matcher = mock(UsageMatcherGlobal.class);
     int dkey = dataRule.testData.key;
-    doReturn(UsageMatch.empty(dkey)).when(matcher).match(anyInt(), any(), (List<? extends SimpleName>) any(), any(), any());
+    when(matcher.match(anyInt(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
   }
 
   @Override

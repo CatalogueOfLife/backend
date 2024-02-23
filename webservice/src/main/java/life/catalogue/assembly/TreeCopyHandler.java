@@ -3,6 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.IgnoreReason;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CatCopy;
 import life.catalogue.db.mapper.NameRelationMapper;
@@ -55,6 +56,9 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
     // copy taxon relations
     copyTaxonRelations();
+
+    // implicit relations last, so we can check if we have duplicates
+    super.copyRelations();
   }
 
   private void copyTaxonRelations() {

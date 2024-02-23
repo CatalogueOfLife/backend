@@ -349,6 +349,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   @Override
   public void copyRelations() {
     // TODO: copy name & taxon relations
+    // implicit relations last, so we can check if we have duplicates
+    super.copyRelations();
   }
 
   @Override

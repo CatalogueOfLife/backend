@@ -51,10 +51,8 @@ public class TreeBaseHandlerTest {
     when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
 
     factory = mock(SqlSessionFactory.class);
-    when(factory.openSession()).thenReturn(session);
     when(factory.openSession(anyBoolean())).thenReturn(session);
     when(factory.openSession(any(ExecutorType.class), anyBoolean())).thenReturn(session);
-
   }
 
   @Test

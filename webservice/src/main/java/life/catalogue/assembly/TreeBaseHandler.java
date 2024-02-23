@@ -65,7 +65,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> typeMaterialIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
+  protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
   private final Map<String, String> refIds = new HashMap<>();
+  // from name to related name with given type
+
   protected int sCounter = 0;
   protected int tCounter = 0;
   protected int decisionCounter = 0;
@@ -158,6 +161,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected void processEnd(@Nullable SimpleName sn, ModifiedUsage mod) throws InterruptedException {
+    // create orth var name relation for synonyms
+    if (sn != null && sn.isSynonym() && Boolean.TRUE.equals(mod.usage.getName().isOriginalSpelling())) {
+      var relMap = nameRelsToBeCreated.putIfAbsent(NomRelType.SPELLING_CORRECTION, new HashMap<>());
+      // find name id of accepted parent, the current name!
+      var nid = nm.getNameIdByUsage(targetDatasetKey, sn.getParentId());
+      relMap.put(nid, mod.usage.getName().getId());
+    }
+
     // in case of updates from decisions, track also the original name as a synonym?
     if (sn != null && !sn.isSynonym() && mod.keepOriginal && mod.originalName != null) {
       var origAsSyn = new Synonym(mod.originalName);
@@ -579,6 +590,28 @@ public abstract class TreeBaseHandler implements TreeHandler {
       ed.getMode()== EditorialDecision.Mode.UPDATE && Boolean.TRUE.equals(ed.isKeepOriginalName()),
       originalName
     );
+  }
+
+  @Override
+  public void copyRelations() {
+    NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
+    for (var type : nameRelsToBeCreated.entrySet()) {
+      int counter = 0;
+      for (var rel : type.getValue().entrySet()) {
+        var nr = new NameRelation();
+        nr.setDatasetKey(targetDatasetKey);
+        nr.setSectorKey(sector.getId());
+        nr.setType(type.getKey());
+        nr.setNameId(rel.getKey());
+        nr.setRelatedNameId(rel.getValue());
+        nrmWrite.create(nr);
+        if (counter++ % 2500 == 0) {
+          batchSession.commit();
+        }
+      }
+      batchSession.commit();
+      LOG.info("Created {} implicit {} name relations for sector {}", counter, type.getKey(), sector.getKey());
+    }
   }
 
   protected boolean incIgnored(IgnoreReason reason, NameUsageBase u) {
