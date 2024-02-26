@@ -123,7 +123,7 @@ public class PortalPageRenderer {
           false
         );
         // put source dataset title into the ID field so we can show a real title
-        if (info.getSource() != null) {
+        if (info.getSource() != null && info.getSource().getSourceDatasetKey() != null) {
           Dataset source = sourceDao.get(datasetKey, info.getSource().getSourceDatasetKey(), false);
           data.put("source", source);
         }

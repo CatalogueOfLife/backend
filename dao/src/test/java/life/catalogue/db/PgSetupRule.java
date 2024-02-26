@@ -55,13 +55,13 @@ public class PgSetupRule extends SqlSessionFactoryRule {
     cfg.user = container.getUsername();
     cfg.password = container.getPassword();
     cfg.port = container.getFirstMappedPort();
+    System.out.println("Postgres container using port " + cfg.port);
     return cfg;
   }
 
   public static PostgreSQLContainer<?> setupPostgres() {
     PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:15.4").withDatabaseName(ADMIN_DB_NAME);
-    container.withReuse(true)
-             .withLabel("reuse.tag", "col_PG_container");
+    container.withAccessToHost(true);
     container.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.ofSeconds(60)));
     return container;
   }

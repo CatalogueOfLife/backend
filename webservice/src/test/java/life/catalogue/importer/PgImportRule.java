@@ -62,7 +62,7 @@ public class PgImportRule extends ExternalResource {
   }
 
   private final Validator validator;
-  private final DatasetDao ddao;
+  private DatasetDao ddao;
 
   private NeoDb store;
   private NormalizerConfig cfg;
@@ -112,7 +112,6 @@ public class PgImportRule extends ExternalResource {
       throw new IllegalStateException(e);
     }
     validator = Validation.buildDefaultValidatorFactory().getValidator();
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
   }
   
   public static class TestResource {
@@ -158,6 +157,7 @@ public class PgImportRule extends ExternalResource {
   public void before() throws Throwable {
     LOG.info("run PgImportRule with {} datasets{}", datasets.length, colImportSource==null ? "" : " and import COL from " + colImportSource.second());
     super.before();
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
 
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();

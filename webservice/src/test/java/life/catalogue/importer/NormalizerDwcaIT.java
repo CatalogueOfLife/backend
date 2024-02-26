@@ -529,7 +529,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
             assertEquals(1, v.getIssues().size());
           }
 
-        } else if (id < 20){
+        } else if (id < 20 || id == 23){
           assertNull(n.getPublishedInYear());
           assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
           assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());

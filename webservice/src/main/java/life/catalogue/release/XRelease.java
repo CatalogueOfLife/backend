@@ -323,11 +323,14 @@ public class XRelease extends ProjectRelease {
     if (entity.equals(Publisher.class)) {
       super.copyTable(entity, mapperClass, session);
 
-    } else if (entity.equals(Sector.class) || entity.equals(EditorialDecision.class)) {
-      // editorial decisions and sectors are tricky.
-      // We want all from the base release AND new ones for the merge sectors only from the project!!!
-      super.copyTable(entity, mapperClass, session);
+    } else {
+      // copy all data from the base release
+      int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
+      LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
+
+      // for editorial decisions and sectors we want all from the base release AND new ones for the merge sectors only from the project!!!
       if (entity.equals(Sector.class)) {
+        session.commit();
         var sm = session.getMapper(SectorMapper.class);
         for (var s : sectors) {
           s.setDatasetKey(newDatasetKey);
@@ -339,13 +342,10 @@ public class XRelease extends ProjectRelease {
           // revert sectors as we might use the sectors as project sectors later on again, better don't alter them
           s.setDatasetKey(datasetKey);
         }
-      } else {
+        session.commit();
+      } else if (entity.equals(EditorialDecision.class)) {
         //TODO: copy merge decisions only...
       }
-
-    } else {
-      int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
-      LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
     }
   }
 
