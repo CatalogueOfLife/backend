@@ -72,7 +72,6 @@ public abstract class CmdTestBase {
         w.write("\nadminDb:\n");
         PgDbConfig adb = new PgDbConfig();
         adb.database = PgSetupRule.ADMIN_DB_NAME;
-        adb.database = "markus";
         adb.password = db.password;
         adb.user = db.user;
         YamlUtils.write(adb, 2, w);
