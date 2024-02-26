@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.TestDataRule;
 
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.core.MediaType;
 
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;
@@ -30,7 +31,7 @@ public class TaxonResourceIT extends ResourceITBase {
   
   @Test
   public void get() {
-    Taxon t = userCreds(base.path("root-1")).get(Taxon.class);
+    Taxon t = userCreds(base.path("root-1")).accept(MediaType.APPLICATION_JSON_TYPE).get(Taxon.class);
     assertNotNull(t);
     assertEquals("root-1", t.getId());
   }
@@ -41,7 +42,7 @@ public class TaxonResourceIT extends ResourceITBase {
     Taxon t = createTaxon();
     t.setId( adminCreds(base).post(json(t), String.class) );
 
-    Taxon t2 = userCreds(base.path(t.getId())).get(Taxon.class);
+    Taxon t2 = userCreds(base.path(t.getId())).accept(MediaType.APPLICATION_JSON_TYPE).get(Taxon.class);
     assertNotNull(t2);
 
     // manually created taxa will always be of origin USER
@@ -80,7 +81,7 @@ public class TaxonResourceIT extends ResourceITBase {
   @Test(expected = ForbiddenException.class)
   public void createFail() {
     Taxon t = createTaxon();
-    editorCreds(base).post(json(t), String.class);
+    userCreds(base).post(json(t), String.class);
   }
   
 }
