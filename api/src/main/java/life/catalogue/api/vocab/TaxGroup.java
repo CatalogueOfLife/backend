@@ -16,58 +16,60 @@ public enum TaxGroup {
     Bacteria(Prokaryotes),
     Archaea(Prokaryotes),
 
-  /**
-   * Any eukaryote that is not animal, plant (incl algae s.l.) nor fungus
-   * Includes all Protozoa (ciliates, flagellates, and amoebas)
-   */
-  Protists(NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
-
-  Plants(NomCode.BOTANICAL), // sensu lato incl red algae. More like Archaeplastida
+  Eukaryotes(NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
 
     /**
-     * Sensu lato including names traditionally treated as eukaryotic algae.
-     * Includes diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria
+     * Any eukaryote that is not animal, plant (incl algae s.l.) nor fungus
+     * Includes all Protozoa (ciliates, flagellates, and amoebas)
      */
-    Algae(Plants, Protists),
-    Bryophytes(Plants), // sensu lato incl liverworts, hornworts and mosses
-    Pteridophytes(Plants), // sensu lato with fern allies incl clubmosses, horsetails and whisk ferns
-    Angiosperms(Plants),
-    Gymnosperms(Plants),
+    Protists(Eukaryotes),
 
-  Fungi(NomCode.BOTANICAL), // incl lichen
-    Ascomycetes(Fungi),
-    Basidiomycetes(Fungi),
-    Oomycetes(Fungi), // traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists
-    OtherFungi(Fungi),
+    Plants(NomCode.BOTANICAL, Eukaryotes), // sensu lato incl red algae. More like Archaeplastida
 
-  Animals(NomCode.ZOOLOGICAL),
-    Arthropods(Animals),
-      Insects(Arthropods),
-        Coleoptera(Insects),
-        Diptera(Insects),
-        Lepidoptera(Insects),
-        Hymenoptera(Insects),
-        Hemiptera(Insects),
-        Orthoptera(Insects),
-        Trichoptera(Insects),
-        OtherInsects(Insects),
-      Arachnids(Arthropods),//
-      Crustacean(Arthropods),
-      OtherArthropods(Arthropods),
-    Molluscs(Animals),
-      Gastropods(Molluscs),//
-      Bivalves(Molluscs),
-      OtherMolluscs(Molluscs),
-    Chordates(Animals),
-      Amphibians(Chordates),
-      Birds(Chordates),
-      Mammals(Chordates),
-      Reptiles(Chordates),
-      Fish(Chordates),
-      OtherChordates(Chordates),
-    OtherAnimals(Animals),
+      /**
+       * Sensu lato including names traditionally treated as eukaryotic algae.
+       * Includes diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria
+       */
+      Algae(Plants, Protists),
+      Bryophytes(Plants), // sensu lato incl liverworts, hornworts and mosses
+      Pteridophytes(Plants), // sensu lato with fern allies incl clubmosses, horsetails and whisk ferns
+      Angiosperms(Plants),
+      Gymnosperms(Plants),
 
-  Other;
+    Fungi(NomCode.BOTANICAL, Eukaryotes), // incl lichen
+      Ascomycetes(Fungi),
+      Basidiomycetes(Fungi),
+      Oomycetes(Fungi), // traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists
+      OtherFungi(Fungi),
+
+    Animals(NomCode.ZOOLOGICAL, Eukaryotes),
+      Arthropods(Animals),
+        Insects(Arthropods),
+          Coleoptera(Insects),
+          Diptera(Insects),
+          Lepidoptera(Insects),
+          Hymenoptera(Insects),
+          Hemiptera(Insects),
+          Orthoptera(Insects),
+          Trichoptera(Insects),
+          OtherInsects(Insects),
+        Arachnids(Arthropods),//
+        Crustacean(Arthropods),
+        OtherArthropods(Arthropods),
+      Molluscs(Animals),
+        Gastropods(Molluscs),//
+        Bivalves(Molluscs),
+        OtherMolluscs(Molluscs),
+      Chordates(Animals),
+        Amphibians(Chordates),
+        Birds(Chordates),
+        Mammals(Chordates),
+        Reptiles(Chordates),
+        Fish(Chordates),
+        OtherChordates(Chordates),
+      OtherAnimals(Animals),
+
+    OtherEukaryotes(Eukaryotes);
 
 
   final Set<TaxGroup> parents = new HashSet<>();
@@ -75,19 +77,25 @@ public enum TaxGroup {
 
   TaxGroup() {
   }
-  TaxGroup(NomCode... codes) {
-    if (codes != null) {
-      for (var c : codes) {
-        this.codes.add(c);
-      }
-    }
-  }
+
   TaxGroup(TaxGroup... parents) {
     if (parents != null) {
       for (var p : parents) {
         this.parents.add(p);
         this.codes.addAll(p.codes);
       }
+    }
+  }
+
+  TaxGroup(NomCode code1, NomCode code2) {
+    this.codes.add(code1);
+    this.codes.add(code2);
+  }
+  TaxGroup(NomCode code, TaxGroup... parents) {
+    this.codes.add(code);
+    if (parents != null) {
+      // dont inherit parent codes - we got an explicit one!
+      this.parents.addAll(Arrays.asList(parents));
     }
   }
 

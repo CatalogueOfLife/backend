@@ -1,6 +1,7 @@
 package life.catalogue.common.collection;
 
 import java.util.EnumMap;
+import java.util.Optional;
 
 public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {
 
@@ -42,6 +43,13 @@ public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {
       }
     }
     return best;
+  }
+
+  /**
+   * @return an Optional describing the maximum count of this map, or an empty Optional if the map is empty
+   */
+  public Optional<Integer> highestCount() {
+    return values().stream().max(Integer::compareTo);
   }
 
 }

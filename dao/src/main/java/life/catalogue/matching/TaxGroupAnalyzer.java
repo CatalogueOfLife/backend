@@ -125,6 +125,38 @@ public class TaxGroupAnalyzer {
       }
     }
 
+    while (!groups.isEmpty()) {
+      var result = filterCandidates(groups);
+      if (result != null) {
+        return result;
+      }
+      // remove lowest count and try again
+      CountEnumMap<TaxGroup> cnt = new CountEnumMap<>(TaxGroup.class);
+      for (var g : groups) {
+        for (var g2 : groups) {
+          if (!g.isDisparateTo(g2)) {
+            cnt.inc(g);
+          }
+        }
+      }
+      final int highest = cnt.highestCount().get();
+      if (!groups.removeIf(g -> cnt.get(g) < highest)) {
+        // we could not reduce the groups any more, pick root
+        // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
+        CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
+        for (var g : groups) {
+          counts.inc(g);
+          for (var p : g.classification()) {
+            counts.inc(p);
+          }
+        }
+        return counts.highest();
+      }
+    }
+    return null;
+  }
+
+  private TaxGroup filterCandidates(Set<TaxGroup> groups) {
     if (!groups.isEmpty()) {
       // keep lowest groups only. Exclude groups which are implicit in parents
       Set<TaxGroup> distinctRoots = new HashSet<>(groups);
@@ -140,21 +172,10 @@ public class TaxGroupAnalyzer {
 
       if (distinctRoots.size() == 1) {
         return distinctRoots.iterator().next();
-
-      } else {
-        // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
-        CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
-        for (var g : groups) {
-          for (var r : g.roots()) {
-            counts.inc(r);
-          }
-        }
-        return counts.highest();
       }
     }
     return null;
   }
-
   @VisibleForTesting
   protected static Optional<NomCode> detectCodeFromAuthorship(SimpleName sn) {
     if (sn.getAuthorship() != null) {

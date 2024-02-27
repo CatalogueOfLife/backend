@@ -66,11 +66,11 @@ public class TaxGroupAnalyzerTest {
     assertEquals(TaxGroup.Mammals, analyzer.analyze(sn(Rank.CLASS, "Mammalia")));
 
     // conflicting classifications, but resolvable
-    assertEquals(TaxGroup.Animals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Plantae"), sn("Felidae"))));
+    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Plantae"), sn("Felidae"))));
     assertEquals(TaxGroup.Animals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Felidae"), sn("Coleoptera"))));
 
     // conflicting classifications, unresolvable
-    assertNull(analyzer.analyze(sn("Animalia"), List.of(sn("Plantae"))));
+    assertEquals(TaxGroup.Eukaryotes, analyzer.analyze(sn("Animalia"), List.of(sn("Plantae"))));
 
     assertEquals(TaxGroup.Plants, analyzer.analyze(sn("Tracheophyta")));
     assertEquals(TaxGroup.Insects, analyzer.analyze(sn("Insecta")));
