@@ -195,6 +195,7 @@ Erysipelotrichaceae
 Erysipelotrichales
 Erysipelotrichia
 Erythrobacteraceae
+Eubacteria
 Eubacteriaceae
 Euzebyaceae
 Euzebyales

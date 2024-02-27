@@ -2,6 +2,7 @@ Acidilobaceae
 Acidilobales
 Aigarchaeota
 Archaea
+Archaebacteria
 Archaeoglobaceae
 Archaeoglobales
 Archaeoglobi

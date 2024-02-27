@@ -1,6 +1,7 @@
 Amplectobeluidae
 Anomalocarididae
 Arachnomorpha
+Arthropoda
 Artiopoda
 Chelicerata
 Condylipoda

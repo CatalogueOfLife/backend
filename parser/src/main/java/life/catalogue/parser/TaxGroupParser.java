@@ -23,7 +23,7 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
   public static final TaxGroupParser PARSER = new TaxGroupParser();
 
   public TaxGroupParser() {
-    super("taxgroup.csv", false, TaxGroup.class);
+    super(null, false, TaxGroup.class);
     for (TaxGroup tg : TaxGroup.values()) {
       InputStream stream = getClass().getResourceAsStream("/parser/dicts/taxgroup/" + tg.name().toLowerCase() + ".txt");
       if (stream == null) {

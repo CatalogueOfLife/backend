@@ -1,9 +1,22 @@
 Archephyta
+Chlorobionta
 Chlorobiota
+Chloroplastida
 Cormobionta
+Cormophyta
+Embryobionta
 Embryophyta
+Euchlorophyta
+Euplanta
+Metaphyta
+Phyta
+Plant
 Plantae
 Plants
 Regnum Vegetabile
+Telomobionta
 Tracheophyta
 Vegetabile
+Vegetabilia
+Vegetable
+Viridiplantae

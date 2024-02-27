@@ -6,6 +6,7 @@ Anisonemia
 Anisonemida
 Anisonemidae
 Apicomplexa
+Archezoa
 Astasiidae
 Axostylea
 Bihospitida
@@ -89,6 +90,8 @@ Postgaardidae
 Preaxostyla
 Prokinetoplastida
 Prokinetoplastina
+Protista
+Protozoa
 Pyrsonympha
 Rapazia
 Rapazida

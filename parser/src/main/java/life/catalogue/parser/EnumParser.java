@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
+import javax.annotation.Nullable;
+
 /**
  *
  */
@@ -28,10 +30,12 @@ public abstract class EnumParser<T extends Enum> extends MapBasedParser<T> {
     addNativeEnumMappings();
   }
 
-  public EnumParser(String mappingResourceFile, boolean throwUnparsableException, Class<T> enumClass) {
+  public EnumParser(@Nullable String mappingResourceFile, boolean throwUnparsableException, Class<T> enumClass) {
     super(enumClass, throwUnparsableException);
     this.enumClass = enumClass;
-    addMappings(mappingResourceFile);
+    if (mappingResourceFile != null) {
+      addMappings(mappingResourceFile);
+    }
     addNativeEnumMappings();
   }
 

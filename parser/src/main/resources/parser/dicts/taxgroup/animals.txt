@@ -1,6 +1,8 @@
 Acridinae
 Acrocephalidae
 Ancylini
+Animal
+Animalia
 Bdelloidea
 Bufonidae
 Cepolidae
@@ -10,6 +12,7 @@ Ellobiinae
 Heterocheilidae
 Leptosomatidae
 Macroglossinae
+Metazoa
 Personidae
 Phyllophoridae
 Phyllophorinae
