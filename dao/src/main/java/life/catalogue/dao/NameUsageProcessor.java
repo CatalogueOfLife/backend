@@ -18,7 +18,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.NotImplementedException;
+import life.catalogue.matching.TaxGroupAnalyzer;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class NameUsageProcessor {
   private static final int LOG_INTERVAL = 5000;
 
   private final SqlSessionFactory factory;
+  private final TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
   private int loadCounter = 0;
   private final File tmpDir;
 
@@ -159,6 +161,7 @@ public class NameUsageProcessor {
               syn.setAccepted((Taxon)acc);
               addClassification(nuw, taxa, usageCache, loader);
             }
+            nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
             consumer.accept(nuw);
             if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
               LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);
@@ -170,6 +173,7 @@ public class NameUsageProcessor {
         LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
         for (var nuw : taxa) {
           addClassification(nuw, taxa, usageCache, loader);
+          nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
           consumer.accept(nuw);
           if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
             LOG.debug("Processed {} usages of dataset {}; loaded taxa={}", counter, datasetKey, loadCounter);

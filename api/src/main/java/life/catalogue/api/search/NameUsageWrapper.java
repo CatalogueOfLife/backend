@@ -9,6 +9,8 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import life.catalogue.api.vocab.TaxGroup;
+
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
@@ -21,6 +23,7 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private UUID publisherKey;
   private Set<InfoGroup> secondarySourceGroups;
   private Set<Integer> secondarySourceKeys;
+  private TaxGroup group;
 
   @Override
   public void setId(String id) {
@@ -109,18 +112,26 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.secondarySourceKeys = secondarySourceKeys;
   }
 
+  public TaxGroup getGroup() {
+    return group;
+  }
+
+  public void setGroup(TaxGroup group) {
+    this.group = group;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys);
+    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys) && group == that.group;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySourceGroups, secondarySourceKeys);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
   }
 
   @Override

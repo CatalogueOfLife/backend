@@ -60,6 +60,14 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
     return getStatus() == null || getStatus().isBareName();
   }
 
+  default SimpleNameLink toSimpleNameLink() {
+    SimpleNameLink sn = SimpleNameLink.of(getId(), getName().getScientificName(), getName().getAuthorship(), getName().getRank());
+    sn.setStatus(getStatus());
+    sn.setCode(getName().getCode());
+    sn.setParent(getParentId());
+    return sn;
+  }
+
   /**
    * factory to create a name usage instance based on the provided status and name.
     */

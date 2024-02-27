@@ -38,6 +38,8 @@ public enum NameUsageSearchParameter {
 
   ISSUE(Issue.class),
 
+  GROUP(TaxGroup.class),
+
   NAME_ID(String.class),
 
   /**

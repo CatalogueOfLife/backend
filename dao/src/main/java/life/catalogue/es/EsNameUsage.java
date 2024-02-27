@@ -54,6 +54,7 @@ public class EsNameUsage {
   private NomStatus nomStatus;
   private Set<NameField> nameFields;
   private TaxonomicStatus status;
+  private TaxGroup group;
   private Set<Issue> issues;
   private Set<Environment> environments;
   private Boolean extinct;
@@ -248,6 +249,27 @@ public class EsNameUsage {
     this.status = status;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    EsNameUsage that = (EsNameUsage) o;
+    return Objects.equals(documentId, that.documentId) && Objects.equals(usageId, that.usageId) && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(secondarySourceGroup, that.secondarySourceGroup) && Objects.equals(secondarySourceKey, that.secondarySourceKey) && Objects.equals(scientificName, that.scientificName) && Objects.equals(nameStrings, that.nameStrings) && Objects.equals(authorship, that.authorship) && Objects.equals(authorshipYear, that.authorshipYear) && Objects.equals(authorshipComplete, that.authorshipComplete) && Objects.equals(nameId, that.nameId) && Objects.equals(publishedInId, that.publishedInId) && Objects.equals(publisherKey, that.publisherKey) && rank == that.rank && origin == that.origin && type == that.type && nomCode == that.nomCode && nomStatus == that.nomStatus && Objects.equals(nameFields, that.nameFields) && status == that.status && group == that.group && Objects.equals(issues, that.issues) && Objects.equals(environments, that.environments) && Objects.equals(extinct, that.extinct) && Objects.equals(classificationIds, that.classificationIds) && Objects.equals(classification, that.classification) && Objects.equals(decisions, that.decisions) && Objects.equals(acceptedName, that.acceptedName) && Objects.equals(payload, that.payload);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(documentId, usageId, datasetKey, sectorKey, sectorDatasetKey, sectorPublisherKey, sectorMode, secondarySourceGroup, secondarySourceKey, scientificName, nameStrings, authorship, authorshipYear, authorshipComplete, nameId, publishedInId, publisherKey, rank, origin, type, nomCode, nomStatus, nameFields, status, group, issues, environments, extinct, classificationIds, classification, decisions, acceptedName, payload);
+  }
+
+  public TaxGroup getGroup() {
+    return group;
+  }
+
+  public void setGroup(TaxGroup group) {
+    this.group = group;
+  }
+
   public Set<Issue> getIssues() {
     return issues;
   }
@@ -344,16 +366,4 @@ public class EsNameUsage {
     this.secondarySourceKey = secondarySourceKey;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    EsNameUsage that = (EsNameUsage) o;
-    return Objects.equals(documentId, that.documentId) && Objects.equals(usageId, that.usageId) && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(secondarySourceGroup, that.secondarySourceGroup) && Objects.equals(secondarySourceKey, that.secondarySourceKey) && Objects.equals(scientificName, that.scientificName) && Objects.equals(nameStrings, that.nameStrings) && Objects.equals(authorship, that.authorship) && Objects.equals(authorshipYear, that.authorshipYear) && Objects.equals(authorshipComplete, that.authorshipComplete) && Objects.equals(nameId, that.nameId) && Objects.equals(publishedInId, that.publishedInId) && Objects.equals(publisherKey, that.publisherKey) && rank == that.rank && origin == that.origin && type == that.type && nomCode == that.nomCode && nomStatus == that.nomStatus && Objects.equals(nameFields, that.nameFields) && status == that.status && Objects.equals(issues, that.issues) && Objects.equals(environments, that.environments) && Objects.equals(extinct, that.extinct) && Objects.equals(classificationIds, that.classificationIds) && Objects.equals(classification, that.classification) && Objects.equals(decisions, that.decisions) && Objects.equals(acceptedName, that.acceptedName) && Objects.equals(payload, that.payload);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(documentId, usageId, datasetKey, sectorKey, sectorDatasetKey, sectorPublisherKey, sectorMode, secondarySourceGroup, secondarySourceKey, scientificName, nameStrings, authorship, authorshipYear, authorshipComplete, nameId, publishedInId, publisherKey, rank, origin, type, nomCode, nomStatus, nameFields, status, issues, environments, extinct, classificationIds, classification, decisions, acceptedName, payload);
-  }
 }

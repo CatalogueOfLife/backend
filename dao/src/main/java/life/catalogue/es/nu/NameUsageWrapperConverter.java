@@ -126,6 +126,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setOrigin(null);
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
+    nuw.setGroup(null);
     nuw.setClassification(null);
     Name name = nuw.getUsage().getName();
     name.setDatasetKey(null);
@@ -171,6 +172,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setOrigin(doc.getOrigin());
     nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
+    nuw.setGroup(doc.getGroup());
     nuw.setClassification(extractClassifiction(doc));
     Name name = nuw.getUsage().getName();
     name.setDatasetKey(doc.getDatasetKey());
@@ -215,6 +217,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     saveClassification(doc, nuw);
     saveDecisions(nuw, doc);
     doc.setIssues(nuw.getIssues());
+    doc.setGroup(nuw.getGroup());
     Name name = nuw.getUsage().getName();
     doc.setDatasetKey(name.getDatasetKey());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
