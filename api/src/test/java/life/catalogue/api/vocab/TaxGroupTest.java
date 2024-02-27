@@ -11,12 +11,12 @@ public class TaxGroupTest {
 
   @Test
   public void root() {
-    assertEquals(Set.of(Animals), Birds.roots());
-    assertEquals(Set.of(Animals), Arthropods.roots());
-    assertEquals(Set.of(Animals), Chordates.roots());
-    assertEquals(Set.of(Animals), Animals.roots());
-    assertEquals(Set.of(Plants), Angiosperms.roots());
-    assertEquals(Set.of(Plants, Protists), Algae.roots());
+    assertEquals(Set.of(Eukaryotes), Birds.roots());
+    assertEquals(Set.of(Eukaryotes), Arthropods.roots());
+    assertEquals(Set.of(Eukaryotes), Chordates.roots());
+    assertEquals(Set.of(Eukaryotes), Animals.roots());
+    assertEquals(Set.of(Eukaryotes), Angiosperms.roots());
+    assertEquals(Set.of(Eukaryotes), Algae.roots());
   }
 
   @Test
@@ -31,8 +31,8 @@ public class TaxGroupTest {
 
   @Test
   public void classification() {
-    assertEquals(Set.of(Animals, Chordates), Birds.classification());
-    assertEquals(Set.of(Plants, Protists), Algae.classification());
+    assertEquals(Set.of(Eukaryotes, Animals, Chordates), Birds.classification());
+    assertEquals(Set.of(Eukaryotes, Plants, Protists), Algae.classification());
   }
 
   @Test
