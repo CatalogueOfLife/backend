@@ -56,6 +56,9 @@ public class TaxGroupTest {
     assertTrue(Angiosperms.isDisparateTo(Arachnids));
     assertTrue(Angiosperms.isDisparateTo(Gymnosperms));
     assertTrue(Coleoptera.isDisparateTo(Hemiptera));
+    assertTrue(Animals.isDisparateTo(Plants));
+    assertTrue(Basidiomycetes.isDisparateTo(Ascomycetes));
+    assertTrue(Basidiomycetes.isDisparateTo(Mammals));
 
     assertFalse(Angiosperms.isDisparateTo(Plants));
     assertFalse(Plants.isDisparateTo(Angiosperms));
@@ -63,5 +66,7 @@ public class TaxGroupTest {
     assertFalse(Algae.isDisparateTo(Plants));
     assertFalse(Algae.isDisparateTo(Protists));
     assertFalse(Plants.isDisparateTo(null));
+    assertFalse(Animals.isDisparateTo(Chordates));
+
   }
 }
