@@ -284,6 +284,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
   
     NameUsageBase eucav = getByName(Datasets.COL, Rank.SPECIES, "Euplectus cavicollis");
     assertEquals("Euplectus cavicollis", eucav.getName().getScientificName());
+    assertEquals("LeConte, J. L., 1878", eucav.getName().getAuthorship());
     assertEquals(NameType.SCIENTIFIC, eucav.getName().getType());
   }
 
