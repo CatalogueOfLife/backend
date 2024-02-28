@@ -248,21 +248,16 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     final int parts;
     LOG.info("Splitting {} with {} records into files with {} each", out, total, size);
     try(var in = new FileInputStream(out)) {
-      AtomicInteger cnt = new AtomicInteger(1);
-      var splitter = new PgBinarySplitter(in, size, () -> part(out.getName(), cnt.getAndIncrement()));
+      var splitter = new PgBinarySplitter(in, size,
+        (p) -> part(out.getName(), p),
+        (p,f) -> CompletableFuture.supplyAsync(() -> matchFile(archived, p, f, ni), exec)
+                                  .exceptionally(ex -> {
+                                    LOG.error("Error matching names part {}", p, ex.getCause());
+                                    return null;
+                                  })
+      );
       parts = splitter.split();
     }
-
-    LOG.info("Matching all names from {} parts of {}", parts, out);
-    for (int p = 1; p <= parts; p++) {
-      final int part = p;
-      CompletableFuture.supplyAsync(() -> matchFile(archived, part, ni), exec)
-        .exceptionally(ex -> {
-          LOG.error("Error matching names part {}", part, ex.getCause());
-          return null;
-        });
-    }
-
     return parts;
   }
 
@@ -302,6 +297,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     }
 
     public void matchAll() {
+      LOG.info("Start to match names from {} to {}", in, out);
       try (var reader = new PgBinaryReader(new FileInputStream(in));
            var writer = new PgBinaryWriter(new FileOutputStream(out))
       ) {
@@ -370,9 +366,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
                  .build();
   }
 
-  private FileMatcher matchFile(boolean archived, int part, NameIndex ni) throws RuntimeException {
+  private FileMatcher matchFile(boolean archived, int part, File in, NameIndex ni) throws RuntimeException {
     LoggingUtils.setDatasetMDC(-1 * part, getClass());
-    File in = part(archived ? FILENAME_ARCHIVED_NAMES : FILENAME_NAMES, part);
     File out = part(archived ? FILENAME_ARCHIVED_MATCHES : FILENAME_MATCHES, part);
     FileMatcher matcher = new FileMatcher(archived, ni, in, out);
     matcher.matchAll();

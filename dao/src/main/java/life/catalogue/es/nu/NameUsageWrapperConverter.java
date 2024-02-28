@@ -2,6 +2,7 @@ package life.catalogue.es.nu;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.es.*;
@@ -120,37 +121,40 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @param nuw
    */
   public static void prunePayload(NameUsageWrapper nuw) {
-    NameUsage u = nuw.getUsage();
-    u.setId(null);
-    u.setDatasetKey(null);
-    u.setOrigin(null);
+    // wrapper
     nuw.setPublisherKey(null);
     nuw.setIssues(null);
     nuw.setGroup(null);
     nuw.setClassification(null);
+    // name
     Name name = nuw.getUsage().getName();
-    name.setDatasetKey(null);
     name.setId(null);
+    name.setDatasetKey(null);
+    name.setSectorKey(null);
     name.setScientificName(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
     name.setType(null);
+    // remove nidx which is not searchable and will get out of sync if the index is rebuilt
+    name.setNamesIndexId(null);
+    name.setNamesIndexType(null);
+    // usage
+    NameUsage u = nuw.getUsage();
+    u.setId(null);
+    u.setDatasetKey(null);
+    u.setSectorKey(null);
+    u.setOrigin(null);
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
-      t.setDatasetKey(null);
-      t.setSectorKey(null);
       t.setExtinct(null);
       t.setEnvironments(null);
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
-      s.setDatasetKey(null);
       s.getAccepted().setDatasetKey(null);
       s.getAccepted().setSectorKey(null);
       s.getAccepted().getName().setScientificName(null);
-    } else {
-      BareName b = (BareName) nuw.getUsage();
-      b.setDatasetKey(null);
     }
+    // decisions
     if (notEmpty(nuw.getDecisions())) {
       nuw.getDecisions().forEach(d -> {
         d.setDatasetKey(null);
@@ -166,14 +170,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @param doc
    */
   public static void enrichPayload(NameUsageWrapper nuw, EsNameUsage doc) {
-    NameUsage u = nuw.getUsage();
-    u.setId(doc.getUsageId());
-    u.setDatasetKey(doc.getDatasetKey());
-    u.setOrigin(doc.getOrigin());
+    // wrapper
     nuw.setPublisherKey(doc.getPublisherKey());
     nuw.setIssues(doc.getIssues());
     nuw.setGroup(doc.getGroup());
     nuw.setClassification(extractClassifiction(doc));
+    // name
     Name name = nuw.getUsage().getName();
     name.setDatasetKey(doc.getDatasetKey());
     name.setId(doc.getNameId());
@@ -181,9 +183,15 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     name.setNomStatus(doc.getNomStatus());
     name.setPublishedInId(doc.getPublishedInId());
     name.setType(doc.getType());
+    // nidx will be empty!
+    // usage
+    NameUsage u = nuw.getUsage();
+    u.setId(doc.getUsageId());
+    u.setDatasetKey(doc.getDatasetKey());
+    u.setSectorKey(doc.getSectorKey());
+    u.setOrigin(doc.getOrigin());
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
-      t.setSectorKey(doc.getSectorKey());
       t.setExtinct(doc.getExtinct());
       t.setEnvironments(doc.getEnvironments());
     } else if (nuw.getUsage().getClass() == Synonym.class) {
@@ -192,6 +200,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
     }
+    // decisions
     if (notEmpty(doc.getDecisions())) {
       for (int i = 0; i < nuw.getDecisions().size(); ++i) {
         nuw.getDecisions().get(i).setDatasetKey(doc.getDecisions().get(i).getCatalogueKey());
@@ -212,33 +221,35 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    */
   public EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage doc = new EsNameUsage();
-    saveScientificName(nuw, doc);
-    saveAuthorship(nuw, doc);
-    saveClassification(doc, nuw);
-    saveDecisions(nuw, doc);
+    // wrapper
     doc.setIssues(nuw.getIssues());
     doc.setGroup(nuw.getGroup());
-    Name name = nuw.getUsage().getName();
-    doc.setDatasetKey(name.getDatasetKey());
+    doc.setPublisherKey(nuw.getPublisherKey());
+    doc.setSectorMode(nuw.getSectorMode());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
-    doc.setSectorMode(nuw.getSectorMode());
+    // name
+    saveScientificName(nuw, doc);
+    saveAuthorship(nuw, doc);
+    Name name = nuw.getUsage().getName();
     doc.setNameId(name.getId());
     doc.setNomCode(name.getCode());
     doc.setNomStatus(name.getNomStatus());
     doc.setPublishedInId(name.getPublishedInId());
-    doc.setPublisherKey(nuw.getPublisherKey());
     doc.setRank(name.getRank());
-    doc.setOrigin(nuw.getUsage().getOrigin());
-    doc.setStatus(nuw.getUsage().getStatus());
-    doc.setUsageId(nuw.getUsage().getId());
     doc.setType(name.getType());
     doc.setNameFields(getNonNullNameFields(nuw.getUsage()));
+    // usage
+    doc.setUsageId(nuw.getUsage().getId());
+    doc.setDatasetKey(ObjectUtils.coalesce(nuw.getUsage().getDatasetKey(), name.getDatasetKey()));
+    doc.setSectorKey(ObjectUtils.coalesce(nuw.getUsage().getSectorKey(), name.getSectorKey()));
+    doc.setOrigin(nuw.getUsage().getOrigin());
+    doc.setStatus(nuw.getUsage().getStatus());
     doc.setSecondarySourceGroup(nuw.getSecondarySourceGroups());
     doc.setSecondarySourceKey(nuw.getSecondarySourceKeys());
+    saveClassification(doc, nuw);
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
-      doc.setSectorKey(t.getSectorKey());
       doc.setExtinct(t.isExtinct());
       doc.setEnvironments(t.getEnvironments());
     } else if (nuw.getUsage().getClass() == Synonym.class) {
@@ -246,6 +257,8 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
       doc.setSectorKey(s.getAccepted().getSectorKey());
       doc.setAcceptedName(s.getAccepted().getName().getScientificName());
     }
+    // decision
+    saveDecisions(nuw, doc);
     prunePayload(nuw);
     doc.setPayload(deflate(nuw));
     return doc;

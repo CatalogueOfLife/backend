@@ -4,6 +4,9 @@ import org.apache.commons.io.IOUtils;
 
 import java.io.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PgBinarySplitter {
@@ -12,16 +15,21 @@ public class PgBinarySplitter {
   private int parts = 0;
   private long total;
   private byte[] buffer = new byte[256*1024]; // to hold data for a single field - can be extended dynamically as needed
-  private Supplier<File> fileSupplier;
+  private Function<Integer, File> fileSupplier;
+  private BiConsumer<Integer, File> listener;
 
   public static PgBinarySplitter build(InputStream in, int size, File baseFile) throws IOException {
-    AtomicInteger cnt = new AtomicInteger(1);
-    return new PgBinarySplitter(in, size, () -> new File(baseFile.getParentFile(), baseFile.getName()+"-"+cnt.getAndIncrement()));
+    return new PgBinarySplitter(in, size, (p) -> new File(baseFile.getParentFile(), baseFile.getName()+"-"+p));
   }
-  public PgBinarySplitter(InputStream in, long size, Supplier<File> fileSupplier) throws IOException {
+  public PgBinarySplitter(InputStream in, long size, Function<Integer, File> fileSupplier) throws IOException {
+    this(in, size, fileSupplier, null);
+  }
+
+  public PgBinarySplitter(InputStream in, long size, Function<Integer, File> fileSupplier, BiConsumer<Integer, File> listener) throws IOException {
     this.in = new PgBinaryStream(in);
     this.size = size;
     this.fileSupplier = fileSupplier;
+    this.listener = listener;
   }
 
   /**
@@ -38,7 +46,7 @@ public class PgBinarySplitter {
 
   private boolean dump() throws IOException {
     parts++;
-    File f = fileSupplier.get();
+    File f = fileSupplier.apply(parts);
     int recs = 0;
     try (var out = new PgBinaryWriter(new FileOutputStream(f))) {
       while(recs < size && copyRow(out)) {
@@ -48,6 +56,9 @@ public class PgBinarySplitter {
       throw e;
     }
     total = total + recs;
+    if (listener != null) {
+      listener.accept(parts, f);
+    }
     return recs >= size;
   }
 

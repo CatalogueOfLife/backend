@@ -48,8 +48,7 @@ public class PgBinarySplitterTest {
       var base = new TempFile();
       int parts = 0;
       try (FileInputStream in = new FileInputStream(full.file)) {
-        AtomicInteger cnt = new AtomicInteger(1);
-        var splitter = new PgBinarySplitter(in, 80, () -> splitFile(full.file, cnt.getAndIncrement()));
+        var splitter = new PgBinarySplitter(in, 80, (p) -> splitFile(full.file, p));
         parts = splitter.split();
         assertEquals(13, parts);
 
