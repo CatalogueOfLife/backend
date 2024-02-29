@@ -230,6 +230,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     FileUtils.createParentDirectories(out);
 
     long total;
+    LOG.info("Dumping all {}names into file {}", archived ? "archived ":"", out);
     try (Connection c = dataSource.getConnection()) {
       var pgc = c.unwrap(PgConnection.class);
       total = PgCopyUtils.dumpBinary(pgc, "SELECT " + (archived ? ARCHIVED_NAME_COLS : NAME_COLS) +
@@ -246,7 +247,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     final long size = (total / threads) +1;
     final int parts;
-    LOG.info("Splitting {} with {} records into files with {} each", out, total, size);
+    LOG.info("Splitting {} with {} records into {} files with {} each", out, total, threads, size);
     try(var in = new FileInputStream(out)) {
       var splitter = new PgBinarySplitter(in, size,
         (p) -> part(out.getName(), p),

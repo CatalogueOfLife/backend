@@ -68,7 +68,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    */
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public Integer createAlt(Dataset obj, @Auth User user) {
     return this.create(obj, user);
   }
@@ -98,7 +98,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
@@ -109,7 +109,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @PUT
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateAlt(@PathParam("key") Integer key, Dataset obj, @Auth User user) {
     // merge metadata?
     Dataset old;
@@ -137,7 +137,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
@@ -150,7 +150,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
@@ -287,7 +287,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @VaryAccept
   @Produces({MediaType.APPLICATION_JSON,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML,
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
@@ -301,7 +301,7 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Path("/{key}/source/{id}")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Consumes({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Consumes({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
   public void updateProjectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, Dataset obj, @Auth User user) {
     if (obj==null) {
       throw new IllegalArgumentException("No source entity given for key " + id);

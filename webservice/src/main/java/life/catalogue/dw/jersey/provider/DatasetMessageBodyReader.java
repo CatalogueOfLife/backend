@@ -23,7 +23,7 @@ import javax.ws.rs.ext.Provider;
  * Dataset body reader that understands YAML or XML given as EML.
  */
 @Provider
-@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+@Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
 public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
 
   @Override
@@ -31,6 +31,7 @@ public class DatasetMessageBodyReader implements MessageBodyReader<Dataset> {
     return mediaType.isCompatible(MediaType.APPLICATION_XML_TYPE) ||
       mediaType.isCompatible(MediaType.TEXT_XML_TYPE) ||
       mediaType.isCompatible(MoreMediaTypes.APP_YAML_TYPE) ||
+      mediaType.isCompatible(MoreMediaTypes.APP_X_YAML_TYPE) ||
       mediaType.isCompatible(MoreMediaTypes.TEXT_YAML_TYPE);
   }
 

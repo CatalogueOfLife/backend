@@ -31,7 +31,7 @@ import io.dropwizard.auth.Auth;
 @Path("/dataset/{key}/patch")
 @Produces(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
 public class DatasetPatchResource {
 
   @GET

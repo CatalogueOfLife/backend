@@ -58,7 +58,7 @@ public class MetadataParserResource {
   @Consumes({MediaType.APPLICATION_JSON,
     MediaType.TEXT_PLAIN,
     MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML
+    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML
   })
   public Optional<Dataset> parsePost(InputStream data, @QueryParam("format") MetadataFormat format, @Context ContainerRequestContext ctx) throws Exception {
     if (format == null && ctx.getMediaType() != null) {

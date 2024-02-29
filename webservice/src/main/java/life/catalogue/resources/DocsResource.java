@@ -41,7 +41,7 @@ public class DocsResource {
 
   @GET
   @Path("/openapi")
-  @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
+  @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public OpenAPI openApi(@Context HttpHeaders headers, @Context UriInfo uriInfo) {
     return openApi;
   }

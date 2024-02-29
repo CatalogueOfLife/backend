@@ -24,6 +24,8 @@ public class MoreMediaTypes {
   public final static String APP_YAML = "application/yaml";
   public final static MediaType APP_YAML_TYPE = new MediaType("application", "yaml");
 
+  public final static String APP_X_YAML = "application/x-yaml";
+  public final static MediaType APP_X_YAML_TYPE = new MediaType("application", "x-yaml");
   public final static String APP_JSON_COLDP = "application/vnd.coldp+json";
   public final static MediaType APP_JSON_COLDP_TYPE = new MediaType("application", "vnd.coldp+json");
   public final static String APP_JSON_CSL   = "application/vnd.citationstyles.csl+json";
