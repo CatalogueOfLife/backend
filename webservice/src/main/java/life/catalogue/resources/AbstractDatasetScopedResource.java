@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.DatasetEntityDao;
@@ -54,6 +56,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   }
 
   @GET
+  @Hidden
   @Path("count")
   public int count(@PathParam("key") int datasetKey) {
     return dao.countByDataset(datasetKey);
