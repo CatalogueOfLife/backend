@@ -48,10 +48,10 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
       return new ResultPage<>(p, result, () -> -1);
     }
   }
-  
+
   @GET
   @Path("{id}/synonyms")
-  public List<Name> getSynonyms(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+  public List<Name> getSynonyms(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return dao.homotypicGroup(DSID.of(datasetKey, id));
   }
 

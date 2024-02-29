@@ -47,4 +47,11 @@ public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRU
     }
   }
 
+  public int countByDataset(int datasetKey){
+    try (SqlSession session = factory.openSession(true)) {
+      M mapper = session.getMapper(mapperClass);
+      return mapper.count(datasetKey);
+    }
+  }
+
 }

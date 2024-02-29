@@ -52,7 +52,13 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   ResultPage<T> searchImpl(int datasetKey, R request, Page page) {
     return dao.list(datasetKey, page);
   }
-  
+
+  @GET
+  @Path("count")
+  public int count(@PathParam("key") int datasetKey) {
+    return dao.countByDataset(datasetKey);
+  }
+
   /**
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
