@@ -140,6 +140,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   public void execute() throws Exception {
     nidxFile = indexBuildFile(cfg);
     buildDir = cfg.normalizer.scratchDir("nidx-build");
+    if (buildDir.exists()) {
+      LOG.info("Clear build directory at {}", buildDir);
+    }
     FileUtils.deleteQuietly(nidxFile);
 
     if (ns.getBoolean(ARG_FILE_ONLY)) {
