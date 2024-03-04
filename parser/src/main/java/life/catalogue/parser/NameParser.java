@@ -41,7 +41,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
-  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*(sic|corrig\\.?)\\s*[\\])]?\\s*");
+  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig\\.?)\\b\\s*[\\])]?\\s*");
 
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
@@ -207,7 +207,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
 
   static String normalizeAuthorship(final String authorship, String taxNote) {
     String name = authorship;
-    // we need to remve the sic/corrig notes which live in originalSpelling flag now
+    // we need to remove the sic/corrig notes which live in originalSpelling flag now once parsed
     name = SIC_CORRIG.matcher(name).replaceFirst("");
 
     // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice

@@ -532,6 +532,26 @@ public class NameInterpreterTest {
       null, null, null, null, v
     );
     assertAbiesAlba(pnu, v);
+
+    // https://github.com/CatalogueOfLife/backend/issues/1059
+    pnu = interpret("subspecies", "Malaraeus arvicolae furkotensis", "Rosicky, 1955", "1955",
+      null, "Malaraeus", null, "arvicolae", "furkotensis", null,
+      null, null, null, null, null, null,
+      null, null, "zoological", null, v
+    );
+    n = pnu.getName();
+    assertEquals("Malaraeus arvicolae furkotensis", n.getScientificName());
+    assertEquals("Malaraeus", n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals("arvicolae", n.getSpecificEpithet());
+    assertEquals("furkotensis", n.getInfraspecificEpithet());
+    assertEquals("Rosicky, 1955", n.getAuthorship());
+    assertEquals(List.of("Rosicky"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1955", n.getCombinationAuthorship().getYear());
+    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
+    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertNull(n.getBasionymAuthorship().getYear());
+    assertFalse(v.hasIssues());
   }
 
   /**
