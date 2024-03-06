@@ -177,7 +177,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       create(origAsSyn, new Usage(sn));
     }
     // commit in batches
-    if ((sCounter + tCounter) % 1000 == 0) {
+    if (sCounter + tCounter > 0 && (sCounter + tCounter) % 1000 == 0) {
       interruptIfCancelled();
       session.commit();
       batchSession.commit();
@@ -676,11 +676,15 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   @Override
   public RuntimeException wrapException(Exception e) {
-    return new InterruptedRuntimeException(e);
+    if (e instanceof InterruptedException) {
+      Thread.currentThread().interrupt();  // set interrupt flag back
+      return new InterruptedRuntimeException(e);
+    }
+    return new RuntimeException(e);
   }
 
   @Override
-  public void reset() throws InterruptedException{
+  public void reset() throws InterruptedException {
     ignoredTaxa.clear();
   }
 

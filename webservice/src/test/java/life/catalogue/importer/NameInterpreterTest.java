@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.gbif.nameparser.api.NomCode.ZOOLOGICAL;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -548,6 +549,26 @@ public class NameInterpreterTest {
     assertEquals("Rosicky, 1955", n.getAuthorship());
     assertEquals(List.of("Rosicky"), n.getCombinationAuthorship().getAuthors());
     assertEquals("1955", n.getCombinationAuthorship().getYear());
+    assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
+    assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
+    assertNull(n.getBasionymAuthorship().getYear());
+    assertFalse(v.hasIssues());
+
+    // https://github.com/CatalogueOfLife/data/issues/630
+    pnu = interpret("species", "Sepidium capricorne Desbrochers des Loges, 1881", "Desbrochers des Loges, 1881", null,
+      null, "Sepidium", null, null, null, null,
+      null, null, null, null, null, null,
+      null, null, "zoological", null, v
+    );
+    n = pnu.getName();
+    assertEquals("Sepidium capricorne", n.getScientificName());
+    assertEquals("Sepidium", n.getGenus());
+    assertNull(n.getInfragenericEpithet());
+    assertEquals("capricorne", n.getSpecificEpithet());
+    assertNull(n.getInfraspecificEpithet());
+    assertEquals("Desbrochers des Loges, 1881", n.getAuthorship());
+    assertEquals(List.of("Desbrochers des Loges"), n.getCombinationAuthorship().getAuthors());
+    assertEquals("1881", n.getCombinationAuthorship().getYear());
     assertEquals(List.of(), n.getBasionymAuthorship().getAuthors());
     assertEquals(List.of(), n.getBasionymAuthorship().getExAuthors());
     assertNull(n.getBasionymAuthorship().getYear());
