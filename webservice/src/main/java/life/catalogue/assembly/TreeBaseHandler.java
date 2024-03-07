@@ -162,11 +162,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected void processEnd(@Nullable SimpleName sn, ModifiedUsage mod) throws InterruptedException {
     // create orth var name relation for synonyms
-    if (sn != null && sn.isSynonym() && Boolean.TRUE.equals(mod.usage.getName().isOriginalSpelling())) {
-      var relMap = nameRelsToBeCreated.putIfAbsent(NomRelType.SPELLING_CORRECTION, new HashMap<>());
+    if (sn != null
+      && sn.isSynonym()
+      && mod.createOrthVarRel
+      && Boolean.TRUE.equals(mod.usage.getName().isOriginalSpelling())) {
       // find name id of accepted parent, the current name!
       var nid = nm.getNameIdByUsage(targetDatasetKey, sn.getParentId());
-      relMap.put(nid, mod.usage.getName().getId());
+      nameRelsToBeCreated.computeIfAbsent(NomRelType.SPELLING_CORRECTION, k -> new HashMap<>())
+                         .put(nid, mod.usage.getName().getId());
     }
 
     // in case of updates from decisions, track also the original name as a synonym?
@@ -459,6 +462,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   public static class ModifiedUsage {
     final NameUsageBase usage;
+    boolean createOrthVarRel = true;
     final boolean relink;
     final boolean keepOriginal;
     final Name originalName;
@@ -594,6 +598,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   @Override
   public void copyRelations() {
+    batchSession.commit();
     NameRelationMapper nrmWrite = batchSession.getMapper(NameRelationMapper.class);
     for (var type : nameRelsToBeCreated.entrySet()) {
       int counter = 0;
@@ -604,6 +609,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         nr.setType(type.getKey());
         nr.setNameId(rel.getKey());
         nr.setRelatedNameId(rel.getValue());
+        nr.applyUser(Users.RELEASER);
         nrmWrite.create(nr);
         if (counter++ % 2500 == 0) {
           batchSession.commit();

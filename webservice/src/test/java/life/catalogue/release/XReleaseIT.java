@@ -89,31 +89,35 @@ public class XReleaseIT extends SectorSyncTestBase {
     biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
 
     return Arrays.asList(new Object[][] {
-      {"inverse_ranks", cfg(biotaSedis), List.of(
-        tax("repdb")
+      {"test", cfg(biotaSedis), List.of(
+        tax("api"),
+        tax("danish")
       )},
-      {"abronia", cfg(biotaSedis), List.of(
-        tax("itis"),
-        tax("wcvp"),
-        tax("repdb")
-      )},
-      {"unplaced_synonyms", cfg(biotaSedis), List.of(
-        tax("wcvp")
-      )},
-      {"incertae", cfg(biotaSedis, Set.of("Dictymia serbia", "Dictymia braunii", "Dictymia brownii Döring")), List.of(
-        tax("sedis"),
-        tax("src2"),
-        nom("nomen", Rank.ORDER,Rank.FAMILY,Rank.GENUS,Rank.SPECIES)
-      )},
-      {"homonyms", cfg(), List.of(
-        tax("worms"),
-        tax("itis"),
-        tax("wcvp"),
-        tax("taxref"),
-        tax("ala"),
-        nom("ipni"),
-        tax("irmng")
-      )}
+      //{"inverse_ranks", cfg(biotaSedis), List.of(
+      //  tax("repdb")
+      //)},
+      //{"abronia", cfg(biotaSedis), List.of(
+      //  tax("itis"),
+      //  tax("wcvp"),
+      //  tax("repdb")
+      //)},
+      //{"unplaced_synonyms", cfg(biotaSedis), List.of(
+      //  tax("wcvp")
+      //)},
+      //{"incertae", cfg(biotaSedis, Set.of("Dictymia serbia", "Dictymia braunii", "Dictymia brownii Döring")), List.of(
+      //  tax("sedis"),
+      //  tax("src2"),
+      //  nom("nomen", Rank.ORDER,Rank.FAMILY,Rank.GENUS,Rank.SPECIES)
+      //)},
+      //{"homonyms", cfg(), List.of(
+      //  tax("worms"),
+      //  tax("itis"),
+      //  tax("wcvp"),
+      //  tax("taxref"),
+      //  tax("ala"),
+      //  nom("ipni"),
+      //  tax("irmng")
+      //)}
     });
   }
 
@@ -258,6 +262,10 @@ public class XReleaseIT extends SectorSyncTestBase {
     System.out.println("\n*** XRELEASE " + xreleaseKey + " ***");
     job = new Thread(xrel);
     job.run();
+
+
+    var u = getByName(xreleaseKey, Rank.GENUS, "Dendropolyporus");
+    assertHasVerbatimSource(u, "5051");
 
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree

@@ -177,6 +177,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (match.isMatch()) {
       update(nu, match);
       sn = match.usage;
+      mod.createOrthVarRel = false; // dont create new name relations for spelling corrections
 
     } else if (match.type == MatchType.AMBIGUOUS) {
       LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
