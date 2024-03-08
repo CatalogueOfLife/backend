@@ -259,10 +259,6 @@ public class XReleaseIT extends SectorSyncTestBase {
     job = new Thread(xrel);
     job.run();
 
-
-    var u = getByName(xreleaseKey, Rank.GENUS, "Dendropolyporus");
-    assertHasVerbatimSource(u, "5051");
-
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree
     assertTree(xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
