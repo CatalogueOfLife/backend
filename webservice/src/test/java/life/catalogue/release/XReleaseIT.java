@@ -89,35 +89,31 @@ public class XReleaseIT extends SectorSyncTestBase {
     biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
 
     return Arrays.asList(new Object[][] {
-      {"test", cfg(biotaSedis), List.of(
-        tax("api"),
-        tax("danish")
+      {"inverse_ranks", cfg(biotaSedis), List.of(
+        tax("repdb")
       )},
-      //{"inverse_ranks", cfg(biotaSedis), List.of(
-      //  tax("repdb")
-      //)},
-      //{"abronia", cfg(biotaSedis), List.of(
-      //  tax("itis"),
-      //  tax("wcvp"),
-      //  tax("repdb")
-      //)},
-      //{"unplaced_synonyms", cfg(biotaSedis), List.of(
-      //  tax("wcvp")
-      //)},
-      //{"incertae", cfg(biotaSedis, Set.of("Dictymia serbia", "Dictymia braunii", "Dictymia brownii Döring")), List.of(
-      //  tax("sedis"),
-      //  tax("src2"),
-      //  nom("nomen", Rank.ORDER,Rank.FAMILY,Rank.GENUS,Rank.SPECIES)
-      //)},
-      //{"homonyms", cfg(), List.of(
-      //  tax("worms"),
-      //  tax("itis"),
-      //  tax("wcvp"),
-      //  tax("taxref"),
-      //  tax("ala"),
-      //  nom("ipni"),
-      //  tax("irmng")
-      //)}
+      {"abronia", cfg(biotaSedis), List.of(
+        tax("itis"),
+        tax("wcvp"),
+        tax("repdb")
+      )},
+      {"unplaced_synonyms", cfg(biotaSedis), List.of(
+        tax("wcvp")
+      )},
+      {"incertae", cfg(biotaSedis, Set.of("Dictymia serbia", "Dictymia braunii", "Dictymia brownii Döring")), List.of(
+        tax("sedis"),
+        tax("src2"),
+        nom("nomen", Rank.ORDER,Rank.FAMILY,Rank.GENUS,Rank.SPECIES)
+      )},
+      {"homonyms", cfg(), List.of(
+        tax("worms"),
+        tax("itis"),
+        tax("wcvp"),
+        tax("taxref"),
+        tax("ala"),
+        nom("ipni"),
+        tax("irmng")
+      )}
     });
   }
 
