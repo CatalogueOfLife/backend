@@ -370,8 +370,8 @@
       <if test="req.hasMatch != null">
         AND nm.type IS <if test="req.hasMatch">NOT</if> NULL
       </if>
-      <if test="req.name != null">
-        AND n.scientific_name ~ '^${req.name}'
+      <if test="req.namePrefix != null">
+        AND n.scientific_name ~ '^${req.namePrefix}'
       </if>
     </if>
     <include refid="life.catalogue.db.Common.limit"/>
