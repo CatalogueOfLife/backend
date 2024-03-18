@@ -14,8 +14,7 @@ import org.parboiled.common.StringUtils;
 
 /**
  * A handler that can be used with the TaxonWalker to print a neo4j taxonomy in a simple nested text structure.
- * Synonyms are prefixed with an asterisk *,
- * Pro parte synoynms with a double asterisk **,
+ * Synonyms are prefixed with an equal sign =,
  * basionyms are prefixed by a $ and listed first in the synonymy.
  * <p>
  * Ranks are given in brackets after the scientific name
@@ -63,7 +62,7 @@ public class TxtPrinter extends BasePrinter {
         writer.write(Tree.SYNONYM_SYMBOL);
         if (u.usageNode.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1) {
           // flag pro parte synonyms with an extra asterisk
-          writer.write(Tree.SYNONYM_SYMBOL);
+          //writer.write(Tree.SYNONYM_SYMBOL);
         }
       }
       if (u.nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
