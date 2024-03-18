@@ -5,8 +5,13 @@ package life.catalogue.api.event;
  */
 public class FlushDatasetCache {
   public final int datasetKey;
+  public final boolean logoOnly;
 
   public FlushDatasetCache(int datasetKey) {
+    this(datasetKey, false);
+  }
+  public FlushDatasetCache(int datasetKey, boolean logoOnly) {
     this.datasetKey = datasetKey;
+    this.logoOnly = logoOnly;
   }
 }

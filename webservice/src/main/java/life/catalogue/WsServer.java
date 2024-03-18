@@ -277,7 +277,7 @@ public class WsServer extends Application<WsServerConfig> {
     }
 
     // images
-    final ImageService imgService = new ImageServiceFS(cfg.img);
+    final ImageService imgService = new ImageServiceFS(cfg.img, bus);
 
     // name index
     if (cfg.namesIndexFile != null) {
@@ -407,6 +407,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
     j.register(new DuplicateResource(dupeDao));
+    j.register(new DuplicateSourceResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService, getSqlSessionFactory()));

@@ -1,5 +1,8 @@
 package life.catalogue.img;
 
+import com.google.common.eventbus.EventBus;
+
+import life.catalogue.api.event.FlushDatasetCache;
 import life.catalogue.api.exception.NotFoundException;
 
 import java.awt.image.BufferedImage;
@@ -12,6 +15,8 @@ import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
+import life.catalogue.cache.VarnishUtils;
+
 import org.apache.commons.io.FileUtils;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
@@ -22,9 +27,11 @@ public class ImageServiceFS implements ImageService {
   private static final Logger LOG = LoggerFactory.getLogger(ImageServiceFS.class);
   
   private final ImgConfig cfg;
+  private final EventBus bus;
 
-  public ImageServiceFS(ImgConfig cfg) {
+  public ImageServiceFS(ImgConfig cfg, EventBus bus) {
     this.cfg = cfg;
+    this.bus = bus;
   }
   
   public static BufferedImage read(InputStream img) throws IOException {
@@ -56,6 +63,9 @@ public class ImageServiceFS implements ImageService {
   public void putDatasetLogo(int datasetKey, BufferedImage img) throws IOException {
     LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);
     storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
+    if (bus != null) {
+      bus.post(new FlushDatasetCache(datasetKey, true));
+    }
   }
 
   @Override

@@ -19,6 +19,7 @@ import com.google.common.eventbus.Subscribe;
 public class CacheFlush {
   private final UriBuilder projectUrlBuilder;
   private final UriBuilder datasetUrlBuilder;
+  private final UriBuilder logoUrlBuilder;
   private final URI colseo;
   private final CloseableHttpClient client;
 
@@ -26,12 +27,17 @@ public class CacheFlush {
     this.client = client;
     this.projectUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}LR");
     this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/");
+    this.logoUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/logo");
     this.colseo = UriBuilder.fromUri(api).path("colseo").build();
   }
 
   @Subscribe
   public void flushDatasetEvent(FlushDatasetCache event){
-    VarnishUtils.ban(client, datasetUrlBuilder.build(event.datasetKey));
+    if (event.logoOnly) {
+      VarnishUtils.ban(client, logoUrlBuilder.build(event.datasetKey));
+    } else {
+      VarnishUtils.ban(client, datasetUrlBuilder.build(event.datasetKey));
+    }
   }
 
   @Subscribe

@@ -24,7 +24,7 @@ public class ImageServiceFSTest {
     cfg = new ImgConfig();
     cfg.repo = new File("target/imgtest/repo").toPath();
     cfg.archive = new File("target/imgtest/archive").toPath();
-    srv = new ImageServiceFS(cfg);
+    srv = new ImageServiceFS(cfg, null);
   }
 
   @After
