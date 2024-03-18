@@ -29,7 +29,7 @@ public class DuplicateSourceResource {
   }
 
   private static DuplicateDao.DuplicateRequest upd(int projectKey, int sourceKey, DuplicateDao.DuplicateRequest req) {
-    req.setDatasetKey(projectKey);
+    req.setProjectKey(projectKey);
     req.setDatasetKey(sourceKey);
     return req;
   }

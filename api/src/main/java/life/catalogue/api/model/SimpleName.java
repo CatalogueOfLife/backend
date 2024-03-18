@@ -31,6 +31,8 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
           .thenComparing(SimpleName::getStatus, nullSafeEnumComparator);
 
   private String id;
+  @JsonIgnore // we include the dagger in the label already
+  private boolean extinct;
   @NotNull
   private String name;
   private String authorship;
@@ -61,6 +63,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
 
   public SimpleName(SimpleName other) {
     this.id = other.id;
+    this.extinct = other.extinct;
     this.name = other.name;
     this.authorship = other.authorship;
     this.phrase = other.phrase;
@@ -87,6 +90,9 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.code = u.getName().getCode();
     this.status = u.getStatus();
     this.parent = u.getParentId();
+    if (u instanceof Taxon) {
+      this.extinct = Boolean.TRUE.equals(((Taxon)u).isExtinct());
+    }
   }
 
   public SimpleName(String id) {
@@ -112,6 +118,14 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public boolean isExtinct() {
+    return extinct;
+  }
+
+  public void setExtinct(boolean extinct) {
+    this.extinct = extinct;
   }
 
   public String getName() {
@@ -200,6 +214,9 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
   }
 
   private StringBuilder appendFullName(StringBuilder sb, boolean html) {
+    if (extinct) {
+      sb.append(NameUsageBase.EXTINCT_SYMBOL);
+    }
     if (name != null) {
       sb.append(html ? NameFormatter.scientificNameHtml(name, rank) : name);
     }

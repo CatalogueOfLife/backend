@@ -53,11 +53,11 @@
   </sql>
 
   <sql id="SELECT_SIMPLE">
-    u.id, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id
+    u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
   <sql id="SELECT_SIMPLE_CACHED">
-    u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
+    u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
   </sql>
 
   <sql id="SELECT_LINNEAN_USAGE">
@@ -755,7 +755,7 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT id, scientific_name, authorship, name_phrase, rank, code, status, parent_id
+    SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x <if test="depthFirst">ORDER BY x.path</if>
   </select>
 

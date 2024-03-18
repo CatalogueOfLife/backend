@@ -16,6 +16,9 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.txtree.SimpleTreeNode;
+import org.gbif.txtree.Tree;
+
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
  * Synonyms are prefixed with an asterisk *,
@@ -38,9 +41,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
  * </pre>
  */
 public class TextTreePrinter extends AbstractTreePrinter {
-  public static final String SYNONYM_SYMBOL = "*";
-  public static final String BASIONYM_SYMBOL = "$";
-  
   private static final int indentation = 2;
   private boolean showIDs;
 
@@ -56,8 +56,11 @@ public class TextTreePrinter extends AbstractTreePrinter {
 
   protected void start(SimpleName u) throws IOException {
     writer.write(StringUtils.repeat(' ', level * indentation));
+    if (u.isExtinct()) {
+      writer.write(Tree.EXTINCT_SYMBOL);
+    }
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
-      writer.write(SYNONYM_SYMBOL);
+      writer.write(Tree.SYNONYM_SYMBOL);
     }
     //TODO: flag basionyms
     writer.write(u.getName());

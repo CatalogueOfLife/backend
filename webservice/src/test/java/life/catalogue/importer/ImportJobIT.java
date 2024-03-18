@@ -137,7 +137,7 @@ public class ImportJobIT {
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
     job = new ImportJob(req, d, cfg, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
-      indexService, new ImageServiceFS(cfg.img), diDao, datasetDao, sDao, dDao, new EventBus("test-bus"), this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, new EventBus("test-bus"), this::start, this::success, this::error);
 
   }
 

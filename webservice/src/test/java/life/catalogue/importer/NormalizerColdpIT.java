@@ -598,7 +598,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
   @Test
   public void hybridGeneraWcvp() throws Exception {
     normalize(18);
-    printTree();
+    //printTree();
 
     try (Transaction tx = store.getNeo().beginTx()) {
       // a synonym with no parent!

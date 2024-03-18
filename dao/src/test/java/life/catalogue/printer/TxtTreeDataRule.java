@@ -213,6 +213,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       sm.create(s);
     } else {
       Taxon t = new Taxon();
+      t.setExtinct(tn.extinct);
       if (keepOrder) {
         t.setOrdinal(ordinal);
       }

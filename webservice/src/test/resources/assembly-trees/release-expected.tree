@@ -4,18 +4,18 @@ Animalia [kingdom] {ID=B3}
       Carnivora [order] {ID=5}
         Canidae [family] {ID=6}
           Canis [genus] {ID=L}
-            *Alopsis [genus] {ID=M}
-            *Lupulus [genus] {ID=N}
+            =Alopsis [genus] {ID=M}
+            =Lupulus [genus] {ID=N}
             Canis adustus [species] {ID=P}
             Canis argentinus [species] {ID=Q}
             Canis aureus [species] {ID=R}
         Felidae [family] {ID=7}
           Lynx [genus] {ID=B4}
-            *Pardina [genus] {ID=B}
+            =Pardina [genus] {ID=B}
             Lynx lynx (Linnaeus, 1758) [species] {ID=C}
-              *Felis lynx Linnaeus, 1758 [species] {ID=B5}
+              =Felis lynx Linnaeus, 1758 [species] {ID=B5}
             Lynx rufus [species] {ID=D}
-              *Felis rufa [species] {ID=B2}
+              =Felis rufa [species] {ID=B2}
               Lynx rufus baileii [subspecies] {ID=F}
               Lynx rufus gigas [subspecies] {ID=G}
         Urocyon [genus] {ID=W}

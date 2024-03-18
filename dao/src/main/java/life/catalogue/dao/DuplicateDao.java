@@ -107,14 +107,13 @@ public class DuplicateDao {
      * @param rankDifferent
      * @param codeDifferent
      * @param withDecision optionally filter duplicates to have or do not already have a decision
-     * @param projectKey the project key decisions and sectors are for. Required if withDecision is given
      */
     @JsonCreator
-    public DuplicateRequest(@QueryParam("entity") EntityType entity,
+    public DuplicateRequest(@PathParam("key") int datasetKey,
+                            @QueryParam("entity") EntityType entity,
                             @QueryParam("mode") MatchingMode mode,
                             @QueryParam("q") String query,
                             @QueryParam("minSize") @Min(2) Integer minSize,
-                            @PathParam("key") int datasetKey,
                             @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
                             @QueryParam("sectorKey") Integer sectorKey,
                             @QueryParam("category") NameCategory category,
@@ -124,8 +123,7 @@ public class DuplicateDao {
                             @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
                             @QueryParam("rankDifferent") Boolean rankDifferent,
                             @QueryParam("codeDifferent") Boolean codeDifferent,
-                            @QueryParam("withDecision") Boolean withDecision,
-                            @QueryParam("catalogueKey") Integer projectKey) {
+                            @QueryParam("withDecision") Boolean withDecision) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
       this.query = query;
@@ -140,7 +138,6 @@ public class DuplicateDao {
       this.rankDifferent = rankDifferent;
       this.codeDifferent = codeDifferent;
       this.withDecision = withDecision;
-      this.projectKey = projectKey;
 
       // entity specific checks & defaults
       if (entity == null || entity == EntityType.NAME_USAGE) {
@@ -157,6 +154,18 @@ public class DuplicateDao {
         this.sectorKey = WRONG_ENTITY;
         this.sourceDatasetKey = WRONG_ENTITY;
       }
+    }
+
+    public void setDatasetKey(int datasetKey) {
+      this.datasetKey = datasetKey;
+    }
+
+    public void setSourceDatasetKey(Integer sourceDatasetKey) {
+      this.sourceDatasetKey = sourceDatasetKey;
+    }
+
+    public void setProjectKey(Integer projectKey) {
+      this.projectKey = projectKey;
     }
   }
 

@@ -1,5 +1,5 @@
 phylum1 [phylum]
-  *phylum2 [phylum]
+=phylum2 [phylum]
   subphylum3 [subphylum]
     infraphylum4 [infraphylum]
       superclass5 [superclass]
