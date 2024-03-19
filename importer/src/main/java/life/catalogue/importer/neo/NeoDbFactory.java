@@ -10,6 +10,7 @@ import java.nio.channels.ClosedByInterruptException;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DBMaker;
+import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
@@ -77,6 +78,11 @@ public class NeoDbFactory {
         LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
       }
     }
+
+    var managementService = new DatabaseManagementServiceBuilder( storeDir.toPath() ).build();
+    var graphDb = managementService.database( DEFAULT_DATABASE_NAME );
+    registerShutdownHook( managementService );
+
     GraphDatabaseBuilder builder = new GraphDatabaseFactory()
       .setUserLogProvider(new Slf4jLogProvider())
       .newEmbeddedDatabaseBuilder(storeDir)
