@@ -10,11 +10,9 @@ import java.nio.channels.ClosedByInterruptException;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DBMaker;
+import org.neo4j.configuration.GraphDatabaseSettings;
+import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,13 +44,13 @@ public class NeoDbFactory {
    */
   private static NeoDb create(int datasetKey, int attempt, NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
     try {
-      GraphDatabaseBuilder builder = newEmbeddedDb(cfg, storeDir, eraseExisting);
+      DatabaseManagementService dbService = newEmbeddedDb(cfg, storeDir, eraseExisting);
       
       // make sure mapdb parent dirs exist
       if (!storeDir.exists()) {
         storeDir.mkdirs();
       }
-      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, builder, cfg.batchSize, cfg.batchTimeout);
+      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, dbService, cfg.batchSize, cfg.batchTimeout);
 
     } catch (RuntimeException e) {
       // can be caused by interruption in mapdb
@@ -70,7 +68,7 @@ public class NeoDbFactory {
    *
    * @param eraseExisting if true deletes previously existing db
    */
-  private static GraphDatabaseBuilder newEmbeddedDb(NormalizerConfig cfg, File storeDir, boolean eraseExisting) {
+  private static DatabaseManagementService newEmbeddedDb(NormalizerConfig cfg, File storeDir, boolean eraseExisting) {
     if (eraseExisting && storeDir.exists()) {
       // erase previous db
       LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
@@ -79,17 +77,28 @@ public class NeoDbFactory {
       }
     }
 
-    var managementService = new DatabaseManagementServiceBuilder( storeDir.toPath() ).build();
-    var graphDb = managementService.database( DEFAULT_DATABASE_NAME );
-    registerShutdownHook( managementService );
-
-    GraphDatabaseBuilder builder = new GraphDatabaseFactory()
-      .setUserLogProvider(new Slf4jLogProvider())
-      .newEmbeddedDatabaseBuilder(storeDir)
+    var dbService = new DatabaseManagementServiceBuilder( storeDir.toPath() )
+      //.setUserLogProvider(new Slf4jLogProvider())
+      //.newEmbeddedDatabaseBuilder(storeDir)
       .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
-      .setConfig(GraphDatabaseSettings.allow_upgrade, "true")
-      .setConfig(GraphDatabaseSettings.pagecache_memory, cfg.mappedMemory + "M");
-    return builder;
+      .setConfig(GraphDatabaseSettings.pagecache_memory, (long) cfg.mappedMemory * 1024 * 1024)
+      .build();
+
+    registerShutdownHook( dbService );
+    return dbService;
+  }
+
+  private static void registerShutdownHook( final DatabaseManagementService dbService ) {
+    // Registers a shutdown hook for the Neo4j instance so that it
+    // shuts down nicely when the VM exits (even if you "Ctrl-C" the
+    // running application).
+    Runtime.getRuntime().addShutdownHook( new Thread() {
+      @Override
+      public void run()
+      {
+        dbService.shutdown();
+      }
+    } );
   }
 
   /**

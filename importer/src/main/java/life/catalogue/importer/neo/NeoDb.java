@@ -36,6 +36,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
+import org.neo4j.dbms.api.DatabaseManagementService;
+import org.neo4j.exceptions.KernelException;
 import org.neo4j.graphalgo.LabelPropagationProc;
 import org.neo4j.graphalgo.UnionFindProc;
 import org.neo4j.graphdb.*;
@@ -72,7 +74,8 @@ public class NeoDb {
 
   private final int datasetKey;
   private final int attempt;
-  private final GraphDatabaseBuilder neoFactory;
+  private final String dbname;
+  private final DatabaseManagementService dbService;
   private final DB mapDb;
   private final File neoDir;
   private final Pool<Kryo> pool;
@@ -98,13 +101,14 @@ public class NeoDb {
   /**
    * @param mapDb
    * @param neoDir
-   * @param neoFactory
+   * @param dbService
    * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, int attempt, DB mapDb, File neoDir, GraphDatabaseBuilder neoFactory, int batchSize, int batchTimeout) {
+  NeoDb(int datasetKey, int attempt, DB mapDb, File neoDir, DatabaseManagementService dbService, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
     this.attempt = attempt;
-    this.neoFactory = neoFactory;
+    this.dbname = "CLB" + datasetKey;
+    this.dbService = dbService;
     this.neoDir = neoDir;
     this.mapDb = mapDb;
     this.batchSize = batchSize;
@@ -168,7 +172,7 @@ public class NeoDb {
   
   private void openNeo() {
     LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
-    neo = neoFactory.newGraphDatabase();
+    neo = dbService.database(dbname);
     try {
       GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
       gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
@@ -186,14 +190,15 @@ public class NeoDb {
       } else {
         devNullNode = neo.createNode(Labels.DEV_NULL);
       }
-      tx.success();
+      tx.commit();
     }
   }
 
   private void closeNeoQuietly() {
     try {
-      if (neo != null) {
-        neo.shutdown();
+      if (dbService != null) {
+        dbService.shutdownDatabase(neo.databaseName());
+        dbService.shutdown();
         LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
         neo = null;
       }
