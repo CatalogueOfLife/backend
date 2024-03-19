@@ -1,10 +1,8 @@
 package life.catalogue.dw.jersey.filter;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.ws.rs.HttpMethod;
@@ -16,18 +14,15 @@ import javax.ws.rs.core.HttpHeaders;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 /**
  * Filter that updates Cache-Control http headers to allow caching of responses belonging to static released datasets.
- * The following headers are added or replaced if they existed:
+ * Requests to external datasets are also cached for a shorter period.
+ *
+ * Any resource can override this default behavior and declare a request to be uncacheable by setting the "dont-cache"
+ * request context property to any non null value.
  */
 public class CacheControlResponseFilter implements ContainerResponseFilter {
+  public static final String DONT_CACHE = "dont-cache";
   private static final long AGE1 = TimeUnit.HOURS.toSeconds(1);
   private static final long AGE24 = TimeUnit.HOURS.toSeconds(24);
   private static final Pattern STATIC_PATH  = Pattern.compile("^(vocab|openapi|version)");
@@ -35,7 +30,8 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
 
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
-    if (req.getMethod() != null && METHODS.contains(req.getMethod())) {
+    // we allow resources to turn off caching for certain requests by using the dont cache property
+    if (req.getMethod() != null && METHODS.contains(req.getMethod()) && req.getProperty(CacheControlResponseFilter.DONT_CACHE) == null) {
       if (STATIC_PATH.matcher(req.getUriInfo().getPath()).find()) {
         allowCaching(resp, AGE1);
         return;

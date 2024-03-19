@@ -407,7 +407,6 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
     j.register(new DuplicateResource(dupeDao));
-    j.register(new DuplicateSourceResource(dupeDao));
     j.register(new EstimateResource(edao));
     j.register(new ExportResource(exdao, cfg));
     j.register(new ImageResource(imgService, getSqlSessionFactory()));

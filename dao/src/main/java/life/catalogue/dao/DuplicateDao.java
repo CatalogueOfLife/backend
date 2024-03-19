@@ -64,7 +64,7 @@ public class DuplicateDao {
   public static class DuplicateRequest {
     private static final int WRONG_ENTITY = -999999;
     // the dataset to be analyzed
-    int datasetKey;
+    public int datasetKey;
     String query;
     // if true compare names only, if false usages
     boolean compareNames;
@@ -87,9 +87,9 @@ public class DuplicateDao {
     Boolean rankDifferent;
     Boolean codeDifferent;
     // optionally filter duplicates to have or do not already have a decision
-    Boolean withDecision;
+    public Boolean withDecision;
     // the project key decisions and sectors are for. Required if withDecision is given
-    Integer projectKey;
+    public Integer projectKey;
 
     /**
      * @param entity the entity to look out for. Must be NAME or NAME_USAGE nothing else
@@ -107,13 +107,14 @@ public class DuplicateDao {
      * @param rankDifferent
      * @param codeDifferent
      * @param withDecision optionally filter duplicates to have or do not already have a decision
+     * @param projectKey the project key decisions and sectors are for. Required if withDecision is given
      */
     @JsonCreator
-    public DuplicateRequest(@PathParam("key") int datasetKey,
-                            @QueryParam("entity") EntityType entity,
+    public DuplicateRequest(@QueryParam("entity") EntityType entity,
                             @QueryParam("mode") MatchingMode mode,
                             @QueryParam("q") String query,
                             @QueryParam("minSize") @Min(2) Integer minSize,
+                            @PathParam("key") int datasetKey,
                             @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
                             @QueryParam("sectorKey") Integer sectorKey,
                             @QueryParam("category") NameCategory category,
@@ -123,7 +124,8 @@ public class DuplicateDao {
                             @QueryParam("acceptedDifferent") Boolean acceptedDifferent,
                             @QueryParam("rankDifferent") Boolean rankDifferent,
                             @QueryParam("codeDifferent") Boolean codeDifferent,
-                            @QueryParam("withDecision") Boolean withDecision) {
+                            @QueryParam("withDecision") Boolean withDecision,
+                            @QueryParam("catalogueKey") Integer projectKey) {
       this.mode = ObjectUtils.defaultIfNull(mode, MatchingMode.STRICT);
       this.minSize = ObjectUtils.defaultIfNull(minSize, 2);
       this.query = query;
@@ -138,6 +140,7 @@ public class DuplicateDao {
       this.rankDifferent = rankDifferent;
       this.codeDifferent = codeDifferent;
       this.withDecision = withDecision;
+      this.projectKey = projectKey;
 
       // entity specific checks & defaults
       if (entity == null || entity == EntityType.NAME_USAGE) {
@@ -154,18 +157,6 @@ public class DuplicateDao {
         this.sectorKey = WRONG_ENTITY;
         this.sourceDatasetKey = WRONG_ENTITY;
       }
-    }
-
-    public void setDatasetKey(int datasetKey) {
-      this.datasetKey = datasetKey;
-    }
-
-    public void setSourceDatasetKey(Integer sourceDatasetKey) {
-      this.sourceDatasetKey = sourceDatasetKey;
-    }
-
-    public void setProjectKey(Integer projectKey) {
-      this.projectKey = projectKey;
     }
   }
 

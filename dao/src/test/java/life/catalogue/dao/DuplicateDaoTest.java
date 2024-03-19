@@ -70,7 +70,7 @@ public class DuplicateDaoTest {
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
     // no catalogue/project given but filtering decisions
-    var req = new DuplicateDao.DuplicateRequest(datasetKey, EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, null, null, null, null, null, null, null, null, null, true);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
     dao.page(req, null);
   }
 
@@ -214,9 +214,8 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    var req = new DuplicateDao.DuplicateRequest(datasetKey, EntityType.NAME_USAGE, mode, null, minSize, sourceDatasetKey, null, category, ranks, status,
-      authorshipDifferent, acceptedDifferent, null, null, withDecision);
-    req.setProjectKey(Datasets.COL);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, null, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status,
+      authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL);
     ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
     return result.getResult();
@@ -229,9 +228,8 @@ public class DuplicateDaoTest {
       watch.resume();
     }
 
-    var req = new DuplicateDao.DuplicateRequest(datasetKey, EntityType.NAME, mode, null, minSize, null, null, category, ranks,
-      null, authorshipDifferent, null, null, null, null);
-    req.setProjectKey(Datasets.COL);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, null, minSize, datasetKey, null, null, category, ranks,
+      null, authorshipDifferent, null, null, null, null, Datasets.COL);
     ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
     return result.getResult();
