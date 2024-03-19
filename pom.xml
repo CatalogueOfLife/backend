@@ -23,7 +23,7 @@
   <properties>
     <!-- build settings -->
     <minimumMavenVersion>3.8.5</minimumMavenVersion>
-    <java.version>21</java.version>
+    <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
