@@ -194,10 +194,6 @@
       <groupId>com.esotericsoftware</groupId>
       <artifactId>kryo</artifactId>
     </dependency>
-    <dependency>
-      <groupId>de.javakaffee</groupId>
-      <artifactId>kryo-serializers</artifactId>
-    </dependency>
 
     <!-- Elasticsearch / Lucene -->
     <dependency>

@@ -28,8 +28,6 @@ import java.util.*;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
-import de.javakaffee.kryoserializers.UnmodifiableCollectionsSerializer;
-import de.javakaffee.kryoserializers.guava.ImmutableListSerializer;
 import de.undercouch.citeproc.csl.CSLType;
 
 
@@ -126,10 +124,6 @@ public class ApiKryoPool extends Pool<Kryo> {
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     }
-    // guave collections
-    UnmodifiableCollectionsSerializer.registerSerializers( kryo );
-    // pre java9 immutable collections
-    ImmutableListSerializer.registerSerializers(kryo);
     // java9 immutable collections
     JdkImmutableListSerializer.registerSerializers(kryo);
     JdkImmutableMapSerializer.registerSerializers(kryo);
@@ -151,8 +145,8 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Setting.class);
     kryo.register(DatasetType.class);
     kryo.register(DistributionStatus.class);
-    kryo.register(EnumMap.class, new EnumMapSerializer());
-    kryo.register(EnumSet.class, new EnumSetSerializer());
+    kryo.register(EnumMap.class);
+    kryo.register(EnumSet.class);
     kryo.register(EstimateType.class);
     kryo.register(Frequency.class);
     kryo.register(Gender.class);

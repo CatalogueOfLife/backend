@@ -72,9 +72,8 @@
     <jcommander.version>1.82</jcommander.version>
     <jjwt.version>0.11.5</jjwt.version>
     <jsoup.version>1.15.4</jsoup.version>
-    <junit.version>5.9.2</junit.version>
-    <kryo-serializers.version>0.45</kryo-serializers.version>
-    <kryo.version>5.4.0</kryo.version>
+    <junit.version>5.10.2</junit.version>
+    <kryo.version>5.6.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <logstash-logback.version>6.4</logstash-logback.version>
     <lombok.version>1.18.30</lombok.version>
@@ -605,11 +604,6 @@
         <version>${kryo.version}</version>
       </dependency>
       <dependency>
-        <groupId>de.javakaffee</groupId>
-        <artifactId>kryo-serializers</artifactId>
-        <version>${kryo-serializers.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.esotericsoftware</groupId>
         <artifactId>reflectasm</artifactId>
         <version>${kryo-reflectasm.version}</version>
@@ -987,9 +981,6 @@
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
             <runOrder>random</runOrder>
-            <argLine>
-              --illegal-access=permit
-            </argLine>
 
             <includes>
               <!-- include regular unit tests -->
@@ -1028,7 +1019,6 @@
             <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
             <argLine>
               -Djdk.net.URLClassPath.disableClassPathURLCheck=true
-              --illegal-access=permit
             </argLine>
             <runOrder>random</runOrder>
           </configuration>
