@@ -208,8 +208,9 @@ public class NameUsageResource {
   @Path("search")
   public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
+                                                 @Context ContainerRequestContext ctx,
                                                  @Context UriInfo uri) throws InvalidQueryException {
-    return searchDataset(datasetKey, req.request, req.page, uri);
+    return searchDataset(datasetKey, req.request, req.page, ctx, uri);
   }
 
   @GET
