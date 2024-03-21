@@ -40,6 +40,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 public class Name extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScoped, FormattableName, Remarkable {
 
   private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private Integer verbatimKey;
 
   private Integer namesIndexId;
@@ -223,6 +224,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public Name(Name n) {
     this.setKey(n);
     this.sectorKey = n.sectorKey;
+    this.sectorMode = n.sectorMode;
     this.namesIndexId = n.namesIndexId;
     this.namesIndexType = n.namesIndexType;
     this.identifier = n.identifier;
@@ -270,6 +272,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setDatasetKey(builder.datasetKey);
     setId(builder.id);
     setSectorKey(builder.sectorKey);
+    setSectorMode(builder.sectorMode);
     setVerbatimKey(builder.verbatimKey);
     setNamesIndexId(builder.namesIndexId);
     setNamesIndexType(builder.namesIndexType);
@@ -343,6 +346,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.datasetKey = copy.getDatasetKey();
     builder.id = copy.getId();
     builder.sectorKey = copy.getSectorKey();
+    builder.sectorMode = copy.getSectorMode();
     builder.verbatimKey = copy.getVerbatimKey();
     builder.namesIndexId = copy.getNamesIndexId();
     builder.namesIndexType = copy.getNamesIndexType();
@@ -387,7 +391,17 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -839,6 +853,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     Name name = (Name) o;
     return candidatus == name.candidatus
            && Objects.equals(sectorKey, name.sectorKey)
+           && Objects.equals(sectorMode, name.sectorMode)
            && Objects.equals(verbatimKey, name.verbatimKey)
            && Objects.equals(namesIndexId, name.namesIndexId)
            && namesIndexType == name.namesIndexType
@@ -876,7 +891,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -934,6 +949,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private Integer datasetKey;
     private String id;
     private Integer sectorKey;
+    private Sector.Mode sectorMode;
     private Integer verbatimKey;
     private Integer namesIndexId;
     private MatchType namesIndexType;
@@ -1004,6 +1020,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder sectorKey(Integer val) {
       sectorKey = val;
+      return this;
+    }
+
+    public Builder sectorMode(Sector.Mode val) {
+      sectorMode = val;
       return this;
     }
 

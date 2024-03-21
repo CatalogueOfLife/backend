@@ -5,10 +5,21 @@
 <mapper namespace="life.catalogue.db.mapper.TaxonPropertyMapper">
 
   <sql id="SELECT">
-    id,
-    <include refid="COLS"/>,
-    created,
-    modified
+    p.id,
+    p.taxon_id,
+    p.dataset_key,
+    p.sector_key,
+    p.verbatim_key,
+    p.property,
+    p.value,
+    p.reference_id,
+    p.page,
+    p.ordinal,
+    p.remarks,
+    p.created,
+    p.created_by,
+    p.modified,
+    p.modified_by
   </sql>
 
   <sql id="COLS">
@@ -45,7 +56,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">taxon_property</sql>
+  <sql id="FROM">taxon_property p</sql>
 
   <resultMap id="taxPropResultMap" type="TaxonProperty" autoMapping="true">
     <id property="id" column="id"/>
@@ -62,20 +73,20 @@
   <select id="listByTaxon" resultMap="taxPropResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND taxon_id = #{key.id}
-    ORDER BY id
+    WHERE p.dataset_key=#{key.datasetKey} AND p.taxon_id = #{key.id}
+    ORDER BY p.id
   </select>
 
   <select id="get" resultMap="taxPropResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
+    WHERE p.dataset_key=#{key.datasetKey} AND p.id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="taxPropExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    WHERE p.dataset_key=#{datasetKey}
   </select>
 
   <insert id="create" parameterType="TaxonProperty" useGeneratedKeys="true" keyProperty="obj.id">
@@ -107,7 +118,7 @@
   <select id="processSector" parameterType="map" resultMap="taxPropResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+    WHERE p.dataset_key=#{key.datasetKey} AND p.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">

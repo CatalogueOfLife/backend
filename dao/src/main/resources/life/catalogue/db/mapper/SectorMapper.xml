@@ -185,6 +185,11 @@
     )
   </select>
 
+  <select id="getMode" resultType="life.catalogue.api.model.Sector$Mode">
+    SELECT mode FROM sector
+    WHERE dataset_key = #{datasetKey} AND id = #{id}
+  </select>
+
   <select id="getBySubject" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

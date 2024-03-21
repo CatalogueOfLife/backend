@@ -4,7 +4,6 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.NameUsageMapper">
 
-
   <sql id="usageCols">
     ${alias}.id AS ${prefix}id,
     ${alias}.dataset_key AS ${prefix}dataset_key,
@@ -184,6 +183,19 @@
   <sql id="FROM">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_ACCEPTED"/>
+  </sql>
+
+  <sql id="FROM_NIDX_BASE">
+    names_index ni
+    JOIN name_match nm ON nm.index_id=ni.id
+    JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
+    JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
+  </sql>
+
+  <sql id="FROM_NIDX">
+    <include refid="FROM_NIDX_BASE"/>
+    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
+    <include refid="FROM_ACCEPTED"/>
   </sql>
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -396,19 +408,6 @@
     FROM name_usage u
     WHERE u.dataset_key = #{datasetKey} AND u.name_id=#{nameId}
   </select>
-
-  <sql id="FROM_NIDX_BASE">
-    names_index ni
-      JOIN name_match nm ON nm.index_id=ni.id
-      JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
-      JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
-  </sql>
-
-  <sql id="FROM_NIDX">
-    <include refid="FROM_NIDX_BASE"/>
-    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
-    <include refid="FROM_ACCEPTED"/>
-  </sql>
 
   <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>

@@ -75,6 +75,16 @@ public class BareName implements NameUsage {
   }
 
   @Override
+  public Sector.Mode getSectorMode() {
+    return name.getSectorMode();
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    name.setSectorMode(sectorMode);
+  }
+
+  @Override
   public Name getName() {
     return name;
   }

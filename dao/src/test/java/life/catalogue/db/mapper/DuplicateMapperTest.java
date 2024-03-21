@@ -124,10 +124,13 @@ public class DuplicateMapperTest {
         assertNull(u.getDecision());
         assertNotNull(u.getUsage());
       }
+    }
 
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DuplicateMapper.class);
       // test with larger number of parameter ids than postgres 32767 limit
       ids = IntStream.range(0, 50000).boxed().map(String::valueOf).collect(Collectors.toList());
-      res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
+      var res = dm.usagesByIds(datasetKey, Datasets.COL, ids);
       assertEquals(51, res.size());
 
       // try with project

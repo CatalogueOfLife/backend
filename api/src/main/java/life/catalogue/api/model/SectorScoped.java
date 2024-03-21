@@ -19,5 +19,11 @@ public interface SectorScoped extends DatasetScoped {
   Integer getSectorKey();
   
   void setSectorKey(Integer sectorKey);
-  
+
+  Sector.Mode getSectorMode();
+  void setSectorMode(Sector.Mode mode);
+
+  default boolean isMerged() {
+    return Sector.Mode.MERGE == getSectorMode();
+  }
 }

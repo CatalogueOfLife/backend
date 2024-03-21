@@ -8,6 +8,11 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
+  <!--
+  <resultMap id="taxResultMap" type="Taxon" extends="life.catalogue.db.mapper.TaxonMapper.taxonResultMap">
+    <result property="sectorMode" column="sector_mode"/>
+  </resultMap>
+-->
 
   <resultMap id="usageResultMap" type="NameUsageWrapper" autoMapping="true" extends="issueResultMap">
     <id column="uid"/>
@@ -46,7 +51,8 @@
   <sql id="taxonSelectFrom">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
     d.gbif_publisher_key AS publisherKey,
-    s.subject_dataset_key AS sectorDatasetKey,
+    s.subject_dataset_key AS sector_dataset_key,
+    s.mode AS sector_mode,
     ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
     array_distinct(vbn.issues || vbt.issues || tcrel.issues || sirel.issues || xdis.issues || xmed.issues || xver.issues || xtyp.issues || nrel.issues) AS issues
     FROM
@@ -102,11 +108,14 @@
 
   <sql id="bareNameSelectFrom">
     v.issues,
+    s.subject_dataset_key AS sector_dataset_key,
+    s.mode AS n_sector_mode,
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value="n_"/>
     </include>
     FROM name n
+    LEFT JOIN sector s ON s.dataset_key=n.dataset_key AND s.id=n.sector_key
     LEFT JOIN name_usage u ON n.id = u.name_id AND u.dataset_key=#{datasetKey}
     LEFT JOIN verbatim v ON v.id= n.verbatim_key AND v.dataset_key=#{datasetKey}
     WHERE n.dataset_key=#{datasetKey}
@@ -163,6 +172,7 @@
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
       d.gbif_publisher_key AS publisherKey,
       s.subject_dataset_key AS sectorDatasetKey,
+      s.mode AS sectorMode,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
       v.issues
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>

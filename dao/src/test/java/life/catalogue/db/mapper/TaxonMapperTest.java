@@ -69,9 +69,14 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     Name n = TestEntityGenerator.newName(dkey);
     n.addIdentifier("col:NN");
     n.addIdentifier("urn:lsid:ipni.org:names:77154529-1");
+    if (dkey == sector.getDatasetKey()) {
+      n.setSectorKey(sector.getId());
+    }
     insertName(n);
     Taxon t = TestEntityGenerator.newTaxon(n);
-    t.setSectorKey(sector.getId());
+    if (dkey == sector.getDatasetKey()) {
+      t.setSectorKey(sector.getId());
+    }
     t.setDatasetKey(dkey);
     t.setNamePhrase("sensu lato");
     t.addIdentifier("col:DERF");
@@ -83,6 +88,9 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   Taxon createTestEntityIncId(int datasetKey) {
     var t = super.createTestEntityIncId(datasetKey);
     t.setSectorKey(null); // causes constraint problems otherwise
+    t.setSectorMode(null);
+    t.getName().setSectorKey(null);
+    t.getName().setSectorMode(null);
     return t;
   }
 

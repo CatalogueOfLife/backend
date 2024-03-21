@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 public class Reference extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScoped, Remarkable {
   
   private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private Integer verbatimKey;
   
   /**
@@ -41,6 +42,7 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
   public Reference(Reference other) {
     super(other);
     this.sectorKey = other.sectorKey;
+    this.sectorMode = other.sectorMode;
     this.verbatimKey = other.verbatimKey;
     this.csl = other.csl;
     this.citation = other.citation;
@@ -55,7 +57,17 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
   @Override
   public Integer getVerbatimKey() {
     return verbatimKey;
@@ -124,27 +136,22 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
   public String getPage() {
     return csl == null ? null : csl.getPage();
   }
-  
-  
+
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     Reference reference = (Reference) o;
-    return Objects.equals(sectorKey, reference.sectorKey) &&
-        Objects.equals(verbatimKey, reference.verbatimKey) &&
-        Objects.equals(csl, reference.csl) &&
-        Objects.equals(citation, reference.citation) &&
-        Objects.equals(year, reference.year) &&
-        Objects.equals(remarks, reference.remarks);
+    return Objects.equals(sectorKey, reference.sectorKey) && sectorMode == reference.sectorMode && Objects.equals(verbatimKey, reference.verbatimKey) && Objects.equals(csl, reference.csl) && Objects.equals(citation, reference.citation) && Objects.equals(year, reference.year) && Objects.equals(remarks, reference.remarks);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, csl, citation, year, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, csl, citation, year, remarks);
   }
-  
+
   @Override
   public String toString() {
     return "Reference{" + "id='" + getId() + '\'' + ", csl='" + csl + '\'' + '}';

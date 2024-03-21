@@ -14,6 +14,8 @@ import org.apache.ibatis.cursor.Cursor;
 
 public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
 
+  Sector.Mode getMode(@Param("datasetKey") int datasetKey,
+                      @Param("key") int id);
   Sector getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("key") DSID<String> key);
   

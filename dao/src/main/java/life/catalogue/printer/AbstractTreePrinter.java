@@ -85,7 +85,7 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
 
   @Override
   protected final void print(SimpleName u) {
-    // we dont use this method - we have overwritte accept instead!
+    // we dont use this method - we have overwritten accept instead!
   }
 
   protected abstract void start(SimpleName u) throws IOException;

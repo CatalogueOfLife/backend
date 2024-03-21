@@ -5,10 +5,25 @@
 <mapper namespace="life.catalogue.db.mapper.MediaMapper">
 
   <sql id="SELECT">
-    id,
-    <include refid="COLS"/>,
-    created,
-    modified
+    m.id,
+    m.dataset_key,
+    m.sector_key,
+    m.taxon_id,
+    m.verbatim_key,
+    m.url,
+    m.type,
+    m.format,
+    m.title,
+    m.captured,
+    m.captured_by,
+    m.license,
+    m.link,
+    m.reference_id,
+    m.remarks,
+    m.created_by,
+    m.modified_by,
+    m.created,
+    m.modified
   </sql>
 
   <sql id="COLS">
@@ -53,7 +68,7 @@
     #{obj.modifiedBy}
   </sql>
 
-  <sql id="FROM">media</sql>
+  <sql id="FROM">media m</sql>
 
   <resultMap id="mediaResultMap" type="Media" autoMapping="true">
     <id property="id" column="id"/>
@@ -70,20 +85,20 @@
   <select id="listByTaxon" resultMap="mediaResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND taxon_id = #{key.id}
+    WHERE m.dataset_key=#{key.datasetKey} AND m.taxon_id = #{key.id}
     ORDER BY id
   </select>
 
   <select id="get" resultMap="mediaResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
+    WHERE m.dataset_key=#{key.datasetKey} AND m.id = #{key.id}
   </select>
 
   <select id="processDataset" parameterType="map" resultMap="mediaExtResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{datasetKey}
+    WHERE m.dataset_key=#{datasetKey}
   </select>
 
   <insert id="create" parameterType="Media" useGeneratedKeys="true" keyProperty="obj.id">
@@ -115,7 +130,7 @@
   <select id="processSector" parameterType="map" resultMap="mediaResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+    WHERE m.dataset_key=#{key.datasetKey} AND m.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">

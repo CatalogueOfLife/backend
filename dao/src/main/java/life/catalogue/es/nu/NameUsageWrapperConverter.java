@@ -225,7 +225,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setIssues(nuw.getIssues());
     doc.setGroup(nuw.getGroup());
     doc.setPublisherKey(nuw.getPublisherKey());
-    doc.setSectorMode(nuw.getSectorMode());
+    doc.setSectorMode(nuw.getUsage().getSectorMode());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
     // name

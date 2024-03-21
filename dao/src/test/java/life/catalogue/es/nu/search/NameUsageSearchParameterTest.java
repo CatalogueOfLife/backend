@@ -273,16 +273,16 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
   @Test
   public void testSectorMode() {
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.setSectorMode(Sector.Mode.ATTACH);
+    nuw1.getUsage().setSectorMode(Sector.Mode.ATTACH);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.setSectorMode(Sector.Mode.ATTACH);
+    nuw2.getUsage().setSectorMode(Sector.Mode.ATTACH);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.setSectorMode(Sector.Mode.MERGE);
+    nuw3.getUsage().setSectorMode(Sector.Mode.MERGE);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.setSectorMode(null);
+    nuw4.getUsage().setSectorMode(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 

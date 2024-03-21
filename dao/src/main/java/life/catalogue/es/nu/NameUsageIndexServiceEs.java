@@ -332,7 +332,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
                 if (sp!=null) {
                   nuw.setSectorDatasetKey(sp.datasetKey);
                   nuw.setSectorPublisherKey(sp.publisherKey);
-                  nuw.setSectorMode(sp.mode);
                 }
               }
               //decisions

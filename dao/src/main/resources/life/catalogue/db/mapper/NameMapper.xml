@@ -207,7 +207,7 @@
 
   <select id="hasData" resultType="boolean">
     SELECT exists(
-      SELECT id FROM <include refid="FROM"/>
+      SELECT id FROM name
       WHERE dataset_key=#{datasetKey}
       LIMIT 1
     )
@@ -217,7 +217,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE n.dataset_key=#{datasetKey}
-    ORDER BY id
+    ORDER BY n.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
@@ -225,7 +225,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE n.dataset_key=#{datasetKey} AND n.published_in_id = #{refId}
-    ORDER BY id
+    ORDER BY n.id
   </select>
 
   <select id="get" resultMap="nameResultMap">
@@ -255,22 +255,22 @@
   </select>
 
   <select id="unrankedRankNameIds" resultType="string">
-    SELECT id
+    SELECT n.id
     FROM <include refid="FROM"/>
-    WHERE n.dataset_key=#{datasetKey} AND rank IN ('UNRANKED'::RANK, 'OTHER'::RANK)
+    WHERE n.dataset_key=#{datasetKey} AND n.rank IN ('UNRANKED'::RANK, 'OTHER'::RANK)
     <if test="sectorKey">
-      AND sector_key = #{sectorKey}
+      AND n.sector_key = #{sectorKey}
     </if>
   </select>
 
   <select id="processNameStrings" resultType="String" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT concat_ws(' ', scientific_name, authorship)
+    SELECT concat_ws(' ', n.scientific_name, n.authorship)
     FROM <include refid="FROM"/>
     WHERE n.dataset_key=#{datasetKey}
     <if test="sectorKey != null">
-      AND sector_key = #{sectorKey}
+      AND n.sector_key = #{sectorKey}
     </if>
-    ORDER BY scientific_name, authorship
+    ORDER BY n.scientific_name, n.authorship
   </select>
 
   <select id="indexGroup" resultMap="nameResultMap">
@@ -343,7 +343,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     <include refid="orphanWhere"/>
-    AND dataset_key=#{datasetKey}
+    AND n.dataset_key=#{datasetKey}
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
@@ -402,7 +402,7 @@
     SELECT <include refid="SELECT_NIDX"/>
     FROM <include refid="FROM_NIDX"/>
     WHERE n.dataset_key = #{datasetKey}
-    ORDER BY rank, scientific_name
+    ORDER BY n.rank, n.scientific_name
   </select>
 
   <select id="processDatasetWithoutMatches" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">

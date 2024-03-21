@@ -29,6 +29,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private static final Pattern AUTHOR = Pattern.compile("^(?:[a-zA-Z]{1,3}[ '´`’.-]+){0,3}[\\p{L}-]{2,60}\\b");
 
   private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private Integer verbatimKey;
   @Nonnull
   @JsonFilter(LabelPropertyFilter.NAME)
@@ -63,6 +64,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public NameUsageBase(NameUsageBase other) {
     super(other);
     this.sectorKey = other.sectorKey;
+    this.sectorMode = other.sectorMode;
     this.verbatimKey = other.verbatimKey;
     this.name = other.name;
     this.status = other.status;
@@ -269,14 +271,26 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     }
   }
 
+  @Override
   public Integer getSectorKey() {
     return sectorKey;
   }
-  
+
+  @Override
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
   }
-  
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
   public List<String> getReferenceIds() {
     return referenceIds;
   }
@@ -328,6 +342,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     if (!super.equals(o)) return false;
     NameUsageBase that = (NameUsageBase) o;
     return Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(sectorMode, that.sectorMode) &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
       Objects.equals(name, that.name) &&
       status == that.status &&
@@ -343,7 +358,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, identifier, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, identifier, link, remarks, referenceIds);
   }
 
   @Override

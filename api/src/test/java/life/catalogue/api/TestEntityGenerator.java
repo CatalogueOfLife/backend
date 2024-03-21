@@ -249,7 +249,7 @@ public class TestEntityGenerator {
       Entity<?> obj = INSTANCES[i];
       int hash = obj.hashCode();
       if (hash != ORIGINAL_HASHES[i]){
-        System.out.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
+        System.err.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
         return true;
       }
     }
@@ -657,10 +657,10 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(TAXON1);
+    nuw.setUsage(new Taxon(TAXON1));
+    nuw.getUsage().setSectorMode(Sector.Mode.MERGE);
     nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
     nuw.setSectorPublisherKey(UUID.randomUUID());
-    nuw.setSectorMode(Sector.Mode.MERGE);
     nuw.setSecondarySourceGroups(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN));
     nuw.setSecondarySourceKeys(Set.of(1010,  2123));
     return copy(nuw);
@@ -668,7 +668,7 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(SYN2);
+    nuw.setUsage(new Synonym(SYN2));
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);

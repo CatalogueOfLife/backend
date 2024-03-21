@@ -26,6 +26,7 @@
     <if test="type != null">
       t.dataset_sectors,
       s.subject_dataset_key AS sector_dataset_key,
+      s.mode AS sector_mode,
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
         s.id AS sector_key,
         NULL AS est_id,

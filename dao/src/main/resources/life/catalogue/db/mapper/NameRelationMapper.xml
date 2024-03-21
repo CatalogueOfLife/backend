@@ -6,11 +6,12 @@
 
   <sql id="SELECT">
     nr.id,
-    nr.verbatim_key,
     nr.dataset_key,
-    nr.type,
+    nr.sector_key,
     nr.name_id,
     nr.related_name_id,
+    nr.verbatim_key,
+    nr.type,
     nr.reference_id,
     nr.remarks,
     nr.created,
@@ -49,9 +50,7 @@
     #{modifiedBy}
   </sql>
 
-  <sql id="FROM">
-    name_rel nr
-  </sql>
+  <sql id="FROM">name_rel nr</sql>
 
   <resultMap id="nameRelResultMap" type="NameRelation" autoMapping="true">
     <id property="id" column="id"/>
@@ -65,7 +64,7 @@
   <select id="listByName" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
+    WHERE nr.dataset_key = #{key.datasetKey} AND nr.name_id = #{key.id}
   </select>
 
   <select id="listUsageRelByName" resultMap="usageRelResultMap">
@@ -89,7 +88,7 @@
   <select id="listByRelatedName" resultMap="nameRelResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND nr.related_name_id = #{key.id}
+    WHERE nr.dataset_key = #{key.datasetKey} AND nr.related_name_id = #{key.id}
   </select>
 
   <select id="listUsageRelByRelatedName" resultMap="usageRelResultMap">
@@ -102,7 +101,7 @@
   <select id="processDataset" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{datasetKey}
+    WHERE nr.dataset_key = #{datasetKey}
   </select>
 
   <select id="listByType" resultMap="nameRelResultMap">
@@ -186,7 +185,7 @@
   <select id="processSector" parameterType="map" resultMap="nameRelResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND nr.sector_key = #{key.id}
+    WHERE nr.dataset_key = #{key.datasetKey} AND nr.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">

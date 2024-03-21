@@ -26,8 +26,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class EsNameUsageSerdeTest extends EsReadTestBase {
 
-  static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerdeTest.class);
-
   @Test
   public void testTaxon() throws IOException {
     roundtrip(TestEntityGenerator.newNameUsageTaxonWrapper());

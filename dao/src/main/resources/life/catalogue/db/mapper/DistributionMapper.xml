@@ -8,6 +8,7 @@
     d.id,
     d.taxon_id,
     d.dataset_key,
+    d.sector_key,
     d.verbatim_key,
     d.area,
     d.gazetteer,

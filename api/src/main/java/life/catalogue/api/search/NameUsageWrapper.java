@@ -19,7 +19,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
   private List<SimpleDecision> decisions;
   private Integer sectorDatasetKey;
   private UUID sectorPublisherKey;
-  private Sector.Mode sectorMode;
   private UUID publisherKey;
   private Set<InfoGroup> secondarySourceGroups;
   private Set<Integer> secondarySourceKeys;
@@ -88,14 +87,6 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.sectorPublisherKey = sectorPublisherKey;
   }
 
-  public Sector.Mode getSectorMode() {
-    return sectorMode;
-  }
-
-  public void setSectorMode(Sector.Mode sectorMode) {
-    this.sectorMode = sectorMode;
-  }
-
   public Set<InfoGroup> getSecondarySourceGroups() {
     return secondarySourceGroups;
   }
@@ -126,12 +117,12 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys) && group == that.group;
+    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys) && group == that.group;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
   }
 
   @Override

@@ -5,33 +5,33 @@
 <mapper namespace="life.catalogue.db.mapper.TypeMaterialMapper">
 
   <sql id="SELECT">
-    id,
-    dataset_key,
-    sector_key,
-    verbatim_key,
-    name_id,
-    citation,
-    status,
-    locality,
-    country,
-    latitude,
-    longitude,
-    altitude,
-    coordinate,
-    sex,
-    institution_code,
-    catalog_number,
-    associated_sequences,
-    host,
-    date,
-    collector,
-    reference_id,
-    link,
-    remarks,
-    created,
-    created_by,
-    modified,
-    modified_by
+    m.id,
+    m.dataset_key,
+    m.sector_key,
+    m.verbatim_key,
+    m.name_id,
+    m.citation,
+    m.status,
+    m.locality,
+    m.country,
+    m.latitude,
+    m.longitude,
+    m.altitude,
+    m.coordinate,
+    m.sex,
+    m.institution_code,
+    m.catalog_number,
+    m.associated_sequences,
+    m.host,
+    m.date,
+    m.collector,
+    m.reference_id,
+    m.link,
+    m.remarks,
+    m.created,
+    m.created_by,
+    m.modified,
+    m.modified_by
   </sql>
 
   <sql id="COLS">
@@ -96,9 +96,7 @@
     #{modifiedBy}
   </sql>
 
-  <sql id="FROM">
-    type_material
-  </sql>
+  <sql id="FROM">type_material m</sql>
 
   <resultMap id="typeResultMap" type="TypeMaterial" autoMapping="true">
     <id property="id" column="id"/>
@@ -108,8 +106,8 @@
   <select id="listByName" resultMap="typeResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND name_id = #{key.id}
-    ORDER BY id
+    WHERE m.dataset_key = #{key.datasetKey} AND m.name_id = #{key.id}
+    ORDER BY m.id
   </select>
 
   <delete id="deleteByName" parameterType="map">
@@ -126,7 +124,7 @@
   <select id="get" resultMap="typeResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+    WHERE m.dataset_key = #{key.datasetKey} AND m.id = #{key.id}
   </select>
 
   <insert id="create" parameterType="TypeMaterial" keyProperty="id">
@@ -158,13 +156,13 @@
   <select id="processDataset" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{datasetKey}
+    WHERE m.dataset_key = #{datasetKey}
   </select>
 
   <select id="processSector" parameterType="map" resultMap="typeResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+    WHERE m.dataset_key = #{key.datasetKey} AND m.sector_key = #{key.id}
   </select>
 
   <delete id="deleteBySector" parameterType="map">

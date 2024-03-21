@@ -8,6 +8,7 @@
     vn.id,
     vn.taxon_id,
     vn.dataset_key,
+    vn.sector_key,
     vn.verbatim_key,
     vn.name,
     vn.latin,
@@ -119,7 +120,7 @@
 
   <select id="searchAll" resultMap="vernacularNameUsageResultMap">
     SELECT <include refid="SELECT"/>
-    FROM vernacular_name vn
+    FROM <include refid="FROM"/>
     <where>
       <if test="q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->

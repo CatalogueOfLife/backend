@@ -19,7 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
  * Adds various additional infos to support the assembly tree.
  */
-public abstract class TreeNode implements DSID<String> {
+public abstract class TreeNode implements DSID<String>, SectorScoped {
 
   public static enum Type {
     CATALOGUE,
@@ -45,6 +45,7 @@ public abstract class TreeNode implements DSID<String> {
   private int childCount;
   private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private Integer sectorDatasetKey;
   private Boolean sectorRoot;
   private EditorialDecision decision;
@@ -190,6 +191,16 @@ public abstract class TreeNode implements DSID<String> {
   
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
+  }
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
   }
 
   public Integer getSectorDatasetKey() {

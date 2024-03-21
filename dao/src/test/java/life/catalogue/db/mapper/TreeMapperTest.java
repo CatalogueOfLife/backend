@@ -58,6 +58,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     tn = mapper().get(Datasets.COL, null, DSID.colID("t1"));
     assertNull(tn.getDatasetSectors());
     assertNull(tn.getSectorKey());
+    assertNull(tn.getSectorMode());
     assertNull(tn.getDecision());
     assertEquals("t1", tn.getId());
   }
@@ -228,6 +229,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t1"), true, new Page());
     assertEquals(1, nodes.size());
     assertEquals(s.getId(), nodes.get(0).getSectorKey());
+    assertEquals(s.getMode(), nodes.get(0).getSectorMode());
 
     DecisionMapperTest.removeCreatedProps(d1);
     DecisionMapperTest.removeCreatedProps(nodes.get(0).getDecision());
@@ -238,10 +240,14 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(4, nodes.size());
   
     assertNull(nodes.get(0).getSectorKey());
+    assertNull(nodes.get(0).getSectorMode());
     assertNull(nodes.get(1).getSectorKey());
+    assertNull(nodes.get(1).getSectorMode());
     assertEquals(s.getId(), nodes.get(2).getSectorKey());
+    assertEquals(s.getMode(), nodes.get(2).getSectorMode());
     assertNull(nodes.get(3).getSectorKey());
-  
+    assertNull(nodes.get(3).getSectorMode());
+
     assertNull(nodes.get(0).getDecision());
     equals(d2, nodes.get(1).getDecision());
     equals(d1, nodes.get(2).getDecision());
@@ -307,6 +313,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     valid(nodes);
     for (TreeNode n : nodes) {
       assertNotNull(n.getSectorKey());
+      assertNotNull(n.getSectorMode());
       assertNotNull(n.getSectorDatasetKey());
     }
     return nodes;
