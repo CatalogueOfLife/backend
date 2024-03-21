@@ -401,6 +401,12 @@
       SELECT NULL FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
       SELECT NULL FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    ) AND NOT EXISTS (
+      SELECT NULL FROM vernacular_name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    ) AND NOT EXISTS (
+      SELECT NULL FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+    ) AND NOT EXISTS (
+      SELECT NULL FROM name_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     )
   </delete>
 </mapper>

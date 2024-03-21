@@ -1,10 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -15,6 +12,7 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.*;
+import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -226,10 +224,15 @@ public class ProjectRelease extends AbstractProjectCopy {
 
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
       //TODO: do we want to create source dataset records for aggregated publishers ???
       for (var d : srcDao.list(datasetKey, newDataset, true, true)) {
+        // avoid empty merge sector sources where the sector has already been deleted above
+        var sourceSectors = sm.listByDataset(newDatasetKey, d.getKey());
+        if (sourceSectors == null || sourceSectors.isEmpty()) continue;
+
         if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
