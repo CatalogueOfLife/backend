@@ -8,11 +8,13 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.es.InvalidQueryException;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
 import javax.annotation.security.RolesAllowed;
 import javax.validation.Valid;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -164,6 +167,7 @@ public class NameUsageResource {
                                                @QueryParam("rank") Rank rank,
                                                @QueryParam("decisionMode") String decisionMode,
                                                @Valid @BeanParam Page page,
+                                               @Context ContainerRequestContext ctx,
                                                @Context SqlSession session) {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
@@ -180,6 +184,9 @@ public class NameUsageResource {
     if (withDecision != null && projectKey == null) {
       throw new IllegalArgumentException("projectKey required when decisionMode is present");
     }
+    if (projectKey != null) {
+      ResourceUtils.dontCache(ctx);
+    }
     return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, projectKey, regex, status, rank, withDecision, mode, p);
   }
 
@@ -188,8 +195,12 @@ public class NameUsageResource {
   public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
+                                                    @Context ContainerRequestContext ctx,
                                                     @Context UriInfo uri) throws InvalidQueryException {
     checkIllegalDatasetKeyParam(datasetKey, query, uri);
+    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+      ResourceUtils.dontCache(ctx);
+    }
     return searchService.search(query, page);
   }
 

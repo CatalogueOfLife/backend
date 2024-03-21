@@ -22,7 +22,7 @@ public enum NameUsageSearchParameter {
   DATASET_KEY(Integer.class),
 
   /**
-   * This takes the datasetKey of the managed catalogue to filter decisions by, not usages. It will prune the list of decisions to just the
+   * This takes the datasetKey of the managed project to filter decisions by, not usages. It will prune the list of decisions to just the
    * ones matching the datasetKey. I.e. the list only contains a single decision at max if one catalogue is given so the UI can quickly
    * determine if a decision exists at all for a given usage and does not have to ignore decisions from other catalogues.
    */

@@ -21,6 +21,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import javax.ws.rs.*;
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
@@ -67,17 +68,25 @@ public class NameUsageSearchResource {
 
   @GET
   @Path("search")
-  public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
+  public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query,
+                                        @Valid @BeanParam Page page,
+                                        @Context ContainerRequestContext ctx,
+                                        @Context UriInfo uri) throws InvalidQueryException {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
+    }
+    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+      ResourceUtils.dontCache(ctx);
     }
     return searchService.search(query, page);
   }
 
   @POST
   @Path("search")
-  public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req, @Context UriInfo uri) throws InvalidQueryException {
-    return search(req.request, req.page, uri);
+  public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req,
+                                            @Context ContainerRequestContext ctx,
+                                            @Context UriInfo uri) throws InvalidQueryException {
+    return search(req.request, req.page, ctx, uri);
   }
 
   public static class SearchRequestBody {

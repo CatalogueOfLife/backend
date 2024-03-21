@@ -69,7 +69,7 @@ public class DuplicateResource {
    */
   private static void setCacheable(ContainerRequestContext ctx, DuplicateDao.DuplicateRequest req){
     if(req.withDecision != null || req.projectKey != null) {
-      ctx.setProperty(CacheControlResponseFilter.DONT_CACHE, true);
+      ResourceUtils.dontCache(ctx);
     }
   }
 }
