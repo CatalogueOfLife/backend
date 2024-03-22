@@ -28,7 +28,9 @@ public class EsNameUsageSerdeTest extends EsReadTestBase {
 
   @Test
   public void testTaxon() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageTaxonWrapper());
+    var nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
+    nuw.getUsage().setSectorMode(null);
+    roundtrip(nuw);
   }
 
   @Test

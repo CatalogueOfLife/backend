@@ -130,7 +130,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     Name name = nuw.getUsage().getName();
     name.setId(null);
     name.setDatasetKey(null);
-    name.setSectorKey(null);
     name.setScientificName(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
@@ -143,6 +142,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setId(null);
     u.setDatasetKey(null);
     u.setSectorKey(null);
+    u.setSectorMode(null);
     u.setOrigin(null);
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
@@ -151,7 +151,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
       s.getAccepted().setDatasetKey(null);
-      s.getAccepted().setSectorKey(null);
       s.getAccepted().getName().setScientificName(null);
     }
     // decisions
@@ -189,6 +188,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setId(doc.getUsageId());
     u.setDatasetKey(doc.getDatasetKey());
     u.setSectorKey(doc.getSectorKey());
+    u.setSectorMode(doc.getSectorMode());
     u.setOrigin(doc.getOrigin());
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
@@ -197,7 +197,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
       s.getAccepted().setDatasetKey(doc.getDatasetKey());
-      s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
     }
     // decisions

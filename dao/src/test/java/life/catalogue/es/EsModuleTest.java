@@ -16,7 +16,7 @@ public class EsModuleTest {
 
     // we hide the mode
     nuw.getUsage().setSectorMode(null);
-    
+
     String json = EsModule.write(nuw);
     System.out.println(json);
 
