@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -26,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
+public class NameDao extends SectorEntityDao<Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);

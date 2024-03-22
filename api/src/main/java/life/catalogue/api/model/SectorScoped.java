@@ -23,7 +23,7 @@ public interface SectorScoped extends DatasetScoped {
   Sector.Mode getSectorMode();
   void setSectorMode(Sector.Mode mode);
 
-  default boolean isMerged() {
-    return Sector.Mode.MERGE == getSectorMode();
+  default Boolean isMerged() {
+    return getSectorMode() == null ? null : Sector.Mode.MERGE == getSectorMode();
   }
 }

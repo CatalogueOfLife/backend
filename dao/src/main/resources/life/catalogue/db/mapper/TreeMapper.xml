@@ -76,6 +76,8 @@
   <resultMap id="treeResultMap" type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
     <id property="id" column="id"/>
     <result property="datasetSectors" column="dataset_sectors"/>
+    <result property="sectorDatasetKey" column="sector_dataset_key"/>
+    <result property="sectorMode" column="sector_mode"/>
     <association property="_name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap"/>
     <association property="decision" javaType="EditorialDecision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"
                  notNullColumn="id"/>

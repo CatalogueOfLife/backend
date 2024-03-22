@@ -21,6 +21,9 @@ import static java.util.Map.entry;
 /**
  * Filter that adds an Accept header based on a file suffix found in the URL path.
  * See SuffixAcceptRequestFilter#SUFFICES for supported mime types.
+ *
+ * It also changes the default Accept header to json for request without anything given
+ * to avoid returning xml for datasets or textree for taxon resources.
  */
 @Provider
 @PreMatching
@@ -57,6 +60,11 @@ public class SuffixAcceptRequestFilter implements ContainerRequestFilter {
           .build();
         req.setRequestUri(newURI);
         LOG.debug("Accept: {}, change URI to {}", mimeType, newURI.toString());
+      }
+    } else {
+      // json default?
+      if (!req.getHeaders().containsKey(HttpHeaders.ACCEPT) || req.getHeaders().getFirst(HttpHeaders.ACCEPT).equals("*/*")) {
+        req.getHeaders().putSingle(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON+",*/*");
       }
     }
   }

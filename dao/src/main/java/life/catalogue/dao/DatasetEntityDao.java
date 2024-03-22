@@ -1,5 +1,8 @@
 package life.catalogue.dao;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.model.*;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
@@ -10,6 +13,8 @@ import javax.validation.Validator;
 
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.PublisherMapper;
+
+import life.catalogue.db.mapper.SectorMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -25,11 +30,10 @@ public class DatasetEntityDao<K, T extends DatasetScopedEntity<K>, M extends CRU
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetEntityDao.class);
-  
   public DatasetEntityDao(boolean offerChangedHook, SqlSessionFactory factory, Class<T> entityClass, Class<M> mapperClass, Validator validator) {
     super(offerChangedHook, factory, entityClass, mapperClass, validator);
   }
-  
+
   public ResultPage<T> list(int datasetKey, Page page) {
     return super.list(mapperClass, datasetKey, page);
   }

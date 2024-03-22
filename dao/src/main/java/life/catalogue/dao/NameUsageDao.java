@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -33,7 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends DatasetEntityDao<String, T, M> {
+abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends SectorEntityDao<T, M> {
   protected final NameUsageIndexService indexService;
   protected final NameDao nameDao;
 
@@ -45,6 +46,16 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
     super(true, factory, clazz, mapperClass, validator);
     this.indexService = indexService;
     this.nameDao = nameDao;
+  }
+
+  @Override
+  public T get(DSID<String> key) {
+    T u = super.get(key);
+    // add the sector mode also to name
+    if (u != null && u.getName() != null && u.getName().getSectorKey() != null) {
+      u.getName().setSectorMode(sectorModes.get(u.getName().getSectorDSID()));
+    }
+    return u;
   }
 
   public VerbatimSource getSource(final DSID<String> key) {

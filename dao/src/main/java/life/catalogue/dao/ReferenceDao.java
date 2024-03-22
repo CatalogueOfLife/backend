@@ -20,7 +20,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ReferenceDao extends DatasetStringEntityDao<Reference, ReferenceMapper> {
+public class ReferenceDao extends SectorEntityDao<Reference, ReferenceMapper> {
   private static final Logger LOG = LoggerFactory.getLogger(ReferenceDao.class);
   private final DoiResolver resolver;
 

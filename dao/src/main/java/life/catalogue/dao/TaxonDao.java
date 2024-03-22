@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.annotations.VisibleForTesting;
 
 import life.catalogue.api.exception.ArchivedException;

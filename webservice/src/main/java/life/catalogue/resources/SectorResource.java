@@ -49,7 +49,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
-  private final TaxonDao tdao;
   private final SectorImportDao sid;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
@@ -59,7 +58,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     this.dao = dao;
     this.sid = sid;
     this.fmsDao = fmsDao;
-    this.tdao = tdao;
     this.assembly = assembly;
   }
 
