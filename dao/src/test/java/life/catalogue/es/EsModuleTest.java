@@ -14,6 +14,9 @@ public class EsModuleTest {
   public void roundtrip() throws Exception {
     NameUsageWrapper nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
 
+    // we hide the mode
+    nuw.getUsage().setSectorMode(null);
+    
     String json = EsModule.write(nuw);
     System.out.println(json);
 
