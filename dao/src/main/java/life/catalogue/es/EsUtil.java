@@ -11,10 +11,7 @@ import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.StatusLine;
@@ -264,6 +261,15 @@ public class EsUtil {
       }
     }
     throw new EsRequestException("_delete_by_query request failed to complete");
+  }
+
+  public static boolean bulkResponseHasErrors(Response resp) {
+    Map<String, Object> content = readResponse(resp);
+    if ((Boolean) content.get("errors")) {
+      LOG.error("ES Bulk response contains errors");
+      return true;
+    }
+    return false;
   }
 
   /**

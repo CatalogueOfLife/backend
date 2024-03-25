@@ -118,7 +118,8 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private void sendBatch(int batchSize) {
     Request request = new Request("POST", "/_bulk/?timeout=5m");
     request.setJsonEntity(buf.toString());
-    EsUtil.executeWithRetry(client, request);
+    var resp = EsUtil.executeWithRetry(client, request);
+    EsUtil.bulkResponseHasErrors(resp);
     indexed += batchSize;
   }
 
