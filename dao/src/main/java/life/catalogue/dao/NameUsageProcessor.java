@@ -120,9 +120,13 @@ public class NameUsageProcessor {
         PgUtils.consume(() -> nuwm.processWithoutClassification(datasetKey, sectorKey), nuw -> {
           // set preloaded infos excluded in sql results as they are very repetitive
           nuw.setPublisherKey(publisher);
+          if (nuw.getUsage().getSectorKey() != null) {
+            nuw.setSectorDatasetKey(sectors.get(nuw.getUsage().getSectorKey()).datasetKey);
+            nuw.setSectorPublisherKey(sectors.get(nuw.getUsage().getSectorKey()).publisherKey);
+            nuw.getUsage().setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
+          }
           if (nuw.getUsage().getName().getSectorKey() != null) {
-            nuw.setSectorDatasetKey(sectors.get(nuw.getUsage().getName().getSectorKey()).datasetKey);
-            nuw.setSectorPublisherKey(sectors.get(nuw.getUsage().getName().getSectorKey()).publisherKey);
+            nuw.getUsage().getName().setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
           }
 
           if (nuw.getUsage().isTaxon()) {
