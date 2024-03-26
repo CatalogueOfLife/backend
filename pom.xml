@@ -189,6 +189,7 @@
     <module>dao</module>
     <module>doi</module>
     <module>metadata</module>
+    <module>matching-ws</module>
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>

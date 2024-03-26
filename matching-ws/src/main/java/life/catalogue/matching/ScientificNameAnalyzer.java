@@ -5,9 +5,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
 
-/**
- * Keyword analyzer that uses the scientific name normalizer
- */
+/** Keyword analyzer that uses the scientific name normalizer */
 public class ScientificNameAnalyzer extends Analyzer {
 
   public static final int BUFFER_SIZE = 1024;
