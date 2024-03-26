@@ -125,7 +125,7 @@ public class EsReadTestBase {
   protected EsNameUsage toDocument(NameUsageWrapper nu) {
     try {
       // create copy of content as the converter modifies the original instance
-      return new NameUsageWrapperConverter().toDocument(deepCopy(nu));
+      return NameUsageWrapperConverter.toDocument(deepCopy(nu));
     } catch (Exception e) {
       throw new EsException(e);
     }

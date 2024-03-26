@@ -703,11 +703,11 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw2.setUsage(new BareName(n));
 
     // Let's also check that the conversion from NameUsageWrapperConverter to document is as expected
-    EsNameUsage doc = new NameUsageWrapperConverter().toDocument(nuw1);
+    EsNameUsage doc = NameUsageWrapperConverter.toDocument(nuw1);
     assertEquals(List.of("Cornelius", "Jim", "John", "Mark"), new ArrayList<>(doc.getAuthorship()));
     assertEquals(List.of("2000"), new ArrayList<>(doc.getAuthorshipYear()));
 
-    doc = new NameUsageWrapperConverter().toDocument(nuw2);
+    doc = NameUsageWrapperConverter.toDocument(nuw2);
     assertEquals(List.of("Aaron", "Billy", "Cornelius"), new ArrayList<>(doc.getAuthorship()));
     assertEquals(List.of("1752"), new ArrayList<>(doc.getAuthorshipYear()));
 

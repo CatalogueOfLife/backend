@@ -117,7 +117,15 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys) && group == that.group;
+    return Objects.equals(usage, that.usage) &&
+      Objects.equals(issues, that.issues) &&
+      Objects.equals(decisions, that.decisions) &&
+      Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+      Objects.equals(sectorPublisherKey, that.sectorPublisherKey) &&
+      Objects.equals(publisherKey, that.publisherKey) &&
+      Objects.equals(secondarySourceGroups, that.secondarySourceGroups) &&
+      Objects.equals(secondarySourceKeys, that.secondarySourceKeys) &&
+      group == that.group;
   }
 
   @Override

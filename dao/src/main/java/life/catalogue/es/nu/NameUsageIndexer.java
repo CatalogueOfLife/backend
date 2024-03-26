@@ -78,11 +78,10 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
 
   private void index(List<NameUsageWrapper> batch) {
     buf.setLength(0);
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
     try {
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(EsModule.write(converter.toDocument(nuw)));
+        buf.append(EsModule.write(NameUsageWrapperConverter.toDocument(nuw)));
         buf.append("\n");
       }
       sendBatch(batch.size());
@@ -94,13 +93,12 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private void indexWithExtraStats(List<NameUsageWrapper> batch) {
     buf.setLength(0);
     int docSize = 0;
-    NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
     DecimalFormat df = new DecimalFormat("0.0");
     try {
       String json;
       for (NameUsageWrapper nuw : batch) {
         buf.append(indexHeader);
-        buf.append(json = EsModule.write(converter.toDocument(nuw)));
+        buf.append(json = EsModule.write(NameUsageWrapperConverter.toDocument(nuw)));
         docSize += json.getBytes(Charsets.UTF_8).length;
         buf.append("\n");
       }

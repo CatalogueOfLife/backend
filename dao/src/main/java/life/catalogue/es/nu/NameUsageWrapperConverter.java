@@ -1,11 +1,17 @@
 package life.catalogue.es.nu;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.es.*;
+
+import org.mapdb.DataIO;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,18 +31,27 @@ import static life.catalogue.common.collection.CollectionUtils.notEmpty;
  * document.
  */
 public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWrapper, EsNameUsage> {
+  final private static EsKryoPool pool = new EsKryoPool(8);
+  final private static int bufferSize = 1024;
+
 
   /**
    * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
    * them.
    */
   public static String deflate(NameUsageWrapper nuw) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-    try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      EsModule.write(dos, nuw);
+    Kryo kryo = pool.obtain();
+    try {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
+      Output output = new Output(buffer, bufferSize);
+      kryo.writeObject(output, nuw);
+      output.close();
+      byte[] bytes = Base64.getEncoder().encode(buffer.toByteArray());
+      return new String(bytes, StandardCharsets.US_ASCII);
+
+    } finally {
+      pool.free(kryo);
     }
-    byte[] bytes = Base64.getEncoder().encode(baos.toByteArray());
-    return new String(bytes, StandardCharsets.US_ASCII);
   }
 
   /**
@@ -47,9 +62,13 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @throws IOException
    */
   public static NameUsageWrapper inflate(String payload) throws IOException {
-    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    return EsModule.readNameUsageWrapper(new InflaterInputStream(bais));
+    Kryo kryo = pool.obtain();
+    try {
+      byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+      return kryo.readObject(new Input(bytes), NameUsageWrapper.class);
+    } finally {
+      pool.free(kryo);
+    }
   }
 
   /**
@@ -218,13 +237,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @return
    * @throws IOException
    */
-  public EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
+  public static EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage doc = new EsNameUsage();
     // wrapper
     doc.setIssues(nuw.getIssues());
     doc.setGroup(nuw.getGroup());
     doc.setPublisherKey(nuw.getPublisherKey());
-    doc.setSectorMode(nuw.getUsage().getSectorMode());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
     // name
@@ -242,6 +260,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setUsageId(nuw.getUsage().getId());
     doc.setDatasetKey(ObjectUtils.coalesce(nuw.getUsage().getDatasetKey(), name.getDatasetKey()));
     doc.setSectorKey(ObjectUtils.coalesce(nuw.getUsage().getSectorKey(), name.getSectorKey()));
+    doc.setSectorMode(ObjectUtils.coalesce(nuw.getUsage().getSectorMode(), name.getSectorMode()));
     doc.setOrigin(nuw.getUsage().getOrigin());
     doc.setStatus(nuw.getUsage().getStatus());
     doc.setSecondarySourceGroup(nuw.getSecondarySourceGroups());

@@ -51,14 +51,13 @@ public class EsUtilTest extends EsReadTestBase {
   @Test
   public void deleteDataset() throws IOException {
     // Insert 3 documents (overwriting dataset key to known values)
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    EsNameUsage doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     doc.setDatasetKey(1);
     insert(client, indexName(), doc);
-    doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
     doc.setDatasetKey(1);
     insert(client, indexName(), doc);
-    doc = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
     doc.setDatasetKey(2);
     insert(client, indexName(), doc);
     refreshIndex(client, indexName());
@@ -81,14 +80,13 @@ public class EsUtilTest extends EsReadTestBase {
   @Test
   public void testDeleteSector() throws IOException {
     // Insert 3 documents (overwriting sector key to known values)
-    NameUsageWrapperConverter transfer = new NameUsageWrapperConverter();
-    EsNameUsage doc = transfer.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
+    EsNameUsage doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageTaxonWrapper());
     doc.setSectorKey(1);
     insert(client, indexName(), doc);
-    doc = transfer.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
+    doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageSynonymWrapper());
     doc.setSectorKey(1);
     insert(client, indexName(), doc);
-    doc = transfer.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
+    doc = NameUsageWrapperConverter.toDocument(TestEntityGenerator.newNameUsageBareNameWrapper());
     doc.setSectorKey(2);
     insert(client, indexName(), doc);
     refreshIndex(client, indexName());

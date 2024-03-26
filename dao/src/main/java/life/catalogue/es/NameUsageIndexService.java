@@ -151,19 +151,14 @@ public interface NameUsageIndexService {
       @Override
       public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
         LOG.info("No Elastic Search configured, pass through dataset {}", datasetKey);
-        return new BatchConsumer<>(new Consumer<List<NameUsageWrapper>>() {
-          final NameUsageWrapperConverter converter = new NameUsageWrapperConverter();
-
-          @Override
-          public void accept(List<NameUsageWrapper> nameUsageWrappers) {
-            // convert nu wrappers to make sure
-            try {
-              for (NameUsageWrapper nuw : nameUsageWrappers) {
-                converter.toDocument(nuw);
-              }
-            } catch (IOException e) {
-              throw new RuntimeException(e);
+        return new BatchConsumer<>(nuws -> {
+          // convert nu wrappers to make sure
+          try {
+            for (NameUsageWrapper nuw : nuws) {
+              NameUsageWrapperConverter.toDocument(nuw);
             }
+          } catch (IOException e) {
+            throw new RuntimeException(e);
           }
         }, 100);
       }
