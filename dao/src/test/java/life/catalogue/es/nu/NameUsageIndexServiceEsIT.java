@@ -33,8 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
 import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
@@ -211,7 +210,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
-    assertNull(res.getResult().get(0).getDecisions());
+    assertTrue(res.getResult().get(0).getDecisions().isEmpty());
   }
 
   // Some JSON to send using the REST API

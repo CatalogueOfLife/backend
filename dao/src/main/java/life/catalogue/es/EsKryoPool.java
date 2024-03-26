@@ -62,23 +62,11 @@ public class EsKryoPool extends Pool<Kryo> {
     kryo.register(FuzzyDate.class, new FuzzyDateSerializer());
 
     // java & commons
-    kryo.register(ArrayList.class);
-    kryo.register(Collections.emptyList().getClass());
-    kryo.register(HashMap.class);
-    kryo.register(HashSet.class);
     kryo.register(int[].class);
-    kryo.register(LinkedHashMap.class);
-    kryo.register(LinkedList.class);
     kryo.register(URI.class, new URISerializer());
     kryo.register(UUID.class, new UUIDSerializer());
-    kryo.register(EnumMap.class);
-    kryo.register(EnumSet.class);
-    // java9 immutable collections
-    JdkImmutableListSerializer.registerSerializers(kryo);
-    JdkImmutableMapSerializer.registerSerializers(kryo);
-    JdkImmutableSetSerializer.registerSerializers(kryo);
-    // fastutils
-    FastUtilsSerializers.registerSerializers(kryo);
+    // collections
+    ApiKryoPool.registerCollectionClasses(kryo);
 
     // enums
     kryo.register(EditorialDecision.Mode.class);

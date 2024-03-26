@@ -108,28 +108,10 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(LocalDateTime.class);
 
     // java & commons
-    kryo.register(ArrayList.class);
-    kryo.register(Collections.emptyList().getClass());
-    kryo.register(HashMap.class);
-    kryo.register(HashSet.class);
     kryo.register(int[].class);
-    kryo.register(LinkedHashMap.class);
-    kryo.register(LinkedList.class);
     kryo.register(URI.class, new URISerializer());
     kryo.register(UUID.class, new UUIDSerializer());
-    // private class, special registration
-    try {
-      Class clazz = Class.forName("java.util.Arrays$ArrayList");
-      kryo.register(clazz);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    // java9 immutable collections
-    JdkImmutableListSerializer.registerSerializers(kryo);
-    JdkImmutableMapSerializer.registerSerializers(kryo);
-    JdkImmutableSetSerializer.registerSerializers(kryo);
-    // fastutils
-    FastUtilsSerializers.registerSerializers(kryo);
+    registerCollectionClasses(kryo);
 
     // areas
     var areaSerde = new AreaSerializer();
@@ -189,5 +171,29 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(UnknownTerm.class, new TermSerializer());
     kryo.register(BibTexTerm.class, new TermSerializer());
     return kryo;
+  }
+
+  public static void registerCollectionClasses(Kryo kryo) {
+    kryo.register(ArrayList.class);
+    kryo.register(HashMap.class);
+    kryo.register(HashSet.class);
+    kryo.register(EnumMap.class);
+    kryo.register(EnumSet.class);
+    kryo.register(LinkedHashMap.class);
+    kryo.register(LinkedList.class);
+    kryo.register(Collections.emptyList().getClass());
+    // private class, special registration
+    try {
+      Class clazz = Class.forName("java.util.Arrays$ArrayList");
+      kryo.register(clazz);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+    // java9 immutable collections
+    JdkImmutableListSerializer.registerSerializers(kryo);
+    JdkImmutableMapSerializer.registerSerializers(kryo);
+    JdkImmutableSetSerializer.registerSerializers(kryo);
+    // fastutils
+    FastUtilsSerializers.registerSerializers(kryo);
   }
 }
