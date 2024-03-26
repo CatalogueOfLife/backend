@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import java.time.Duration;
+import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,26 +10,23 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.time.Duration;
-import java.time.LocalTime;
-
 @SpringBootApplication
 public class MatchingApplication implements CommandLineRunner {
 
   private static Logger LOG = LoggerFactory.getLogger(IndexingService.class);
 
-  @Autowired
-  IndexingService datasetIndexingService;
+  @Autowired IndexingService datasetIndexingService;
 
   public static void main(String[] args) {
 
-    //FIXME: needs to check the index exists and if it doesnt exist, create it
+    // FIXME: needs to check the index exists and if it doesnt exist, create it
 
     WebApplicationType appType;
-    if (args.length > 0) appType =
-      WebApplicationType.NONE;
-    else
+    if (args.length > 0) {
+      appType = WebApplicationType.NONE;
+    } else {
       appType = WebApplicationType.SERVLET;
+    }
 
     SpringApplication application = new SpringApplication(MatchingApplication.class);
     application.setWebApplicationType(appType);
@@ -42,9 +41,9 @@ public class MatchingApplication implements CommandLineRunner {
       LocalTime end = LocalTime.now();
       Duration duration = Duration.between(start, end);
       LOG.info(
-        "Indexing finished in {} min, {} secs",
-        duration.toMinutes() % 60,
-        duration.getSeconds() % 60);
+          "Indexing finished in {} min, {} secs",
+          duration.toMinutes() % 60,
+          duration.getSeconds() % 60);
     }
   }
 }

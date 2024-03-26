@@ -1,21 +1,15 @@
 package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import org.gbif.api.model.common.LinneanClassification;
-import org.gbif.api.util.ClassificationUtils;
-import org.gbif.api.vocabulary.Rank;
-import org.gbif.api.vocabulary.TaxonomicStatus;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
+import javax.annotation.Nullable;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import org.gbif.api.vocabulary.Rank;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 public class NameUsageMatch implements LinneanClassification {
 
@@ -31,8 +25,10 @@ public class NameUsageMatch implements LinneanClassification {
   private List<NameUsageMatch> alternatives;
   private String kingdom;
   private String phylum;
+
   @JsonProperty("class")
   private String clazz;
+
   private String order;
   private String family;
   private String genus;
@@ -52,8 +48,8 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   @Schema(
-    description = "The confidence that the lookup was correct.\n\nA value between 0 and 100 with higher values being better matches."
-  )
+      description =
+          "The confidence that the lookup was correct.\n\nA value between 0 and 100 with higher values being better matches.")
   public @Min(0L) @Max(100L) Integer getConfidence() {
     return this.confidence;
   }
@@ -62,9 +58,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.confidence = confidence;
   }
 
-  @Schema(
-    description = "The type of match for this result."
-  )
+  @Schema(description = "The type of match for this result.")
   public MatchType getMatchType() {
     return this.matchType;
   }
@@ -73,9 +67,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.matchType = matchType;
   }
 
-  @Schema(
-    description = "The rank of the matching usage."
-  )
+  @Schema(description = "The rank of the matching usage.")
   @Nullable
   public Rank getRank() {
     return this.rank;
@@ -85,9 +77,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.rank = rank;
   }
 
-  @Schema(
-    description = "The scientific name of the matched name usage."
-  )
+  @Schema(description = "The scientific name of the matched name usage.")
   @Nullable
   public String getScientificName() {
     return this.scientificName;
@@ -97,9 +87,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.scientificName = scientificName;
   }
 
-  @Schema(
-    description = "The name usage key of the name usage that has been matched."
-  )
+  @Schema(description = "The name usage key of the name usage that has been matched.")
   @Nullable
   public String getUsageKey() {
     return this.usageKey;
@@ -110,8 +98,7 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   @Schema(
-    description = "The key of the accepted name usage in case the matched usage was a synonym."
-  )
+      description = "The key of the accepted name usage in case the matched usage was a synonym.")
   @Nullable
   public String getAcceptedUsageKey() {
     return this.acceptedUsageKey;
@@ -121,16 +108,12 @@ public class NameUsageMatch implements LinneanClassification {
     this.acceptedUsageKey = acceptedUsageKey;
   }
 
-  @Schema(
-    description = "True if the match name is a synonym."
-  )
+  @Schema(description = "True if the match name is a synonym.")
   public boolean isSynonym() {
     return this.status != null && this.status.isSynonym();
   }
 
-  @Schema(
-    description = "The taxonomic status of the backbone usage."
-  )
+  @Schema(description = "The taxonomic status of the backbone usage.")
   public TaxonomicStatus getStatus() {
     return this.status;
   }
@@ -139,9 +122,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.status = status;
   }
 
-  @Schema(
-    description = "Matched name's kingdom."
-  )
+  @Schema(description = "Matched name's kingdom.")
   @Nullable
   public String getKingdom() {
     return this.kingdom;
@@ -151,9 +132,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.kingdom = kingdom;
   }
 
-  @Schema(
-    description = "Matched name's phylum."
-  )
+  @Schema(description = "Matched name's phylum.")
   @Nullable
   public String getPhylum() {
     return this.phylum;
@@ -163,9 +142,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.phylum = phylum;
   }
 
-  @Schema(
-    description = "Matched name's class."
-  )
+  @Schema(description = "Matched name's class.")
   @Nullable
   public String getClazz() {
     return this.clazz;
@@ -175,9 +152,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.clazz = clazz;
   }
 
-  @Schema(
-    description = "Matched name's order."
-  )
+  @Schema(description = "Matched name's order.")
   @Nullable
   public String getOrder() {
     return this.order;
@@ -187,9 +162,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.order = order;
   }
 
-  @Schema(
-    description = "Matched name's family."
-  )
+  @Schema(description = "Matched name's family.")
   @Nullable
   public String getFamily() {
     return this.family;
@@ -199,9 +172,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.family = family;
   }
 
-  @Schema(
-    description = "Matched name's genus."
-  )
+  @Schema(description = "Matched name's genus.")
   @Nullable
   public String getGenus() {
     return this.genus;
@@ -211,9 +182,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.genus = genus;
   }
 
-  @Schema(
-    description = "Matched name's subgenus."
-  )
+  @Schema(description = "Matched name's subgenus.")
   @Nullable
   public String getSubgenus() {
     return this.subgenus;
@@ -223,9 +192,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.subgenus = subgenus;
   }
 
-  @Schema(
-    description = "Matched name's species."
-  )
+  @Schema(description = "Matched name's species.")
   @Nullable
   public String getSpecies() {
     return this.species;
@@ -235,9 +202,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.species = species;
   }
 
-  @Schema(
-    description = "Usage key of the kingdom of the matched name."
-  )
+  @Schema(description = "Usage key of the kingdom of the matched name.")
   @Nullable
   public String getKingdomKey() {
     return this.kingdomKey;
@@ -247,9 +212,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.kingdomKey = kingdomKey;
   }
 
-  @Schema(
-    description = "Usage key of the phylum of the matched name."
-  )
+  @Schema(description = "Usage key of the phylum of the matched name.")
   @Nullable
   public String getPhylumKey() {
     return this.phylumKey;
@@ -259,9 +222,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.phylumKey = phylumKey;
   }
 
-  @Schema(
-    description = "Usage key of the class of the matched name."
-  )
+  @Schema(description = "Usage key of the class of the matched name.")
   @Nullable
   public String getClassKey() {
     return this.classKey;
@@ -271,9 +232,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.classKey = classKey;
   }
 
-  @Schema(
-    description = "Usage key of the order of the matched name."
-  )
+  @Schema(description = "Usage key of the order of the matched name.")
   @Nullable
   public String getOrderKey() {
     return this.orderKey;
@@ -283,9 +242,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.orderKey = orderKey;
   }
 
-  @Schema(
-    description = "Usage key of the family of the matched name."
-  )
+  @Schema(description = "Usage key of the family of the matched name.")
   @Nullable
   public String getFamilyKey() {
     return this.familyKey;
@@ -295,9 +252,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.familyKey = familyKey;
   }
 
-  @Schema(
-    description = "Usage key of the genus of the matched name."
-  )
+  @Schema(description = "Usage key of the genus of the matched name.")
   @Nullable
   public String getGenusKey() {
     return this.genusKey;
@@ -307,9 +262,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.genusKey = genusKey;
   }
 
-  @Schema(
-    description = "Usage key of the subgenus of the matched name."
-  )
+  @Schema(description = "Usage key of the subgenus of the matched name.")
   @Nullable
   public String getSubgenusKey() {
     return this.subgenusKey;
@@ -319,9 +272,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.subgenusKey = subgenusKey;
   }
 
-  @Schema(
-    description = "Usage key of the species of the matched name."
-  )
+  @Schema(description = "Usage key of the species of the matched name.")
   @Nullable
   public String getSpeciesKey() {
     return this.speciesKey;
@@ -331,16 +282,10 @@ public class NameUsageMatch implements LinneanClassification {
     this.speciesKey = speciesKey;
   }
 
-  @Schema(
-    description = "Usage key of the kingdom of the matched name."
-  )
+  @Schema(description = "Usage key of the kingdom of the matched name.")
   @Nullable
   public String getHigherRank(Rank rank) {
-    return ClassificationUtils.getHigherRank(this, rank);
-  }
-
-  public Integer getHigherRankKey(Rank rank) {
-    return ClassificationUtils.getHigherRankKey(this, rank);
+    return this.getHigherRank(rank);
   }
 
   @Nullable
@@ -376,34 +321,130 @@ public class NameUsageMatch implements LinneanClassification {
     } else if (o != null && this.getClass() == o.getClass()) {
       NameUsageMatch that = (NameUsageMatch) o;
       return Objects.equals(this.usageKey, that.usageKey)
-        && Objects.equals(this.acceptedUsageKey, that.acceptedUsageKey)
-        && Objects.equals(this.scientificName, that.scientificName)
-        && Objects.equals(this.canonicalName, that.canonicalName)
-        && this.rank == that.rank
-        && this.status == that.status
-        && Objects.equals(this.confidence, that.confidence)
-        && Objects.equals(this.note, that.note) && this.matchType == that.matchType && Objects.equals(this.alternatives, that.alternatives) && Objects.equals(this.kingdom, that.kingdom) && Objects.equals(this.phylum, that.phylum) && Objects.equals(this.clazz, that.clazz) && Objects.equals(this.order, that.order) && Objects.equals(this.family, that.family) && Objects.equals(this.genus, that.genus) && Objects.equals(this.subgenus, that.subgenus) && Objects.equals(this.species, that.species) && Objects.equals(this.kingdomKey, that.kingdomKey) && Objects.equals(this.phylumKey, that.phylumKey) && Objects.equals(this.classKey, that.classKey) && Objects.equals(this.orderKey, that.orderKey) && Objects.equals(this.familyKey, that.familyKey) && Objects.equals(this.genusKey, that.genusKey) && Objects.equals(this.subgenusKey, that.subgenusKey) && Objects.equals(this.speciesKey, that.speciesKey);
+          && Objects.equals(this.acceptedUsageKey, that.acceptedUsageKey)
+          && Objects.equals(this.scientificName, that.scientificName)
+          && Objects.equals(this.canonicalName, that.canonicalName)
+          && this.rank == that.rank
+          && this.status == that.status
+          && Objects.equals(this.confidence, that.confidence)
+          && Objects.equals(this.note, that.note)
+          && this.matchType == that.matchType
+          && Objects.equals(this.alternatives, that.alternatives)
+          && Objects.equals(this.kingdom, that.kingdom)
+          && Objects.equals(this.phylum, that.phylum)
+          && Objects.equals(this.clazz, that.clazz)
+          && Objects.equals(this.order, that.order)
+          && Objects.equals(this.family, that.family)
+          && Objects.equals(this.genus, that.genus)
+          && Objects.equals(this.subgenus, that.subgenus)
+          && Objects.equals(this.species, that.species)
+          && Objects.equals(this.kingdomKey, that.kingdomKey)
+          && Objects.equals(this.phylumKey, that.phylumKey)
+          && Objects.equals(this.classKey, that.classKey)
+          && Objects.equals(this.orderKey, that.orderKey)
+          && Objects.equals(this.familyKey, that.familyKey)
+          && Objects.equals(this.genusKey, that.genusKey)
+          && Objects.equals(this.subgenusKey, that.subgenusKey)
+          && Objects.equals(this.speciesKey, that.speciesKey);
     } else {
       return false;
     }
   }
 
   public int hashCode() {
-    return Objects.hash(new Object[]{this.usageKey, this.acceptedUsageKey, this.scientificName, this.canonicalName, this.rank, this.status, this.confidence, this.note, this.matchType, this.alternatives, this.kingdom, this.phylum, this.clazz, this.order, this.family, this.genus, this.subgenus, this.species, this.kingdomKey, this.phylumKey, this.classKey, this.orderKey, this.familyKey, this.genusKey, this.subgenusKey, this.speciesKey});
+    return Objects.hash(
+        new Object[] {
+          this.usageKey,
+          this.acceptedUsageKey,
+          this.scientificName,
+          this.canonicalName,
+          this.rank,
+          this.status,
+          this.confidence,
+          this.note,
+          this.matchType,
+          this.alternatives,
+          this.kingdom,
+          this.phylum,
+          this.clazz,
+          this.order,
+          this.family,
+          this.genus,
+          this.subgenus,
+          this.species,
+          this.kingdomKey,
+          this.phylumKey,
+          this.classKey,
+          this.orderKey,
+          this.familyKey,
+          this.genusKey,
+          this.subgenusKey,
+          this.speciesKey
+        });
   }
 
   public String toString() {
-    return (new StringJoiner(", ", NameUsageMatch.class.getSimpleName() + "[", "]")).add("usageKey=" + this.usageKey).add("acceptedUsageKey=" + this.acceptedUsageKey).add("scientificName='" + this.scientificName + "'").add("canonicalName='" + this.canonicalName + "'").add("rank=" + this.rank).add("status=" + this.status).add("confidence=" + this.confidence).add("note='" + this.note + "'").add("matchType=" + this.matchType).add("alternatives=" + this.alternatives).add("kingdom='" + this.kingdom + "'").add("phylum='" + this.phylum + "'").add("clazz='" + this.clazz + "'").add("order='" + this.order + "'").add("family='" + this.family + "'").add("genus='" + this.genus + "'").add("subgenus='" + this.subgenus + "'").add("species='" + this.species + "'").add("kingdomKey=" + this.kingdomKey).add("phylumKey=" + this.phylumKey).add("classKey=" + this.classKey).add("orderKey=" + this.orderKey).add("familyKey=" + this.familyKey).add("genusKey=" + this.genusKey).add("subgenusKey=" + this.subgenusKey).add("speciesKey=" + this.speciesKey).toString();
+    return (new StringJoiner(", ", NameUsageMatch.class.getSimpleName() + "[", "]"))
+        .add("usageKey=" + this.usageKey)
+        .add("acceptedUsageKey=" + this.acceptedUsageKey)
+        .add("scientificName='" + this.scientificName + "'")
+        .add("canonicalName='" + this.canonicalName + "'")
+        .add("rank=" + this.rank)
+        .add("status=" + this.status)
+        .add("confidence=" + this.confidence)
+        .add("note='" + this.note + "'")
+        .add("matchType=" + this.matchType)
+        .add("alternatives=" + this.alternatives)
+        .add("kingdom='" + this.kingdom + "'")
+        .add("phylum='" + this.phylum + "'")
+        .add("clazz='" + this.clazz + "'")
+        .add("order='" + this.order + "'")
+        .add("family='" + this.family + "'")
+        .add("genus='" + this.genus + "'")
+        .add("subgenus='" + this.subgenus + "'")
+        .add("species='" + this.species + "'")
+        .add("kingdomKey=" + this.kingdomKey)
+        .add("phylumKey=" + this.phylumKey)
+        .add("classKey=" + this.classKey)
+        .add("orderKey=" + this.orderKey)
+        .add("familyKey=" + this.familyKey)
+        .add("genusKey=" + this.genusKey)
+        .add("subgenusKey=" + this.subgenusKey)
+        .add("speciesKey=" + this.speciesKey)
+        .toString();
   }
 
-  public static enum MatchType {
+  public String getHigherRankKey(Rank r) {
+    if (rank != null) {
+      switch (rank) {
+        case KINGDOM:
+          return getKingdomKey();
+        case PHYLUM:
+          return getPhylumKey();
+        case CLASS:
+          return getClassKey();
+        case ORDER:
+          return getOrderKey();
+        case FAMILY:
+          return getFamilyKey();
+        case GENUS:
+          return getGenusKey();
+        case SUBGENUS:
+          return getSubgenusKey();
+        case SPECIES:
+          return getSpeciesKey();
+      }
+    }
+    return null;
+  }
+
+  public enum MatchType {
     EXACT,
     FUZZY,
     HIGHERRANK,
     AGGREGATE,
     NONE;
 
-    private MatchType() {
-    }
+    private MatchType() {}
   }
 }

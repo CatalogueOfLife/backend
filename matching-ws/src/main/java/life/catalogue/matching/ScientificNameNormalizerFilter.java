@@ -1,6 +1,9 @@
 package life.catalogue.matching;
 
 import java.io.IOException;
+
+import life.catalogue.common.tax.SciNameNormalizer;
+
 import org.apache.lucene.analysis.TokenFilter;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -26,7 +29,8 @@ public class ScientificNameNormalizerFilter extends TokenFilter {
       // porting notes: this section was simplified, as it was always called with
       // normMonomials=true, stemming=true
       // fullNameTokens=true is the same as normMonomials=true
-      String normed = SciNameNormalizer.normalizeAll(term);
+//      String normed = fullNameTokens ? SciNameNormalizer.normalize(term, stemming) : SciNameNormalizer.normalizeAll(term, stemming);
+      String normed = SciNameNormalizer.normalize(term);
       termAtt.copyBuffer(normed.toCharArray(), 0, normed.length());
     }
     return true;

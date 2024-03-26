@@ -1,30 +1,27 @@
 package life.catalogue.matching;
 
 import com.google.common.annotations.VisibleForTesting;
-
-import life.catalogue.api.model.Classification;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.api.model.checklistbank.NameUsageMatch;
-import org.gbif.api.model.checklistbank.ParsedName;
-import org.gbif.api.model.common.LinneanClassification;
-import org.gbif.api.vocabulary.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.ParsedName;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class NameNRank {
   private static final Logger LOG = LoggerFactory.getLogger(NameNRank.class);
   private static final List<Rank> REVERSED_DWC_RANKS = new ArrayList<>(Rank.DWC_RANKS);
+
   static {
     Collections.reverse(REVERSED_DWC_RANKS);
   }
-  private static final Pattern BINOMIAL = Pattern.compile("^\\s*([A-Z][a-z]+)\\s+([a-z1-9-]+)\\s*$");
+
+  private static final Pattern BINOMIAL =
+      Pattern.compile("^\\s*([A-Z][a-z]+)\\s+([a-z1-9-]+)\\s*$");
 
   public final String name;
   public final Rank rank;
@@ -36,6 +33,7 @@ public class NameNRank {
 
   /**
    * Construct the best possible full name with authorship and rank out of various input parameters
+   *
    * @param scientificName
    * @param authorship
    * @param specificEpithet
@@ -44,17 +42,26 @@ public class NameNRank {
    * @param classification
    * @return
    */
-  public static NameNRank build(@Nullable String scientificName, @Nullable String authorship,
-                                @Nullable String genericName, @Nullable String specificEpithet, @Nullable String infraSpecificEpithet,
-                                @Nullable Rank rank, @Nullable LinneanClassification classification) {
+  public static NameNRank build(
+      @Nullable String scientificName,
+      @Nullable String authorship,
+      @Nullable String genericName,
+      @Nullable String specificEpithet,
+      @Nullable String infraSpecificEpithet,
+      @Nullable Rank rank,
+      @Nullable LinneanClassification classification) {
 
     // make sure we have a classification instance
-    classification = classification == null ? new NameUsageMatch() : classification;
+    classification = classification == null ? new LinneanClassificationImpl() : classification;
     final String genus = clean(first(genericName, classification.getGenus()));
-    // If given primarily trust the scientific name, especially since these can be unparsable names like OTUs
-    // only exceptions is when the scientific name clearly is just a part of the atoms - then reassemble it
+    // If given primarily trust the scientific name, especially since these can be unparsable names
+    // like OTUs
+    // only exceptions is when the scientific name clearly is just a part of the atoms - then
+    // reassemble it
     // authorship can be appended as this is a very common case
-    if (exists(scientificName) && useScientificName(scientificName, genericName, specificEpithet, infraSpecificEpithet, classification)) {
+    if (exists(scientificName)
+        && useScientificName(
+            scientificName, genericName, specificEpithet, infraSpecificEpithet, classification)) {
       // expand abbreviated or placeholder genus?
       scientificName = expandAbbreviatedGenus(scientificName, genus);
       // missing authorship?
@@ -79,7 +86,7 @@ public class NameNRank {
           appendIfExists(sb, authorship);
           return new NameNRank(sb.toString(), rank);
 
-        } else if (clRank != null){
+        } else if (clRank != null) {
           return new NameNRank(classification.getHigherRank(clRank), clRank);
         } else {
           return new NameNRank(null, rank);
@@ -88,23 +95,27 @@ public class NameNRank {
       } else {
         // try atomized
         ParsedName pn = new ParsedName();
-        pn.setGenusOrAbove(genus);
-        pn.setInfraGeneric(clean(classification.getSubgenus()));
+        pn.setGenus(genus);
+        pn.setInfragenericEpithet(clean(classification.getSubgenus()));
         pn.setSpecificEpithet(clean(specificEpithet));
-        pn.setInfraSpecificEpithet(clean(infraSpecificEpithet));
-        pn.setRank(rank);
-        pn.setAuthorship(clean(authorship));
+        pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
+        // FIXME
+//        pn.setRank(rank);
+//        pn.setAuthorship(clean(authorship));
         // see if species rank in classificaiton can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
           if (m.find()) {
-            if (pn.getGenusOrAbove() == null) {
-              pn.setGenusOrAbove(m.group(1));
+            if (pn.getGenus() == null) {
+              //FIXME is this ok ?
+              //pn.setGenusOrAbove(m.group(1));
+              pn.setGenus(m.group(1));
             }
             if (pn.getSpecificEpithet() == null) {
               pn.setSpecificEpithet(m.group(2));
             }
-          } else if (StringUtils.isAllLowerCase(classification.getSpecies()) && !clean(classification.getSpecies()).contains(" ")) {
+          } else if (StringUtils.isAllLowerCase(classification.getSpecies())
+              && !clean(classification.getSpecies()).contains(" ")) {
             // sometimes the field is wrongly used as the species epithet
             pn.setSpecificEpithet(clean(classification.getSpecies()));
           }
@@ -114,7 +125,7 @@ public class NameNRank {
     }
   }
 
-  public static String first(String... values){
+  public static String first(String... values) {
     if (values != null) {
       for (String val : values) {
         if (!StringUtils.isBlank(val)) {
@@ -151,20 +162,26 @@ public class NameNRank {
 
   private static void appendIfExists(StringBuilder sb, @Nullable String x) {
     if (exists(x)) {
-      if (sb.length()>0) {
+      if (sb.length() > 0) {
         sb.append(" ");
       }
       sb.append(x.trim());
     }
   }
 
-  private static boolean useScientificName(String scientificName, @Nullable String genericName, @Nullable String specificEpithet, @Nullable String infraSpecificEpithet, LinneanClassification cl) {
+  private static boolean useScientificName(
+      String scientificName,
+      @Nullable String genericName,
+      @Nullable String specificEpithet,
+      @Nullable String infraSpecificEpithet,
+      LinneanClassification cl) {
     // without genus given we cannot assemble the name, so lets then just use it as it is
     if (exists(cl.getGenus()) || exists(genericName) || isSimpleBinomial(cl.getSpecies())) {
       // scientific name is just one of the epithets
-      if (StringUtils.isAllLowerCase(scientificName) &&
-        (scientificName.equals(specificEpithet) || scientificName.equals(infraSpecificEpithet) || scientificName.equals(cl.getSpecies()))
-      ) {
+      if (StringUtils.isAllLowerCase(scientificName)
+          && (scientificName.equals(specificEpithet)
+              || scientificName.equals(infraSpecificEpithet)
+              || scientificName.equals(cl.getSpecies()))) {
         return false;
       }
     }
@@ -198,15 +215,16 @@ public class NameNRank {
           sb.append(genusCorrect);
         } else if (genusCorrect.length() > 1) {
           // test if name has an abbreviated genus
-          if (parts[0].length() == 2 && parts[0].charAt(1) == '.' && parts[0].charAt(0) == genusCorrect.charAt(0)
-            || parts[0].length() == 1 && parts[0].charAt(0) == genusCorrect.charAt(0)
-          ) {
+          if (parts[0].length() == 2
+                  && parts[0].charAt(1) == '.'
+                  && parts[0].charAt(0) == genusCorrect.charAt(0)
+              || parts[0].length() == 1 && parts[0].charAt(0) == genusCorrect.charAt(0)) {
             sb.append(genusCorrect);
           }
         } else {
           sb.append(parts[0]);
         }
-        if (parts.length>1) {
+        if (parts.length > 1) {
           sb.append(" ");
           sb.append(parts[1]);
         }
@@ -217,16 +235,16 @@ public class NameNRank {
   }
 
   @VisibleForTesting
-  static String appendAuthorship(String scientificName, String authorship){
+  static String appendAuthorship(String scientificName, String authorship) {
     if (!StringUtils.isBlank(scientificName)
-      && !StringUtils.isBlank(authorship)
-      && !scientificName.toLowerCase().contains(authorship.trim().toLowerCase())) {
+        && !StringUtils.isBlank(authorship)
+        && !scientificName.toLowerCase().contains(authorship.trim().toLowerCase())) {
       return scientificName.trim() + " " + authorship.trim();
     }
     return StringUtils.trimToNull(scientificName);
   }
 
-  private static Rank lowestRank(LinneanClassification cl){
+  private static Rank lowestRank(LinneanClassification cl) {
     for (Rank r : REVERSED_DWC_RANKS) {
       if (exists(cl.getHigherRank(r))) {
         return r;

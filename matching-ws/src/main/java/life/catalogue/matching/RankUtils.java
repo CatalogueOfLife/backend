@@ -1,15 +1,14 @@
 package life.catalogue.matching;
 
 import com.google.common.collect.Lists;
-
-import org.gbif.api.vocabulary.Rank;
-
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.gbif.api.vocabulary.Rank;
 
 public class RankUtils {
-  private static final Pattern PREFIX = Pattern.compile("^(SUPER|SUB(?:TER)?|INFRA|GIGA|MAGN|GRAND|MIR|NAN|HYPO|MIN|PARV|MEGA|EPI)");
+  private static final Pattern PREFIX =
+      Pattern.compile("^(SUPER|SUB(?:TER)?|INFRA|GIGA|MAGN|GRAND|MIR|NAN|HYPO|MIN|PARV|MEGA|EPI)");
   private static List<Rank> LINNEAN_RANKS_REVERSE = Lists.reverse(Rank.LINNEAN_RANKS);
 
   public static Rank nextLowerLinneanRank(Rank rank) {
@@ -31,7 +30,8 @@ public class RankUtils {
   }
 
   /**
-   * Ignore super- or sub- prefixes of a rank and returns the main Linnean rank if it can be found, the rank as was given otherwise.
+   * Ignore super- or sub- prefixes of a rank and returns the main Linnean rank if it can be found,
+   * the rank as was given otherwise.
    */
   public static Rank linneanBaseRank(Rank rank) {
     if (rank != null) {
@@ -58,12 +58,9 @@ public class RankUtils {
     return rank;
   }
 
-  /**
-   * @return true if the ranks given do not contradict each other
-   */
+  /** @return true if the ranks given do not contradict each other */
   public static boolean match(Rank r1, Rank r2) {
-    if (r1 == null || r1 == Rank.UNRANKED ||
-        r2 == null || r2 == Rank.UNRANKED) return true;
+    if (r1 == null || r1 == Rank.UNRANKED || r2 == null || r2 == Rank.UNRANKED) return true;
 
     if (r1 == Rank.INFRASPECIFIC_NAME) {
       return r2.isInfraspecific();

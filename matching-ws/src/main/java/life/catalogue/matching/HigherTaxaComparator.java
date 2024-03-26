@@ -2,13 +2,6 @@ package life.catalogue.matching;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Closeables;
-import org.apache.commons.lang3.StringUtils;
-import org.gbif.api.model.common.LinneanClassification;
-import org.gbif.api.vocabulary.Kingdom;
-import org.gbif.api.vocabulary.Rank;
-import org.gbif.utils.file.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -16,37 +9,55 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
+import org.gbif.api.vocabulary.Kingdom;
+import org.gbif.api.vocabulary.Rank;
+import org.gbif.utils.file.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HigherTaxaComparator {
-  private final static Map<Rank, String> SYNONYM_FILENAMES = Map.of(
-    Rank.KINGDOM, "kingdom.txt",
-    Rank.PHYLUM, "phylum.txt",
-    Rank.CLASS, "class.txt",
-    Rank.ORDER, "order.txt",
-    Rank.FAMILY, "family.txt"
-  );
+  private static final Map<Rank, String> SYNONYM_FILENAMES =
+      Map.of(
+          Rank.KINGDOM, "kingdom.txt",
+          Rank.PHYLUM, "phylum.txt",
+          Rank.CLASS, "class.txt",
+          Rank.ORDER, "order.txt",
+          Rank.FAMILY, "family.txt");
   private static final Set<String> NON_NAMES = new HashSet<>();
 
   private final Logger LOG = LoggerFactory.getLogger(HigherTaxaComparator.class);
   private final Map<Rank, Map<String, String>> syn = new HashMap<>();
-  private final Map<String, Kingdom> kingdoms = Arrays.stream(Kingdom.values())
-    .collect(Collectors.toMap(k -> norm(k.name()), Function.identity()));
+  private final Map<String, Kingdom> kingdoms =
+      Arrays.stream(Kingdom.values())
+          .collect(Collectors.toMap(k -> norm(k.name()), Function.identity()));
 
   /**
    * Compares a single higher rank and returns the matching confidence supplied.
+   *
    * @param rank the rank to be compared
    * @param query the classification of the query
    * @param ref the classification of the nub reference usage
    * @param match confidence returned if the classifications match for the given rank
    * @param mismatch confidence returned if the classifications do not match for the given rank
-   * @param missing confidence returned if one or both classifications have missing information for the given rank
+   * @param missing confidence returned if one or both classifications have missing information for
+   *     the given rank
    * @return match, mismatch or missing confidence depending on match
    */
-  public int compareHigherRank(Rank rank, LinneanClassification query, LinneanClassification ref, int match, int mismatch, int missing) {
-    if (!StringUtils.isBlank(query.getHigherRank(rank)) && !StringUtils.isBlank(ref.getHigherRank(rank))) {
+  public int compareHigherRank(
+      Rank rank,
+      LinneanClassification query,
+      LinneanClassification ref,
+      int match,
+      int mismatch,
+      int missing) {
+    if (!StringUtils.isBlank(query.getHigherRank(rank))
+        && !StringUtils.isBlank(ref.getHigherRank(rank))) {
       String querySyn = lookup(query.getHigherRank(rank), rank);
       String refSyn = lookup(ref.getHigherRank(rank), rank);
-      if (!StringUtils.isBlank(querySyn) && !StringUtils.isBlank(refSyn) && querySyn.equalsIgnoreCase(refSyn)){
+      if (!StringUtils.isBlank(querySyn)
+          && !StringUtils.isBlank(refSyn)
+          && querySyn.equalsIgnoreCase(refSyn)) {
         return match;
       } else {
         return mismatch;
@@ -55,11 +66,11 @@ public class HigherTaxaComparator {
     return missing;
   }
 
-  public boolean isInKingdoms(LinneanClassification n, Kingdom ... kingdoms){
+  public boolean isInKingdoms(LinneanClassification n, Kingdom... kingdoms) {
     String syn = lookup(n.getKingdom(), Rank.KINGDOM);
-    if (Objects.nonNull(syn) && !syn.isEmpty()){
-      for (Kingdom kingdom : kingdoms){
-        if (syn.equalsIgnoreCase(kingdom.name())){
+    if (Objects.nonNull(syn) && !syn.isEmpty()) {
+      for (Kingdom kingdom : kingdoms) {
+        if (syn.equalsIgnoreCase(kingdom.name())) {
           return true;
         }
       }
@@ -88,12 +99,12 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * Lookup synonym for given higher rank.
-   * Can be null.
+   * Lookup synonym for given higher rank. Can be null.
    *
    * @param higherTaxon higher rank name, case insensitive
    * @param rank the rank to lookup for
-   * @return the looked up accepted name, null for blacklisted names or the original higherTaxon if no synonym is known
+   * @return the looked up accepted name, null for blacklisted names or the original higherTaxon if
+   *     no synonym is known
    */
   @VisibleForTesting
   protected String lookup(String higherTaxon, Rank rank) {
@@ -114,8 +125,8 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * Check for obvious, blacklisted garbage and return true if thats the case.
-   * The underlying set is hosted at http://rs.gbif.org/dictionaries/authority/blacklisted.txt
+   * Check for obvious, blacklisted garbage and return true if thats the case. The underlying set is
+   * hosted at http://rs.gbif.org/dictionaries/authority/blacklisted.txt
    */
   public boolean isBlacklisted(String name) {
     if (name != null) {
@@ -128,7 +139,8 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * @return non empty uppercased string with normalized whitespace and all non latin letters replaced. Or null
+   * @return non empty uppercased string with normalized whitespace and all non latin letters
+   *     replaced. Or null
    */
   @VisibleForTesting
   protected static String norm(String x) {
@@ -140,7 +152,6 @@ public class HigherTaxaComparator {
   }
 
   /**
-   *
    * @param file the synonym file on rs.gbif.org
    * @return
    */
@@ -159,9 +170,7 @@ public class HigherTaxaComparator {
     return Map.of();
   }
 
-  /**
-   * Reads blacklisted names from rs.gbif.org
-   */
+  /** Reads blacklisted names from rs.gbif.org */
   private void readOnlineBlacklist() {
     try {
       URL url = RsGbifOrg.authorityUrl(RsGbifOrg.FILENAME_BLACKLIST);
@@ -172,9 +181,7 @@ public class HigherTaxaComparator {
     }
   }
 
-  /**
-   * Reads blacklisted names from stream
-   */
+  /** Reads blacklisted names from stream */
   private void readBlacklistStream(InputStream in) {
     NON_NAMES.clear();
     try {
@@ -188,8 +195,8 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * Reads synonym dicts from given classpath root path.
-   * File names must be the same as on rs.gbif.org.
+   * Reads synonym dicts from given classpath root path. File names must be the same as on
+   * rs.gbif.org.
    */
   public void loadClasspathDicts(String classpathFolder) throws IOException {
     LOG.info("Reloading dictionary files from classpath ...");
@@ -219,9 +226,7 @@ public class HigherTaxaComparator {
     }
   }
 
-  /**
-   * Reloads all synonym files found on rs.gbif.org replacing existing mappings.
-   */
+  /** Reloads all synonym files found on rs.gbif.org replacing existing mappings. */
   public void loadOnlineDicts() {
     LOG.info("Reloading dictionary files from rs.gbif.org ...");
 
@@ -235,8 +240,8 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * Sets the synonym lookup map for a given rank.
-   * Names will be normalised and checked for existance of the same entry as key or value.
+   * Sets the synonym lookup map for a given rank. Names will be normalised and checked for
+   * existance of the same entry as key or value.
    *
    * @param rank
    * @param synonyms
@@ -283,12 +288,9 @@ public class HigherTaxaComparator {
         this.kingdoms.put(norm(k.name()), k);
       }
     }
-
   }
 
-  /**
-   * @return the number of entries across all ranks
-   */
+  /** @return the number of entries across all ranks */
   public int size() {
     int all = 0;
     for (Rank r : syn.keySet()) {
@@ -297,9 +299,7 @@ public class HigherTaxaComparator {
     return all;
   }
 
-  /**
-   * @return the number of entries for a given rank
-   */
+  /** @return the number of entries for a given rank */
   public int size(Rank rank) {
     if (syn.containsKey(rank)) {
       return syn.get(rank).size();

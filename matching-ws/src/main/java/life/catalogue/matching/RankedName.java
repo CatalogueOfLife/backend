@@ -1,16 +1,14 @@
 package life.catalogue.matching;
 
-import org.gbif.api.vocabulary.Rank;
-
 import java.util.Objects;
+import org.gbif.api.vocabulary.Rank;
 
 public class RankedName {
   private String key;
   private String name;
   private Rank rank;
 
-  public RankedName() {
-  }
+  public RankedName() {}
 
   public RankedName(String key, String name, Rank rank) {
     this.key = key;
@@ -47,14 +45,16 @@ public class RankedName {
       return true;
     } else if (o != null && this.getClass() == o.getClass()) {
       RankedName u = (RankedName) o;
-      return Objects.equals(this.key,u.key) && Objects.equals(this.name, u.name) && this.rank == u.rank;
+      return Objects.equals(this.key, u.key)
+          && Objects.equals(this.name, u.name)
+          && this.rank == u.rank;
     } else {
       return false;
     }
   }
 
   public int hashCode() {
-    return Objects.hash(new Object[]{this.key, this.name, this.rank});
+    return Objects.hash(new Object[] {this.key, this.name, this.rank});
   }
 
   public String toString() {

@@ -1,30 +1,34 @@
 package life.catalogue.matching;
 
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
-
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.MMapDirectory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import static life.catalogue.matching.IndexConstants.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import static life.catalogue.matching.IndexConstants.*;
+import com.google.common.collect.Lists;
+
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.*;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.MMapDirectory;
+
+import org.gbif.api.vocabulary.Rank;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DatasetIndex {
 
   private static Logger LOG = LoggerFactory.getLogger(DatasetIndex.class);
+
+  private static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
 
   private IndexSearcher searcher;
 
@@ -39,9 +43,13 @@ public class DatasetIndex {
     }
   }
 
-  public NameUsageMatch matchByUsageId(Integer usageID) {
+  public NameUsageMatch matchByUsageId(String usageID) {
 
-    Query query = new TermQuery(new Term(FIELD_ID, Integer.toString(usageID))); // Searching for documents with 'id' field matching the given ID
+    Query query =
+        new TermQuery(
+            new Term(
+                FIELD_ID,
+                    usageID)); // Searching for documents with 'id' field matching the given ID
 
     try {
       TopDocs docs = this.searcher.search(query, 3);
@@ -62,7 +70,6 @@ public class DatasetIndex {
     return null;
   }
 
-
   private static NameUsageMatch fromDoc(Document doc) {
     NameUsageMatch u = new NameUsageMatch();
     u.setUsageKey(doc.get(FIELD_ID));
@@ -71,18 +78,77 @@ public class DatasetIndex {
     u.setCanonicalName(doc.get(FIELD_CANONICAL_NAME));
 
     // higher ranks
-//    for (Rank r : HIGHER_RANK_FIELD_MAP.keySet()) {
-//      ClassificationUtils.setHigherRank(u, r, doc.get(HIGHER_RANK_FIELD_MAP.get(r)), toInteger(doc,
-//        HIGHER_RANK_ID_FIELD_MAP.get(r)));
-//    }
+    //    for (Rank r : HIGHER_RANK_FIELD_MAP.keySet()) {
+    //      ClassificationUtils.setHigherRank(u, r, doc.get(HIGHER_RANK_FIELD_MAP.get(r)),
+    // toInteger(doc,
+    //        HIGHER_RANK_ID_FIELD_MAP.get(r)));
+    //    }
 
-//    u.setRank(doc.get(FIELD_RANK));
-//    u.setStatus(doc.get(FIELD_STATUS));
+    String rank = doc.get(FIELD_RANK);
+    Rank.valueOf(rank);
+    //FIXME dodgy, as some values from CLB might not be in this enum
+    u.setRank(Rank.valueOf(rank));
+
+    // parse to enum
+    String status = doc.get(FIELD_STATUS);
+    u.setStatus(TaxonomicStatus.valueOf(status));
 
     return u;
   }
 
-  public List<NameUsageMatch> matchByName(String canonicalName, boolean fuzzy, int i) {
-    return List.of();
+  public List<NameUsageMatch> matchByName(String name, boolean fuzzySearch, int maxMatches) {
+    // use the same lucene analyzer to normalize input
+    final String analyzedName = LuceneUtils.analyzeString(analyzer, name).get(0);
+    LOG.debug("Analyzed {} query \"{}\" becomes >>{}<<", fuzzySearch ? "fuzzy" : "straight", name, analyzedName);
+
+    // query needs to have at least 2 letters to match a real name
+    if (analyzedName.length() < 2) {
+      return Lists.newArrayList();
+    }
+
+    Term t = new Term(FIELD_CANONICAL_NAME, analyzedName);
+    Query q;
+    if (fuzzySearch) {
+      // allow 2 edits for names longer than 10 chars
+      q = new FuzzyQuery(t, analyzedName.length() > 10 ? 2 : 1, 1);
+    } else {
+      q = new TermQuery(t);
+    }
+
+    try {
+      return search(q, name, fuzzySearch, maxMatches);
+    } catch (RuntimeException e) {
+      // for example TooComplexToDeterminizeException, see http://dev.gbif.org/issues/browse/POR-2725
+      LOG.warn("Lucene failed to fuzzy search for name [{}]. Try a straight match instead", name);
+      return search(new TermQuery(t), name, false, maxMatches);
+    }
+  }
+
+  private List<NameUsageMatch> search(Query q, String name, boolean fuzzySearch, int maxMatches) {
+    List<NameUsageMatch> results = Lists.newArrayList();
+    try {
+      TopDocs docs = searcher.search(q, maxMatches);
+      if (docs.totalHits.value > 0) {
+        for (ScoreDoc sdoc : docs.scoreDocs) {
+          NameUsageMatch match = fromDoc(searcher.doc(sdoc.doc));
+          if (name.equalsIgnoreCase(match.getCanonicalName())) {
+            match.setMatchType(NameUsageMatch.MatchType.EXACT);
+            results.add(match);
+          } else {
+            // even though we used a term query for straight matching the lucene analyzer has already normalized
+            // the name drastically. So we include these matches here only in case of fuzzy queries
+            match.setMatchType(NameUsageMatch.MatchType.FUZZY);
+            results.add(match);
+          }
+        }
+
+      } else {
+        LOG.debug("No {} match for name {}", fuzzySearch ? "fuzzy" : "straight", name);
+      }
+
+    } catch (IOException e) {
+      LOG.error("lucene search error", e);
+    }
+    return results;
   }
 }

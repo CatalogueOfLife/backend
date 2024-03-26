@@ -136,27 +136,27 @@ public class IndexingService {
     // use custom precision step as we do not need range queries and prefer to save memory usage
     // instead
     // FIXME check this is the correct "id" field
-    doc.add(new TextField(FIELD_ID, nameUsage.id, Field.Store.YES));
+    doc.add(new StringField(FIELD_ID, nameUsage.id, Field.Store.YES));
 
     // we only store accepted key, no need to index it
     // FIXME re-check this understanding. If the name is a synonym, then parentId name usage points
     // to the accepted name
     if (nameUsage.status.equals(TaxonomicStatus.SYNONYM.name())) {
-      doc.add(new TextField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
+      doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
     }
 
     // analyzed name field - this is what we search upon
     doc.add(new TextField(FIELD_CANONICAL_NAME, canonical, Field.Store.YES));
 
     // store full name and classification only to return a full match object for hits
-    doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameUsage.scientificName, Field.Store.YES));
+    doc.add(new StringField(FIELD_SCIENTIFIC_NAME, nameUsage.scientificName, Field.Store.YES));
 
     // FIXME: old impl stored as int, but service returns string
     // this lucene index is not persistent, so not risk in changing ordinal numbers
-    doc.add(new TextField(FIELD_RANK, nameUsage.rank, Field.Store.YES));
+    doc.add(new StringField(FIELD_RANK, nameUsage.rank, Field.Store.YES));
 
     if (nameUsage.parentId != null) {
-      doc.add(new TextField(FIELD_PARENT_ID, nameUsage.parentId, Field.Store.YES));
+      doc.add(new StringField(FIELD_PARENT_ID, nameUsage.parentId, Field.Store.YES));
     }
 
     // FIXME: old implementation allowed only 3 values for status: accepted, doubtful and synonym
@@ -167,7 +167,7 @@ public class IndexingService {
     //      status = TaxonomicStatus.SYNONYM;
     //    }
     //    doc.add(new StoredField(FIELD_STATUS, status.ordinal()));
-    doc.add(new TextField(FIELD_STATUS, nameUsage.status, Field.Store.YES));
+    doc.add(new StringField(FIELD_STATUS, nameUsage.status, Field.Store.YES));
 
     return doc;
   }

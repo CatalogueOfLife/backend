@@ -1,16 +1,11 @@
 package life.catalogue.matching;
 
-
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-/**
- * Utility class knowing the url layout of rs.gbif.org to access authority and dictionary files.
- */
+/** Utility class knowing the url layout of rs.gbif.org to access authority and dictionary files. */
 public class RsGbifOrg {
   private static final Logger LOG = LoggerFactory.getLogger(RsGbifOrg.class);
   private static final String DICT_DIR = "dictionaries";
@@ -21,9 +16,9 @@ public class RsGbifOrg {
    * @param path given as array of individual names that will be concatenated
    * @return url to file inside rs.gbif.org
    */
-  public static URL url(String ... path) {
+  public static URL url(String... path) {
     try {
-      if (path == null){
+      if (path == null) {
         return new URL(DOMAIN);
       }
       return new URL(DOMAIN + String.join("/", path));
