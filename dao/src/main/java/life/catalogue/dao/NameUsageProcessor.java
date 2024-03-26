@@ -123,9 +123,9 @@ public class NameUsageProcessor {
           if (nuw.getUsage().getSectorKey() != null) {
             nuw.setSectorDatasetKey(sectors.get(nuw.getUsage().getSectorKey()).datasetKey);
             nuw.setSectorPublisherKey(sectors.get(nuw.getUsage().getSectorKey()).publisherKey);
-            nuw.getUsage().setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
+            nuw.getUsage().setSectorMode(sectors.get(nuw.getUsage().getSectorKey()).mode);
           }
-          if (nuw.getUsage().getName().getSectorKey() != null) {
+          if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
             nuw.getUsage().getName().setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
           }
 
