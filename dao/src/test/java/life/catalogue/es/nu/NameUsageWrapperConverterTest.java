@@ -29,55 +29,31 @@ import static org.junit.Assert.assertEquals;
  */
 public class NameUsageWrapperConverterTest {
 
+  void roundtrip(NameUsageWrapper nuw) throws IOException {
+    var base64 = NameUsageWrapperConverter.deflate(nuw);
+    NameUsageWrapper nuw2 = NameUsageWrapperConverter.inflate(base64);
+    System.out.println("Payload length: " + base64.length());
+    assertEquals(nuw2, nuw);
+  }
+
   @Test
   public void roundtrip() throws IOException {
-    // original input
-    var nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
-    nuw.setGroup(TaxGroup.Algae);
-    nuw.setPublisherKey(UUID.randomUUID());
-    nuw.setSectorDatasetKey(4567);
-    nuw.setDecisions(new ArrayList<>(List.of( // array list to avoid kryo not doing a deep copy
-      new SimpleDecision(66, 456, EditorialDecision.Mode.UPDATE),
-      new SimpleDecision(62, 456, EditorialDecision.Mode.BLOCK)
-    )));
-    nuw.setClassification(new ArrayList<>(List.of(
-      SimpleName.sn("Karambula"),
-      SimpleName.sn(Rank.ORDER, "Karambulales"),
-      SimpleName.sn("d4f", Rank.PHYLUM, "Karambulatae", null) // authorship is not kept !!!
-    )));
-    var u = (Taxon) nuw.getUsage();
-    u.setParentId("P68");
-    u.setSectorKey(12);
-    u.setScrutinizerID("456ZT");
-    u.setExtinct(true);
-    u.setScrutinizer("drftg");
-    u.setScrutinizerDate(FuzzyDate.of("2008-08"));
-    u.setEnvironments(Set.of(Environment.TERRESTRIAL, Environment.MARINE));
-    u.setTemporalRangeStart("start");
-    u.setTemporalRangeEnd("end");
-    u.setTemporalRangeStart(GeoTime.byName("Neoarchean"));
-    u.setTemporalRangeEnd(GeoTime.byName("Cretaceous"));
-    u.setOrdinal(789);
-    u.setNamePhrase("ftgzhj");
-    u.setLink(URI.create("http://go.to/me"));
-    u.setRemarks("drfthuj gtzhu jz7ghu");
-    u.setIdentifier(List.of(
-      Identifier.parse("col:4r56"),
-      Identifier.parse("gbif:3456789")
-    ));
-    var n = u.getName();
-    n.setSectorKey(13);
-    n.setSectorMode(Sector.Mode.MERGE);
-    n.setGender(Gender.FEMININE);
-    n.setGenderAgreement(true);
-    n.setNomStatus(NomStatus.ESTABLISHED);
-    n.setPublishedInPage("14");
-    n.setPublishedInYear(1988);
-    n.setLink(URI.create("http://read.me"));
-    n.setRemarks("NR guzgqszugwqtfdwqw");
-    n.setEtymology("etym");
-    n.setNomenclaturalNote("nom notes not good");
+    // full Taxon object
+    roundtrip(TestEntityGenerator.newNameUsageTaxonWrapperComplete());
+  }
+  @Test
+  public void testSynonym() throws IOException {
+    roundtrip(TestEntityGenerator.newNameUsageSynonymWrapper());
+  }
 
+  @Test
+  public void testBareName() throws IOException {
+    roundtrip(TestEntityGenerator.newNameUsageBareNameWrapper());
+  }
+  @Test
+  public void roundtripPayload() throws IOException {
+    // original input
+    var nuw = TestEntityGenerator.newNameUsageTaxonWrapperComplete();
     var orig = TestEntityGenerator.copy(nuw); // we keep a copy as the converters modify the instance
 
     // convert into doc instance, which keeps a pruned payload for all non indexed data

@@ -9,6 +9,8 @@ import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.NameStrings;
 
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.ByteArrayOutputStream;
@@ -681,11 +683,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   private static String getDummyPayload() {
     try {
       NameUsageWrapper dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
-      ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-      try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-        EsModule.write(dos, dummy);
-      }
-      return Base64.getEncoder().encodeToString(baos.toByteArray());
+      return NameUsageWrapperConverter.deflate(dummy);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

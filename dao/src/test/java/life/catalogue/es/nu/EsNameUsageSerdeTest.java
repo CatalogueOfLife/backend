@@ -20,40 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 
-/*
- * Also separately tests serde for payload field, which contains the serialized NameUsageWrapper object. NB Can't extend
- * SerdeTestBase b/c it's specifically about (de)serialization to ES documents, which uses another ObjectMapper.
- */
 public class EsNameUsageSerdeTest extends EsReadTestBase {
-
-  @Test
-  public void testTaxon() throws IOException {
-    var nuw = TestEntityGenerator.newNameUsageTaxonWrapper();
-    nuw.getUsage().setSectorMode(null);
-    roundtrip(nuw);
-  }
-
-  @Test
-  public void testSynonym() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageSynonymWrapper());
-  }
-
-  @Test
-  public void testBareName() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageBareNameWrapper());
-  }
-
-  static void roundtrip(NameUsageWrapper nuwIn) throws IOException {
-    String json = EsModule.write(nuwIn);
-    System.out.println(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
 
   @Test
   public void testEsNameUsage() throws IOException {
     EsNameUsage docIn = new EsNameUsage();
-    docIn.setPayload(EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
+    docIn.setPayload(NameUsageWrapperConverter.deflate(TestEntityGenerator.newNameUsageTaxonWrapper()));
     docIn.setAuthorshipComplete("John Smith");
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));
