@@ -105,7 +105,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     // that suits us fine now.
     InputStream is = getClass().getResourceAsStream("/elastic/Issue407_document.json");
     EsNameUsage doc = EsModule.readDocument(is);
-    NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(doc.getPayload());
+    NameUsageWrapper nuw = NameUsageWrapperConverter.decode(doc.getPayload());
     NameUsageWrapperConverter.enrichPayload(nuw, doc);
     Taxon taxon = (Taxon) nuw.getUsage();
 

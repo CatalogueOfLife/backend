@@ -1,25 +1,11 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 
 import java.io.IOException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.api.vocab.*;
-
-import life.catalogue.common.date.FuzzyDate;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
-import org.testcontainers.shaded.org.apache.commons.lang3.time.StopWatch;
 
 import static org.junit.Assert.assertEquals;
 
@@ -30,8 +16,8 @@ import static org.junit.Assert.assertEquals;
 public class NameUsageWrapperConverterTest {
 
   void roundtrip(NameUsageWrapper nuw) throws IOException {
-    var base64 = NameUsageWrapperConverter.deflate(nuw);
-    NameUsageWrapper nuw2 = NameUsageWrapperConverter.inflate(base64);
+    var base64 = NameUsageWrapperConverter.encode(nuw);
+    NameUsageWrapper nuw2 = NameUsageWrapperConverter.decode(base64);
     System.out.println("Payload length: " + base64.length());
     assertEquals(nuw2, nuw);
   }
@@ -58,7 +44,7 @@ public class NameUsageWrapperConverterTest {
 
     // convert into doc instance, which keeps a pruned payload for all non indexed data
     var doc = NameUsageWrapperConverter.toDocument(nuw);
-    NameUsageWrapper nuw2 = NameUsageWrapperConverter.inflate(doc.getPayload());
+    NameUsageWrapper nuw2 = NameUsageWrapperConverter.decode(doc.getPayload());
     System.out.println("Payload length: " + doc.getPayload().length());
     System.out.println("Payload: " + doc.getPayload());
     NameUsageWrapperConverter.enrichPayload(nuw2, doc);

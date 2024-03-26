@@ -13,10 +13,8 @@ import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.zip.DeflaterOutputStream;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -683,7 +681,7 @@ public class NameUsageSearchServiceFacetTest extends EsReadTestBase {
   private static String getDummyPayload() {
     try {
       NameUsageWrapper dummy = TestEntityGenerator.newNameUsageTaxonWrapper();
-      return NameUsageWrapperConverter.deflate(dummy);
+      return NameUsageWrapperConverter.encode(dummy);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

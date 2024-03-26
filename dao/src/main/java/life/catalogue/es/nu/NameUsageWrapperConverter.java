@@ -11,16 +11,11 @@ import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.es.*;
 
-import org.mapdb.DataIO;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
@@ -36,10 +31,10 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
 
 
   /**
-   * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
-   * them.
+   * Serializes and base64-encodes a NameUsageWrapper with Kryo.
+   * NB you can't store raw byte arrays in Elasticsearch. You must base64-encode them.
    */
-  public static String deflate(NameUsageWrapper nuw) throws IOException {
+  public static String encode(NameUsageWrapper nuw) throws IOException {
     Kryo kryo = pool.obtain();
     try {
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
@@ -55,13 +50,13 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
   }
 
   /**
-   * Base64-decodes, unzips and deserializes the provided payload string back to a NameUsageWrapper instance.
+   * Base64-decodes and deserializes the provided kryo payload string back to a NameUsageWrapper instance.
    * 
-   * @param payload
+   * @param payload Base64 encoded kryo byte array for a NameUsageWrapper
    * @return
    * @throws IOException
    */
-  public static NameUsageWrapper inflate(String payload) throws IOException {
+  public static NameUsageWrapper decode(String payload) throws IOException {
     Kryo kryo = pool.obtain();
     try {
       byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
@@ -278,7 +273,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     // decision
     saveDecisions(nuw, doc);
     prunePayload(nuw);
-    doc.setPayload(deflate(nuw));
+    doc.setPayload(encode(nuw));
     return doc;
   }
 
