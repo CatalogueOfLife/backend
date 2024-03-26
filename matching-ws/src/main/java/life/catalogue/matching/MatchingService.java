@@ -35,7 +35,7 @@ public class MatchingService {
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
   private static final int MIN_CONFIDENCE_ACROSS_RANKS = 1;
   private static final Set<Kingdom> VAGUE_KINGDOMS =
-      ImmutableSet.of(
+      Set.of(
           Kingdom.ARCHAEA,
           Kingdom.BACTERIA,
           Kingdom.FUNGI,
@@ -52,9 +52,9 @@ public class MatchingService {
   private final StringSimilarity sim = new ScientificNameSimilarity();
 
   private static final Set<NameType> STRICT_MATCH_TYPES =
-      ImmutableSet.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID);
+      Set.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID);
   private static final List<Rank> HIGHER_QUERY_RANK =
-      ImmutableList.of(
+      List.of(
           Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
   // FIXME all the taxonomic statuses ???
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
@@ -974,7 +974,7 @@ public class MatchingService {
   /** Returns all matches that are within the given threshold of the best. */
   private List<NameUsageMatch> extractMatchesOfInterest(
       List<NameUsageMatch> matches, int threshold) {
-    List<NameUsageMatch> target = Lists.newArrayList();
+    List<NameUsageMatch> target = new ArrayList<>();
     if (!matches.isEmpty()) {
       final int conf = matches.get(0).getConfidence();
       for (NameUsageMatch m : matches) {

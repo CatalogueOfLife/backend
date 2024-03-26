@@ -25,10 +25,8 @@ public class NameUsageMatch implements LinneanClassification {
   private List<NameUsageMatch> alternatives;
   private String kingdom;
   private String phylum;
-
   @JsonProperty("class")
   private String clazz;
-
   private String order;
   private String family;
   private String genus;
@@ -313,6 +311,44 @@ public class NameUsageMatch implements LinneanClassification {
 
   public void setAlternatives(List<NameUsageMatch> alternatives) {
     this.alternatives = alternatives;
+  }
+
+  void setHigherRank(String key, String name, Rank rank){
+    if (rank != null) {
+      switch (rank) {
+        case KINGDOM:
+          setKingdom(name);
+          setKingdomKey(key);
+          break;
+        case PHYLUM:
+          setPhylum(name);
+          setPhylumKey(key);
+          break;
+        case CLASS:
+          setClazz(name);
+          setClassKey(key);
+          break;
+        case ORDER:
+          setOrder(name);
+          setOrderKey(key);
+          break;
+        case FAMILY:
+          setFamily(name);
+          setFamilyKey(key);
+          break;
+        case GENUS:
+          setGenus(name);
+          setGenusKey(key);
+          break;
+        case SUBGENUS:
+          setSubgenus(name);
+          setSubgenusKey(key);
+          break;
+        case SPECIES:
+          setSpecies(name);
+          setSpeciesKey(key);
+      }
+    }
   }
 
   public boolean equals(Object o) {

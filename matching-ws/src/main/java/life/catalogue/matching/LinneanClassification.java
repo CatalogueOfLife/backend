@@ -45,6 +45,7 @@ public interface LinneanClassification {
     }
     return null;
   }
+
   default void setHigherRank(String name, Rank rank){
     if (rank != null) {
       switch (rank) {
