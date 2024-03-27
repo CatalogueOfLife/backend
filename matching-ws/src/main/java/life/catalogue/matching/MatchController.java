@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import life.catalogue.parser.RankParser;
-
 import life.catalogue.parser.UnparsableException;
 
 import org.gbif.api.vocabulary.Rank;
@@ -92,7 +91,7 @@ public class MatchController {
             description = "The usage key to look up. When provided, all other fields are ignored.")
       })
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
-  @GetMapping(value = "match")
+  @GetMapping(value = "match", produces = "application/json")
   public NameUsageMatch match(
       @RequestParam(value = "usageKey", required = false) String usageKey,
       @RequestParam(value = "name", required = false) String scientificName2,

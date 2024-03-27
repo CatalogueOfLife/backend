@@ -73,6 +73,7 @@ public class DatasetIndex {
     int pageNumber = 1; // Start with page 1
 
     try {
+      LOG.info("Building higher taxa cache...");
       // Perform a query to retrieve all documents
       MatchAllDocsQuery query = new MatchAllDocsQuery();
       ScoreDoc[] hits = searcher.search(query, Integer.MAX_VALUE).scoreDocs;
@@ -85,7 +86,7 @@ public class DatasetIndex {
         int start = (pageNumber - 1) * pageSize;
         int end = Math.min(start + pageSize, totalHits);
 
-        System.out.println("Page " + pageNumber + "/" + totalPages + ":");
+        LOG.debug("Cache build: Page " + pageNumber + "/" + totalPages + ":");
 
         for (int i = start; i < end; i++) {
           int docId = hits[i].doc;
@@ -102,7 +103,7 @@ public class DatasetIndex {
         pageNumber++;
       }
 
-      System.out.println("Cache size: " + higherTaxaCache.size());
+      LOG.info("Cache size: {}", higherTaxaCache.size());
     } catch (IOException e) {
       e.printStackTrace();
     }

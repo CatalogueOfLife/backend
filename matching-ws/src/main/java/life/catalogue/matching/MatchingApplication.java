@@ -13,7 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class MatchingApplication implements CommandLineRunner {
 
-  private static Logger LOG = LoggerFactory.getLogger(IndexingService.class);
+  private static Logger LOG = LoggerFactory.getLogger(MatchingApplication.class);
 
   @Autowired IndexingService datasetIndexingService;
 
