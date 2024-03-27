@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import static life.catalogue.matching.MatchingService.first;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -9,20 +11,15 @@ import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import java.util.Objects;
+import java.util.Optional;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
-
 import org.gbif.api.vocabulary.Rank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Objects;
-import java.util.Optional;
-
-import static life.catalogue.matching.MatchingService.first;
 
 @RestController
 public class MatchController {
@@ -121,7 +118,7 @@ public class MatchController {
         bool(verbose));
   }
 
-  private Rank parseRank(String value){
+  private Rank parseRank(String value) {
     try {
       if (!Objects.isNull(value) && !value.isEmpty()) {
         Optional<org.gbif.nameparser.api.Rank> pr = RankParser.PARSER.parse(null, value);
@@ -130,7 +127,7 @@ public class MatchController {
         }
       }
     } catch (UnparsableException e) {
-      //throw new UnparsableException("Rank", value);
+      // throw new UnparsableException("Rank", value);
     }
     return null;
   }

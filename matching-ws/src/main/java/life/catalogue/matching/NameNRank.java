@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.api.vocabulary.Rank;
 import org.gbif.nameparser.api.ParsedName;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,15 +99,15 @@ public class NameNRank {
         pn.setSpecificEpithet(clean(specificEpithet));
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
         // FIXME
-//        pn.setRank(rank);
-//        pn.setAuthorship(clean(authorship));
+        //        pn.setRank(rank);
+        //        pn.setAuthorship(clean(authorship));
         // see if species rank in classificaiton can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
           if (m.find()) {
             if (pn.getGenus() == null) {
-              //FIXME is this ok ?
-              //pn.setGenusOrAbove(m.group(1));
+              // FIXME is this ok ?
+              // pn.setGenusOrAbove(m.group(1));
               pn.setGenus(m.group(1));
             }
             if (pn.getSpecificEpithet() == null) {

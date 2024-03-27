@@ -15,7 +15,6 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -53,6 +52,8 @@ public class IndexingService {
   @Value("${clb.driver}")
   String clDriver;
 
+  private static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
+
   @Transactional
   public void runDatasetIndexing(String datasetId) throws Exception {
 
@@ -69,7 +70,6 @@ public class IndexingService {
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create index writer configuration
-    StandardAnalyzer analyzer = new StandardAnalyzer();
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 

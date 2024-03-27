@@ -64,8 +64,7 @@ public class MatchingService {
           TaxonomicStatus.PROVISIONALLY_ACCEPTED, 1,
           TaxonomicStatus.AMBIGUOUS_SYNONYM, -2,
           TaxonomicStatus.BARE_NAME, -10,
-          TaxonomicStatus.SYNONYM, 0
-      );
+          TaxonomicStatus.SYNONYM, 0);
 
   // FIXME: what to do here ?
   // match order by usageKey lowest to highest to preserve old ids
@@ -501,7 +500,7 @@ public class MatchingService {
         if (val != null) {
           Matcher m = FIRST_WORD.matcher(val);
           if (m.find()) {
-            cl.setHigherRank( m.group(1), rank);
+            cl.setHigherRank(m.group(1), rank);
           }
         }
       }

@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -18,9 +16,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
-
 import org.gbif.api.vocabulary.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,6 +40,7 @@ public class DatasetIndex {
       this.name = name;
       this.rank = rank;
     }
+
     String key;
     String parentKey;
     String name;
@@ -63,10 +60,10 @@ public class DatasetIndex {
   }
 
   /**
-   * Naive implementation that build an in-memory cache of higher taxa.
-   * Not intended for production use.
+   * Naive implementation that build an in-memory cache of higher taxa. Not intended for production
+   * use.
    */
-  private void buildHigherTaxaCache(){
+  private void buildHigherTaxaCache() {
     IndexReader reader = this.searcher.getIndexReader();
 
     int pageSize = 10000; // Number of documents to retrieve per page
@@ -115,7 +112,7 @@ public class DatasetIndex {
         new TermQuery(
             new Term(
                 FIELD_ID,
-                    usageID)); // Searching for documents with 'id' field matching the given ID
+                usageID)); // Searching for documents with 'id' field matching the given ID
 
     try {
       TopDocs docs = this.searcher.search(query, 3);
@@ -165,7 +162,7 @@ public class DatasetIndex {
       u.setHigherRank(c.key, c.name, rank);
     }
 
-    //FIXME dodgy, as some values from CLB might not be in this enum
+    // FIXME dodgy, as some values from CLB might not be in this enum
     String rankStr = doc.get(FIELD_RANK);
     Rank rank = Rank.valueOf(rankStr);
     u.setHigherRank(u.getUsageKey(), u.getScientificName(), rank);
@@ -181,7 +178,11 @@ public class DatasetIndex {
   public List<NameUsageMatch> matchByName(String name, boolean fuzzySearch, int maxMatches) {
     // use the same lucene analyzer to normalize input
     final String analyzedName = LuceneUtils.analyzeString(analyzer, name).get(0);
-    LOG.debug("Analyzed {} query \"{}\" becomes >>{}<<", fuzzySearch ? "fuzzy" : "straight", name, analyzedName);
+    LOG.debug(
+        "Analyzed {} query \"{}\" becomes >>{}<<",
+        fuzzySearch ? "fuzzy" : "straight",
+        name,
+        analyzedName);
 
     // query needs to have at least 2 letters to match a real name
     if (analyzedName.length() < 2) {
@@ -200,7 +201,8 @@ public class DatasetIndex {
     try {
       return search(q, name, fuzzySearch, maxMatches);
     } catch (RuntimeException e) {
-      // for example TooComplexToDeterminizeException, see http://dev.gbif.org/issues/browse/POR-2725
+      // for example TooComplexToDeterminizeException, see
+      // http://dev.gbif.org/issues/browse/POR-2725
       LOG.warn("Lucene failed to fuzzy search for name [{}]. Try a straight match instead", name);
       return search(new TermQuery(t), name, false, maxMatches);
     }
@@ -217,7 +219,8 @@ public class DatasetIndex {
             match.setMatchType(NameUsageMatch.MatchType.EXACT);
             results.add(match);
           } else {
-            // even though we used a term query for straight matching the lucene analyzer has already normalized
+            // even though we used a term query for straight matching the lucene analyzer has
+            // already normalized
             // the name drastically. So we include these matches here only in case of fuzzy queries
             match.setMatchType(NameUsageMatch.MatchType.FUZZY);
             results.add(match);

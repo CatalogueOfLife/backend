@@ -1,25 +1,38 @@
 package life.catalogue.matching;
 
-
 import org.gbif.api.vocabulary.Rank;
 
 public interface LinneanClassification {
   String getKingdom();
+
   String getPhylum();
+
   String getClazz();
+
   String getOrder();
+
   String getFamily();
+
   String getGenus();
+
   String getSubgenus();
+
   String getSpecies();
 
   void setKingdom(String v);
+
   void setPhylum(String v);
+
   void setClazz(String v);
+
   void setOrder(String v);
+
   void setFamily(String v);
+
   void setGenus(String v);
+
   void setSubgenus(String v);
+
   void setSpecies(String v);
 
   default String getHigherRank(Rank rank) {
@@ -46,7 +59,7 @@ public interface LinneanClassification {
     return null;
   }
 
-  default void setHigherRank(String name, Rank rank){
+  default void setHigherRank(String name, Rank rank) {
     if (rank != null) {
       switch (rank) {
         case KINGDOM:

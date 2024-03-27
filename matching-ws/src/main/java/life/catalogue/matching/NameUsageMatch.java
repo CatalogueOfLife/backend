@@ -8,8 +8,8 @@ import java.util.StringJoiner;
 import javax.annotation.Nullable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import org.gbif.api.vocabulary.Rank;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import org.gbif.api.vocabulary.Rank;
 
 public class NameUsageMatch implements LinneanClassification {
 
@@ -25,8 +25,10 @@ public class NameUsageMatch implements LinneanClassification {
   private List<NameUsageMatch> alternatives;
   private String kingdom;
   private String phylum;
+
   @JsonProperty("class")
   private String clazz;
+
   private String order;
   private String family;
   private String genus;
@@ -313,7 +315,7 @@ public class NameUsageMatch implements LinneanClassification {
     this.alternatives = alternatives;
   }
 
-  void setHigherRank(String key, String name, Rank rank){
+  void setHigherRank(String key, String name, Rank rank) {
     if (rank != null) {
       switch (rank) {
         case KINGDOM:
