@@ -16,10 +16,9 @@ import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.gbif.api.vocabulary.Kingdom;
-import org.gbif.api.vocabulary.NameType;
-import org.gbif.api.vocabulary.NomenclaturalCode;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.slf4j.Logger;
@@ -52,7 +51,7 @@ public class MatchingService {
   private final StringSimilarity sim = new ScientificNameSimilarity();
 
   private static final Set<NameType> STRICT_MATCH_TYPES =
-      Set.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID);
+      Set.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID_FORMULA);
   private static final List<Rank> HIGHER_QUERY_RANK =
       List.of(
           Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
@@ -283,7 +282,7 @@ public class MatchingService {
   /** Real method doing the work */
   private NameUsageMatch matchInternal(
       @Nullable String scientificName,
-      @Nullable org.gbif.api.vocabulary.Rank rank,
+      @Nullable Rank rank,
       @Nullable LinneanClassification classification,
       Set<Integer> exclude,
       boolean strict,
@@ -313,7 +312,7 @@ public class MatchingService {
         mainMatchingMode = MatchingMode.STRICT;
       }
       if (rank == null) {
-        rank = org.gbif.api.vocabulary.Rank.UNRANKED;
+        rank = Rank.UNRANKED;
       }
 
     } else {
@@ -321,8 +320,8 @@ public class MatchingService {
         // use name parser to make the name a canonical one
         // we build the name with flags manually as we wanna exclude indet. names such as "Abies
         // spec." and rather match them to Abies only
-        org.gbif.nameparser.api.Rank npRank =
-            rank == null ? null : org.gbif.nameparser.api.Rank.valueOf(rank.name());
+        Rank npRank =
+            rank == null ? null : Rank.valueOf(rank.name());
         pn = NameParsers.INSTANCE.parse(scientificName, npRank, null);
         queryNameType = NameType.valueOf(pn.getType().name());
 
@@ -667,27 +666,6 @@ public class MatchingService {
 
   private int incNegScore(int score, int factor) {
     return score < 0 ? score * factor : score;
-  }
-
-  @VisibleForTesting
-  protected NameUsageMatch match(
-      @Nullable org.gbif.nameparser.api.NameType queryNameType,
-      @Nullable ParsedName pn,
-      @Nullable String canonicalName,
-      Rank rank,
-      LinneanClassification lc,
-      Set<Integer> exclude,
-      final MatchingMode mode,
-      final boolean verbose) {
-    return match(
-        NameType.valueOf(queryNameType.name()),
-        pn,
-        canonicalName,
-        rank,
-        lc,
-        exclude,
-        mode,
-        verbose);
   }
 
   /**
@@ -1060,7 +1038,7 @@ public class MatchingService {
     // kingdom is super important
     int rate =
         htComp.compareHigherRank(
-            org.gbif.api.vocabulary.Rank.KINGDOM, query, reference, 5, -10, -1);
+            Rank.KINGDOM, query, reference, 5, -10, -1);
     if (rate == -10) {
       // plant and animal kingdoms are better delimited than Chromista, Fungi, etc. , so punish
       // those mismatches higher
@@ -1080,16 +1058,16 @@ public class MatchingService {
     // phylum to family
     rate +=
         htComp.compareHigherRank(
-            org.gbif.api.vocabulary.Rank.PHYLUM, query, reference, 10, -10, -1);
+            Rank.PHYLUM, query, reference, 10, -10, -1);
     rate +=
-        htComp.compareHigherRank(org.gbif.api.vocabulary.Rank.CLASS, query, reference, 15, -10, 0);
+        htComp.compareHigherRank(Rank.CLASS, query, reference, 15, -10, 0);
     rate +=
-        htComp.compareHigherRank(org.gbif.api.vocabulary.Rank.ORDER, query, reference, 15, -10, 0);
+        htComp.compareHigherRank(Rank.ORDER, query, reference, 15, -10, 0);
     rate +=
-        htComp.compareHigherRank(org.gbif.api.vocabulary.Rank.FAMILY, query, reference, 25, -15, 0);
+        htComp.compareHigherRank(Rank.FAMILY, query, reference, 25, -15, 0);
     // we compare the genus only for minimal adjustments as it is part of the binomen usually
     // it helps to disambiguate in some cases though
-    rate += htComp.compareHigherRank(org.gbif.api.vocabulary.Rank.GENUS, query, reference, 2, 1, 0);
+    rate += htComp.compareHigherRank(Rank.GENUS, query, reference, 2, 1, 0);
 
     return minMax(-60, 50, rate);
   }
@@ -1100,7 +1078,7 @@ public class MatchingService {
     int similarity = 0;
     if (ref != null) {
       // rate ranks lower that are not represented in the canonical, e.g. cultivars
-      if (ref.isRestrictedToCode() == NomenclaturalCode.CULTIVARS) {
+      if (ref.isRestrictedToCode() == NomCode.CULTIVARS) {
         similarity -= 7;
       } else if (Rank.STRAIN == ref) {
         similarity -= 7;
@@ -1125,7 +1103,7 @@ public class MatchingService {
         } else if (either(query, ref, r -> r == Rank.INFRAGENERIC_NAME, r -> r == Rank.GENUS)) {
           similarity += 4;
 
-        } else if (either(query, ref, not(Rank::notOtherOrUnknown))) {
+        } else if (either(query, ref, not(Rank::notOtherOrUnranked))) {
           // unranked
           similarity = 0;
 

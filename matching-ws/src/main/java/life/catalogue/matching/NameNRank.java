@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.ParsedName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

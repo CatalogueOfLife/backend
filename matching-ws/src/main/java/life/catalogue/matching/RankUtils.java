@@ -3,7 +3,7 @@ package life.catalogue.matching;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 
 public class RankUtils {
   private static final Pattern PREFIX =

@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
 import java.util.Objects;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 
 public class RankedName {
   private String key;

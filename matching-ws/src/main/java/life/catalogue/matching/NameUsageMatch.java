@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 
 public class NameUsageMatch implements LinneanClassification {
 

@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Optional;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

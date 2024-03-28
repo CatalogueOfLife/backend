@@ -1,6 +1,6 @@
 package life.catalogue.matching;
 
-import org.gbif.api.vocabulary.Rank;
+import org.gbif.nameparser.api.Rank;
 
 public interface LinneanClassification {
   String getKingdom();
