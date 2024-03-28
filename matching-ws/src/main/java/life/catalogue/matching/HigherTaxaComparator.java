@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class HigherTaxaComparator {
+
+  private final Logger LOG = LoggerFactory.getLogger(HigherTaxaComparator.class);
   private static final Map<Rank, String> SYNONYM_FILENAMES =
       Map.of(
           Rank.KINGDOM, "kingdom.txt",
@@ -26,7 +28,6 @@ public class HigherTaxaComparator {
           Rank.FAMILY, "family.txt");
   private static final Set<String> NON_NAMES = new HashSet<>();
 
-  private final Logger LOG = LoggerFactory.getLogger(HigherTaxaComparator.class);
   private final Map<Rank, Map<String, String>> syn = new HashMap<>();
   private final Map<String, Kingdom> kingdoms =
       Arrays.stream(Kingdom.values())
@@ -101,7 +102,7 @@ public class HigherTaxaComparator {
   /**
    * Lookup synonym for given higher rank. Can be null.
    *
-   * @param higherTaxon higher rank name, case insensitive
+   * @param higherTaxon higher rank name, case-insensitive
    * @param rank the rank to lookup for
    * @return the looked up accepted name, null for blacklisted names or the original higherTaxon if
    *     no synonym is known

@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
@@ -20,7 +21,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.gbif.api.vocabulary.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -40,7 +40,7 @@ public class IndexingService {
   @Value("${index.path:/tmp/matching-index}")
   String indexPath;
 
-  @Value("${spring.datasource.url}")
+  @Value("${clb.url}")
   String clbUrl;
 
   @Value("${clb.user}")
@@ -55,7 +55,7 @@ public class IndexingService {
   private static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
 
   @Transactional
-  public void runDatasetIndexing(String datasetId) throws Exception {
+  public void runDatasetIndexing(final Integer datasetKey) throws Exception {
 
     // FIXME I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
     // (parallelism)
@@ -87,7 +87,7 @@ public class IndexingService {
 
       // Create index writer
       consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(2011),
+          () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
           name -> {
             try {
               Document doc = toDoc(name);

@@ -9,8 +9,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 public class MatchingApplication implements CommandLineRunner {
 
   private static Logger LOG = LoggerFactory.getLogger(MatchingApplication.class);
@@ -37,7 +38,7 @@ public class MatchingApplication implements CommandLineRunner {
     if (args.length > 0) {
       LocalTime start = LocalTime.now();
       LOG.info("Starting indexing...");
-      datasetIndexingService.runDatasetIndexing(args[0]);
+      datasetIndexingService.runDatasetIndexing(Integer.parseInt(args[0]));
       LocalTime end = LocalTime.now();
       Duration duration = Duration.between(start, end);
       LOG.info(

@@ -71,7 +71,8 @@ public class DatasetIndex {
 
     try {
       LOG.info("Building higher taxa cache...");
-      // Perform a query to retrieve all documents
+
+      // Retrieve all documents
       MatchAllDocsQuery query = new MatchAllDocsQuery();
       ScoreDoc[] hits = searcher.search(query, Integer.MAX_VALUE).scoreDocs;
 
@@ -108,11 +109,7 @@ public class DatasetIndex {
 
   public NameUsageMatch matchByUsageId(String usageID) {
 
-    Query query =
-        new TermQuery(
-            new Term(
-                FIELD_ID,
-                usageID)); // Searching for documents with 'id' field matching the given ID
+    Query query = new TermQuery(new Term(FIELD_ID, usageID));
 
     try {
       TopDocs docs = this.searcher.search(query, 3);
