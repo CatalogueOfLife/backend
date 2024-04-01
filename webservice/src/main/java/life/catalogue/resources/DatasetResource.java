@@ -12,6 +12,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.job.DeleteDatasetJob;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -123,6 +124,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       dao.patchMetadata(new DatasetWithSettings(old,settings), obj);
     }
     this.update(key, old, user);
+  }
+
+
+  @Override
+  public void delete(Integer key, boolean async, User user) {
+    if (async) {
+      // the constructor already makes sure the dataset exists
+      var job = new DeleteDatasetJob(key, user.getKey(), dao);
+      exec.submit(job);
+    } else {
+      super.delete(key, async, user);
+    }
   }
 
   @PUT

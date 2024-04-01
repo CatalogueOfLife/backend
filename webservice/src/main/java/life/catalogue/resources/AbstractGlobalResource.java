@@ -86,7 +86,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") Integer key, @Auth User user) {
+  public void delete(@PathParam("key") Integer key, @QueryParam("async") boolean async, @Auth User user) {
     int i = dao.delete(key, user.getKey());
     if (i == 0) {
       throw NotFoundException.notFound(objClass, key);
