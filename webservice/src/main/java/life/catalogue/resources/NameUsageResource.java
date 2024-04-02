@@ -55,10 +55,11 @@ public class NameUsageResource {
   private final LatestDatasetKeyCache datasetKeyCache;
   private final TaxonDao dao;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, NameUsageIndexService indexService,
+                           LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
     this.searchService = search;
     this.suggestService = suggest;
-    this.indexService = null;
+    this.indexService = indexService;
     this.datasetKeyCache = datasetKeyCache;
     this.dao = dao;
   }
