@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import life.catalogue.matching.TaxGroupAnalyzer;
+
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -49,6 +51,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   private final EsConfig esConfig;
   private final SqlSessionFactory factory;
   private final NameUsageProcessor processor;
+  private final TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
 
   public NameUsageIndexServiceEs(RestClient client, EsConfig esConfig, File tmpDir, SqlSessionFactory factory) {
     this.client = client;
@@ -212,7 +215,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public void update(int datasetKey, Collection<String> usageIds) {
     if (!usageIds.isEmpty()) {
       String first = usageIds.iterator().next();
-      LOG.info("Syncing {} taxa  from dataset {}. First id: {}", usageIds.size(), datasetKey, first);
+      LOG.info("Syncing {} taxa from dataset {}. First id: {}", usageIds.size(), datasetKey, first);
       int deleted = EsUtil.deleteNameUsages(client, esConfig.nameUsage.name, datasetKey, usageIds);
       int inserted = indexNameUsages(datasetKey, usageIds);
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
@@ -316,38 +319,30 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
       var dm = session.getMapper(DecisionMapper.class);
+      var dam = session.getMapper(DatasetMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
 
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       final LoadingCache<Integer, NameUsageProcessor.SectorProps> sectors = Caffeine.newBuilder()
         .maximumSize(1000)
-        .build(id -> this.loadSectorProp(datasetKey, id));
+        .build(id -> loadSectorProp(datasetKey, id, sm, dam));
 
+      // the following code populates individual name usage wrappers
+      // Important! This always needs to match the logic for the bulk dataset/sector handling in NameUsageProcessor.processTree !!!
       List<NameUsageWrapper> usages = usageIds.stream()
           .map(id -> {
+            // this already contains the classification, issues, decisions & secondary sources
             var nuw = mapper.get(datasetKey, id);
             if (nuw != null) {
               nuw.setPublisherKey(publisher);
-              if (nuw.getUsage().getName().getSectorKey() != null) {
-                var sp = sectors.get(nuw.getUsage().getName().getSectorKey());
-                if (sp!=null) {
-                  nuw.setSectorDatasetKey(sp.datasetKey);
-                  nuw.setSectorPublisherKey(sp.publisherKey);
-                }
+              if (nuw.getUsage().getSectorKey() != null) {
+                NameUsageProcessor.addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
               }
-              //decisions
-              var decisions = dm.listBySubject(datasetKey, id);
-              if (decisions != null && !decisions.isEmpty()) {
-                nuw.setDecisions(
-                  decisions.stream()
-                    .map(ed -> new SimpleDecision(ed.getId(), ed.getDatasetKey(), ed.getMode()))
-                    .collect(toList())
-                );
+              if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
+                NameUsageProcessor.addNameSectorData(nuw, sectors.get(nuw.getUsage().getName().getSectorKey()));
               }
-              // TODO: issues
-              nuw.setIssues(null);
-              // TODO: secondary sources
-              nuw.setSecondarySourceKeys(null);
-              nuw.setSecondarySourceGroups(null);
+              // group
+              nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
             }
             return nuw;
           })
@@ -367,7 +362,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
-  private NameUsageProcessor.SectorProps loadSectorProp(int datasetKey, Integer sectorKey) {
-    return null;
+  private NameUsageProcessor.SectorProps loadSectorProp(int datasetKey, Integer sectorKey, SectorMapper sm, DatasetMapper dm) {
+    return new NameUsageProcessor.SectorProps(sm.get(DSID.of(datasetKey, sectorKey)), dm);
   }
 }

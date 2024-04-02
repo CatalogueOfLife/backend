@@ -166,19 +166,20 @@
       <include refid="life.catalogue.db.mapper.VerbatimRecordMapper.usageIssues"/>
       ) vs
       GROUP BY vs.id
+    ), src AS (
+      SELECT v.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
+      FROM nu JOIN verbatim_source_secondary v ON nu.id=v.id
+      WHERE v.dataset_key=#{datasetKey}
+      GROUP BY v.id
     )
 
     SELECT u.id AS uid,
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
-      d.gbif_publisher_key AS publisherKey,
-      s.subject_dataset_key AS sectorDatasetKey,
-      s.mode AS sectorMode,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
-      v.issues
+      v.issues, src.sources, src.groups
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
-      JOIN dataset d ON d.key=u.dataset_key
       LEFT JOIN nuissues v ON v.id=u.id
-      LEFT JOIN sector s ON s.dataset_key=u.dataset_key AND s.id=u.sector_key
+      LEFT JOIN src ON src.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>

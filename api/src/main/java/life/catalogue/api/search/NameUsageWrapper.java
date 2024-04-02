@@ -14,12 +14,15 @@ import life.catalogue.api.vocab.TaxGroup;
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
+  // publisher of the usages dataset
+  private UUID publisherKey;
   private Set<Issue> issues;
   // decisions about this usage in any number of project or releases
   private List<SimpleDecision> decisions;
+  // subject datasetKey of usage sector
   private Integer sectorDatasetKey;
+  // publisher of the usage sectors subject dataset
   private UUID sectorPublisherKey;
-  private UUID publisherKey;
   private Set<InfoGroup> secondarySourceGroups;
   private Set<Integer> secondarySourceKeys;
   private TaxGroup group;
@@ -79,6 +82,10 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.publisherKey = publisherKey;
   }
 
+  /**
+   *
+   * @return
+   */
   public UUID getSectorPublisherKey() {
     return sectorPublisherKey;
   }

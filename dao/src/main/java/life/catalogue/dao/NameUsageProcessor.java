@@ -74,15 +74,31 @@ public class NameUsageProcessor {
     processTree(sectorKey.getDatasetKey(), sectorKey.getId(), consumer);
   }
 
+  /**
+   * Container for indexed sector data
+   */
   public static class SectorProps {
-    public int datasetKey;
-    public UUID publisherKey;
+    public int datasetKey; // sector subject
+    public UUID publisherKey; // sector subject
     public Sector.Mode mode;
 
     public SectorProps(Sector s, DatasetMapper dm) {
       this.mode = s.getMode();
       this.datasetKey = s.getSubjectDatasetKey();
       this.publisherKey = dm.getPublisherKey(datasetKey);
+    }
+  }
+
+  public static void addUsageSectorData(NameUsageWrapper nuw, @Nullable SectorProps sectorProps){
+    if (sectorProps != null) {
+      nuw.setSectorDatasetKey(sectorProps.datasetKey);
+      nuw.setSectorPublisherKey(sectorProps.publisherKey);
+      nuw.getUsage().setSectorMode(sectorProps.mode);
+    }
+  }
+  public static void addNameSectorData(NameUsageWrapper nuw, @Nullable SectorProps sectorProps){
+    if (sectorProps != null) {
+      nuw.getUsage().getName().setSectorMode(sectorProps.mode);
     }
   }
   private void processTree(int datasetKey, @Nullable Integer sectorKey, Consumer<NameUsageWrapper> consumer) {
@@ -121,12 +137,10 @@ public class NameUsageProcessor {
           // set preloaded infos excluded in sql results as they are very repetitive
           nuw.setPublisherKey(publisher);
           if (nuw.getUsage().getSectorKey() != null) {
-            nuw.setSectorDatasetKey(sectors.get(nuw.getUsage().getSectorKey()).datasetKey);
-            nuw.setSectorPublisherKey(sectors.get(nuw.getUsage().getSectorKey()).publisherKey);
-            nuw.getUsage().setSectorMode(sectors.get(nuw.getUsage().getSectorKey()).mode);
+            addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
           }
           if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
-            nuw.getUsage().getName().setSectorMode(sectors.get(nuw.getUsage().getName().getSectorKey()).mode);
+            addNameSectorData(nuw, sectors.get(nuw.getUsage().getName().getSectorKey()));
           }
 
           if (nuw.getUsage().isTaxon()) {

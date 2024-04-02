@@ -27,9 +27,9 @@ public class EsNameUsage {
   @MapToType(ESDataType.KEYWORD)
   private Integer sectorKey; // usage sector, not name
   @MapToType(ESDataType.KEYWORD)
-  private Integer sectorDatasetKey; // usage sector, not name
+  private Integer sectorDatasetKey; // subject datasetKey of usage sector, not name
   @MapToType(ESDataType.KEYWORD)
-  private UUID sectorPublisherKey; // usage sector, not name
+  private UUID sectorPublisherKey; // publisher of the usage sectors subject dataset, not name
   private Sector.Mode sectorMode; // usage sector, not name
   private Set<InfoGroup> secondarySourceGroup;
   @Analyzers(KEYWORD)
