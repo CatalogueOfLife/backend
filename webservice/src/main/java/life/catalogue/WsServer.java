@@ -1,6 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.admin.jobs.cron.CronExecutor;
+import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
@@ -245,7 +246,10 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.JobExecutor, executor);
 
     // cron jobs
-    var cron = CronExecutor.startWith(new TempDatasetCleanup());
+    var cron = CronExecutor.startWith(
+      new TempDatasetCleanup(),
+      new ProjectCounterUpdate(getSqlSessionFactory())
+    );
     env.lifecycle().manage(cron);
 
     // name parser

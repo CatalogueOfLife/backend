@@ -200,7 +200,7 @@ public class AdminResource {
   @POST
   @Path("/counter-update")
   public BackgroundJob updateCounter(@Auth User user) {
-    return runJob(new UsageCountJob(user, JobPriority.HIGH, factory));
+    return runJob(new UsageCountJob(user.getKey(), JobPriority.HIGH, factory));
   }
 
   @POST

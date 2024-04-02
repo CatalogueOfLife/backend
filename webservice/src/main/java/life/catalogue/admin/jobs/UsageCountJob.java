@@ -1,6 +1,5 @@
 package life.catalogue.admin.jobs;
 
-import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
@@ -19,8 +18,8 @@ public class UsageCountJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(UsageCountJob.class);
   private final SqlSessionFactory factory;
 
-  public UsageCountJob(User user, JobPriority priority, SqlSessionFactory factory) {
-    super(user.getKey(), priority);
+  public UsageCountJob(int userKey, JobPriority priority, SqlSessionFactory factory) {
+    super(userKey, priority);
     this.factory = factory;
   }
 
