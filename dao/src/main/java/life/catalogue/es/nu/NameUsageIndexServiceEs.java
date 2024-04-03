@@ -316,52 +316,55 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
    */
   private int indexNameUsages(int datasetKey, Collection<String> usageIds) {
     NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
+    var usages = buildNameUsageWrappers(datasetKey, usageIds);
+    if (usages.isEmpty()) {
+      LOG.warn("None of the provided name usage IDs found in dataset {}: {}.", datasetKey, usageIds.stream().collect(joining(", ")));
+      return 0;
+    }
+    if (usages.size() != usageIds.size()) {
+      List<String> ids = new ArrayList<>(usageIds);
+      ids.removeAll(usages.stream().map(nuw -> nuw.getUsage().getId()).collect(toList()));
+      LOG.warn("Some usage IDs not found in dataset {}: {}", datasetKey, ids.stream().collect(joining(", ")));
+    }
+    indexer.accept(usages);
+    return indexer.documentsIndexed();
+  }
+
+  public List<NameUsageWrapper> buildNameUsageWrappers(int datasetKey, Collection<String> usageIds) {
     try (SqlSession session = factory.openSession()) {
       NameUsageWrapperMapper mapper = session.getMapper(NameUsageWrapperMapper.class);
-      var dm = session.getMapper(DecisionMapper.class);
-      var dam = session.getMapper(DatasetMapper.class);
+      var dm = session.getMapper(DatasetMapper.class);
       var sm = session.getMapper(SectorMapper.class);
 
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       final LoadingCache<Integer, NameUsageProcessor.SectorProps> sectors = Caffeine.newBuilder()
         .maximumSize(1000)
-        .build(id -> loadSectorProp(datasetKey, id, sm, dam));
+        .build(id -> loadSectorProp(datasetKey, id, sm, dm));
 
       // the following code populates individual name usage wrappers
       // Important! This always needs to match the logic for the bulk dataset/sector handling in NameUsageProcessor.processTree !!!
       List<NameUsageWrapper> usages = usageIds.stream()
-          .map(id -> {
-            // this already contains the classification, issues, decisions & secondary sources
-            var nuw = mapper.get(datasetKey, id);
-            if (nuw != null) {
-              nuw.setPublisherKey(publisher);
-              if (nuw.getUsage().getSectorKey() != null) {
-                NameUsageProcessor.addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
-              }
-              if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
-                NameUsageProcessor.addNameSectorData(nuw, sectors.get(nuw.getUsage().getName().getSectorKey()));
-              }
-              // group
-              nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
+        .map(id -> {
+          // this already contains the classification, issues, decisions & secondary sources
+          var nuw = mapper.get(datasetKey, id);
+          if (nuw != null) {
+            nuw.setPublisherKey(publisher);
+            if (nuw.getUsage().getSectorKey() != null) {
+              NameUsageProcessor.addUsageSectorData(nuw, sectors.get(nuw.getUsage().getSectorKey()));
             }
-            return nuw;
-          })
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-      if (usages.isEmpty()) {
-        LOG.warn("None of the provided name usage IDs found in dataset {}: {}.", datasetKey, usageIds.stream().collect(joining(", ")));
-        return 0;
-      }
-      if (usages.size() != usageIds.size()) {
-        List<String> ids = new ArrayList<>(usageIds);
-        ids.removeAll(usages.stream().map(nuw -> nuw.getUsage().getId()).collect(toList()));
-        LOG.warn("Some usage IDs not found in dataset {}: {}", datasetKey, ids.stream().collect(joining(", ")));
-      }
-      indexer.accept(usages);
-      return indexer.documentsIndexed();
+            if (nuw.getUsage().getName() != null && nuw.getUsage().getName().getSectorKey() != null) {
+              NameUsageProcessor.addNameSectorData(nuw, sectors.get(nuw.getUsage().getName().getSectorKey()));
+            }
+            // group
+            nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
+          }
+          return nuw;
+        })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toList());
+      return usages;
     }
   }
-
   private NameUsageProcessor.SectorProps loadSectorProp(int datasetKey, Integer sectorKey, SectorMapper sm, DatasetMapper dm) {
     return new NameUsageProcessor.SectorProps(sm.get(DSID.of(datasetKey, sectorKey)), dm);
   }

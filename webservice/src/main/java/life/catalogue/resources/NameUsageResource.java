@@ -12,17 +12,21 @@ import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
+import life.catalogue.es.*;
+
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.NameUsageIndexer;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -149,6 +153,26 @@ public class NameUsageResource {
   }
 
   @GET
+  @Hidden
+  @Path("{id}/nuw")
+  public NameUsageWrapper nuw(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    if (indexService instanceof NameUsageIndexServiceEs) {
+      var idxSrv = (NameUsageIndexServiceEs) indexService;
+      var usages = idxSrv.buildNameUsageWrappers(datasetKey, Set.of(id));
+      return usages == null || usages.isEmpty() ? null : usages.get(0);
+    }
+    throw new UnsupportedOperationException("No real NameUsageIndexServiceEs installed: " + indexService.getClass());
+  }
+
+  @GET
+  @Hidden
+  @Path("{id}/nues")
+  public EsNameUsage nues(@PathParam("key") int datasetKey, @PathParam("id") String id) throws IOException {
+    return NameUsageWrapperConverter.toDocument(nuw(datasetKey, id));
+  }
+
+  @GET
+  @Hidden
   @Path("{id}/info")
   public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
