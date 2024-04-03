@@ -221,7 +221,9 @@ public class XRelease extends ProjectRelease {
       final LocalDateTime start = LocalDateTime.now();
       final var prios = new SectorPriority(getDatasetKey(), factory);
       var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
-      hc.setBasionymExclusions(xCfg.basionymExclusions);
+      if (xCfg.basionymExclusions != null) {
+        hc.setBasionymExclusions(xCfg.basionymExclusions);
+      }
       hc.consolidate();
       DateUtils.logDuration(LOG, hc.getClass(), start);
 
