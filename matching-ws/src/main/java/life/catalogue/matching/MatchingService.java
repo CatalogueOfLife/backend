@@ -55,7 +55,7 @@ public class MatchingService {
   private static final List<Rank> HIGHER_QUERY_RANK =
       List.of(
           Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
-  // FIXME all the taxonomic statuses ???
+  // FIXME check the ranking of these taxonomic statuses
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
       Map.of(
           TaxonomicStatus.ACCEPTED, 1,
@@ -871,44 +871,38 @@ public class MatchingService {
   private int authorSimilarity(@Nullable ParsedName pn, NameUsageMatch m) {
     int similarity = 0;
     // FIXME - authorship comparison with new API to be done....
-    //    if (pn != null) {
-    //      try {
-    //
-    //        //FIXME -
-    //
-    //        ParsedName mpn = NameParsers.INSTANCE.parse(m.getScientificName(), m.getRank());
-    //
-    //        // authorship comparison was requested!
-    //        Equality recomb = authComp.compare(pn.getAuthorship(), pn.getYear(),
-    // mpn.getAuthorship(), mpn.getYear());
-    //        Equality bracket = authComp.compare(pn.getBracketAuthorship(), pn.getBracketYear(),
-    // mpn.getBracketAuthorship(), mpn.getBracketYear());
-    //        if (bracket == Equality.UNKNOWN) {
-    //          // dont have 2 bracket authors to compare. Try with combination authors as brackets
-    // are sometimes forgotten or wrong
-    //          if (pn.getBracketAuthorship() != null) {
-    //            bracket = authComp.compare(pn.getBracketAuthorship(), pn.getBracketYear(),
-    // mpn.getAuthorship(), mpn.getYear());
-    //          } else if (mpn.getBracketAuthorship() != null) {
-    //            bracket = authComp.compare(pn.getAuthorship(), pn.getYear(),
-    // mpn.getBracketAuthorship(), mpn.getBracketYear());
-    //          }
-    //          if (bracket == Equality.EQUAL) {
-    //            similarity -= 1;
-    //          } else if (bracket == Equality.DIFFERENT) {
-    //            similarity += 1;
-    //          }
-    //        }
-    //
-    //        similarity += equality2Similarity(recomb, 3);
-    //        similarity += equality2Similarity(bracket, 1);
-    //
-    //      } catch (UnparsableException e) {
-    //        if (e.type.isParsable()) {
-    //          LOG.warn("Failed to parse name: {}", m.getScientificName());
-    //        }
-    //      }
-    //    }
+    if (pn != null) {
+      try {
+        ParsedName mpn = NameParsers.INSTANCE.parse(m.getScientificName(), m.getRank(), null);
+        //FIXME - authorship comparison with new API to be done....
+        // authorship comparison was requested!
+        Equality recomb = authComp.compare(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
+        Equality bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
+        if (bracket == Equality.UNKNOWN) {
+          // dont have 2 bracket authors to compare. Try with combination authors as brackets are sometimes forgotten or wrong
+          if (pn.getBasionymAuthorship() != null) {
+            bracket = authComp.compare(pn.getCombinationAuthorship(), mpn.getBasionymAuthorship());
+          } else if (mpn.getBasionymAuthorship() != null) {
+            bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getCombinationAuthorship());
+          }
+          if (bracket == Equality.EQUAL) {
+            similarity -= 1;
+          } else if (bracket == Equality.DIFFERENT) {
+            similarity += 1;
+          }
+        }
+
+        similarity += equality2Similarity(recomb, 3);
+        similarity += equality2Similarity(bracket, 1);
+
+      } catch (UnparsableNameException e) {
+        if (e.getType().isParsable()) {
+          LOG.warn("Failed to parse name: {}", m.getScientificName());
+        }
+      } catch (Exception e) {
+        LOG.error("Error comparing authorship", e);
+      }
+    }
 
     return similarity;
   }

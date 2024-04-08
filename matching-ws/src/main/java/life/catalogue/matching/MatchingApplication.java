@@ -20,7 +20,7 @@ public class MatchingApplication implements CommandLineRunner {
 
   public static void main(String[] args) {
 
-    // FIXME: needs to check the index exists and if it doesnt exist, create it
+    // TODO: needs to check the index exists and if it doesnt exist, create it
 
     WebApplicationType appType;
     if (args.length > 0) {

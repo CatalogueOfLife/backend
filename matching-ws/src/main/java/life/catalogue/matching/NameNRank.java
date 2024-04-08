@@ -98,9 +98,9 @@ public class NameNRank {
         pn.setInfragenericEpithet(clean(classification.getSubgenus()));
         pn.setSpecificEpithet(clean(specificEpithet));
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
-        // FIXME
-        //        pn.setRank(rank);
-        //        pn.setAuthorship(clean(authorship));
+        pn.setRank(rank);
+        //FIXME - which authorship to use?
+//        pn.setAuthorship(clean(authorship));
         // see if species rank in classificaiton can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));

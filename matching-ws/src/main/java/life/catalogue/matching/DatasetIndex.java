@@ -159,7 +159,6 @@ public class DatasetIndex {
       u.setHigherRank(c.key, c.name, rank);
     }
 
-    // FIXME dodgy, as some values from CLB might not be in this enum
     String rankStr = doc.get(FIELD_RANK);
     Rank rank = Rank.valueOf(rankStr);
     u.setHigherRank(u.getUsageKey(), u.getScientificName(), rank);

@@ -57,9 +57,8 @@ public class IndexingService {
   @Transactional
   public void runDatasetIndexing(final Integer datasetKey) throws Exception {
 
-    // FIXME I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
-    // (parallelism)
-    // as opposed to the spring managed DataSource
+    // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
+    // (parallelism) as opposed to the spring managed DataSource
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
 
     // Create index directory
@@ -135,11 +134,10 @@ public class IndexingService {
 
     // use custom precision step as we do not need range queries and prefer to save memory usage
     // instead
-    // FIXME check this is the correct "id" field
     doc.add(new StringField(FIELD_ID, nameUsage.id, Field.Store.YES));
 
     // we only store accepted key, no need to index it
-    // FIXME re-check this understanding. If the name is a synonym, then parentId name usage points
+    // FIXME Re-check this understanding. If the name is a synonym, then parentId name usage points
     // to the accepted name
     if (nameUsage.status.equals(TaxonomicStatus.SYNONYM.name())) {
       doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
@@ -151,7 +149,6 @@ public class IndexingService {
     // store full name and classification only to return a full match object for hits
     doc.add(new StringField(FIELD_SCIENTIFIC_NAME, nameUsage.scientificName, Field.Store.YES));
 
-    // FIXME: old impl stored as int, but service returns string
     // this lucene index is not persistent, so not risk in changing ordinal numbers
     doc.add(new StringField(FIELD_RANK, nameUsage.rank, Field.Store.YES));
 
