@@ -34,7 +34,7 @@ public interface ScientificName {
    */
   @JsonIgnore
   default boolean hasAuthorship() {
-    return hasCombinationAuthorship() || hasBasionymAuthorship();
+    return getAuthorship() != null || hasCombinationAuthorship() || hasBasionymAuthorship();
   }
 
   @JsonIgnore

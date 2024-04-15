@@ -330,15 +330,16 @@ public class NameIndexImplTest {
     final int canonID = m.getName().getCanonicalId();
     final int m1Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+    // new rank, new entry and therefore exact match
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
       n.setRank(Rank.VARIETY);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
     assertCanonicalNidx(m, canonID);
     final int m2Key = m.getNameKey();
 
-    // the scientificName is rebuilt if parsed, so this one is the exact same as above
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    // the scientificName contains the var marker, so counts as a variant
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.VARIETY);
       n.setScientificName("Abies alba var. alba");
     });
@@ -352,7 +353,8 @@ public class NameIndexImplTest {
     assertNidx(m, m2Key, canonID);
     final int m4Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+    // new rank, new entry
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
       n.setRank(Rank.FORM);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
@@ -368,7 +370,7 @@ public class NameIndexImplTest {
     });
     assertEquals(canonID, (int)m.getCanonicalNameKey());
 
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.FORM);
       n.setCombinationAuthorship(Authorship.authors("Mill"));
       n.setScientificName("Abies alba f. alba");

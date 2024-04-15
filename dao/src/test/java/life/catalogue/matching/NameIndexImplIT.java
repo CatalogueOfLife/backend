@@ -29,6 +29,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -63,7 +64,7 @@ public class NameIndexImplIT {
     }
   }
 
-  void setupMemory(boolean erase) throws Exception {
+  void setupMemory(boolean erase) {
     if (erase) {
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         session.getMapper(NamesIndexMapper.class).truncate();
@@ -139,6 +140,65 @@ public class NameIndexImplIT {
     m = ni.match(n, true, true);
     assertEquals(MatchType.VARIANT, m.getType());
     assertNotEquals(m.getCanonicalNameKey(), m.getNameKey());
+  }
+
+  void setupNames(List<SimpleName> names) {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    for (var sn : names) {
+      var n = new Name();
+      n.setScientificName(sn.getName());
+      n.setAuthorship(sn.getAuthorship());
+      n.setRank(sn.getRank());
+      n.setType(NameType.SCIENTIFIC);
+
+      var m = ni.match(n, true, true);
+      assertTrue(m.getType() == MatchType.EXACT || m.getType() == MatchType.VARIANT);
+    }
+
+    assertAllUnique();
+  }
+
+  @Test
+  public void poecile() throws Exception {
+    setupNames(List.of(
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montanus affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.UNRANKED, "Poecile montana affinis", null),
+      SimpleName.sn(Rank.SPECIES, "Poecile montana", "(Conrad von Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana borealis", "Selys-Longchamps, 1843"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana kleinschmidti", "Hellmayr, 1900"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana songarus", "(Severtsov, 1873)"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana songarus", null),
+      SimpleName.sn(Rank.UNRANKED, "Poecile montanus", null)
+    ));
+
+    dumpIndex();
+    assertEquals(11, ni.size());
+    assertCanonicalSize(5);
+  }
+
+  private void assertAllUnique() {
+    var names = new HashSet<>();
+    for (var n : ni.all()) {
+      var sn = new SimpleName(null, n.getScientificName(), n.getAuthorship(), n.getRank());
+      if (!names.add(sn)) {
+        dumpIndex();
+        throw new IllegalStateException("Non unique name "+sn+" in names index");
+      }
+    }
+  }
+
+  private int assertCanonicalSize(int num) {
+    int count = 0;
+    for (var n : ni.all()) {
+      if (n.isCanonical()) {
+        count++;
+      }
+    }
+    assertEquals(num, count);
+    return count;
   }
 
   @Test

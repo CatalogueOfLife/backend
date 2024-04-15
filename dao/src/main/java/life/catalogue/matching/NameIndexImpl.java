@@ -95,6 +95,10 @@ public class NameIndexImpl implements NameIndex {
   public NameMatch match(Name name, boolean allowInserts, boolean verbose) throws MatchingException {
     NameMatch m = null;
     try {
+      // make sure we have a name
+      if (name.getRank() == null) {
+        name.setRank(IndexName.CANONICAL_RANK);
+      }
       List<IndexName> candidates = store.get(key(name));
       if (candidates != null && !candidates.isEmpty()) {
         m = matchCandidates(name, candidates);
@@ -161,7 +165,7 @@ public class NameIndexImpl implements NameIndex {
    * Does comparison by rank, name & author to pick real match from candidates
    */
   private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
-    final Rank rank = IndexName.normRank(query.getRank());
+    final Rank rank = query.getRank();
     final boolean hasRank = rank != IndexName.CANONICAL_RANK;
     final boolean hasAuthorship = query.hasAuthorship();
     final String canonicalname = NameFormatter.canonicalName(query);
@@ -431,8 +435,14 @@ public class NameIndexImpl implements NameIndex {
    */
   @Override
   public void add(IndexName n) {
-    final String key = key(n);
+    //// make sure this is the same as what the key method is based on !!!
+    //n.setScientificName(NameFormatter.canonicalName(n));
+    //// rebuild authorship if only existing as parsed version
+    //if (n.getAuthorship() == null && n.hasAuthorship()) {
+    //  n.setAuthorship(NameFormatter.authorship(n, false));
+    //}
 
+    final String key = key(n);
     try (SqlSession s = sqlFactory.openSession()) {
       NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
 
@@ -440,12 +450,6 @@ public class NameIndexImpl implements NameIndex {
       n.setCreated(LocalDateTime.now());
       n.setModifiedBy(Users.MATCHER);
       n.setModified(LocalDateTime.now());
-
-      // rebuild standard name strings if parsed
-      if (n.isParsed()) {
-        n.setScientificName(NameFormatter.scientificName(n));
-        n.setAuthorship(NameFormatter.authorship(n, false));
-      }
 
       if (n.qualifiesAsCanonical()) {
         createCanonical(nim, key, n);

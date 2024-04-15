@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
@@ -133,16 +135,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     return cn;
   }
 
-  /**
-   * Very weak normalisation of ranks, mapping only null and uncomparable ranks to unranked.
-   */
-  public static Rank normRank(Rank r) {
-    if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
-      return CANONICAL_RANK;
-    }
-    return r;
-  }
-
   @Override
   public Integer getKey() {
     return key;
@@ -171,7 +163,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    * Use updateNameCache() instead!
    */
   public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
+    this.scientificName = Preconditions.checkNotNull(scientificName);
   }
   
   /**
@@ -221,7 +213,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public void setRank(Rank rank) {
-    this.rank = normRank(rank);
+    this.rank = Preconditions.checkNotNull(rank);
   }
 
   @Override
@@ -304,15 +296,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   public void setCultivarEpithet(String cultivarEpithet) {
     this.cultivarEpithet = cultivarEpithet;
-  }
-
-  /**
-   * @return true if any kind of authorship exists
-   */
-  @JsonIgnore
-  @Override
-  public boolean hasAuthorship() {
-    return FormattableName.super.hasAuthorship() || authorship != null;
   }
 
   /**
