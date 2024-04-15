@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.text.StringUtils;
 
@@ -69,6 +71,7 @@ public class JobResult extends DataEntity<UUID> {
     return DOWNLOAD_BASE_URI.resolve(downloadFilePath(key));
   }
 
+  @JsonIgnore
   public File getFile() {
     return new File(DOWNLOAD_DIR, downloadFilePath(key));
   }
