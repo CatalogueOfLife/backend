@@ -299,7 +299,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
       Name pn = null;
-      if (nu.getName().hasAuthorship() && !existing.usage.hasAuthorship()) {
+      if (nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship()) {
         pn = loadFromDB(existing.usage.getId());
         upd.add(InfoGroup.AUTHORSHIP);
         pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());

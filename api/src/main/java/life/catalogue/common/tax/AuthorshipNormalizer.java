@@ -107,7 +107,7 @@ public class AuthorshipNormalizer {
    * See https://github.com/Sp2000/colplus-backend/issues/341
    */
   public List<String> normalizeName(Name n) {
-    if (n.hasAuthorship()) {
+    if (n.hasParsedAuthorship()) {
       // only compare basionym if existing, ignore ex and year
       Authorship authors;
       if (n.hasBasionymAuthorship()) {

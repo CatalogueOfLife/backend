@@ -327,7 +327,7 @@ public class NameInterpreter {
       pnu.getName().rebuildScientificName();
 
       // look for irregularities and flag issues
-      if (pnu.getName().hasAuthorship()) {
+      if (pnu.getName().hasParsedAuthorship()) {
         verifyNomenYear(pnu.getName().getCombinationAuthorship(), issues);
         verifyNomenYear(pnu.getName().getBasionymAuthorship(), issues);
       }
