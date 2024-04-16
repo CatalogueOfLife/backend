@@ -6,9 +6,10 @@ import java.util.regex.Pattern;
 import org.gbif.nameparser.api.Rank;
 
 public class RankUtils {
+
   private static final Pattern PREFIX =
       Pattern.compile("^(SUPER|SUB(?:TER)?|INFRA|GIGA|MAGN|GRAND|MIR|NAN|HYPO|MIN|PARV|MEGA|EPI)");
-  private static List<Rank> LINNEAN_RANKS_REVERSE = Lists.reverse(Rank.LINNEAN_RANKS);
+  private static final List<Rank> LINNEAN_RANKS_REVERSE = Lists.reverse(Rank.LINNEAN_RANKS);
 
   public static Rank nextHigherLinneanRank(Rank rank) {
     for (Rank r : LINNEAN_RANKS_REVERSE) {

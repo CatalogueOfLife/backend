@@ -5,13 +5,12 @@ import static life.catalogue.matching.IndexConstants.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
@@ -19,6 +18,7 @@ import org.apache.lucene.store.MMapDirectory;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,80 +30,17 @@ public class DatasetIndex {
 
   private IndexSearcher searcher;
 
-  private Map<String, CachedName> higherTaxaCache = new HashMap<>();
-
-  class CachedName {
-
-    CachedName(String key, String parentKey, String name, String rank) {
-      this.key = key;
-      this.parentKey = parentKey;
-      this.name = name;
-      this.rank = rank;
-    }
-
-    String key;
-    String parentKey;
-    String name;
-    String rank;
-  }
+  @Value("${index.path:/tmp/matching-index}")
+  String indexPath;
 
   private DatasetIndex() {
 
     try {
-      Directory indexDir = new MMapDirectory(Path.of("/tmp/matching-index"));
+      Directory indexDir = new MMapDirectory(Path.of("/data/matching-ws/index"));
       DirectoryReader reader = DirectoryReader.open(indexDir);
       this.searcher = new IndexSearcher(reader);
-      buildHigherTaxaCache();
     } catch (IOException e) {
       LOG.error("Cannot open lucene index", e);
-    }
-  }
-
-  /**
-   * Naive implementation that build an in-memory cache of higher taxa. Not intended for production
-   * use.
-   */
-  private void buildHigherTaxaCache() {
-    IndexReader reader = this.searcher.getIndexReader();
-
-    int pageSize = 10000; // Number of documents to retrieve per page
-    int pageNumber = 1; // Start with page 1
-
-    try {
-      LOG.info("Building higher taxa cache...");
-
-      // Retrieve all documents
-      MatchAllDocsQuery query = new MatchAllDocsQuery();
-      ScoreDoc[] hits = searcher.search(query, Integer.MAX_VALUE).scoreDocs;
-
-      int totalHits = hits.length;
-      int totalPages = (int) Math.ceil((double) totalHits / pageSize);
-
-      // Pagination loop
-      while (pageNumber <= totalPages) {
-        int start = (pageNumber - 1) * pageSize;
-        int end = Math.min(start + pageSize, totalHits);
-
-        LOG.debug("Cache build: Page " + pageNumber + "/" + totalPages + ":");
-
-        for (int i = start; i < end; i++) {
-          int docId = hits[i].doc;
-          Document doc = reader.document(docId);
-          String name = doc.get(FIELD_SCIENTIFIC_NAME);
-          String id = doc.get(FIELD_ID);
-          String rank = doc.get(FIELD_RANK);
-          String parentID = doc.get(FIELD_PARENT_ID);
-          if (rank != null && !rank.equals("SPECIES") && !rank.equals("SUBSPECIES")) {
-            higherTaxaCache.put(id, new CachedName(id, parentID, name, rank));
-          }
-        }
-
-        pageNumber++;
-      }
-
-      LOG.info("Cache size: {}", higherTaxaCache.size());
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
@@ -117,7 +54,10 @@ public class DatasetIndex {
       if (docs.totalHits.value > 0) {
         Document doc = searcher.doc(docs.scoreDocs[0].doc);
         NameUsageMatch match = fromDoc(doc);
-        match.setConfidence(100);
+        Diagnostics diagnostics = new Diagnostics();
+        match.setDiagnostics(diagnostics);
+        diagnostics.setConfidence(100);
+        diagnostics.setMatchType(MatchType.EXACT);
         return match;
       } else {
         LOG.warn("No usage {} found in lucene index", usageID);
@@ -130,41 +70,76 @@ public class DatasetIndex {
     return null;
   }
 
-  public List<CachedName> loadHigherTaxa(String parentID) {
-    List<CachedName> higherTaxa = new ArrayList<>();
-    String currentID = parentID;
-    while (currentID != null) {
-      CachedName current = higherTaxaCache.get(currentID);
-      if (current == null) {
+  public Document getByUsageId(String usageID) {
+    Query query = new TermQuery(new Term(FIELD_ID, usageID));
+    try {
+      TopDocs docs = this.searcher.search(query, 3);
+
+      if (docs.totalHits.value > 0) {
+        return searcher.doc(docs.scoreDocs[0].doc);
+      } else {
+        return null;
+      }
+    } catch (IOException e) {
+      LOG.error("Cannot load usage {} from lucene index", usageID, e);
+    }
+    return null;
+  }
+
+  public List<RankedName> loadHigherTaxa(String parentID) {
+
+    List<RankedName> higherTaxa = new ArrayList<>();
+
+    while (parentID != null){
+      Document doc = getByUsageId(parentID);
+      if (doc == null) {
         break;
       }
-      higherTaxa.add(current);
-      currentID = current.parentKey;
+      RankedName c = new RankedName();
+      c.setKey(doc.get(FIELD_ID));
+      c.setName(doc.get(FIELD_CANONICAL_NAME));
+      c.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
+      higherTaxa.add(c);
+      parentID = doc.get(FIELD_PARENT_ID);
     }
     return higherTaxa;
   }
 
   private NameUsageMatch fromDoc(Document doc) {
+
+    boolean synonym = false;
     NameUsageMatch u = new NameUsageMatch();
-    u.setUsageKey(doc.get(FIELD_ID));
-    u.setAcceptedUsageKey(doc.get(FIELD_ACCEPTED_ID));
-    u.setScientificName(doc.get(FIELD_SCIENTIFIC_NAME));
-    u.setCanonicalName(doc.get(FIELD_CANONICAL_NAME));
+    u.setDiagnostics(new Diagnostics());
+
+    String canonical = doc.get(FIELD_CANONICAL_NAME);
+
+    // set the usage
+    u.setUsage(new RankedName(
+      doc.get(FIELD_ID),
+      doc.get(FIELD_SCIENTIFIC_NAME),
+      Rank.valueOf(doc.get(FIELD_RANK)),
+      doc.get(FIELD_CANONICAL_NAME)
+    ));
+
+    if (doc.get(FIELD_ACCEPTED_ID) != null){
+      synonym = true;
+      Document accDoc = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
+      u.setAcceptedUsage(new RankedName(
+        accDoc.get(FIELD_ID),
+        accDoc.get(FIELD_SCIENTIFIC_NAME),
+        Rank.valueOf(accDoc.get(FIELD_RANK)),
+        accDoc.get(FIELD_CANONICAL_NAME)
+      ));
+      canonical = accDoc.get(FIELD_CANONICAL_NAME);
+    }
 
     // set the higher classification
     String parentID = doc.get(FIELD_PARENT_ID);
-    List<CachedName> classification = loadHigherTaxa(parentID);
-    for (CachedName c : classification) {
-      Rank rank = Rank.valueOf(c.rank);
-      u.setHigherRank(c.key, c.name, rank);
-    }
+    List<RankedName> classification = loadHigherTaxa(parentID);
+    u.setClassification(classification);
+    classification.add(0, new RankedName(u.getUsage().getKey(), canonical, u.getUsage().getRank()));
+    u.setSynonym(synonym);
 
-    String rankStr = doc.get(FIELD_RANK);
-    Rank rank = Rank.valueOf(rankStr);
-    u.setHigherRank(u.getUsageKey(), u.getScientificName(), rank);
-    u.setRank(rank);
-
-    // parse to enum
     String status = doc.get(FIELD_STATUS);
     u.setStatus(TaxonomicStatus.valueOf(status));
 
@@ -182,7 +157,7 @@ public class DatasetIndex {
 
     // query needs to have at least 2 letters to match a real name
     if (analyzedName.length() < 2) {
-      return List.of();
+      return new ArrayList<>();
     }
 
     Term t = new Term(FIELD_CANONICAL_NAME, analyzedName);
@@ -211,14 +186,14 @@ public class DatasetIndex {
       if (docs.totalHits.value > 0) {
         for (ScoreDoc sdoc : docs.scoreDocs) {
           NameUsageMatch match = fromDoc(searcher.doc(sdoc.doc));
-          if (name.equalsIgnoreCase(match.getCanonicalName())) {
-            match.setMatchType(NameUsageMatch.MatchType.EXACT);
+          if (name.equalsIgnoreCase(match.getUsage().getCanonicalName())) {
+            match.getDiagnostics().setMatchType(MatchType.EXACT);
             results.add(match);
           } else {
             // even though we used a term query for straight matching the lucene analyzer has
             // already normalized
             // the name drastically. So we include these matches here only in case of fuzzy queries
-            match.setMatchType(NameUsageMatch.MatchType.FUZZY);
+            match.getDiagnostics().setMatchType(MatchType.FUZZY);
             results.add(match);
           }
         }

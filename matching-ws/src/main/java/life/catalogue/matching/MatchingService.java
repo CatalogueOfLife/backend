@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
@@ -86,7 +87,10 @@ public class MatchingService {
     HIGHER_RANKS = ImmutableList.copyOf(ranks);
   }
 
-  private final AuthorComparator authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);;
+
+
+  private final AuthorComparator authComp = new AuthorComparator(
+    AuthorshipNormalizer.createWithoutAuthormap());
 
   protected enum MatchingMode {
     FUZZY,
@@ -120,11 +124,12 @@ public class MatchingService {
   }
 
   private static boolean isMatch(NameUsageMatch match) {
-    return NameUsageMatch.MatchType.NONE != match.getMatchType();
+    return MatchType.NONE != match.getDiagnostics().getMatchType();
   }
 
   private static NameUsageMatch higherMatch(NameUsageMatch match, NameUsageMatch firstMatch) {
-    match.setMatchType(NameUsageMatch.MatchType.HIGHERRANK);
+    match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
+    //FIXME
     addAlternatives(match, firstMatch.getAlternatives());
     return match;
   }
@@ -139,60 +144,13 @@ public class MatchingService {
     }
     return null;
   }
-  //
-  //  public NameUsageMatch2 v2(NameUsageMatch m) {
-  //    NameUsageMatch2 m2 = new NameUsageMatch2();
-  //    if (m.getUsageKey() != null) {
-  //      // main usage
-  //      RankedName u = new RankedName();
-  //      m2.setUsage(match2rankedName(m));
-  //      // accepted
-  //      if (m.getAcceptedUsageKey() != null) {
-  //        m2.setSynonym(true);
-  //        NameUsageMatch accM = datasetIndex.matchByUsageId(m.getAcceptedUsageKey());
-  //        m2.setAcceptedUsage(match2rankedName(accM));
-  //      }
-  //      // classification
-  //      for (Rank r : Rank.LINNEAN_RANKS) {
-  //        Integer key = ClassificationUtils.getHigherRankKey(m, r);
-  //        if (key != null) {
-  //          RankedName ht = new RankedName();
-  //          ht.setRank(r);
-  //          ht.setKey(key);
-  //          ht.setName(ClassificationUtils.getHigherRank(m, r));
-  //          m2.getClassification().add(ht);
-  //        }
-  //      }
-  //    }
-  //    // diagnostics in all cases
-  //    m2.getDiagnostics().setMatchType(m.getMatchType());
-  //    m2.getDiagnostics().setConfidence(m.getConfidence());
-  //    m2.getDiagnostics().setStatus(m.getStatus());
-  //    m2.getDiagnostics().setNote(m.getNote());
-  //    if (m.getAlternatives() != null) {
-  //      for (NameUsageMatch alt : m.getAlternatives()) {
-  //        m2.getDiagnostics().getAlternatives().add(v2(alt));
-  //      }
-  //    }
-  //    return m2;
-  //  }
-
-  private static RankedName match2rankedName(NameUsageMatch m) {
-    RankedName rn = null;
-    if (m.getUsageKey() != null) {
-      rn = new RankedName();
-      rn.setKey(m.getUsageKey());
-      rn.setName(m.getScientificName());
-      rn.setRank(m.getRank());
-    }
-    return rn;
-  }
 
   /**
    * Adds the given alternatives to the alternatives existing in the match, making sure we dont get
    * infinite recursions my clearing all alternate matches on the arguments
    */
   private static void addAlternatives(NameUsageMatch match, List<NameUsageMatch> alts) {
+    //FIXME
     if (match.getAlternatives() != null && alts != null) {
       alts.addAll(match.getAlternatives());
     }
@@ -204,20 +162,21 @@ public class MatchingService {
    * alternate matches on the arguments
    */
   private static void setAlternatives(NameUsageMatch match, List<NameUsageMatch> alts) {
+    // FIXME
     if (alts != null) {
       Set<String> keys =
           new HashSet<>(); // remember keys and make unique - we can have the same usages in here
       ListIterator<NameUsageMatch> iter = alts.listIterator();
       while (iter.hasNext()) {
         NameUsageMatch m = iter.next();
-        if (Objects.equals(m.getUsageKey(), match.getUsageKey())
-            || keys.contains(m.getUsageKey())) {
+        if (Objects.equals(m.getUsage().getKey(), match.getUsage().getKey())
+            || keys.contains(m.getUsage().getKey())) {
           // same usage, remove!
           iter.remove();
         } else if (m.getAlternatives() != null && !m.getAlternatives().isEmpty()) {
           m.setAlternatives(List.of());
         }
-        keys.add(m.getUsageKey());
+        keys.add(m.getUsage().getKey());
       }
     }
     match.setAlternatives(alts);
@@ -235,9 +194,11 @@ public class MatchingService {
       Set<Integer> exclude,
       boolean strict,
       boolean verbose) {
+
     StopWatch watch = new StopWatch();
     watch.start();
-    NameUsageMatch match;
+
+    NameUsageMatch match = new NameUsageMatch();
 
     // When provided a usageKey is used exclusively
     if (usageKey != null) {
@@ -246,14 +207,18 @@ public class MatchingService {
       // maintain backward compatible API
       if (match == null) {
         match = new NameUsageMatch();
-        match.setMatchType(NameUsageMatch.MatchType.NONE);
-        match.setConfidence(100);
+        Diagnostics diagnostics = new Diagnostics();
+        match.setDiagnostics(diagnostics);
+        diagnostics.setMatchType(MatchType.NONE);
+        diagnostics.setConfidence(100);
       } else {
-        match.setNote("All provided names were ignored since the usageKey was provided");
-        match.setMatchType(NameUsageMatch.MatchType.EXACT);
+        Diagnostics diagnostics = new Diagnostics();
+        match.setDiagnostics(diagnostics);
+        match.getDiagnostics().setNote("All provided names were ignored since the usageKey was provided");
+        match.getDiagnostics().setMatchType(MatchType.EXACT);
       }
       watch.stop();
-      LOG.debug("{} Match of usageKey[{}] in {}", match.getMatchType(), usageKey, watch);
+      LOG.debug("{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), usageKey, watch);
     } else {
       NameNRank nr =
           NameNRank.build(
@@ -266,14 +231,16 @@ public class MatchingService {
               classification);
       match = matchInternal(nr.name, nr.rank, classification, exclude, strict, verbose);
       watch.stop();
-      LOG.debug(
+      if (match.getUsage() != null) {
+        LOG.debug(
           "{} Match of {} >{}< to {} [{}] in {}",
-          match.getMatchType(),
+          match.getDiagnostics().getMatchType(),
           nr.rank,
           nr.name,
-          match.getUsageKey(),
-          match.getScientificName(),
+          match.getUsage().getKey(),
+          match.getUsage().getName(),
           watch);
+      }
     }
 
     return match;
@@ -370,6 +337,7 @@ public class MatchingService {
       }
     }
 
+    // run the initial match
     NameUsageMatch match1 =
         match(
             queryNameType,
@@ -380,13 +348,14 @@ public class MatchingService {
             exclude,
             mainMatchingMode,
             verbose);
+
     // use genus higher match instead of fuzzy one?
     // https://github.com/gbif/portal-feedback/issues/2930
-    if (match1.getMatchType() == NameUsageMatch.MatchType.FUZZY
-        && match1.getRank() != null
-        && match1.getRank().isSpeciesOrBelow()
+    if (match1.getDiagnostics().getMatchType() == MatchType.FUZZY
+        && match1.getUsage().getRank() != null
+        && match1.getUsage().getRank().isSpeciesOrBelow()
         && pn != null
-        && !match1.getCanonicalName().startsWith(getGenusOrAbove(pn) + " ")
+        && !match1.getUsage().getCanonicalName().startsWith(getGenusOrAbove(pn) + " ")
         && nextAboveGenusDiffers(classification, match1)) {
       NameUsageMatch genusMatch =
           match(
@@ -398,10 +367,11 @@ public class MatchingService {
               exclude,
               MatchingMode.HIGHER,
               verbose);
-      if (isMatch(genusMatch) && genusMatch.getRank() == Rank.GENUS) {
+      if (isMatch(genusMatch) && genusMatch.getUsage().getRank() == Rank.GENUS) {
         return higherMatch(genusMatch, match1);
       }
     }
+
     // for strict matching do not try higher ranks
     if (isMatch(match1) || strict) {
       return match1;
@@ -476,20 +446,31 @@ public class MatchingService {
 
     // if finally we cant find anything, return empty match object - but not null!
     LOG.debug("No match for name {}", scientificName);
-    return noMatch(100, match1.getNote(), verbose ? match1.getAlternatives() : null);
+    return noMatch(100, match1.getDiagnostics().getNote(), verbose ? match1.getAlternatives() : null);
   }
 
-  private boolean nextAboveGenusDiffers(LinneanClassification cl, LinneanClassification cl2) {
+  private boolean nextAboveGenusDiffers(LinneanClassification cl, NameUsageMatch cl2) {
     for (Rank r = RankUtils.nextHigherLinneanRank(Rank.GENUS);
         r != null;
         r = RankUtils.nextHigherLinneanRank(r)) {
       String h1 = cl.getHigherRank(r);
-      String h2 = cl2.getHigherRank(r);
+      String h2 = getHigherRank(cl2, r);
       if (h1 != null && h2 != null) {
         return !Objects.equals(h1, h2);
       }
     }
     return false;
+  }
+
+  static String getHigherRank(NameUsageMatch match, Rank rank) {
+    if (rank != null) {
+      return nameForRank(match, rank);
+    }
+    return null;
+  }
+
+  public static String nameForRank(NameUsageMatch match, Rank rank){
+    return match.getClassification().stream().findFirst().filter(c -> c.getRank().equals(rank)).map(c -> c.getName()).orElse(null);
   }
 
   private void cleanClassification(LinneanClassification cl) {
@@ -519,13 +500,13 @@ public class MatchingService {
     final int before = matches.size();
     matches.removeIf(
         m -> {
-          if (m.getMatchType() == NameUsageMatch.MatchType.EXACT
+          if (m.getDiagnostics().getMatchType() == MatchType.EXACT
               && rank == Rank.SPECIES_AGGREGATE
-              && m.getRank() != Rank.SPECIES_AGGREGATE) {
+              && m.getUsage().getRank() != Rank.SPECIES_AGGREGATE) {
             LOG.info(
                 "Species aggregate match found for {} {}. Ignore and prefer higher matches",
-                m.getRank(),
-                m.getScientificName());
+                m.getUsage().getRank(),
+                m.getUsage().getName());
             return true;
           }
           return false;
@@ -534,12 +515,12 @@ public class MatchingService {
     if (matches.size() < before) {
       matches.removeIf(
           m -> {
-            if (m.getMatchType() == NameUsageMatch.MatchType.FUZZY) {
+            if (m.getDiagnostics().getMatchType() == MatchType.FUZZY) {
               LOG.info(
                   "Species aggregate match found for {}. Ignore also fuzzy match {} {}",
                   canonicalName,
-                  m.getRank(),
-                  m.getScientificName());
+                  m.getUsage().getRank(),
+                  m.getUsage().getName());
               return true;
             }
             return false;
@@ -565,14 +546,14 @@ public class MatchingService {
       // -50 - +50
       final int classificationSimilarity = classificationSimilarity(lc, m);
       // -10 - +5
-      final int rankSimilarity = rankSimilarity(rank, m.getRank());
+      final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank());
       // -5 - +1
       final int statusScore = STATUS_SCORE.get(m.getStatus());
       // -25 - 0
       final int fuzzyMatchUnlikely = fuzzyMatchUnlikelyhood(canonicalName, m);
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
-      m.setConfidence(
+      m.getDiagnostics().setConfidence(
           nameSimilarity
               + authorSimilarity
               + classificationSimilarity
@@ -605,12 +586,12 @@ public class MatchingService {
       // -50 - +50
       final int classificationSimilarity = classificationSimilarity(lc, m);
       // -10 - +5
-      final int rankSimilarity = rankSimilarity(rank, m.getRank()) * 2;
+      final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank()) * 2;
       // -5 - +1
       final int statusScore = STATUS_SCORE.get(m.getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
-      m.setConfidence(nameSimilarity + classificationSimilarity + rankSimilarity + statusScore);
+      m.getDiagnostics().setConfidence(nameSimilarity + classificationSimilarity + rankSimilarity + statusScore);
 
       if (verbose) {
         addNote(m, "Similarity: name=" + nameSimilarity);
@@ -644,12 +625,12 @@ public class MatchingService {
                   htComp.toKingdom(lc.getKingdom()), htComp.toKingdom(m.getKingdom())),
               10);
       // -10 - +5
-      final int rankSimilarity = incNegScore(rankSimilarity(rank, m.getRank()), 10);
+      final int rankSimilarity = incNegScore(rankSimilarity(rank, m.getUsage().getRank()), 10);
       // -5 - +1
       final int statusScore = STATUS_SCORE.get(m.getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
-      m.setConfidence(
+      m.getDiagnostics().setConfidence(
           nameSimilarity + authorSimilarity + kingdomSimilarity + rankSimilarity + statusScore);
 
       if (verbose) {
@@ -711,13 +692,13 @@ public class MatchingService {
     // exclude any matches against the explicit exclusion list
     if (exclude != null && !exclude.isEmpty()) {
       for (NameUsageMatch m : matches) {
-        if (exclude.contains(m.getUsageKey())) {
-          m.setConfidence(0);
-          addNote(m, "excluded by " + m.getUsageKey());
+        if (exclude.contains(m.getUsage().getKey())) {
+          m.getDiagnostics().setConfidence(0);
+          addNote(m, "excluded by " + m.getUsage().getKey());
         } else {
           for (Rank r : Rank.DWC_RANKS) {
             if (exclude.contains(m.getHigherRankKey(r))) {
-              m.setConfidence(0);
+              m.getDiagnostics().setConfidence(0);
               addNote(m, "excluded by " + m.getHigherRankKey(r));
               break;
             }
@@ -725,20 +706,21 @@ public class MatchingService {
         }
       }
     }
+
     // order by confidence
     Collections.sort(matches, CONFIDENCE_ORDER);
 
     // having the pre-normalized confidence is necessary to understand usage selection in some cases
     if (verbose) {
       for (NameUsageMatch match : matches) {
-        addNote(match, "score=" + match.getConfidence());
+        addNote(match, "score=" + match.getDiagnostics().getConfidence());
       }
     }
 
     if (!matches.isEmpty()) {
       // add 0 - 5 confidence based on distance to next best match
       NameUsageMatch best = matches.get(0);
-      int bestConfidence = best.getConfidence();
+      int bestConfidence = best.getDiagnostics().getConfidence();
       int nextMatchDistance;
 
       if (matches.size() == 1) {
@@ -750,7 +732,7 @@ public class MatchingService {
 
       } else {
         // we have more than one match to choose from
-        int secondBestConfidence = matches.get(1).getConfidence();
+        int secondBestConfidence = matches.get(1).getDiagnostics().getConfidence();
 
         // Do our results fall within the confidence score range AND differ across classes?
         boolean ambiguousAcrossClasses =
@@ -792,10 +774,10 @@ public class MatchingService {
         }
       }
       // normalize confidence values into the range of 0 to 100
-      best.setConfidence(normConfidence(bestConfidence + nextMatchDistance));
+      best.getDiagnostics().setConfidence(normConfidence(bestConfidence + nextMatchDistance));
 
       // finally check if match is good enough
-      if (best.getConfidence()
+      if (best.getDiagnostics().getConfidence()
           < (mode == MatchingMode.HIGHER ? MIN_CONFIDENCE_FOR_HIGHER_MATCHES : MIN_CONFIDENCE)) {
         return noMatch(99, "No match because of too little confidence", verbose ? matches : null);
       }
@@ -805,7 +787,7 @@ public class MatchingService {
         matches.remove(best);
         setAlternatives(best, matches);
         for (NameUsageMatch alt : matches) {
-          alt.setConfidence(normConfidence(alt.getConfidence()));
+          alt.getDiagnostics().setConfidence(normConfidence(alt.getDiagnostics().getConfidence()));
         }
       }
 
@@ -827,7 +809,7 @@ public class MatchingService {
       for (int i = 1; i < matches.size(); i++) {
         NameUsageMatch curr = matches.get(i);
 
-        if (best.getConfidence() - curr.getConfidence() <= confidenceThreshold) {
+        if (best.getDiagnostics().getConfidence() - curr.getDiagnostics().getConfidence() <= confidenceThreshold) {
           if (!equalClassification(best, curr, rank)) {
             similarButSpanRanks =
                 true; // within confidence threshold but higher classifications differ
@@ -859,7 +841,7 @@ public class MatchingService {
         // NPE safetly first - maybe the key is missing in the index
         NameUsageMatch match = datasetIndex.matchByUsageId(higherKey);
         if (match != null) {
-          match.setMatchType(NameUsageMatch.MatchType.HIGHERRANK);
+          match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
           return match;
         }
       }
@@ -873,13 +855,13 @@ public class MatchingService {
     // FIXME - authorship comparison with new API to be done....
     if (pn != null) {
       try {
-        ParsedName mpn = NameParsers.INSTANCE.parse(m.getScientificName(), m.getRank(), null);
+        ParsedName mpn = NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
         //FIXME - authorship comparison with new API to be done....
         // authorship comparison was requested!
         Equality recomb = authComp.compare(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
         Equality bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
         if (bracket == Equality.UNKNOWN) {
-          // dont have 2 bracket authors to compare. Try with combination authors as brackets are sometimes forgotten or wrong
+          // we don't have 2 bracket authors to compare. Try with combination authors as brackets are sometimes forgotten or wrong
           if (pn.getBasionymAuthorship() != null) {
             bracket = authComp.compare(pn.getCombinationAuthorship(), mpn.getBasionymAuthorship());
           } else if (mpn.getBasionymAuthorship() != null) {
@@ -897,7 +879,7 @@ public class MatchingService {
 
       } catch (UnparsableNameException e) {
         if (e.getType().isParsable()) {
-          LOG.warn("Failed to parse name: {}", m.getScientificName());
+          LOG.warn("Failed to parse name: {}", m.getUsage().getName());
         }
       } catch (Exception e) {
         LOG.error("Error comparing authorship", e);
@@ -944,12 +926,12 @@ public class MatchingService {
 
   /** Returns all matches that are within the given threshold of the best. */
   private List<NameUsageMatch> extractMatchesOfInterest(
-      List<NameUsageMatch> matches, int threshold) {
+    List<NameUsageMatch> matches, int threshold) {
     List<NameUsageMatch> target = new ArrayList<>();
     if (!matches.isEmpty()) {
-      final int conf = matches.get(0).getConfidence();
+      final int conf = matches.get(0).getDiagnostics().getConfidence();
       for (NameUsageMatch m : matches) {
-        if (conf - m.getConfidence() <= threshold) {
+        if (conf - m.getDiagnostics().getConfidence() <= threshold) {
           target.add(m);
         } else {
           // matches are sorted by confidence!
@@ -961,27 +943,28 @@ public class MatchingService {
   }
 
   private static void addNote(NameUsageMatch m, String note) {
-    if (m.getNote() == null) {
-      m.setNote(note);
+    if (m.getDiagnostics().getNote() == null) {
+      m.getDiagnostics().setNote(note);
     } else {
-      m.setNote(m.getNote() + "; " + note);
+      m.getDiagnostics().setNote(m.getDiagnostics().getNote() + "; " + note);
     }
   }
 
   private static NameUsageMatch noMatch(
       int confidence, String note, List<NameUsageMatch> alternatives) {
     NameUsageMatch no = new NameUsageMatch();
-    no.setMatchType(NameUsageMatch.MatchType.NONE);
-    no.setConfidence(confidence);
-    no.setNote(note);
+    no.setDiagnostics(new Diagnostics());
+    no.getDiagnostics().setMatchType(MatchType.NONE);
+    no.getDiagnostics().setConfidence(confidence);
+    no.getDiagnostics().setNote(note);
     setAlternatives(no, alternatives);
     return no;
   }
 
   private int fuzzyMatchUnlikelyhood(String canonicalName, NameUsageMatch m) {
     // ignore fuzzy matches with a terminal epithet of "indet" meaning usually indeterminate
-    if (m.getMatchType() == NameUsageMatch.MatchType.FUZZY
-        && m.getRank().isSpeciesOrBelow()
+    if (m.getDiagnostics().getMatchType() == MatchType.FUZZY
+        && m.getUsage().getRank().isSpeciesOrBelow()
         && canonicalName.endsWith(" indet")) {
       return -25;
     }
@@ -992,7 +975,7 @@ public class MatchingService {
       @Nullable NameType queryNameType, String canonicalName, NameUsageMatch m) {
     // calculate name distance
     int confidence;
-    if (canonicalName.equalsIgnoreCase(m.getCanonicalName())) {
+    if (canonicalName.equalsIgnoreCase(m.getUsage().getCanonicalName())) {
       // straight match
       confidence = 100;
       // binomial straight match? That is pretty trustworthy
@@ -1004,7 +987,7 @@ public class MatchingService {
 
     } else {
       // fuzzy - be careful!
-      confidence = (int) sim.getSimilarity(canonicalName, m.getCanonicalName()) - 5;
+      confidence = (int) sim.getSimilarity(canonicalName, m.getUsage().getCanonicalName()) - 5;
       // fuzzy OTU match? That is dangerous, often one character/number means sth entirely different
       if (queryNameType == NameType.OTU) {
         confidence -= 50;
@@ -1013,9 +996,9 @@ public class MatchingService {
       // modify confidence according to genus comparison in bionomials.
       // slightly trust binomials with a matching genus more, and trust less if we matched a
       // different genus name
-      int spaceIdx = m.getCanonicalName().indexOf(" ");
+      int spaceIdx = m.getUsage().getName().indexOf(" ");
       if (spaceIdx > 0) {
-        String genus = m.getCanonicalName().substring(0, spaceIdx);
+        String genus = m.getUsage().getName().substring(0, spaceIdx);
         if (canonicalName.startsWith(genus)) {
           confidence += 5;
         } else {
@@ -1190,8 +1173,8 @@ public class MatchingService {
     @Override
     public int compare(NameUsageMatch o1, NameUsageMatch o2) {
       return ComparisonChain.start()
-          .compare(o1.getConfidence(), o2.getConfidence(), Ordering.natural().reverse().nullsLast())
-          .compare(o1.getScientificName(), o2.getScientificName(), Ordering.natural().nullsLast())
+          .compare(o1.getDiagnostics().getConfidence(), o2.getDiagnostics().getConfidence(), Ordering.natural().reverse().nullsLast())
+          .compare(o1.getUsage().getCanonicalName(), o2.getUsage().getCanonicalName(), Ordering.natural().nullsLast())
           .result();
     }
   }

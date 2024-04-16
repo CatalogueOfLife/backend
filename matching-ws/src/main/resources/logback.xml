@@ -2,8 +2,9 @@
 <configuration>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
   <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
-  <root level="INFO">
+  <root level="WARN">
     <appender-ref ref="CONSOLE" />
   </root>
-  <logger name="org.springframework.web" level="DEBUG"/>
+  <logger name="org.springframework.web" level="ERROR"/>
+  <logger name="life.catalogue" level="INFO"/>
 </configuration>

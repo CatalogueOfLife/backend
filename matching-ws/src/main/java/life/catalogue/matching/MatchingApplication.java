@@ -21,7 +21,10 @@ public class MatchingApplication implements CommandLineRunner {
   public static void main(String[] args) {
 
     // TODO: needs to check the index exists and if it doesnt exist, create it
-
+    // check for pre-generated index
+    // if not found, generate index
+    // check for files on filesystem in /tmp/matching-export
+    // if found, connect to database if config exists
     WebApplicationType appType;
     if (args.length > 0) {
       appType = WebApplicationType.NONE;
@@ -38,7 +41,22 @@ public class MatchingApplication implements CommandLineRunner {
     if (args.length > 0) {
       LocalTime start = LocalTime.now();
       LOG.info("Starting indexing...");
-      datasetIndexingService.runDatasetIndexing(Integer.parseInt(args[0]));
+      String command = args[0];
+      Integer datasetId = Integer.parseInt(args[1]);
+      switch (command){
+        case "index-db":
+          datasetIndexingService.runDatasetIndexing(datasetId);
+          break;
+        case "export-file":
+          datasetIndexingService.writeCLBToFile(datasetId);
+          break;
+        case "index-file":
+          datasetIndexingService.indexFile(datasetId);
+          break;
+        default:
+          LOG.error("Invalid command");
+          break;
+      }
       LocalTime end = LocalTime.now();
       Duration duration = Duration.between(start, end);
       LOG.info(

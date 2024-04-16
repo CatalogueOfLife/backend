@@ -1,11 +1,16 @@
 package life.catalogue.matching;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.gbif.nameparser.api.Rank;
 
 public class RankedName {
   private String key;
   private String name;
+  @JsonIgnore
+  private String canonicalName;
   private Rank rank;
 
   public RankedName() {}
@@ -14,6 +19,13 @@ public class RankedName {
     this.key = key;
     this.name = name;
     this.rank = rank;
+  }
+
+  public RankedName(String key, String name, Rank rank, String canonicalName) {
+    this.key = key;
+    this.name = name;
+    this.rank = rank;
+    this.canonicalName = canonicalName;
   }
 
   public String getKey() {
@@ -38,6 +50,11 @@ public class RankedName {
 
   public void setRank(Rank rank) {
     this.rank = rank;
+  }
+
+  @JsonIgnore
+  public String getCanonicalName() {
+    return this.canonicalName;
   }
 
   public boolean equals(Object o) {
