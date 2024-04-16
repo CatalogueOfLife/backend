@@ -214,20 +214,21 @@ public class MatchingJob extends DatasetBlockingJob {
       "classification",
       "issues"
     ));
-    int firstCustomColIdx = cols.size();
+    final int firstCustomColIdx = cols.size();
     if (srcHeader != null) {
       for (var h : srcHeader) {
         cols.add(StringUtils.stripToEmpty(h));
       }
     }
     writer.writeHeaders(cols);
+    final int size = cols.size();
 
     // match & write to file
     AtomicLong counter = new AtomicLong(0);
     AtomicLong none = new AtomicLong(0);
     names.forEach(n -> {
       var m = match(n);
-      var row = new String[13];
+      var row = new String[size];
       row[0] = m.original.getId();
       row[1] = str(m.original.getRank());
       row[2] = m.original.getLabel();
@@ -253,7 +254,10 @@ public class MatchingJob extends DatasetBlockingJob {
       if (srcHeader != null && n.row != null) {
         int idx = 0;
         for (String val : n.row) {
-          row[firstCustomColIdx + idx] = val;
+          if (idx < size-firstCustomColIdx) {
+            // make sure we dont have more columns than headers
+            row[firstCustomColIdx + idx] = val;
+          }
           idx++;
         }
       }
