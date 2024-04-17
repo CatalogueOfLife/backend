@@ -68,7 +68,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final String FILENAME_ARCHIVED_MATCHES = "archived-matches.pg";
   private static final String NAME_COLS = "scientific_name,authorship,rank,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,cultivar_epithet,basionym_authors,basionym_ex_authors,basionym_year,combination_authors,combination_ex_authors,combination_year,sanctioning_author,type,code,notho,candidatus,sector_key,dataset_key,id";
   private static final String ARCHIVED_NAME_COLS = "n_scientific_name,n_authorship,n_rank,n_uninomial,n_genus,n_infrageneric_epithet,n_specific_epithet,n_infraspecific_epithet,n_cultivar_epithet,n_basionym_authors,n_basionym_ex_authors,n_basionym_year,n_combination_authors,n_combination_ex_authors,n_combination_year,n_sanctioning_author,n_type,n_code,n_notho,n_candidatus,null,dataset_key,id";
-  private static final String MATCH_TABLE = "name_match";
+  private static final String MATCH_TABLE = BUILD_SCHEMA + "." + "name_match";
   private static final List<String> MATCH_TABLE_COLUMNS = List.of(
 
     "dataset_key",
@@ -77,7 +77,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     "name_id",
     "sector_key"
   );
-  private static final String ARCHIVED_MATCH_TABLE = "name_usage_archive_match";
+  private static final String ARCHIVED_MATCH_TABLE = BUILD_SCHEMA + "." + "name_usage_archive_match";
   private static final List<String> ARCHIVED_MATCH_TABLE_COLUMNS = List.of(
     "dataset_key",
     "type",
@@ -119,7 +119,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s.\n", BUILD_SCHEMA, cfg.db.database);
+    return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s on %a.\n", BUILD_SCHEMA, cfg.db.database, cfg.db.host);
   }
 
   private static File indexBuildFile(WsServerConfig cfg) throws IOException {
@@ -165,7 +165,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
-    LOG.warn("Rebuilt names index at {} and rematch all names with {} threads using build folder {} and pg schema {}", nidxFile, threads, buildDir, BUILD_SCHEMA);
+    LOG.warn("Rebuilt names index at {} and rematch all names with {} threads using build folder {} and pg schema {} in db {} on {}.", nidxFile, threads, buildDir, BUILD_SCHEMA, cfg.db.database, cfg.db.host);
     // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
@@ -249,9 +249,12 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       return 0;
     }
 
-    final long size = (total / threads) +1;
+    // we create 10x smaller files to make use of all threads better
+    // as the splitting takes time and the first file starts much earlier than the last
+    final long size = (total / threads / 10) +1;
+    final int expectedParts = (int) Math.ceil( (double)total / size);
+    LOG.info("Splitting {} with {} records into files with {} each, expecting {} files", out, total, size, expectedParts);
     final int parts;
-    LOG.info("Splitting {} with {} records into {} files with {} each", out, total, threads, size);
     try(var in = new FileInputStream(out)) {
       var splitter = new PgBinarySplitter(in, size,
         (p) -> part(out.getName(), p),
@@ -262,6 +265,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
                                   })
       );
       parts = splitter.split();
+      LOG.info("Done splitting {} with {} records into {} files with {} each", out, total, parts, size);
     }
     return parts;
   }

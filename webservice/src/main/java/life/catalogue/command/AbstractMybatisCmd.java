@@ -71,6 +71,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
     ns = namespace;
 
     try {
+      LOG.info("Connecting to database {} on {}", cfg.db.database, cfg.db.host);
       dataSource = cfg.db.pool();
       factory = MybatisFactory.configure(dataSource, getClass().getSimpleName());
       DatasetInfoCache.CACHE.setFactory(factory);
