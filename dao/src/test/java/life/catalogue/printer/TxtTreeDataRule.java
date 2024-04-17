@@ -2,12 +2,18 @@ package life.catalogue.printer;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.parser.RankParser;
+import life.catalogue.parser.SafeParser;
+import life.catalogue.parser.UnparsableException;
+
+import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
@@ -185,7 +191,8 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym, Integer ordinal) throws InterruptedException {
-    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, VerbatimRecord.VOID).get();
+    Rank rank = SafeParser.parse(RankParser.PARSER, tn.rank).orElse(Rank.UNRANKED);
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, null, VerbatimRecord.VOID).get();
     Name n = nat.getName();
     n.setDatasetKey(src.key);
     n.setId(String.valueOf(tn.id));

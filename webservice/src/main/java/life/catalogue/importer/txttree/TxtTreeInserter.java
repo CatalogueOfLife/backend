@@ -1,6 +1,7 @@
 package life.catalogue.importer.txttree;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
@@ -17,11 +18,11 @@ import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.metadata.MetadataFactory;
-import life.catalogue.parser.EnvironmentParser;
-import life.catalogue.parser.LanguageParser;
-import life.catalogue.parser.NameParser;
+import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 import org.gbif.txtree.TreeLine;
@@ -70,12 +71,16 @@ public class TxtTreeInserter implements NeoInserter {
   private Long2IntMap line2verbatimKey = new Long2IntOpenHashMap();
   private final BibTexInserter bibIns;
   private final ReferenceFactory refFactory;
+  private final DatasetSettings settings;
+  private final NomCode code;
 
-  public TxtTreeInserter(NeoDb store, Path folder, ReferenceFactory refFactory) throws IOException {
+  public TxtTreeInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     if (!Files.isDirectory(folder)) {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
     this.datasetKey = store.getDatasetKey();
+    this.settings = settings;
+    this.code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
     this.store = store;
     this.folder = folder;
     findReadable(folder).ifPresent(f -> {
@@ -170,7 +175,17 @@ public class TxtTreeInserter implements NeoInserter {
 
   private NeoUsage usage(SimpleTreeNode tn, boolean synonym, int ordinal) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
-    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, tn.rank, null, v).get();
+    Rank rank = Rank.UNRANKED; // default for unknown
+    try {
+      var parsedRank = RankParser.PARSER.parse(code, tn.rank);
+      if (parsedRank.isPresent()) {
+        rank = parsedRank.get();
+      }
+    } catch (UnparsableException e) {
+      v.addIssue(Issue.RANK_INVALID);
+      rank = Rank.OTHER;
+    }
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, null, v).get();
     NeoUsage u;
     if(synonym) {
       u = NeoUsage.createSynonym(Origin.SOURCE, nat.getName(), TaxonomicStatus.SYNONYM);

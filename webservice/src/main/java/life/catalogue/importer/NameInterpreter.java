@@ -107,6 +107,7 @@ public class NameInterpreter {
     NamePart nothoVal = parse(NamePartParser.PARSER, v.get(notho)).orNull(Issue.NOTHO_INVALID, v);
     Boolean originalSpellingVal = parse(BooleanParser.PARSER, v.get(originalSpelling)).orNull(Issue.ORIGINAL_SPELLING_INVALID, v);
 
+    // now the real thing
     var opt = interpret(vrank==null,
       id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,

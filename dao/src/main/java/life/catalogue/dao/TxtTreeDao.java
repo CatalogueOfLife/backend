@@ -5,16 +5,20 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.parser.RankParser;
+import life.catalogue.parser.UnparsableException;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameValidator;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
@@ -130,7 +134,7 @@ public class TxtTreeDao {
 
   private int insertTaxon(Taxon parent, SimpleTreeNode t, LinkedList<SimpleName> classification, NomCode code, User user, List<NameUsageWrapper> docs) {
     int counter = 0;
-    final Name n = tree2name(parent.getDatasetKey(), t, code);
+    final Name n = treeNode2name(parent.getDatasetKey(), t, code);
     final Taxon tax = new Taxon(n);
     tax.setParentId(parent.getId());
     tdao.create(tax, user.getKey(), false); // this also does name matching
@@ -139,7 +143,7 @@ public class TxtTreeDao {
 
     // synonyms
     for (SimpleTreeNode st : t.synonyms){
-      final Name sn = tree2name(parent.getDatasetKey(), st, code);
+      final Name sn = treeNode2name(parent.getDatasetKey(), st, code);
       final Synonym syn = new Synonym(sn);
       syn.setAccepted(tax);
       sdao.create(syn, user.getKey());
@@ -171,12 +175,21 @@ public class TxtTreeDao {
     return counter;
   }
 
-  private static Name tree2name(int datasetKey, SimpleTreeNode tree, NomCode code) {
+  private static Name treeNode2name(int datasetKey, SimpleTreeNode tn, NomCode code) {
     Name n = new Name();
     n.setDatasetKey(datasetKey);
-    n.setScientificName(tree.name);
-    n.setRank(tree.rank);
+    n.setScientificName(tn.name);
     n.setCode(code);
+    Rank rank = Rank.UNRANKED; // default for unknown
+    try {
+      var parsedRank = RankParser.PARSER.parse(code, tn.rank);
+      if (parsedRank.isPresent()) {
+        rank = parsedRank.get();
+      }
+    } catch (UnparsableException e) {
+      rank = Rank.OTHER;
+    }
+    n.setRank(rank);
     return n;
   }
 

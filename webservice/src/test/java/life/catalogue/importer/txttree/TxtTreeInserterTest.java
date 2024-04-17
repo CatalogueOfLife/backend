@@ -27,7 +27,13 @@ public class TxtTreeInserterTest extends InserterBaseTest {
   @Override
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
     refFactory = new ReferenceFactory(d.getKey(), store.references(), null);
-    return new TxtTreeInserter(store, resource, refFactory);
+    return new TxtTreeInserter(store, resource, settings, refFactory);
+  }
+
+  @Test
+  public void badRanks() throws Exception {
+    NeoInserter ins = setup("/txtree/4");
+    ins.insertAll();
   }
 
   @Test

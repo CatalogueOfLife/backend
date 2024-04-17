@@ -942,7 +942,7 @@ public class Normalizer implements Callable<Boolean> {
           inserter = new AcefInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case TEXT_TREE:
-          inserter = new TxtTreeInserter(store, sourceDir, refFactory);
+          inserter = new TxtTreeInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);

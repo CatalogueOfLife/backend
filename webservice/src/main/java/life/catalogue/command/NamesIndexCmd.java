@@ -180,9 +180,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     ni.start();
 
     String limit = "";
-    if (ns.getInt(ARG_LIMIT) != null) {
-      limit = " LIMIT " + ns.getInt(ARG_LIMIT);
-      LOG.info("Limiting to {} names only", limit);
+    Integer ll = ns.getInt(ARG_LIMIT);
+    if (ll != null) {
+      LOG.info("Limiting to {} names only", ll);
+      limit = " LIMIT " + ll;
     }
 
     ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("matcher"));

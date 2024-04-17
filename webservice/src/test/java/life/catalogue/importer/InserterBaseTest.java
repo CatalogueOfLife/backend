@@ -41,20 +41,25 @@ public abstract class InserterBaseTest {
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
-  
+
   protected NeoInserter setup(String resource) {
+    URL url = getClass().getResource(resource);
+    try {
+      return setup(Paths.get(url.toURI()));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+  protected NeoInserter setup(Path path) {
     try {
       d = new DatasetWithSettings();
       d.setKey(1);
       store = NeoDbFactory.create(d.getKey(), 1, cfg);
       refFactory = new ReferenceFactory(d.getKey(), store.references(), null);
 
-      URL url = getClass().getResource(resource);
-      Path path = Paths.get(url.toURI());
-  
       return newInserter(path, d.getSettings());
       
-    } catch (IOException | URISyntaxException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
