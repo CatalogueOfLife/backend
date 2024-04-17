@@ -119,7 +119,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s on %a.\n", BUILD_SCHEMA, cfg.db.database, cfg.db.host);
+    return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s on %s.\n", BUILD_SCHEMA, cfg.db.database, cfg.db.host);
   }
 
   private static File indexBuildFile(WsServerConfig cfg) throws IOException {
