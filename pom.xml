@@ -84,7 +84,6 @@
     <neo4j-algorithms.version>3.4.0.0</neo4j-algorithms.version>
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
-    <pgbulkinsert.version>8.1.2</pgbulkinsert.version>
     <poi.version>5.2.3</poi.version>
     <postgresql.version>42.5.4</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
@@ -537,11 +536,6 @@
         <groupId>org.mybatis</groupId>
         <artifactId>mybatis</artifactId>
         <version>${mybatis.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>de.bytefish</groupId>
-        <artifactId>pgbulkinsert</artifactId>
-        <version>${pgbulkinsert.version}</version>
       </dependency>
 
       <!-- neo4j -->

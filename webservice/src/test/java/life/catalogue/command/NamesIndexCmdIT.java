@@ -1,27 +1,23 @@
 package life.catalogue.command;
 
-import de.bytefish.pgbulkinsert.pgsql.PgBinaryWriter;
-
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.db.TestDataRule;
-
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.printer.TxtTreeDataRule;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Before;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

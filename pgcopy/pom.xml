@@ -46,10 +46,6 @@
 
     <!-- TEST SCOPE -->
     <dependency>
-      <groupId>de.bytefish</groupId>
-      <artifactId>pgbulkinsert</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
       <scope>test</scope>
