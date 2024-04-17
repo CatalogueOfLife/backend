@@ -1,8 +1,8 @@
 Chordata [phylum]
   Mammalia [class]
     Carnivora [order]
-      Canidae [family]
-        Canis [genus]
+      Canidae [family] {CHRONO=Jurassic-Cretacious}
+        Canis [genus] {CHRONO=Jurassic}
           =Alopsis [genus]
           =Lupulus [genus]
           Canis adustus [species]

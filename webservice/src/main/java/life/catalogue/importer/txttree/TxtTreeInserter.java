@@ -203,6 +203,22 @@ public class TxtTreeInserter implements NeoInserter {
           }
         }
       }
+      // CHRONO TEMPORAL RANGE
+      if (hasDataItem(TxtTreeDataKey.CHRONO, tn)) {
+        String[] vals = rmDataItem(TxtTreeDataKey.CHRONO, tn);
+        for (String val : vals) {
+          var range = val.split("-");
+          if (range.length==1) {
+            t.setTemporalRangeStart(range[0].trim());
+            t.setTemporalRangeEnd(range[0].trim());
+          } else if (range.length==2) {
+            t.setTemporalRangeStart(range[0].trim());
+            t.setTemporalRangeEnd(range[1].trim());
+          } else {
+            v.addIssue(Issue.GEOTIME_INVALID);
+          }
+        }
+      }
       // TAX REF
       if (hasDataItem(TxtTreeDataKey.REF, tn)) {
         String[] vals = rmDataItem(TxtTreeDataKey.REF, tn);
