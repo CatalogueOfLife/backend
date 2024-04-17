@@ -193,6 +193,10 @@ public class TxtTreeInserter implements NeoInserter {
       u = NeoUsage.createTaxon(Origin.SOURCE, nat.getName(), TaxonomicStatus.ACCEPTED);
       var t = u.asTaxon();
       t.setOrdinal(ordinal);
+      // DAGGER
+      if (nat.isExtinct()) {
+        t.setExtinct(true);
+      }
       // ENVIRONMENT
       if (hasDataItem(TxtTreeDataKey.ENV, tn)) {
         String[] vals = rmDataItem(TxtTreeDataKey.ENV, tn);
