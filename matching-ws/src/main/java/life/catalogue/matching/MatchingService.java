@@ -59,12 +59,12 @@ public class MatchingService {
   // https://github.com/CatalogueOfLife/backend/issues/1314
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
       Map.of(
-          TaxonomicStatus.ACCEPTED, 1,
-          TaxonomicStatus.PROVISIONALLY_ACCEPTED, -1,
-          TaxonomicStatus.MISAPPLIED, -5,
-          TaxonomicStatus.AMBIGUOUS_SYNONYM, -2,
-          TaxonomicStatus.BARE_NAME, -10,
-          TaxonomicStatus.SYNONYM, 0);
+        TaxonomicStatus.ACCEPTED, 1,
+        TaxonomicStatus.SYNONYM, 0,
+        TaxonomicStatus.AMBIGUOUS_SYNONYM, -1,
+        TaxonomicStatus.PROVISIONALLY_ACCEPTED, -5,
+        TaxonomicStatus.MISAPPLIED, -10
+      );
 
   // FIXME: what to do here ?
   // match order by usageKey lowest to highest to preserve old ids
