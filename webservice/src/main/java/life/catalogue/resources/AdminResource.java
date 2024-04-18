@@ -5,12 +5,10 @@ import com.google.common.eventbus.EventBus;
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
-import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -222,6 +220,14 @@ public class AdminResource {
     }
   }
 
+
+  @DELETE
+  @Path("/reindex")
+  public int createEmptyIndex(@Auth User user) {
+    LOG.warn("Drop and recreate empty search index by {}", user);
+    return indexService.createEmptyIndex();
+  }
+
   @POST
   @Path("/reindex")
   public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, RequestScope req, @Auth User user) {
@@ -234,7 +240,19 @@ public class AdminResource {
     if (req.getDatasetKey() == null && !req.getAll()) {
       throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    return runJob(new IndexJob(req, user.getKey(), priority, indexService));
+    return runJob(new IndexJob(req, user.getKey(), priority, indexService, bus));
+  }
+
+  @GET
+  @Path("/reindex/preview")
+  public Response reindexPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, null);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
   }
 
   @POST
@@ -243,8 +261,9 @@ public class AdminResource {
    * Reindex all datasets which have not been fully indexed before.
    */
   public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.95") double threshold) {
-    return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService));
+    return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, bus));
   }
+
 
   @POST
   @Path("/rematch")
@@ -266,6 +285,27 @@ public class AdminResource {
     }
   }
 
+  @GET
+  @Path("/rematch/preview")
+  public Response rematchPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, null);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
+  /**
+   * Rematch all datasets which have not been fully matched before.
+   */
+  @POST
+  @Path("/rematch/scheduler")
+  public BackgroundJob rematchIncomplete(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, bus));
+  }
+
   @POST
   @Path("/rematch/missing")
   /**
@@ -275,24 +315,6 @@ public class AdminResource {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
-  @GET
-  @Path("/rematch/overview")
-  public Response rematchOverview(@Auth User user) {
-    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, exec, null);
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      job.write(writer);
-      writer.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  @DELETE
-  @Path("/reindex")
-  public int createEmptyIndex(@Auth User user) {
-    LOG.warn("Drop and recreate empty search index by {}", user);
-    return indexService.createEmptyIndex();
-  }
 
   @DELETE
   @Path("/cache")

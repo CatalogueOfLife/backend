@@ -20,6 +20,10 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
   private final JobExecutor exec;
   private final double threshold;
 
+  /**
+   * @param threshold the lowest percentage of names already matched that triggers a reprocessing.
+   *                  Can be zero or negative to process all incomplete datasets even if a single record is missing.
+   */
   public DatasetSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, JobExecutor exec) {
     super(userKey);
     this.exec = exec;
@@ -47,6 +51,10 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
       if (done == 0) return 0;
       if (usages == 0) return done;
       return ((double) done * 100 / (double) usages);
+    }
+
+    public boolean complete() {
+      return done == usages;
     }
 
     public void write(Writer writer) throws IOException {
@@ -80,14 +88,13 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     processDatasets( d -> d.write(writer));
   }
 
-
   @Override
   public void execute() {
     LOG.info("Schedule datasets for reprocessing. Triggered by {}", getUserKey());
     // load dataset keys to check if they need to be reprocessed
     AtomicInteger counter = new AtomicInteger();
     processDatasets( d -> {
-      if (d.done == 0 || d.percentage() < threshold) {
+      if ( (threshold <= 0 && !d.complete())  ||  (d.done == 0 || d.percentage() < threshold)) {
         var job = buildJob(d.datasetKey);
         exec.submit(job);
         counter.incrementAndGet();

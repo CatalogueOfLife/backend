@@ -17,6 +17,10 @@ public class RematchSchedulerJob extends DatasetSchedulerJob {
   private final NameIndex ni;
   private NameMatchMapper nmm;
 
+  /**
+   * @param threshold the lowest percentage of names already matched that triggers a rematch.
+   *                  Can be zero or negative to process all incomplete datasets even if a single record is missing.
+   */
   public RematchSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, NameIndex ni, JobExecutor exec, EventBus bus) {
     super(userKey, threshold, factory, exec);
     this.ni = ni;

@@ -7,6 +7,10 @@ public class FlushDatasetCache {
   public final int datasetKey;
   public final boolean logoOnly;
 
+  public static FlushDatasetCache all() {
+    return new FlushDatasetCache(-1);
+  }
+
   public FlushDatasetCache(int datasetKey) {
     this(datasetKey, false);
   }
