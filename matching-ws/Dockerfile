@@ -12,22 +12,21 @@
 # Build the Maven project and create a WAR file
 #RUN mvn clean install spring-boot:repackage
 
-FROM amazoncorretto:17.0.7-alpine
+FROM openjdk:17-jdk-slim
 
-#COPY matching-index /tmp/matching-index
+COPY index /data/matching-ws/index
 COPY target/matching-ws-*-SNAPSHOT.jar /opt/gbif/$APP_ARTIFACT/app.jar
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT="8080"
 ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
-ARG USER=matching-ws
+ARG USER=matching
 ARG APP_ARTIFACT=matching-ws
 
 # Directories and perms
-RUN mkdir -p /data/"$APP_ARTIFACT" && \
-    addgroup -g 1000 "$USER" && \
-    adduser -D -u 1000 -G "$USER" -h /home/"$USER" "$USER" && \
-    chown -R "$USER":"$USER" /data/"$APP_ARTIFACT"
+RUN mkdir -p /data/$APP_ARTIFACT && \
+    groupadd -r $USER -g 1000 && useradd -r -g $USER -u 1000 -m $USER && \
+    chown -R $USER:$USER /data/$APP_ARTIFACT
 
 WORKDIR /opt/gbif/$APP_ARTIFACT
 
