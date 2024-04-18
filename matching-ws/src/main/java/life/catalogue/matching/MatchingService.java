@@ -56,12 +56,12 @@ public class MatchingService {
   private static final List<Rank> HIGHER_QUERY_RANK =
       List.of(
           Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
-  // FIXME check the ranking of these taxonomic statuses
+  // https://github.com/CatalogueOfLife/backend/issues/1314
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
       Map.of(
           TaxonomicStatus.ACCEPTED, 1,
+          TaxonomicStatus.PROVISIONALLY_ACCEPTED, -1,
           TaxonomicStatus.MISAPPLIED, -5,
-          TaxonomicStatus.PROVISIONALLY_ACCEPTED, 1,
           TaxonomicStatus.AMBIGUOUS_SYNONYM, -2,
           TaxonomicStatus.BARE_NAME, -10,
           TaxonomicStatus.SYNONYM, 0);

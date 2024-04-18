@@ -1,5 +1,9 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import lombok.Data;
@@ -10,11 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class NameUsageMatch implements LinneanClassification {
 
   boolean synonym = false;
   RankedName usage;
+  @JsonIgnore
   TaxonomicStatus status;
   RankedName acceptedUsage;
   List<RankedName> classification = new ArrayList<>();
@@ -42,41 +48,49 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   @Override
+  @JsonIgnore
   public String getKingdom() {
     return nameFor(Rank.KINGDOM);
   }
 
   @Override
+  @JsonIgnore
   public String getPhylum() {
     return nameFor(Rank.PHYLUM);
   }
 
   @Override
+  @JsonIgnore
   public String getClazz() {
     return nameFor(Rank.CLASS);
   }
 
   @Override
+  @JsonIgnore
   public String getOrder() {
     return nameFor(Rank.ORDER);
   }
 
   @Override
+  @JsonIgnore
   public String getFamily() {
     return nameFor(Rank.FAMILY);
   }
 
   @Override
+  @JsonIgnore
   public String getGenus() {
     return nameFor(Rank.GENUS);
   }
 
   @Override
+  @JsonIgnore
   public String getSubgenus() {
     return nameFor(Rank.SUBGENUS);
   }
 
   @Override
+  @JsonIgnore
   public String getSpecies() {
     return nameFor(Rank.SPECIES);
   }

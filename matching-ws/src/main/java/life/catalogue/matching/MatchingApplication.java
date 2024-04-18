@@ -16,7 +16,7 @@ public class MatchingApplication implements CommandLineRunner {
 
   private static Logger LOG = LoggerFactory.getLogger(MatchingApplication.class);
 
-  @Autowired IndexingService datasetIndexingService;
+  @Autowired IndexingService indexingService;
 
   public static void main(String[] args) {
 
@@ -45,13 +45,13 @@ public class MatchingApplication implements CommandLineRunner {
       Integer datasetId = Integer.parseInt(args[1]);
       switch (command){
         case "index-db":
-          datasetIndexingService.runDatasetIndexing(datasetId);
+          indexingService.runDatasetIndexing(datasetId);
           break;
         case "export-file":
-          datasetIndexingService.writeCLBToFile(datasetId);
+          indexingService.writeCLBToFile(datasetId);
           break;
         case "index-file":
-          datasetIndexingService.indexFile(datasetId);
+          indexingService.indexFile(datasetId);
           break;
         default:
           LOG.error("Invalid command");

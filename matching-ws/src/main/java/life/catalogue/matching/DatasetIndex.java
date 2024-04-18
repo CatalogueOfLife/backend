@@ -2,10 +2,14 @@ package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import jakarta.annotation.PostConstruct;
 
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -30,76 +34,92 @@ public class DatasetIndex {
 
   private IndexSearcher searcher;
 
-  @Value("${index.path:/tmp/matching-index}")
+  @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
 
-  private DatasetIndex() {
-
-    try {
-      Directory indexDir = new MMapDirectory(Path.of("/data/matching-ws/index"));
-      DirectoryReader reader = DirectoryReader.open(indexDir);
-      this.searcher = new IndexSearcher(reader);
-    } catch (IOException e) {
-      LOG.error("Cannot open lucene index", e);
+  @PostConstruct
+  void init() {
+    if (new File(indexPath).exists()) {
+      LOG.info("Loading lucene index from {}", indexPath);
+      try {
+        Directory indexDir = new MMapDirectory(Path.of(indexPath));
+        DirectoryReader reader = DirectoryReader.open(indexDir);
+        this.searcher = new IndexSearcher(reader);
+      } catch (IOException e) {
+        LOG.warn("Cannot open lucene index. Index not available", e);
+      }
+    } else {
+      LOG.error("Lucene index not found at {}", indexPath);
     }
+  }
+
+  private IndexSearcher getSearcher() {
+    if (searcher == null) {
+      throw new IllegalStateException("Lucene index not loaded");
+    }
+    return searcher;
   }
 
   public NameUsageMatch matchByUsageId(String usageID) {
-
-    Query query = new TermQuery(new Term(FIELD_ID, usageID));
-
-    try {
-      TopDocs docs = this.searcher.search(query, 3);
-
-      if (docs.totalHits.value > 0) {
-        Document doc = searcher.doc(docs.scoreDocs[0].doc);
-        NameUsageMatch match = fromDoc(doc);
-        Diagnostics diagnostics = new Diagnostics();
-        match.setDiagnostics(diagnostics);
-        diagnostics.setConfidence(100);
-        diagnostics.setMatchType(MatchType.EXACT);
-        return match;
-      } else {
-        LOG.warn("No usage {} found in lucene index", usageID);
-      }
-
-    } catch (IOException e) {
-      LOG.error("Cannot load usage {} from lucene index", usageID, e);
+    Optional<Document> docOpt = getByUsageId(usageID);
+    if (docOpt.isPresent()) {
+      Document doc = docOpt.get();
+      NameUsageMatch match = fromDoc(doc);
+      Diagnostics diagnostics = new Diagnostics();
+      match.setDiagnostics(diagnostics);
+      diagnostics.setConfidence(100);
+      diagnostics.setMatchType(MatchType.EXACT);
+      return match;
+    } else {
+      LOG.warn("No usage {} found in lucene index", usageID);
+      NameUsageMatch match = new NameUsageMatch();
+      Diagnostics diagnostics = new Diagnostics();
+      match.setDiagnostics(diagnostics);
+      diagnostics.setConfidence(100);
+      diagnostics.setMatchType(MatchType.NONE);
+      return match;
     }
-
-    return null;
   }
 
-  public Document getByUsageId(String usageID) {
+  public Optional<Document> getByUsageId(String usageID) {
     Query query = new TermQuery(new Term(FIELD_ID, usageID));
     try {
-      TopDocs docs = this.searcher.search(query, 3);
-
+      TopDocs docs = getSearcher().search(query, 3);
       if (docs.totalHits.value > 0) {
-        return searcher.doc(docs.scoreDocs[0].doc);
+        return Optional.of(getSearcher().doc(docs.scoreDocs[0].doc));
       } else {
-        return null;
+        return Optional.empty();
       }
     } catch (IOException e) {
       LOG.error("Cannot load usage {} from lucene index", usageID, e);
     }
-    return null;
+    return Optional.empty();
   }
 
+  /**
+   * Loads the higher classification of a taxon starting from the given parentID.
+   * The parentID is not included in the result.
+   *
+   * TODO: this might be the naive approach. Need to check performance vs MapDB.
+   *
+   * @param parentID
+   * @return
+   */
   public List<RankedName> loadHigherTaxa(String parentID) {
 
     List<RankedName> higherTaxa = new ArrayList<>();
 
     while (parentID != null){
-      Document doc = getByUsageId(parentID);
-      if (doc == null) {
+      Optional<Document> docOpt = getByUsageId(parentID);
+      if (docOpt.isEmpty()) {
         break;
       }
+      Document doc = docOpt.get();
       RankedName c = new RankedName();
       c.setKey(doc.get(FIELD_ID));
       c.setName(doc.get(FIELD_CANONICAL_NAME));
       c.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
-      higherTaxa.add(c);
+      higherTaxa.add(0, c);
       parentID = doc.get(FIELD_PARENT_ID);
     }
     return higherTaxa;
@@ -123,25 +143,31 @@ public class DatasetIndex {
 
     if (doc.get(FIELD_ACCEPTED_ID) != null){
       synonym = true;
-      Document accDoc = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
-      u.setAcceptedUsage(new RankedName(
-        accDoc.get(FIELD_ID),
-        accDoc.get(FIELD_SCIENTIFIC_NAME),
-        Rank.valueOf(accDoc.get(FIELD_RANK)),
-        accDoc.get(FIELD_CANONICAL_NAME)
-      ));
-      canonical = accDoc.get(FIELD_CANONICAL_NAME);
+      Optional<Document> accDocOpt = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
+      if (accDocOpt.isPresent()) {
+        Document accDoc = accDocOpt.get();
+        u.setAcceptedUsage(new RankedName(
+          accDoc.get(FIELD_ID),
+          accDoc.get(FIELD_SCIENTIFIC_NAME),
+          Rank.valueOf(accDoc.get(FIELD_RANK)),
+          accDoc.get(FIELD_CANONICAL_NAME)
+        ));
+        canonical = accDoc.get(FIELD_CANONICAL_NAME);
+      }
     }
 
     // set the higher classification
     String parentID = doc.get(FIELD_PARENT_ID);
     List<RankedName> classification = loadHigherTaxa(parentID);
     u.setClassification(classification);
-    classification.add(0, new RankedName(u.getUsage().getKey(), canonical, u.getUsage().getRank()));
+
+    //add leaf
+    classification.add(new RankedName(u.getUsage().getKey(), canonical, u.getUsage().getRank()));
     u.setSynonym(synonym);
 
     String status = doc.get(FIELD_STATUS);
     u.setStatus(TaxonomicStatus.valueOf(status));
+    u.getDiagnostics().setStatus(status);
 
     return u;
   }

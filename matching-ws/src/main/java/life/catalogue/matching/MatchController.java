@@ -88,7 +88,7 @@ public class MatchController {
         description = "The usage key to look up. When provided, all other fields are ignored.")
     })
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
-  @GetMapping(value = {"species/match2",  "match"}, produces = "application/json")
+  @GetMapping(value = {"species/match2"}, produces = "application/json")
   public NameUsageMatch match2(
     @RequestParam(value = "usageKey", required = false) String usageKey,
     @RequestParam(value = "name", required = false) String scientificName2,
@@ -116,6 +116,36 @@ public class MatchController {
       null,
       bool(strict),
       bool(verbose));
+  }
+
+  @GetMapping(value = {"species/match",  "match"}, produces = "application/json")
+  public NameUsageMatchV1 match(
+    @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "name", required = false) String scientificName2,
+    @RequestParam(value = "scientificName", required = false) String scientificName,
+    @RequestParam(value = "authorship", required = false) String authorship2,
+    @RequestParam(value = "scientificNameAuthorship", required = false) String authorship,
+    @RequestParam(value = "rank", required = false) String rank2,
+    @RequestParam(value = "taxonRank", required = false) String rank,
+    @RequestParam(value = "genericName", required = false) String genericName,
+    @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
+    @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+    LinneanClassificationImpl classification,
+    @RequestParam(value = "strict", required = false) Boolean strict,
+    @RequestParam(value = "verbose", required = false) Boolean verbose) {
+
+    return NameUsageMatchV1.createFrom(matchingService.match(
+      usageKey,
+      first(scientificName, scientificName2),
+      first(authorship, authorship2),
+      genericName,
+      specificEpithet,
+      infraspecificEpithet,
+      parseRank(first(rank, rank2)),
+      classification,
+      null,
+      bool(strict),
+      bool(verbose)));
   }
 
   private Rank parseRank(String value) {
