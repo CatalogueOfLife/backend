@@ -11,6 +11,7 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.HttpHeaders;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 
@@ -38,15 +39,19 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
       }
       Integer datasetKey = FilterUtils.datasetKeyOrNull(req.getUriInfo());
       if (datasetKey != null) {
-        var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-        if (info.origin.isRelease()) {
-          // its a release, we can cache it for longer!
-          allowCaching(resp, AGE24);
-          return;
-        } else if (info.origin == DatasetOrigin.EXTERNAL) {
-          // thats also rather static information, but allow it to change more often
-          allowCaching(resp, AGE1);
-          return;
+        try {
+          var info = DatasetInfoCache.CACHE.info(datasetKey, true);
+          if (info.origin.isRelease()) {
+            // its a release, we can cache it for longer!
+            allowCaching(resp, AGE24);
+            return;
+          } else if (info.origin == DatasetOrigin.EXTERNAL) {
+            // thats also rather static information, but allow it to change more often
+            allowCaching(resp, AGE1);
+            return;
+          }
+        } catch (NotFoundException e) {
+          // fall through to prevent caching - e.g. happens when we process an already mapped NotFoundException
         }
       }
     }
