@@ -385,7 +385,7 @@ public class MatchingService {
       if (pn.getSpecificEpithet() != null || (rank != null && rank.isInfrageneric())) {
         if (pn.getInfraspecificEpithet() != null || (rank != null && rank.isInfraspecific())) {
           // try with species
-          String species = pn.canonicalNameMinimal();
+          String species = pn.getGenus() + " " + pn.getSpecificEpithet();
           match =
               match(
                   pn.getType(),
@@ -852,20 +852,18 @@ public class MatchingService {
   // -12 to 8
   private int authorSimilarity(@Nullable ParsedName pn, NameUsageMatch m) {
     int similarity = 0;
-    // FIXME - authorship comparison with new API to be done....
     if (pn != null) {
       try {
         ParsedName mpn = NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
-        //FIXME - authorship comparison with new API to be done....
         // authorship comparison was requested!
         Equality recomb = authComp.compare(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
         Equality bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
         if (bracket == Equality.UNKNOWN) {
           // we don't have 2 bracket authors to compare. Try with combination authors as brackets are sometimes forgotten or wrong
           if (pn.getBasionymAuthorship() != null) {
-            bracket = authComp.compare(pn.getCombinationAuthorship(), mpn.getBasionymAuthorship());
-          } else if (mpn.getBasionymAuthorship() != null) {
             bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getCombinationAuthorship());
+          } else if (mpn.getBasionymAuthorship() != null) {
+            bracket = authComp.compare(pn.getCombinationAuthorship(), mpn.getBasionymAuthorship());
           }
           if (bracket == Equality.EQUAL) {
             similarity -= 1;
