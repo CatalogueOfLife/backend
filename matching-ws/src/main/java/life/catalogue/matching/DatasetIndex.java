@@ -141,6 +141,8 @@ public class DatasetIndex {
       doc.get(FIELD_CANONICAL_NAME)
     ));
 
+    String acceptedParentID = null;
+
     if (doc.get(FIELD_ACCEPTED_ID) != null){
       synonym = true;
       Optional<Document> accDocOpt = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
@@ -152,17 +154,37 @@ public class DatasetIndex {
           Rank.valueOf(accDoc.get(FIELD_RANK)),
           accDoc.get(FIELD_CANONICAL_NAME)
         ));
-        canonical = accDoc.get(FIELD_CANONICAL_NAME);
+        acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
 
     // set the higher classification
     String parentID = doc.get(FIELD_PARENT_ID);
-    List<RankedName> classification = loadHigherTaxa(parentID);
+    List<RankedName> classification = null;
+    if (acceptedParentID != null) {
+      classification = loadHigherTaxa(acceptedParentID);
+    } else {
+      classification = loadHigherTaxa(parentID);
+    }
+
     u.setClassification(classification);
 
     //add leaf
-    classification.add(new RankedName(u.getUsage().getKey(), canonical, u.getUsage().getRank()));
+    if (u.getAcceptedUsage() != null){
+      classification.add(new RankedName(
+        u.getAcceptedUsage().getKey(),
+        u.getAcceptedUsage().getCanonicalName(),
+        u.getAcceptedUsage().getRank(),
+        u.getAcceptedUsage().getCanonicalName()
+      ));
+    } else {
+      classification.add(new RankedName(
+        doc.get(FIELD_ID),
+        doc.get(FIELD_CANONICAL_NAME),
+        Rank.valueOf(doc.get(FIELD_RANK)),
+        doc.get(FIELD_CANONICAL_NAME)
+      ));
+    }
     u.setSynonym(synonym);
 
     String status = doc.get(FIELD_STATUS);
