@@ -5,12 +5,15 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.MatchedParentStack;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -53,10 +56,38 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcher;
     uCache = matcher.getUCache();
-    if (target == null && cfg != null && cfg.incertae != null) {
-      parents = new MatchedParentStack(matcher.toSimpleName(cfg.incertae));
-    } else {
-      parents = new MatchedParentStack(matcher.toSimpleName(target));
+
+    // figure out the lowest insertion point in the project/release
+    // a) a target is given
+    // b) a subject is given. Match it and see if it is lower and inside the target
+    // c) nothing, but there maybe is an incertae sedis taxon configured to collect all unplaced
+    SimpleNameWithNidx trgt = null;
+    if (target != null) {
+      trgt = matcher.toSimpleName(target);
+    } else if (cfg != null && cfg.incertae != null) {
+      trgt = matcher.toSimpleName(cfg.incertae);
+    }
+    parents = new MatchedParentStack(trgt);
+    if (sector.getSubject() != null) {
+      // match subject and its classification
+      try (SqlSession session = factory.openSession()) {
+        var num = session.getMapper(NameUsageMapper.class);
+        // loop over classification incl the subject itself as the last usage
+        for (var p : num.getClassification(sector.getSubjectAsDSID())) {
+          var nusn = matcher.toSimpleName(p);
+          parents.push(nusn);
+          UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classification(), false, false);
+          if (match.isMatch()) {
+            parents.setMatch(match.usage);
+          }
+        }
+        var lowest = parents.lowestParentMatch();
+        if (lowest != null && (trgt == null || !lowest.getId().equals(trgt.getId()))) {
+          // found a lower target than we had before!
+          LOG.info("The sector subject {} resulted in a lower target match to use for merging: {}", sector.getSubject(), lowest);
+          parents.setRoot(lowest);
+        }
+      }
     }
     this.loader = new CacheLoader.Mybatis(batchSession, true);
     matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!

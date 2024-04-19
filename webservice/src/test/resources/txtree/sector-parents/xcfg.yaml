@@ -1,0 +1,17 @@
+
+incertaeSedis:
+  name: incertae sedis
+  rank: unranked
+  status: PROVISIONALLY_ACCEPTED
+  classification: 
+    - 
+      name: Biota
+      rank: unranked
+  
+blockedNames:
+  - Abies alba
+  - Picea nigra DC.
+
+blockedNamePatterns:
+  - ^Homularia
+  - chaos\b

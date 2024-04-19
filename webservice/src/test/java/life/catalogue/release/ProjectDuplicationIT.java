@@ -56,7 +56,7 @@ public class ProjectDuplicationIT extends ProjectBaseIT {
     SectorSyncIT.createSector(Sector.Mode.ATTACH, src, trg);
 
     // TODO: setup/clear NamesIndex ???
-    SectorSyncIT.syncAll(null);
+    SectorSyncIT.syncAll(null, null);
 
     ProjectDuplication dupe = projectCopyFactory.buildDuplication(Datasets.COL, Users.TESTER);
     final int datasetKey = dupe.newDatasetKey;

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MatchedParentStack {
   private static final Logger LOG = LoggerFactory.getLogger(MatchedParentStack.class);
-  private final SimpleNameWithNidx root;
+  private SimpleNameWithNidx root;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
   private boolean first = true;
@@ -25,6 +25,10 @@ public class MatchedParentStack {
    */
   public MatchedParentStack(SimpleNameWithNidx rootTarget) {
     this.root = rootTarget;
+  }
+
+  public void setRoot(SimpleNameWithNidx root) {
+    this.root = root;
   }
 
   public boolean containsMatch(String id) {

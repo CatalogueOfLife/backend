@@ -64,8 +64,9 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
   }
 
   private static boolean needsRematching(Boolean flag, SimpleName sn){
+    if (sn == null) return false;
     if (flag != null) return flag;
-    return sn == null || sn.getId() == null;
+    return sn.getId() == null;
   }
   
 }

@@ -51,7 +51,7 @@ public class SectorSync extends SectorRunnable {
   private final boolean project;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
-  private final @Nullable TreeMergeHandlerConfig mergeCfg;
+  private @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> usageIdGen;
@@ -78,7 +78,12 @@ public class SectorSync extends SectorRunnable {
     this.typeMaterialIdGen = typeMaterialIdGen;
     this.mergeCfg = mergeCfg;
   }
-  
+
+  @VisibleForTesting
+  protected void setMergeCfg(@Nullable TreeMergeHandlerConfig mergeCfg) {
+    this.mergeCfg = mergeCfg;
+  }
+
   @Override
   void doWork() throws Exception {
     if (project) {

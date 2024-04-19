@@ -11,6 +11,7 @@ import life.catalogue.db.TempNameUsageRelated;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +28,26 @@ import org.apache.ibatis.cursor.Cursor;
 public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, DatasetProcessable<NameUsageBase>, TempNameUsageRelated {
 
   NameUsageBase get(@Param("key") DSID<String> key);
+
+  /**
+   * Retrieves all parents and the original taxon in a single list, starting with the highest taxon and the requested taxon last
+   * @param key
+   * @return null in case the given key does not exist, otherwise the entire classification
+   */
+  default LinkedList<NameUsageBase> getClassification(DSID<String> key) {
+    var classification = new LinkedList<NameUsageBase>();
+    var u = get(key);
+    if (u == null) return null;
+
+    classification.addLast(u);
+
+    var pid = DSID.<String>root(key.getDatasetKey());
+    while (u.getParentId() != null) {
+      u = get(pid.id(u.getParentId()));
+      classification.addFirst(u);
+    }
+    return classification;
+  }
 
   /**
    * SimpleName.parent=parent.id
