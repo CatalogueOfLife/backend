@@ -53,7 +53,7 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
       return ((double) done * 100 / (double) usages);
     }
 
-    public boolean complete() {
+    public boolean isComplete() {
       return done == usages;
     }
 
@@ -94,7 +94,9 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     // load dataset keys to check if they need to be reprocessed
     AtomicInteger counter = new AtomicInteger();
     processDatasets( d -> {
-      if ( (threshold <= 0 && !d.complete())  ||  (d.done == 0 || d.percentage() < threshold)) {
+      if ( (threshold <= 0 && !d.isComplete())  ||
+           (threshold > 0 && (d.done == 0 || d.percentage() < threshold))
+      ) {
         var job = buildJob(d.datasetKey);
         exec.submit(job);
         counter.incrementAndGet();
