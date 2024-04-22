@@ -23,7 +23,12 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.*;
+import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.RematchMissing;
+import life.catalogue.matching.UsageMatcherGlobal;
+
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,8 +37,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import javax.validation.Validator;
@@ -41,11 +44,6 @@ import javax.validation.Validator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.NameType;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
