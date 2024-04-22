@@ -273,10 +273,9 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{key}/source")
   public List<Dataset> projectSources(@PathParam("key") int datasetKey,
-                                      @QueryParam("showPublisherSources") boolean showPublisherSources,
                                       @QueryParam("notCurrentOnly") boolean notCurrentOnly
   ) {
-    var ds = sourceDao.listSimple(datasetKey, !showPublisherSources);
+    var ds = sourceDao.listSimple(datasetKey);
     if (notCurrentOnly) {
       List<Dataset> notCurrent = new ArrayList<>();
       try (SqlSession session = factory.openSession()) {

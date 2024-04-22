@@ -244,7 +244,7 @@ public class XRelease extends ProjectRelease {
     buildSectorMetrics();
     // update metadata
     updateMetadata();
-    // finally also call the shared part which e.g. archives metadata
+    // finally also call the shared part which e.g. archives metadata and creates source dataset records
     super.finalWork();
   }
 

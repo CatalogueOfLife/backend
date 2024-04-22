@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -12,7 +13,6 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.*;
-import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -208,13 +209,19 @@ public class ProjectRelease extends AbstractProjectCopy {
     return null;
   }
 
+  protected List<Dataset> listSourceDatasets() {
+    // this does not create source dataset records for aggregated publishers,
+    // nor does it create source records for merge sectors without data in the release itself!
+    return srcDao.listSectorBasedSources(newDatasetKey, newDataset);
+  }
+
   @Override
   void finalWork() throws Exception {
     checkIfCancelled();
     // remove orphan sectors and decisions not used in the data, e.g. merge sectors from the XCOL
     try (SqlSession session = factory.openSession(true)) {
       int del = session.getMapper(SectorMapper.class).deleteOrphans(newDatasetKey);
-      LOG.info("Removed {} unused sectors", del);
+      LOG.info("Removed {} sectors without data in release {}", del, newDatasetKey);
     }
 
     updateState(ImportState.ARCHIVING);
@@ -224,15 +231,10 @@ public class ProjectRelease extends AbstractProjectCopy {
 
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
-      var sm = session.getMapper(SectorMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
-      //TODO: do we want to create source dataset records for aggregated publishers ???
-      for (var d : srcDao.list(datasetKey, newDataset, true, true)) {
-        // avoid empty merge sector sources where the sector has already been deleted above
-        var sourceSectors = sm.listByDataset(newDatasetKey, d.getKey());
-        if (sourceSectors == null || sourceSectors.isEmpty()) continue;
-
+      // create fixed source dataset records for this release
+      for (var d : listSourceDatasets()) {
         if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
@@ -246,7 +248,7 @@ public class ProjectRelease extends AbstractProjectCopy {
           d.setDoi(srcDOI);
         }
 
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), attempt, newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}: {}", d.getKey(), attempt, newDatasetKey, d.getAliasOrTitle());
         psm.create(newDatasetKey, d);
         cm.createRelease(d.getKey(), newDatasetKey, attempt);
         // archive logos

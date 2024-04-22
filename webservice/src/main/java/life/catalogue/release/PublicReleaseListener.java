@@ -70,7 +70,7 @@ public class PublicReleaseListener {
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
-      LOG.info("Publish release {} {} by user {}.", event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getModifiedBy());
+      LOG.info("Publish release {} {} from project {} by user {}.", event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
       // publish DOI if exists
       if (event.obj.getDoi() != null) {
         LOG.info("Publish DOI {}", event.obj.getDoi());
@@ -86,6 +86,7 @@ public class PublicReleaseListener {
 
       // COL specifics
       if (Datasets.COL == event.obj.getSourceKey()) {
+        LOG.info("Publish COL release specifics");
         publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);
         copyExportsToColDownload(event.obj, true);
@@ -98,7 +99,7 @@ public class PublicReleaseListener {
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
     try {
-      for (Dataset d : dao.list(release.getKey(), release, false, false)) {
+      for (Dataset d : dao.listReleaseSources(release.getKey())) {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {
@@ -144,11 +145,11 @@ public class PublicReleaseListener {
         // sources
         DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
         // track DOIs of current release - these should stay as they are!
-        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey(), false).stream()
+        Set<DOI> currentDOIs = psm.listReleaseSources(release.getKey()).stream()
           .map(Dataset::getDoi)
           .filter(java.util.Objects::nonNull)
           .collect(Collectors.toSet());
-        for (var src : psm.listReleaseSources(lastReleaseKey, false)) {
+        for (var src : psm.listReleaseSources(lastReleaseKey)) {
           if (src.getDoi() != null && !currentDOIs.contains(src.getDoi())) {
             var url = converter.sourceURI(lastReleaseKey, src.getKey(), false);
             LOG.info("Update source DOI {} from previous release {} to target {}", src.getDoi(), lastReleaseKey, url);
@@ -174,7 +175,7 @@ public class PublicReleaseListener {
         LOG.error("Updated COL release {} is missing a release date", datasetKey);
         return;
       }
-      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 25));
+      var resp = dao.list(ExportSearchRequest.fullDataset(datasetKey), new Page(0, 50));
       Set<DataFormat> done = new HashSet<>();
       for (DatasetExport exp : resp.getResult()) {
         if (!done.contains(exp.getRequest().getFormat())) {
@@ -193,6 +194,7 @@ public class PublicReleaseListener {
           LOG.error("Failed to symlink latest release logs", e);
         }
       }
+      LOG.info("Copied {} COL exports to downloads at {}", done.size(), cfg.release.colDownloadDir);
     }
   }
 

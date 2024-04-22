@@ -97,29 +97,24 @@
 
   <sql id="SECTOR_SUBJECT_DATASETS">
     WITH src AS (
-      SELECT s.subject_dataset_key AS key, max(s.dataset_attempt) AS attempt
-      FROM sector s
-      <if test="hidePublisher">
-        JOIN dataset d ON d.key=s.subject_dataset_key
-      </if>
+      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt
+      FROM sector s JOIN dataset d ON d.key=s.subject_dataset_key
       WHERE s.dataset_key=#{datasetKey}
-      <if test="hidePublisher">
         AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
-      </if>
-      GROUP BY s.subject_dataset_key
+        AND EXISTS (SELECT TRUE FROM name_usage u WHERE u.sector_key=s.id AND u.dataset_key = #{datasetKey})
+      GROUP BY 1,2
     )
   </sql>
 
-  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listSectorBasedSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT"/>
     FROM src
-      JOIN dataset d2 ON d2.key = src.key
       LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
-    WHERE src.attempt != d2.attempt
+    WHERE src.attempt != src.dattempt
 
     UNION
 
@@ -127,9 +122,9 @@
     SELECT <include refid="SELECT"/>
     FROM src
       JOIN dataset d ON d.key = src.key
-      LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
+      LEFT JOIN dataset_import di ON di.dataset_key = src.key AND di.attempt = d.attempt
       LEFT JOIN dataset con ON con.key = #{datasetKey}
-    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+    WHERE src.attempt = src.dattempt OR src.attempt IS NULL
 
     ORDER BY 1
   </select>
@@ -139,9 +134,8 @@
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM src
-      JOIN dataset d2 ON d2.key = src.key
       LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
-    WHERE src.attempt != d2.attempt
+    WHERE src.attempt != src.dattempt
 
     UNION
 
@@ -149,7 +143,7 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM src
       JOIN dataset d ON d.key = src.key
-    WHERE src.attempt = d.attempt OR src.attempt IS NULL
+    WHERE src.attempt = src.dattempt OR src.attempt IS NULL
 
     ORDER BY 1
   </select>
@@ -158,9 +152,7 @@
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
-    <if test="hidePublisher">
       AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
-    </if>
   </select>
 
   <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
