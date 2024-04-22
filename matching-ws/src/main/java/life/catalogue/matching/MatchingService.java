@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
@@ -87,10 +88,25 @@ public class MatchingService {
     HIGHER_RANKS = ImmutableList.copyOf(ranks);
   }
 
+  private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
 
+  private final AuthorComparator authComp = createAuthorComparator();
 
-  private final AuthorComparator authComp = new AuthorComparator(
-    AuthorshipNormalizer.createWithoutAuthormap());
+  private static AuthorComparator createAuthorComparator() {
+    Map<String, String> map = new HashMap<>();
+    try {
+      Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
+        map.put(row[0], row[2]);
+        map.put(row[1], row[2]);
+      });
+    } catch (Exception e) {
+      LOG.warn("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME);
+      if (LOG.isDebugEnabled()){
+        LOG.debug("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
+      }
+    }
+    return new AuthorComparator(new AuthorshipNormalizer(map));
+  }
 
   protected enum MatchingMode {
     FUZZY,
@@ -420,6 +436,21 @@ public class MatchingService {
           return higherMatch(match, match1);
         }
         supraGenericOnly = true;
+      } else {
+        // try with genus
+        match =
+            match(
+                pn.getType(),
+                null,
+                getGenusOrAbove(pn),
+                Rank.GENUS,
+                classification,
+                exclude,
+                MatchingMode.FUZZY,
+                verbose);
+        if (isMatch(match)) {
+          return higherMatch(match, match1);
+        }
       }
     }
 

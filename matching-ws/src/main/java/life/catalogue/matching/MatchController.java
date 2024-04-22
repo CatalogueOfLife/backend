@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.Objects;
 import java.util.Optional;
+import jakarta.servlet.http.HttpServletRequest;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 import org.gbif.nameparser.api.Rank;
@@ -100,10 +101,12 @@ public class MatchController {
     @RequestParam(value = "genericName", required = false) String genericName,
     @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
     @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
-    LinneanClassificationImpl classification,
     @RequestParam(value = "strict", required = false) Boolean strict,
-    @RequestParam(value = "verbose", required = false) Boolean verbose) {
-
+    @RequestParam(value = "verbose", required = false) Boolean verbose,
+    LinneanClassificationImpl classification,
+    HttpServletRequest response) {
+    //ugly, i know, but jackson/spring isnt working with @JsonProperty
+    classification.setClazz(response.getParameter("class"));
     return matchingService.match(
       usageKey,
       first(scientificName, scientificName2),
@@ -130,10 +133,12 @@ public class MatchController {
     @RequestParam(value = "genericName", required = false) String genericName,
     @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
     @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
-    LinneanClassificationImpl classification,
     @RequestParam(value = "strict", required = false) Boolean strict,
-    @RequestParam(value = "verbose", required = false) Boolean verbose) {
+    @RequestParam(value = "verbose", required = false) Boolean verbose,
+    LinneanClassificationImpl classification,
+    HttpServletRequest response) {
 
+    classification.setClazz(response.getParameter("class"));
     return NameUsageMatchV1.createFrom(matchingService.match(
       usageKey,
       first(scientificName, scientificName2),
