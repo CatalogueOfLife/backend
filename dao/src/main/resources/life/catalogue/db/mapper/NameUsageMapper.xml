@@ -658,12 +658,6 @@
       </otherwise>
     </choose>
     AND NOT is_synonym(u.status)
-    <if test="param.extinct != null and param.extinct">
-      AND u.extinct
-    </if>
-    <if test="param.extinct != null and !param.extinct">
-      AND NOT u.extinct
-    </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
@@ -677,12 +671,6 @@
     <if test="!param.synonyms">
       AND NOT is_synonym(u.status)
     </if>
-    <if test="param.extinct != null and param.extinct">
-      AND u.extinct
-    </if>
-    <if test="param.extinct != null and !param.extinct">
-      AND NOT u.extinct
-    </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
@@ -692,6 +680,12 @@
     </if>
     <if test="param.lowestRank">
       AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+    </if>
+  </sql>
+
+  <sql id="WHERE_EXTINCT">
+    <if test="param.extinct != null">
+      <where><if test="!param.extinct">NOT</if> u.extinct</where>
     </if>
   </sql>
 
@@ -722,6 +716,7 @@
       </where>
     )
     SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
+    <include refid="WHERE_EXTINCT"/>
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
@@ -756,6 +751,7 @@
     )
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x <if test="depthFirst">ORDER BY x.path</if>
+    <include refid="WHERE_EXTINCT"/>
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -773,6 +769,7 @@
       </where>
     )
     SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
+    <include refid="WHERE_EXTINCT"/>
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

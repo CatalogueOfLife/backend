@@ -39,6 +39,7 @@ public class TreeTraversalParameter {
 
   /**
    * optional filter for explicitly only extinct or only extant records. Null includes all.
+   * This filter will only prune the results, but not prevent from traversing descendants!
    */
   @QueryParam("extinct")
   private Boolean extinct;
