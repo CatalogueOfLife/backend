@@ -675,18 +675,20 @@
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
     </if>
-    <if test="param.sectorKey != null">
-      AND u.sector_key = #{param.sectorKey}
-    </if>
     <if test="param.lowestRank">
       AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
     </if>
   </sql>
 
-  <sql id="WHERE_EXTINCT">
+  <sql id="WHERE_FINAL">
+    <where>
     <if test="param.extinct != null">
-      <where><if test="!param.extinct">NOT</if> u.extinct</where>
+      <if test="!param.extinct">NOT</if> u.extinct
     </if>
+    <if test="param.sectorKey != null">
+      AND u.sector_key = #{param.sectorKey}
+    </if>
+    </where>
   </sql>
 
   <sql id="DEPTH_FIRST_ROOT">
@@ -716,7 +718,7 @@
       </where>
     )
     SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
-    <include refid="WHERE_EXTINCT"/>
+    <include refid="WHERE_FINAL"/>
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
@@ -751,7 +753,7 @@
     )
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x <if test="depthFirst">ORDER BY x.path</if>
-    <include refid="WHERE_EXTINCT"/>
+    <include refid="WHERE_FINAL"/>
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -769,7 +771,7 @@
       </where>
     )
     SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
-    <include refid="WHERE_EXTINCT"/>
+    <include refid="WHERE_FINAL"/>
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

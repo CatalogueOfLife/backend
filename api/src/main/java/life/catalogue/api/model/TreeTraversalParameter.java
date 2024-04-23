@@ -15,7 +15,8 @@ public class TreeTraversalParameter {
   private int datasetKey;
 
   /**
-   * An optional sector to limit traversal to
+   * An optional sector to limit final results to.
+   * This filter will only prune the results, but not prevent from traversing descendants!
    */
   private Integer sectorKey;
 
