@@ -68,8 +68,12 @@ public class ExportManager {
 
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     UUID prev = exists(req);
-    if (prev != null && !req.isForce()) {
-      return prev;
+    if (prev != null) {
+      if (req.isForce()) {
+        LOG.info("Force new {} export by user {}: {}", req.getFormat(), userKey, req);
+      } else {
+        return prev;
+      }
     }
     validate(req);
     DatasetExportJob job;
