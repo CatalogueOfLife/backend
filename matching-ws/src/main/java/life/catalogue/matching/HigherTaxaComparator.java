@@ -14,7 +14,9 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.utils.file.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class HigherTaxaComparator {
 
   private final Logger LOG = LoggerFactory.getLogger(HigherTaxaComparator.class);
@@ -31,6 +33,14 @@ public class HigherTaxaComparator {
   private final Map<String, Kingdom> kingdoms =
       Arrays.stream(Kingdom.values())
           .collect(Collectors.toMap(k -> norm(k.name()), Function.identity()));
+
+  public HigherTaxaComparator() {
+    try {
+      loadOnlineDicts();
+    } catch (Exception e) {
+      LOG.error("Failed to load dictionary files from classpath", e);
+    }
+  }
 
   /**
    * Compares a single higher rank and returns the matching confidence supplied.
@@ -157,6 +167,12 @@ public class HigherTaxaComparator {
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
     URL url = RsGbifOrg.synonymUrl(file);
+    LOG.info("Reading synonyms from " + url.toString());
+    try (InputStream synIn = url.openStream()) {
+      return FileUtils.streamToMap(synIn, 0, 1, true);
+    } catch (IOException e) {
+      LOG.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
+    }
     return readSynonymStream(rank, file);
   }
 

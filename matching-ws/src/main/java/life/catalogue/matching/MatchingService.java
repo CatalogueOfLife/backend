@@ -47,7 +47,8 @@ public class MatchingService {
       ImmutableList.copyOf(Lists.reverse(Rank.DWC_RANKS));
   private static final ConfidenceOrder CONFIDENCE_ORDER = new ConfidenceOrder();
   //  private final NubIndex nubIndex;
-  private final HigherTaxaComparator htComp = new HigherTaxaComparator();
+  @Autowired
+  HigherTaxaComparator htComp;
   // name string to usageId
   private final Map<String, NameUsageMatch> hackMap = new HashMap<>();
   private final StringSimilarity sim = new ScientificNameSimilarity();
@@ -166,7 +167,6 @@ public class MatchingService {
    * infinite recursions my clearing all alternate matches on the arguments
    */
   private static void addAlternatives(NameUsageMatch match, List<NameUsageMatch> alts) {
-    //FIXME
     if (match.getAlternatives() != null && alts != null) {
       alts.addAll(match.getAlternatives());
     }
@@ -178,14 +178,13 @@ public class MatchingService {
    * alternate matches on the arguments
    */
   private static void setAlternatives(NameUsageMatch match, List<NameUsageMatch> alts) {
-    // FIXME
     if (alts != null) {
       Set<String> keys =
           new HashSet<>(); // remember keys and make unique - we can have the same usages in here
       ListIterator<NameUsageMatch> iter = alts.listIterator();
       while (iter.hasNext()) {
         NameUsageMatch m = iter.next();
-        if (Objects.equals(m.getUsage().getKey(), match.getUsage().getKey())
+        if (m.getUsage() != null && match.getUsage() != null && Objects.equals(m.getUsage().getKey(), match.getUsage().getKey())
             || keys.contains(m.getUsage().getKey())) {
           // same usage, remove!
           iter.remove();
@@ -417,11 +416,11 @@ public class MatchingService {
           }
         }
 
-        // try with genus
-        // we're not sure if this is really a genus, so don't set the rank
-        // we get non species names sometimes like "Chaetognatha eyecount" that refer to a phylum
-        // called
-        // "Chaetognatha"
+//        // try with genus
+//        // we're not sure if this is really a genus, so don't set the rank
+//        // we get non species names sometimes like "Chaetognatha eyecount" that refer to a phylum
+//        // called
+//        // "Chaetognatha"
         match =
             match(
                 pn.getType(),
@@ -436,21 +435,22 @@ public class MatchingService {
           return higherMatch(match, match1);
         }
         supraGenericOnly = true;
-      } else {
-        // try with genus
-        match =
-            match(
-                pn.getType(),
-                null,
-                getGenusOrAbove(pn),
-                Rank.GENUS,
-                classification,
-                exclude,
-                MatchingMode.FUZZY,
-                verbose);
-        if (isMatch(match)) {
-          return higherMatch(match, match1);
-        }
+      }
+      else if ((match1.getDiagnostics().matchIssueType == null || match1.getDiagnostics().matchIssueType != MatchIssueType.MULTIPLE_MATCHES)) {
+        // if we dont homonyms, try with genus
+//        match =
+//            match(
+//                pn.getType(),
+//                null,
+//                getGenusOrAbove(pn),
+//                Rank.GENUS,
+//                classification,
+//                exclude,
+//                MatchingMode.FUZZY,
+//                verbose);
+//        if (isMatch(match)) {
+//          return higherMatch(match, match1);
+//        }
       }
     }
 
@@ -477,7 +477,7 @@ public class MatchingService {
 
     // if finally we cant find anything, return empty match object - but not null!
     LOG.debug("No match for name {}", scientificName);
-    return noMatch(100, match1.getDiagnostics().getNote(), verbose ? match1.getAlternatives() : null);
+    return noMatch(100, match1.getDiagnostics().getMatchIssueType(), match1.getDiagnostics().getNote(), verbose ? match1.getAlternatives() : null);
   }
 
   private boolean nextAboveGenusDiffers(LinneanClassification cl, NameUsageMatch cl2) {
@@ -698,7 +698,7 @@ public class MatchingService {
       final boolean verbose) {
 
     if (Strings.isNullOrEmpty(canonicalName)) {
-      return noMatch(100, "No name given", null);
+      return noMatch(100, MatchIssueType.NO_NAME_SUPPLIED, "No name given", null);
     }
 
     // first try our manual hackmap
@@ -793,7 +793,7 @@ public class MatchingService {
             best = matchLowestDenominator(canonicalName, suitableMatches);
             if (!isMatch(best)) {
               return noMatch(
-                  99, "Multiple equal matches for " + canonicalName, verbose ? matches : null);
+                  99, MatchIssueType.MULTIPLE_MATCHES, "Multiple equal matches for " + canonicalName, verbose ? matches : null);
             }
           }
         }
@@ -810,8 +810,9 @@ public class MatchingService {
       // finally check if match is good enough
       if (best.getDiagnostics().getConfidence()
           < (mode == MatchingMode.HIGHER ? MIN_CONFIDENCE_FOR_HIGHER_MATCHES : MIN_CONFIDENCE)) {
-        return noMatch(99, "No match because of too little confidence", verbose ? matches : null);
+        return noMatch(99, MatchIssueType.LOW_CONFIDENCE, "No match because of too little confidence", verbose ? matches : null);
       }
+
       // verbose and alternatives?
       if (verbose && matches.size() > 1) {
         // remove best match
@@ -825,7 +826,7 @@ public class MatchingService {
       return best;
     }
 
-    return noMatch(100, null, null);
+    return noMatch(100, null, null, null);
   }
 
   /**
@@ -877,7 +878,7 @@ public class MatchingService {
         }
       }
     }
-    return noMatch(99, "No lowest denominator in equal matches for " + canonicalName, null);
+    return noMatch(99,  MatchIssueType.NO_LOWEST_DENOMINATOR, "No lowest denominator in equal matches for " + canonicalName, null);
   }
 
   // -12 to 8
@@ -980,10 +981,11 @@ public class MatchingService {
   }
 
   private static NameUsageMatch noMatch(
-      int confidence, String note, List<NameUsageMatch> alternatives) {
+      int confidence, MatchIssueType matchIssueType, String note, List<NameUsageMatch> alternatives) {
     NameUsageMatch no = new NameUsageMatch();
     no.setDiagnostics(new Diagnostics());
     no.getDiagnostics().setMatchType(MatchType.NONE);
+    no.getDiagnostics().setMatchIssueType(matchIssueType);
     no.getDiagnostics().setConfidence(confidence);
     no.getDiagnostics().setNote(note);
     setAlternatives(no, alternatives);

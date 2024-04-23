@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import static life.catalogue.matching.CleanupUtils.clean;
 import static life.catalogue.matching.MatchingService.first;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import jakarta.servlet.http.HttpServletRequest;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
+import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -108,14 +110,14 @@ public class MatchController {
     //ugly, i know, but jackson/spring isnt working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
     return matchingService.match(
-      usageKey,
-      first(scientificName, scientificName2),
-      first(authorship, authorship2),
-      genericName,
-      specificEpithet,
-      infraspecificEpithet,
-      parseRank(first(rank, rank2)),
-      classification,
+      removeNulls(usageKey),
+      first(removeNulls(scientificName), removeNulls(scientificName2)),
+      first(removeNulls(authorship), removeNulls(authorship2)),
+      removeNulls(genericName),
+      removeNulls(specificEpithet),
+      removeNulls(infraspecificEpithet),
+      parseRank(first(removeNulls(rank), removeNulls(rank2))),
+      clean(classification),
       null,
       bool(strict),
       bool(verbose));
@@ -140,17 +142,28 @@ public class MatchController {
 
     classification.setClazz(response.getParameter("class"));
     return NameUsageMatchV1.createFrom(matchingService.match(
-      usageKey,
-      first(scientificName, scientificName2),
-      first(authorship, authorship2),
-      genericName,
-      specificEpithet,
-      infraspecificEpithet,
-      parseRank(first(rank, rank2)),
-      classification,
+      removeNulls(usageKey),
+      first(removeNulls(scientificName), removeNulls(scientificName2)),
+      first(removeNulls(authorship), removeNulls(authorship2)),
+      removeNulls(genericName),
+      removeNulls(specificEpithet),
+      removeNulls(infraspecificEpithet),
+      parseRank(first(removeNulls(rank), removeNulls(rank2))),
+      clean(classification),
       null,
       bool(strict),
       bool(verbose)));
+  }
+
+  public static String removeNulls(String value) {
+    if (value != null){
+      value = StringUtils.trimToEmpty(value);
+      if (value.equalsIgnoreCase("null")) {
+        return null;
+      }
+      return value;
+    }
+    return null;
   }
 
   private Rank parseRank(String value) {

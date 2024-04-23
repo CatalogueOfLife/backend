@@ -24,4 +24,21 @@ public class CleanupUtils {
     x = Normalizer.normalize(x, Normalizer.Form.NFC);
     return Strings.emptyToNull(x.trim());
   }
+
+  /**
+   *
+   * @param classification
+   * @return
+   */
+  public static LinneanClassification clean(LinneanClassification classification) {
+    classification.setKingdom(clean(classification.getKingdom()));
+    classification.setPhylum(clean(classification.getPhylum()));
+    classification.setClazz(clean(classification.getClazz()));
+    classification.setOrder(clean(classification.getOrder()));
+    classification.setFamily(clean(classification.getFamily()));
+    classification.setGenus(clean(classification.getGenus()));
+    classification.setSubgenus(clean(classification.getSubgenus()));
+    classification.setSpecies(clean(classification.getSpecies()));
+    return classification;
+  }
 }
