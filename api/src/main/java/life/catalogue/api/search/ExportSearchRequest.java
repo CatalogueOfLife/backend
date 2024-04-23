@@ -42,7 +42,7 @@ public class ExportSearchRequest {
   @QueryParam("extended")
   private Boolean extended;
 
-  @QueryParam("synonyms")
+  @QueryParam("extinct")
   private Boolean extinct;
 
   /**
