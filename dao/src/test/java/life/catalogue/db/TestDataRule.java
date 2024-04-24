@@ -86,6 +86,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   public final static TestData FISH = new TestData("fish", 100, 2, 4, Set.of(3, 100, 101, 102));
   public final static TestData TREE = new TestData("tree", 11, 1, 2, Set.of(3, 11, 12));
   public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, Set.of(3, 11));
+  public final static TestData TREE3 = new TestData("tree3", 3, 2, 3, Set.of(3));
   public final static TestData DRAFT = new TestData("draft", 3, 1, 2, Set.of(3));
   public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, Set.of(3));
   public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), Set.of(3, 1000));
@@ -187,6 +188,9 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule tree2() {
     return new TestDataRule(TREE2);
+  }
+  public static TestDataRule tree3() {
+    return new TestDataRule(TREE3);
   }
 
   public static TestDataRule draft() {

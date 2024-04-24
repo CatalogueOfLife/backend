@@ -69,7 +69,7 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
       }
       if (ranks.isEmpty() || ranks.contains(u.getRank())) {
         counter.inc(u);
-        if (countRank != null) {
+        if (countRank != null && taxonCounter != null) {
           taxonCount = taxonCounter.count(DSID.of(params.getDatasetKey(), u.getId()), countRank);
         }
         start(u);

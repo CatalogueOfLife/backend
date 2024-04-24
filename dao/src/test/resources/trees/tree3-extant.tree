@@ -1,0 +1,19 @@
+Biota [unranked] {ID=t0}
+  Animalia [kingdom] {ID=t1}
+    Chordata [phylum] {ID=t2}
+      Mammalia [class] {ID=t3}
+        Carnivora [order] {ID=t4}
+          Canidae [family] {ID=t5}
+            Canis aureus [species] {ID=t25}
+          Felidae [family] {ID=t6}
+            Lynx [genus] {ID=t10}
+              =Pardina [genus] {ID=s11}
+              Lynx lynx [species] {ID=t12}
+              Lynx rufus [species] {ID=t13}
+                =Felis rufus [species] {ID=s14}
+                Lynx rufus baileyi [subspecies] {ID=t15}
+                Lynx rufus gigas [subspecies] {ID=t16}
+          ×Urocyon [genus] {ID=t30}
+            Urocyon citrinus [species] {ID=t31}
+            Urocyon webbi [species] {ID=t34}
+            Urocyon ×littoralis [species] {ID=t32}
