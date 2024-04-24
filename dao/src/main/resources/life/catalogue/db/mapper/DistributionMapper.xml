@@ -123,6 +123,11 @@
     WHERE dataset_key = #{datasetKey}
   </insert>
 
+  <select id="entityExists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE FROM distribution WHERE dataset_key=#{datasetKey}
+    )
+  </select>
 
   <select id="processSector" parameterType="map" resultMap="distributionResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>

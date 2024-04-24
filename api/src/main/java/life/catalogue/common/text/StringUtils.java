@@ -404,6 +404,12 @@ public class StringUtils {
     ).replaceAll("");
   }
 
+  public static String removeWhitespace(String value) {
+    if (value == null)
+      return value;
+    return WHITESPACE.matcher(value).replaceAll("");
+  }
+
   public static String extractEmail(String value) {
     if (value != null) {
       var m = EMAIL_EXTRACTION.matcher(value.replaceAll("\\s+", ""));

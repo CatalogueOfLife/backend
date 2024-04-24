@@ -5,15 +5,14 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.MatchedParentStack;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
-
-import org.apache.commons.lang3.StringUtils;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -21,13 +20,13 @@ import org.gbif.nameparser.api.Rank;
 import java.util.*;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
-
+import static life.catalogue.common.text.StringUtils.removeWhitespace;
 /**
  * Expects depth first traversal!
  */
@@ -91,6 +90,24 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     this.loader = new CacheLoader.Mybatis(batchSession, true);
     matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
+
+    // check if requested entities are supported in the source at all
+    try (SqlSession session = factory.openSession()) {
+      if (entities.contains(EntityType.VERNACULAR)) {
+        var mapper = session.getMapper(VernacularNameMapper.class);
+        if (!mapper.entityExists(sourceDatasetKey)) {
+          entities.remove(EntityType.VERNACULAR);
+          LOG.info("No vernacular names in sector {}", sector);
+        }
+      }
+      if (entities.contains(EntityType.TYPE_MATERIAL)) {
+        var mapper = session.getMapper(TypeMaterialMapper.class);
+        if (!mapper.entityExists(sourceDatasetKey)) {
+          entities.remove(EntityType.TYPE_MATERIAL);
+          LOG.info("No type material in sector {}", sector);
+        }
+      }
+    }
   }
 
 
@@ -326,6 +343,39 @@ public class TreeMergeHandler extends TreeBaseHandler {
             }
           }
         }
+        // vernacular names
+        if (entities.contains(EntityType.VERNACULAR)) {
+          final var mapper = batchSession.getMapper(VernacularNameMapper.class);
+          List<VernacularName> existingVNames = null;
+          vnloop:
+          for (var vn : mapper.listByTaxon(nu)) {
+            // we only want to add vernaculars with a name & language
+            if (vn.getName() == null || vn.getLanguage() == null) continue;
+
+            // does it exist already?
+            if (existingVNames == null) {
+              // lazily query existing vnames
+              existingVNames = mapper.listByTaxon(existing);
+            }
+            for (var evn : existingVNames) {
+              if (sameName(vn, evn)) {
+                continue vnloop;
+              }
+            }
+            // a new vernacular
+            vn.setId(null);
+            vn.setVerbatimKey(null);
+            vn.setSectorKey(sector.getId());
+            vn.setDatasetKey(targetDatasetKey);
+            vn.applyUser(user);
+            // check if the entity refers to a reference which we need to lookup / copy
+            String ridCopy = lookupReference(vn.getReferenceId());
+            vn.setReferenceId(ridCopy);
+            CopyUtil.transliterateVernacularName(vn, IssueContainer.VOID);
+            mapper.create(vn, existingUsageKey.getId());
+            existingVNames.add(vn);
+          }
+        }
       }
 
       // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
@@ -358,7 +408,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
         existing.usage.setPublishedInID(pn.getPublishedInId());
         LOG.debug("Updated {} with publishedIn", pn);
       }
-      // TODO: implement updates basionym, vernaculars, etc
+
+      // type material
+      if (entities.contains(EntityType.TYPE_MATERIAL)) {
+        // TODO: implement type material updates
+      }
+
+      // basionym / name relations
+      if (entities.contains(EntityType.NAME_RELATION)) {
+        // TODO: implement basionym/name rel updates
+      }
+
       if (!upd.isEmpty()) {
         this.updated++;
         // update name
@@ -373,6 +433,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
     }
     return false;
+  }
+
+  /**
+   * @param vn1 required to have a name & language!
+   */
+  private static boolean sameName(VernacularName vn1, VernacularName vn2) {
+    return removeWhitespace(vn1.getName()).equalsIgnoreCase(removeWhitespace(vn2.getName())) ||
+      ( vn1.getLatin() != null && removeWhitespace(vn1.getLatin()).equalsIgnoreCase(removeWhitespace(vn2.getLatin())) );
   }
 
   /**

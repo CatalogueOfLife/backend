@@ -13,8 +13,25 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+CREATE TYPE INFOGROUP AS ENUM (
 
-keep_original_name BOOLEAN,
+
+
+### 2024-04-24 change info group
+```sql
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE text;
+DROP TYPE INFOGROUP;
+CREATE TYPE INFOGROUP AS ENUM (
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'PARENT',
+  'BASIONYM',
+  'EXTINCT',
+  'TEMPORAL_RANGE'
+);
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;;
+```
+
 ### 2024-02-14 add keep_original_name to decisions
 ```sql
 ALTER TABLE decision ADD COLUMN keep_original_name BOOLEAN;

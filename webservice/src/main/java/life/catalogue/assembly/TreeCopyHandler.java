@@ -1,11 +1,9 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.IgnoreReason;
-import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.dao.CatCopy;
+import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.matching.NameIndex;
 
@@ -32,7 +30,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
   TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR, CatCopy.ID_GENERATOR);
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR);
     targetDSID = DSID.root(targetDatasetKey);
   }
 

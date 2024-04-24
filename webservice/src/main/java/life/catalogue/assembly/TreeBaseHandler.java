@@ -3,7 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.InterruptedRuntimeException;
-import life.catalogue.dao.CatCopy;
+import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
@@ -232,7 +232,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    CatCopy.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities,
+    CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities,
       usageIdGen, nameIdGen, typeMaterialIdGen,
       this::lookupReference, this::lookupReference
     );

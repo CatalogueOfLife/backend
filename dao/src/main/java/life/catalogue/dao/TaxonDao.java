@@ -1,13 +1,11 @@
 package life.catalogue.dao;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.annotations.VisibleForTesting;
 
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
@@ -15,11 +13,6 @@ import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.TaxGroupAnalyzer;
-import life.catalogue.parser.NameParser;
-
-import life.catalogue.parser.TaxGroupParser;
-
-import org.gbif.nameparser.api.NameType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -69,12 +62,12 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
    * An optional set of associated entity types can be indicated to be copied too.
    *
    * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
-   * See {@link CatCopy#copyUsage} for details.
+   * See {@link CopyUtil#copyUsage} for details.
    *
    * @return the original source taxon id
    */
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
-    CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+    CopyUtil.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
 
   /**

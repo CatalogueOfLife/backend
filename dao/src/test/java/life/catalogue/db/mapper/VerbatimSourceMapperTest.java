@@ -142,7 +142,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     assertEquals(v2, v1);
 
     // add sources
-    var groups = Set.of(InfoGroup.NAME, InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP);
+    var groups = Set.of(InfoGroup.PARENT, InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP);
     final var srcKey = DSID.of(34, "dtfgzhn");
     mapper().insertSources(v1, srcKey, groups);
 
@@ -152,7 +152,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     var v = srcs.values();
     assertEquals(3, v.size());
     assertEquals(VerbatimSourceMapper.SecondarySource.class, v.iterator().next().getClass());
-    assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.NAME)));
+    assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.PARENT)));
     assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.PUBLISHED_IN)));
     assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.AUTHORSHIP)));
 

@@ -1,0 +1,5 @@
+Arthropoda [phylum] {VERN=en:Arthropods,de:Gliederfüßer}
+  Diptera Linnaeus, 1758 [order] {VERN=en:Flies,de:Fliegen}
+    Musca domestica Linnaeus, 1758 [species] {VERN=en:housefly,de:Fliegen}
+    Drosophila melanogaster [species] {VERN=en:fruit fly,de:Schwarzbäuchige Fruchtfliege}
+    Aedes albopictus [species]

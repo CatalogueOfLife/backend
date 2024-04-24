@@ -2,19 +2,19 @@ package life.catalogue.assembly;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.NameIndexImpl;
@@ -35,10 +35,7 @@ import java.io.InputStream;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -48,6 +45,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Parameterized SectorSync to test merge sectors with different sources.
@@ -83,6 +83,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"vernacular", List.of("v1", "v2")}, // extended trees
       {"sector-parents", List.of("none", "subject", "target", "subject-target")},
       {"sic", List.of("millibase")},
       {"protoperidinium", List.of("itis", "worms", "brazil", "taxref", "dyntaxa", "artsnavebasen", "griis")},
@@ -139,6 +140,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
+      s.setEntities(Set.of(EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
       s.setPriority(dkey-99);
       s.setNote(tree);
       sectors.add(s);
@@ -183,7 +185,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Test
   public void syncAndCompare() throws Throwable {
     syncAll(null, mergeCfg);
-    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
+    assertTree(Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
     // do once more with decisions?
     var decRes = getClass().getResourceAsStream("/txtree/" + project + "/decisions.yaml");
@@ -229,6 +231,45 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       syncAll(null, mergeCfg);
       assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected-with-decisions.txtree"));
     }
+
+    switch (project) {
+      case "vernacular":
+        validateVernacular(); break;
+    }
+  }
+
+  private void validateVernacular() {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var vnm = session.getMapper(VernacularNameMapper.class);
+
+      var u = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+      assertVNames(u, 3, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+      assertVNames(u, 2, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Drosophila melanogaster");
+      assertVNames(u, 5, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      assertVNames(u, 2, vnm);
+
+      u = getByName(Datasets.COL, Rank.PHYLUM, "Arthropoda");
+      assertVNames(u, 2, vnm);
+    }
+  }
+
+  void assertVNames(DSID<String> key, int num, VernacularNameMapper vnm) {
+    var vnames = vnm.listByTaxon(key);
+    assertEquals(num, vnames.size());
+    vnames.forEach(v -> {
+      if (v.getId() != 2) {
+        assertNotNull(v.getSectorKey());
+        assertNotNull(v.getLatin());
+      }
+      assertNotNull(v.getLanguage());
+      assertNotNull(v.getName());
+    });
   }
 
 }

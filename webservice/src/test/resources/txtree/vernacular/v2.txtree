@@ -1,0 +1,5 @@
+Arthropoda [phylum] {VERN=en:Arthropods,de:Gliederfüßer}
+  Diptera [order] {VERN=en:Flies,de:Fliegen,de:Zweiflügler}
+    Musca domestica [species] {VERN=en:housefly,de:Fliegen}
+    Drosophila melanogaster [species] {VERN=en:FruitFly,de:Schwarzbauchige FruchtFliege,de:Schwarzbäuchige Taufliege,dk:Bananflue}
+    Aedes albopictus [species] {VERN=de:Asiatische Tigermücke,de:Tigermoskito}

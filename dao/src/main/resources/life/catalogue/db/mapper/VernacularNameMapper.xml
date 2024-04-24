@@ -185,6 +185,12 @@
     WHERE vn.dataset_key = #{key.datasetKey} AND vn.sector_key = #{key.id}
   </select>
 
+  <select id="entityExists" parameterType="map" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE FROM vernacular_name WHERE dataset_key=#{datasetKey}
+    )
+  </select>
+
   <delete id="deleteBySector" parameterType="map">
     DELETE FROM vernacular_name
     WHERE dataset_key = #{key.datasetKey} AND sector_key=#{key.id}

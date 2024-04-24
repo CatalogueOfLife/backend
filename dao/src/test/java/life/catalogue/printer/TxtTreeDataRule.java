@@ -2,8 +2,8 @@ package life.catalogue.printer;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
@@ -11,7 +11,6 @@ import life.catalogue.parser.NameParser;
 
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UnparsableException;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
@@ -32,8 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-
-import javax.annotation.Nullable;
 
 import static org.junit.Assert.assertFalse;
 
@@ -58,6 +55,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private SynonymMapper sm;
   private ReferenceMapper rm;
   private SectorMapper secm;
+  private VernacularNameMapper vm;
   private AtomicInteger refID = new AtomicInteger(0);
 
   public enum TreeData {
@@ -165,6 +163,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     // create sequences
     if (d.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(DatasetPartitionMapper.class).createSequences(d.getKey());
+    } else {
+      // always create vernacular sequence so we can insert easily
+      session.getMapper(DatasetPartitionMapper.class).createIdSequence("vernacular_name", d.getKey());
     }
     session.commit();
   }
@@ -231,6 +232,20 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
       prepUsage(t, src.key, sk, nat, status, parent, tn);
       tm.create(t);
+
+      if (tn.infos.containsKey(TxtTreeDataKey.VERN.name())) {
+        for (var x : tn.infos.get(TxtTreeDataKey.VERN.name())) {
+          var parts = x.split(":");
+          var vn = new VernacularName();
+          vn.setDatasetKey(src.key);
+          vn.setSectorKey(sk);
+          vn.setLanguage(parts[0]);
+          vn.setName(parts[1]);
+          vn.applyUser(Users.DB_INIT);
+          CopyUtil.transliterateVernacularName(vn, IssueContainer.VOID);
+          vm.create(vn, t.getId());
+        }
+      }
     }
   }
 
@@ -276,6 +291,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       sm = session.getMapper(SynonymMapper.class);
       secm = session.getMapper(SectorMapper.class);
       rm = session.getMapper(ReferenceMapper.class);
+      vm = session.getMapper(VernacularNameMapper.class);
     }
   }
 

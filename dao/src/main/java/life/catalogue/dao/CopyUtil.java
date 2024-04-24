@@ -21,7 +21,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import com.ibm.icu.text.Transliterator;
 
-public class CatCopy {
+public class CopyUtil {
   
   // Public so that the ES QMatcher class can us it and be guranteed it transliterates the Q exactly alike.
   public static final Transliterator transLatin = Transliterator.getInstance("Any-Latin; de-ascii; Latin-ASCII");
@@ -95,7 +95,7 @@ public class CatCopy {
             eRef.setReferenceId(ridCopy);
           }
           if (EntityType.VERNACULAR == type) {
-            updateVernacularName((VernacularName)e, IssueContainer.VOID);
+            transliterateVernacularName((VernacularName)e, IssueContainer.VOID);
           }
           mapper.create(e, t.getId());
         });
@@ -173,7 +173,7 @@ public class CatCopy {
     return e;
   }
   
-  private static void updateVernacularName(VernacularName vn, IssueContainer issues) {
+  public static void transliterateVernacularName(VernacularName vn, IssueContainer issues) {
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
       issues.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
