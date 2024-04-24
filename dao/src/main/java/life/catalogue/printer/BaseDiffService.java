@@ -44,12 +44,7 @@ public abstract class BaseDiffService<K> {
     this.timeoutInSeconds = timeoutInSeconds;
   }
 
-  public Reader treeDiff(K key, String attempts) {
-    int[] atts = parseAttempts(key, attempts);
-    return udiff(key, atts, 2, a -> dao.treeFile(key, a));
-  }
-
-  public Reader namesDiff(K key, String attempts) {
+  public Reader diff(K key, String attempts) {
     int[] atts = parseAttempts(key, attempts);
     return udiff(key, atts, 0, a -> dao.namesFile(key, a));
   }
@@ -109,7 +104,7 @@ public abstract class BaseDiffService<K> {
   }
 
   @VisibleForTesting
-  protected NamesDiff namesDiff(K key, int[] atts, Function<Integer, File> getFile) {
+  protected NamesDiff diff(K key, int[] atts, Function<Integer, File> getFile) {
     File[] files = attemptToFiles(key, atts, getFile);
     try {
       final NamesDiff diff = new NamesDiff(key, atts[0], atts[1]);

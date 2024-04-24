@@ -193,15 +193,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   }
 
   @GET
-  @Path("{id}/sync/{attempt}/tree")
-  @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptTree(@PathParam("key") int datasetKey,
-                                           @PathParam("id") int id,
-                                           @PathParam("attempt") int attempt) {
-    return fmsDao.getTree(DSID.of(datasetKey, id), attempt);
-  }
-  
-  @GET
   @Path("{id}/sync/{attempt}/names")
   @Produces({MediaType.TEXT_PLAIN})
   public Stream<String> getSyncAttemptNames(@PathParam("key") int datasetKey,

@@ -24,7 +24,7 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
 
   @Test(expected = FileMetricsDao.AttemptMissingException.class)
   public void missingFile() throws Exception {
-    dao.getTree(key, 77);
+    dao.getNames(key, 77);
   }
 
   @Test

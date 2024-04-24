@@ -8,6 +8,7 @@ import life.catalogue.printer.TextTreePrinter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -48,6 +49,13 @@ public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
       LOG.info("Written text tree with {} lines for {} {}-{}", count, type, datasetKey, attempt);
       return count;
     }
+  }
+
+  public Stream<String> getTree(Integer datasetKey, int attempt) {
+    return streamFile(treeFile(datasetKey, attempt), datasetKey, attempt);
+  }
+  public File treeFile(Integer datasetKey, int attempt) {
+    return new File(subdir(datasetKey), attempt+"-tree.txt.gz");
   }
 
   /**

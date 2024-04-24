@@ -10,7 +10,7 @@ import java.io.Writer;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
- * DAO giving read and write access to potentially large text trees and name lists
+ * DAO giving read and write access to potentially large name lists
  * stored on the filesystem. We use compression to keep storage small.
  */
 public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {

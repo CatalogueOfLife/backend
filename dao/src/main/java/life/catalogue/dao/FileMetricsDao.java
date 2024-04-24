@@ -128,11 +128,7 @@ public abstract class FileMetricsDao<K> {
     return streamFile(namesFile(key, attempt), key, attempt);
   }
 
-  public Stream<String> getTree(K key, int attempt) {
-    return streamFile(treeFile(key, attempt), key, attempt);
-  }
-
-  private Stream<String> streamFile(File f, K key, int attempt) {
+  protected Stream<String> streamFile(File f, K key, int attempt) {
     try {
       BufferedReader br = UTF8IoUtils.readerFromGzipFile(f);
       return br.lines();
@@ -161,10 +157,6 @@ public abstract class FileMetricsDao<K> {
     private static String buildMessage(String type, Object key, int attempt) {
       return String.format("Import attempt %s for %s %s missing", attempt, type, key);
     }
-  }
-
-  public File treeFile(K key, int attempt) {
-    return new File(subdir(key), attempt+"-tree.txt.gz");
   }
 
   public File namesFile(K key, int attempt) {

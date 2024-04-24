@@ -28,19 +28,10 @@ public abstract class AbstractDiffResource<K> {
   abstract K keyFromPath(DSID<Integer> dsid);
 
   @GET
-  @Path("tree")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffTree(@BeanParam DSIDValue<Integer> key,
-                         @QueryParam("attempts") String attempts) throws IOException {
-    return diff.treeDiff(keyFromPath(key), attempts);
-  }
-
-  @GET
-  @Path("names")
   @Produces(MediaType.TEXT_PLAIN)
   public Reader diffNames(@BeanParam DSIDValue<Integer> key,
                           @QueryParam("attempts") String attempts) throws IOException {
-    return diff.namesDiff(keyFromPath(key), attempts);
+    return diff.diff(keyFromPath(key), attempts);
   }
 
 }
