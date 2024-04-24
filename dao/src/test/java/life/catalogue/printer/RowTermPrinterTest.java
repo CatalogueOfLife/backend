@@ -44,7 +44,8 @@ public class RowTermPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(clazz, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(clazz, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
+      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
 

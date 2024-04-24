@@ -44,7 +44,10 @@ public class TextTreePrinter2Test {
   @Test
   public void printWithCounts() throws IOException {
     Writer writer = new StringWriter();
-    var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(testDataRule.testData.key), Set.of(Rank.FAMILY, Rank.GENUS), Rank.SPECIES, null, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(testDataRule.testData.key),
+      Set.of(Rank.FAMILY, Rank.GENUS), null,
+      Rank.SPECIES, null, SqlSessionFactoryRule.getSqlSessionFactory(), writer
+    );
     p.showIDs();
     int count = p.print();
     System.out.println(writer);
@@ -55,12 +58,13 @@ public class TextTreePrinter2Test {
       writer = new StringWriter();
       var ttp = TreeTraversalParameter.dataset(testDataRule.testData.key);
       ttp.setSynonyms(true);
-      ttp.setExtinct(extinct);
-      p = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+      p = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, extinct, null, null,
+        SqlSessionFactoryRule.getSqlSessionFactory(), writer
+      );
       p.showIDs();
       count = p.print();
       System.out.println(writer);
-      assertEquals(extinct ? 13 : 21, count);
+      assertEquals(extinct ? 13 : 19, count);
       String expected = UTF8IoUtils.readString(Resources.stream("trees/tree3-" + (extinct ? "extinct" : "extant") + ".tree"));
       assertEquals(expected, writer.toString());
     }

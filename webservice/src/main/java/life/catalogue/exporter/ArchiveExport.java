@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
@@ -21,10 +22,7 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -195,7 +193,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
-        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms());
+        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
         cursor = num.processTree(ttp);
       }
       PgUtils.consume(() -> cursor, this::consumeUsage);
@@ -229,6 +227,16 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void consumeUsage(NameUsageBase u){
     if (!fullDataset) {
+      if (req.getExtinct() != null) {
+        // filter out usages as the tree traversal cannot do that
+        if (u.isTaxon() && !Objects.equals(req.getExtinct(), ObjectUtils.coalesce(u.asTaxon().isExtinct(), false))) {
+          return;
+        }
+        // also remove synonyms of filtered accepted taxa
+        if (u.isSynonym() && !taxonIDs.contains(u.getParentId())) {
+          return;
+        }
+      }
       refIDs.add(u.getName().getPublishedInId());
       refIDs.addAll(u.getReferenceIds());
       refIDs.add(u.getAccordingToId());

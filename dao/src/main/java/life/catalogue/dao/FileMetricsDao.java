@@ -71,15 +71,6 @@ public abstract class FileMetricsDao<K> {
     }
   }
 
-  public int updateTree(K dataKey, K storeKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(storeKey, attempt))) {
-      TextTreePrinter ttp = ttPrinter(dataKey, factory, writer);
-      int count = ttp.print();
-      LOG.info("Written text tree with {} lines for {} {}-{}", count, type, dataKey, attempt);
-      return count;
-    }
-  }
-
   /**
    * Deletes all metrics stored for the given key, incl tree and name index sets.
    */
@@ -132,8 +123,6 @@ public abstract class FileMetricsDao<K> {
       }
     }
   }
-
-  abstract TextTreePrinter ttPrinter(K key, SqlSessionFactory factory, Writer writer);
 
   public Stream<String> getNames(K key, int attempt) {
     return streamFile(namesFile(key, attempt), key, attempt);

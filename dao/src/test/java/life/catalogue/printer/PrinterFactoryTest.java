@@ -45,7 +45,7 @@ public class PrinterFactoryTest {
       }
     }
 
-    var ttp = TreeTraversalParameter.all(3, null, "x", null, Rank.GENUS, null, true);
+    var ttp = TreeTraversalParameter.all(3, "x", null, Rank.GENUS, true);
     var p2 = PrinterFactory.dataset(JsonFlatPrinter.class, ttp, null, new StringWriter());
     assertNotNull(p2);
   }

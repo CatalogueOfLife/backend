@@ -39,14 +39,16 @@ public class NewickPrinterTest {
       }
     };
     var ttp = TreeTraversalParameter.dataset(TestDataRule.TREE.key);
-    int count = PrinterFactory.dataset(NewickPrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(NewickPrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), null, null,
+      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(20, count);
     System.out.println(writer);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.newick"));
     assertEquals(expected, writer.toString());
 
     writer = new StringWriter();
-    var printer = PrinterFactory.dataset(NewickPrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    var printer = PrinterFactory.dataset(NewickPrinter.class, TreeTraversalParameter.datasetNoSynonyms(TestDataRule.TREE.key), null, null,
+      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
     printer.useExtendedFormat();
     count = printer.print();
     assertEquals(20, count);

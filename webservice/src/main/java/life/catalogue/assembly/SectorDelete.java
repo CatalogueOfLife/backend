@@ -133,14 +133,14 @@ public class SectorDelete extends SectorRunnable {
     int counter = 0;
     List<String> nids = session.getMapper(NameMapper.class).unrankedRankNameIds(sectorKey.getDatasetKey(), sectorKey.getId());
     LOG.debug("Found {} unranked names. Check their usages next", nids.size());
-    // if we have unranked names filter out the ones that have children of ranks above or equals to GENUS
+    // if we have unranked names, filter out the ones that have children of ranks above or equals to GENUS
     // we iterate over children as we rarely even get unranked usages
     if (nids != null && !nids.isEmpty()) {
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
       for (String nid : nids) {
         usageLoop:
         for (String uid : um.listUsageIDsByNameID(sector.getDatasetKey(), nid)){
-          TreeTraversalParameter ttp = TreeTraversalParameter.sectorTarget(sector);
+          TreeTraversalParameter ttp = TreeTraversalParameter.dataset(sector.getDatasetKey());
           ttp.setTaxonID(uid);
           ttp.setLowestRank(cutoffRank);
           ttp.setSynonyms(false);

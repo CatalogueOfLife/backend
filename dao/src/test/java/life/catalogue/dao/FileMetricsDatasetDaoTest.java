@@ -1,8 +1,13 @@
 package life.catalogue.dao;
 
+import life.catalogue.common.io.UTF8IoUtils;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.util.stream.Stream;
 
 public class FileMetricsDatasetDaoTest extends FileMetricsDaoTestBase<Integer> {
 
@@ -10,6 +15,16 @@ public class FileMetricsDatasetDaoTest extends FileMetricsDaoTestBase<Integer> {
   public void initDao(){
     dao = new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo());
     key = 11;
+  }
+
+  @Test
+  public void roundtripTree() throws Exception {
+    BufferedReader expected = UTF8IoUtils.readerFromStream(getClass().getResourceAsStream("/trees/tree.tree"));
+
+    ((FileMetricsDatasetDao)dao).updateTree(key, key, 1);
+
+    Stream<String> lines = dao.getTree( key, 1);
+    assertEquals(expected.lines(), lines);
   }
 
   @Test

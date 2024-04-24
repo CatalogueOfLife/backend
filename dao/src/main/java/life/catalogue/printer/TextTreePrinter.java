@@ -19,6 +19,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
+import javax.annotation.Nullable;
+
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
  * Synonyms are prefixed with an asterisk *,
@@ -44,8 +46,10 @@ public class TextTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
   private boolean showIDs;
 
-  public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(params, ranks, countRank, taxonCounter, factory, writer);
+  public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
+                         @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
+                         SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
 

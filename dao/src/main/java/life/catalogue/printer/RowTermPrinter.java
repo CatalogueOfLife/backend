@@ -18,16 +18,18 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Prints simple names as TSV or CSV rows.
  */
 public abstract class RowTermPrinter extends AbstractPrinter {
   protected final TermWriter tw;
 
-  public RowTermPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory,
-                        Writer writer, TabularFormat format, Term rowType, List<Term> columns
+  public RowTermPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
+                        SqlSessionFactory factory, Writer writer, TabularFormat format, Term rowType, List<Term> columns
   ) throws IOException {
-    super(false, params, ranks, countRank, taxonCounter, factory, writer);
+    super(false, params, ranks, extinct, countRank, taxonCounter, factory, writer);
     if (format == TabularFormat.CSV) {
       tw = new TermWriter(new CsvWriter(writer), rowType, columns);
     } else {

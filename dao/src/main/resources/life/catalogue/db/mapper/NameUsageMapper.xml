@@ -680,17 +680,6 @@
     </if>
   </sql>
 
-  <sql id="WHERE_FINAL">
-    <where>
-    <if test="param.extinct != null">
-      <if test="!param.extinct">NOT</if> x.extinct
-    </if>
-    <if test="param.sectorKey != null">
-      AND x.sector_key = #{param.sectorKey}
-    </if>
-    </where>
-  </sql>
-
   <sql id="DEPTH_FIRST_ROOT">
     <if test="depthFirst">
       ,concat_ws('|',<if test="orderByName">n.scientific_name, n.authorship,</if> u.id) || '|' AS path
@@ -718,7 +707,6 @@
       </where>
     )
     SELECT * FROM x
-    <include refid="WHERE_FINAL"/>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
@@ -754,7 +742,6 @@
     )
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x
-    <include refid="WHERE_FINAL"/>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
@@ -773,7 +760,6 @@
       </where>
     )
     SELECT * FROM x
-    <include refid="WHERE_FINAL"/>
     <if test="depthFirst">ORDER BY x.path</if>
   </select>
 

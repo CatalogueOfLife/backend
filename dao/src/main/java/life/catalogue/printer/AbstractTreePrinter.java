@@ -3,32 +3,22 @@ package life.catalogue.printer;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
-import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
 public abstract class AbstractTreePrinter extends AbstractPrinter {
-  protected final LinkedList<SimpleName> parents = new LinkedList<>();
+  protected final LinkedList<FilterSN> parents = new LinkedList<>();
   protected int level = 0;
   protected EVENT last;
   protected enum EVENT {START, END}
@@ -38,17 +28,26 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
    * @param ranks set of ranks to include. Can be null or empty to include all
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  public AbstractTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(true, params, ranks, countRank, taxonCounter, factory, writer);
+  public AbstractTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, Boolean extinct, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(true, params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
+  static class FilterSN {
+    final SimpleName sn;
+    final boolean filtered;
+
+    FilterSN(SimpleName sn, boolean filtered) {
+      this.sn = sn;
+      this.filtered = filtered;
+    }
+  }
   @Override
   protected void postIter() throws IOException {
     // send final end signals
     while (!parents.isEmpty()) {
-      SimpleName p = parents.removeLast();
-      if (ranks.isEmpty() || ranks.contains(p.getRank())) {
-        end(p);
+      FilterSN p = parents.removeLast();
+      if (!p.filtered) {
+        end(p.sn);
         level--;
         last = EVENT.END;
       }
@@ -59,15 +58,17 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
   public final void accept(SimpleName u) {
     try {
       // send end signals
-      while (!parents.isEmpty() && !parents.peekLast().getId().equals(u.getParent())) {
-        SimpleName p = parents.removeLast();
-        if (ranks.isEmpty() || ranks.contains(p.getRank())) {
-          end(p);
+      while (!parents.isEmpty() && !parents.peekLast().sn.getId().equals(u.getParent())) {
+        var p = parents.removeLast();
+        if (!p.filtered) {
+          end(p.sn);
           level--;
           last = EVENT.END;
         }
       }
-      if (ranks.isEmpty() || ranks.contains(u.getRank())) {
+
+      final boolean filtered = filter(u);
+      if (!filtered) {
         counter.inc(u);
         if (countRank != null && taxonCounter != null) {
           taxonCount = taxonCounter.count(DSID.of(params.getDatasetKey(), u.getId()), countRank);
@@ -76,11 +77,19 @@ public abstract class AbstractTreePrinter extends AbstractPrinter {
         level++;
         last = EVENT.START;
       }
-      parents.add(u);
+      parents.add(new FilterSN(u, filtered));
       
     } catch (IOException e) {
       throw new PrinterException(e);
     }
+  }
+
+  @Override
+  protected boolean filter(SimpleName u) {
+    return super.filter(u) ||
+      // also filter out synonyms which a filtered parent in the printed tree.
+      // This can e.g. happen with the extinct filter
+      (u.isSynonym() && (parents.isEmpty() || parents.getLast().filtered));
   }
 
   @Override

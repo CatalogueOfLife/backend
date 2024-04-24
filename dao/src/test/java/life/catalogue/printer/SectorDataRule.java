@@ -102,7 +102,8 @@ public class SectorDataRule extends ExternalResource implements AutoCloseable {
       if (s.getMode() == Sector.Mode.ATTACH) {
         // the parentID to be used by the copied root usage
         parentID = s.getTarget().getId();
-        um.processTree(TreeTraversalParameter.sectorSubject(s), false, false)
+        var ttp = TreeTraversalParameter.dataset(s.getSubjectDatasetKey(), s.getSubjectID());
+        um.processTree(ttp, false, false)
           .forEach(this::copy);
 
       } else if (s.getMode() == Sector.Mode.UNION) {

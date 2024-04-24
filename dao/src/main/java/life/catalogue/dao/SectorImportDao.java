@@ -48,14 +48,9 @@ public class SectorImportDao {
       mapper.update(si);
       LOG.debug("Updated counts for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
 
-      DSID<Integer> dataKey = DSID.of(datasetKey, si.getSectorKey());
-      fileMetricsDao.updateTree(dataKey, si.getSectorDSID(), si.getAttempt());
-      LOG.debug("Updated tree for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
-      fileMetricsDao.updateNames(dataKey, si.getSectorDSID(), si.getAttempt());
+      DSID<Integer> sectorKey = DSID.of(datasetKey, si.getSectorKey());
+      fileMetricsDao.updateNames(sectorKey, si.getSectorDSID(), si.getAttempt());
       LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
-
-    } catch (IOException e) {
-      LOG.error("Failed to update metrics for sector {} from dataset {}", si.getSectorDSID(), datasetKey, e);
     }
   }
 

@@ -18,6 +18,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.catalogueoflife.newick.Node;
 import org.catalogueoflife.newick.SimpleNode;
 
+import javax.annotation.Nullable;
+
 /**
  * Print an entire dataset in the extended Newick format, listing the name, rank and id in the extended properties.
  * <p>
@@ -32,8 +34,9 @@ public class NewickPrinter extends AbstractTreePrinter {
   private final LinkedList<Node> parents = new LinkedList<>();
   private boolean extended;
 
-  public NewickPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(params, ranks, countRank, taxonCounter, factory, writer);
+  public NewickPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank,
+                       @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
     params.setSynonyms(false);
   }
 

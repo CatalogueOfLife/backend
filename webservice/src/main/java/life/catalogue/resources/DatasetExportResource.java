@@ -131,7 +131,6 @@ public class DatasetExportResource {
       var ttp = TreeTraversalParameter.dataset(datasetKey);
       ttp.setTaxonID(taxonID);
       ttp.setSynonyms(synonyms);
-      ttp.setExtinct(extinct);
       if (ranks != null && !ranks.isEmpty()) {
         ttp.setLowestRank(RankUtils.lowestRank(ranks));
       } else if (minRank != null) {
@@ -145,7 +144,7 @@ public class DatasetExportResource {
     params.init();
     StreamingOutput stream = os -> {
       Writer writer = UTF8IoUtils.writerFromStream(os);
-      T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
+      T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, searchService, factory, writer);
       modifier.accept(printer);
       printer.print();
       writer.flush();

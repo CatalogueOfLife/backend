@@ -20,11 +20,6 @@ public class FileMetricsSectorDao extends FileMetricsDao<DSID<Integer>> {
   }
 
   @Override
-  TextTreePrinter ttPrinter(DSID<Integer> key, SqlSessionFactory factory, Writer writer) {
-    return PrinterFactory.sector(TextTreePrinter.class, key, factory, writer);
-  }
-
-  @Override
   public File subdir(DSID<Integer> key) {
     File dDir = FileMetricsDatasetDao.datasetDir(repo, key.getDatasetKey());
     return new File(dDir, "sector/" + key.getId());

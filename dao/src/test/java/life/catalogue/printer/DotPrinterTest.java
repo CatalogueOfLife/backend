@@ -38,7 +38,8 @@ public class DotPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(DotPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(DotPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
+      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.dot"));

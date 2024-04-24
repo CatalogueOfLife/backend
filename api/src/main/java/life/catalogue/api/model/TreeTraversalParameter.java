@@ -15,12 +15,6 @@ public class TreeTraversalParameter {
   private int datasetKey;
 
   /**
-   * An optional sector to limit final results to.
-   * This filter will only prune the results, but not prevent from traversing descendants!
-   */
-  private Integer sectorKey;
-
-  /**
    * taxon id to start the traversal. Will be included in the result. If null start with all root taxa
    */
   @QueryParam("taxonID")
@@ -39,13 +33,6 @@ public class TreeTraversalParameter {
   private Rank lowestRank;
 
   /**
-   * optional filter for explicitly only extinct or only extant records. Null includes all.
-   * This filter will only prune the results, but not prevent from traversing descendants!
-   */
-  @QueryParam("extinct")
-  private Boolean extinct;
-
-  /**
    * if true includes synonyms (default), otherwise only taxa
    */
   @QueryParam("sectorKey")
@@ -57,35 +44,18 @@ public class TreeTraversalParameter {
 
   public TreeTraversalParameter(TreeTraversalParameter other) {
     this.datasetKey = other.datasetKey;
-    this.sectorKey = other.sectorKey;
     this.taxonID = other.taxonID;
     this.exclusion = other.exclusion;
     this.lowestRank = other.lowestRank;
-    this.extinct = other.extinct;
     this.synonyms = other.synonyms;
   }
 
-  public static TreeTraversalParameter all(int datasetKey, Integer sectorKey, String taxonID, Set<String> exclusion, Rank lowestRank, Boolean extinct, boolean synonyms) {
+  public static TreeTraversalParameter all(int datasetKey, String taxonID, Set<String> exclusion, Rank lowestRank, boolean synonyms) {
     var ttp = TreeTraversalParameter.dataset(datasetKey);
-    ttp.setSectorKey(sectorKey);
     ttp.setTaxonID(taxonID);
     ttp.setExclusion(exclusion);
     ttp.setLowestRank(lowestRank);
-    ttp.setExtinct(extinct);
     ttp.setSynonyms(synonyms);
-    return ttp;
-  }
-
-  public static TreeTraversalParameter sectorTarget(Sector sector) {
-    var ttp = dataset(sector.getDatasetKey());
-    ttp.setSectorKey(sector.getId());
-    ttp.setTaxonID(sector.getTargetID());
-    return ttp;
-  }
-
-  public static TreeTraversalParameter sectorSubject(Sector sector) {
-    var ttp = dataset(sector.getSubjectDatasetKey());
-    ttp.setTaxonID(sector.getSubjectID());
     return ttp;
   }
 
@@ -98,16 +68,15 @@ public class TreeTraversalParameter {
   }
 
   public static TreeTraversalParameter dataset(int datasetKey, String taxonID, Set<String> exclusions) {
-    return dataset(datasetKey, taxonID, exclusions, null, null, true);
+    return dataset(datasetKey, taxonID, exclusions, null, true);
   }
 
-  public static TreeTraversalParameter dataset(int datasetKey, String taxonID, Set<String> exclusions, Rank lowestRank, Boolean extinct, boolean synonyms) {
+  public static TreeTraversalParameter dataset(int datasetKey, String taxonID, Set<String> exclusions, Rank lowestRank, boolean synonyms) {
     var ttp = new TreeTraversalParameter();
     ttp.setDatasetKey(datasetKey);
     ttp.setTaxonID(taxonID);
     ttp.setExclusion(exclusions);
     ttp.setLowestRank(lowestRank);
-    ttp.setExtinct(extinct);
     ttp.setSynonyms(synonyms);
     return ttp;
   }
@@ -124,14 +93,6 @@ public class TreeTraversalParameter {
 
   public void setDatasetKey(int datasetKey) {
     this.datasetKey = datasetKey;
-  }
-
-  public Integer getSectorKey() {
-    return sectorKey;
-  }
-
-  public void setSectorKey(Integer sectorKey) {
-    this.sectorKey = sectorKey;
   }
 
   public String getTaxonID() {
@@ -158,14 +119,6 @@ public class TreeTraversalParameter {
     this.lowestRank = lowestRank;
   }
 
-  public Boolean getExtinct() {
-    return extinct;
-  }
-
-  public void setExtinct(Boolean extinct) {
-    this.extinct = extinct;
-  }
-
   public boolean isSynonyms() {
     return synonyms;
   }
@@ -178,18 +131,16 @@ public class TreeTraversalParameter {
    * @return true if any filter has been used apart from the mandatory datasetKey
    */
   public boolean hasFilter() {
-    return !synonyms || extinct!=null || sectorKey!=null || taxonID != null || lowestRank != null || (exclusion != null && !exclusion.isEmpty());
+    return !synonyms || taxonID != null || lowestRank != null || (exclusion != null && !exclusion.isEmpty());
   }
 
   @Override
   public String toString() {
     return "TreeTraversalParameter{" +
            "datasetKey=" + datasetKey +
-           ", sectorKey=" + sectorKey +
            ", rootTaxonID='" + taxonID + '\'' +
            ", exclusions=" + exclusion +
            ", lowestRank=" + lowestRank +
-           ", extinct=" + extinct +
            ", synonyms=" + synonyms +
            '}';
   }
@@ -201,15 +152,13 @@ public class TreeTraversalParameter {
     TreeTraversalParameter that = (TreeTraversalParameter) o;
     return datasetKey == that.datasetKey
            && synonyms == that.synonyms
-           && Objects.equals(sectorKey, that.sectorKey)
            && Objects.equals(taxonID, that.taxonID)
            && Objects.equals(exclusion, that.exclusion)
-           && lowestRank == that.lowestRank
-           && Objects.equals(extinct, that.extinct);
+           && lowestRank == that.lowestRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, sectorKey, taxonID, exclusion, lowestRank, extinct, synonyms);
+    return Objects.hash(datasetKey, taxonID, exclusion, lowestRank, synonyms);
   }
 }

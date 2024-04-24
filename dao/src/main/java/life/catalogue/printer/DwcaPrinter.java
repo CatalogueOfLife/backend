@@ -11,14 +11,18 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
 
+import javax.annotation.Nullable;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
 public abstract class DwcaPrinter extends RowTermPrinter{
-  private DwcaPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
-    super(params, ranks, countRank, taxonCounter, factory, writer, tabFormat, DwcTerm.Taxon, List.of(
+  private DwcaPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
+                      @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
+                      SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer, tabFormat, DwcTerm.Taxon, List.of(
       DwcTerm.taxonID,
       DwcTerm.parentNameUsageID,
       DwcTerm.acceptedNameUsageID,
@@ -30,13 +34,17 @@ public abstract class DwcaPrinter extends RowTermPrinter{
   }
 
   public static class TSV extends DwcaPrinter{
-    public TSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
-      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
+    public TSV(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
+               @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
+               SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, extinct, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
     }
   }
   public static class CSV extends DwcaPrinter{
-    public CSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
-      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
+    public CSV(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
+               @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
+               SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, extinct, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
     }
   }
 

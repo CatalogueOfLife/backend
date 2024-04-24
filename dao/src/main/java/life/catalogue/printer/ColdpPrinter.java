@@ -15,10 +15,12 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.annotation.Nullable;
+
 public abstract class ColdpPrinter extends RowTermPrinter{
 
-  private ColdpPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
-    super(params, ranks, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, List.of(
+  private ColdpPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer, TabularFormat tabFormat) throws IOException {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer, tabFormat, ColdpTerm.NameUsage, List.of(
       ColdpTerm.ID,
       ColdpTerm.parentID,
       ColdpTerm.status,
@@ -29,13 +31,13 @@ public abstract class ColdpPrinter extends RowTermPrinter{
   }
 
   public static class TSV extends ColdpPrinter{
-    public TSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
-      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
+    public TSV(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, extinct, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
     }
   }
   public static class CSV extends ColdpPrinter{
-    public CSV(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
-      super(params, ranks, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
+    public CSV(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) throws IOException {
+      super(params, ranks, extinct, countRank, taxonCounter, factory, writer, TabularFormat.CSV);
     }
   }
 

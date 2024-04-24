@@ -186,10 +186,8 @@ public class ExportRequest {
 
   public TreeTraversalParameter toTreeTraversalParameter() {
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey);
-    ttp.setSectorKey(getSectorKey());
     ttp.setTaxonID(getTaxonID());
     ttp.setSynonyms(isSynonyms());
-    ttp.setExtinct(getExtinct());
     ttp.setLowestRank(getMinRank());
     return ttp;
   }

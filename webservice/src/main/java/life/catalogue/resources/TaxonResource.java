@@ -94,7 +94,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
     StreamingOutput stream = os -> {
       Writer writer = UTF8IoUtils.writerFromStream(os);
-      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, dao.getFactory(), writer);
+      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, dao.getFactory(), writer);
       printer.print();
       writer.flush();
     };

@@ -22,16 +22,6 @@ public abstract class FileMetricsDaoTestBase<K> extends DaoTestBase {
   
   K key;
 
-  @Test
-  public void roundtripTree() throws Exception {
-    BufferedReader expected = UTF8IoUtils.readerFromStream(getClass().getResourceAsStream("/trees/tree.tree"));
-
-    dao.updateTree(key, key, 1);
-  
-    Stream<String> lines = dao.getTree( key, 1);
-    assertEquals(expected.lines(), lines);
-  }
-
   @Test(expected = FileMetricsDao.AttemptMissingException.class)
   public void missingFile() throws Exception {
     dao.getTree(key, 77);

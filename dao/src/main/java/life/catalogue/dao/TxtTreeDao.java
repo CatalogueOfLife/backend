@@ -55,7 +55,7 @@ public class TxtTreeDao {
 
 
     Writer writer = UTF8IoUtils.writerFromStream(os);
-    TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, factory, writer);
+    TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, null, factory, writer);
     printer.print();
     writer.flush();
   }
