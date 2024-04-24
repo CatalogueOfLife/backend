@@ -213,7 +213,7 @@ public class MatchingService {
     StopWatch watch = new StopWatch();
     watch.start();
 
-    NameUsageMatch match = new NameUsageMatch();
+    NameUsageMatch match;
 
     // When provided a usageKey is used exclusively
     if (usageKey != null) {
@@ -264,13 +264,14 @@ public class MatchingService {
   /** Real method doing the work */
   private NameUsageMatch matchInternal(
       @Nullable String scientificName,
-      @Nullable Rank rank,
+      @Nullable Rank suppliedRank,
       @Nullable LinneanClassification classification,
       Set<Integer> exclude,
       boolean strict,
       boolean verbose) {
 
     ParsedName pn = null;
+    Rank rank = suppliedRank;
     NameType queryNameType;
     MatchingMode mainMatchingMode = strict ? MatchingMode.STRICT : MatchingMode.FUZZY;
 
@@ -306,11 +307,7 @@ public class MatchingService {
             rank == null ? null : Rank.valueOf(rank.name());
         pn = NameParsers.INSTANCE.parse(scientificName, npRank, null);
         queryNameType = NameType.valueOf(pn.getType().name());
-
-        // FIXME: check this is building an equivalent canonical
         scientificName = pn.canonicalNameMinimal();
-        //        scientificName = pn.buildName(false, false, false, false, false, false, true,
-        // true, false, false, false, false, false, false);
 
         // parsed genus provided for a name lower than genus?
         if (classification.getGenus() == null
@@ -319,11 +316,15 @@ public class MatchingService {
             && pn.getRank().isInfragenericStrictly()) {
           classification.setGenus(getGenusOrAbove(pn));
         }
-        // used parsed rank if not given explicitly
+
+        // used parsed rank if not given explicitly, but only for bi+trinomials
+        // see https://github.com/CatalogueOfLife/backend/issues/1316
         if (rank == null) {
-          // FIXME - check this resolves to the correct rank
-          rank = Rank.valueOf(pn.getRank().name());
+          if (pn.isBinomial() || pn.isTrinomial()) {
+            rank = Rank.valueOf(pn.getRank().name());
+          }
         }
+
         // hybrid names, virus names, OTU & blacklisted ones don't provide any parsed name
         if (mainMatchingMode != MatchingMode.STRICT && !pn.getType().isParsable()) {
           // turn off fuzzy matching
@@ -435,22 +436,6 @@ public class MatchingService {
           return higherMatch(match, match1);
         }
         supraGenericOnly = true;
-      }
-      else if ((match1.getDiagnostics().matchIssueType == null || match1.getDiagnostics().matchIssueType != MatchIssueType.MULTIPLE_MATCHES)) {
-        // if we dont homonyms, try with genus
-//        match =
-//            match(
-//                pn.getType(),
-//                null,
-//                getGenusOrAbove(pn),
-//                Rank.GENUS,
-//                classification,
-//                exclude,
-//                MatchingMode.FUZZY,
-//                verbose);
-//        if (isMatch(match)) {
-//          return higherMatch(match, match1);
-//        }
       }
     }
 
