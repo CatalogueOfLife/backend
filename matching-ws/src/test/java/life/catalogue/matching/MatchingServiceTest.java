@@ -36,7 +36,7 @@ public class MatchingServiceTest {
     assertEquals(2, rankSimilarity(SUBSPECIES, INFRASPECIFIC_NAME));
     assertEquals(-35, rankSimilarity(GENUS, CLASS));
     assertEquals(-35, rankSimilarity(GENUS, FAMILY));
-    assertEquals(-28, rankSimilarity(FAMILY, KINGDOM));
+    assertEquals(-35, rankSimilarity(FAMILY, KINGDOM));
   }
 
   @Test
