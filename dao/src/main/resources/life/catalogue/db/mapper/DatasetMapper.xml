@@ -9,6 +9,7 @@
     d.deleted,
     d.private,
     d.last_import_attempt,
+    dli.state AS last_import_state,
     <include refid="size"/> AS size
   </sql>
 
@@ -31,6 +32,8 @@
     dataset d
       LEFT JOIN dataset_import di ON di.attempt=d.attempt AND di.dataset_key=coalesce(d.source_key,d.key)
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
+      LEFT JOIN v_last_dataset_import li ON li.dataset_key=d.key
+      LEFT JOIN dataset_import dli ON dli.attempt=li.attempt AND dli.dataset_key=d.key
   </sql>
 
   <sql id="FROM_PROJ">
@@ -157,6 +160,9 @@
       </if>
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
+      </if>
+      <if test="req.lastImportState != null">
+        AND dli.state = #{req.lastImportState}::IMPORTSTATE
       </if>
     </if>
   </sql>

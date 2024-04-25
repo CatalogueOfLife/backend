@@ -4,6 +4,7 @@ import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
@@ -58,6 +59,8 @@ public class Dataset extends DataEntity<Integer> {
         "origin",
         "imported",
         "deleted",
+        "lastImportAttempt",
+        "lastImportState",
         "gbifKey",
         "gbifPublisherKey",
         "size",
@@ -105,9 +108,12 @@ public class Dataset extends DataEntity<Integer> {
   private DatasetType type;
   @NotNull
   private DatasetOrigin origin;
-  private Integer attempt;
-  private LocalDateTime imported; // from import table
+  private Integer attempt; // last successful import attempt that created the current data
+  private LocalDateTime imported; // linked via attempt from import table
   private LocalDateTime lastImportAttempt; // last try to import the dataset, will be set even for unchanged attempts
+  // state of the last import that was not unchanged.
+  // Does not have to correlate with the lastImportAttempt timestamp
+  private ImportState lastImportState;
   private LocalDateTime deleted;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -175,6 +181,7 @@ public class Dataset extends DataEntity<Integer> {
     this.origin = other.origin;
     this.attempt = other.attempt;
     this.lastImportAttempt = other.lastImportAttempt;
+    this.lastImportState = other.lastImportState;
     this.imported = other.imported;
     this.deleted = other.deleted;
     this.gbifKey = other.gbifKey;
@@ -405,6 +412,14 @@ public class Dataset extends DataEntity<Integer> {
 
   public void setLastImportAttempt(LocalDateTime lastImportAttempt) {
     this.lastImportAttempt = lastImportAttempt;
+  }
+
+  public ImportState getLastImportState() {
+    return lastImportState;
+  }
+
+  public void setLastImportState(ImportState lastImportState) {
+    this.lastImportState = lastImportState;
   }
 
   public DOI getDoi() {
@@ -812,6 +827,7 @@ public class Dataset extends DataEntity<Integer> {
            && origin == dataset.origin
            && Objects.equals(attempt, dataset.attempt)
            && Objects.equals(lastImportAttempt, dataset.lastImportAttempt)
+           && Objects.equals(lastImportState, dataset.lastImportState)
            && Objects.equals(imported, dataset.imported)
            && Objects.equals(deleted, dataset.deleted)
            && Objects.equals(gbifKey, dataset.gbifKey)
@@ -849,7 +865,8 @@ public class Dataset extends DataEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, lastImportAttempt, imported, deleted,
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin,
+      attempt, lastImportAttempt, lastImportState, imported, deleted,
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator,

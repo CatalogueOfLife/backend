@@ -1954,6 +1954,11 @@ CREATE VIEW v_name_usage AS (
   FROM name_usage u JOIN name n ON n.id=u.name_id AND u.dataset_key=n.dataset_key
 );
 
+CREATE VIEW v_last_dataset_import AS (
+ SELECT DISTINCT ON (dataset_key) dataset_key, attempt
+ FROM dataset_import
+ ORDER BY dataset_key, attempt
+);
 
 
 -- we track counts for usages and names to avoid long count() queries

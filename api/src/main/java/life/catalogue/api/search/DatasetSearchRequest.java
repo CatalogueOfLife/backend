@@ -2,6 +2,7 @@ package life.catalogue.api.search;
 
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 
@@ -29,6 +30,7 @@ public class DatasetSearchRequest {
     CREATED,
     MODIFIED,
     IMPORTED,
+    LAST_IMPORT_ATTEMPT,
     SIZE
   }
   
@@ -94,6 +96,12 @@ public class DatasetSearchRequest {
    */
   @QueryParam("withoutSectorInProject")
   private Integer withoutSectorInProject;
+
+  /**
+   * Filters datasets by their last import state
+   */
+  @QueryParam("lastImportState")
+  private ImportState lastImportState;
 
   /**
    * Filters datasets by having the given editor key authorized.
@@ -261,6 +269,14 @@ public class DatasetSearchRequest {
     this.withoutSectorInProject = withoutSectorInProject;
   }
 
+  public ImportState getLastImportState() {
+    return lastImportState;
+  }
+
+  public void setLastImportState(ImportState lastImportState) {
+    this.lastImportState = lastImportState;
+  }
+
   public Integer getEditor() {
     return editor;
   }
@@ -408,13 +424,13 @@ public class DatasetSearchRequest {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof DatasetSearchRequest)) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return codeIsNull == that.codeIsNull && reverse == that.reverse && Objects.equals(q, that.q) && Objects.equals(alias, that.alias) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(hasGbifKey, that.hasGbifKey) && Objects.equals(gbifKey, that.gbifKey) && Objects.equals(gbifPublisherKey, that.gbifPublisherKey) && Objects.equals(withoutSectorInProject, that.withoutSectorInProject) && Objects.equals(editor, that.editor) && Objects.equals(reviewer, that.reviewer) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(rowType, that.rowType) && Objects.equals(modified, that.modified) && Objects.equals(modifiedBefore, that.modifiedBefore) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(created, that.created) && Objects.equals(createdBefore, that.createdBefore) && Objects.equals(createdBy, that.createdBy) && Objects.equals(issued, that.issued) && Objects.equals(issuedBefore, that.issuedBefore) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
+    return codeIsNull == that.codeIsNull && reverse == that.reverse && Objects.equals(q, that.q) && Objects.equals(alias, that.alias) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(hasGbifKey, that.hasGbifKey) && Objects.equals(gbifKey, that.gbifKey) && Objects.equals(gbifPublisherKey, that.gbifPublisherKey) && Objects.equals(withoutSectorInProject, that.withoutSectorInProject) && lastImportState == that.lastImportState && Objects.equals(editor, that.editor) && Objects.equals(reviewer, that.reviewer) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(rowType, that.rowType) && Objects.equals(modified, that.modified) && Objects.equals(modifiedBefore, that.modifiedBefore) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(created, that.created) && Objects.equals(createdBefore, that.createdBefore) && Objects.equals(createdBy, that.createdBy) && Objects.equals(issued, that.issued) && Objects.equals(issuedBefore, that.issuedBefore) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, codeIsNull, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, withoutSectorInProject, editor, reviewer, origin, type, license, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, codeIsNull, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
   }
 }

@@ -13,9 +13,15 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
-CREATE TYPE INFOGROUP AS ENUM (
 
 
+### 2024-04-24 latest dataset attempt state
+```sql
+CREATE VIEW v_last_dataset_import AS
+ SELECT distinct on (dataset_key) dataset_key, attempt
+ FROM dataset_import
+ ORDER BY dataset_key, attempt;
+```
 
 ### 2024-04-24 change info group
 ```sql

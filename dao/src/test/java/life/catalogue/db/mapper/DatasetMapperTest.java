@@ -702,6 +702,12 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     query.setQ("Döring");
     var res = mapper().search(query, null, new Page());
     assertEquals(d4, res.get(0).getKey());
+
+    // lastImportState
+    query = new DatasetSearchRequest();
+    assertEquals(8, mapper().search(query, null, new Page()).size());
+    query.setLastImportState(ImportState.FAILED);
+    assertEquals(0, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
