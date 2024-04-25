@@ -20,7 +20,7 @@ and done it manually. So we can as well log changes here.
 CREATE VIEW v_last_dataset_import AS
  SELECT distinct on (dataset_key) dataset_key, attempt
  FROM dataset_import
- ORDER BY dataset_key, attempt;
+ ORDER BY dataset_key, attempt DESC;
 ```
 
 ### 2024-04-24 change info group

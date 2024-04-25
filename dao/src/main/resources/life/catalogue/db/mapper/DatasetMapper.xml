@@ -32,7 +32,7 @@
     dataset d
       LEFT JOIN dataset_import di ON di.attempt=d.attempt AND di.dataset_key=coalesce(d.source_key,d.key)
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
-      LEFT JOIN v_last_dataset_import li ON li.dataset_key=d.key
+      LEFT JOIN v_last_dataset_import li ON li.dataset_key=d.key AND d.origin='EXTERNAL'::DATASETORIGIN
       LEFT JOIN dataset_import dli ON dli.attempt=li.attempt AND dli.dataset_key=d.key
   </sql>
 
