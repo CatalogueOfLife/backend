@@ -24,10 +24,15 @@ public class MatchedParentStack {
    * @param rootTarget the default attachment point to the target taxonomy
    */
   public MatchedParentStack(SimpleNameWithNidx rootTarget) {
+    LOG.info("Create parent stack with root {}", rootTarget);
     this.root = rootTarget;
   }
 
+  /**
+   * Changes the default attachment point to the target taxonomy
+   */
   public void setRoot(SimpleNameWithNidx root) {
+    LOG.info("Change root of parent stack to {}", root);
     this.root = root;
   }
 

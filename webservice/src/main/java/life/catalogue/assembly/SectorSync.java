@@ -275,7 +275,11 @@ public class SectorSync extends SectorRunnable {
          TreeHandler treeHandler = sectorHandler()
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
+      LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(),
+        sector.getSubject() == null ? "without subject" : sector.getSubject(),
+        sector.getTarget() == null ? "entire target dataset" : sector.getTarget(),
+        blockedIds.size()
+      );
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
