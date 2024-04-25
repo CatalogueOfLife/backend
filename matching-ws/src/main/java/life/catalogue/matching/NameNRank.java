@@ -1,13 +1,17 @@
 package life.catalogue.matching;
 
+import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
+
 import com.google.common.annotations.VisibleForTesting;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,15 +103,14 @@ public class NameNRank {
         pn.setSpecificEpithet(clean(specificEpithet));
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
         pn.setRank(rank);
-        //FIXME - which authorship to use?
-//        pn.setAuthorship(clean(authorship));
+        Authorship authorship1 = Authorship.authors(clean(authorship));
+        // FIXME is this ok ?
+        pn.setCombinationAuthorship(authorship1);
         // see if species rank in classificaiton can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
           if (m.find()) {
             if (pn.getGenus() == null) {
-              // FIXME is this ok ?
-              // pn.setGenusOrAbove(m.group(1));
               pn.setGenus(m.group(1));
             }
             if (pn.getSpecificEpithet() == null) {
@@ -133,6 +136,15 @@ public class NameNRank {
       }
     }
     return null;
+  }
+
+  public void setGenus(ParsedName parsedName, String genus) {
+    if (genus != null && genus.startsWith(String.valueOf(HYBRID_MARKER))) {
+      parsedName.setGenus(genus.substring(1));
+      parsedName.setNotho(NamePart.GENERIC);
+    } else {
+      parsedName.setGenus(genus);
+    }
   }
 
   private static String clean(String x) {
@@ -187,8 +199,7 @@ public class NameNRank {
     return true;
   }
 
-  @VisibleForTesting
-  static boolean isSimpleBinomial(String name) {
+  protected static boolean isSimpleBinomial(String name) {
     return exists(name) && BINOMIAL.matcher(name).matches();
   }
 
@@ -203,7 +214,7 @@ public class NameNRank {
   }
 
   @VisibleForTesting
-  static String expandAbbreviatedGenus(String scientificName, String genus) {
+  public static String expandAbbreviatedGenus(String scientificName, String genus) {
     if (exists(scientificName) && exists(genus)) {
       String[] parts = scientificName.split(" +", 2);
       if (parts[0].length() <= 2) {
@@ -234,7 +245,7 @@ public class NameNRank {
   }
 
   @VisibleForTesting
-  static String appendAuthorship(String scientificName, String authorship) {
+  public static String appendAuthorship(String scientificName, String authorship) {
     if (!StringUtils.isBlank(scientificName)
         && !StringUtils.isBlank(authorship)
         && !scientificName.toLowerCase().contains(authorship.trim().toLowerCase())) {

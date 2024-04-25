@@ -43,7 +43,7 @@ public class MatchingApplication implements CommandLineRunner {
       LOG.info("Starting indexing...");
       String command = args[0];
       Integer datasetId = Integer.parseInt(args[1]);
-      switch (command){
+      switch (command) {
         case "index-db":
           indexingService.runDatasetIndexing(datasetId);
           break;

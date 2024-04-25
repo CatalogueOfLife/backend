@@ -116,8 +116,7 @@ public class HigherTaxaComparator {
    * @return the looked up accepted name, null for blacklisted names or the original higherTaxon if
    *     no synonym is known
    */
-  @VisibleForTesting
-  protected String lookup(String higherTaxon, Rank rank) {
+  public String lookup(String higherTaxon, Rank rank) {
     if (higherTaxon == null) {
       return null;
     }
@@ -152,10 +151,11 @@ public class HigherTaxaComparator {
    * @return non empty uppercased string with normalized whitespace and all non latin letters
    *     replaced. Or null
    */
-  @VisibleForTesting
   protected static String norm(String x) {
+    if (x == null) {
+      return null;
+    }
     Pattern REMOVE_NON_LETTERS = Pattern.compile("[\\W\\d]+");
-    x = Objects.toString(x);
     x = REMOVE_NON_LETTERS.matcher(x).replaceAll(" ");
     x = StringUtils.normalizeSpace(x).toUpperCase();
     return StringUtils.trimToNull(x);

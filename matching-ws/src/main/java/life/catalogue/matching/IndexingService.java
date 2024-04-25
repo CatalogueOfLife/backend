@@ -84,27 +84,28 @@ public class IndexingService {
     final String fileName = exportPath + "/" + datasetKey + "/" + "index.csv";
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKey));
     try (SqlSession session = factory.openSession(false);
-         final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
+        final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
 
       // Create index writer
       consume(
-        () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
-        name -> {
-          try {
-            writer.write(new String[]{
-              name.id,
-              name.parentId,
-              name.scientificName,
-              name.authorship,
-              name.rank,
-              name.status,
-              name.nomenclaturalCode
-            });
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
-          counter.incrementAndGet();
-        });
+          () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
+          name -> {
+            try {
+              writer.write(
+                  new String[] {
+                    name.id,
+                    name.parentId,
+                    name.scientificName,
+                    name.authorship,
+                    name.rank,
+                    name.status,
+                    name.nomenclaturalCode
+                  });
+            } catch (IOException e) {
+              throw new RuntimeException(e);
+            }
+            counter.incrementAndGet();
+          });
     }
     // write metadata file in JSON format
     LOG.info("Records written to file {}: {}", fileName, counter.get());
@@ -131,11 +132,10 @@ public class IndexingService {
     final String filePath = exportPath + "/" + datasetId + "/index.csv";
 
     // File source, String encoding, String delimiter, Character quotes, Integer headerRows
-    try (CSVReader reader = new CSVReader(new File(filePath), "UTF-8", ",",
-      '"', 0);
-         IndexWriter indexWriter = new IndexWriter(directory, config)) {
+    try (CSVReader reader = new CSVReader(new File(filePath), "UTF-8", ",", '"', 0);
+        IndexWriter indexWriter = new IndexWriter(directory, config)) {
 
-      while(reader.hasNext()){
+      while (reader.hasNext()) {
         String[] row = reader.next();
         NameUsage name = new NameUsage();
         name.id = row[0];
@@ -205,7 +205,7 @@ public class IndexingService {
     LOG.info("Indexed: {}", counter.get());
   }
 
-  private static Document toDoc(NameUsage nameUsage) {
+  protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
 

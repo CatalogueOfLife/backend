@@ -37,7 +37,14 @@ public enum MatchType {
    */
   UNSUPPORTED,
 
+  /**
+   * The name matched a fuzzy name, i.e. a name that is not an exact match but very similar.
+   */
   FUZZY,
-  HIGHERRANK;
 
+  /**
+   * The matching alogrithm was unable to match a scientific name with sufficient confidence,
+   * and matched a higher rank instead.
+   */
+  HIGHERRANK;
 }

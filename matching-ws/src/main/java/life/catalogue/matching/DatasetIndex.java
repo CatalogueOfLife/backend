@@ -1,22 +1,24 @@
 package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
+import static life.catalogue.matching.IndexingService.toDoc;
 
+import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import jakarta.annotation.PostConstruct;
-
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.gbif.nameparser.api.Rank;
@@ -37,20 +39,50 @@ public class DatasetIndex {
   @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
 
+  /** Attempts to read the index from disk if it exists. */
   @PostConstruct
   void init() {
     if (new File(indexPath).exists()) {
       LOG.info("Loading lucene index from {}", indexPath);
       try {
-        Directory indexDir = new MMapDirectory(Path.of(indexPath));
-        DirectoryReader reader = DirectoryReader.open(indexDir);
-        this.searcher = new IndexSearcher(reader);
+        initWithDir(new MMapDirectory(Path.of(indexPath)));
       } catch (IOException e) {
         LOG.warn("Cannot open lucene index. Index not available", e);
       }
     } else {
-      LOG.error("Lucene index not found at {}", indexPath);
+      LOG.warn("Lucene index not found at {}", indexPath);
     }
+  }
+
+  void initWithDir(Directory indexDir) {
+    try {
+      DirectoryReader reader = DirectoryReader.open(indexDir);
+      this.searcher = new IndexSearcher(reader);
+    } catch (IOException e) {
+      LOG.warn("Cannot open lucene index. Index not available", e);
+    }
+  }
+
+  public static DatasetIndex newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
+    LOG.info("Start building a new nub RAM index");
+    ByteBuffersDirectory dir = new ByteBuffersDirectory();
+    IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
+    IndexWriter writer = new IndexWriter(dir, cfg);
+    // creates initial index segments
+    writer.commit();
+    int counter = 0;
+    for (NameUsage u : usages) {
+      if (u != null && u.getId() != null) {
+        writer.addDocument(toDoc(u));
+        counter++;
+      }
+    }
+    writer.close();
+    LOG.info("Finished building nub index with {} usages", counter);
+
+    DatasetIndex datasetIndex = new DatasetIndex();
+    datasetIndex.initWithDir(dir);
+    return datasetIndex;
   }
 
   private IndexSearcher getSearcher() {
@@ -97,10 +129,10 @@ public class DatasetIndex {
   }
 
   /**
-   * Loads the higher classification of a taxon starting from the given parentID.
-   * The parentID is not included in the result.
+   * Loads the higher classification of a taxon starting from the given parentID. The parentID is
+   * not included in the result.
    *
-   * TODO: this might be the naive approach. Need to check performance vs MapDB.
+   * <p>TODO: this might be the naive approach. Need to check performance vs MapDB.
    *
    * @param parentID
    * @return
@@ -109,7 +141,7 @@ public class DatasetIndex {
 
     List<RankedName> higherTaxa = new ArrayList<>();
 
-    while (parentID != null){
+    while (parentID != null) {
       Optional<Document> docOpt = getByUsageId(parentID);
       if (docOpt.isEmpty()) {
         break;
@@ -131,29 +163,27 @@ public class DatasetIndex {
     NameUsageMatch u = new NameUsageMatch();
     u.setDiagnostics(new Diagnostics());
 
-    String canonical = doc.get(FIELD_CANONICAL_NAME);
-
     // set the usage
-    u.setUsage(new RankedName(
-      doc.get(FIELD_ID),
-      doc.get(FIELD_SCIENTIFIC_NAME),
-      Rank.valueOf(doc.get(FIELD_RANK)),
-      doc.get(FIELD_CANONICAL_NAME)
-    ));
+    u.setUsage(
+        new RankedName(
+            doc.get(FIELD_ID),
+            doc.get(FIELD_SCIENTIFIC_NAME),
+            Rank.valueOf(doc.get(FIELD_RANK)),
+            doc.get(FIELD_CANONICAL_NAME)));
 
     String acceptedParentID = null;
 
-    if (doc.get(FIELD_ACCEPTED_ID) != null){
+    if (doc.get(FIELD_ACCEPTED_ID) != null) {
       synonym = true;
       Optional<Document> accDocOpt = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
-        u.setAcceptedUsage(new RankedName(
-          accDoc.get(FIELD_ID),
-          accDoc.get(FIELD_SCIENTIFIC_NAME),
-          Rank.valueOf(accDoc.get(FIELD_RANK)),
-          accDoc.get(FIELD_CANONICAL_NAME)
-        ));
+        u.setAcceptedUsage(
+            new RankedName(
+                accDoc.get(FIELD_ID),
+                accDoc.get(FIELD_SCIENTIFIC_NAME),
+                Rank.valueOf(accDoc.get(FIELD_RANK)),
+                accDoc.get(FIELD_CANONICAL_NAME)));
         acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
@@ -169,21 +199,21 @@ public class DatasetIndex {
 
     u.setClassification(classification);
 
-    //add leaf
-    if (u.getAcceptedUsage() != null){
-      classification.add(new RankedName(
-        u.getAcceptedUsage().getKey(),
-        u.getAcceptedUsage().getCanonicalName(),
-        u.getAcceptedUsage().getRank(),
-        u.getAcceptedUsage().getCanonicalName()
-      ));
+    // add leaf
+    if (u.getAcceptedUsage() != null) {
+      classification.add(
+          new RankedName(
+              u.getAcceptedUsage().getKey(),
+              u.getAcceptedUsage().getCanonicalName(),
+              u.getAcceptedUsage().getRank(),
+              u.getAcceptedUsage().getCanonicalName()));
     } else {
-      classification.add(new RankedName(
-        doc.get(FIELD_ID),
-        doc.get(FIELD_CANONICAL_NAME),
-        Rank.valueOf(doc.get(FIELD_RANK)),
-        doc.get(FIELD_CANONICAL_NAME)
-      ));
+      classification.add(
+          new RankedName(
+              doc.get(FIELD_ID),
+              doc.get(FIELD_CANONICAL_NAME),
+              Rank.valueOf(doc.get(FIELD_RANK)),
+              doc.get(FIELD_CANONICAL_NAME)));
     }
     u.setSynonym(synonym);
 

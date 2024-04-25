@@ -95,7 +95,4 @@ public class ScientificNameSimilarity implements StringSimilarity {
     LOG.debug("'{}' is {}% like '{}'", x1, r, x2);
     return r;
   }
-//
-//
-//
 }

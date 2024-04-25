@@ -1,17 +1,16 @@
 package life.catalogue.matching;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
-import org.gbif.nameparser.api.Rank;
 import lombok.Data;
+import org.gbif.nameparser.api.Rank;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-public class NameUsageMatchV1  {
+public class NameUsageMatchV1 {
 
   private static final long serialVersionUID = -8927655067465421358L;
   private Integer usageKey;
@@ -26,8 +25,10 @@ public class NameUsageMatchV1  {
   private List<NameUsageMatchV1> alternatives;
   private String kingdom;
   private String phylum;
+
   @JsonProperty("class")
   private String clazz;
+
   private String order;
   private String family;
   private String genus;
@@ -42,7 +43,7 @@ public class NameUsageMatchV1  {
   private Integer subgenusKey;
   private Integer speciesKey;
 
-  public static NameUsageMatchV1 createFrom(NameUsageMatch nameUsageMatch){
+  public static NameUsageMatchV1 createFrom(NameUsageMatch nameUsageMatch) {
     NameUsageMatchV1 match = new NameUsageMatchV1();
     if (nameUsageMatch.getUsage() != null) {
       match.setUsageKey(Integer.parseInt(nameUsageMatch.getUsage().getKey()));
@@ -53,13 +54,15 @@ public class NameUsageMatchV1  {
     if (nameUsageMatch.getAcceptedUsage() != null)
       match.setAcceptedUsageKey(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()));
 
-    if(nameUsageMatch.getStatus() != null)
-      match.setStatus(nameUsageMatch.getStatus().name());
+    if (nameUsageMatch.getStatus() != null) match.setStatus(nameUsageMatch.getStatus().name());
     match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
     match.setNote(nameUsageMatch.getDiagnostics().getNote());
     match.setMatchType(nameUsageMatch.getDiagnostics().getMatchType());
     if (nameUsageMatch.getAlternatives() != null)
-      match.setAlternatives(nameUsageMatch.getAlternatives().stream().map(NameUsageMatchV1::createFrom).collect(Collectors.toList()));
+      match.setAlternatives(
+          nameUsageMatch.getAlternatives().stream()
+              .map(NameUsageMatchV1::createFrom)
+              .collect(Collectors.toList()));
     match.setKingdom(nameUsageMatch.getKingdom());
     match.setPhylum(nameUsageMatch.getPhylum());
     match.setClazz(nameUsageMatch.getClazz());
@@ -87,7 +90,3 @@ public class NameUsageMatchV1  {
     return match;
   }
 }
-
-
-
-
