@@ -9,12 +9,14 @@ Apicomplexa
 Archezoa
 Astasiidae
 Axostylea
+Bigyra
 Bihospitida
 Bihospitidae
 Bodonida
 Bodonidae
 Calkinsiidae
 Carpediemonadia
+Cercozoa
 Ciliophora
 Cristamonadida
 Cryptobiidae
@@ -44,6 +46,7 @@ Eutreptiida
 Excavata
 Fornicata
 Glycomonada
+Heliozoa
 Hemistasiidae
 Heterolobosea
 Heterostavia
@@ -59,6 +62,7 @@ Malawimonadida
 Metakinetoplastina
 Metamonada
 Metanemina
+Miozoa
 Myzozoa
 Natomonadida
 Neobodonida
@@ -93,6 +97,7 @@ Prokinetoplastina
 Protista
 Protozoa
 Pyrsonympha
+Radiozoa
 Rapazia
 Rapazida
 Rapazidae
