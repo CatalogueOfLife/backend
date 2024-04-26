@@ -47,10 +47,9 @@ public class DatasetPatchResource {
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
   @POST
-  @DatasetPatch
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public DSID<Integer> create(@PathParam("key") int datasetKey, Dataset obj, @Auth User user, @Context SqlSession session) {
+  public DSID<Integer> create(@PathParam("key") int datasetKey, @DatasetPatch Dataset obj, @Auth User user, @Context SqlSession session) {
     obj.applyUser(user);
     session.getMapper(DatasetPatchMapper.class).create(datasetKey, obj);
     session.commit();
@@ -61,18 +60,17 @@ public class DatasetPatchResource {
    * Gets entity by its key and throws NotFoundException if not existing
    */
   @GET
-  @Path("{id}")
   @DatasetPatch
+  @Path("{id}")
   public Dataset get(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context SqlSession session) {
     return session.getMapper(DatasetPatchMapper.class).get(datasetKey, id);
   }
 
   @PUT
   @Path("{id}")
-  @DatasetPatch
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, Dataset obj, @Auth User user, @Context SqlSession session) {
+  public void update(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @DatasetPatch Dataset obj, @Auth User user, @Context SqlSession session) {
     if (obj.getKey() != null && !obj.getKey().equals(id)) {
       throw new IllegalArgumentException("Dataset patch does contain different key " + obj.getKey());
     }
