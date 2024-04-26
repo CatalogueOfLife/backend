@@ -134,7 +134,8 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
   @Test
   public void patch() throws Exception {
-    Dataset d = genTestValue();
+    Dataset orig = genTestValue();
+    Dataset d = new Dataset(orig);
 
     Dataset patch = new Dataset();
     patch.setTitle("Grundig");
@@ -143,6 +144,24 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
     assertEquals("Grundig", d.getTitle());
     assertEquals("grr", d.getAlias());
+
+    d = new Dataset(orig);
+    patch = createNullPatchDataset(-12);
+    d.applyPatch(patch);
+
+    assertNull(d.getTitle());
+    assertNull(d.getAlias());
+    assertNull(d.getDescription());
+    assertNull(d.getCreator());
+    assertNull(d.getPublisher());
+    assertNull(d.getDoi());
+    assertNull(d.getContributor());
+    assertNull(d.getContact());
+    assertNull(d.getIssued());
+    assertNull(d.getIdentifier());
+    assertNull(d.getKeyword());
+
+    assertEquals(orig.getLicense(), d.getLicense());
   }
 
   @Test
