@@ -100,7 +100,8 @@ public class TaxGroupAnalyzer {
       LOG.error("Error analyzing taxonomic group", e);
     }
 
-    // add group based on code
+    // add group based on code if there was no group spotted so far at all.
+    // we should only add a single group here, cause we need to select a single one at the end anyways
     NomCode code = name.getCode();
     if (code != null && groups.isEmpty()) {
       switch (code) {
@@ -108,13 +109,8 @@ public class TaxGroupAnalyzer {
           groups.add(Prokaryotes);
           break;
         case ZOOLOGICAL:
-          groups.add(Animals);
-          groups.add(Protists);
-          break;
         case BOTANICAL:
-          groups.add(Plants);
-          groups.add(Fungi);
-          groups.add(Algae);
+          groups.add(Eukaryotes);
           break;
         case VIRUS:
           groups.add(TaxGroup.Viruses);

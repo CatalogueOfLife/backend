@@ -46,4 +46,9 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
     }
   }
 
+  @Override
+  String normalize(String x) {
+    // we dont want whitespace to be removed - this joins binomials to one word
+    return life.catalogue.common.text.StringUtils.digitOrAsciiLetters(x);
+  }
 }
