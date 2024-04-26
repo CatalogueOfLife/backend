@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.esotericsoftware.minlog.Log;
+
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
@@ -9,11 +11,9 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
+import java.lang.reflect.Modifier;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Test;
 
@@ -104,6 +104,18 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setVersion(null);
     assertEquals("2025", d.getVersion());
     assertEquals(FuzzyDate.of(2025), d.getIssued());
+  }
+
+  @Test
+  public void nullTypesComplete() throws Exception {
+    var ignore = Set.of(License.class);
+    for (var p : Dataset.PATCH_PROPS) {
+      System.out.println(p.getName() + "  -> " + p.getPropertyType());
+
+      if (!ignore.contains(p.getPropertyType())) {
+        assertTrue(p.getName(), Dataset.NULL_TYPES.containsKey(p.getName()));
+      }
+    }
   }
 
   @Test

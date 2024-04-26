@@ -43,6 +43,8 @@ import de.undercouch.citeproc.csl.CSLType;
  * Metadata about a dataset which can be archived
  */
 public class Dataset extends DataEntity<Integer> {
+  // key=json field name, value=java type specific instance which is considered to be null, but can be stored and moved around without loss
+  // only used for internal representation of explicit nulls for patches!!!
   public static final Map<String, Object> NULL_TYPES;
   // properties which are human mediated and can be patched
   // title is the only required property, make sure it is not null !!!
@@ -84,11 +86,27 @@ public class Dataset extends DataEntity<Integer> {
           nullType = "";
         } else if (p.getPropertyType().equals(Integer.class)) {
           nullType = Integer.MIN_VALUE;
+        } else if (p.getPropertyType().equals(DOI.class)) {
+          nullType = new DOI("10.0000", "null");;
         } else if (p.getPropertyType().equals(Agent.class)) {
-          nullType = Agent.parse("null");
+          nullType = Agent.person("0000-0000-0000-0000");
         } else if (p.getPropertyType().equals(LocalDate.class)) {
           nullType = LocalDate.of(1900, 1, 1);
+        } else if (p.getPropertyType().equals(FuzzyDate.class)) {
+          nullType = FuzzyDate.of(0);
+        } else if (p.getPropertyType().equals(List.class)) {
+          var l = new ArrayList<>();
+          l.add(null);
+          l.add(null);
+          nullType = l;
+        } else if (p.getPropertyType().equals(Map.class)) {
+          var l = new HashMap<>();
+          l.put(null ,null);
+          nullType = l;
         }
+        // unupported as they are required
+        // License
+
         if (nullType != null) {
           nullTypes.put(p.getName(), nullType);
         }

@@ -7,8 +7,10 @@ import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -20,6 +22,7 @@ import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,18 +63,33 @@ public class DatasetPatchMessageBodyRW implements MessageBodyReader<Dataset>, Me
 
   @Override
   public void writeTo(Dataset dataset, Class<?> aClass, Type type, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> multivaluedMap, OutputStream outputStream) throws IOException, WebApplicationException {
+    var nullFields = new StringBuilder();
     for (PropertyDescriptor p : Dataset.PATCH_PROPS) {
       try {
         if (Dataset.NULL_TYPES.containsKey(p.getName())) {
           Object nullType = Dataset.NULL_TYPES.get(p.getName());
           if (nullType.equals(p.getReadMethod().invoke(dataset))) {
               p.getWriteMethod().invoke(dataset, (Object) null);
+              nullFields.append(',');
+              nullFields.append('"');
+              nullFields.append(p.getName());
+              nullFields.append('"');
+              nullFields.append(":null");
           }
         }
       } catch (Exception e) {
         LOG.error("Fail to set dataset patch field {} to null", p.getName(), e);
       }
     }
-    ApiModule.MAPPER.writeValue(outputStream, dataset);
+    if (nullFields.length()>1) {
+      var json = ApiModule.MAPPER.writeValueAsString(dataset);
+      if (json != null) {
+        nullFields.append('}');
+        var j2 = json.replaceFirst("\\}$", nullFields.toString());
+        IOUtils.write(j2, outputStream, StandardCharsets.UTF_8);
+      }
+    } else {
+      ApiModule.MAPPER.writeValue(outputStream, dataset);
+    }
   }
 }
