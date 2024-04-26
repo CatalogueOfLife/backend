@@ -26,7 +26,7 @@ public class DatasetSourceDao {
   }
 
   /**
-   * @param datasetKey the dataset key of the release or managed project
+   * @param datasetKey the dataset key of the release or project
    * @param sourceDatasetKey the dataset key of the source within the release or project
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
@@ -35,20 +35,19 @@ public class DatasetSourceDao {
     Dataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
       if (EXTERNAL == info.origin) {
         throw new IllegalArgumentException("Dataset "+datasetKey+" is external");
 
       } else if (PROJECT == info.origin) {
-        d = psm.getProjectSource(sourceDatasetKey, datasetKey);
+        d = dsm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
-          final Dataset project = dm.get(datasetKey);
-          patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
+          patch(d, datasetKey, session.getMapper(DatasetPatchMapper.class));
         }
 
       } else {
-        d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
+        d = dsm.getReleaseSource(sourceDatasetKey, datasetKey);
         // if the release was deleted, the source should also be marked as deleted
         if (info.deleted) {
           final Dataset release = dm.get(datasetKey);
@@ -111,9 +110,8 @@ public class DatasetSourceDao {
       } else {
         sources = psm.listProjectSourcesSimple(datasetKey);
         // a project, get latest version with patch applied
-        final Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
         final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
-        sources.forEach(d -> patch(d, datasetKey, project, pm));
+        sources.forEach(d -> patch(d, datasetKey, pm));
       }
     }
     return sources;
@@ -134,29 +132,30 @@ public class DatasetSourceDao {
    * This does not return datasets of sectors created by a sector publisher.
    * It does NOT rely on dataset_source records for releases and can be used to create them.
    *
-   * @param datasetKey project or release key
-   * @param patch dataset used for building the source citations, if null master project is used
+   * @param projectKey the dataset key of the project to load patches from
+   * @param datasetKey project or release key to query for source sectors
    */
-  public List<Dataset> listSectorBasedSources(int datasetKey, Dataset patch){
+  public List<Dataset> listSectorBasedSources(int projectKey, int datasetKey){
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
       // get latest version with patch applied
       List<Dataset> sources = psm.listSectorBasedSources(datasetKey);
-      sources.forEach(d -> patch(d, datasetKey, patch, pm));
+      sources.forEach(d -> patch(d, projectKey, pm));
       return sources;
     }
   }
 
   /**
-   * Applies the projects dataset patch if existing to the dataset d
+   * Loads and applies the projects metadata patch, if existing, to the dataset d
    * @param d dataset to be patched
+   * @param projectKey dataset key to project NOT a release
    * @return the same dataset instance d as given
    */
-  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm){
+  private Dataset patch(Dataset d, int projectKey, DatasetPatchMapper pm){
     Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
-      LOG.debug("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
+      LOG.debug("Apply dataset patch from project {} to {}: {}", projectKey, d.getKey(), d.getTitle());
       d.applyPatch(patch);
     }
     return d;

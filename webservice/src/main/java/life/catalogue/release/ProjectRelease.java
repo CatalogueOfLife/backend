@@ -209,12 +209,6 @@ public class ProjectRelease extends AbstractProjectCopy {
     return null;
   }
 
-  protected List<Dataset> listSourceDatasets() {
-    // this does not create source dataset records for aggregated publishers,
-    // nor does it create source records for merge sectors without data in the release itself!
-    return srcDao.listSectorBasedSources(newDatasetKey, newDataset);
-  }
-
   @Override
   void finalWork() throws Exception {
     checkIfCancelled();
@@ -233,8 +227,10 @@ public class ProjectRelease extends AbstractProjectCopy {
       var cm = session.getMapper(CitationMapper.class);
       final AtomicInteger counter = new AtomicInteger(0);
       final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
-      // create fixed source dataset records for this release
-      for (var d : listSourceDatasets()) {
+      // create fixed source dataset records for this release.
+      // This does not create source dataset records for aggregated publishers,
+      // nor does it create source records for merge sectors without data in the release itself!
+      for (var d : srcDao.listSectorBasedSources(datasetKey, newDatasetKey)) {
         if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);

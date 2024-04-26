@@ -35,9 +35,9 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * Retrieves a single source dataset for a project, reading either from the latest version
    * or the dataset archive if the last successful sync attempt was older.
    * @param key the source dataset key
-   * @param datasetKey the project dataset key. No release keys allowed!
+   * @param projectKey the project dataset key. No release keys allowed!
    */
-  Dataset getProjectSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
+  Dataset getProjectSource(@Param("key") int key, @Param("datasetKey") int projectKey);
 
   /**
    * @param datasetKey the release dataset key

@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.db.TestDataRule;
 
 import org.junit.Test;
@@ -14,7 +15,7 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     DatasetSourceDao dao = new DatasetSourceDao(factory());
-    dao.listSectorBasedSources(TestDataRule.FISH.key, new Dataset()).forEach(d -> {
+    dao.listSectorBasedSources(TestDataRule.FISH.key, Datasets.COL).forEach(d -> {
       System.out.println(d.getTitle());
     });
   }
