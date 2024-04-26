@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.esotericsoftware.minlog.Log;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
@@ -11,7 +9,8 @@ import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
-import java.lang.reflect.Modifier;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
 
@@ -23,7 +22,8 @@ import static org.junit.Assert.*;
  *
  */
 public class DatasetTest extends SerdeTestBase<Dataset> {
-  
+  private static Set<?> IGNORE = Set.of(License.class);
+
   public DatasetTest() {
     super(Dataset.class);
   }
@@ -108,14 +108,28 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
   @Test
   public void nullTypesComplete() throws Exception {
-    var ignore = Set.of(License.class);
     for (var p : Dataset.PATCH_PROPS) {
       System.out.println(p.getName() + "  -> " + p.getPropertyType());
 
-      if (!ignore.contains(p.getPropertyType())) {
+      if (!IGNORE.contains(p.getPropertyType())) {
         assertTrue(p.getName(), Dataset.NULL_TYPES.containsKey(p.getName()));
       }
     }
+  }
+
+  public static Dataset createNullPatchDataset(int key) {
+    var d = new Dataset();
+    d.setKey(key);
+    try {
+      for (PropertyDescriptor p : Dataset.PATCH_PROPS) {
+        if (!IGNORE.contains(p.getPropertyType())) {
+          p.getWriteMethod().invoke(d, Dataset.NULL_TYPES.get(p.getName()));
+        }
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+    return d;
   }
 
   @Test
@@ -161,6 +175,10 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     patch.setAttempt(13);
     d.applyPatch(patch);
     assertEquals(copy, d);
+
+    // just making sure nothing bad happens when appling explicit nulls
+    d = TestEntityGenerator.newDataset("Hallo Spencer");
+    d.applyPatch(createNullPatchDataset(999));
   }
 
   @Test

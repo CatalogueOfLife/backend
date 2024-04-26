@@ -2,10 +2,12 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.Datasets;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
@@ -21,6 +23,17 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   @Test
   public void deleteByDataset() throws Exception {
     mapper().deleteByDataset(Datasets.COL);
+  }
+  @Test
+  public void roundTripNullPatch() throws Exception {
+    var d1 = DatasetTest.createNullPatchDataset(TestEntityGenerator.DATASET11.getKey());
+    TestEntityGenerator.setUserDate(d1);
+    mapper().create(Datasets.COL, d1);
+    commit();
+
+    removeDbCreatedProps(d1);
+    Dataset d2 = removeDbCreatedProps(mapper().get(Datasets.COL, d1.getKey()));
+    assertEquals(d1, d2);
   }
 
   @Test
@@ -80,6 +93,9 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   Dataset removeDbCreatedProps(Dataset obj) {
     obj.setCreated(null);
     obj.setModified(null);
+    if (obj.getSource() == null) {
+      obj.setSource(new ArrayList<>());
+    }
     return obj;
   }
 

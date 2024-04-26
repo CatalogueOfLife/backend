@@ -46,6 +46,12 @@ public class Dataset extends DataEntity<Integer> {
   // key=json field name, value=java type specific instance which is considered to be null, but can be stored and moved around without loss
   // only used for internal representation of explicit nulls for patches!!!
   public static final Map<String, Object> NULL_TYPES;
+  private static final DOI NULL_DOI = new DOI("10.0000", "null");
+  private static final URI NULL_URI = URI.create("null:null");
+  private static final FuzzyDate NULL_DATE = FuzzyDate.of(0);
+  private static final Agent NULL_AGENT = Agent.person("Null","Null","null@null.nl","0000-0000-0000-0000");
+  private static final List<String> NULL_LIST_STR = List.of("NULL","Null","null");
+  private static final Map<String,String> NULL_MAP = Map.of("NULL","NULL",  "Null","Null",  "null","null");
   // properties which are human mediated and can be patched
   // title is the only required property, make sure it is not null !!!
   public static final List<PropertyDescriptor> PATCH_PROPS;
@@ -66,6 +72,11 @@ public class Dataset extends DataEntity<Integer> {
         "gbifKey",
         "gbifPublisherKey",
         "size",
+        "source", // (citations): not stored in patches in the db at all !!!
+        "license", // required
+        "containerKey",
+        "containerTitle",
+        "containerCreator",
         "notes",
         "aliasOrTitle",
         "created",
@@ -81,31 +92,26 @@ public class Dataset extends DataEntity<Integer> {
       for (PropertyDescriptor p : PATCH_PROPS) {
         Object nullType = null;
         if (p.getPropertyType().equals(URI.class)) {
-          nullType = URI.create("null:null");
+          nullType = NULL_URI;
         } else if (p.getPropertyType().equals(String.class)) {
           nullType = "";
         } else if (p.getPropertyType().equals(Integer.class)) {
           nullType = Integer.MIN_VALUE;
         } else if (p.getPropertyType().equals(DOI.class)) {
-          nullType = new DOI("10.0000", "null");;
+          nullType = NULL_DOI;
         } else if (p.getPropertyType().equals(Agent.class)) {
-          nullType = Agent.person("0000-0000-0000-0000");
-        } else if (p.getPropertyType().equals(LocalDate.class)) {
-          nullType = LocalDate.of(1900, 1, 1);
+          nullType = NULL_AGENT;
         } else if (p.getPropertyType().equals(FuzzyDate.class)) {
-          nullType = FuzzyDate.of(0);
+          nullType = NULL_DATE;
         } else if (p.getPropertyType().equals(List.class)) {
-          var l = new ArrayList<>();
-          l.add(null);
-          l.add(null);
-          nullType = l;
+          if (p.getName().equals("keyword")) {
+            nullType = NULL_LIST_STR;
+          } else {
+            nullType = List.of(NULL_AGENT);
+          }
         } else if (p.getPropertyType().equals(Map.class)) {
-          var l = new HashMap<>();
-          l.put(null ,null);
-          nullType = l;
+          nullType = NULL_MAP;
         }
-        // unupported as they are required
-        // License
 
         if (nullType != null) {
           nullTypes.put(p.getName(), nullType);
