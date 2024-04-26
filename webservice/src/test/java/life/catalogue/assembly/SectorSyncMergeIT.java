@@ -49,7 +49,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Parameterized SectorSync to test merge sectors with different sources.
  */
-@Ignore("The sector-parents test fails on Jenkins but not locally - until then we ignore this test to get builds out ")
+//@Ignore("The sector-parents test fails on Jenkins but not locally - until then we ignore this test to get builds out ")
 @RunWith(Parameterized.class)
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);
@@ -176,13 +176,15 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       req.setTarget(true);
       req.setSubject(true);
       req.setDatasetKey(Datasets.COL);
-      var sm = SectorRematcher.match(dao, req, Users.TESTER);
+      SectorRematcher.match(dao, req, Users.TESTER);
     }
   }
 
   @Test
   public void syncAndCompare() throws Throwable {
-    syncAll(null, mergeCfg);
+    for (var s : sectors) {
+      sync(s, mergeCfg);
+    }
     assertTree(Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
     // do once more with decisions?
