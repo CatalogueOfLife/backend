@@ -86,7 +86,6 @@ public class MatchingTestConfiguration {
             NameUsageMatchV1 m = mapper.readValue(json, NameUsageMatchV1.class);
             for (NameUsage u : extractUsages(m)) {
               if (u != null) {
-
                 NameUsage existing = usages.get(u.getId());
                 if (existing == null){
                   usages.put(u.getId(), u);
@@ -98,7 +97,7 @@ public class MatchingTestConfiguration {
               }
             }
 
-            System.out.println("Loaded " + (usages.size() - before) + " new usage(s) from " + file);
+//            System.out.println("Loaded " + (usages.size() - before) + " new usage(s) from " + file);
           } catch (IOException e) {
             Assertions.fail("Failed to read " + file + ": " + e.getMessage());
           }
@@ -154,13 +153,19 @@ public class MatchingTestConfiguration {
     if (m.getGenusKey() != null)
       usages.add(NameUsage.builder().id(m.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").
         parentId(getParentKey(m, Rank.GENUS)).scientificName(m.getGenus()).build());
+    if (m.getSpeciesKey() != null)
+      usages.add(NameUsage.builder().id(m.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.SPECIES)).scientificName(m.getSpecies()).build());
 
     if (m.getUsageKey() != null)
       u.setId(m.getUsageKey().toString());
+
     u.setRank(m.getRank());
-    u.setStatus(m.getSynonym() ? TaxonomicStatus.SYNONYM.toString() : TaxonomicStatus.ACCEPTED.toString());
+    setStatus(m, u);
     setParent(m, u);
     usages.add(u);
+
+
     if (m.getAlternatives() != null) {
       m.getAlternatives().stream()
           .forEach(
@@ -179,8 +184,9 @@ public class MatchingTestConfiguration {
                 } catch (Exception e) {
 //                  e.printStackTrace();
                 }
+
                 alt.setRank(a.getRank());
-                alt.setStatus(m.getSynonym() ? TaxonomicStatus.SYNONYM.toString() : TaxonomicStatus.ACCEPTED.toString());
+                setStatus(a, alt);
 
                 // add all the intermediate ranks
                 if (a.getKingdomKey() != null)
@@ -195,6 +201,8 @@ public class MatchingTestConfiguration {
                   usages.add(NameUsage.builder().id(a.getFamilyKey().toString()).rank(Rank.FAMILY.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.FAMILY)).scientificName(a.getFamily()).build());
                 if (a.getGenusKey() != null)
                   usages.add(NameUsage.builder().id(a.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.GENUS)).scientificName(a.getGenus()).build());
+                if (a.getSpeciesKey() != null)
+                  usages.add(NameUsage.builder().id(a.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.SPECIES)).scientificName(a.getSpecies()).build());
 
                 setParent(a, alt);
                 usages.add(alt);
@@ -204,7 +212,20 @@ public class MatchingTestConfiguration {
     return usages.stream().toList();
   }
 
+  private static void setStatus(NameUsageMatchV1 source, NameUsage target) {
+    if (source.getSynonym()){
+      target.setStatus(TaxonomicStatus.SYNONYM.toString());
+    } else {
+      if (source.getStatus() != null && source.getStatus().equals("DOUBTFUL")){
+        target.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED.toString());
+      } else {
+        target.setStatus(TaxonomicStatus.ACCEPTED.toString());
+      }
+    }
+  }
+
   private static String getParentKey(NameUsageMatchV1 m, Rank aboveRank){
+    if (aboveRank.ordinal() > Rank.SPECIES.ordinal() && m.getSpeciesKey()    != null && !m.getUsageKey().equals(m.getSpeciesKey())    && !m.getGenusKey().equals(m.getAcceptedUsageKey())) return m.getSpeciesKey().toString();
     if (aboveRank.ordinal() > Rank.GENUS.ordinal() && m.getGenusKey()    != null && !m.getUsageKey().equals(m.getGenusKey())    && !m.getGenusKey().equals(m.getAcceptedUsageKey())) return m.getGenusKey().toString();
     if (aboveRank.ordinal() > Rank.FAMILY.ordinal() && m.getFamilyKey()  != null && !m.getUsageKey().equals(m.getFamilyKey())   && !m.getFamilyKey().equals(m.getAcceptedUsageKey())) return m.getFamilyKey().toString();
     if (aboveRank.ordinal() > Rank.ORDER.ordinal() && m.getOrderKey()    != null && !m.getUsageKey().equals(m.getOrderKey())    && !m.getOrderKey().equals(m.getAcceptedUsageKey())) return m.getOrderKey().toString();

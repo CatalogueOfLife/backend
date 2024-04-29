@@ -206,17 +206,17 @@ public class MatchingService {
   }
 
   public NameUsageMatch match(
-      @Nullable String scientificName, @Nullable LinneanClassification classification) {
+      @Nullable String scientificName, @Nullable LinneanClassification classification, boolean strict) {
     return match(
-        null, scientificName, null, null, null, null, null, classification, null, false, false);
+        null, scientificName, null, null, null, null, null, classification, null, strict, false);
   }
 
   public NameUsageMatch match(
       @Nullable String scientificName,
       @Nullable Rank rank,
-      @Nullable LinneanClassification classification) {
+      @Nullable LinneanClassification classification, boolean strict) {
     return match(
-        null, scientificName, null, null, null, null, rank, classification, null, false, false);
+        null, scientificName, null, null, null, null, rank, classification, null, strict, false);
   }
 
   public NameUsageMatch match(

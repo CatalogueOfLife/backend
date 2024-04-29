@@ -213,7 +213,7 @@ public class MatchingServiceImplIT {
   }
 
   private void assertNoMatch(String name, LinneanClassification cl, @Nullable IntRange confidence) {
-    NameUsageMatch best = matcher.match(name, cl);
+    NameUsageMatch best = matcher.match(name, cl, true);
     print(name, best);
 
     assertEquals(MatchType.NONE, best.getDiagnostics().getMatchType());
