@@ -132,6 +132,9 @@ public class MatchingTestConfiguration {
         else if (pn.getBasionymAuthorship() != null)
           u.setAuthorship(pn.getBasionymAuthorship().toString());
       }
+      if (m.getCanonicalName() !=null && m.getScientificName() !=null && m.getScientificName().length() > m.getCanonicalName().length())
+        u.setAuthorship(m.getScientificName().substring(m.getCanonicalName().length() + 1));
+
     } catch (Exception e) {}
 
     // add all the intermediate ranks
@@ -174,13 +177,17 @@ public class MatchingTestConfiguration {
                 alt.setId(a.getUsageKey().toString());
                 alt.setScientificName(a.getCanonicalName() != null ? a.getCanonicalName() : a.getScientificName());
                 try {
-                  ParsedName pn1 = NameParsers.INSTANCE.parse(a.getScientificName());
-                  if (pn1 != null) {
-                    if (pn1.getCombinationAuthorship() != null)
-                      alt.setAuthorship(pn1.getCombinationAuthorship().toString());
-                    else if (pn1.getBasionymAuthorship() != null)
-                      u.setAuthorship(pn1.getBasionymAuthorship().toString());
-                  }
+//                  ParsedName pn1 = NameParsers.INSTANCE.parse(a.getScientificName());
+//                  if (pn1 != null) {
+//                    if (pn1.getCombinationAuthorship() != null)
+//                      alt.setAuthorship(pn1.getCombinationAuthorship().toString());
+//                    else if (pn1.getBasionymAuthorship() != null)
+//                      alt.setAuthorship(pn1.getBasionymAuthorship().toString());
+//                  }
+
+                  if (a.getCanonicalName() !=null && a.getScientificName() !=null && a.getScientificName().length() > a.getCanonicalName().length())
+                    alt.setAuthorship(a.getScientificName().substring(a.getCanonicalName().length() + 1));
+
                 } catch (Exception e) {
 //                  e.printStackTrace();
                 }
@@ -256,6 +263,9 @@ public class MatchingTestConfiguration {
     } else if (m.getRank() != null && u.getParentId() == null) {
 
       Rank rank = Rank.valueOf(m.getRank().toUpperCase());
+      if (rank.ordinal() == Rank.SUBSPECIES.ordinal() && u.getParentId() == null && m.getSpeciesKey() != null) {
+        u.setParentId(m.getSpeciesKey().toString());
+      }
       if (rank.ordinal() == Rank.SPECIES.ordinal() && u.getParentId() == null && m.getGenusKey() != null) {
         u.setParentId(m.getGenusKey().toString());
       }

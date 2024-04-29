@@ -64,7 +64,7 @@ public class DatasetIndex {
   }
 
   public static DatasetIndex newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
-    LOG.info("Start building a new nub RAM index");
+    LOG.info("Start building a new RAM index");
     ByteBuffersDirectory dir = new ByteBuffersDirectory();
     IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, cfg);
