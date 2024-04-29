@@ -341,7 +341,7 @@ public class MatchingService {
         // used parsed rank if not given explicitly, but only for bi+trinomials
         // see https://github.com/CatalogueOfLife/backend/issues/1316
         if (rank == null) {
-          if (pn.isBinomial() || pn.isTrinomial()) {
+          if (pn.isBinomial() || pn.isTrinomial() || (pn.getRank() != null && pn.getRank().ordinal() >=Rank.SPECIES.ordinal())) {
             rank = Rank.valueOf(pn.getRank().name());
           }
         }
