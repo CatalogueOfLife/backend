@@ -925,17 +925,17 @@ CREATE TABLE dataset_export (
   key UUID PRIMARY KEY,
   -- request
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
-  extended BOOLEAN NOT NULL,
-  excel BOOLEAN NOT NULL,
   root SIMPLE_NAME,
+  min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
-  min_rank RANK,
-  created_by INTEGER NOT NULL REFERENCES "user",
+  excel BOOLEAN NOT NULL,
+  extended BOOLEAN NOT NULL,
+  extinct BOOLEAN,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  modified_by INTEGER,
-  modified TIMESTAMP WITHOUT TIME ZONE,
+
   -- results
   attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,

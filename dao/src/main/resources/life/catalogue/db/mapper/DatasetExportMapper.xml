@@ -9,13 +9,13 @@
     de.dataset_key,
     de.format,
     de.extended,
+    de.extinct,
     de.excel,
     de.root,
     de.synonyms,
     de.bare_names,
     de.min_rank,
     de.created_by,
-    de.modified_by,
     de.attempt,
     de.started,
     de.finished,
@@ -29,8 +29,7 @@
     de.synonym_count,
     de.taxon_count,
     de.taxa_by_rank_count,
-    de.created,
-    de.modified
+    de.created
   </sql>
 
   <sql id="COLS">
@@ -38,13 +37,13 @@
     dataset_key,
     format,
     extended,
+    extinct,
     excel,
     root,
     synonyms,
     bare_names,
     min_rank,
     created_by,
-    modified_by,
     attempt,
     started,
     finished,
@@ -65,13 +64,13 @@
     #{request.datasetKey},
     #{request.format}::DATAFORMAT,
     #{request.extended},
+    #{request.extinct},
     #{request.excel},
     #{request.root, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
     #{request.synonyms},
     #{request.bareNames},
     #{request.minRank}::RANK,
     #{createdBy},
-    #{modifiedBy},
     #{attempt},
     #{started},
     #{finished},
@@ -96,6 +95,11 @@
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
     <result property="truncated" column="truncated" typeHandler="life.catalogue.db.type2.TermSetTypeHandler"/>
+    <!-- keep modified & created the same -->
+    <result property="created" column="created"/>
+    <result property="createdBy" column="created_by"/>
+    <result property="modified" column="created"/>
+    <result property="modifiedBy" column="created_by"/>
     <association property="request" javaType="ExportRequest" resultMap="life.catalogue.db.mapper.DatasetExportMapper.exportRequestResultMap"/>
   </resultMap>
 
@@ -118,7 +122,7 @@
 
   <update id="update" parameterType="DatasetExport">
     UPDATE dataset_export
-    SET (<include refid="COLS"/>, modified) = (<include refid="PROPS"/>, now())
+    SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
     WHERE key=#{key}
   </update>
 
@@ -154,8 +158,10 @@
       <if test="req.bareNames != null">AND de.bare_names = #{req.bareNames}</if>
       <if test="req.excel != null">AND de.excel = #{req.excel}</if>
       <if test="req.extended != null">AND de.extended = #{req.extended}</if>
+      AND <if test="req.extinct == null">de.extinct IS NULL</if><if test="req.extinct != null">de.extinct = #{req.extinct}</if>
     </where>
   </sql>
+
 
   <select id="count" resultType="integer">
     SELECT count(*)

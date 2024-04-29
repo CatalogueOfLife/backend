@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.Entity;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.TestDataRule;
@@ -44,10 +45,11 @@ abstract class CRUDTestBase<K, V extends Entity<K>, M extends CRUD<K, V>> extend
   @Test
   public void roundtrip() throws Exception {
     V u1 = createTestEntity();
+
     mapper().create(u1);
     commit();
-    
-    V u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
+    var u0 = mapper().get(u1.getKey());
+    V u2 = removeDbCreatedProps(u0);
     removeDbCreatedProps(u1);
     //printDiff(u1, u2);
     assertEquals(u1, u2);

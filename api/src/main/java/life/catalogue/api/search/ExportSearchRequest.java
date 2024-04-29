@@ -11,6 +11,11 @@ import java.util.Set;
 
 import javax.ws.rs.QueryParam;
 
+/**
+ * Watch out - null values mean different things.
+ * For most properties NULL means I don't care - match any.
+ * For some the filter only selects actual null values which is indicated in the fields descriptions
+ */
 public class ExportSearchRequest {
   @QueryParam("datasetKey")
   private Integer datasetKey;
@@ -25,10 +30,10 @@ public class ExportSearchRequest {
   private DataFormat format;
 
   @QueryParam("taxonID")
-  private String taxonID;
+  private String taxonID; // NULL requires taxonID to be null in the export
 
   @QueryParam("minRank")
-  private Rank minRank;
+  private Rank minRank; // NULL requires minRank to be null in the export
 
   @QueryParam("synonyms")
   private Boolean synonyms;
@@ -43,7 +48,7 @@ public class ExportSearchRequest {
   private Boolean extended;
 
   @QueryParam("extinct")
-  private Boolean extinct;
+  private Boolean extinct;// NULL requires extinct to be null in the export
 
   /**
    * Matches complete exports of a dataset not in Excel which have finished successfully and regardless of their format

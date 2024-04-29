@@ -24,6 +24,7 @@ public class DatasetExportDaoIT extends DaoTestBase {
     DatasetExportDao dao = new DatasetExportDao(new JobConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(TestDataRule.APPLE.key);
+    req.setExtinct(true);
     var c = dao.current(req);
     assertNull(c);
 

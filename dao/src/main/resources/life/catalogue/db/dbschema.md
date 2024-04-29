@@ -14,6 +14,13 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+### 2024-04-24 latest dataset attempt state
+```sql
+ALTER TABLE dataset_export DROP COLUMN modified_by;
+ALTER TABLE dataset_export DROP COLUMN modified;
+ALTER TABLE dataset_export ADD COLUMN extinct BOOLEAN;
+```
+
 
 ### 2024-04-24 latest dataset attempt state
 ```sql
