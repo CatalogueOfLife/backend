@@ -46,7 +46,7 @@ public class DatasetIndexTest {
       CSVReader reader = CSVReaderFactory.build(testFile, "UTF8", "\t", null, 0);
       while (reader.hasNext()) {
         String[] row = reader.next();
-        NameUsage n = new NameUsage();
+        NameUsage n = NameUsage.builder().build();
         n.setId(row[0]);
         n.setParentId(row[1]);
         n.setScientificName(row[2]);

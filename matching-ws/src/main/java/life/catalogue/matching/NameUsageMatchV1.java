@@ -25,10 +25,9 @@ public class NameUsageMatchV1 {
   private List<NameUsageMatchV1> alternatives;
   private String kingdom;
   private String phylum;
-
+  private Boolean synonym;
   @JsonProperty("class")
   private String clazz;
-
   private String order;
   private String family;
   private String genus;
@@ -71,6 +70,7 @@ public class NameUsageMatchV1 {
     match.setGenus(nameUsageMatch.getGenus());
     match.setSubgenus(nameUsageMatch.getSubgenus());
     match.setSpecies(nameUsageMatch.getSpecies());
+
     if (nameUsageMatch.getHigherRankKey(Rank.KINGDOM) != null)
       match.setKingdomKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.KINGDOM)));
     if (nameUsageMatch.getHigherRankKey(Rank.PHYLUM) != null)

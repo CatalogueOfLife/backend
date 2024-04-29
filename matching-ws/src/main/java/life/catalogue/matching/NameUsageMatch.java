@@ -42,10 +42,12 @@ public class NameUsageMatch implements LinneanClassification {
         this.getClassification().stream().filter(c -> c.getRank().equals(rank)).findFirst();
     if (name.isPresent()) {
       name.get().setName(value);
+      name.get().setCanonicalName(value);
     } else {
       RankedName newRank = new RankedName();
       newRank.setRank(rank);
       newRank.setName(value);
+      newRank.setCanonicalName(value);
       this.getClassification().add(newRank);
     }
   }

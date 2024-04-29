@@ -137,15 +137,9 @@ public class IndexingService {
 
       while (reader.hasNext()) {
         String[] row = reader.next();
-        NameUsage name = new NameUsage();
-        name.id = row[0];
-        name.parentId = row[1];
-        name.scientificName = row[2];
-        name.authorship = row[3];
-        name.rank = row[4];
-        name.status = row[5];
-        name.nomenclaturalCode = row[6];
-        Document doc = toDoc(name);
+        NameUsage nameUsage = NameUsage.builder().id(row[0]).parentId(row[1]).scientificName(row[2]).authorship(row[3])
+          .rank(row[4]).status(row[5]).nomenclaturalCode(row[6]).build();
+        Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);
         counter.incrementAndGet();
       }
@@ -240,9 +234,9 @@ public class IndexingService {
     doc.add(new StringField(FIELD_ID, nameUsage.id, Field.Store.YES));
 
     // we only store accepted key, no need to index it
-    // FIXME Re-check this understanding. If the name is a synonym, then parentId name usage points
+    // If the name is a synonym, then parentId name usage points
     // to the accepted name
-    if (nameUsage.status.equals(TaxonomicStatus.SYNONYM.name())) {
+    if (nameUsage.status != null && nameUsage.status.equals(TaxonomicStatus.SYNONYM.name()) && nameUsage.parentId != null) {
       doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
     }
 
@@ -259,20 +253,13 @@ public class IndexingService {
     // this lucene index is not persistent, so not risk in changing ordinal numbers
     doc.add(new StringField(FIELD_RANK, nameUsage.rank, Field.Store.YES));
 
-    if (nameUsage.parentId != null) {
+    if (nameUsage.parentId != null && !nameUsage.parentId.equals(nameUsage.id)) {
       doc.add(new StringField(FIELD_PARENT_ID, nameUsage.parentId, Field.Store.YES));
     }
 
-    // FIXME: old implementation allowed only 3 values for status: accepted, doubtful and synonym
-    // Shall we pass more values and re-educate pipelines ?
-    //    if (nameUsage.status == null) {
-    //      status = TaxonomicStatus.DOUBTFUL;
-    //    } else if (status.isSynonym()) {
-    //      status = TaxonomicStatus.SYNONYM;
-    //    }
-    //    doc.add(new StoredField(FIELD_STATUS, status.ordinal()));
-    doc.add(new StringField(FIELD_STATUS, nameUsage.status, Field.Store.YES));
-
+    if (nameUsage.status != null) {
+      doc.add(new StringField(FIELD_STATUS, nameUsage.status, Field.Store.YES));
+    }
     return doc;
   }
 

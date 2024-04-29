@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class MatchingServiceTest {
 
   @Test
-  public void rankSimilarityTest() throws Exception {
+  public void rankSimilarityTest(){
     assertEquals(6, rankSimilarity(FAMILY, FAMILY));
     assertEquals(6, rankSimilarity(SPECIES, SPECIES));
     assertEquals(-1, rankSimilarity(GENUS, SUBGENUS));
@@ -36,6 +36,8 @@ public class MatchingServiceTest {
     assertEquals(2, rankSimilarity(SUBSPECIES, INFRASPECIFIC_NAME));
     assertEquals(-35, rankSimilarity(GENUS, CLASS));
     assertEquals(-35, rankSimilarity(GENUS, FAMILY));
+    // FIXME this value has changed due to rank ordinal values being changed
+    // with the introduction of the new rank class
     assertEquals(-35, rankSimilarity(FAMILY, KINGDOM));
   }
 

@@ -245,16 +245,13 @@ public class MatchingService {
       if (match == null) {
         match = new NameUsageMatch();
         Diagnostics diagnostics = new Diagnostics();
-        match.setDiagnostics(diagnostics);
         diagnostics.setMatchType(MatchType.NONE);
         diagnostics.setConfidence(100);
-      } else {
-        Diagnostics diagnostics = new Diagnostics();
         match.setDiagnostics(diagnostics);
+      } else {
         match
             .getDiagnostics()
             .setNote("All provided names were ignored since the usageKey was provided");
-        match.getDiagnostics().setMatchType(MatchType.EXACT);
       }
       watch.stop();
       LOG.debug(
@@ -1169,7 +1166,6 @@ public class MatchingService {
           similarity -= 35;
 
         } else {
-          // GENERIC: rate lower the further away the ranks are
           similarity -= Math.abs(ref.ordinal() - query.ordinal());
         }
       }

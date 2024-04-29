@@ -106,12 +106,12 @@ public class MatchingServiceImplIT {
         "\n"
             + name
             + " matches "
-            + best.getUsage().getName()
+            + (best.getUsage() != null ? best.getUsage().getName(): "no match")
             + " ["
-            + best.getUsage().getKey()
+            + (best.getUsage() != null ? best.getUsage().getKey(): "no matching key")
             + "] with confidence "
             + best.getDiagnostics().getConfidence());
-    if (best.getUsage().getKey() != null) {
+    if (best.getUsage() != null && best.getUsage().getKey() != null) {
       System.out.println(
           "  "
               + CLASS_JOINER.join(
@@ -186,7 +186,14 @@ public class MatchingServiceImplIT {
 
     print(name, best);
 
-    assertEquals(expectedKey, best.getUsage().getKey(), "Wrong expected key");
+    if (expectedKey == null){
+      assertNull(best.getUsage(), "Wrong expected key");
+    } else {
+      if (best.getUsage() == null)
+        assertEquals(expectedKey, null, "Wrong expected key");
+      else
+        assertEquals(expectedKey, best.getUsage().getKey(), "Wrong expected key");
+    }
     if (type == null) {
       assertNotSame(MatchType.NONE, best.getDiagnostics().getMatchType(), "Wrong none match type");
     } else {
@@ -210,16 +217,14 @@ public class MatchingServiceImplIT {
     print(name, best);
 
     assertEquals(MatchType.NONE, best.getDiagnostics().getMatchType());
-    assertNull(best.getUsage().getKey());
+    assertNull(best.getUsage());
   }
 
   static void assertMatchConsistency(NameUsageMatch match) {
     assertNotNull(match.getDiagnostics().getConfidence());
     assertNotNull(match.getDiagnostics().getMatchType());
     if (MatchType.NONE == match.getDiagnostics().getMatchType()) {
-      assertNull(match.getUsage().getKey());
-
-      assertNull(match.getUsage().getName());
+      assertNull(match.getUsage());
       assertNull(match.getSpeciesKey());
       assertNull(match.getGenusKey());
       assertNull(match.getFamilyKey());
@@ -464,6 +469,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("O")
+          .kingdomKey("A")
+          .phylumKey("B")
+          .classKey("C")
+          .orderKey("O")
             .confidence(100)
             .build();
     NameUsageMatch m2 =
@@ -472,6 +481,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("O")
+          .kingdomKey("A")
+          .phylumKey("B")
+          .classKey("C")
+          .orderKey("O")
             .confidence(99)
             .build();
     NameUsageMatch m3 =
@@ -480,6 +493,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("X")
+          .kingdomKey("A")
+          .phylumKey("B")
+          .classKey("C")
+          .orderKey("X")
             .confidence(99)
             .build();
     NameUsageMatch m4 =
@@ -488,8 +505,10 @@ public class MatchingServiceImplIT {
         NameUsageBuilder.builder()
             .kingdom("A")
             .phylum("B")
-            .clazz("C")
             .clazz("O")
+            .kingdomKey("A")
+            .phylumKey("B")
+            .classKey("O")
             .confidence(90)
             .build();
 
@@ -667,7 +686,7 @@ public class MatchingServiceImplIT {
    */
   @Test
   public void testViruses() throws IOException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     assertMatch("Inachis io", cl, 5881450, new IntRange(92, 100));
     assertMatch("Inachis io (Linnaeus)", cl, 5881450, new IntRange(95, 100));
     assertMatch("Inachis io NPV", cl, 8562651, new IntRange(95, 100));
@@ -686,7 +705,7 @@ public class MatchingServiceImplIT {
    */
   @Test
   public void testPOR2704() throws IOException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     cl.setKingdom("Plantae");
     cl.setFamily("Scrophulariaceae"); // nowadays Plantaginaceae as in our nub/col
     assertMatch("Linaria pedunculata (L.) Chaz.", cl, 3172168, new IntRange(90, 100));
@@ -695,7 +714,7 @@ public class MatchingServiceImplIT {
   /** Classification names need to be parsed if they are no monomials already */
   @Test
   public void testClassificationWithAuthors() throws IOException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     cl.setKingdom("Fungi Bartling, 1830");
     cl.setPhylum("Ascomycota Caval.-Sm., 1998");
     cl.setClazz("Lecanoromycetes, O.E. Erikss. & Winka, 1997");
@@ -708,7 +727,7 @@ public class MatchingServiceImplIT {
   /** Non existing species should match genus Quedius http://dev.gbif.org/issues/browse/POR-1712 */
   @Test
   public void testPOR1712() throws IOException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     cl.setClazz("Hexapoda");
     cl.setFamily("Staphylinidae");
     cl.setGenus("Quedius");

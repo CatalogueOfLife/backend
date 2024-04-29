@@ -42,11 +42,11 @@ public class MatchingServiceImplStrictIT {
   }
 
   private void assertMatch(String name, Rank rank, Kingdom kingdom, Integer expectedKey) {
-    assertMatch(name, rank, kingdom, expectedKey, null);
+    assertMatch(name, rank, kingdom, String.valueOf(expectedKey), null);
   }
 
   private void assertMatch(
-      String name, Rank rank, Kingdom kingdom, Integer expectedKey, @Nullable IntRange confidence) {
+      String name, Rank rank, Kingdom kingdom, String expectedKey, @Nullable IntRange confidence) {
     NameUsageMatch best = query(name, rank, kingdom);
 
     printMatch(name, best);
@@ -89,7 +89,7 @@ public class MatchingServiceImplStrictIT {
                   best.getClazz(),
                   best.getOrder(),
                   best.getFamily()));
-      System.out.println("  " + best.getDiagnostics().getNote());
+      System.out.println("diag: " + best.getDiagnostics().getNote());
     }
 
     if (best.getAlternatives() != null && !best.getAlternatives().isEmpty()) {
