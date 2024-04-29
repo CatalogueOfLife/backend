@@ -27,6 +27,9 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   @Test
   public void roundTripNullPatch() throws Exception {
     var d1 = DatasetTest.createNullPatchDataset(TestEntityGenerator.DATASET11.getKey());
+    // ignore the source property which we dont even store in the db!
+    d1.setSource(null);
+
     TestEntityGenerator.setUserDate(d1);
     mapper().create(Datasets.COL, d1);
     commit();

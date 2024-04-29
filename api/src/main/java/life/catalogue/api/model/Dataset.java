@@ -53,7 +53,9 @@ public class Dataset extends DataEntity<Integer> {
   private static final List<String> NULL_LIST_STR = List.of("NULL","Null","null");
   private static final Map<String,String> NULL_MAP = Map.of("NULL","NULL",  "Null","Null",  "null","null");
   // properties which are human mediated and can be patched
-  // title is the only required property, make sure it is not null !!!
+  // title & license are the only required property, make sure they are not null !!!
+  // this list of properties is not only used for patching,
+  // but also to copy/merge metadata found during imports!
   public static final List<PropertyDescriptor> PATCH_PROPS;
 
   static {
@@ -72,7 +74,6 @@ public class Dataset extends DataEntity<Integer> {
         "gbifKey",
         "gbifPublisherKey",
         "size",
-        "source", // (citations): not stored in patches in the db at all !!!
         "license", // required
         "containerKey",
         "containerTitle",
