@@ -65,13 +65,15 @@ abstract class SectorRunnable implements Runnable {
   private final EventBus bus;
   final User user;
   final SectorImport state;
+  final boolean updateSectorAttemptOnSuccess;
 
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
                  UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
-                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
+                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, User user) throws IllegalArgumentException {
+    this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = Preconditions.checkNotNull(user);
     this.bus = bus;
     this.matcher = matcher;
@@ -120,7 +122,6 @@ abstract class SectorRunnable implements Runnable {
     LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
     LoggingUtils.setSourceMDC(sector.getSubjectDatasetKey());
 
-    boolean failed = true;
     try {
       state.setStarted(LocalDateTime.now());
       state.setState( ImportState.PREPARING);
@@ -145,8 +146,13 @@ abstract class SectorRunnable implements Runnable {
 
       state.setState( ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
-      failed = false;
       successCallback.accept(this);
+      if (updateSectorAttemptOnSuccess) {
+        // update sector with latest attempt on success if subclass requested it
+        try (SqlSession session = factory.openSession(true)) {
+          session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
+        }
+      }
 
     } catch (InterruptedException e) {
       LOG.warn("Interrupted {}", this, e);
@@ -164,10 +170,6 @@ abstract class SectorRunnable implements Runnable {
       // persist sector import
       try (SqlSession session = factory.openSession(true)) {
         session.getMapper(SectorImportMapper.class).update(state);
-        // update sector with latest attempt on success only for true syncs
-        if (!failed && this instanceof SectorSync) {
-          session.getMapper(SectorMapper.class).updateLastSync(sectorKey, state.getAttempt());
-        }
       }
       LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(state.getDuration(), "HH:mm:ss"));
       LoggingUtils.removeSourceMDC();
@@ -243,9 +245,9 @@ abstract class SectorRunnable implements Runnable {
         SectorDao.verifyTaxon(s, "target", s::getTargetAsDSID, tm);
       }
       // load current dataset import
-      var datasetImport = session.getMapper(DatasetImportMapper.class).last(subjectDatasetKey);
-      if (datasetImport != null) {
-        state.setDatasetAttempt(datasetImport.getAttempt());
+      var currentImp = session.getMapper(DatasetImportMapper.class).current(subjectDatasetKey);
+      if (currentImp != null) {
+        state.setDatasetAttempt(currentImp.getAttempt());
       }
 
       return s;

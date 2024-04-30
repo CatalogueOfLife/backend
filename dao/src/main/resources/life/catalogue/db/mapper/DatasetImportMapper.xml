@@ -5,21 +5,21 @@
 <mapper namespace="life.catalogue.db.mapper.DatasetImportMapper">
 
   <sql id="SELECT">
-    dataset_key,
-    attempt,
-    state,
+    di.dataset_key,
+    di.attempt,
+    di.state,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
-      <property name="alias" value=""/>
+      <property name="alias" value="di."/>
     </include>,
-    md5,
-    download_uri,
-    download,
-    format,
-    origin,
-    max_classification_depth,
-    verbatim_count,
-    verbatim_by_term_count,
-    verbatim_by_row_type_count
+    di.md5,
+    di.download_uri,
+    di.download,
+    di.format,
+    di.origin,
+    di.max_classification_depth,
+    di.verbatim_count,
+    di.verbatim_by_term_count,
+    di.verbatim_by_row_type_count
   </sql>
 
   <sql id="metricsCols">
@@ -218,6 +218,13 @@
     WHERE di.dataset_key=#{key}
     ORDER BY di.attempt DESC, di.started DESC
     LIMIT 1
+  </select>
+
+  <select id="current" resultMap="datasetImportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN dataset d on d.key=di.dataset_key
+    WHERE di.dataset_key=#{key} and di.attempt=d.attempt
   </select>
 
   <select id="count" resultType="integer">
