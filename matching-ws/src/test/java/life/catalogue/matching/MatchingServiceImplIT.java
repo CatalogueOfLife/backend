@@ -192,7 +192,8 @@ public class MatchingServiceImplIT {
       if (best.getUsage() == null)
         assertEquals(expectedKey, null, "Wrong expected key");
       else
-        assertEquals(expectedKey, best.getUsage().getKey(), "Wrong expected key");
+        assertEquals(expectedKey,best.getUsage().getKey(),
+          "Wrong expected key");
     }
     if (type == null) {
       assertNotSame(MatchType.NONE, best.getDiagnostics().getMatchType(), "Wrong none match type");
@@ -361,9 +362,9 @@ public class MatchingServiceImplIT {
   }
 
   @Test
-  public void testHomonyms() throws IOException {
+  public void testHomonyms() {
     // Oenanthe
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     assertNoMatch("Oenanthe", cl);
 
     cl.setKingdom("Animalia");
@@ -374,7 +375,7 @@ public class MatchingServiceImplIT {
     assertMatch("Oenante", cl, 3034893, new IntRange(84, 95));
 
     // Acanthophora
-    cl = new NameUsageMatch();
+    cl = new LinneanClassificationImpl();
     assertNoMatch("Acanthophora", cl);
 
     // there are 3 genera in animalia, 2 synonyms and 1 accepted but they differ at phylum level
@@ -425,7 +426,7 @@ public class MatchingServiceImplIT {
     assertMatch("Pima concolor", cl, 3925, new IntRange(90, 100));
 
     // Amphibia is a homonym genus, but also and most prominently a class!
-    cl = new NameUsageMatch();
+    cl = new LinneanClassificationImpl();
     // non existing "species" name. Amphibia could either be the genus or the class. As we
     assertNoMatch("Amphibia eyecount", cl);
 
@@ -444,7 +445,7 @@ public class MatchingServiceImplIT {
   public void testHomonyms2() throws IOException {
     // this hits 2 species synonyms with no such name being accepted
     // nub match must pick one if the accepted name of all synonyms is the same!
-    NameUsageMatch cl = new NameUsageMatch();
+    LinneanClassification cl = new LinneanClassificationImpl();
     cl.setKingdom("Plantae");
     cl.setFamily("Poaceae");
     assertMatch("Elytrigia repens", cl, 7522774, new IntRange(92, 100));
@@ -460,8 +461,7 @@ public class MatchingServiceImplIT {
    */
   @Test
   public void testHomonyms3() throws IOException {
-    NameUsageMatch cl = new NameUsageMatch();
-    assertMatch("Siphonophora", new NameUsageMatch(), 1, new IntRange(90, 100));
+    assertMatch("Siphonophora", new LinneanClassificationImpl(), 1, new IntRange(90, 100));
   }
 
   @Test
@@ -924,7 +924,7 @@ public class MatchingServiceImplIT {
     LinneanClassification cl = new LinneanClassificationImpl();
     cl.setKingdom("Plantae");
     // THIS SETS the genus too
-    NameUsageMatch m = assertMatch("Centaurea subg. Jacea", cl, 3148240, MatchType.EXACT);
+    NameUsageMatch m = assertMatch("Centaurea subg. Jacea", cl, 7652419, MatchType.EXACT);
     assertEquals("Jacea", m.getUsage().getCanonicalName());
   }
 
