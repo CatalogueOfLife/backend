@@ -63,7 +63,7 @@ public class SectorSync extends SectorRunnable {
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen,
              User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, user);
+    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;
