@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -19,15 +21,20 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
+import org.gbif.nameparser.util.NameFormatter;
 import org.gbif.utils.file.csv.CSVReader;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
@@ -59,7 +66,14 @@ public class IndexingService {
   @Value("${clb.driver}")
   String clDriver;
 
-  private static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
+  protected static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
+
+  protected static IndexWriterConfig getIndexWriterConfig(){
+    Map<String, Analyzer> analyzerPerField = new HashMap<>();
+    analyzerPerField.put(FIELD_SCIENTIFIC_NAME, new StandardAnalyzer());
+    PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(analyzer, analyzerPerField);
+    return new IndexWriterConfig(aWrapper);
+  }
 
   @Transactional
   public void writeCLBToFile(final Integer datasetKey) throws Exception {
@@ -69,7 +83,7 @@ public class IndexingService {
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
 
     // Create index writer configuration
-    IndexWriterConfig config = new IndexWriterConfig(analyzer);
+    IndexWriterConfig config = getIndexWriterConfig();
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
@@ -111,6 +125,30 @@ public class IndexingService {
     LOG.info("Records written to file {}: {}", fileName, counter.get());
   }
 
+  public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
+    LOG.info("Start building a new RAM index");
+    Directory dir = new ByteBuffersDirectory();
+
+    IndexWriter writer = getIndexWriter(dir);
+
+    // creates initial index segments
+    writer.commit();
+    int counter = 0;
+    for (NameUsage u : usages) {
+      if (u != null && u.getId() != null) {
+        writer.addDocument(toDoc(u));
+        counter++;
+      }
+    }
+    writer.close();
+    LOG.info("Finished building nub index with {} usages", counter);
+    return dir;
+  }
+
+  private static IndexWriter getIndexWriter(Directory dir) throws IOException {
+    return new IndexWriter(dir, getIndexWriterConfig());
+  }
+
   @Transactional
   public void indexFile(Integer datasetId) throws Exception {
 
@@ -122,7 +160,7 @@ public class IndexingService {
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create index writer configuration
-    IndexWriterConfig config = new IndexWriterConfig(analyzer);
+    IndexWriterConfig config = getIndexWriterConfig();
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
@@ -165,7 +203,7 @@ public class IndexingService {
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create index writer configuration
-    IndexWriterConfig config = new IndexWriterConfig(analyzer);
+    IndexWriterConfig config = getIndexWriterConfig();
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
@@ -220,7 +258,7 @@ public class IndexingService {
       ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.scientificName, rank, nomCode);
 
       // canonicalMinimal will construct the name without the hybrid marker and authorship
-      String canonical = org.gbif.nameparser.util.NameFormatter.canonicalMinimal(pn);
+      String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
     } catch (UnparsableNameException | InterruptedException e) {
       // do nothing
@@ -248,7 +286,7 @@ public class IndexingService {
     if (StringUtils.isNotBlank(nameUsage.authorship)) {
       nameComplete += " " + nameUsage.authorship;
     }
-    doc.add(new StringField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
+    doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
     doc.add(new StringField(FIELD_RANK, nameUsage.rank, Field.Store.YES));

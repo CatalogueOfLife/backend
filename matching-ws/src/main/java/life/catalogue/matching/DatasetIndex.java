@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
-import static life.catalogue.matching.IndexingService.toDoc;
+import static life.catalogue.matching.IndexingService.analyzer;
 
 import jakarta.annotation.PostConstruct;
 import java.io.File;
@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.Optional;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
-import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.gbif.nameparser.api.Rank;
@@ -31,8 +30,6 @@ import org.springframework.stereotype.Service;
 public class DatasetIndex {
 
   private static Logger LOG = LoggerFactory.getLogger(DatasetIndex.class);
-
-  private static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
 
   private IndexSearcher searcher;
 
@@ -64,22 +61,7 @@ public class DatasetIndex {
   }
 
   public static DatasetIndex newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
-    LOG.info("Start building a new RAM index");
-    ByteBuffersDirectory dir = new ByteBuffersDirectory();
-    IndexWriterConfig cfg = new IndexWriterConfig(analyzer);
-    IndexWriter writer = new IndexWriter(dir, cfg);
-    // creates initial index segments
-    writer.commit();
-    int counter = 0;
-    for (NameUsage u : usages) {
-      if (u != null && u.getId() != null) {
-        writer.addDocument(toDoc(u));
-        counter++;
-      }
-    }
-    writer.close();
-    LOG.info("Finished building nub index with {} usages", counter);
-
+    Directory dir = IndexingService.newMemoryIndex(usages);
     DatasetIndex datasetIndex = new DatasetIndex();
     datasetIndex.initWithDir(dir);
     return datasetIndex;
@@ -246,6 +228,16 @@ public class DatasetIndex {
     } else {
       q = new TermQuery(t);
     }
+
+    // strict match
+    Term t2 = new Term(FIELD_SCIENTIFIC_NAME, name.toLowerCase());
+    Query q2 = new TermQuery(t2);
+
+    BooleanQuery.Builder booleanQueryBuilder = new BooleanQuery.Builder();
+    booleanQueryBuilder.add(q, BooleanClause.Occur.SHOULD);
+    booleanQueryBuilder.add(q2, BooleanClause.Occur.SHOULD);
+
+    q = booleanQueryBuilder.build();
 
     try {
       return search(q, name, fuzzySearch, maxMatches);

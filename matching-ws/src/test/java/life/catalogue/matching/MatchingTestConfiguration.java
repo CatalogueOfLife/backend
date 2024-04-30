@@ -83,7 +83,6 @@ public class MatchingTestConfiguration {
         InputStream json = isu.classpathStream(file);
         if (json != null) {
           try {
-            int before = usages.size();
             NameUsageMatchV1 m = mapper.readValue(json, NameUsageMatchV1.class);
             for (NameUsage u : extractUsages(m)) {
               if (u != null) {
@@ -97,8 +96,6 @@ public class MatchingTestConfiguration {
                 }
               }
             }
-
-//            System.out.println("Loaded " + (usages.size() - before) + " new usage(s) from " + file);
           } catch (IOException e) {
             Assertions.fail("Failed to read " + file + ": " + e.getMessage());
           }
