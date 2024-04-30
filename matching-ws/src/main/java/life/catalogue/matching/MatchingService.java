@@ -228,7 +228,7 @@ public class MatchingService {
       @Nullable String infraSpecificEpithet,
       @Nullable Rank rank,
       @Nullable LinneanClassification classification,
-      Set<Integer> exclude,
+      Set<String> exclude,
       boolean strict,
       boolean verbose) {
 
@@ -288,7 +288,7 @@ public class MatchingService {
       @Nullable String scientificName,
       @Nullable Rank suppliedRank,
       @Nullable LinneanClassification classification,
-      Set<Integer> exclude,
+      Set<String> exclude,
       boolean strict,
       boolean verbose) {
 
@@ -513,10 +513,10 @@ public class MatchingService {
 
   public static String nameForRank(NameUsageMatch match, Rank rank) {
     return match.getClassification().stream()
-        .findFirst()
-        .filter(c -> c.getRank().equals(rank))
-        .map(c -> c.getName())
-        .orElse(null);
+      .filter(c -> c.getRank().equals(rank))
+      .findFirst()
+      .map(c -> c.getName())
+      .orElse(null);
   }
 
   private void cleanClassification(LinneanClassification cl) {
@@ -711,7 +711,7 @@ public class MatchingService {
       @Nullable String canonicalName,
       Rank rank,
       LinneanClassification lc,
-      Set<Integer> exclude,
+      Set<String> exclude,
       final MatchingMode mode,
       final boolean verbose) {
 

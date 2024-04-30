@@ -50,7 +50,7 @@ public class MatchingServiceImplIT {
 
   private NameUsageMatch assertMatch(
       String name, LinneanClassification query, Integer expectedKey, IntRange confidence) {
-    return assertMatch(name, query, expectedKey, confidence, null);
+    return assertMatch(name, query, expectedKey, confidence, Set.of());
   }
 
   private NameUsageMatch assertMatch(
@@ -58,7 +58,7 @@ public class MatchingServiceImplIT {
       LinneanClassification query,
       Integer expectedKey,
       IntRange confidence,
-      Set<Integer> exclude) {
+      Set<String> exclude) {
     return assertMatch(name, null, query, String.valueOf(expectedKey), null, confidence, exclude);
   }
 
@@ -73,10 +73,6 @@ public class MatchingServiceImplIT {
         name, rank, query, String.valueOf(expectedKey), type, new IntRange(1, 100), null);
   }
 
-  private NameUsageMatch assertMatch(String name, LinneanClassification query, String expectedKey) {
-    return assertMatch(name, query, expectedKey, null, new IntRange(1, 100));
-  }
-
   private NameUsageMatch assertMatch(
       String name, LinneanClassification query, String expectedKey, IntRange confidence) {
     return assertMatch(name, query, expectedKey, confidence, null);
@@ -87,7 +83,7 @@ public class MatchingServiceImplIT {
       LinneanClassification query,
       String expectedKey,
       IntRange confidence,
-      Set<Integer> exclude) {
+      Set<String> exclude) {
     return assertMatch(name, null, query, expectedKey, null, confidence, exclude);
   }
 
@@ -168,7 +164,7 @@ public class MatchingServiceImplIT {
       String expectedKey,
       @Nullable MatchType type,
       IntRange confidence,
-      Set<Integer> exclude) {
+      Set<String> exclude) {
     return assertMatch(null, name, rank, query, expectedKey, type, confidence, exclude);
   }
 
@@ -180,7 +176,7 @@ public class MatchingServiceImplIT {
       String expectedKey,
       @Nullable MatchType type,
       IntRange confidence,
-      Set<Integer> exclude) {
+      Set<String> exclude) {
     NameUsageMatch best =
         matcher.match(usageKey, name, null, null, null, null, rank, query, exclude, false, true);
 
@@ -895,12 +891,14 @@ public class MatchingServiceImplIT {
   public void higherOverFuzzy() throws IOException {
     LinneanClassification cl = new LinneanClassificationImpl();
     // Stolas
-    NameUsageMatch m = assertMatch("Stolas costaricensis", cl, 4734997, new IntRange(90, 99));
+    NameUsageMatch m = null;
+    m = assertMatch("Stolas costaricensis", cl, 4734997, new IntRange(90, 99));
     assertEquals(MatchType.HIGHERRANK, m.getDiagnostics().getMatchType());
 
     cl.setKingdom("Animalia");
     cl.setPhylum("Arthropoda");
     cl.setClazz("Insecta");
+
     // Stelis costaricensis
     m = assertMatch("Stolas costaricensis", cl, 1334265, new IntRange(90, 99));
     assertEquals(MatchType.FUZZY, m.getDiagnostics().getMatchType());
@@ -912,8 +910,8 @@ public class MatchingServiceImplIT {
     assertEquals(MatchType.HIGHERRANK, m.getDiagnostics().getMatchType());
 
     // exclude Stolas, match Stelis costaricensis again but with lower confidence now
-    Set<Integer> excl = new HashSet<>();
-    excl.add(7780); // excludes Stolas family
+    Set<String> excl = new HashSet<>();
+    excl.add("7780"); // excludes Stolas family
     m = assertMatch("Stolas costaricensis", cl, 1334265, new IntRange(80, 90), excl);
     assertEquals(MatchType.FUZZY, m.getDiagnostics().getMatchType());
   }

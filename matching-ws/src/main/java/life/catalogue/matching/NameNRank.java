@@ -106,7 +106,7 @@ public class NameNRank {
         Authorship authorship1 = Authorship.authors(clean(authorship));
         // FIXME is this ok ?
         pn.setCombinationAuthorship(authorship1);
-        // see if species rank in classificaiton can contribute sth
+        // see if species rank in classification can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
           if (m.find()) {

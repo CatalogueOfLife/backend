@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.StringUtils;
@@ -120,7 +122,7 @@ public class MatchController {
         removeNulls(infraspecificEpithet),
         parseRank(first(removeNulls(rank), removeNulls(rank2))),
         clean(classification),
-        null,
+        Set.of(),
         bool(strict),
         bool(verbose));
   }
@@ -155,7 +157,7 @@ public class MatchController {
             removeNulls(infraspecificEpithet),
             parseRank(first(removeNulls(rank), removeNulls(rank2))),
             clean(classification),
-            null,
+            Set.of(),
             bool(strict),
             bool(verbose)));
   }
