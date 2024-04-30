@@ -21,6 +21,7 @@ import com.google.common.collect.Maps;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,55 +120,44 @@ public class MatchingTestConfiguration {
    * @return a list of NameUsage instances, including the main usage and all alternatives.
    */
   private static List<NameUsage> extractUsages(NameUsageMatchV1 m)  {
-    List<NameUsage> usages = Lists.newArrayList();
+    Map<String, NameUsage> usages = new HashMap<>();
 
     NameUsage u = NameUsage.builder().build();
     u.setScientificName(m.getCanonicalName() != null ? m.getCanonicalName() : m.getScientificName());
-
-    try {
-      ParsedName pn = NameParsers.INSTANCE.parse(m.getScientificName());
-      if (pn != null) {
-        if (pn.getCombinationAuthorship() != null)
-          u.setAuthorship(pn.getCombinationAuthorship().toString());
-        else if (pn.getBasionymAuthorship() != null)
-          u.setAuthorship(pn.getBasionymAuthorship().toString());
-      }
-      if (m.getCanonicalName() !=null && m.getScientificName() !=null && m.getScientificName().length() > m.getCanonicalName().length())
-        u.setAuthorship(m.getScientificName().substring(m.getCanonicalName().length() + 1));
-
-    } catch (Exception e) {}
-
-    // add all the intermediate ranks
-    if (m.getKingdomKey() != null)
-      usages.add(NameUsage.builder().id(m.getKingdomKey().toString()).rank(Rank.KINGDOM.name()).status("ACCEPTED").
-        scientificName(m.getKingdom()).build());
-    if (m.getPhylumKey() != null)
-      usages.add(NameUsage.builder().id(m.getPhylumKey().toString()).rank(Rank.PHYLUM.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.PHYLUM)).scientificName(m.getPhylum()).build());
-    if (m.getClassKey() != null)
-      usages.add(NameUsage.builder().id(m.getClassKey().toString()).rank(Rank.CLASS.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.CLASS)).scientificName(m.getClazz()).build());
-    if (m.getOrderKey() != null)
-      usages.add(NameUsage.builder().id(m.getOrderKey().toString()).rank(Rank.ORDER.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.ORDER)).scientificName(m.getOrder()).build());
-    if (m.getFamilyKey() != null)
-      usages.add(NameUsage.builder().id(m.getFamilyKey().toString()).rank(Rank.FAMILY.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.FAMILY)).scientificName(m.getFamily()).build());
-    if (m.getGenusKey() != null)
-      usages.add(NameUsage.builder().id(m.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.GENUS)).scientificName(m.getGenus()).build());
-    if (m.getSpeciesKey() != null)
-      usages.add(NameUsage.builder().id(m.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").
-        parentId(getParentKey(m, Rank.SPECIES)).scientificName(m.getSpecies()).build());
-
-    if (m.getUsageKey() != null)
+    if (m.getCanonicalName() != null && m.getScientificName() != null && m.getScientificName().length() > m.getCanonicalName().length()){
+      u.setAuthorship(m.getScientificName().substring(m.getCanonicalName().length() + 1));
+    }
+    if (m.getUsageKey() != null) {
       u.setId(m.getUsageKey().toString());
+    }
 
     u.setRank(m.getRank());
     setStatus(m, u);
     setParent(m, u);
-    usages.add(u);
+    usages.put(u.getId(), u);
 
+    // add all the intermediate ranks
+    if (m.getKingdomKey() != null )
+      addIfNotPresent(usages, NameUsage.builder().id(m.getKingdomKey().toString()).rank(Rank.KINGDOM.name()).status("ACCEPTED").
+        scientificName(m.getKingdom()).build());
+    if (m.getPhylumKey() != null)
+      addIfNotPresent(usages, NameUsage.builder().id(m.getPhylumKey().toString()).rank(Rank.PHYLUM.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.PHYLUM)).scientificName(m.getPhylum()).build());
+    if (m.getClassKey() != null)
+      addIfNotPresent(usages, NameUsage.builder().id(m.getClassKey().toString()).rank(Rank.CLASS.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.CLASS)).scientificName(m.getClazz()).build());
+    if (m.getOrderKey() != null)
+      addIfNotPresent(usages, NameUsage.builder().id(m.getOrderKey().toString()).rank(Rank.ORDER.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.ORDER)).scientificName(m.getOrder()).build());
+    if (m.getFamilyKey() != null)
+      addIfNotPresent(usages, NameUsage.builder().id(m.getFamilyKey().toString()).rank(Rank.FAMILY.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.FAMILY)).scientificName(m.getFamily()).build());
+    if (m.getGenusKey() != null )
+      addIfNotPresent(usages, NameUsage.builder().id(m.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.GENUS)).scientificName(m.getGenus()).build());
+    if (m.getSpeciesKey() != null)
+      addIfNotPresent(usages, NameUsage.builder().id(m.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").
+        parentId(getParentKey(m, Rank.SPECIES)).scientificName(m.getSpecies()).build());
 
     if (m.getAlternatives() != null) {
       m.getAlternatives().stream()
@@ -176,47 +166,39 @@ public class MatchingTestConfiguration {
                 NameUsage alt = NameUsage.builder().build();
                 alt.setId(a.getUsageKey().toString());
                 alt.setScientificName(a.getCanonicalName() != null ? a.getCanonicalName() : a.getScientificName());
-                try {
-//                  ParsedName pn1 = NameParsers.INSTANCE.parse(a.getScientificName());
-//                  if (pn1 != null) {
-//                    if (pn1.getCombinationAuthorship() != null)
-//                      alt.setAuthorship(pn1.getCombinationAuthorship().toString());
-//                    else if (pn1.getBasionymAuthorship() != null)
-//                      alt.setAuthorship(pn1.getBasionymAuthorship().toString());
-//                  }
-
-                  if (a.getCanonicalName() !=null && a.getScientificName() !=null && a.getScientificName().length() > a.getCanonicalName().length())
-                    alt.setAuthorship(a.getScientificName().substring(a.getCanonicalName().length() + 1));
-
-                } catch (Exception e) {
-//                  e.printStackTrace();
+                if (a.getCanonicalName() != null && a.getScientificName() != null && a.getScientificName().length() > a.getCanonicalName().length()) {
+                  alt.setAuthorship(a.getScientificName().substring(a.getCanonicalName().length() + 1));
                 }
-
                 alt.setRank(a.getRank());
                 setStatus(a, alt);
+                setParent(a, alt);
+                usages.put(alt.getId(), alt);
 
                 // add all the intermediate ranks
-                if (a.getKingdomKey() != null)
-                  usages.add(NameUsage.builder().id(a.getKingdomKey().toString()).rank(Rank.KINGDOM.name()).status("ACCEPTED").scientificName(a.getKingdom()).build());
+                if (a.getKingdomKey() != null )
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getKingdomKey().toString()).rank(Rank.KINGDOM.name()).status("ACCEPTED").scientificName(a.getKingdom()).build());
                 if (a.getPhylumKey() != null)
-                  usages.add(NameUsage.builder().id(a.getPhylumKey().toString()).rank(Rank.PHYLUM.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.PHYLUM)).scientificName(a.getPhylum()).build());
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getPhylumKey().toString()).rank(Rank.PHYLUM.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.PHYLUM)).scientificName(a.getPhylum()).build());
                 if (a.getClassKey() != null)
-                  usages.add(NameUsage.builder().id(a.getClassKey().toString()).rank(Rank.CLASS.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.CLASS)).scientificName(a.getClazz()).build());
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getClassKey().toString()).rank(Rank.CLASS.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.CLASS)).scientificName(a.getClazz()).build());
                 if (a.getOrderKey() != null)
-                  usages.add(NameUsage.builder().id(a.getOrderKey().toString()).rank(Rank.ORDER.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.ORDER)).scientificName(a.getOrder()).build());
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getOrderKey().toString()).rank(Rank.ORDER.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.ORDER)).scientificName(a.getOrder()).build());
                 if (a.getFamilyKey() != null)
-                  usages.add(NameUsage.builder().id(a.getFamilyKey().toString()).rank(Rank.FAMILY.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.FAMILY)).scientificName(a.getFamily()).build());
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getFamilyKey().toString()).rank(Rank.FAMILY.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.FAMILY)).scientificName(a.getFamily()).build());
                 if (a.getGenusKey() != null)
-                  usages.add(NameUsage.builder().id(a.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.GENUS)).scientificName(a.getGenus()).build());
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getGenusKey().toString()).rank(Rank.GENUS.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.GENUS)).scientificName(a.getGenus()).build());
                 if (a.getSpeciesKey() != null)
-                  usages.add(NameUsage.builder().id(a.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.SPECIES)).scientificName(a.getSpecies()).build());
-
-                setParent(a, alt);
-                usages.add(alt);
+                  addIfNotPresent(usages, NameUsage.builder().id(a.getSpeciesKey().toString()).rank(Rank.SPECIES.name()).status("ACCEPTED").parentId(getParentKey(a, Rank.SPECIES)).scientificName(a.getSpecies()).build());
               }
           );
     }
-    return usages.stream().toList();
+    return usages.values().stream().toList();
+  }
+
+  public static void  addIfNotPresent(Map<String, NameUsage> usages, NameUsage usage){
+    if (!usages.containsKey(usage.getId())){
+      usages.put(usage.getId(), usage);
+    }
   }
 
   private static void setStatus(NameUsageMatchV1 source, NameUsage target) {
