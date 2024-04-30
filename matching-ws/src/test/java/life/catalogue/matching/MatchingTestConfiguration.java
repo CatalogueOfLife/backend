@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
-import org.gbif.nameparser.api.NameParser;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
+
+import org.gbif.nameparser.api.*;
 import org.gbif.utils.file.InputStreamUtils;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
@@ -120,8 +119,12 @@ public class MatchingTestConfiguration {
     Map<String, NameUsage> usages = new HashMap<>();
 
     NameUsage u = NameUsage.builder().build();
-    u.setScientificName(m.getCanonicalName() != null ? m.getCanonicalName() : m.getScientificName());
-    if (m.getCanonicalName() != null && m.getScientificName() != null && m.getScientificName().length() > m.getCanonicalName().length()){
+    u.setScientificName(m.getCanonicalName() != null && !isViralName(m.getScientificName()) ? m.getCanonicalName() : m.getScientificName());
+    if (m.getCanonicalName() != null
+      && m.getScientificName() != null
+      && m.getScientificName().length() > m.getCanonicalName().length()
+      && !isViralName(m.getScientificName())
+    ){
       u.setAuthorship(m.getScientificName().substring(m.getCanonicalName().length() + 1));
     }
     if (m.getUsageKey() != null) {
@@ -162,8 +165,12 @@ public class MatchingTestConfiguration {
               a -> {
                 NameUsage alt = NameUsage.builder().build();
                 alt.setId(a.getUsageKey().toString());
-                alt.setScientificName(a.getCanonicalName() != null ? a.getCanonicalName() : a.getScientificName());
-                if (a.getCanonicalName() != null && a.getScientificName() != null && a.getScientificName().length() > a.getCanonicalName().length()) {
+                alt.setScientificName(a.getCanonicalName() != null && !isViralName(a.getScientificName()) ? a.getCanonicalName() : a.getScientificName());
+                if (a.getCanonicalName() != null
+                  && a.getScientificName() != null
+                  && a.getScientificName().length() > a.getCanonicalName().length()
+                  && !isViralName(a.getScientificName())
+                ) {
                   alt.setAuthorship(a.getScientificName().substring(a.getCanonicalName().length() + 1));
                 }
                 alt.setRank(a.getRank());
@@ -191,6 +198,20 @@ public class MatchingTestConfiguration {
     }
     return usages.values().stream().toList();
   }
+
+  public static boolean isViralName(String name)  {
+    try {
+      NameParsers.INSTANCE.parse(name, null);
+    } catch (UnparsableNameException e) {
+      if (NameType.VIRUS == e.getType()) {
+        return true;
+      }
+    } catch (InterruptedException e) {
+      // swallow
+    }
+    return false;
+  }
+
 
   public static void  addIfNotPresent(Map<String, NameUsage> usages, NameUsage usage){
     if (!usages.containsKey(usage.getId())){
