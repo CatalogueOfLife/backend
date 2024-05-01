@@ -29,11 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class MatchController {
 
-  @GetMapping("/")
-  public String index() {
-    return "Lets get matching!";
-  }
-
   @Autowired MatchingService matchingService;
 
   @Operation(
@@ -64,7 +59,7 @@ public class MatchController {
         @Parameter(
             name = "rank",
             description =
-                "Filters by taxonomic rank as given in our https://api.gbif.org/v1/enumeration/basic/Rank[Rank enum].",
+                "Filters by taxonomic rank.",
             schema = @Schema(implementation = Rank.class)),
         @Parameter(name = "taxonRank", hidden = true),
         @Parameter(name = "kingdom", description = "Kingdom to match.", in = ParameterIn.QUERY),
@@ -73,6 +68,8 @@ public class MatchController {
         @Parameter(name = "class", description = "Class to match.", in = ParameterIn.QUERY),
         @Parameter(name = "family", description = "Family to match.", in = ParameterIn.QUERY),
         @Parameter(name = "genus", description = "Genus to match.", in = ParameterIn.QUERY),
+        @Parameter(name = "subgenus", description = "Subgenus to match.", in = ParameterIn.QUERY),
+        @Parameter(name = "species", description = "Species to match.", in = ParameterIn.QUERY),
         @Parameter(
             name = "genericName",
             description =
@@ -80,6 +77,7 @@ public class MatchController {
         @Parameter(name = "specificEpithet", description = "Specific epithet to match."),
         @Parameter(name = "infraspecificEpithet", description = "Infraspecific epithet to match."),
         @Parameter(name = "classification", hidden = true),
+        @Parameter(name = "arg10", hidden = true),
         @Parameter(
             name = "strict",
             description =
@@ -107,9 +105,10 @@ public class MatchController {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+      LinneanClassificationImpl classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
-      LinneanClassificationImpl classification,
+
       HttpServletRequest response) {
     // ugly, i know, but jackson/spring isnt working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
@@ -141,9 +140,9 @@ public class MatchController {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+      LinneanClassificationImpl classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
-      LinneanClassificationImpl classification,
       HttpServletRequest response) {
 
     classification.setClazz(response.getParameter("class"));
