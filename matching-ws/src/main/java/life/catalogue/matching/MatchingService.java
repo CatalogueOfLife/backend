@@ -1064,7 +1064,7 @@ public class MatchingService {
       // modify confidence according to genus comparison in bionomials.
       // slightly trust binomials with a matching genus more, and trust less if we matched a
       // different genus name
-      int spaceIdx = m.getUsage().getName().indexOf(" ");
+      int spaceIdx = m.getUsage().getCanonicalName().indexOf(" ");
       if (spaceIdx > 0) {
         String genus = m.getUsage().getName().substring(0, spaceIdx);
         if (canonicalName.startsWith(genus)) {
