@@ -11,6 +11,8 @@ import life.catalogue.matching.similarity.JaroWinkler;
 import org.gbif.nameparser.api.Authorship;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -53,6 +55,45 @@ public class AuthorComparator {
     if (result != Equality.DIFFERENT) {
       var aresult = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP);
       return result.and(aresult);
+    }
+    return result;
+  }
+
+  /**
+   * This ported over from gbif/checklistbank.
+   * The {@link AuthorComparator.compare} compares years first
+   * which leads to very different results compared to current GBIF API.
+   *
+   * Compares the authorteams and year of two names.
+   * If given both the year and authorteam needs to match to yield an EQUAL,
+   * with a small difference of 2 years being accepted.
+   */
+  public Equality compareAuthorsFirst(@Nullable Authorship a1, @Nullable Authorship a2) {
+    // compare year first - simpler to calculate
+    Equality result = compareAuthorteam(a1, a2, minCommonSubstring, MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP);
+    if (result != Equality.EQUAL) {
+      // if authors are not the same we allow a positive year comparison to override it as author comparison is very difficult
+      Equality yresult = new YearComparator(a1.getYear(), a2.getYear()).compare();
+      if (yresult != Equality.UNKNOWN) {
+        if (yresult == Equality.DIFFERENT || a1.getAuthors().isEmpty()  || a2.getAuthors().isEmpty()) {
+          result = yresult;
+        } else {
+          // year EQUAL, i.e. very close by
+          // also make sure we have at least one capital char overlap between the 2 authorships
+          Set<Character> upper1 = String.join("; ", a1.getAuthors()).chars()
+            .filter(Character::isUpperCase)
+            .mapToObj(c -> (char) c)
+            .collect(Collectors.toSet());
+          Set<Character> upper2 = String.join("; ", a2.getAuthors()).chars()
+            .filter(Character::isUpperCase)
+            .mapToObj(c -> (char) c)
+            .collect(Collectors.toSet());
+          upper1.retainAll(upper2);
+          if (!upper1.isEmpty()) {
+            result = yresult;
+          }
+        }
+      }
     }
     return result;
   }

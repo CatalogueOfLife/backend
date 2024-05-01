@@ -920,9 +920,9 @@ public class MatchingService {
             NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
         // authorship comparison was requested!
         Equality recomb =
-            authComp.compare(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
+            authComp.compareAuthorsFirst(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
         Equality bracket =
-            authComp.compare(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
+            authComp.compareAuthorsFirst(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
         if (bracket == Equality.UNKNOWN) {
           // we don't have 2 bracket authors to compare. Try with combination authors as brackets
           // are sometimes forgotten or wrong

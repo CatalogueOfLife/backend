@@ -246,6 +246,11 @@ public class MatchingTestConfiguration {
 
     if (m.getSynonym()) {
 
+      if (m.getAcceptedUsageKey() != null) {
+        u.setParentId(m.getAcceptedUsageKey().toString());
+        return;
+      }
+
       // need to get the key from the other
       if (m.getRank().equals("SPECIES") && m.getSpeciesKey() != null)
         u.setParentId(m.getSpeciesKey().toString());
@@ -286,5 +291,4 @@ public class MatchingTestConfiguration {
       }
     }
   }
-
 }
