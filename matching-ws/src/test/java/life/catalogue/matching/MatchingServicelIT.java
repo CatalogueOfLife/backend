@@ -28,10 +28,9 @@ import life.catalogue.api.vocab.MatchType;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-public class MatchingServiceImplIT {
+public class MatchingServicelIT {
 
   private static MatchingService matcher;
   private static final Joiner CLASS_JOINER = Joiner.on("; ").useForNull("???");
@@ -102,9 +101,9 @@ public class MatchingServiceImplIT {
         "\n"
             + name
             + " matches "
-            + (best.getUsage() != null ? best.getUsage().getName(): "no match")
+            + (best.getUsage() != null ? best.getUsage().getName() : "no match")
             + " ["
-            + (best.getUsage() != null ? best.getUsage().getKey(): "no matching key")
+            + (best.getUsage() != null ? best.getUsage().getKey() : "no matching key")
             + "] with confidence "
             + best.getDiagnostics().getConfidence());
     if (best.getUsage() != null && best.getUsage().getKey() != null) {
@@ -182,14 +181,11 @@ public class MatchingServiceImplIT {
 
     print(name, best);
 
-    if (expectedKey == null){
+    if (expectedKey == null) {
       assertNull(best.getUsage(), "Wrong expected key");
     } else {
-      if (best.getUsage() == null)
-        assertEquals(expectedKey, null, "Wrong expected key");
-      else
-        assertEquals(expectedKey,best.getUsage().getKey(),
-          "Wrong expected key");
+      if (best.getUsage() == null) assertEquals(expectedKey, null, "Wrong expected key");
+      else assertEquals(expectedKey, best.getUsage().getKey(), "Wrong expected key");
     }
     if (type == null) {
       assertNotSame(MatchType.NONE, best.getDiagnostics().getMatchType(), "Wrong none match type");
@@ -256,8 +252,8 @@ public class MatchingServiceImplIT {
           assertNull(match.getSpeciesKey());
 
         } else if (rank == Rank.SPECIES) {
-          //FIXME - this breaks a test, but the actual result doesnt have a genus
-//          assertNotNull(match.getGenus());
+          // FIXME - this breaks a test, but the actual result doesnt have a genus
+          //          assertNotNull(match.getGenus());
           assertNotNull(match.getSpecies());
           assertNotNull(match.getSpeciesKey());
           if (!match.isSynonym()) {
@@ -266,7 +262,7 @@ public class MatchingServiceImplIT {
           }
 
         } else if (rank.isInfraspecific()) {
-//          assertNotNull(match.getGenus());
+          //          assertNotNull(match.getGenus());
           assertNotNull(match.getSpecies());
           assertNotNull(match.getSpeciesKey());
           if (!match.isSynonym()) {
@@ -319,8 +315,8 @@ public class MatchingServiceImplIT {
     assertMatch("Aneplus", cl, "1027792", new IntRange(98, 100));
 
     // too far off
-    //FIXME - im not sure what the sensible outcome is for this one....
-    //assertMatch("Anmeplues", cl, "1", new IntRange(90, 100));
+    // FIXME - im not sure what the sensible outcome is for this one....
+    // assertMatch("Anmeplues", cl, "1", new IntRange(90, 100));
 
     assertNoMatch("Anmeplues", new NameUsageMatch(), new IntRange(-10, 80));
   }
@@ -468,10 +464,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("O")
-          .kingdomKey("A")
-          .phylumKey("B")
-          .classKey("C")
-          .orderKey("O")
+            .kingdomKey("A")
+            .phylumKey("B")
+            .classKey("C")
+            .orderKey("O")
             .confidence(100)
             .build();
     NameUsageMatch m2 =
@@ -480,10 +476,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("O")
-          .kingdomKey("A")
-          .phylumKey("B")
-          .classKey("C")
-          .orderKey("O")
+            .kingdomKey("A")
+            .phylumKey("B")
+            .classKey("C")
+            .orderKey("O")
             .confidence(99)
             .build();
     NameUsageMatch m3 =
@@ -492,10 +488,10 @@ public class MatchingServiceImplIT {
             .phylum("B")
             .clazz("C")
             .order("X")
-          .kingdomKey("A")
-          .phylumKey("B")
-          .classKey("C")
-          .orderKey("X")
+            .kingdomKey("A")
+            .phylumKey("B")
+            .classKey("C")
+            .orderKey("X")
             .confidence(99)
             .build();
     NameUsageMatch m4 =
@@ -811,8 +807,8 @@ public class MatchingServiceImplIT {
   @Test
   public void testIndet() throws IOException {
     LinneanClassification cl = new LinneanClassificationImpl();
-//    assertMatch("Peperomia induta", cl, 4189260, new IntRange(95, 100));
-//    assertMatch("Peperomia indet", cl, 3086367, MatchType.HIGHERRANK);
+    //    assertMatch("Peperomia induta", cl, 4189260, new IntRange(95, 100));
+    //    assertMatch("Peperomia indet", cl, 3086367, MatchType.HIGHERRANK);
     assertMatch("Lacerta bilineata indet", cl, 6159243, new IntRange(95, 100));
   }
 

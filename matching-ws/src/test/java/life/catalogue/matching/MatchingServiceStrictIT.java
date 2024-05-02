@@ -23,7 +23,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class MatchingServiceImplStrictIT {
+public class MatchingServiceStrictIT {
 
   private static MatchingService matcher;
   private static final Joiner JOINER = Joiner.on("; ").useForNull("???");
@@ -58,7 +58,7 @@ public class MatchingServiceImplStrictIT {
           confidence.contains(best.getDiagnostics().getConfidence()),
           "confidence " + best.getDiagnostics().getConfidence() + " not within " + confidence);
     }
-    MatchingServiceImplIT.assertMatchConsistency(best);
+    MatchingServicelIT.assertMatchConsistency(best);
   }
 
   private void assertNoMatch(String name, Rank rank, Kingdom kingdom) {
@@ -144,7 +144,7 @@ public class MatchingServiceImplStrictIT {
     assertMatch("Modiola caroliniana (L.) G. Don fil.", Rank.SPECIES, Kingdom.PLANTAE, 8338793);
 
     assertNoMatch("Oenothera affinis Cambess. ex A. St. Hil.", Rank.SPECIES, Kingdom.PLANTAE);
-//    assertMatch("Oenothera affinis Loud.", Rank.SPECIES, Kingdom.PLANTAE, 7860544);
+    //    assertMatch("Oenothera affinis Loud.", Rank.SPECIES, Kingdom.PLANTAE, 7860544);
     assertMatch("Oenothera affinis Camb.", Rank.SPECIES, Kingdom.PLANTAE, 3188847);
 
     assertMatch("Malva setigera F.K. Schimp. et Spenn.", Rank.SPECIES, Kingdom.PLANTAE, 3940638);

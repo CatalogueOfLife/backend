@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class MatchingServiceTest {
 
   @Test
-  public void rankSimilarityTest(){
+  public void rankSimilarityTest() {
     assertEquals(6, rankSimilarity(FAMILY, FAMILY));
     assertEquals(6, rankSimilarity(SPECIES, SPECIES));
     assertEquals(-1, rankSimilarity(GENUS, SUBGENUS));

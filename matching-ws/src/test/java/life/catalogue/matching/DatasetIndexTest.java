@@ -66,7 +66,7 @@ public class DatasetIndexTest {
   @Test
   public void testMatchByName() {
     final String abiesAlbaKey = "7";
-    NameUsageMatch m = index.matchByUsageId(abiesAlbaKey);
+    NameUsageMatch m = index.matchByUsageKey(abiesAlbaKey);
     assertEquals(abiesAlbaKey, m.getUsage().getKey());
     assertEquals("Abies alba Mill.", m.getUsage().getName());
     assertEquals(Rank.SPECIES, m.getUsage().getRank());

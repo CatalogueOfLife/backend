@@ -26,8 +26,10 @@ public class NameUsageMatchV1 {
   private String kingdom;
   private String phylum;
   private Boolean synonym;
+
   @JsonProperty("class")
   private String clazz;
+
   private String order;
   private String family;
   private String genus;

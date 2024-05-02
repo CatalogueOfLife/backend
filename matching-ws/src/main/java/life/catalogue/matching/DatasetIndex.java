@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
@@ -60,6 +58,13 @@ public class DatasetIndex {
     }
   }
 
+  /**
+   * Creates a new in memory lucene index from the given list of usages.
+   *
+   * @param usages
+   * @return
+   * @throws IOException
+   */
   public static DatasetIndex newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
     Directory dir = IndexingService.newMemoryIndex(usages);
     DatasetIndex datasetIndex = new DatasetIndex();
@@ -74,8 +79,14 @@ public class DatasetIndex {
     return searcher;
   }
 
-  public NameUsageMatch matchByUsageId(String usageID) {
-    Optional<Document> docOpt = getByUsageId(usageID);
+  /**
+   * Lookup a name usage by its usage key.
+   *
+   * @param usageKey
+   * @return
+   */
+  public NameUsageMatch matchByUsageKey(String usageKey) {
+    Optional<Document> docOpt = getByUsageId(usageKey);
     if (docOpt.isPresent()) {
       Document doc = docOpt.get();
       NameUsageMatch match = fromDoc(doc);
@@ -85,7 +96,7 @@ public class DatasetIndex {
       diagnostics.setMatchType(MatchType.EXACT);
       return match;
     } else {
-      LOG.warn("No usage {} found in lucene index", usageID);
+      LOG.warn("No usage {} found in lucene index", usageKey);
       NameUsageMatch match = new NameUsageMatch();
       Diagnostics diagnostics = new Diagnostics();
       match.setDiagnostics(diagnostics);
@@ -95,8 +106,8 @@ public class DatasetIndex {
     }
   }
 
-  public Optional<Document> getByUsageId(String usageID) {
-    Query query = new TermQuery(new Term(FIELD_ID, usageID));
+  public Optional<Document> getByUsageId(String usageKey) {
+    Query query = new TermQuery(new Term(FIELD_ID, usageKey));
     try {
       TopDocs docs = getSearcher().search(query, 3);
       if (docs.totalHits.value > 0) {
@@ -105,7 +116,7 @@ public class DatasetIndex {
         return Optional.empty();
       }
     } catch (IOException e) {
-      LOG.error("Cannot load usage {} from lucene index", usageID, e);
+      LOG.error("Cannot load usage {} from lucene index", usageKey, e);
     }
     return Optional.empty();
   }
@@ -139,6 +150,12 @@ public class DatasetIndex {
     return higherTaxa;
   }
 
+  /**
+   * Converts a lucene document into a NameUsageMatch object.
+   *
+   * @param doc
+   * @return
+   */
   private NameUsageMatch fromDoc(Document doc) {
 
     boolean synonym = false;

@@ -206,7 +206,9 @@ public class MatchingService {
   }
 
   public NameUsageMatch match(
-      @Nullable String scientificName, @Nullable LinneanClassification classification, boolean strict) {
+      @Nullable String scientificName,
+      @Nullable LinneanClassification classification,
+      boolean strict) {
     return match(
         null, scientificName, null, null, null, null, null, classification, null, strict, false);
   }
@@ -214,7 +216,8 @@ public class MatchingService {
   public NameUsageMatch match(
       @Nullable String scientificName,
       @Nullable Rank rank,
-      @Nullable LinneanClassification classification, boolean strict) {
+      @Nullable LinneanClassification classification,
+      boolean strict) {
     return match(
         null, scientificName, null, null, null, null, rank, classification, null, strict, false);
   }
@@ -239,7 +242,7 @@ public class MatchingService {
 
     // When provided a usageKey is used exclusively
     if (usageKey != null) {
-      match = datasetIndex.matchByUsageId(usageKey);
+      match = datasetIndex.matchByUsageKey(usageKey);
 
       // maintain backward compatible API
       if (match == null) {
@@ -341,7 +344,9 @@ public class MatchingService {
         // used parsed rank if not given explicitly, but only for bi+trinomials
         // see https://github.com/CatalogueOfLife/backend/issues/1316
         if (rank == null) {
-          if (pn.isBinomial() || pn.isTrinomial() || (pn.getRank() != null && pn.getRank().ordinal() >=Rank.SPECIES.ordinal())) {
+          if (pn.isBinomial()
+              || pn.isTrinomial()
+              || (pn.getRank() != null && pn.getRank().ordinal() >= Rank.SPECIES.ordinal())) {
             rank = Rank.valueOf(pn.getRank().name());
           }
         }
@@ -513,10 +518,10 @@ public class MatchingService {
 
   public static String nameForRank(NameUsageMatch match, Rank rank) {
     return match.getClassification().stream()
-      .filter(c -> c.getRank().equals(rank))
-      .findFirst()
-      .map(c -> c.getName())
-      .orElse(null);
+        .filter(c -> c.getRank().equals(rank))
+        .findFirst()
+        .map(c -> c.getName())
+        .orElse(null);
   }
 
   private void cleanClassification(LinneanClassification cl) {
@@ -897,7 +902,7 @@ public class MatchingService {
       // did all equal matches have the same higherKey?
       if (higherKey != null) {
         // NPE safetly first - maybe the key is missing in the index
-        NameUsageMatch match = datasetIndex.matchByUsageId(higherKey);
+        NameUsageMatch match = datasetIndex.matchByUsageKey(higherKey);
         if (match != null) {
           match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
           return match;
@@ -920,7 +925,8 @@ public class MatchingService {
             NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
         // authorship comparison was requested!
         Equality recomb =
-            authComp.compareAuthorsFirst(pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
+            authComp.compareAuthorsFirst(
+                pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
         Equality bracket =
             authComp.compareAuthorsFirst(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
         if (bracket == Equality.UNKNOWN) {

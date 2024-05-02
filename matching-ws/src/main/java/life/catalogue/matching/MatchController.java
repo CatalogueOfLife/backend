@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.StringUtils;
@@ -58,8 +57,7 @@ public class MatchController {
         @Parameter(name = "scientificNameAuthorship", hidden = true),
         @Parameter(
             name = "rank",
-            description =
-                "Filters by taxonomic rank.",
+            description = "Filters by taxonomic rank.",
             schema = @Schema(implementation = Rank.class)),
         @Parameter(name = "taxonRank", hidden = true),
         @Parameter(name = "kingdom", description = "Kingdom to match.", in = ParameterIn.QUERY),
@@ -108,7 +106,6 @@ public class MatchController {
       LinneanClassificationImpl classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
-
       HttpServletRequest response) {
     // ugly, i know, but jackson/spring isnt working with @JsonProperty
     classification.setClazz(response.getParameter("class"));

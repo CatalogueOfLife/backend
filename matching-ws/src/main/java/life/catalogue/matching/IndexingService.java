@@ -68,7 +68,7 @@ public class IndexingService {
 
   protected static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
 
-  protected static IndexWriterConfig getIndexWriterConfig(){
+  protected static IndexWriterConfig getIndexWriterConfig() {
     Map<String, Analyzer> analyzerPerField = new HashMap<>();
     analyzerPerField.put(FIELD_SCIENTIFIC_NAME, new StandardAnalyzer());
     PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(analyzer, analyzerPerField);
@@ -175,8 +175,16 @@ public class IndexingService {
 
       while (reader.hasNext()) {
         String[] row = reader.next();
-        NameUsage nameUsage = NameUsage.builder().id(row[0]).parentId(row[1]).scientificName(row[2]).authorship(row[3])
-          .rank(row[4]).status(row[5]).nomenclaturalCode(row[6]).build();
+        NameUsage nameUsage =
+            NameUsage.builder()
+                .id(row[0])
+                .parentId(row[1])
+                .scientificName(row[2])
+                .authorship(row[3])
+                .rank(row[4])
+                .status(row[5])
+                .nomenclaturalCode(row[6])
+                .build();
         Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);
         counter.incrementAndGet();
@@ -274,7 +282,9 @@ public class IndexingService {
     // we only store accepted key, no need to index it
     // If the name is a synonym, then parentId name usage points
     // to the accepted name
-    if (nameUsage.status != null && nameUsage.status.equals(TaxonomicStatus.SYNONYM.name()) && nameUsage.parentId != null) {
+    if (nameUsage.status != null
+        && nameUsage.status.equals(TaxonomicStatus.SYNONYM.name())
+        && nameUsage.parentId != null) {
       doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
     }
 
