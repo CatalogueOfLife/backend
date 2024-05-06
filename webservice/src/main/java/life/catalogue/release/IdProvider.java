@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.IdReportType;
@@ -115,14 +114,8 @@ public class IdProvider {
     try (SqlSession session = factory.openSession(true)) {
       lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, DatasetOrigin.RELEASE);
     }
-  }
 
-  public IdReport run() {
-    prepare();
-    mapIds();
-    report();
-    LOG.info("ID provision done. Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
-    return getReport();
+    init();
   }
 
   public static class InstableName implements DSID<String> {
@@ -344,7 +337,7 @@ public class IdProvider {
     }
   }
 
-  private void prepare(){
+  private void init(){
     File dir = cfg.reportDir(projectKey, attempt);
     dir.mkdirs();
     // load a map of all releases to their attempts
@@ -563,7 +556,7 @@ public class IdProvider {
       ReleasedId[] rids = ids.byNxId(nidx);
       if (rids != null) {
         IntSet ids = new IntOpenHashSet();
-        ScoreMatrix scores = new ScoreMatrix(names, rids, this::matchScore);
+        ScoreMatrix scores = new ScoreMatrix(names, rids, IdProvider::matchScore);
         List<ScoreMatrix.ReleaseMatch> best = scores.highest();
         while (!best.isEmpty()) {
           // best is sorted, issue as they come but avoid already released ids
@@ -616,8 +609,7 @@ public class IdProvider {
    *
    * @return zero for no match, positive for a match. The higher the better!
    */
-  private int matchScore(SimpleNameWithNidx n, ReleasedId r) {
-    var dsid = DSID.of(dataset2attempt.getKey(r.attempt), r.id());
+  private static int matchScore(SimpleNameWithNidx n, ReleasedId r) {
     // only one is a misapplied name - never match to anything else
     if (!Objects.equals(n.getStatus(), r.status) && (n.getStatus()==MISAPPLIED || r.status==MISAPPLIED) ) {
       return 0;
@@ -657,7 +649,7 @@ public class IdProvider {
     return score;
   }
 
-  private int matchTypeScore(MatchType mt) {
+  private static int matchTypeScore(MatchType mt) {
     switch (mt) {
       case EXACT: return 3;
       case VARIANT: return 2;

@@ -161,6 +161,9 @@ public class NameParserTest {
     assertNull(NameParser.normalizeAuthorship("(non Scacchi, 1836) sensu Zibrowius, 1968", "(non Scacchi, 1836) sensu Zibrowius, 1968"));
     assertEquals("Fischer-Le Saux et al., 1999", NameParser.normalizeAuthorship("Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004", "emend. Akhurst et al. , 2004"));
     assertEquals("Engl., nom. illeg.", NameParser.normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
+
+    assertNull(NameParser.normalizeAuthorship("[sic]", ""));
+    assertNull(NameParser.normalizeAuthorship("[sic!]", ""));
   }
 
   @Test
