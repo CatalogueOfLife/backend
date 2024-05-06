@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.model.User;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
@@ -15,6 +16,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
+
+import life.catalogue.release.UsageIdGen;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -49,14 +52,14 @@ public class SyncFactory {
 
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
-      successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, ShortUUID.ID_GEN, user);
+      successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
   public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg,
-                            Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen, User user) throws IllegalArgumentException {
+                            Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, User user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),
-      nameIdGen, usageIdGen, typeMaterialIdGen, user);
+      nameIdGen, typeMaterialIdGen, usageIdGen, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, User user) throws IllegalArgumentException {

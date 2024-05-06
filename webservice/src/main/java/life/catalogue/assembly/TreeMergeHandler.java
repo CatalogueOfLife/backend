@@ -14,6 +14,8 @@ import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import life.catalogue.release.UsageIdGen;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -47,10 +49,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                    User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
-                   Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
+                   Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, usageIdGen, typeMaterialIdGen);
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
     this.cfg = cfg;
     this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcher;

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.release.UsageIdGen;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -53,15 +55,15 @@ public class SectorSync extends SectorRunnable {
   private final int targetDatasetKey; // dataset to sync into
   private @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
+  private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
-  private final Supplier<String> usageIdGen;
   private final Supplier<String> typeMaterialIdGen;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
-             Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen,
+             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              User user) throws IllegalArgumentException {
     super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.project = project;
@@ -257,7 +259,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

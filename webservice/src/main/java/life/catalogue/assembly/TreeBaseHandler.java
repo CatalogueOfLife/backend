@@ -10,6 +10,8 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.release.UsageIdGen;
+
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
@@ -61,7 +63,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Set<String> ignoredTaxa = new HashSet<>(); // usageIDs of skipped accepted names only
   // id generators
   protected final Supplier<String> nameIdGen;
-  protected final Supplier<String> usageIdGen;
+  protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
@@ -75,7 +77,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
                          User user, Sector sector, SectorImport state,
-                         Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
+                         Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     this.targetDatasetKey = targetDatasetKey;
     this.targetKey = DSID.root(targetDatasetKey);
     this.user = user;
@@ -233,7 +235,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities,
-      usageIdGen, nameIdGen, typeMaterialIdGen,
+      nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
       this::lookupReference, this::lookupReference
     );
     // track source

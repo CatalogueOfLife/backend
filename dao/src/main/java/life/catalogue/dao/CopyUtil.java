@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.matching.NameIndex;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 
@@ -47,16 +49,17 @@ public class CopyUtil {
                                                                  @Nullable final DSID<String> targetParent,
                                                                  int user,
                                                                  Set<EntityType> include,
-                                                                 Supplier<String> usageIdSupplier,
                                                                  Supplier<String> nameIdSupplier,
                                                                  Supplier<String> typeMaterialIdSupplier,
+                                                                 Function<SimpleNameWithNidx, String> usageIdSupplier,
+                                                                 Function<Integer, Integer> nidx2canonical,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
     final DSID<String> origT = new DSIDValue<>(t);
     final DSID<String> origN = new DSIDValue<>(t.getName());
     copyName(batchSession, t, targetParent.getDatasetKey(), user, lookupReference, nameIdSupplier);
     
-    setKeys(t, targetParent.getDatasetKey(), usageIdSupplier);
+    setKeys(t, targetParent.getDatasetKey(), usageIdSupplier, nidx2canonical);
     t.applyUser(user, true);
     t.setOrigin(Origin.SOURCE);
     t.setParentId(targetParent.getId());
@@ -128,7 +131,7 @@ public class CopyUtil {
                                                                  Set<EntityType> include,
                                                                  Function<Reference, String> lookupReference,
                                                                  Function<String, String> lookupByIdReference) {
-    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, ID_GENERATOR, lookupReference, lookupByIdReference);
+    return copyUsage(batchSession, t, targetParent, user, include, ID_GENERATOR, ID_GENERATOR, n -> ID_GENERATOR.get(), i -> null, lookupReference, lookupByIdReference);
   }
 
 
@@ -149,9 +152,12 @@ public class CopyUtil {
     batchSession.getMapper(NameMapper.class).create(n);
   }
   
-  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey, Supplier<String> idSupplier) {
+  private static NameUsageBase setKeys(NameUsageBase t, int datasetKey, Function<SimpleNameWithNidx, String> idSupplier, Function<Integer, Integer> nidx2canonical) {
     t.setDatasetKey(datasetKey);
-    return newKey(t, idSupplier);
+    t.setVerbatimKey(null);
+    SimpleNameWithNidx sn = t.toSimpleNameWithNidx(nidx2canonical);
+    t.setId(idSupplier.apply(sn));
+    return t;
   }
   
   private static Name setKeys(Name n, int datasetKey, Integer sectorKey, Supplier<String> idSupplier) {
@@ -169,7 +175,7 @@ public class CopyUtil {
   
   private static <T extends VerbatimEntity & DSID<String>> T newKey(T e, Supplier<String> idSupplier) {
     e.setVerbatimKey(null);
-    e.setId(idSupplier.get()); // UUID.randomUUID().toString()
+    e.setId(idSupplier.get());
     return e;
   }
   

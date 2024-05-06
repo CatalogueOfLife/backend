@@ -33,7 +33,7 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
   protected void export() throws Exception {
     File f = new File(tmpDir, filename());
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      T printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), factory, writer);
+      T printer = PrinterFactory.dataset(printerClass, req.toTreeTraversalParameter(), null, req.getExtinct(), null, null, factory, writer);
       modifyPrinter(printer);
       int cnt = printer.print();
       LOG.info("Written {} taxa to {} for dataset {}", cnt, printerName, req.getDatasetKey());

@@ -9,6 +9,8 @@ import life.catalogue.matching.NameIndex;
 
 import java.util.*;
 
+import life.catalogue.release.UsageIdGen;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.slf4j.Logger;
@@ -30,7 +32,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
   TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
-    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR);
+    super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, UsageIdGen.RANDOM_SHORT_UUID);
     targetDSID = DSID.root(targetDatasetKey);
   }
 

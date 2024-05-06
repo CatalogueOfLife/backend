@@ -37,6 +37,14 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   IndexName get(Integer key);
 
+  default Integer getCanonical(Integer key) {
+    var ni = get(key);
+    if (ni != null) {
+      return ni.getCanonicalId();
+    }
+    return null;
+  }
+
   /**
    * List all index names for a given canonical name key, but not the canonical name itself!
    */

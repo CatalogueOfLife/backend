@@ -138,9 +138,14 @@ public class NameInterpreterTest {
     assertEquals("Barleeidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());
 
-    pnu = ib.interpret(SimpleName.sn(Rank.FAMILY,"Barleeidae", "[sic]"), v).get();
+    pnu = ib.interpret(SimpleName.sn("Barleeidae", "[sic]"), v).get();
     assertTrue(pnu.getName().isOriginalSpelling());
     assertEquals("Barleeidae", pnu.getName().getScientificName());
+    assertNull(pnu.getName().getAuthorship());
+
+    pnu = ib.interpret(SimpleName.sn(Rank.FAMILY,"Polynicidae", "[sic!]"), v).get();
+    assertTrue(pnu.getName().isOriginalSpelling());
+    assertEquals("Polynicidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());
 
     // test various ways to supply the authorship

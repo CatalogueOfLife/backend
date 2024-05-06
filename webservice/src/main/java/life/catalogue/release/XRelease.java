@@ -373,55 +373,56 @@ public class XRelease extends ProjectRelease {
     final LocalDateTime start = LocalDateTime.now();
     // prepare merge handler config instance
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
-    // create id generators for extended records
-    final Supplier<String> nameIdGen = new XIdGen();
-    final Supplier<String> usageIdGen = new XIdGen();
-    final Supplier<String> typeMaterialIdGen = new XIdGen();
-
-    updateState(ImportState.INSERTING);
     final int size = sectors.size();
     int counter = 0;
     int failedSyncs = 0;
-    for (Sector s : sectors) {
-      LOG.info("Merge {}. #{} out of {}", s, counter++, size);
-      // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
-      // create only if missing
-      try (SqlSession session = factory.openSession(true)) {
-        SectorMapper sm = session.getMapper(SectorMapper.class);
-        Sector sRel = sm.get(DSID.of(newDatasetKey, s.getId()));
-        if (sRel == null) {
-          sRel = new Sector(s);
-          sRel.setDatasetKey(newDatasetKey);
-          sm.createWithID(sRel);
-        }
-      }
-      checkIfCancelled();
-      SectorSync ss;
-      try {
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen, fullUser);
-        ss.run();
-        if (ss.getState().getState() != ImportState.FINISHED){
-          failedSyncs++;
-          LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError());
-        } else {
-          // copy attempts to local instances as it finished successfully
-          s.setSyncAttempt(ss.getState().getAttempt());
-          // and also update our release copy!
-          try (SqlSession session = factory.openSession(true)) {
-            SectorMapper sm = session.getMapper(SectorMapper.class);
-            sm.updateReleaseAttempts(DSID.of(datasetKey, s.getId()), newDatasetKey);
-          }
-        }
-      } catch (NotFoundException e) {
-        failedSyncs++;
-        LOG.error("Sector {} was deleted. No sync possible", s);
-        // remove from release
+    // create id generators for extended records
+    final Supplier<String> nameIdGen = new XIdGen();
+    final Supplier<String> typeMaterialIdGen = new XIdGen();
+    try(XIdProvider usageIdGen = new XIdProvider(datasetKey, attempt, newDatasetKey, cfg.release, ni, factory)) {
+      updateState(ImportState.INSERTING);
+      for (Sector s : sectors) {
+        LOG.info("Merge {}. #{} out of {}", s, counter++, size);
+        // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
+        // create only if missing
         try (SqlSession session = factory.openSession(true)) {
           SectorMapper sm = session.getMapper(SectorMapper.class);
-          sm.delete(DSID.of(newDatasetKey, s.getId()));
+          Sector sRel = sm.get(DSID.of(newDatasetKey, s.getId()));
+          if (sRel == null) {
+            sRel = new Sector(s);
+            sRel.setDatasetKey(newDatasetKey);
+            sm.createWithID(sRel);
+          }
+        }
+        checkIfCancelled();
+        SectorSync ss;
+        try {
+          ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser);
+          ss.run();
+          if (ss.getState().getState() != ImportState.FINISHED){
+            failedSyncs++;
+            LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError());
+          } else {
+            // copy attempts to local instances as it finished successfully
+            s.setSyncAttempt(ss.getState().getAttempt());
+            // and also update our release copy!
+            try (SqlSession session = factory.openSession(true)) {
+              SectorMapper sm = session.getMapper(SectorMapper.class);
+              sm.updateReleaseAttempts(DSID.of(datasetKey, s.getId()), newDatasetKey);
+            }
+          }
+        } catch (NotFoundException e) {
+          failedSyncs++;
+          LOG.error("Sector {} was deleted. No sync possible", s);
+          // remove from release
+          try (SqlSession session = factory.openSession(true)) {
+            SectorMapper sm = session.getMapper(SectorMapper.class);
+            sm.delete(DSID.of(newDatasetKey, s.getId()));
+          }
         }
       }
     }
+
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, getClass(), start);
   }

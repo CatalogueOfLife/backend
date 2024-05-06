@@ -123,7 +123,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(1, report.deleted.size());
     assertEquals(2, report.resurrected.size());
@@ -152,7 +153,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(2, report.deleted.size());
     assertEquals(2, report.resurrected.size());
@@ -179,7 +181,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(0, report.deleted.size());
     assertEquals(0, report.resurrected.size());

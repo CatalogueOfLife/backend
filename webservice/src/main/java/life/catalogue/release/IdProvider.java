@@ -223,6 +223,7 @@ public class IdProvider {
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project "+projectKey, e);
     }
+    LOG.info("ID provision done. Reused {} stable IDs for project release {}-{} ({}), resurrected={}, newly created={}, deleted={}", reused, projectKey, attempt, releaseDatasetKey, resurrected.size(), created.size(), deleted.size());
   }
 
   private void writeInstableName(Writer writer, InstableName n) {
@@ -448,11 +449,13 @@ public class IdProvider {
     return dataset2attempt;
   }
 
-  @VisibleForTesting
   protected void mapIds(){
     try (SqlSession readSession = factory.openSession(true)) {
       mapIds(readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey));
     }
+  }
+  protected Writer buildNomatchWriter() throws IOException {
+    return UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"));
   }
 
   @VisibleForTesting
@@ -461,7 +464,7 @@ public class IdProvider {
     final int lastRelIds = ids.maxAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
-         Writer nomatchWriter = UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"))
+         Writer nomatchWriter = buildNomatchWriter()
     ) {
       idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
@@ -503,7 +506,7 @@ public class IdProvider {
       group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
       // now split the canonical group into subgroups for each nidx to match them individually
       for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
-        issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter);
+        issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter, true);
       }
     }
   }
@@ -540,8 +543,9 @@ public class IdProvider {
 
   /**
    * Populates sn.canonicalId with either an existing or new int based ID
+   * @param nidx the concrete names index id that all names are mapped to
    */
-  private void issueIDs(Integer nidx, List<SimpleNameWithNidx> names, Writer nomatchWriter) throws IOException {
+  protected void issueIDs(Integer nidx, List<SimpleNameWithNidx> names, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
     if (nidx == null) {
       LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
       for (SimpleNameWithNidx n : names) {
@@ -574,7 +578,9 @@ public class IdProvider {
         if (sn.getCanonicalId() == null) {
           issueNewId(sn);
         }
-        idm.mapUsage(projectKey, sn.getId(), encode(sn.getCanonicalId()));
+        if (persistIdMapping) {
+          idm.mapUsage(projectKey, sn.getId(), encode(sn.getCanonicalId()));
+        }
       }
     }
   }

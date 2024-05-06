@@ -65,14 +65,15 @@ public class IdProviderIT {
   }
 
   @Test
-  public void run() throws Exception {
+  public void mapIds() throws Exception {
     init(new ReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
-    provider.run();
+    provider.mapIds();
+    //provider.report();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
@@ -109,7 +110,7 @@ public class IdProviderIT {
     cfg.additionalReleases = Map.of(projectKey, List.of(11));
     init(cfg);
 
-    provider.run();
+    provider.mapIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);

@@ -2,7 +2,6 @@ package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -27,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -139,8 +137,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
-    idProvider.run();
+    IdProvider idp = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
+    idp.mapIds();
+    idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
 

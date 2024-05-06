@@ -13,7 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class ExportRequest {
   // filters
   private Integer datasetKey;
-  private Integer sectorKey;
   private SimpleName root;
   private boolean synonyms = true;
   private Boolean extinct = null;
@@ -40,14 +39,6 @@ public class ExportRequest {
 
   public void setDatasetKey(Integer datasetKey) {
     this.datasetKey = datasetKey;
-  }
-
-  public Integer getSectorKey() {
-    return sectorKey;
-  }
-
-  public void setSectorKey(Integer sectorKey) {
-    this.sectorKey = sectorKey;
   }
 
   public DataFormat getFormat() {
@@ -153,7 +144,6 @@ public class ExportRequest {
            && bareNames == that.bareNames
            && force == that.force
            && Objects.equals(datasetKey, that.datasetKey)
-           && Objects.equals(sectorKey, that.sectorKey)
            && format == that.format
            && tabFormat == that.tabFormat
            && Objects.equals(root, that.root)
@@ -163,7 +153,7 @@ public class ExportRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, sectorKey, format, tabFormat, excel, root, extended, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, format, tabFormat, excel, root, extended, synonyms, extinct, bareNames, minRank, force);
   }
 
   @Override

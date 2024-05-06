@@ -7,6 +7,8 @@ import org.gbif.nameparser.api.Rank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.function.Function;
+
 /**
  *
  */
@@ -66,6 +68,14 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
 
   default SimpleNameLink toSimpleNameLink() {
     SimpleNameLink sn = SimpleNameLink.of(getId(), getName().getScientificName(), getName().getAuthorship(), getName().getRank());
+    sn.setStatus(getStatus());
+    sn.setCode(getName().getCode());
+    sn.setParent(getParentId());
+    return sn;
+  }
+
+  default SimpleNameWithNidx toSimpleNameWithNidx(Function<Integer, Integer> nidx2canonical) {
+    SimpleNameWithNidx sn = new SimpleNameWithNidx(getName(), nidx2canonical.apply(getName().getNamesIndexId()));
     sn.setStatus(getStatus());
     sn.setCode(getName().getCode());
     sn.setParent(getParentId());
