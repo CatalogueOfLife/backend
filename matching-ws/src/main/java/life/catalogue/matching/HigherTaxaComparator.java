@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.utils.file.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -169,7 +168,7 @@ public class HigherTaxaComparator {
     URL url = RsGbifOrg.synonymUrl(file);
     LOG.info("Reading synonyms from " + url.toString());
     try (InputStream synIn = url.openStream()) {
-      return FileUtils.streamToMap(synIn, 0, 1, true);
+      return IOUtils.streamToMap(synIn, 0, 1, true);
     } catch (IOException e) {
       LOG.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
     }
@@ -179,7 +178,7 @@ public class HigherTaxaComparator {
   private Map<String, String> readSynonymStream(Rank rank, String filePath) {
     ClassLoader classLoader = getClass().getClassLoader();
     try (InputStream synIn = classLoader.getResourceAsStream(filePath)) {
-      return FileUtils.streamToMap(synIn, 0, 1, true);
+      return IOUtils.streamToMap(synIn, 0, 1, true);
     } catch (IOException e) {
       LOG.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
     }
@@ -201,7 +200,7 @@ public class HigherTaxaComparator {
   private void readBlacklistStream(InputStream in) {
     NON_NAMES.clear();
     try {
-      NON_NAMES.addAll(FileUtils.streamToSet(in));
+      NON_NAMES.addAll(IOUtils.streamToSet(in));
     } catch (IOException e) {
       LOG.warn("Cannot read blacklist. Use empty set instead.", e);
     } finally {

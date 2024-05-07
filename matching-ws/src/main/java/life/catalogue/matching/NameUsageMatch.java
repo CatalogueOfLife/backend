@@ -9,6 +9,10 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
 
+/**
+ * A name usage match with additional classification information and a flag indicating if the name
+ * is a synonym or not.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class NameUsageMatch implements LinneanClassification {

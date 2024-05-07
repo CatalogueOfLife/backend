@@ -30,7 +30,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class MatchingServicelIT {
+public class MatchingServiceIT {
 
   private static MatchingService matcher;
   private static final Joiner CLASS_JOINER = Joiner.on("; ").useForNull("???");

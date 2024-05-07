@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.*;
-import org.gbif.utils.file.InputStreamUtils;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +41,7 @@ public class MatchingTestConfiguration {
 
   @Bean
   public static DatasetIndex provideIndex() throws IOException {
-    return DatasetIndex.newMemoryIndex(loadIndexJson());
+    return DatasetIndex.newMemoryIndex(loadIndexFromV1Responses());
   }
 
   @Bean
@@ -60,13 +59,12 @@ public class MatchingTestConfiguration {
 
   /**
    * Load all nubXX.json files from the index resources into a distinct list of NameUsage instances.
-   * The individual nubXX.json files are regular results of a NameUsageMatch and can be added to the
-   * folder to be picked up here.
+   * The individual nubXX.json files are regular results of a NameUsageMatch (v1) and can be added
+   * to the folder to be picked up here.
    */
-  private static List<NameUsage> loadIndexJson() {
+  private static List<NameUsage> loadIndexFromV1Responses() {
     Map<String, NameUsage> usages = Maps.newHashMap();
 
-    InputStreamUtils isu = new InputStreamUtils();
     ObjectMapper mapper = new ObjectMapper();
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
@@ -75,11 +73,11 @@ public class MatchingTestConfiguration {
     try (FileWriter writer = new FileWriter("/tmp/test.csv")) {
       while (id < 300) {
         String file = "index/nub" + id + ".json";
-        InputStream json = isu.classpathStream(file);
+        InputStream json = IOUtils.classpathStream(file);
         if (json != null) {
           try {
             NameUsageMatchV1 m = mapper.readValue(json, NameUsageMatchV1.class);
-            for (NameUsage u : extractUsages(m)) {
+            for (NameUsage u : extractUsagesFromV1Responses(m)) {
               if (u != null) {
                 NameUsage existing = usages.get(u.getId());
                 if (existing == null) {
@@ -99,9 +97,9 @@ public class MatchingTestConfiguration {
       }
       for (NameUsage u : usages.values()) {
         writer.write(
-            u.getScientificName()
+            u.getId()
                 + ","
-                + u.getId()
+                + u.getScientificName()
                 + ","
                 + u.getAuthorship()
                 + ","
@@ -124,7 +122,7 @@ public class MatchingTestConfiguration {
    *
    * @return a list of NameUsage instances, including the main usage and all alternatives.
    */
-  private static List<NameUsage> extractUsages(NameUsageMatchV1 m) {
+  private static List<NameUsage> extractUsagesFromV1Responses(NameUsageMatchV1 m) {
     Map<String, NameUsage> usages = new HashMap<>();
 
     NameUsage u = NameUsage.builder().build();
@@ -154,7 +152,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getKingdomKey().toString())
               .rank(Rank.KINGDOM.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .scientificName(m.getKingdom())
               .build());
     if (m.getPhylumKey() != null)
@@ -163,7 +161,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getPhylumKey().toString())
               .rank(Rank.PHYLUM.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.PHYLUM))
               .scientificName(m.getPhylum())
               .build());
@@ -173,7 +171,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getClassKey().toString())
               .rank(Rank.CLASS.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.CLASS))
               .scientificName(m.getClazz())
               .build());
@@ -183,7 +181,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getOrderKey().toString())
               .rank(Rank.ORDER.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.ORDER))
               .scientificName(m.getOrder())
               .build());
@@ -193,7 +191,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getFamilyKey().toString())
               .rank(Rank.FAMILY.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.FAMILY))
               .scientificName(m.getFamily())
               .build());
@@ -203,7 +201,7 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getGenusKey().toString())
               .rank(Rank.GENUS.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.GENUS))
               .scientificName(m.getGenus())
               .build());
@@ -213,13 +211,13 @@ public class MatchingTestConfiguration {
           NameUsage.builder()
               .id(m.getSpeciesKey().toString())
               .rank(Rank.SPECIES.name())
-              .status("ACCEPTED")
+              .status(TaxonomicStatus.ACCEPTED.toString())
               .parentId(getParentKey(m, Rank.SPECIES))
               .scientificName(m.getSpecies())
               .build());
 
     if (m.getAlternatives() != null) {
-      m.getAlternatives().stream()
+      m.getAlternatives()
           .forEach(
               a -> {
                 NameUsage alt = NameUsage.builder().build();
@@ -247,7 +245,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getKingdomKey().toString())
                           .rank(Rank.KINGDOM.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .scientificName(a.getKingdom())
                           .build());
                 if (a.getPhylumKey() != null)
@@ -256,7 +254,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getPhylumKey().toString())
                           .rank(Rank.PHYLUM.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.PHYLUM))
                           .scientificName(a.getPhylum())
                           .build());
@@ -266,7 +264,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getClassKey().toString())
                           .rank(Rank.CLASS.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.CLASS))
                           .scientificName(a.getClazz())
                           .build());
@@ -276,7 +274,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getOrderKey().toString())
                           .rank(Rank.ORDER.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.ORDER))
                           .scientificName(a.getOrder())
                           .build());
@@ -286,7 +284,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getFamilyKey().toString())
                           .rank(Rank.FAMILY.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.FAMILY))
                           .scientificName(a.getFamily())
                           .build());
@@ -296,7 +294,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getGenusKey().toString())
                           .rank(Rank.GENUS.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.GENUS))
                           .scientificName(a.getGenus())
                           .build());
@@ -306,7 +304,7 @@ public class MatchingTestConfiguration {
                       NameUsage.builder()
                           .id(a.getSpeciesKey().toString())
                           .rank(Rank.SPECIES.name())
-                          .status("ACCEPTED")
+                          .status(TaxonomicStatus.ACCEPTED.toString())
                           .parentId(getParentKey(a, Rank.SPECIES))
                           .scientificName(a.getSpecies())
                           .build());

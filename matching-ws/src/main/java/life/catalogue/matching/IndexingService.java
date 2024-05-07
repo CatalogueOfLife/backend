@@ -2,7 +2,9 @@ package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
 
+import au.com.bytecode.opencsv.CSVReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -35,7 +37,6 @@ import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.gbif.nameparser.util.NameFormatter;
-import org.gbif.utils.file.csv.CSVReader;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class IndexingService {
   }
 
   @Transactional
-  public void writeCLBToFile(final Integer datasetKey) throws Exception {
+  public void writeCLBToFile(final String datasetKey) throws Exception {
 
     // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
     // (parallelism) as opposed to the spring managed DataSource
@@ -102,7 +103,7 @@ public class IndexingService {
 
       // Create index writer
       consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
+          () -> session.getMapper(IndexingMapper.class).getAllForDataset(Integer.parseInt(datasetKey)),
           name -> {
             try {
               writer.write(
@@ -150,7 +151,7 @@ public class IndexingService {
   }
 
   @Transactional
-  public void indexFile(Integer datasetId) throws Exception {
+  public void indexFile(String exportPath, String indexPath) throws Exception {
 
     // Create index directory
     if (new File(indexPath).exists()) {
@@ -167,14 +168,17 @@ public class IndexingService {
     LOG.info("Indexing dataset...");
     final AtomicInteger counter = new AtomicInteger(0);
 
-    final String filePath = exportPath + "/" + datasetId + "/index.csv";
+    // FIXME - looks for csv files in the export path
+    final String filePath = exportPath + "/index.csv";
+
+    // FIXME - validate the file
 
     // File source, String encoding, String delimiter, Character quotes, Integer headerRows
-    try (CSVReader reader = new CSVReader(new File(filePath), "UTF-8", ",", '"', 0);
+    try (CSVReader reader = new CSVReader(new FileReader(filePath), ',', '"');
         IndexWriter indexWriter = new IndexWriter(directory, config)) {
 
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+      String[] row = reader.readNext();
+      while (row != null) {
         NameUsage nameUsage =
             NameUsage.builder()
                 .id(row[0])
@@ -188,12 +192,13 @@ public class IndexingService {
         Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);
         counter.incrementAndGet();
+        row = reader.readNext();
       }
       indexWriter.commit();
       indexWriter.forceMerge(1);
     }
     // write metadata file in JSON format
-    LOG.info("Indexed: {}", counter.get());
+    LOG.info("Taxa indexed: {}", counter.get());
   }
 
   @Transactional

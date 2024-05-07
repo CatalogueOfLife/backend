@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.util.Set;
 import java.util.TreeSet;
 import org.gbif.api.model.checklistbank.NameUsageMatch;
-import org.gbif.utils.file.InputStreamUtils;
 import org.junit.jupiter.api.Assertions;
 
 /**
@@ -31,13 +30,12 @@ import org.junit.jupiter.api.Assertions;
 public class DownloadJsonUtil {
   public static Set<String> extract() {
     Set<String> names = new TreeSet<>();
-    InputStreamUtils isu = new InputStreamUtils();
     ObjectMapper mapper = new ObjectMapper();
     mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     int id = 0;
     while (id < 150) {
       String file = "index/nub" + id + ".json";
-      InputStream json = isu.classpathStream(file);
+      InputStream json = IOUtils.classpathStream(file);
       if (json != null) {
         try {
           NameUsageMatch m = mapper.readValue(json, NameUsageMatch.class);

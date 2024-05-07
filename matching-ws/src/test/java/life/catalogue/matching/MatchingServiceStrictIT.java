@@ -58,7 +58,7 @@ public class MatchingServiceStrictIT {
           confidence.contains(best.getDiagnostics().getConfidence()),
           "confidence " + best.getDiagnostics().getConfidence() + " not within " + confidence);
     }
-    MatchingServicelIT.assertMatchConsistency(best);
+    MatchingServiceIT.assertMatchConsistency(best);
   }
 
   private void assertNoMatch(String name, Rank rank, Kingdom kingdom) {

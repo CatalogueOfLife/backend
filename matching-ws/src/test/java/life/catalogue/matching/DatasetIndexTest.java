@@ -15,16 +15,16 @@ package life.catalogue.matching;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.List;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.utils.file.csv.CSVReader;
-import org.gbif.utils.file.csv.CSVReaderFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -43,9 +43,9 @@ public class DatasetIndexTest {
     List<NameUsage> usages = Lists.newArrayList();
     // 1	2	Acanthophora Hulst, 1896	Geometridae	Lepidoptera	Insecta	Arthropoda	Animalia	GENUS
     try (InputStream testFile = Resources.getResource("testNames.txt").openStream()) {
-      CSVReader reader = CSVReaderFactory.build(testFile, "UTF8", "\t", null, 0);
-      while (reader.hasNext()) {
-        String[] row = reader.next();
+      CSVReader reader = new CSVReader(new InputStreamReader(testFile), '\t', '"');
+      String[] row = reader.readNext();
+      while (row != null) {
         NameUsage n = NameUsage.builder().build();
         n.setId(row[0]);
         n.setParentId(row[1]);
@@ -56,8 +56,8 @@ public class DatasetIndexTest {
                 ? TaxonomicStatus.SYNONYM.toString()
                 : TaxonomicStatus.ACCEPTED.toString());
         usages.add(n);
+        row = reader.readNext();
       }
-
       Preconditions.checkArgument(usages.size() == 10, "Wrong number of test names");
     }
     return usages;

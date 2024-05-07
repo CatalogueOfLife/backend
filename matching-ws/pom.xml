@@ -7,15 +7,20 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>matching-ws</artifactId>
-  <name>matching web services</name>
-  <description>matching api</description>
+  <name>Matching index generation and web services</name>
+  <description>
+    Matching index generation and web services for datasets stored in ChecklistBank.
+  </description>
   <properties>
       <java.version>17</java.version>
       <lucene.version>9.10.0</lucene.version>
       <spring-boot.version>3.2.3</spring-boot.version>
       <lombok.version>1.18.22</lombok.version>
-      <spotless-maven-plugin.version>2.22.8</spotless-maven-plugin.version>
+      <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
       <gbif-api.version>1.6.0</gbif-api.version>
+      <logback.version>1.4.14</logback.version>
+      <mybatis-spring-boot.version>3.0.3</mybatis-spring-boot.version>
+      <gbif-common.version>0.60</gbif-common.version>
   </properties>
   <dependencies>
     <!-- COL -->
@@ -122,19 +127,16 @@
       <artifactId>jaxb-runtime</artifactId>
       <version>4.0.4</version>
     </dependency>
-
     <dependency>
       <groupId>jakarta.xml.bind</groupId>
       <artifactId>jakarta.xml.bind-api</artifactId>
       <version>4.0.2</version>
     </dependency>
-    <!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
     <dependency>
       <groupId>jakarta.validation</groupId>
       <artifactId>jakarta.validation-api</artifactId>
       <version>3.0.2</version>
     </dependency>
-    <!-- Runtime, com.sun.xml.bind module -->
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
       <artifactId>jaxb-runtime</artifactId>
@@ -158,17 +160,17 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.4.14</version>
+      <version>${logback.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.4.14</version>
+      <version>${logback.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mybatis.spring.boot</groupId>
       <artifactId>mybatis-spring-boot-starter</artifactId>
-      <version>3.0.3</version>
+      <version>${mybatis-spring-boot.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -205,6 +207,11 @@
       <version>${lucene.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.82</version>
+    </dependency>
+    <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
       <version>${mybatis.version}</version>
@@ -213,12 +220,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.5.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.gbif</groupId>
-      <artifactId>gbif-common</artifactId>
-      <version>0.60</version>
+      <version>42.6.0</version>
     </dependency>
     <dependency>
       <groupId>org.gbif</groupId>
@@ -253,6 +255,12 @@
       <artifactId>jackson-annotations</artifactId>
       <version>2.17.0</version>
     </dependency>
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>2.3</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -274,7 +282,7 @@
           <java>
             <removeUnusedImports />
             <googleJavaFormat>
-              <version>1.7</version>
+              <version>1.10.0</version>
               <style>GOOGLE</style>
             </googleJavaFormat>
           </java>
