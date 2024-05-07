@@ -3,6 +3,7 @@ package life.catalogue.matching.decision;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.SectorMapper;
@@ -63,10 +64,10 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     }
   }
 
-  private static boolean needsRematching(Boolean flag, SimpleName sn){
+  private static boolean needsRematching(Boolean flag, SimpleNameLink sn){
     if (sn == null) return false;
     if (flag != null) return flag;
-    return sn.getId() == null;
+    return sn.isBroken() || sn.getId() == null;
   }
   
 }
