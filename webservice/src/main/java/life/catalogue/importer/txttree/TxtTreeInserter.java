@@ -173,6 +173,19 @@ public class TxtTreeInserter implements NeoInserter {
     }
   }
 
+  private static String normGeoTime(String gt, IssueContainer issues){
+    if (gt != null) {
+      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
+      if (pr.isPresent()) {
+        return pr.get().getName();
+      } else {
+        issues.addIssue(Issue.GEOTIME_INVALID);
+      }
+      return gt.trim().replaceAll("_+", " ");
+    }
+    return null;
+  }
+
   private NeoUsage usage(SimpleTreeNode tn, boolean synonym, int ordinal) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     Rank rank = Rank.UNRANKED; // default for unknown
@@ -211,11 +224,11 @@ public class TxtTreeInserter implements NeoInserter {
         for (String val : vals) {
           var range = val.split("-");
           if (range.length==1) {
-            t.setTemporalRangeStart(range[0].trim());
-            t.setTemporalRangeEnd(range[0].trim());
+            t.setTemporalRangeStart(normGeoTime(range[0],v));
+            t.setTemporalRangeEnd(normGeoTime(range[0],v));
           } else if (range.length==2) {
-            t.setTemporalRangeStart(range[0].trim());
-            t.setTemporalRangeEnd(range[1].trim());
+            t.setTemporalRangeStart(normGeoTime(range[0],v));
+            t.setTemporalRangeEnd(normGeoTime(range[1],v));
           } else {
             v.addIssue(Issue.GEOTIME_INVALID);
           }
