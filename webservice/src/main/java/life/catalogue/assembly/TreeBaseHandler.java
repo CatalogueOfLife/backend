@@ -417,7 +417,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
   }
 
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
     // we must ignore synonyms for taxa which have been skipped
     if (u.isSynonym() && ignoredTaxa.contains(u.getParentId())) {
       // https://github.com/CatalogueOfLife/backend/issues/1150
@@ -437,8 +437,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     Name n = u.getName();
-    if (u.isTaxon()) {
-      // apply rank filter only for accepted names, always allow any synonyms
+    if (filterSynonymsByRank || u.isTaxon()) {
+      // apply rank filter only for accepted names, always allow any synonyms unless requested otherwise via filterSynonymsByRank
       if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
         return incIgnored(IgnoreReason.RANK, u);
       }

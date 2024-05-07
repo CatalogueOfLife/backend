@@ -203,7 +203,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     parents.setMatch(match.usage);
 
     // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()))) {
+    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), true)) {
       // skip this taxon, but include children
       ignored++;
       return;
@@ -256,8 +256,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision) {
-    var ignore =  super.ignoreUsage(u, decision);
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
+    var ignore =  super.ignoreUsage(u, decision, true);
     if (!ignore) {
       // additional checks - we dont want any unranked unless they are OTU names
       ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
