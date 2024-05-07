@@ -36,6 +36,8 @@ public class EstimateRematcher extends RematcherBase<SpeciesEstimate, RematchReq
   void match(SpeciesEstimate obj) {
     if (obj.getTarget() != null) {
       final SpeciesEstimate old = new SpeciesEstimate(obj);
+      // we dont want to let the parent break a subject - thats mostly useful for editorial decision
+      obj.getTarget().setParent(null);
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(u == null ? null : u.getId());
       if (updateCounter(old.getTarget().getId(), obj.getTarget().getId())) {

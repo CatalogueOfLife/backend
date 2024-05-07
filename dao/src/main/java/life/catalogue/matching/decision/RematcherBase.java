@@ -56,7 +56,7 @@ public abstract class RematcherBase<
 
   abstract S toSearchRequest(R req);
 
-  T verify(DSID<Integer> key, T obj) {
+  T exists(DSID<Integer> key, T obj) {
     if (obj == null) {
       throw new NotFoundException(type + " " + key.getId() + " does not exist in project " + projectKey);
     }
@@ -101,7 +101,7 @@ public abstract class RematcherBase<
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);
       if (req.getId() != null){
-        T ed = verify(req, mapper.get(req));
+        T ed = exists(req, mapper.get(req));
         LOG.info("Match {} {} from project {}", type, req.getId(), projectKey);
         match(ed);
 

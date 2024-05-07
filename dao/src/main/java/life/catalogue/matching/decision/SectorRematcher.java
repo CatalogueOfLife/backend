@@ -37,6 +37,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     // subject
     if (needsRematching(req.isSubject(), obj.getSubject())) {
       LOG.debug("Match subject {} of sector {} in project {}", obj.getSubject(), obj.getId(), projectKey);
+      // we dont want to let the parent break a subject - thats mostly useful for editorial decision
+      obj.getSubject().setParent(null);
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       obj.getSubject().setId(null);
       if (u != null) {
@@ -52,6 +54,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     // target can have multiple sectors
     if (needsRematching(req.isTarget(), obj.getTarget())) {
       LOG.debug("Match target {} of sector {} in project {}", obj.getTarget(), obj.getId(), projectKey);
+      // we dont want to let the parent break a target - thats mostly useful for editorial decision
+      obj.getTarget().setParent(null);
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(null);
       if (u != null) {
