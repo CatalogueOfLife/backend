@@ -8,6 +8,11 @@ import life.catalogue.api.vocab.MatchType;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
 
+/**
+ * Version 1 of the name usage match response object.
+ * This class is used to serialize the response of the name usage matching service in the v1 format
+ * and to read legacy integration test data to create a index for matching tests.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
 public class NameUsageMatchV1 {

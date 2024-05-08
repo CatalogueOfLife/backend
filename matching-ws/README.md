@@ -19,3 +19,11 @@ sudo docker run -d --platform linux/arm64 \
 --name matching-ws \
 -v /tmp/matching-ws/index:/data/matching/index matching-ws:v1
 ```
+
+### Usage
+
+```bash 
+java -jar target/matching-ws-1.0-SNAPSHOT-exec.jar 
+--mode=INDEX_CSV --index.path=/tmp/my-worms-index/ --export.path=/data/matching-ws/export/2011
+```
+

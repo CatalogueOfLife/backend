@@ -90,7 +90,7 @@ public class MatchController {
       })
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
   @GetMapping(
-      value = {"species/match2"},
+      value = {"v2/species/match"},
       produces = "application/json")
   public NameUsageMatch match2(
       @RequestParam(value = "usageKey", required = false) String usageKey,
@@ -124,7 +124,7 @@ public class MatchController {
   }
 
   @GetMapping(
-      value = {"species/match", "match"},
+      value = {"v1/species/match"},
       produces = "application/json")
   public NameUsageMatchV1 match(
       @RequestParam(value = "usageKey", required = false) String usageKey,
