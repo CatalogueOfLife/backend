@@ -41,7 +41,8 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   private static final Pattern NORM_AND = Pattern.compile("\\s*(\\b(?:and|et|und)\\b|(?:,\\s*)?&)\\s*");
   private static final Pattern NORM_ET_AL = Pattern.compile("(&|\\bet) al\\b\\.?");
   private static final Pattern NORM_ANON = Pattern.compile("\\b(anon\\.?)(\\b|\\s|$)");
-  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig\\.?)\\b!?\\s*[\\])]?\\s*");
+  private static final Pattern LEADING_PUNCT = Pattern.compile("^\\s*[.;,]\\s*");
+  private static final Pattern SIC_CORRIG = Pattern.compile("\\s*[\\[(]?\\s*\\b(sic|corrig)\\b[.!\\s]*[\\])]?\\s*");
 
   private static final String YEAR = "[12][0-9][0-9][0-9?]";
   private static final Pattern COMMA_BEFORE_YEAR = Pattern.compile("(?<!,)\\s+("+YEAR+")");
@@ -166,7 +167,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         ic.getIssues().forEach(v::addIssue);
 
         // use original authorship string but normalize whitespace and remove taxonomic notes, e.g. misapplication
-        pnu.getName().setAuthorship( normalizeAuthorship(authorship, pnAuthorship.getTaxonomicNote()) );
+        setNormalizeAuthorship(pnu, authorship, pnAuthorship.getTaxonomicNote());
 
       } else {
         // unparsed name might still not have any authorship
@@ -205,14 +206,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       .replace("]", " *\\] *");
   }
 
-  static String normalizeAuthorship(final String authorship, String taxNote) {
-    String name = authorship;
+  static String setNormalizeAuthorship(ParsedNameUsage pnu, final String originalAuthorship, String taxNote) {
+    String name = originalAuthorship;
 
     // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
     if (taxNote != null) {
       // this is more tricky than it sounds as we altered the taxNote and it may have more/less whitespace in particular
       Pattern noteP = Pattern.compile("^(.*)" + note2pattern(taxNote) + "(.*)$", Pattern.CASE_INSENSITIVE);
-      Matcher m = noteP.matcher(authorship);
+      Matcher m = noteP.matcher(originalAuthorship);
       if (m.find()) {
         name = m.replaceFirst("$1 $2");
         // remove completely if no chars are left
@@ -225,7 +226,9 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     }
 
     // we need to remove the sic/corrig notes which live in originalSpelling flag now once parsed
-    name = SIC_CORRIG.matcher(name).replaceFirst("");
+    if (pnu.getName().isOriginalSpelling() != null) {
+      name = SIC_CORRIG.matcher(name).replaceFirst("");
+    }
 
     // normalise different usages of ampersand, and, et &amp; to always use &
     name = NORM_AND.matcher(name).replaceAll(" & ");
@@ -243,12 +246,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       name = m.replaceFirst("Anon.");
     }
 
+    // remove leading punctuations and normalize subsequent ones
+    name = LEADING_PUNCT.matcher(name).replaceAll("");
     name = NORM_WS_PUNCT.matcher(name).replaceAll(" $1");
     name = NORM_PUNCT_WS.matcher(name).replaceAll("$1 ");
 
     // finally whitespace and trimming
     name = NORM_WHITESPACE.matcher(name).replaceAll(" ");
-    return StringUtils.trimToNull(name);
+
+    // apply to parsed name
+    pnu.getName().setAuthorship(StringUtils.trimToNull(name));
+    return pnu.getName().getAuthorship();
   }
 
   static <T> void setIfNull(T val, Supplier<T> getter, Consumer<T> setter) {

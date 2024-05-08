@@ -9,6 +9,7 @@ import life.catalogue.coldp.ColdpTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.gbif.nameparser.api.NomCode.BACTERIAL;
 import static org.gbif.nameparser.api.NomCode.ZOOLOGICAL;
 import static org.junit.Assert.*;
 
@@ -130,10 +132,20 @@ public class NameInterpreterTest {
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
-    ParsedNameUsage pnu;
     Name n;
 
-    pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
+    for (var pnu : List.of(
+      ib.interpret(SimpleName.sn(Rank.FAMILY, BACTERIAL, "Alcanivoracaceae", "corrig. Golyshin et al., 2005"), v).get(),
+      ib.interpret(SimpleName.sn(Rank.FAMILY, "Alcanivoracaceae corrig. Golyshin et al., 2005"), v).get()
+    )) {
+      assertEquals(Rank.FAMILY, pnu.getName().getRank());
+      assertEquals("Alcanivoracaceae", pnu.getName().getScientificName());
+      assertEquals("Golyshin et al., 2005", pnu.getName().getAuthorship());
+      assertFalse(pnu.getName().isOriginalSpelling());
+      assertEquals("Alcanivoracaceae corrig. Golyshin et al., 2005", pnu.getName().getLabel());
+    }
+
+    ParsedNameUsage pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
     assertTrue(pnu.getName().isOriginalSpelling());
     assertEquals("Barleeidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());

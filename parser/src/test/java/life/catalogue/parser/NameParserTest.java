@@ -135,35 +135,39 @@ public class NameParserTest {
     NameParser.PARSER.configs().setName(obj.getScientificName() + " " + obj.getAuthorship(), pn);
   }
 
+  static String normalizeAuthorship(String authorship, String taxnote) {
+    ParsedNameUsage pnu = new ParsedNameUsage();
+    return NameParser.setNormalizeAuthorship(pnu, authorship, taxnote);
+  }
   @Test
   public void normalizeAuthorship() throws Exception {
     // https://github.com/CatalogueOfLife/backend/issues/1067
-    assertNull(NameParser.normalizeAuthorship("(non Snyder, 1904)", "non Snyder, 1904"));
-    assertNull(NameParser.normalizeAuthorship("( non Snyder, 1904 )", "(non Snyder, 1904)"));
+    assertNull(normalizeAuthorship("(non Snyder, 1904)", "non Snyder, 1904"));
+    assertNull(normalizeAuthorship("( non Snyder, 1904 )", "(non Snyder, 1904)"));
 
-    assertEquals("Rosicky, 1955", NameParser.normalizeAuthorship("Rosicky, 1955", null));
-    assertEquals("(Huteret ali)", NameParser.normalizeAuthorship("(Huteret ali)", null));
-    assertEquals("(Huter et al.) P. D. Sell & Whitehead", NameParser.normalizeAuthorship("(Huter et al.) P. D. Sell & Whitehead", null));
-    assertNull(NameParser.normalizeAuthorship("sensu Wilson & Henderson [Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great", "sensu Wilson & Henderson[Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great"));
-    assertEquals("Brouss. ex Willd.", NameParser.normalizeAuthorship("Brouss. ex Willd.", null));
-    assertEquals("(St.John) Sachet", NameParser.normalizeAuthorship("(St.John) Sachet", null));
-    assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv.&Meyer", null));
-    assertEquals("Trautv. & Meyer", NameParser.normalizeAuthorship("Trautv. & Meyer", null));
-    assertEquals("Rossi, 1988", NameParser.normalizeAuthorship("Rossi 1988 non DC.1988", "non DC. 1988"));
-    assertEquals("Rossi, 1790", NameParser.normalizeAuthorship("Rossi, 1790", null));
-    assertEquals("Rossi, 1790", NameParser.normalizeAuthorship("Rossi 1790", null));
-    assertEquals("(Rossi, 1790)", NameParser.normalizeAuthorship("(Rossi 1790)", null));
-    assertEquals("(Ridl.) ined.", NameParser.normalizeAuthorship("(Ridl.) ined.", null));
-    assertEquals("(L.) DC", NameParser.normalizeAuthorship("( L.)DC ", null));
-    assertEquals("(Walther & Rück) van der Damme & Resorbin, 1999", NameParser.normalizeAuthorship("( Walther&Rück ) van der Damme and Resorbin 1999", null));
-    assertEquals("Miller, 1989", NameParser.normalizeAuthorship("Miller 1989 sensu Carol 2001", "sensu Carol 2001"));
+    assertEquals("Rosicky, 1955", normalizeAuthorship("Rosicky, 1955", null));
+    assertEquals("(Huteret ali)", normalizeAuthorship("(Huteret ali)", null));
+    assertEquals("(Huter et al.) P. D. Sell & Whitehead", normalizeAuthorship("(Huter et al.) P. D. Sell & Whitehead", null));
+    assertNull(normalizeAuthorship("sensu Wilson & Henderson [Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great", "sensu Wilson & Henderson[Brit. Rust Fungi:47-48 (1966) ]; fide Checklist of Basidiomycota of Great"));
+    assertEquals("Brouss. ex Willd.", normalizeAuthorship("Brouss. ex Willd.", null));
+    assertEquals("(St.John) Sachet", normalizeAuthorship("(St.John) Sachet", null));
+    assertEquals("Trautv. & Meyer", normalizeAuthorship("Trautv.&Meyer", null));
+    assertEquals("Trautv. & Meyer", normalizeAuthorship("Trautv. & Meyer", null));
+    assertEquals("Rossi, 1988", normalizeAuthorship("Rossi 1988 non DC.1988", "non DC. 1988"));
+    assertEquals("Rossi, 1790", normalizeAuthorship("Rossi, 1790", null));
+    assertEquals("Rossi, 1790", normalizeAuthorship("Rossi 1790", null));
+    assertEquals("(Rossi, 1790)", normalizeAuthorship("(Rossi 1790)", null));
+    assertEquals("(Ridl.) ined.", normalizeAuthorship("(Ridl.) ined.", null));
+    assertEquals("(L.) DC", normalizeAuthorship("( L.)DC ", null));
+    assertEquals("(Walther & Rück) van der Damme & Resorbin, 1999", normalizeAuthorship("( Walther&Rück ) van der Damme and Resorbin 1999", null));
+    assertEquals("Miller, 1989", normalizeAuthorship("Miller 1989 sensu Carol 2001", "sensu Carol 2001"));
 
-    assertNull(NameParser.normalizeAuthorship("(non Scacchi, 1836) sensu Zibrowius, 1968", "(non Scacchi, 1836) sensu Zibrowius, 1968"));
-    assertEquals("Fischer-Le Saux et al., 1999", NameParser.normalizeAuthorship("Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004", "emend. Akhurst et al. , 2004"));
-    assertEquals("Engl., nom. illeg.", NameParser.normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
+    assertNull(normalizeAuthorship("(non Scacchi, 1836) sensu Zibrowius, 1968", "(non Scacchi, 1836) sensu Zibrowius, 1968"));
+    assertEquals("Fischer-Le Saux et al., 1999", normalizeAuthorship("Fischer-Le Saux et al., 1999 emend. Akhurst et al., 2004", "emend. Akhurst et al. , 2004"));
+    assertEquals("Engl., nom. illeg.", normalizeAuthorship("Engl., nom. illeg., non. A. lancea.", "non. A.lancea."));
 
-    assertNull(NameParser.normalizeAuthorship("[sic]", ""));
-    assertNull(NameParser.normalizeAuthorship("[sic!]", ""));
+    assertNull(normalizeAuthorship("[sic]", ""));
+    assertNull(normalizeAuthorship("[sic!]", ""));
   }
 
   @Test

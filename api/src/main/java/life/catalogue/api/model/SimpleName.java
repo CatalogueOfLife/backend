@@ -55,6 +55,9 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
   public static SimpleName sn(Rank rank, String name, String authorship) {
     return new SimpleName(null, name, authorship, rank);
   }
+  public static SimpleName sn(Rank rank, NomCode code, String name, String authorship) {
+    return new SimpleName(null, name, authorship, rank, code);
+  }
   public static SimpleName sn(String id, Rank rank, String name, String authorship) {
     return new SimpleName(id, name, authorship, rank);
   }
@@ -110,6 +113,14 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.name = name;
     this.authorship = authorship;
     this.rank = rank;
+  }
+
+  public SimpleName(String id, String name, String authorship, Rank rank, NomCode code) {
+    this.id = id;
+    this.name = name;
+    this.authorship = authorship;
+    this.rank = rank;
+    this.code = code;
   }
 
   public String getId() {
