@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -22,7 +23,7 @@ public class SynonymTest {
     tn.setGenus("Abies");
     tn.setSpecificEpithet("alba");
     tn.setRank(Rank.SPECIES);
-    tn.setCombinationAuthorship(Authorship.yearAuthors("1899", "Miller"));
+    tn.setCombinationAuthorship(ExAuthorship.yearAuthors("1899", "Miller"));
     tn.rebuildScientificName();
     tn.rebuildAuthorship();
     Taxon t = new Taxon();
@@ -34,8 +35,8 @@ public class SynonymTest {
     sn.setInfraspecificEpithet("alpina");
     sn.setRank(Rank.SUBSPECIES);
     sn.setCode(NomCode.BOTANICAL);
-    sn.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
-    sn.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
+    sn.setCombinationAuthorship(ExAuthorship.yearAuthors("1999", "L.","DC."));
+    sn.setBasionymAuthorship(ExAuthorship.yearAuthors("1899","Lin.","Deca."));
     sn.rebuildScientificName();
     sn.rebuildAuthorship();
 

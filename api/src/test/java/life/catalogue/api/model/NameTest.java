@@ -48,7 +48,7 @@ public class NameTest extends SerdeTestBase<Name> {
     Name n = new Name();
     n.setGenus("Toleria");
     n.setSpecificEpithet("aegerides");
-    n.setBasionymAuthorship(Authorship.yearAuthors("[1916]", "Strand"));
+    n.setBasionymAuthorship(ExAuthorship.yearAuthors("[1916]", "Strand"));
     n.setRank(Rank.SPECIES);
     n.rebuildAuthorship();
     n.rebuildScientificName();
@@ -142,8 +142,8 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Abies × alba ssp.", n.getScientificName());
     
     n.setInfraspecificEpithet("alpina");
-    n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
-    n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
+    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1999", "L.","DC."));
+    n.setBasionymAuthorship(ExAuthorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
     n.rebuildScientificName();
     n.rebuildAuthorship();
@@ -179,8 +179,8 @@ public class NameTest extends SerdeTestBase<Name> {
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
     n.setInfraspecificEpithet("alpina");
-    n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
-    n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
+    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1999", "L.","DC."));
+    n.setBasionymAuthorship(ExAuthorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
     n.rebuildScientificName();
     n.rebuildAuthorship();
@@ -205,8 +205,8 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Hieracium brevifolium malyi-caroli", n.getLabel());
     assertEquals("<i>Hieracium brevifolium malyi-caroli</i>", n.getLabelHtml());
 
-    n.setCombinationAuthorship(Authorship.yearAuthors(null, "Zahn"));
-    n.setBasionymAuthorship(Authorship.yearAuthors(null,"Gus. Schneid."));
+    n.setCombinationAuthorship(ExAuthorship.yearAuthors(null, "Zahn"));
+    n.setBasionymAuthorship(ExAuthorship.yearAuthors(null,"Gus. Schneid."));
     n.setCode(NomCode.BOTANICAL);
 
     n.rebuildScientificName();

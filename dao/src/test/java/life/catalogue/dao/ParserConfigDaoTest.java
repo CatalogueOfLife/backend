@@ -9,6 +9,7 @@ import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -31,7 +32,7 @@ public class ParserConfigDaoTest {
     cfg.setSpecificEpithet("cretacicus");
     cfg.setRank(Rank.SPECIES);
     cfg.setType(NameType.SCIENTIFIC);
-    cfg.setCombinationAuthorship(Authorship.yearAuthors("1977", "zur Straßen"));
+    cfg.setCombinationAuthorship(ExAuthorship.yearAuthors("1977", "zur Straßen"));
 
     assertParsed("Jezzinothrips cretacicus", "zur Strassen, 1973", Rank.SPECIES, "1973","zur Strassen");
     dao.putName(cfg, Users.TESTER);

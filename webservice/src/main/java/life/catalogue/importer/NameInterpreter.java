@@ -341,8 +341,8 @@ public class NameInterpreter {
     }
   }
 
-  private static Authorship buildAuthorship(String author, String ex, String year) {
-    Authorship a = new Authorship();
+  private static ExAuthorship buildAuthorship(String author, String ex, String year) {
+    var a = new ExAuthorship();
     a.setAuthors(parseAuthors(author));
     a.setExAuthors(parseAuthors(ex));
     a.setYear(year);

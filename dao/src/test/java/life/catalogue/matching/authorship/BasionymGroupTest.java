@@ -4,6 +4,8 @@ import org.gbif.nameparser.api.Authorship;
 
 import java.util.List;
 
+import org.gbif.nameparser.api.ExAuthorship;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -12,7 +14,7 @@ public class BasionymGroupTest {
 
   @Test
   public void getAll() {
-    BasionymGroup<String> group = new BasionymGroup<>("alba", Authorship.authors("Miller"));
+    BasionymGroup<String> group = new BasionymGroup<>("alba", ExAuthorship.authors("Miller"));
     assertTrue(group.isEmpty());
     assertEquals(0, group.size());
     assertEquals(List.of(), group.getAll());

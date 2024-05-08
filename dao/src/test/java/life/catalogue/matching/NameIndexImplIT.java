@@ -23,6 +23,7 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.printer.TxtTreeDataRule;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -95,7 +96,7 @@ public class NameIndexImplIT {
     n.setInfragenericEpithet("Abies");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Mill.");
-    n.setCombinationAuthorship(Authorship.authors("Mill."));
+    n.setCombinationAuthorship(ExAuthorship.authors("Mill."));
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
@@ -111,7 +112,7 @@ public class NameIndexImplIT {
     n.setInfragenericEpithet("Pinus");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Mill.");
-    n.setCombinationAuthorship(Authorship.authors("Mill."));
+    n.setCombinationAuthorship(ExAuthorship.authors("Mill."));
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
@@ -133,7 +134,7 @@ public class NameIndexImplIT {
     n.setInfragenericEpithet("Argworta");
     n.setSpecificEpithet("hansa");
     n.setAuthorship("DC.");
-    n.setCombinationAuthorship(Authorship.authors("DC."));
+    n.setCombinationAuthorship(ExAuthorship.authors("DC."));
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
@@ -282,7 +283,7 @@ public class NameIndexImplIT {
     n1.setGenus("Abies");
     n1.setSpecificEpithet("alba");
     n1.setAuthorship("Mill.");
-    n1.setCombinationAuthorship(Authorship.authors("Mill."));
+    n1.setCombinationAuthorship(ExAuthorship.authors("Mill."));
     n1.setRank(Rank.SPECIES);
     n1.setType(NameType.SCIENTIFIC);
 
@@ -300,7 +301,7 @@ public class NameIndexImplIT {
 
     Name n5 = new Name(n1); // should be the same
     n1.setAuthorship("Miller");
-    n1.setCombinationAuthorship(Authorship.authors("Miller"));
+    n1.setCombinationAuthorship(ExAuthorship.authors("Miller"));
 
     return List.of(n1, n2, n3, n4, n5);
   }
@@ -451,7 +452,7 @@ public class NameIndexImplIT {
   private static IndexName create(String genus, String species, String year, String... authors){
     Name n = new Name();
     if (authors != null || year != null) {
-      n.setCombinationAuthorship(Authorship.yearAuthors(year, authors));
+      n.setCombinationAuthorship(ExAuthorship.yearAuthors(year, authors));
     }
     n.setGenus(genus);
     n.setSpecificEpithet(species);

@@ -132,20 +132,38 @@ public class NameInterpreterTest {
   @Test
   public void interpretName() throws Exception {
     VerbatimRecord v = new VerbatimRecord();
+    ParsedNameUsage pnu;
     Name n;
 
-    for (var pnu : List.of(
+    pnu = ib.interpret(SimpleName.sn(BACTERIAL, "Bacteroides tectus (corrig.) Love et al. 1986"), v).get();
+    assertEquals("Bacteroides tectus", pnu.getName().getScientificName());
+    assertFalse(pnu.getName().isOriginalSpelling());
+    assertEquals("Love et al. 1986", pnu.getName().getAuthorship());
+    assertEquals("Bacteroides tectus corrig. Love et al. 1986", pnu.getName().getLabel());
+
+    for (var pn : List.of(
+      ib.interpret(SimpleName.sn(Rank.GENUS, BACTERIAL, "Achromobacter", "Yabuuchi and Yano, 1981 emend. Yabuuchi et al., 1998"), v).get(),
+      ib.interpret(SimpleName.sn(Rank.GENUS, "Achromobacter Yabuuchi and Yano, 1981 emend. Yabuuchi et al., 1998"), v).get()
+    )) {
+      assertEquals(Rank.GENUS, pn.getName().getRank());
+      assertEquals("Achromobacter", pn.getName().getScientificName());
+      //assertEquals("Yabuuchi & Yano, 1981", pn.getName().getAuthorship());
+      assertNull(pn.getName().isOriginalSpelling());
+      //assertEquals("Achromobacter Yabuuchi & Yano, 1981 emend. Yabuuchi et al., 1998", pn.getName().getLabel());
+    }
+
+    for (var pn : List.of(
       ib.interpret(SimpleName.sn(Rank.FAMILY, BACTERIAL, "Alcanivoracaceae", "corrig. Golyshin et al., 2005"), v).get(),
       ib.interpret(SimpleName.sn(Rank.FAMILY, "Alcanivoracaceae corrig. Golyshin et al., 2005"), v).get()
     )) {
-      assertEquals(Rank.FAMILY, pnu.getName().getRank());
-      assertEquals("Alcanivoracaceae", pnu.getName().getScientificName());
-      assertEquals("Golyshin et al., 2005", pnu.getName().getAuthorship());
-      assertFalse(pnu.getName().isOriginalSpelling());
-      assertEquals("Alcanivoracaceae corrig. Golyshin et al., 2005", pnu.getName().getLabel());
+      assertEquals(Rank.FAMILY, pn.getName().getRank());
+      assertEquals("Alcanivoracaceae", pn.getName().getScientificName());
+      assertEquals("Golyshin et al., 2005", pn.getName().getAuthorship());
+      assertFalse(pn.getName().isOriginalSpelling());
+      assertEquals("Alcanivoracaceae corrig. Golyshin et al., 2005", pn.getName().getLabel());
     }
 
-    ParsedNameUsage pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
+    pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
     assertTrue(pnu.getName().isOriginalSpelling());
     assertEquals("Barleeidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());

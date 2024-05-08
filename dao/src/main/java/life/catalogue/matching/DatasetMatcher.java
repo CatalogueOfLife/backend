@@ -66,7 +66,7 @@ public class DatasetMatcher extends BaseMatcher {
         // also match archived names
         if (isProject) {
           ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
-          LOG.info("{} {}name archive matches for project {}", doUpdate ? "Update" : "Create", onlyMissingMatches?"missing ":"", datasetKey);
+          LOG.info("{} {}name archive matches for project {}", doUpdate ? "Update" : "Create", onlyMissingMatches ? "missing ":"", datasetKey);
           final int totalBeforeArchive = total;
           PgUtils.consume(() -> anum.processArchivedNames(datasetKey, onlyMissingMatches), hu);
           archived = archived + total - totalBeforeArchive;

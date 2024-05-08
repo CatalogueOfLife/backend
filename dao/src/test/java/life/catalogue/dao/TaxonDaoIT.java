@@ -15,6 +15,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
@@ -252,7 +253,7 @@ public class TaxonDaoIT extends DaoTestBase {
     // parsed
     Name n = new Name();
     n.setUninomial("Abies");
-    n.setCombinationAuthorship(Authorship.authors("Miller"));
+    n.setCombinationAuthorship(ExAuthorship.authors("Miller"));
     n.setRank(Rank.GENUS);
     Taxon t = new Taxon();
     t.setName(n);

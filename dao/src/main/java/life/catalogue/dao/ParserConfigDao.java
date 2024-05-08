@@ -130,6 +130,7 @@ public class ParserConfigDao {
       pnNoAuthor.copy(pn);
       pnNoAuthor.setCombinationAuthorship(null);
       pnNoAuthor.setBasionymAuthorship(null);
+      pnNoAuthor.setEmendAuthorship(null);
       pnNoAuthor.setSanctioningAuthor(null);
       NameParser.PARSER.configs().setName(obj.getScientificName(), pnNoAuthor);
     }

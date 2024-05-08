@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 
+import org.gbif.nameparser.api.ExAuthorship;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -29,8 +31,8 @@ public class NameUsageSearchHighlighterTest {
     return nuw;
   }
 
-  private static Authorship auth(String... names) {
-    Authorship a = new Authorship();
+  private static ExAuthorship auth(String... names) {
+    var a = new ExAuthorship();
     a.setAuthors(Arrays.asList(names));
     return a;
   }

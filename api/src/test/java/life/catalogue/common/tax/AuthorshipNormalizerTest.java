@@ -6,6 +6,8 @@ import org.gbif.nameparser.api.Authorship;
 
 import java.util.List;
 
+import org.gbif.nameparser.api.ExAuthorship;
+
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -126,8 +128,8 @@ import static org.junit.Assert.*;
       assertEquals(Lists.newArrayList(expected), totest);
     }
 
-    private static Authorship cr(String year, String... authors) {
-      Authorship a = new Authorship();
+    private static ExAuthorship cr(String year, String... authors) {
+      ExAuthorship a = new ExAuthorship();
       a.setYear(year);
       a.setAuthors(Lists.newArrayList(authors));
       return a;

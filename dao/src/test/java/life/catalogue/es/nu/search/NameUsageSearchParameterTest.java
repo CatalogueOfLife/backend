@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.gbif.nameparser.api.ExAuthorship;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -679,14 +681,14 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
   @Test
   public void testAuthorShip() throws IOException {
 
-    Authorship a1 = new Authorship();
+    ExAuthorship a1 = new ExAuthorship();
     a1.setAuthors(List.of("Mark", "John"));
     a1.setExAuthors(List.of("Cornelius"));
     a1.setYear("2000");
-    Authorship a2 = new Authorship();
+    ExAuthorship a2 = new ExAuthorship();
     a2.setAuthors(List.of("Jim"));
     a2.setYear(null);
-    Authorship a3 = new Authorship();
+    ExAuthorship a3 = new ExAuthorship();
     a3.setAuthors(List.of("Cornelius"));
     a3.setExAuthors(List.of("Aaron", "Billy"));
     a3.setYear("1752");

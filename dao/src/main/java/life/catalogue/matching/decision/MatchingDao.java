@@ -51,7 +51,7 @@ public class MatchingDao {
       if (name.getCode() != null && t.getName().getCode() != null && !name.getCode().equals(t.getName().getCode())) {
         continue;
       }
-      if (name.getParent() != null) {
+      if (!StringUtils.isBlank(name.getParent())) {
         // synonyms already have their parent name. For taxa we need to look that up
         // https://github.com/Sp2000/colplus-backend/issues/349
         Name parent;

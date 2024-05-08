@@ -16,9 +16,10 @@ import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
-
+import static org.gbif.nameparser.util.NameFormatter.appendAuthorship;
 /**
- *
+ * Formatting FormattableName instances to plain text and html labels.
+ * See also the NameFormatter in the name parser package which formats ParsedName instances, but does similar.
  */
 public class NameFormatter {
   public static final char HYBRID_MARKER = '×';
@@ -71,14 +72,14 @@ public class NameFormatter {
     StringBuilder sb = new StringBuilder();
     if (n.hasBasionymAuthorship()) {
       sb.append("(");
-      appendAuthorship(sb, n.getBasionymAuthorship(), true);
+      appendAuthorship(sb, n.getBasionymAuthorship(), true, n.getCode());
       sb.append(")");
     }
     if (n.hasCombinationAuthorship()) {
-      if (n.hasBasionymAuthorship()) {
-        sb.append(" ");
+      if (sb.length() > 1) {
+        sb.append(' ');
       }
-      appendAuthorship(sb, n.getCombinationAuthorship(), true);
+      appendAuthorship(sb, n.getCombinationAuthorship(), true, n.getCode());
       // Render sanctioning author via colon:
       // http://www.iapt-taxon.org/nomen/main.php?page=r50E
       //TODO: remove rendering of sanctioning author according to Paul Kirk!
@@ -86,6 +87,13 @@ public class NameFormatter {
         sb.append(" : ");
         sb.append(n.getSanctioningAuthor());
       }
+    }
+    if (n.hasEmendAuthorship()) {
+      if (sb.length() > 1) {
+        sb.append(' ');
+      }
+      sb.append("emend. ");
+      appendAuthorship(sb, n.getEmendAuthorship(), true, n.getCode());
     }
     if (includeNotes && n.getNomenclaturalNote() != null) {
       if (n.hasAuthorship()) {
@@ -371,32 +379,6 @@ public class NameFormatter {
 
     } else {
       return AUTHORSHIP_JOINER.join(authors);
-    }
-  }
-
-  /**
-   * Renders the authorship with ex authors and year
-   *
-   * @param sb StringBuilder to append to
-   */
-  private static void appendAuthorship(StringBuilder sb, Authorship auth, boolean includeYear) {
-    if (auth != null && auth.exists()) {
-      boolean authorsAppended = false;
-      if (auth.hasExAuthors()) {
-        sb.append(joinAuthors(auth.getExAuthors(), false));
-        sb.append(" ex ");
-        authorsAppended = true;
-      }
-      if (auth.hasAuthors()) {
-        sb.append(joinAuthors(auth.getAuthors(), false));
-        authorsAppended = true;
-      }
-      if (auth.getYear() != null && includeYear) {
-        if (authorsAppended) {
-          sb.append(", ");
-        }
-        sb.append(auth.getYear());
-      }
     }
   }
 

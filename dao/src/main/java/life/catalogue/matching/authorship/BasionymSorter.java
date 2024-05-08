@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.gbif.nameparser.api.ExAuthorship;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +81,7 @@ public class BasionymSorter {
     if (basionyms.isEmpty()) {
       // try again without year in case we didn't find any but make sure we only match once!
       if (authorship != null) {
-        Authorship aNoYear = copyWithoutYear(authorship);
+        ExAuthorship aNoYear = copyWithoutYear(authorship);
         for (T obj : originals) {
           FormattableName b = func.apply(obj);
           if (authorComp.compareStrict(aNoYear, copyWithoutYear(b.getCombinationAuthorship()))) {
@@ -133,8 +135,8 @@ public class BasionymSorter {
     }
   }
 
-  private static Authorship copyWithoutYear(Authorship a) {
-    Authorship a2 = new Authorship();
+  private static ExAuthorship copyWithoutYear(ExAuthorship a) {
+    ExAuthorship a2 = new ExAuthorship();
     a2.setAuthors(a.getAuthors());
     a2.setExAuthors(a.getExAuthors());
     return a2;

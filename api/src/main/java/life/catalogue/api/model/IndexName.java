@@ -6,10 +6,7 @@ import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
 
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.util.Objects;
 
@@ -46,9 +43,11 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   private String infraspecificEpithet;
   private String cultivarEpithet;
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
-  private Authorship combinationAuthorship = new Authorship();
+  private ExAuthorship combinationAuthorship = new ExAuthorship();
   @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
-  private Authorship basionymAuthorship = new Authorship();
+  private ExAuthorship basionymAuthorship = new ExAuthorship();
+  @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = IsEmptyFilter.class)
+  private Authorship emendAuthorship = new Authorship();
   private String sanctioningAuthor;
 
   public IndexName() {
@@ -69,6 +68,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.cultivarEpithet = other.cultivarEpithet;
     this.combinationAuthorship = other.combinationAuthorship;
     this.basionymAuthorship = other.basionymAuthorship;
+    this.emendAuthorship = other.emendAuthorship;
     this.sanctioningAuthor = other.sanctioningAuthor;
   }
 
@@ -92,6 +92,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.cultivarEpithet = n.getCultivarEpithet();
     this.combinationAuthorship = n.getCombinationAuthorship();
     this.basionymAuthorship = n.getBasionymAuthorship();
+    this.emendAuthorship = n.getEmendAuthorship();
     this.sanctioningAuthor = n.getSanctioningAuthor();
     this.setCreated(n.getCreated());
     this.setModified(n.getModified());
@@ -181,23 +182,35 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public void setAuthorship(String authorship) {
     this.authorship = authorship;
   }
-  
-  public Authorship getCombinationAuthorship() {
+
+  @Override
+  public ExAuthorship getCombinationAuthorship() {
     return combinationAuthorship;
   }
   
-  public void setCombinationAuthorship(Authorship combinationAuthorship) {
+  public void setCombinationAuthorship(ExAuthorship combinationAuthorship) {
     this.combinationAuthorship = combinationAuthorship;
   }
 
-  public Authorship getBasionymAuthorship() {
+  @Override
+  public ExAuthorship getBasionymAuthorship() {
     return basionymAuthorship;
   }
   
-  public void setBasionymAuthorship(Authorship basionymAuthorship) {
+  public void setBasionymAuthorship(ExAuthorship basionymAuthorship) {
     this.basionymAuthorship = basionymAuthorship;
   }
-  
+
+  @Override
+  public Authorship getEmendAuthorship() {
+    return emendAuthorship;
+  }
+
+  public void setEmendAuthorship(Authorship emendAuthorship) {
+    this.emendAuthorship = emendAuthorship;
+  }
+
+  @Override
   public String getSanctioningAuthor() {
     return sanctioningAuthor;
   }
@@ -395,12 +408,13 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
       Objects.equals(cultivarEpithet, indexName.cultivarEpithet) &&
       Objects.equals(combinationAuthorship, indexName.combinationAuthorship) &&
       Objects.equals(basionymAuthorship, indexName.basionymAuthorship) &&
+      Objects.equals(emendAuthorship, indexName.emendAuthorship) &&
       Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, emendAuthorship, sanctioningAuthor);
   }
 
   @Override

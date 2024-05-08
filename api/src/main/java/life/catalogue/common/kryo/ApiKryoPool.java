@@ -63,6 +63,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(Distribution.class);
     kryo.register(EditorialDecision.class);
     kryo.register(EditorialDecision.Mode.class);
+    kryo.register(ExAuthorship.class);
     kryo.register(Identifier.class);
     kryo.register(IndexName.class);
     kryo.register(Media.class);

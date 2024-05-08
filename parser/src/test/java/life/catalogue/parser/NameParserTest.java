@@ -117,7 +117,7 @@ public class NameParserTest {
     cfg.updateID("Aspilota vector",  "Belokobylskij, 2007");
     cfg.setGenus("Aspilota");
     cfg.setSpecificEpithet("vector");
-    cfg.setCombinationAuthorship(Authorship.yearAuthors("2007", "Belokobylskij"));
+    cfg.setCombinationAuthorship(ExAuthorship.yearAuthors("2007", "Belokobylskij"));
     cfg.setType(NameType.SCIENTIFIC);
     cfg.setRank(Rank.SPECIES);
     addToParser(cfg);

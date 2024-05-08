@@ -1,6 +1,7 @@
 package life.catalogue.api.model;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -18,10 +19,11 @@ public interface ScientificName {
 
   NomCode getCode();
 
-  Authorship getCombinationAuthorship();
+  ExAuthorship getCombinationAuthorship();
 
-  Authorship getBasionymAuthorship();
+  ExAuthorship getBasionymAuthorship();
 
+  Authorship getEmendAuthorship();
   String getLabel();
 
   @JsonIgnore
@@ -38,7 +40,7 @@ public interface ScientificName {
   }
 
   default boolean hasParsedAuthorship() {
-    return hasCombinationAuthorship() || hasBasionymAuthorship();
+    return hasCombinationAuthorship() || hasBasionymAuthorship() || hasEmendAuthorship();
   }
 
   @JsonIgnore
@@ -54,5 +56,10 @@ public interface ScientificName {
   @JsonIgnore
   default boolean hasBasionymAuthorship() {
     return getBasionymAuthorship() != null && !getBasionymAuthorship().isEmpty();
+  }
+
+  @JsonIgnore
+  default boolean hasEmendAuthorship() {
+    return getEmendAuthorship() != null && !getEmendAuthorship().isEmpty();
   }
 }
