@@ -106,7 +106,6 @@ public class PgSetupRuleTest {
     enums.remove(DoiResolution.class);
     enums.remove(TabularFormat.class);
     enums.remove(TaxGroup.class);
-    enums.remove(TxtTreeDataKey.class);
     // remove enums not used in coldp
     if (coldpOnly) {
       enums.remove(DataFormat.class);

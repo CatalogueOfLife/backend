@@ -13,8 +13,6 @@ import javax.annotation.Nullable;
  *
  */
 public abstract class EnumParser<T extends Enum> extends MapBasedParser<T> {
-  private static final Logger LOG = LoggerFactory.getLogger(EnumParser.class);
-  private final Map<String, T> mapping = Maps.newHashMap();
   private final Class<T> enumClass;
   
   public EnumParser(Class<T> enumClass) {

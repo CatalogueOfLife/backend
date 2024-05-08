@@ -2,7 +2,7 @@ Chordata [phylum]
   Mammalia [class]
     †Eugeneodontiformes [order] # sedis mutabilis
     Carnivora [order]
-      Canidae [family] {CHRONO=Jurassic-Cretacious}
+      Canidae [family] {CHRONO=Jurassic-Creticeous} # misspelled Cretaceous
         Canis [genus] {CHRONO=Jurassic}
           =Alopsis [genus]
           =Lupulus [genus]

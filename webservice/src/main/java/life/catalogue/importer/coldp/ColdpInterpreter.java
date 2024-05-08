@@ -32,7 +32,7 @@ import org.gbif.nameparser.api.Rank;
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
- * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
+ * Interprets a verbatim ColDP record and transforms it into a name, taxon and unique references.
  */
 public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);

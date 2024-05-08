@@ -11,7 +11,18 @@ import java.net.URI;
 public enum TxtTreeTerm implements Term, AlternativeNames {
   Tree(true),
   indent,
-  content;
+  content,
+  // data info property keys
+  ID,
+  PUB,
+  REF,
+  ENV,
+  VERN,
+  SRC,
+  CHRONO, // temporal range
+  LINK,
+  CODE,
+  PROV; // provisional
 
   private static final String PREFIX = "tt";
   private static final String NS = "http://rs.gbif.org.org/terms/1.0/txtree/";

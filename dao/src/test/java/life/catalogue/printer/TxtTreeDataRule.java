@@ -3,6 +3,7 @@ package life.catalogue.printer;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
@@ -44,6 +45,7 @@ import static org.junit.Assert.assertFalse;
  */
 public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDataRule.class);
+  private static final String KEY_PRIO = "PRIO";
 
   final private boolean keepOrder;
   final private List<TreeDataset> datasets;
@@ -202,8 +204,8 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     nm.create(n);
 
     Integer sk = null;
-    if (src.origin.isProjectOrRelease() && tn.infos.containsKey(TxtTreeDataKey.PRIO.name())) {
-      sk = Integer.parseInt(tn.infos.get(TxtTreeDataKey.PRIO.name())[0]);
+    if (src.origin.isProjectOrRelease() && tn.infos.containsKey(KEY_PRIO)) {
+      sk = Integer.parseInt(tn.infos.get(KEY_PRIO)[0]);
       if (!sectors.contains(sk)) {
         Sector s = new Sector();
         s.setDatasetKey(src.key);
@@ -226,15 +228,15 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
         t.setOrdinal(ordinal);
       }
       var status = TaxonomicStatus.ACCEPTED;
-      if (tn.infos.containsKey(TxtTreeDataKey.PROV.name())) {
+      if (tn.infos.containsKey(TxtTreeTerm.PROV.name())) {
         status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
       }
 
       prepUsage(t, src.key, sk, nat, status, parent, tn);
       tm.create(t);
 
-      if (tn.infos.containsKey(TxtTreeDataKey.VERN.name())) {
-        for (var x : tn.infos.get(TxtTreeDataKey.VERN.name())) {
+      if (tn.infos.containsKey(TxtTreeTerm.VERN.name())) {
+        for (var x : tn.infos.get(TxtTreeTerm.VERN.name())) {
           var parts = x.split(":");
           var vn = new VernacularName();
           vn.setDatasetKey(src.key);

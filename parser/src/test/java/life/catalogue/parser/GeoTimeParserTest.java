@@ -28,6 +28,8 @@ public class GeoTimeParserTest extends ParserTestBase<GeoTime> {
     assertParse("LowerDevonian", "Lower Devonian");
     assertParse("LowerDevonian", "Lower_Devonian");
 
+    assertParse("Cambrian", "Cambrian");
+
     assertParse("LowerCretaceous", "Apatinė Kreida");
     assertParse("UpperCretaceous", "yngre krita");
     assertParse("UpperCretaceous", "Crétacé supérieur");

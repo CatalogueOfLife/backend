@@ -3,8 +3,10 @@ package life.catalogue.importer.txttree;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InserterBaseTest;
 import life.catalogue.importer.NeoInserter;
@@ -34,6 +36,15 @@ public class TxtTreeInserterTest extends InserterBaseTest {
   public void badRanks() throws Exception {
     NeoInserter ins = setup("/txtree/4");
     ins.insertAll();
+    CountMap<Issue> issues = new CountMap<>();
+    for (var v : store.verbatimList()) {
+      for (var iss : v.getIssues()) {
+        issues.inc(iss);
+      }
+    }
+    assertEquals(2, issues.size());
+    assertEquals(1, (int) issues.get(Issue.GEOTIME_INVALID));
+    assertEquals(1, (int) issues.get(Issue.RANK_INVALID));
   }
 
   @Test

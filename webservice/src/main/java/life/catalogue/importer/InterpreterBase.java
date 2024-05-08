@@ -512,27 +512,33 @@ public class InterpreterBase {
   }
 
   protected void setEnvironment(Taxon t, VerbatimRecord v, Term environment) {
+    List<String> envs;
     String raw = v.get(environment);
     if (raw != null) {
-      for (String lzv : words(raw)) {
-        Environment lz = parse(EnvironmentParser.PARSER, lzv).orNull(Issue.ENVIRONMENT_INVALID, v);
-        if (lz != null) {
-          t.getEnvironments().add(lz);
-        }
+      envs = words(raw);
+    } else {
+      envs = Collections.emptyList();
+    }
+    setEnvironment(t, envs, v);
+  }
+  protected void setEnvironment(Taxon t, List<String> environments, IssueContainer v) {
+    for (String lzv : environments) {
+      Environment lz = parse(EnvironmentParser.PARSER, lzv).orNull(Issue.ENVIRONMENT_INVALID, v);
+      if (lz != null) {
+        t.getEnvironments().add(lz);
       }
     }
     if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
       t.setEnvironments(Set.of(settings.getEnum(Setting.ENVIRONMENT)));
     }
   }
-  
   protected static Integer parseNomenYear(Term term, VerbatimRecord v) {
     return parseNomenYear(v.get(term), v);
   }
 
   /**
    * Parses the nomenclatural year the name was published and flags issues if the year is unparsable
-   * or unliklely, i.e. before 1753 or after next year.
+   * or unlikely, i.e. before 1753 or after next year.
    */
   protected static Integer parseNomenYear(String year, IssueContainer issues) {
     if (!StringUtils.isBlank(year)) {
@@ -557,4 +563,16 @@ public class InterpreterBase {
     return null;
   }
 
+  public static String normGeoTime(String gt, IssueContainer issues){
+    if (gt != null) {
+      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
+      if (pr.isPresent()) {
+        return pr.get().getName();
+      } else {
+        issues.addIssue(Issue.GEOTIME_INVALID);
+      }
+      return StringUtils.trimToNull(gt.replaceAll("_", " "));
+    }
+    return null;
+  }
 }
