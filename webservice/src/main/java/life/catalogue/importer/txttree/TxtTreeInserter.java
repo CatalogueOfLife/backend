@@ -1,6 +1,7 @@
 package life.catalogue.importer.txttree;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
@@ -149,16 +150,25 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
+  private void persist(NeoUsage u, SimpleTreeNode t) {
+    store.createNameAndUsage(u); // this removes the usage.name
+    if (u.getId() == null) {
+      // try again with line number as ID in case of duplicates
+      u.setId(String.valueOf(t.id));
+      store.usages().create(u);
+    }
+  }
+
   private void recursiveNodeInsert(Node parent, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
     NeoUsage u = usage(t, false, ordinal, parentCode);
     final NomCode code = u.usage.getName().getCode();
-    store.createNameAndUsage(u); // this removes the usage.name
+    persist(u, t);
     if (parent != null) {
       store.assignParent(parent, u.node);
     }
     for (SimpleTreeNode syn : t.synonyms){
       NeoUsage s = usage(syn, true, 0, code);
-      store.createNameAndUsage(s);
+      persist(s, t);
       store.createSynonymRel(s.node, u.node);
       if (syn.basionym) {
         NeoRel rel = new NeoRel();
@@ -194,6 +204,7 @@ public class TxtTreeInserter implements NeoInserter {
 
     // NAME
     ParsedNameUsage pnu = NameParser.PARSER.parse(tn.name, rank, code, v).get();
+    pnu.getName().setId(String.valueOf(tn.id));
     // PUB REF
     if (hasDataItem(PUB, tn)) {
       String[] vals = rmDataItem(PUB, tn);
@@ -208,7 +219,8 @@ public class TxtTreeInserter implements NeoInserter {
       }
     }
 
-    // link (remove before we add properties)
+    // general usage props to be removed before we add properties!
+    String uid = rmSingleDataItem(ID, tn);
     URI link = parse(UriParser.PARSER, rmSingleDataItem(LINK, tn)).orNull(Issue.URL_INVALID, v);
 
     // USAGE
@@ -287,7 +299,7 @@ public class TxtTreeInserter implements NeoInserter {
         }
       }
     }
-    u.setId(String.valueOf(tn.id));
+    u.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
     u.setVerbatimKey(v.getId());
     u.asNameUsageBase().setLink(link);
     u.usage.setAccordingToId(pnu.getTaxonomicNote());

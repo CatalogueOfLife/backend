@@ -48,6 +48,21 @@ public class TxtTreeInserterTest extends InserterBaseTest {
   }
 
   @Test
+  public void uniqueIDs() throws Exception {
+    NeoInserter ins = setup("/txtree/5");
+    ins.insertAll();
+    CountMap<Issue> issues = new CountMap<>();
+    for (var v : store.verbatimList()) {
+      for (var iss : v.getIssues()) {
+        issues.inc(iss);
+      }
+    }
+    assertEquals(2, issues.size());
+    assertEquals(2, (int) issues.get(Issue.ID_NOT_UNIQUE));
+    assertEquals(1, (int) issues.get(Issue.RANK_INVALID));
+  }
+
+  @Test
   public void test2() throws Exception {
     NeoInserter ins = setup("/txtree/2");
     ins.insertAll();
