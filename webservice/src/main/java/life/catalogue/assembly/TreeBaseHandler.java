@@ -437,8 +437,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     Name n = u.getName();
-    if (filterSynonymsByRank || u.isTaxon()) {
-      // apply rank filter only for accepted names, always allow any synonyms unless requested otherwise via filterSynonymsByRank
+    if (u.isTaxon() || (filterSynonymsByRank && n.getRank().isSupraspecific())) {
+      // apply rank filter only for accepted names, always allow any synonyms below species
+      // but also filter synonyms above if requested via filterSynonymsByRank
       if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
         return incIgnored(IgnoreReason.RANK, u);
       }
