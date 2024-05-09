@@ -222,6 +222,12 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         }
         // remove final comma
         name = COMMA_AT_END.matcher(name).replaceFirst("");
+      } else {
+        // the pattern did not work, so the notes will be duplicated
+        // better rebuild the authorship from scratch than keeping redundant data which gets duplicated in the label!
+        LOG.debug("Failed to remove tax note >{}< from original authorship >{}<. Rebuild authorship from atoms instead", taxNote, originalAuthorship);
+        pnu.getName().rebuildAuthorship();
+        return pnu.getName().getAuthorship();
       }
     }
 
