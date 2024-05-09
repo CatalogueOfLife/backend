@@ -18,7 +18,7 @@ public class MatchingApplication implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingService.class);
 
   @Override
-  public void run(ApplicationArguments args) throws Exception {
+  public void run(ApplicationArguments args) {
     LOG.info("Web services started");
   }
 }
