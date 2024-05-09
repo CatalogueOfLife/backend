@@ -27,3 +27,15 @@ java -jar target/matching-ws-1.0-SNAPSHOT-exec.jar
 --mode=INDEX_CSV --index.path=/tmp/my-worms-index/ --export.path=/data/matching-ws/export/2011
 ```
 
+
+```bash
+CLB_DATASET_ID=2011
+docker build \
+  --platform linux/amd64 \
+  --build-arg INDEX_DATASET_ID=$CLB_DATASET_ID \
+  --build-arg CLB_URL=jdbc:postgresql://localhost:5432/clb \
+  --build-arg CLB_USER=add-me \
+  --build-arg CLB_PASSWORD=add-me\
+  . -t matching-ws:$CLB_DATASET_ID
+```
+
