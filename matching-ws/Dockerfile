@@ -18,26 +18,14 @@ RUN mvn clean install -DskipTests
 WORKDIR /app/backend/matching-ws
 RUN mvn clean install spring-boot:repackage
 
-# Use an official OpenJDK runtime as a parent image
+# Copy the executable JAR file from the builder image to the new image
 FROM openjdk:17-jdk-slim
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT="8080"
-ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
 ARG USER=matching
 ARG APP_ARTIFACT=matching-ws
-
-# Directories and perms
-RUN mkdir -p /data/$APP_ARTIFACT && \
-    groupadd -r $USER -g 1000 && useradd -r -g $USER -u 1000 -m $USER && \
-    chown -R $USER:$USER /data/$APP_ARTIFACT
-
-# Set the working directory in the container
-WORKDIR /opt/gbif/$APP_ARTIFACT
-
-# Copy the executable JAR file from the builder image to the new image
-FROM openjdk:17-jdk-slim
 
 # Set environment variables
 ARG CLB_DATASET_ID=""
