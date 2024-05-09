@@ -18,9 +18,6 @@ RUN mvn clean install -DskipTests
 WORKDIR /app/backend/matching-ws
 RUN mvn clean install spring-boot:repackage
 
-COPY export-from-clb.sh /app/export-from-clb.sh
-RUN chmod +x /app/export-from-clb.sh
-
 # Use an official OpenJDK runtime as a parent image
 FROM openjdk:17-jdk-slim
 
@@ -43,13 +40,7 @@ WORKDIR /opt/gbif/$APP_ARTIFACT
 FROM openjdk:17-jdk-slim
 
 # Set environment variables
-ARG DEBIAN_FRONTEND=noninteractive
-ENV SERVER_PORT="8080"
-ARG APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
-ARG USER=matching
-ARG APP_ARTIFACT=matching-ws
-
-ARG INDEX_DATASET_ID=""
+ARG CLB_DATASET_ID=""
 ARG CLB_URL=""
 ARG CLB_USER=""
 ARG CLB_PASSWORD=""
@@ -66,21 +57,21 @@ WORKDIR /opt/gbif/$APP_ARTIFACT
 COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
 
 # CSV export from checklistbank
-RUN if [ -n "$INDEX_DATASET_ID" ]; then \
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
     java -jar /opt/gbif/$APP_ARTIFACT/app.jar \
     --mode=EXPORT_CSV \
     --export.path=/data/$APP_ARTIFACT/exports \
-    --clb.dataset.id=$INDEX_DATASET_ID \
+    --clb.dataset.id=$CLB_DATASET_ID \
     --clb.url=$CLB_URL \
     --clb.user=$CLB_USER \
     --clb.password=$CLB_PASSWORD; \
     fi
 
 # Generate the index from the exported CSV
-RUN if [ -n "$INDEX_DATASET_ID" ]; then \
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
     java -jar /opt/gbif/$APP_ARTIFACT/app.jar \
     --mode=INDEX_CSV \
-    --export.path=/data/matching-ws/exports/$INDEX_DATASET_ID \
+    --export.path=/data/matching-ws/exports/$CLB_DATASET_ID \
     --index.path=/data/matching-ws/index; \
     fi
 
