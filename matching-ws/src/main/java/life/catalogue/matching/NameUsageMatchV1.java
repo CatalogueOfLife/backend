@@ -2,7 +2,11 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import lombok.Data;
@@ -11,12 +15,13 @@ import org.gbif.nameparser.api.Rank;
 /**
  * Version 1 of the name usage match response object.
  * This class is used to serialize the response of the name usage matching service in the v1 format
- * and to read legacy integration test data to create a index for matching tests.
+ * and to read legacy integration test data to create an index for matching tests.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
-public class NameUsageMatchV1 {
+public class NameUsageMatchV1 implements Serializable {
 
+  @Serial
   private static final long serialVersionUID = -8927655067465421358L;
   private Integer usageKey;
   private Integer acceptedUsageKey;
@@ -49,7 +54,16 @@ public class NameUsageMatchV1 {
   private Integer subgenusKey;
   private Integer speciesKey;
 
-  public static NameUsageMatchV1 createFrom(NameUsageMatch nameUsageMatch) {
+  public static Optional<NameUsageMatchV1> createFrom(NameUsageMatch nameUsageMatch) {
+    if (nameUsageMatch == null) return Optional.empty();
+
+    try {
+      //check if usageKey is a number
+      Integer.parseInt(nameUsageMatch.getUsage().getKey());
+    } catch (NumberFormatException e) {
+      return Optional.empty();
+    }
+
     NameUsageMatchV1 match = new NameUsageMatchV1();
     if (nameUsageMatch.getUsage() != null) {
       match.setUsageKey(Integer.parseInt(nameUsageMatch.getUsage().getKey()));
@@ -68,6 +82,8 @@ public class NameUsageMatchV1 {
       match.setAlternatives(
           nameUsageMatch.getAlternatives().stream()
               .map(NameUsageMatchV1::createFrom)
+              .filter(Optional::isPresent)
+              .map(Optional::get)
               .collect(Collectors.toList()));
     match.setKingdom(nameUsageMatch.getKingdom());
     match.setPhylum(nameUsageMatch.getPhylum());
@@ -94,6 +110,6 @@ public class NameUsageMatchV1 {
       match.setSubgenusKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SUBGENUS)));
     if (nameUsageMatch.getHigherRankKey(Rank.SPECIES) != null)
       match.setSpeciesKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SPECIES)));
-    return match;
+    return Optional.of(match);
   }
 }

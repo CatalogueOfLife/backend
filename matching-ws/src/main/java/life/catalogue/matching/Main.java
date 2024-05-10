@@ -36,6 +36,9 @@ public class Main {
   @Parameter(names = {"--export.path"}, description = "File system path to write exports from ChecklistBank to")
   private String exportPath = "/data/matching-ws/export";
 
+  @Parameter(names = {"--v1.enabled"}, description = "Enable v1 support for the web service", arity = 1)
+  private boolean v1Enabled = false;
+
   @Parameter(names = "--help", help = true, description = "Print help options")
   private boolean help;
 
@@ -48,6 +51,7 @@ public class Main {
     try {
       commander.parse(args);
     } catch (ParameterException e) {
+      System.err.println(e.getMessage());
       commander.usage();
     }
 

@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +23,7 @@ import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +35,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class MatchController {
 
   @Autowired MatchingService matchingService;
+
+  @Value("${v1.enabled:false}")
+  protected boolean v1Enabled = false;
 
   @Operation(
       operationId = "matchNames",
@@ -216,7 +222,7 @@ public class MatchController {
   @GetMapping(
       value = {"v1/species/match"},
       produces = "application/json")
-  public NameUsageMatchV1 matchV1(
+  public Object matchV1(
       @RequestParam(value = "usageKey", required = false) String usageKey,
       @RequestParam(value = "name", required = false) String scientificName2,
       @RequestParam(value = "scientificName", required = false) String scientificName,
@@ -232,8 +238,12 @@ public class MatchController {
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {
 
+    if (!v1Enabled) {
+      return Map.of("message", "API v1 is disabled. Please use v2 instead.");
+    }
+
     classification.setClazz(response.getParameter("class"));
-    return NameUsageMatchV1.createFrom(
+    Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
         matchingService.match(
             removeNulls(usageKey),
             first(removeNulls(scientificName), removeNulls(scientificName2)),
@@ -246,6 +256,12 @@ public class MatchController {
             Set.of(),
             bool(strict),
             bool(verbose)));
+
+    if (optionalNameUsageMatchV1.isPresent()) {
+      return optionalNameUsageMatchV1.get();
+    } else {
+      return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+    }
   }
 
   public static String removeNulls(String value) {

@@ -32,6 +32,7 @@ ARG CLB_DATASET_ID=""
 ARG CLB_URL=""
 ARG CLB_USER=""
 ARG CLB_PASSWORD=""
+ARG V1_ENABLED="false"
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -62,4 +63,4 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 USER $USER
 EXPOSE $SERVER_PORT
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "app.jar", "--server.port=$SERVER_PORT", "--v1.enabled=$V1_ENABLED"]
