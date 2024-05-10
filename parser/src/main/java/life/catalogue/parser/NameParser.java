@@ -210,7 +210,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     String name = originalAuthorship;
 
     // we need to exclude the taxonomic bits from the authorship, otherwise we render them twice
-    if (taxNote != null) {
+    if (!StringUtils.isBlank(taxNote)) {
       // this is more tricky than it sounds as we altered the taxNote and it may have more/less whitespace in particular
       Pattern noteP = Pattern.compile("^(.*)" + note2pattern(taxNote) + "(.*)$", Pattern.CASE_INSENSITIVE);
       Matcher m = noteP.matcher(originalAuthorship);

@@ -138,6 +138,7 @@ public class NameParserTest {
   static String normalizeAuthorship(String authorship, String taxnote) {
     ParsedNameUsage pnu = new ParsedNameUsage();
     pnu.setName(new Name());
+    pnu.getName().setOriginalSpelling(true);
     return NameParser.setNormalizeAuthorship(pnu, authorship, taxnote);
   }
   @Test
