@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 
-import org.gbif.nameparser.api.ExAuthorship;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -139,7 +137,7 @@ public class InterpreterBaseTest {
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Miller 1876");
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1876", "Miller"));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1876", "Miller"));
     n.rebuildScientificName();
 
     ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
@@ -171,7 +169,7 @@ public class InterpreterBaseTest {
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Miller 1876");
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1876", "Miller"));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1876", "Miller"));
     n.rebuildScientificName();
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);

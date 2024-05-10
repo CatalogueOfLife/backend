@@ -88,13 +88,6 @@ public class NameFormatter {
         sb.append(n.getSanctioningAuthor());
       }
     }
-    if (n.hasEmendAuthorship()) {
-      if (sb.length() > 1) {
-        sb.append(' ');
-      }
-      sb.append("emend. ");
-      appendAuthorship(sb, n.getEmendAuthorship(), true, n.getCode());
-    }
     if (includeNotes && n.getNomenclaturalNote() != null) {
       if (n.hasAuthorship()) {
         sb.append(" ");

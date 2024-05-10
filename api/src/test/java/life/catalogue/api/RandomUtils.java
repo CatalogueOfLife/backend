@@ -3,7 +3,6 @@ package life.catalogue.api;
 import life.catalogue.api.model.Name;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -56,8 +55,8 @@ public class RandomUtils {
     return WordUtils.capitalize(RandomUtils.randomLatinString(rnd.nextInt(12) + 1).toLowerCase());
   }
   
-  public static ExAuthorship randomAuthorship() {
-    ExAuthorship auth = new ExAuthorship();
+  public static Authorship randomAuthorship() {
+    Authorship auth = new Authorship();
     while (rnd.nextBoolean()) {
       auth.addAuthor(randomAuthor());
     }

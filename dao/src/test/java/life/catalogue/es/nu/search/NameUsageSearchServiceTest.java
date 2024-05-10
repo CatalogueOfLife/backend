@@ -13,7 +13,6 @@ import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -696,7 +695,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
     n.setSpecificEpithet("alba");
     n.setInfraspecificEpithet("montana");
     n.setRank(Rank.SUBSPECIES);
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1879", "Smith", "Miller"));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1879", "Smith", "Miller"));
     n.rebuildScientificName();
     n.rebuildAuthorship();
     return nu;

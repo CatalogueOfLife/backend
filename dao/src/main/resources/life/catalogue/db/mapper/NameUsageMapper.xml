@@ -222,12 +222,12 @@
 
   <resultMap id="linneanUsageResultMap" type="LinneanNameUsage" autoMapping="true">
     <id property="id" column="id"/>
-    <association property="combinationAuthorship" javaType="ExAuthorship">
+    <association property="combinationAuthorship" javaType="Authorship">
       <result property="authors" column="combination_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="combination_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="combination_year"/>
     </association>
-    <association property="basionymAuthorship" javaType="ExAuthorship">
+    <association property="basionymAuthorship" javaType="Authorship">
       <result property="authors" column="basionym_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="exAuthors" column="basionym_ex_authors" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
       <result property="year" column="basionym_year"/>

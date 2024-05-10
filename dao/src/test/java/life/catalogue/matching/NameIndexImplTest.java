@@ -175,7 +175,7 @@ public class NameIndexImplTest {
     n.setRank(Rank.GENUS);
     n.setUninomial("?");
     n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(ExAuthorship.authors("Nardo"));
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setCode(NomCode.ZOOLOGICAL);
     n.setType(NameType.PLACEHOLDER);
     assertNoInsert(n);
@@ -198,7 +198,7 @@ public class NameIndexImplTest {
     n.setRank(Rank.SUBGENUS);
     n.setInfragenericEpithet("?");
     n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(ExAuthorship.authors("Nardo"));
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setType(NameType.SCIENTIFIC);
     var quest = assertInsert(n);
 
@@ -219,7 +219,7 @@ public class NameIndexImplTest {
     n = new Name();
     n.setInfragenericEpithet("Tragulla");
     n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(ExAuthorship.authors("Nardo"));
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setRank(Rank.SUBGENUS);
     n.setType(NameType.SCIENTIFIC);
     assertInsert(n);
@@ -228,7 +228,7 @@ public class NameIndexImplTest {
     n.setGenus("Triceps");
     n.setInfragenericEpithet("Tragulla");
     n.setAuthorship("Nardo");
-    n.setCombinationAuthorship(ExAuthorship.authors("Nardo"));
+    n.setCombinationAuthorship(Authorship.authors("Nardo"));
     n.setRank(Rank.SECTION_BOTANY);
     n.setType(NameType.SCIENTIFIC);
     assertInsert(n);
@@ -273,7 +273,7 @@ public class NameIndexImplTest {
     n.setGenus("Abies");
     n.setSpecificEpithet("alba");
     n.setAuthorship("Mill.");
-    n.setCombinationAuthorship(ExAuthorship.authors("Mill."));
+    n.setCombinationAuthorship(Authorship.authors("Mill."));
     n.setRank(Rank.SPECIES);
     n.setType(NameType.SCIENTIFIC);
 
@@ -295,14 +295,14 @@ public class NameIndexImplTest {
     assertEquals(2, ni.size());
 
     n.setAuthorship("Miller");
-    n.setCombinationAuthorship(ExAuthorship.authors("Miller"));
+    n.setCombinationAuthorship(Authorship.authors("Miller"));
     m = ni.match(n, true, true);
     assertEquals(MatchType.VARIANT, m.getType());
     assertEquals(idx, m.getName().getKey());
     assertEquals(2, ni.size());
 
     n.setAuthorship("Tesla");
-    n.setCombinationAuthorship(ExAuthorship.authors("Tesla"));
+    n.setCombinationAuthorship(Authorship.authors("Tesla"));
     m = ni.match(n, true, true);
     final Integer idxTesla = m.getName().getKey();
     assertNotEquals(idx, cidx);
@@ -320,7 +320,7 @@ public class NameIndexImplTest {
     n1.setSpecificEpithet("alba");
     n1.setInfraspecificEpithet("alba");
     n1.setAuthorship("Mill.");
-    n1.setCombinationAuthorship(ExAuthorship.authors("Mill."));
+    n1.setCombinationAuthorship(Authorship.authors("Mill."));
     n1.setRank(Rank.SUBSPECIES);
     n1.setType(NameType.SCIENTIFIC);
 
@@ -364,7 +364,7 @@ public class NameIndexImplTest {
 
     m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.FORM);
-      n.setCombinationAuthorship(ExAuthorship.authors("Miller")); // variant, we had Mill. before
+      n.setCombinationAuthorship(Authorship.authors("Miller")); // variant, we had Mill. before
       n.setScientificName("Abies alba f. alba");
       n.setAuthorship("Miller");
     });
@@ -372,7 +372,7 @@ public class NameIndexImplTest {
 
     m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.FORM);
-      n.setCombinationAuthorship(ExAuthorship.authors("Mill"));
+      n.setCombinationAuthorship(Authorship.authors("Mill"));
       n.setScientificName("Abies alba f. alba");
       n.setAuthorship("Mill");
     });
@@ -403,7 +403,7 @@ public class NameIndexImplTest {
     n1.setScientificName("Puma");
     n1.setUninomial("Puma");
     n1.setAuthorship("L.");
-    n1.setCombinationAuthorship(ExAuthorship.authors("L."));
+    n1.setCombinationAuthorship(Authorship.authors("L."));
     n1.setRank(Rank.GENUS);
     n1.setType(NameType.SCIENTIFIC);
 
@@ -425,7 +425,7 @@ public class NameIndexImplTest {
 
     m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setAuthorship("Linné");
-      n.setCombinationAuthorship(ExAuthorship.authors("Linné"));
+      n.setCombinationAuthorship(Authorship.authors("Linné"));
     });
     assertNidx(m, m1Key, canonID);
 
@@ -574,7 +574,7 @@ public class NameIndexImplTest {
   private static IndexName create(String genus, String species, String year, String... authors){
     Name n = new Name();
     if (authors != null || year != null) {
-      n.setCombinationAuthorship(ExAuthorship.yearAuthors(year, authors));
+      n.setCombinationAuthorship(Authorship.yearAuthors(year, authors));
     }
     n.setGenus(genus);
     n.setSpecificEpithet(species);

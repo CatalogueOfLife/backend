@@ -595,8 +595,8 @@ public class TestEntityGenerator {
     return r;
   }
 
-  public static ExAuthorship createAuthorship() {
-    ExAuthorship a = ExAuthorship.yearAuthors(RandomUtils.randomSpeciesYear(), RandomUtils.randomAuthor());
+  public static Authorship createAuthorship() {
+    Authorship a = Authorship.yearAuthors(RandomUtils.randomSpeciesYear(), RandomUtils.randomAuthor());
     while (RND.nextBoolean()) {
       a.addAuthor(RandomUtils.randomAuthor());
     }

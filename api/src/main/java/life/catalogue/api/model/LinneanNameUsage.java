@@ -26,9 +26,8 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String specificEpithet;
   private String infraspecificEpithet;
   private String cultivarEpithet;
-  private ExAuthorship combinationAuthorship = new ExAuthorship();
-  private ExAuthorship basionymAuthorship = new ExAuthorship();
-  private Authorship emendAuthorship = new Authorship();
+  private Authorship combinationAuthorship = new Authorship();
+  private Authorship basionymAuthorship = new Authorship();
   private String sanctioningAuthor;
 
   public LinneanNameUsage() {
@@ -53,7 +52,6 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     cultivarEpithet = nu.getName().getCultivarEpithet();
     combinationAuthorship = nu.getName().getCombinationAuthorship();
     basionymAuthorship = nu.getName().getBasionymAuthorship();
-    emendAuthorship = nu.getName().getEmendAuthorship();
     sanctioningAuthor = nu.getName().getSanctioningAuthor();
   }
 
@@ -212,38 +210,17 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   }
 
   @Override
-  public ExAuthorship getCombinationAuthorship() {
+  public Authorship getCombinationAuthorship() {
     return combinationAuthorship;
   }
 
-  public void setCombinationAuthorship(ExAuthorship combinationAuthorship) {
+  public void setCombinationAuthorship(Authorship combinationAuthorship) {
     this.combinationAuthorship = combinationAuthorship;
   }
 
   @Override
-  public ExAuthorship getBasionymAuthorship() {
+  public Authorship getBasionymAuthorship() {
     return basionymAuthorship;
-  }
-
-  public void setBasionymAuthorship(ExAuthorship basionymAuthorship) {
-    this.basionymAuthorship = basionymAuthorship;
-  }
-
-  @Override
-  public Authorship getEmendAuthorship() {
-    return emendAuthorship;
-  }
-
-  public void setEmendAuthorship(Authorship emendAuthorship) {
-    this.emendAuthorship = emendAuthorship;
-  }
-
-  public String getSanctioningAuthor() {
-    return sanctioningAuthor;
-  }
-
-  public void setSanctioningAuthor(String sanctioningAuthor) {
-    this.sanctioningAuthor = sanctioningAuthor;
   }
 
   @Override
@@ -257,6 +234,18 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
       sb.append(authorship);
     }
     return sb.toString();
+  }
+
+  public void setBasionymAuthorship(Authorship basionymAuthorship) {
+    this.basionymAuthorship = basionymAuthorship;
+  }
+
+  public String getSanctioningAuthor() {
+    return sanctioningAuthor;
+  }
+
+  public void setSanctioningAuthor(String sanctioningAuthor) {
+    this.sanctioningAuthor = sanctioningAuthor;
   }
 
   @Override
@@ -297,13 +286,12 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
            && Objects.equals(cultivarEpithet, that.cultivarEpithet)
            && Objects.equals(combinationAuthorship, that.combinationAuthorship)
            && Objects.equals(basionymAuthorship, that.basionymAuthorship)
-           && Objects.equals(emendAuthorship, that.emendAuthorship)
            && Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, sectorKey, status, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, emendAuthorship, sanctioningAuthor);
+    return Objects.hash(id, parentId, sectorKey, status, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override

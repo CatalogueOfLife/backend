@@ -53,7 +53,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return new SimpleName(null, name, rank);
   }
   public static SimpleName sn(NomCode code, String name) {
-    return new SimpleName(null, name, null, Rank.UNRANKED, code);
+    return new SimpleName(null, name, null, null, code);
   }
   public static SimpleName sn(Rank rank, String name, String authorship) {
     return new SimpleName(null, name, authorship, rank);

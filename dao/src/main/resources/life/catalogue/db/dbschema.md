@@ -14,11 +14,6 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2024-05-08 new code
-```
-ALTER TYPE NOMCODE ADD VALUE 'PHYLOGENETIC' after 'CULTIVARS';
-```
-
 ### 2024-04-24 latest dataset attempt state
 ```sql
 ALTER TABLE dataset_export DROP COLUMN modified_by;

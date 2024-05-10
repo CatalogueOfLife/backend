@@ -11,7 +11,10 @@ import life.catalogue.importer.neo.model.RankedUsage;
 
 import org.checkerframework.checker.units.qual.A;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
@@ -58,7 +61,7 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     cfg.updateID("Aspilota vector", "Belokobylskij, 2007");
     cfg.setGenus("Aspilota");
     cfg.setSpecificEpithet("vector");
-    cfg.setCombinationAuthorship(ExAuthorship.yearAuthors("2007", "Belokobylskij"));
+    cfg.setCombinationAuthorship(Authorship.yearAuthors("2007", "Belokobylskij"));
     cfg.setRank(Rank.SPECIES);
     cfg.setType(NameType.SCIENTIFIC);
     cfg.setCode(NomCode.ZOOLOGICAL);

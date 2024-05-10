@@ -3,7 +3,10 @@ package life.catalogue.common.tax;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.NomStatus;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.regex.Matcher;
 
@@ -28,14 +31,6 @@ public class NameFormatterTest {
     assertEquals("Spirulina subsalsa subsalsa", NameFormatter.scientificName(n));
     n.setCode(NomCode.BACTERIAL);
     assertEquals("Spirulina subsalsa subsalsa", NameFormatter.scientificName(n));
-
-    // bacterial authors dont use a comma before the year
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1999", "Döring", "Banki"));
-    assertEquals("Döring et al. 1999", NameFormatter.authorship(n));
-    n.setCode(NomCode.BOTANICAL);
-    assertEquals("Döring & Banki, 1999", NameFormatter.authorship(n));
-    n.setCode(null);
-    assertEquals("Döring & Banki, 1999", NameFormatter.authorship(n));
   }
 
   @Test
@@ -69,7 +64,7 @@ public class NameFormatterTest {
     // all the following should not matter for the canonical name
     n.setCode(NomCode.BACTERIAL);
     n.setAuthorship("Alberta");
-    n.setCombinationAuthorship(ExAuthorship.authors("Alberta"));
+    n.setCombinationAuthorship(Authorship.authors("Alberta"));
     n.setCandidatus(true);
     n.setNomStatus(NomStatus.UNACCEPTABLE);
     n.setNomenclaturalNote("nom note");
@@ -91,8 +86,8 @@ public class NameFormatterTest {
   @Test
   public void authors() throws Exception {
     Name n = new Name();
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1967", "Morrison", "Hendrix"));
-    n.setBasionymAuthorship(ExAuthorship.yearAuthors("1923", "D.Reinhardt"));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1967", "Morrison", "Hendrix"));
+    n.setBasionymAuthorship(Authorship.yearAuthors("1923", "D.Reinhardt"));
 
     assertNull(n.getAuthorship());
     assertEquals("(D.Reinhardt, 1923) Morrison & Hendrix, 1967", NameFormatter.authorship(n));

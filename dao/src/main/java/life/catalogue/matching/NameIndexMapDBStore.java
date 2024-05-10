@@ -8,7 +8,6 @@ import life.catalogue.common.kryo.FastUtilsSerializers;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -64,7 +63,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
       kryo.setRegistrationRequired(true);
       kryo.register(IndexName.class);
       kryo.register(Authorship.class);
-      kryo.register(ExAuthorship.class);
       kryo.register(Rank.class);
       kryo.register(LocalDateTime.class);
       kryo.register(ArrayList.class);

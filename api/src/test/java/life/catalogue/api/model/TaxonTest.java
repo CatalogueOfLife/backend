@@ -4,7 +4,6 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.SerdeTestBase;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
@@ -34,8 +33,8 @@ public class TaxonTest extends SerdeTestBase<Taxon> {
     n.setNotho(NamePart.SPECIFIC);
     n.setRank(Rank.SUBSPECIES);
     n.setInfraspecificEpithet("alpina");
-    n.setCombinationAuthorship(ExAuthorship.yearAuthors("1999", "L.","DC."));
-    n.setBasionymAuthorship(ExAuthorship.yearAuthors("1899","Lin.","Deca."));
+    n.setCombinationAuthorship(Authorship.yearAuthors("1999", "L.","DC."));
+    n.setBasionymAuthorship(Authorship.yearAuthors("1899","Lin.","Deca."));
     n.setNomenclaturalNote("nom.illeg.");
     n.rebuildScientificName();
     n.rebuildAuthorship();

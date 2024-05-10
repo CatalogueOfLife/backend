@@ -9,8 +9,6 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 
-import org.gbif.nameparser.api.ExAuthorship;
-
 
 /**
  * A group of recombined names and their original basionym with the epithet and original publication author.
@@ -19,12 +17,12 @@ import org.gbif.nameparser.api.ExAuthorship;
 public class BasionymGroup<T> {
   private static final Joiner joiner = Joiner.on("; ").skipNulls();
   private final String epithet;
-  private final ExAuthorship authorship;
+  private final Authorship authorship;
   private final List<T> recombinations = new ArrayList<>();
   private final List<T> basionymDuplicates = new ArrayList<>();
   private T basionym;
 
-  public BasionymGroup(String epithet, ExAuthorship authorship) {
+  public BasionymGroup(String epithet, Authorship authorship) {
     this.epithet = epithet;
     this.authorship = authorship;
   }
@@ -65,7 +63,7 @@ public class BasionymGroup<T> {
     return !recombinations.isEmpty();
   }
   
-  public ExAuthorship getAuthorship() {
+  public Authorship getAuthorship() {
     return authorship;
   }
   

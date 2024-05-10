@@ -8,7 +8,6 @@ import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.ExAuthorship;
 import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
@@ -25,7 +24,7 @@ import static org.junit.Assert.*;
 public class AuthorComparatorTest {
   AuthorComparator comp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   
-  public static ExAuthorship parse(String x) {
+  public static Authorship parse(String x) {
     try {
       return NameParser.PARSER.parseAuthorship(x).orElse(new ParsedAuthorship()).getCombinationAuthorship();
     } catch (InterruptedException e) {
@@ -33,7 +32,7 @@ public class AuthorComparatorTest {
     }
   }
   
-  public static ExAuthorship parse(String x, String year) throws InterruptedException {
+  public static Authorship parse(String x, String year) throws InterruptedException {
     if (year != null) {
       x = Strings.nullToEmpty(x) + " " + year;
     }
@@ -97,8 +96,8 @@ public class AuthorComparatorTest {
     p2.getCombinationAuthorship().setAuthors(Lists.newArrayList("L."));
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
 
-    p1.setCombinationAuthorship(ExAuthorship.yearAuthors("1933","Mortensen"));
-    p2.setCombinationAuthorship(ExAuthorship.yearAuthors("1924","Meixner"));
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1933","Mortensen"));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1924","Meixner"));
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
 
 
@@ -151,25 +150,25 @@ public class AuthorComparatorTest {
     Name p1 = new Name();
     Name p2 = new Name();
 
-    p1.setCombinationAuthorship(ExAuthorship.yearAuthors("1978", "Young", "Dye", "Wilkie"));
-    p2.setCombinationAuthorship(ExAuthorship.yearAuthors("1978", "Young"));
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "Dye", "Wilkie"));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young"));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
 
-    p2.setCombinationAuthorship(ExAuthorship.yearAuthors("1978", "Young", "Dye"));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "Dye"));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
 
-    p2.setCombinationAuthorship(ExAuthorship.yearAuthors("1978", "Young", "et al."));
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1978", "Young", "et al."));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
 
     // without the year
-    p1.setCombinationAuthorship(ExAuthorship.authors("Young", "Dye", "Wilkie"));
-    p2.setCombinationAuthorship(ExAuthorship.authors("Young"));
+    p1.setCombinationAuthorship(Authorship.authors("Young", "Dye", "Wilkie"));
+    p2.setCombinationAuthorship(Authorship.authors("Young"));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
 
-    p2.setCombinationAuthorship(ExAuthorship.authors("Young", "Dye"));
+    p2.setCombinationAuthorship(Authorship.authors("Young", "Dye"));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
 
-    p2.setCombinationAuthorship(ExAuthorship.authors("Young", "et al."));
+    p2.setCombinationAuthorship(Authorship.authors("Young", "et al."));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
   }
 
