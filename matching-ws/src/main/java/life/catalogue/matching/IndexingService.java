@@ -83,10 +83,6 @@ public class IndexingService {
     // (parallelism) as opposed to the spring managed DataSource
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
 
-    // Create index writer configuration
-    IndexWriterConfig config = getIndexWriterConfig();
-    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
     // Create a session factory
     SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
     sessionFactoryBean.setDataSource(dataSource);
@@ -100,7 +96,6 @@ public class IndexingService {
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKey));
     try (SqlSession session = factory.openSession(false);
         final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
-
       // Create index writer
       consume(
           () -> session.getMapper(IndexingMapper.class).getAllForDataset(Integer.parseInt(datasetKey)),
@@ -121,7 +116,10 @@ public class IndexingService {
             }
             counter.incrementAndGet();
           });
+    } finally {
+      dataSource.forceCloseAll();
     }
+
     // write metadata file in JSON format
     LOG.info("Records written to file {}: {}", fileName, counter.get());
   }
