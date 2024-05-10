@@ -147,6 +147,7 @@ public class NameInterpreterTest {
       assertEquals("Yabuuchi & Yano, 1981", pn.getName().getAuthorship());
       assertNull(pn.getName().isOriginalSpelling());
       assertEquals("Achromobacter Yabuuchi & Yano, 1981", pn.getName().getLabel());
+      // emend. is considered a taxonomic note which we onky store in a taxon, so we only get this in the taxon label:
       Taxon t = new Taxon(pn.getName());
       t.setNamePhrase(pn.getTaxonomicNote());
       assertEquals("Achromobacter Yabuuchi & Yano, 1981 emend. Yabuuchi et al., 1998", t.getLabel());
