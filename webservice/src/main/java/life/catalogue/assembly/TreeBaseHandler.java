@@ -12,6 +12,8 @@ import life.catalogue.parser.NameParser;
 
 import life.catalogue.release.UsageIdGen;
 
+import org.antlr.v4.runtime.misc.Array2DHashSet;
+
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
@@ -88,7 +90,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.nameIdGen = nameIdGen;
     this.usageIdGen = usageIdGen;
     this.typeMaterialIdGen = typeMaterialIdGen;
-    this.entities = Preconditions.checkNotNull(sector.getEntities(), "Sector entities required");
+    this.entities = new HashSet<>(Preconditions.checkNotNull(sector.getEntities(), "Sector entities required"));
     LOG.info("Include taxon extensions: {}", Joiner.on(", ").join(entities));
 
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty())  {
