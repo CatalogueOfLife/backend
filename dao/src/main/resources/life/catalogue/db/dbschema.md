@@ -16,7 +16,7 @@ and done it manually. So we can as well log changes here.
 
 #### 2024-05-08 new code
 ```
-ALTER TYPE NOMCODE ADD VALUE 'PHYLOGENETIC' after 'CULTIVARS';
+ALTER TYPE NOMCODE ADD VALUE 'PHYLOGENETIC';
 ```
 
 ### 2024-04-24 latest dataset attempt state
