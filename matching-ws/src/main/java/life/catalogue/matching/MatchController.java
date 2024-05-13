@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import static life.catalogue.matching.CleanupUtils.clean;
 import static life.catalogue.matching.MatchingService.first;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -24,20 +25,99 @@ import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.error.ErrorAttributeOptions;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorController;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.context.request.WebRequest;
 
 /**
  * The MatchController provides a RESTful API for fuzzy matching of scientific names against a checklist.
  */
 @RestController
-public class MatchController {
+public class MatchController implements ErrorController {
 
   @Autowired MatchingService matchingService;
 
+  private final ErrorAttributes errorAttributes;
+
   @Value("${v1.enabled:false}")
   protected boolean v1Enabled = false;
+
+  private static final String PATH = "/error";
+
+  @Hidden
+  @RequestMapping(value = PATH, produces = "application/json")
+  public Map<String, Object> error(WebRequest aRequest){
+    Map<String, Object> body = getErrorAttributes(aRequest);
+    String traceRequested = aRequest.getParameter("trace");
+    if (StringUtils.isNotBlank(traceRequested) &&
+      (traceRequested.equalsIgnoreCase("true") || traceRequested.equalsIgnoreCase("on"))) {
+      String trace = (String) body.get("trace");
+      if (trace != null){
+        String[] lines = trace.split("\n\t");
+        body.put("trace", lines);
+      }
+    } else {
+      body.remove("trace");
+    }
+    return body;
+  }
+
+  private boolean getTraceParameter(HttpServletRequest request) {
+    String parameter = request.getParameter("trace");
+    if (parameter == null) {
+      return false;
+    }
+    return !"false".equals(parameter.toLowerCase());
+  }
+
+  @Autowired
+  public MatchController(ErrorAttributes errorAttributes) {
+    Assert.notNull(errorAttributes, "ErrorAttributes must not be null");
+    this.errorAttributes = errorAttributes;
+  }
+
+  private Map<String, Object> getErrorAttributes(WebRequest request) {
+    ErrorAttributeOptions options = ErrorAttributeOptions.defaults().including(ErrorAttributeOptions.Include.STACK_TRACE);
+    return errorAttributes.getErrorAttributes(request, options);
+  }
+
+  @Operation(
+    operationId = "metadata",
+    summary = "Retrieve metadata about the matching service",
+    description =
+      "Returns metadata about the index, such as the size, the dataset, the software versioning.",
+    extensions =
+    @Extension(
+      name = "Order",
+      properties = @ExtensionProperty(name = "Order", value = "0130")))
+  @Tag(name = "Searching names")
+  @GetMapping(
+    value = {"v2/metadata"},
+    produces = "application/json")
+  public IndexMetadata metadata(){
+    // index size
+    // counts by rank
+    // git commit ID
+    // git commit date
+    // git commit user
+    // git commit message
+    // git branch
+    // git tag
+    // dataset ID
+    // dataset title
+    // dataset version
+    // dataset release date
+    return matchingService.getIndexMetadata();
+  }
+
 
   @Operation(
       operationId = "matchNames",
@@ -134,7 +214,7 @@ public class MatchController {
 
   @Operation(
     operationId = "matchNames",
-    summary = "Legacy version 1 fuzzy name match service",
+    summary = "Legacy fuzzy name match service (Version 1)",
     description = "Fuzzy matches scientific names against the GBIF Backbone Taxonomy with the optional " +
       "classification provided. If a classification is provided and strict is not set to true, the default matching " +
       "will also try to match against these if no direct match is found for the name parameter alone.\n\n" +

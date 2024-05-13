@@ -1,8 +1,11 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -26,12 +29,17 @@ import org.gbif.nameparser.api.UnparsableNameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class MatchingService {
 
   private static final Logger LOG = LoggerFactory.getLogger(MatchingService.class);
+
+  @Value("${index.metadata.file}")
+  protected String metadataFilePath = "/tmp/index-metadata.json";
+
   private static final int MIN_CONFIDENCE = 80;
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
   private static final int MIN_CONFIDENCE_ACROSS_RANKS = 1;
@@ -129,6 +137,29 @@ public class MatchingService {
     this.datasetIndex = datasetIndex;
     this.htComp = htComp;
     //    initHackMap();
+  }
+
+  public IndexMetadata getIndexMetadata() {
+
+    // read JSON from file, if not available generate from datasetIndex
+    File metadata = new File(metadataFilePath);
+    try {
+      if (!metadata.exists()) {
+        IndexMetadata metadata1 = datasetIndex.getIndexMetadata();
+        //serialise to file
+        ObjectMapper mapper = new ObjectMapper();
+        FileWriter writer = new FileWriter(metadata);
+        mapper.writeValue(writer, metadata1);
+        return metadata1;
+      } else {
+        // read from file
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(metadata, IndexMetadata.class);
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to read index metadata from {}", metadata, e);
+    }
+    return null;
   }
 
   private void initHackMap() {
@@ -885,6 +916,8 @@ public class MatchingService {
     }
     return similarButSpanRanks;
   }
+
+
 
   /** Tries to match to the lowest common higher rank from all best equal matches */
   private NameUsageMatch matchLowestDenominator(

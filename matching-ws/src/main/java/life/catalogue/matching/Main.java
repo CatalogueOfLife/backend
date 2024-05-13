@@ -39,6 +39,9 @@ public class Main {
   @Parameter(names = {"--v1.enabled"}, description = "Enable v1 support for the web service", arity = 1)
   private boolean v1Enabled = false;
 
+  @Parameter(names = {"--server.port"}, description = "Enable v1 support for the web service", arity = 1)
+  private Integer serverPort = 8080;
+
   @Parameter(names = "--help", help = true, description = "Print help options")
   private boolean help;
 

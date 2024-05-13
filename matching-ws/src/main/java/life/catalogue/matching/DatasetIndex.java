@@ -6,19 +6,25 @@ import static life.catalogue.matching.IndexingService.analyzer;
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +62,55 @@ public class DatasetIndex {
     } catch (IOException e) {
       LOG.warn("Cannot open lucene index. Index not available", e);
     }
+  }
+
+  public IndexMetadata getIndexMetadata(){
+
+    IndexMetadata metadata = new IndexMetadata();
+    // get size on disk
+    Path directoryPath = Path.of(indexPath);
+    try {
+      BasicFileAttributes attributes = Files.readAttributes(directoryPath, BasicFileAttributes.class);
+      FileTime creationTime = attributes.creationTime();
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+      String formattedCreationTime = dateFormat.format(creationTime.toMillis());
+      metadata.setCreatedDate(formattedCreationTime);
+
+      FileStore fileStore = Files.getFileStore(directoryPath);
+      long totalSpace = fileStore.getTotalSpace();
+      long usableSpace = fileStore.getUsableSpace();
+      long usedSpace = totalSpace - usableSpace;
+      if (usedSpace > 0)
+        metadata.setSizeInMB((usedSpace / 1024) / 1024);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    // number of taxa
+    IndexReader reader = getSearcher().getIndexReader();
+    int numDocs = reader.numDocs();
+    metadata.setTaxaCount((long) numDocs);
+    try {
+      Map<String, Long> rankCounts = new LinkedHashMap<>();
+      rankCounts.put(Rank.KINGDOM.name(), getCountForRank(reader, Rank.KINGDOM));
+      rankCounts.put(Rank.PHYLUM.name(), getCountForRank(reader, Rank.PHYLUM));
+      rankCounts.put(Rank.CLASS.name(), getCountForRank(reader, Rank.CLASS));
+      rankCounts.put(Rank.ORDER.name(), getCountForRank(reader, Rank.ORDER));
+      rankCounts.put(Rank.FAMILY.name(), getCountForRank(reader, Rank.FAMILY));
+      rankCounts.put(Rank.GENUS.name(), getCountForRank(reader, Rank.GENUS));
+      rankCounts.put(Rank.SPECIES.name(), getCountForRank(reader, Rank.SPECIES));
+      rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(reader, Rank.SUBSPECIES));
+      metadata.setTaxaCounts(rankCounts);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return metadata;
+  }
+
+  private long getCountForRank(IndexReader reader, Rank rank) throws IOException {
+    Query query = new TermQuery(new Term(FIELD_RANK, rank.name()));
+    TopDocs docs = searcher.search(query, reader.numDocs());
+    return docs.totalHits.value;
   }
 
   /**

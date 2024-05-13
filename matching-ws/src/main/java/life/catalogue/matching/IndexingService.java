@@ -124,6 +124,8 @@ public class IndexingService {
     LOG.info("Records written to file {}: {}", fileName, counter.get());
   }
 
+
+
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
     LOG.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
