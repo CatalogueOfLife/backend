@@ -255,8 +255,10 @@ public class DatasetConverter {
       Contributor c = new Contributor(StringUtils.trimToNull(a.getGiven()), StringUtils.trimToNull(a.getFamily()), StringUtils.trimToNull(a.getOrcid()), type);
       addAffiliation(c, a);
       return c;
+    } else if (a.getName() != null) {
+      return new Contributor(a.getName(), NameType.ORGANIZATIONAL, type);
     }
-    return new Contributor(a.getName(), NameType.ORGANIZATIONAL, type);
+    return null;
   }
 
   public URI datasetURI(int datasetKey, boolean portal) {

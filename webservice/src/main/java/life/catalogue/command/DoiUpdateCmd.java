@@ -84,9 +84,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       Dataset project = dm.get(key);
       LOG.info("Update all DOIs for releases of project {}: {}", key, project.getTitle());
       //TODO: what about extended releases?
+      updateReleaseOrProject(project, false, null, null, dm);
       final var latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
       LOG.info("Latest release of project {} is {}", key, latestReleaseKey);
-      updateReleaseOrProject(project, false, null, null, dm);
       // list all releases in chronological order, starting with the very first release
       DOI prev = null;
       for (Dataset release : dm.listReleases(key)) {
