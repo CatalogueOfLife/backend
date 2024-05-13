@@ -15,8 +15,8 @@ import java.util.Map;
 public class IndexMetadata {
   Long datasetKey;
   String datasetTitle;
-  String createdDate;
+  String created;
   Long sizeInMB = 0L;
-  Long taxaCount = 0L;
-  Map<String, Long> taxaCounts = new HashMap<>();
+  Long taxonCount = 0L;
+  Map<String, Long> taxaByRankCount = new HashMap<>();
 }

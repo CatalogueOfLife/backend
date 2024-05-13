@@ -74,7 +74,7 @@ public class DatasetIndex {
       FileTime creationTime = attributes.creationTime();
       SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
       String formattedCreationTime = dateFormat.format(creationTime.toMillis());
-      metadata.setCreatedDate(formattedCreationTime);
+      metadata.setCreated(formattedCreationTime);
 
       FileStore fileStore = Files.getFileStore(directoryPath);
       long totalSpace = fileStore.getTotalSpace();
@@ -89,7 +89,7 @@ public class DatasetIndex {
     // number of taxa
     IndexReader reader = getSearcher().getIndexReader();
     int numDocs = reader.numDocs();
-    metadata.setTaxaCount((long) numDocs);
+    metadata.setTaxonCount((long) numDocs);
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
       rankCounts.put(Rank.KINGDOM.name(), getCountForRank(reader, Rank.KINGDOM));
@@ -100,7 +100,7 @@ public class DatasetIndex {
       rankCounts.put(Rank.GENUS.name(), getCountForRank(reader, Rank.GENUS));
       rankCounts.put(Rank.SPECIES.name(), getCountForRank(reader, Rank.SPECIES));
       rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(reader, Rank.SUBSPECIES));
-      metadata.setTaxaCounts(rankCounts);
+      metadata.setTaxaByRankCount(rankCounts);
     } catch (IOException e) {
       e.printStackTrace();
     }
