@@ -38,8 +38,10 @@ import life.catalogue.metadata.DoiResolver;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -218,7 +220,7 @@ public class ImportJob implements Runnable {
       } else {
         // copy uploaded data to repository
         LOG.info("Move upload for dataset {} from {} to {}", datasetKey, req.upload, archive);
-        Files.move(req.upload, archive.toPath());
+        Files.move(req.upload, archive.toPath(), StandardCopyOption.REPLACE_EXISTING);
       }
 
     } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
