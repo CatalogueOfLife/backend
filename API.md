@@ -165,6 +165,23 @@ http://api.checklistbank.org/dataset/COL2023/vernacular?q=Puma
 http://api.checklistbank.org/dataset/COL2023/vernacular?q=Puma&language=spa
 
 
+## Tree browsing
+There is a specialised API to support navigating a taxonomic tree and to implement a tree browser.
+This lists the root taxa of the tree - or better forrests:
+https://api.checklistbank.org/dataset/COL2023/tree
+
+For a specific taxon you can then list all of its direct children
+https://api.checklistbank.org/dataset/COL2023/tree/N/children
+
+Some taxa have mixed ranks as their direct children. 
+For these the Tree API offers an option to create virtual placeholder nodes that group them under a single entry:
+https://api.checklistbank.org/dataset/COL2023/tree/RT/children?insertPlaceholder=true
+
+To load a tree from any given taxon, you can use the following resource that lists the parent classification:
+https://api.checklistbank.org/dataset/COL2023/tree/33VS
+
+Our reusable [React Tree component](https://github.com/CatalogueOfLife/portal-components/blob/master/README.md#colbrowsertree) makes use of this API.
+
 ## Name matching
 The name matching API in ChecklistBank allows to match against any dataset in CLB which is identified by an integer dataset key. 
 There are different resources for simple & batch matching.
