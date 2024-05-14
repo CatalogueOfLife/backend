@@ -4,6 +4,11 @@ FROM maven:3.8.5-openjdk-17 AS builder
 # Set the working directory in the container
 WORKDIR /app
 
+ARG CLB_DATASET_ID=""
+ARG CLB_URL=""
+ARG CLB_USER=""
+ARG CLB_PASSWORD=""
+ENV CLB_API_URL="https://api.checklistbank.org"
 ENV BACKEND_BRANCH="matching-ws"
 
 # Clone the backend repository
@@ -15,14 +20,23 @@ RUN git checkout $BACKEND_BRANCH
 RUN mvn install -DskipTests
 
 # Store git commit id and log
-RUN git rev-parse HEAD > /app/backend/commit_id
-# Download and install jq
-RUN curl -o /usr/local/bin/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux64 && \
-    chmod +x /usr/local/bin/jq
-RUN git log --all --pretty=format:"%h%x09%an%x09%ad%x09%s" --date=short --no-merges | \
-  jq -R '[ inputs | split("\t") | { hash: .[0], author: .[1], date: .[2], message: .[3] }]' > /app/backend/commit_log.json
+RUN GIT_COMMIT_HASH=$(git rev-parse HEAD) && \
+    curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/${GIT_COMMIT_HASH}"
 
-RUN curl -o /app/backend/dataset.json https://api.checklistbank.org/dataset/53147.json
+# Run a script to validate the arguments
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
+        if [ -z "$CLB_URL" ] || [ -z "$CLB_USER" ] || [ -z "$CLB_PASSWORD" ]; then \
+            echo "Error: CLB_URL, CLB_USER, and CLB_PASSWORD must be set when CLB_DATASET_ID is set." >&2; \
+            exit 1; \
+        fi \
+    fi
+
+# cache a copy of the dataset metadata from checklistbank
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
+        curl -o /app/backend/dataset.json $CLB_API_URL/dataset/$CLB_DATASET_ID.json; \
+    else \
+        echo "{}" > /app/backend/dataset.json; \
+    fi
 
 # Build the Maven project and create a exec file
 WORKDIR /app/backend/matching-ws
@@ -34,6 +48,7 @@ FROM openjdk:17.0.1-jdk-slim
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
+ENV V1_ENABLED="false"
 ARG USER=matching
 ARG APP_ARTIFACT=matching-ws
 
@@ -42,7 +57,6 @@ ARG CLB_DATASET_ID=""
 ARG CLB_URL=""
 ARG CLB_USER=""
 ARG CLB_PASSWORD=""
-ARG V1_ENABLED="false"
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -54,8 +68,7 @@ WORKDIR /opt/gbif/$APP_ARTIFACT
 
 # Copy the executable JAR file from the builder image to the new image
 COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
-COPY --from=builder /app/backend/commit_id /opt/gbif/$APP_ARTIFACT/commit_id
-COPY --from=builder /app/backend/commit_log.json /opt/gbif/$APP_ARTIFACT/commit_log.json
+COPY --from=builder /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
 COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
 
 # CSV export from checklistbank
@@ -76,4 +89,4 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 USER $USER
 EXPOSE $SERVER_PORT
 
-CMD ["java", "-jar", "app.jar", "--server.port=$SERVER_PORT", "--v1.enabled=$V1_ENABLED"]
+CMD java -jar app.jar --server.port=$SERVER_PORT --v1.enabled=$V1_ENABLED --working.dir=/opt/gbif/$APP_ARTIFACT

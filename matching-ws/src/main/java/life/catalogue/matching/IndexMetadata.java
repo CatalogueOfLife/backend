@@ -19,4 +19,5 @@ public class IndexMetadata {
   Long sizeInMB = 0L;
   Long taxonCount = 0L;
   Map<String, Long> taxaByRankCount = new HashMap<>();
+  Map<String, Object> gitInfo = new HashMap<>();
 }

@@ -37,8 +37,8 @@ public class MatchingService {
 
   private static final Logger LOG = LoggerFactory.getLogger(MatchingService.class);
 
-  @Value("${index.metadata.file}")
-  protected String metadataFilePath = "/tmp/index-metadata.json";
+  @Value("${working.dir}")
+  protected String metadataFilePath = "/tmp/";
 
   private static final int MIN_CONFIDENCE = 80;
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
@@ -142,7 +142,7 @@ public class MatchingService {
   public IndexMetadata getIndexMetadata() {
 
     // read JSON from file, if not available generate from datasetIndex
-    File metadata = new File(metadataFilePath);
+    File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
       if (!metadata.exists()) {
         IndexMetadata metadata1 = datasetIndex.getIndexMetadata();

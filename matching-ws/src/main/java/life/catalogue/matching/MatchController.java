@@ -93,7 +93,19 @@ public class MatchController implements ErrorController {
     operationId = "metadata",
     summary = "Retrieve metadata about the matching service",
     description =
-      "Returns metadata about the index, such as the size, the dataset, the software versioning.",
+      "Returns metadata about the index, such as the size, the dataset, the software versioning. Includes:" +
+        " index size\n" +
+        " counts by rank\n" +
+        " git commit ID\n" +
+        " git commit date\n" +
+        " git commit user\n" +
+        " git commit message\n" +
+        " git branch\n" +
+        " git tag\n" +
+        " dataset ID\n" +
+        " dataset title\n" +
+        " dataset version\n" +
+        " dataset release date",
     extensions =
     @Extension(
       name = "Order",
@@ -103,18 +115,7 @@ public class MatchController implements ErrorController {
     value = {"v2/metadata"},
     produces = "application/json")
   public IndexMetadata metadata(){
-    // index size
-    // counts by rank
-    // git commit ID
-    // git commit date
-    // git commit user
-    // git commit message
-    // git branch
-    // git tag
-    // dataset ID
-    // dataset title
-    // dataset version
-    // dataset release date
+
     return matchingService.getIndexMetadata();
   }
 

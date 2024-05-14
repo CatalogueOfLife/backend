@@ -42,6 +42,9 @@ public class Main {
   @Parameter(names = {"--server.port"}, description = "Enable v1 support for the web service", arity = 1)
   private Integer serverPort = 8080;
 
+  @Parameter(names = {"--working.dir"}, description = "Working directory used to store system metadata files", arity = 1)
+  private String workingDir = "/tmp";
+
   @Parameter(names = "--help", help = true, description = "Print help options")
   private boolean help;
 

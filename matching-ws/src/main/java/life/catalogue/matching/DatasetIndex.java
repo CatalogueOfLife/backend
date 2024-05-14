@@ -3,6 +3,9 @@ package life.catalogue.matching;
 import static life.catalogue.matching.IndexConstants.*;
 import static life.catalogue.matching.IndexingService.analyzer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +42,9 @@ public class DatasetIndex {
 
   @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
+
+  @Value("${working.dir}")
+  protected String workingDir = "/tmp/";
 
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
@@ -82,6 +88,10 @@ public class DatasetIndex {
       long usedSpace = totalSpace - usableSpace;
       if (usedSpace > 0)
         metadata.setSizeInMB((usedSpace / 1024) / 1024);
+
+      metadata.setDatasetTitle((String) readDatasetInfo().getOrDefault("datasetTitle", null));
+      metadata.setGitInfo(readGitInfo());
+
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -105,6 +115,46 @@ public class DatasetIndex {
       e.printStackTrace();
     }
     return metadata;
+  }
+
+  public Map<String, Object> readGitInfo() {
+    ObjectMapper mapper = new ObjectMapper();
+
+    try {
+      // Read JSON file and parse to JsonNode
+      JsonNode rootNode = mapper.readTree(new File(workingDir + "/git.json"));
+
+      // Navigate to the author node
+      JsonNode authorNode = rootNode.path("commit").path("author");
+
+      // Retrieve author information
+      String name = authorNode.path("name").asText();
+      String email = authorNode.path("email").asText();
+      String date = authorNode.path("date").asText();
+
+      return Map.of("name", name, "email", email, "date", date);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return Map.of();
+  }
+
+  public Map<String, Object> readDatasetInfo() {
+    ObjectMapper mapper = new ObjectMapper();
+
+    try {
+      // Read JSON file and parse to JsonNode
+      JsonNode rootNode = mapper.readTree(new File(workingDir + "/dataset.json"));
+
+      // Navigate to the author node
+      String datasetKey = rootNode.path("key").asText();
+      String datasetTitle = rootNode.path("title").asText();
+
+      return Map.of("datasetKey", datasetKey, "datasetTitle", datasetTitle);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return Map.of();
   }
 
   private long getCountForRank(IndexReader reader, Rank rank) throws IOException {
