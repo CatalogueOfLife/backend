@@ -37,6 +37,8 @@ import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.gbif.nameparser.util.NameFormatter;
+
+import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,10 +46,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Service to index a dataset from the Checklist Bank.
+ */
 @Service
 public class IndexingService {
 
-  private static Logger LOG = LoggerFactory.getLogger(IndexingService.class);
+  private static final Logger LOG = LoggerFactory.getLogger(IndexingService.class);
 
   @Value("${index.path:/tmp/matching-index}")
   String indexPath;
@@ -124,8 +129,6 @@ public class IndexingService {
     LOG.info("Records written to file {}: {}", fileName, counter.get());
   }
 
-
-
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
     LOG.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
@@ -154,10 +157,7 @@ public class IndexingService {
   public void indexFile(String exportPath, String indexPath) throws Exception {
 
     // Create index directory
-    if (new File(indexPath).exists()) {
-      FileUtils.forceDelete(new File(indexPath));
-    }
-    Path indexDirectory = Paths.get(indexPath);
+    Path indexDirectory = initialiseIndexDirectory(indexPath);
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create index writer configuration
@@ -165,20 +165,20 @@ public class IndexingService {
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
-    LOG.info("Indexing dataset...");
+    LOG.info("Indexing dataset from CSV...");
     final AtomicInteger counter = new AtomicInteger(0);
-
-    // FIXME - looks for csv files in the export path
     final String filePath = exportPath + "/index.csv";
 
-    // FIXME - validate the file
-
-    // File source, String encoding, String delimiter, Character quotes, Integer headerRows
     try (CSVReader reader = new CSVReader(new FileReader(filePath), ',', '"');
         IndexWriter indexWriter = new IndexWriter(directory, config)) {
 
       String[] row = reader.readNext();
       while (row != null) {
+        if (row.length != 7) {
+          LOG.warn("Skipping row with invalid number of columns: {}", String.join(",", row));
+          row = reader.readNext();
+          continue;
+        }
         NameUsage nameUsage =
             NameUsage.builder()
                 .id(row[0])
@@ -209,10 +209,7 @@ public class IndexingService {
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
 
     // Create index directory
-    if (new File(indexPath).exists()) {
-      FileUtils.forceDelete(new File(indexPath));
-    }
-    Path indexDirectory = Paths.get(indexPath);
+    Path indexDirectory = initialiseIndexDirectory(indexPath);
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create index writer configuration
@@ -250,10 +247,16 @@ public class IndexingService {
     LOG.info("Indexed: {}", counter.get());
   }
 
+  private @NotNull Path initialiseIndexDirectory(String indexPath) throws IOException {
+    if (new File(indexPath).exists()) {
+      FileUtils.forceDelete(new File(indexPath));
+    }
+    return Paths.get(indexPath);
+  }
+
   protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
-
     /*
      Porting notes: The canonical name *sensu strictu* with nothing else but three name parts at
      most (genus, species, infraspecific). No rank or hybrid markers and no authorship,

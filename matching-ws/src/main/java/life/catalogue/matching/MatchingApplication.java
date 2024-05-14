@@ -22,7 +22,7 @@ public class MatchingApplication implements ApplicationRunner {
   @Override
   public void run(ApplicationArguments args) {
     // generate the index metadata if not present
-    matchingService.getIndexMetadata();
-    LOG.info("Web services started");
+    IndexMetadata metadata = matchingService.getIndexMetadata();
+    LOG.info("Web services started. Index size: {} taxa", metadata.getTaxonCount());
   }
 }

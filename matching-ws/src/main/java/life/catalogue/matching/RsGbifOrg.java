@@ -29,14 +29,6 @@ public class RsGbifOrg {
   }
 
   /**
-   * @param filename of dictionary file requested
-   * @return url to file inside to dictionary folder of rs.gbif.org
-   */
-  public static URL dictionaryUrl(String filename) {
-    return url(DICT_DIR, filename);
-  }
-
-  /**
    * @param filename of authority dictionary file requested
    * @return url to file inside to authority folder of rs.gbif.org
    */

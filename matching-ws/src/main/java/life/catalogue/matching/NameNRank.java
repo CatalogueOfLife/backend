@@ -173,7 +173,7 @@ public class NameNRank {
 
   private static void appendIfExists(StringBuilder sb, @Nullable String x) {
     if (exists(x)) {
-      if (sb.length() > 0) {
+      if (!sb.isEmpty()) {
         sb.append(" ");
       }
       sb.append(x.trim());
@@ -266,8 +266,7 @@ public class NameNRank {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof NameNRank)) return false;
-    NameNRank nameNRank = (NameNRank) o;
+    if (!(o instanceof NameNRank nameNRank)) return false;
     return Objects.equals(name, nameNRank.name) && rank == nameNRank.rank;
   }
 

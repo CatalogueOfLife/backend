@@ -13,11 +13,11 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 public class IndexMetadata {
-  Long datasetKey;
+  String datasetKey;
   String datasetTitle;
   String created;
   Long sizeInMB = 0L;
   Long taxonCount = 0L;
   Map<String, Long> taxaByRankCount = new HashMap<>();
-  Map<String, Object> gitInfo = new HashMap<>();
+  Map<String, Object> buildInfo = new HashMap<>();
 }

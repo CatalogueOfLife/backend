@@ -20,8 +20,7 @@ RUN git checkout $BACKEND_BRANCH
 RUN mvn install -DskipTests
 
 # Store git commit id and log
-RUN GIT_COMMIT_HASH=$(git rev-parse HEAD) && \
-    curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/${GIT_COMMIT_HASH}"
+RUN curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/$(git rev-parse HEAD)"
 
 # Run a script to validate the arguments
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
@@ -49,8 +48,8 @@ FROM openjdk:17.0.1-jdk-slim
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
 ENV V1_ENABLED="false"
-ARG USER=matching
-ARG APP_ARTIFACT=matching-ws
+ENV USER=matching
+ENV APP_ARTIFACT=matching-ws
 
 # Set environment variables
 ARG CLB_DATASET_ID=""
@@ -85,6 +84,8 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         --export.path=/data/$APP_ARTIFACT/exports/$CLB_DATASET_ID \
         --index.path=/data/$APP_ARTIFACT/index; \
     fi
+
+RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 
 USER $USER
 EXPOSE $SERVER_PORT

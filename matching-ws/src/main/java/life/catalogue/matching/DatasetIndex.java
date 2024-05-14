@@ -90,7 +90,8 @@ public class DatasetIndex {
         metadata.setSizeInMB((usedSpace / 1024) / 1024);
 
       metadata.setDatasetTitle((String) readDatasetInfo().getOrDefault("datasetTitle", null));
-      metadata.setGitInfo(readGitInfo());
+      metadata.setDatasetKey((String) readDatasetInfo().getOrDefault("datasetKey", null));
+      metadata.setBuildInfo(readGitInfo());
 
     } catch (IOException e) {
       e.printStackTrace();
@@ -125,6 +126,10 @@ public class DatasetIndex {
       JsonNode rootNode = mapper.readTree(new File(workingDir + "/git.json"));
 
       // Navigate to the author node
+      String sha = rootNode.path("sha").asText();
+      String url = rootNode.path("url").asText();
+      String html_url = rootNode.path("html_url").asText();
+      String message = rootNode.path("commit").path("message").asText();
       JsonNode authorNode = rootNode.path("commit").path("author");
 
       // Retrieve author information
@@ -132,7 +137,7 @@ public class DatasetIndex {
       String email = authorNode.path("email").asText();
       String date = authorNode.path("date").asText();
 
-      return Map.of("name", name, "email", email, "date", date);
+      return Map.of("sha", sha, "url", url, "html_url", html_url, "name", name, "email", email, "date", date, "message", message );
     } catch (IOException e) {
       e.printStackTrace();
     }
