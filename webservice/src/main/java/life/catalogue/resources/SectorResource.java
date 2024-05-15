@@ -45,7 +45,8 @@ import io.dropwizard.auth.Auth;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector, SectorSearchRequest> {
-  
+  private static final String FULL_PARAMETER = "full";
+
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
@@ -76,7 +77,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@PathParam("key") int catalogueKey,
                               @QueryParam("datasetKey") int datasetKey,
-                              @QueryParam("full") boolean full,
+                              @DefaultValue("true") @QueryParam(FULL_PARAMETER) boolean full,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
@@ -139,7 +140,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
-    boolean full = Boolean.parseBoolean(uri.getQueryParameters().getFirst("full"));
+    boolean full = !uri.getQueryParameters().containsKey(FULL_PARAMETER) || Boolean.parseBoolean(uri.getQueryParameters().getFirst(FULL_PARAMETER));
     assembly.deleteSector(DSID.of(datasetKey, id), full, user);
   }
 
