@@ -45,7 +45,7 @@ import io.dropwizard.auth.Auth;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector, SectorSearchRequest> {
-  private static final String FULL_PARAMETER = "full";
+  private static final String PARTIAL_PARAMETER = "partial";
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
@@ -77,12 +77,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@PathParam("key") int catalogueKey,
                               @QueryParam("datasetKey") int datasetKey,
-                              @DefaultValue("true") @QueryParam(FULL_PARAMETER) boolean full,
+                              @DefaultValue("false") @QueryParam(PARTIAL_PARAMETER) boolean partial,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
-      assembly.deleteSector(s, full, user);
+      assembly.deleteSector(s, !partial, user);
       counter++;
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
@@ -140,8 +140,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
-    boolean full = !uri.getQueryParameters().containsKey(FULL_PARAMETER) || Boolean.parseBoolean(uri.getQueryParameters().getFirst(FULL_PARAMETER));
-    assembly.deleteSector(DSID.of(datasetKey, id), full, user);
+    boolean partial = Boolean.parseBoolean(uri.getQueryParameters().getFirst(PARTIAL_PARAMETER));
+    assembly.deleteSector(DSID.of(datasetKey, id), !partial, user);
   }
 
   @POST
