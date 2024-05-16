@@ -184,7 +184,12 @@ public enum Setting {
    * If true prefers the atomised name as given in several terms over the full scientificName string which needs parsing with our name parser.
    * Default depends on the
    */
-  PREFER_NAME_ATOMS(Boolean.class, false, EXTERNAL);
+  PREFER_NAME_ATOMS(Boolean.class, false, EXTERNAL),
+
+  /**
+   * If true no merge syncs into the project will be allowed.
+   */
+  BLOCK_MERGE_SYNCS(Boolean.class, false, PROJECT);
 
   private final Class type;
   private final DatasetOrigin[] origin;

@@ -4,10 +4,12 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
@@ -179,19 +181,27 @@ public class SyncManager implements Managed, Idle {
     throw new IllegalArgumentException("Dataset empty. Cannot sync " + s);
   }
 
-  public void sync(int catalogueKey, RequestScope request, User user) throws IllegalArgumentException {
+  private DatasetSettings projectSettings(int projectKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(DatasetMapper.class).getSettings(projectKey);
+    }
+  }
+
+  public void sync(int projectKey, RequestScope request, User user) throws IllegalArgumentException {
     nameIndex.assertOnline();
+    var settings = projectSettings(projectKey);
+    final boolean blockMergeSyncs = settings.getBoolDefault(Setting.BLOCK_MERGE_SYNCS, false);
     if (request.getSectorKey() != null) {
-      syncSector(DSID.of(catalogueKey, request.getSectorKey()), user);
+      syncSector(DSID.of(projectKey, request.getSectorKey()), user, blockMergeSyncs);
     } else if (request.getDatasetKey() != null) {
       LOG.info("Sync all sectors in source dataset {}", request.getDatasetKey());
       final AtomicInteger cnt = new AtomicInteger();
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
         PgUtils.consume(
-          () -> sm.processSectors(catalogueKey, request.getDatasetKey()),
+          () -> sm.processSectors(projectKey, request.getDatasetKey()),
           s -> {
-            if (syncSector(s, user)) {
+            if (syncSector(s, user, blockMergeSyncs)) {
               cnt.getAndIncrement();
             }
           }
@@ -200,7 +210,7 @@ public class SyncManager implements Managed, Idle {
       // now that we have them schedule syncs
       LOG.info("Queued {} sectors from dataset {} for sync", cnt.get(), request.getDatasetKey());
     } else if (request.getAll()) {
-      syncAll(catalogueKey, user);
+      syncAll(projectKey, user, blockMergeSyncs);
     } else {
       throw new IllegalArgumentException("No sectorKey or datasetKey given in request");
     }
@@ -211,9 +221,9 @@ public class SyncManager implements Managed, Idle {
    * @return true if it was actually queued
    * @throws IllegalArgumentException
    */
-  private synchronized boolean syncSector(DSID<Integer> sectorKey, User user) throws IllegalArgumentException {
+  private synchronized boolean syncSector(DSID<Integer> sectorKey, User user, boolean blockMergeSyncs) throws IllegalArgumentException {
     SectorSync ss = syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
-    return queueJob(ss);
+    return queueJob(ss, blockMergeSyncs);
   }
 
   /**
@@ -228,7 +238,7 @@ public class SyncManager implements Managed, Idle {
     } else {
       sd = syncFactory.delete(sectorKey, this::successCallBack, this::errorCallBack, user);
     }
-    return queueJob(sd);
+    return queueJob(sd, false);
   }
 
   /**
@@ -236,13 +246,18 @@ public class SyncManager implements Managed, Idle {
    * @throws IllegalArgumentException
    * @throws UnavailableException if sync manager or names index are not started
    */
-  private synchronized boolean queueJob(SectorRunnable job) throws IllegalArgumentException {
+  private synchronized boolean queueJob(SectorRunnable job, boolean blockMergeSyncs) throws IllegalArgumentException {
     nameIndex.assertOnline();
     this.assertOnline();
     // is this sector already syncing?
     if (syncs.containsKey(job.sectorKey)) {
       LOG.info("{} already queued or running", job.sector);
       // ignore
+      return false;
+
+    } else if (blockMergeSyncs && Sector.Mode.MERGE == job.sector.getMode()){
+      // block merge sector syncs
+      LOG.info("Merge sectors blocked in project, skip sync of sector {}", job.sector);
       return false;
 
     } else {
@@ -284,18 +299,18 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
-  private int syncAll(int catalogueKey, User user) {
+  private int syncAll(int projectKey, User user, boolean blockMergeSyncs) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
     final List<Sector> sectors = new ArrayList<>();
     try (SqlSession session = factory.openSession(false)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      PgUtils.consume(()->sm.processDataset(catalogueKey), sectors::add);
+      PgUtils.consume(()->sm.processDataset(projectKey), sectors::add);
     }
     sectors.sort(SECTOR_ORDER);
     int failed = 0;
     for (Sector s : sectors) {
       try {
-        syncSector(s, user);
+        syncSector(s, user, blockMergeSyncs);
       } catch (RuntimeException e) {
         LOG.error("Fail to sync {}: {}", s, e.getMessage());
         failed++;
