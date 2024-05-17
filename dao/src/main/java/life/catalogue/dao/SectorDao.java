@@ -156,6 +156,9 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     if (s.getMode() != Sector.Mode.MERGE && s.getTarget() == null) {
       throw new IllegalArgumentException(String.format("%s sector %s must have a target", s.getMode(), s.getKey()));
     }
+    if (s.getMode() != old.getMode()) {
+      throw new IllegalArgumentException(String.format("Sector mode is immutable and cannot be changed from %s to %s", s.getMode(), old.getMode()));
+    }
     requireTaxonIdExists(s.getTargetAsDSID(), session);
     if (s.getPriority() != null && !Objects.equals(s.getPriority(), old.getPriority())) {
       updatePriorities(s, mapper);

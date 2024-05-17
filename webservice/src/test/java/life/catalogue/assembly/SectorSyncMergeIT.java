@@ -49,7 +49,6 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Parameterized SectorSync to test merge sectors with different sources.
  */
-//@Ignore("The sector-parents test fails on Jenkins but not locally - until then we ignore this test to get builds out ")
 @RunWith(Parameterized.class)
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);

@@ -396,29 +396,29 @@
 
   <delete id="deleteOrphans" parameterType="map">
     DELETE FROM sector s WHERE dataset_key = #{datasetKey} AND NOT EXISTS (
-      SELECT NULL FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM name_usage x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM reference x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
 
     ) AND NOT EXISTS (
-      SELECT NULL FROM vernacular_name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM vernacular_name x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM media x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM distribution x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM distribution x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM species_interaction x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM species_interaction x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM taxon_property x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
 
     ) AND NOT EXISTS (
-      SELECT NULL FROM name_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM name_rel x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM type_material x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM type_material x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     ) AND NOT EXISTS (
-      SELECT NULL FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
+      SELECT true FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     )
   </delete>
 </mapper>
