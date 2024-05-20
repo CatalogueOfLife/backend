@@ -86,16 +86,16 @@ public class DatasetIndex {
       long totalSpace = fileStore.getTotalSpace();
       long usableSpace = fileStore.getUsableSpace();
       long usedSpace = totalSpace - usableSpace;
-      if (usedSpace > 0)
+      if (usedSpace > 0) {
         metadata.setSizeInMB((usedSpace / 1024) / 1024);
-
-      metadata.setDatasetTitle((String) readDatasetInfo().getOrDefault("datasetTitle", null));
-      metadata.setDatasetKey((String) readDatasetInfo().getOrDefault("datasetKey", null));
-      metadata.setBuildInfo(readGitInfo());
-
+      }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Cannot read index directory attributes", e);
     }
+
+    metadata.setDatasetTitle((String) readDatasetInfo().getOrDefault("datasetTitle", null));
+    metadata.setDatasetKey((String) readDatasetInfo().getOrDefault("datasetKey", null));
+    metadata.setBuildInfo(readGitInfo());
 
     // number of taxa
     IndexReader reader = getSearcher().getIndexReader();
@@ -113,7 +113,7 @@ public class DatasetIndex {
       rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(reader, Rank.SUBSPECIES));
       metadata.setTaxaByRankCount(rankCounts);
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Cannot read index information", e);
     }
     return metadata;
   }
@@ -122,24 +122,28 @@ public class DatasetIndex {
     ObjectMapper mapper = new ObjectMapper();
 
     try {
-      // Read JSON file and parse to JsonNode
-      JsonNode rootNode = mapper.readTree(new File(workingDir + "/git.json"));
+      if (new File(workingDir + "/git.json").exists()) {
+        // Read JSON file and parse to JsonNode
+        JsonNode rootNode = mapper.readTree(new File(workingDir + "/git.json"));
 
-      // Navigate to the author node
-      String sha = rootNode.path("sha").asText();
-      String url = rootNode.path("url").asText();
-      String html_url = rootNode.path("html_url").asText();
-      String message = rootNode.path("commit").path("message").asText();
-      JsonNode authorNode = rootNode.path("commit").path("author");
+        // Navigate to the author node
+        String sha = rootNode.path("sha").asText();
+        String url = rootNode.path("url").asText();
+        String html_url = rootNode.path("html_url").asText();
+        String message = rootNode.path("commit").path("message").asText();
+        JsonNode authorNode = rootNode.path("commit").path("author");
 
-      // Retrieve author information
-      String name = authorNode.path("name").asText();
-      String email = authorNode.path("email").asText();
-      String date = authorNode.path("date").asText();
+        // Retrieve author information
+        String name = authorNode.path("name").asText();
+        String email = authorNode.path("email").asText();
+        String date = authorNode.path("date").asText();
 
-      return Map.of("sha", sha, "url", url, "html_url", html_url, "name", name, "email", email, "date", date, "message", message );
+        return Map.of("sha", sha, "url", url, "html_url", html_url, "name", name, "email", email, "date", date, "message", message);
+      } else {
+        LOG.warn("Git info not found at {}", workingDir + "/dataset.json");
+      }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Cannot read index git information", e);
     }
     return Map.of();
   }
@@ -148,16 +152,19 @@ public class DatasetIndex {
     ObjectMapper mapper = new ObjectMapper();
 
     try {
-      // Read JSON file and parse to JsonNode
-      JsonNode rootNode = mapper.readTree(new File(workingDir + "/dataset.json"));
-
-      // Navigate to the author node
-      String datasetKey = rootNode.path("key").asText();
-      String datasetTitle = rootNode.path("title").asText();
-
-      return Map.of("datasetKey", datasetKey, "datasetTitle", datasetTitle);
+      if (new File(workingDir + "/dataset.json").exists()){
+        LOG.info("Loading dataset info from {}", workingDir + "/dataset.json");
+        // Read JSON file and parse to JsonNode
+        JsonNode rootNode = mapper.readTree(new File(workingDir + "/dataset.json"));
+        // Navigate to the author node
+        String datasetKey = rootNode.path("key").asText();
+        String datasetTitle = rootNode.path("title").asText();
+        return Map.of("datasetKey", datasetKey, "datasetTitle", datasetTitle);
+      } else {
+        LOG.warn("Dataset info not found at {}", workingDir + "/dataset.json");
+      }
     } catch (IOException e) {
-      e.printStackTrace();
+      LOG.error("Cannot read index dataset information", e);
     }
     return Map.of();
   }

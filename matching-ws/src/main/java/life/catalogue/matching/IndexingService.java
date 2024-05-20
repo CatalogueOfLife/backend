@@ -15,6 +15,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import life.catalogue.api.model.ReleaseAttempt;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.CsvWriter;
 import org.apache.commons.io.FileUtils;
@@ -37,7 +41,6 @@ import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.gbif.nameparser.util.NameFormatter;
-
 import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
@@ -45,6 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import javax.ws.rs.NotFoundException;
 
 /**
  * Service to index a dataset from the Checklist Bank.
@@ -72,6 +76,9 @@ public class IndexingService {
   @Value("${clb.driver}")
   String clDriver;
 
+  private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
+  private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
+
   protected static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
 
   protected static IndexWriterConfig getIndexWriterConfig() {
@@ -81,29 +88,100 @@ public class IndexingService {
     return new IndexWriterConfig(aWrapper);
   }
 
+  public Optional<Integer> lookupDatasetKey(SqlSessionFactory factory, String datasetKey) {
+    if (life.catalogue.common.text.StringUtils.hasContent(datasetKey)) {
+      Matcher m = REL_PATTERN.matcher(datasetKey);
+      if (m.find()){
+        return Optional.of(releaseKeyFromMatch(factory, m));
+      }
+    }
+    return Optional.empty();
+  }
+
+  private Integer releaseKeyFromMatch(SqlSessionFactory factory,  Matcher m) {
+    // parsing cannot fail, we have a pattern
+    int projectKey = Integer.parseInt(m.group(1));
+    Integer releaseKey;
+    // candidate requested? (\\d+)(?:LX?RC?|R(\\d+))$
+    final boolean extended = m.group().contains("X");
+    if (m.group().endsWith("RC")) {
+
+      releaseKey = lookupLatest(factory, projectKey, true, extended);
+    } else if (m.group().endsWith("R")) {
+
+      releaseKey = lookupLatest(factory, projectKey, false, extended);
+
+    } else {
+      // parsing cannot fail, we have a pattern
+      int attempt = Integer.parseInt(m.group(2));
+      releaseKey = lookupAttempt(factory, new ReleaseAttempt(projectKey, attempt));
+    }
+
+    if (releaseKey == null) {
+      throw new NotFoundException("Dataset " + projectKey + " was never released");
+    }
+    return releaseKey;
+  }
+
+  /**
+   * @param projectKey a dataset key that is known to exist and point to a managed dataset
+   * @return dataset key for the latest release of a project or null in case no release exists
+   */
+  private Integer lookupLatest(SqlSessionFactory factory, int projectKey, boolean candidate, boolean extended) throws NotFoundException {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      DatasetOrigin origin = extended ? DatasetOrigin.XRELEASE : DatasetOrigin.RELEASE;
+      return dm.latestRelease(projectKey, !candidate, origin);
+    }
+  }
+
+  private Integer lookupAttempt(SqlSessionFactory factory,  ReleaseAttempt release) throws NotFoundException {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      return dm.releaseAttempt(release.projectKey, release.attempt);
+    }
+  }
+
   @Transactional
-  public void writeCLBToFile(final String datasetKey) throws Exception {
+  public void writeCLBToFile(@NotNull final String datasetKeyInput) throws Exception {
 
     // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
     // (parallelism) as opposed to the spring managed DataSource
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
-
     // Create a session factory
     SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
     sessionFactoryBean.setDataSource(dataSource);
     SqlSessionFactory factory = sessionFactoryBean.getObject();
     assert factory != null;
     factory.getConfiguration().addMapper(IndexingMapper.class);
+    factory.getConfiguration().addMapper(DatasetMapper.class);
+
+    // FIXME - resolve the magic keys...
+    Optional<Integer> datasetKey = Optional.empty();
+    try {
+      datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
+    } catch (NumberFormatException e) {
+    }
+
+    if (datasetKey.isEmpty()) {
+      datasetKey = lookupDatasetKey(factory, datasetKeyInput);
+    }
+
+    if (datasetKey.isEmpty()) {
+      throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
+    }
+
+    final Integer validDatasetKey = datasetKey.get();
 
     LOG.info("Writing dataset to file...");
     final AtomicInteger counter = new AtomicInteger(0);
-    final String fileName = exportPath + "/" + datasetKey + "/" + "index.csv";
-    FileUtils.forceMkdir(new File(exportPath + "/" + datasetKey));
+    final String fileName = exportPath + "/" + validDatasetKey + "/" + "index.csv";
+    FileUtils.forceMkdir(new File(exportPath + "/" + validDatasetKey));
     try (SqlSession session = factory.openSession(false);
         final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
       // Create index writer
       consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(Integer.parseInt(datasetKey)),
+          () -> session.getMapper(IndexingMapper.class).getAllForDataset(validDatasetKey),
           name -> {
             try {
               writer.write(
@@ -114,7 +192,11 @@ public class IndexingService {
                     name.authorship,
                     name.rank,
                     name.status,
-                    name.nomenclaturalCode
+                    name.nomenclaturalCode,
+                    name.sourceId,
+                    name.sourceDatasetKey,
+                    name.parentSourceId,
+                    name.parentSourceDatasetKey
                   });
             } catch (IOException e) {
               throw new RuntimeException(e);
@@ -174,7 +256,7 @@ public class IndexingService {
 
       String[] row = reader.readNext();
       while (row != null) {
-        if (row.length != 7) {
+        if (row.length != 11) {
           LOG.warn("Skipping row with invalid number of columns: {}", String.join(",", row));
           row = reader.readNext();
           continue;
@@ -188,6 +270,10 @@ public class IndexingService {
                 .rank(row[4])
                 .status(row[5])
                 .nomenclaturalCode(row[6])
+                .sourceId(row[7])
+                .sourceDatasetKey(row[8])
+                .parentSourceId(row[9])
+                .parentSourceDatasetKey(row[10])
                 .build();
         Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);

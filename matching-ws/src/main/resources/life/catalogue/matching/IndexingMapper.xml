@@ -10,16 +10,25 @@
             fetchSize="10" resultSetType="FORWARD_ONLY">
       SELECT
         nu.id as id,
+        n.id as nameId,
         nu.parent_id as parentId,
         nu.status as status,
         n.scientific_name as scientificName,
         n.authorship,
         n.rank,
-        n.code as nomenclaturalCode
+        n.code as nomenclaturalCode,
+        vs.source_id as sourceId,
+        vs.source_dataset_key as sourceDatasetKey,
+        pvs.source_id as parentSourceId,
+        pvs.source_dataset_key as parentSourceDatasetKey
       FROM
         name_usage nu
       INNER JOIN
         name n on n.id = nu.name_id AND n.dataset_key=#{datasetKey}
+      LEFT JOIN
+        verbatim_source vs on vs.id = nu.id AND vs.dataset_key=#{datasetKey}
+      LEFT JOIN
+        verbatim_source pvs on pvs.id = nu.parent_id AND pvs.dataset_key=#{datasetKey}
       WHERE
         nu.dataset_key = #{datasetKey}
     </select>

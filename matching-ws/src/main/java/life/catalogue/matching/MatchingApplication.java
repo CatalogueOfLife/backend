@@ -1,13 +1,23 @@
 package life.catalogue.matching;
 
+import io.swagger.v3.oas.models.ExternalDocumentation;
+
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+
+import java.text.NumberFormat;
 
 /**
  * Main application class for the matching-ws module.
@@ -19,10 +29,41 @@ public class MatchingApplication implements ApplicationRunner {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingService.class);
   @Autowired protected MatchingService matchingService;
 
+  @Value("${version}") String version;
+  @Value("${licence}") String licence;
+  @Value("${licence.url}") String licenceUrl;
+
   @Override
   public void run(ApplicationArguments args) {
-    // generate the index metadata if not present
     IndexMetadata metadata = matchingService.getIndexMetadata();
-    LOG.info("Web services started. Index size: {} taxa", metadata.getTaxonCount());
+    LOG.info("Web services started. Index size: {} taxa", NumberFormat.getInstance().format(metadata.getTaxonCount()));
   }
+
+  @Bean
+  public OpenAPI customOpenAPI() {
+    IndexMetadata metadata = matchingService.getIndexMetadata();
+    String title = metadata.getDatasetTitle() != null ?
+      metadata.getDatasetTitle() + " Matching Service API" :
+      "COL Matching Service API";
+    String description = "API for matching scientific names to taxa in the checklist" +
+      (metadata.getDatasetTitle() != null ? " " + metadata.getDatasetTitle() : "");
+
+    OpenAPI openAPI = new OpenAPI()
+      .info(new Info()
+        .title(title)
+        .description(description)
+        .version(version)
+        .license(new License()
+          .name(licence)
+          .url(licenceUrl)));
+
+    if (metadata.getDatasetKey() != null) {
+      openAPI.externalDocs(new ExternalDocumentation()
+        .description(metadata.getDatasetTitle())
+        .url("https://checklistbank.org/dataset/" + metadata.getDatasetKey()));
+    }
+
+    return openAPI;
+  }
+
 }

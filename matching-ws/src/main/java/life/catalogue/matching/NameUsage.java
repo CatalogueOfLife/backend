@@ -16,4 +16,8 @@ public class NameUsage {
   String status;
   String rank;
   String nomenclaturalCode;
+  String sourceId;
+  String sourceDatasetKey;
+  String parentSourceId;
+  String parentSourceDatasetKey;
 }

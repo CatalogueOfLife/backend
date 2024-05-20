@@ -15,9 +15,8 @@ docker buildx build \
 
 Locally running docker image
 ```bash
-sudo docker run -d --platform linux/arm64 \
---name matching-ws \
--v /tmp/matching-ws/index:/data/matching/index matching-ws:v1
+docker pull docker.gbif.org/matching-ws:1.0-SNAPSHOT-3LXRC
+docker run -d --platform linux/arm64 -p 8080:8080 --name matching-ws-xcol docker.gbif.org/matching-ws:1.0-SNAPSHOT-3LXRC
 ```
 
 ### Usage
