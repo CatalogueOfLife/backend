@@ -17,10 +17,10 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import au.com.bytecode.opencsv.CSVWriter;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.io.CsvWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -178,13 +178,13 @@ public class IndexingService {
     final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
     try (SqlSession session = factory.openSession(false);
-        final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
+        final CSVWriter writer = new CSVWriter(new FileWriter(fileName), '$')) {
       // Create index writer
       consume(
           () -> session.getMapper(IndexingMapper.class).getAllForDataset(validDatasetKey),
           name -> {
             try {
-              writer.write(
+              writer.writeNext(
                   new String[] {
                     name.id,
                     name.parentId,
@@ -198,7 +198,7 @@ public class IndexingService {
                     name.parentSourceId,
                     name.parentSourceDatasetKey
                   });
-            } catch (IOException e) {
+            } catch (Exception e) {
               throw new RuntimeException(e);
             }
             counter.incrementAndGet();
@@ -251,7 +251,7 @@ public class IndexingService {
     final AtomicInteger counter = new AtomicInteger(0);
     final String filePath = exportPath + "/index.csv";
 
-    try (CSVReader reader = new CSVReader(new FileReader(filePath), ',', '"');
+    try (CSVReader reader = new CSVReader(new FileReader(filePath), '$', '"');
         IndexWriter indexWriter = new IndexWriter(directory, config)) {
 
       String[] row = reader.readNext();
@@ -261,6 +261,11 @@ public class IndexingService {
           row = reader.readNext();
           continue;
         }
+        if (counter.get() % 100000 == 0) {
+          LOG.info("Indexed: {} taxa", counter.get());
+          indexWriter.commit();
+        }
+
         NameUsage nameUsage =
             NameUsage.builder()
                 .id(row[0])
@@ -280,8 +285,11 @@ public class IndexingService {
         counter.incrementAndGet();
         row = reader.readNext();
       }
+      LOG.info("Final index commit");
       indexWriter.commit();
+      LOG.info("Optimising index....");
       indexWriter.forceMerge(1);
+      LOG.info("Optimisation complete.");
     }
     // write metadata file in JSON format
     LOG.info("Taxa indexed: {}", counter.get());
@@ -319,6 +327,9 @@ public class IndexingService {
           () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
           name -> {
             try {
+              if (counter.get() % 10000 == 0) {
+                LOG.info("Indexed: {} taxa", counter.get());
+              }
               Document doc = toDoc(name);
               indexWriter.addDocument(doc);
             } catch (IOException e) {
@@ -326,8 +337,11 @@ public class IndexingService {
             }
             counter.incrementAndGet();
           });
+      LOG.info("Final index commit");
       indexWriter.commit();
+      LOG.info("Optimising index....");
       indexWriter.forceMerge(1);
+      LOG.info("Optimisation complete.");
     }
     // write metadata file in JSON format
     LOG.info("Indexed: {}", counter.get());
