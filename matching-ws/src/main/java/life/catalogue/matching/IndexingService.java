@@ -175,8 +175,8 @@ public class IndexingService {
 
     LOG.info("Writing dataset to file...");
     final AtomicInteger counter = new AtomicInteger(0);
-    final String fileName = exportPath + "/" + validDatasetKey + "/" + "index.csv";
-    FileUtils.forceMkdir(new File(exportPath + "/" + validDatasetKey));
+    final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
+    FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
     try (SqlSession session = factory.openSession(false);
         final CsvWriter writer = new CsvWriter(new FileWriter(fileName))) {
       // Create index writer
