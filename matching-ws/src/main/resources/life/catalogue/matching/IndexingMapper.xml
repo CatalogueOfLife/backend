@@ -10,12 +10,11 @@
             fetchSize="10" resultSetType="FORWARD_ONLY">
       SELECT
         nu.id as id,
-        n.id as nameId,
         nu.parent_id as parentId,
-        nu.status as status,
         n.scientific_name as scientificName,
-        n.authorship,
-        n.rank,
+        n.authorship as authorship,
+        n.rank as rank,
+        nu.status as status,
         n.code as nomenclaturalCode,
         vs.source_id as sourceId,
         vs.source_dataset_key as sourceDatasetKey,
