@@ -41,8 +41,10 @@ import scala.annotation.meta.setter;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
-  private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
-    Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM, Rank.UNRANKED);
+  private final static Set<Rank> MERGE_RANKS_DEFAULT = Set.of(
+    Rank.FAMILY, Rank.GENUS, Rank.SPECIES,
+    Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM
+  );
 
   protected final DSID<Integer> sectorKey;
   protected final int subjectDatasetKey;
