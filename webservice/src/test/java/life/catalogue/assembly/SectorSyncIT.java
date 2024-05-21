@@ -636,29 +636,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     print(Datasets.COL);
 
     // by default we include all names
-    assertFalse(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_NO_NAME));
+    assertEquals(2, stats.getIgnoredByReasonCount().keySet().size());
+    assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.RANK));
+    assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.IGNORED_PARENT));
     var parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
+    assertNull(parent); // we dont sync unranked
     var reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
-    assertNotNull(parent);
-    assertNotNull(reticulatus);
-
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var sm = session.getMapper(SectorMapper.class);
-      s = sm.get(secID);
-      s.setNameTypes(Set.of(NameType.SCIENTIFIC)); // only sync proper scientific names
-      sm.update(s);
-    }
-
-    stats = sync(s);
-    print(Datasets.COL);
-
-    // synonym with a bad accepted name should be included if we allow no name types
-    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.IGNORED_PARENT));
-    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_OTU)); // 3372 gets declared OTU apparently :(
-    parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
-    reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
-    assertNull(parent);
-    assertNull(reticulatus);
+    assertNull(reticulatus); // we dont sync synonyms without parent
   }
 
   /**
