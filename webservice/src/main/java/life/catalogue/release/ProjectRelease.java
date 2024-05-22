@@ -137,7 +137,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
+    IdProvider idp = new IdProvider(datasetKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg.release, factory);
     idp.mapIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);

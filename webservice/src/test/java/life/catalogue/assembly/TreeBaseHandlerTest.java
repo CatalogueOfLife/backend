@@ -107,6 +107,11 @@ public class TreeBaseHandlerTest {
     }
 
     @Override
+    public boolean hasThrown() {
+      return false;
+    }
+
+    @Override
     public void copyRelations() {
 
     }

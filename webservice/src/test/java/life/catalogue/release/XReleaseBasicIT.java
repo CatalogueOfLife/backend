@@ -3,10 +3,7 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
@@ -74,7 +71,7 @@ public class XReleaseBasicIT {
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    provider = new IdProvider(projectKey, 1, -1, cfg.release, factory);
+    provider = new IdProvider(projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
 
     EventBus bus = mock(EventBus.class);
     ExportManager exm = mock(ExportManager.class);
@@ -107,6 +104,7 @@ public class XReleaseBasicIT {
   public void release() throws Exception {
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
     xrel.run();
+    assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
 
     assertEquals(ImportState.FINISHED, xrel.getMetrics().getState());
 

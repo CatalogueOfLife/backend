@@ -61,6 +61,7 @@ public class XRelease extends ProjectRelease {
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
+  private int failedSyncs;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -390,7 +391,7 @@ public class XRelease extends ProjectRelease {
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     final int size = sectors.size();
     int counter = 0;
-    int failedSyncs = 0;
+    failedSyncs = 0;
     // sequential id generators for extended records
     final Supplier<String> nameIdGen = new XIdGen();
     final Supplier<String> typeMaterialIdGen = new XIdGen();
@@ -440,7 +441,10 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, getClass(), start);
   }
 
-  /**
+  public int getFailedSyncs() {
+    return failedSyncs;
+  }
+/**
    * Goes through all accepted infraspecies and checks if a matching autonym exists,
    * creating missing autonyms where needed.
    * An autonym is an infraspecific taxon that has the same species and infraspecific epithet.

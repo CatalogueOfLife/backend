@@ -120,6 +120,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
+  public boolean hasThrown() {
+    return thrown > 0;
+  }
+
+  @Override
   public Map<IgnoreReason, Integer> getIgnoredCounter() {
     return ignoredCounter;
   }

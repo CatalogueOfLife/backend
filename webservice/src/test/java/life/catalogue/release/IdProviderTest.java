@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
@@ -60,7 +61,7 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+      super(projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     }
 
     @Override

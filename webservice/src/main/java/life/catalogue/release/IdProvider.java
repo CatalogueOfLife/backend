@@ -52,7 +52,7 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  *
  * Basic steps:
  *
- * 1) Generate a ReleasedIds view (use interface to allow for different impls) on all previous releases,
+ * 1) Generate a ReleasedIds view on all previous releases,
  *    keyed on their usage id and names index id (nxId).
  *    For each id only use the version from its latest release.
  *    Include ALL ids, also deleted ones.
@@ -70,6 +70,7 @@ public class IdProvider {
 
   private final int projectKey;
   private final int attempt;
+  private final DatasetOrigin origin;
   private final int releaseDatasetKey;
   private final Integer lastReleaseKey;
   private final SqlSessionFactory factory;
@@ -77,7 +78,7 @@ public class IdProvider {
   private final ReleasedIds ids = new ReleasedIds();
   private final Int2IntBiMap dataset2attempt = new Int2IntBiMap();
   private final List<Integer> ignoredReleases;
-  private final List<Integer> additionalReleases;
+  private final List<Integer> additionalReleases = new ArrayList<>();
   private final AtomicInteger keySequence = new AtomicInteger();
   private final File reportDir;
   // id changes in this release
@@ -90,9 +91,10 @@ public class IdProvider {
   protected NameUsageMapper num;
   protected NameMatchMapper nmm;
 
-  public IdProvider(int projectKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+  public IdProvider(int projectKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
     this.releaseDatasetKey = releaseDatasetKey;
     this.projectKey = projectKey;
+    this.origin = origin;
     this.attempt = attempt;
     this.factory = factory;
     this.cfg = cfg;
@@ -106,13 +108,18 @@ public class IdProvider {
       ignoredReleases = List.of();
     }
     if (cfg.additionalReleases != null && cfg.additionalReleases.containsKey(projectKey)) {
-      additionalReleases = cfg.additionalReleases.get(projectKey);
-    } else {
-      additionalReleases = List.of();
+      additionalReleases.addAll(cfg.additionalReleases.get(projectKey));
     }
 
     try (SqlSession session = factory.openSession(true)) {
-      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, DatasetOrigin.RELEASE);
+      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, origin);
+      for (DatasetOrigin o : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
+        var rkey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, o);
+        if (rkey != null && !rkey.equals(lastReleaseKey)) {
+          LOG.info("Add previous {} {} to list of releases to load", o, rkey);
+          additionalReleases.add(rkey);
+        }
+      }
     }
 
     init();
@@ -390,20 +397,20 @@ public class IdProvider {
    */
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
-    if (lastReleaseKey == null) {
-      LOG.info("There have been no previous releases, start without existing ids");
-      return;
-    }
-
     try (SqlSession session = factory.openSession(true)) {
       final LoadStats stats = new LoadStats();
 
       // load entire last release
-      PgUtils.consume(
-        () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
-        sn -> addReleaseId(lastReleaseKey, sn, stats)
-      );
-      LOG.info("Read {} from last release {}. Total ids={}", stats, lastReleaseKey, ids.size());
+      if (lastReleaseKey == null) {
+        LOG.info("There has been no previous {}, start without existing ids", origin);
+
+      } else {
+        PgUtils.consume(
+          () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
+          sn -> addReleaseId(lastReleaseKey, sn, stats)
+        );
+        LOG.info("Read {} from last {} {}. Total ids={}", stats, origin, lastReleaseKey, ids.size());
+      }
 
       // load additional releases if configured
       for (int dk : additionalReleases) {
@@ -411,7 +418,7 @@ public class IdProvider {
           () -> session.getMapper(NameUsageMapper.class).processNxIds(dk),
           sn -> addReleaseId(dk, sn, stats)
         );
-        LOG.info("Read {} from past release {}. Total ids={}", stats, lastReleaseKey, ids.size());
+        LOG.info("Read {} from past release {}. Total ids={}", stats, dk, ids.size());
       }
 
       // always also include the archived names if they have not been processed before yet
@@ -438,7 +445,7 @@ public class IdProvider {
         ids.add(rl);
         LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, releaseDatasetKey, sn);
       } catch (IllegalArgumentException e) {
-        // expected for temp UUID, swallow
+        // expected for temp identifiers, swallow and count
         stats.temporary.incrementAndGet();
       }
     }

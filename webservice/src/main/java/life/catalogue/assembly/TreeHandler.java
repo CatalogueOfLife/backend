@@ -20,6 +20,11 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
 
   void reset() throws InterruptedException;
 
+  /**
+   * @return true if exception had been thrown during handling of records
+   */
+  boolean hasThrown();
+
   void copyRelations();
 
   Map<IgnoreReason, Integer> getIgnoredCounter();

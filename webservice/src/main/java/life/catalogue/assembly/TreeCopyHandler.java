@@ -42,6 +42,11 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   @Override
+  public boolean hasThrown() {
+    return false;
+  }
+
+  @Override
   public int getDecisionCounter() {
     return decisionCounter;
   }
