@@ -6,6 +6,7 @@ import java.text.Normalizer;
 import java.util.regex.Pattern;
 
 public class CleanupUtils {
+
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
   private static final CharMatcher SPACE_MATCHER =
       CharMatcher.whitespace().or(CharMatcher.javaIsoControl());
@@ -26,8 +27,8 @@ public class CleanupUtils {
   }
 
   /**
-   * @param classification
-   * @return
+   * @param classification the classification object to clean
+   * @return a new cleaned classification object
    */
   public static LinneanClassification clean(LinneanClassification classification) {
     classification.setKingdom(clean(classification.getKingdom()));

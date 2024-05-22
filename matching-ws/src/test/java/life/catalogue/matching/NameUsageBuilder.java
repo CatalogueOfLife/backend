@@ -44,7 +44,7 @@ class NameUsageBuilder {
     m.getUsage().setCanonicalName(canonicalName);
     m.getUsage().setRank(rank);
     m.setAcceptedUsage(new RankedName(acceptedUsageKey, null, null));
-    m.setStatus(status);
+    m.getDiagnostics().setStatus(status);
     m.getDiagnostics().setConfidence(confidence);
     m.getDiagnostics().setNote(note);
     m.getDiagnostics().setMatchType(matchType);

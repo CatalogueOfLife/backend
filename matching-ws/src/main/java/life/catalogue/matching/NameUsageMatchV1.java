@@ -74,7 +74,7 @@ public class NameUsageMatchV1 implements Serializable {
     if (nameUsageMatch.getAcceptedUsage() != null)
       match.setAcceptedUsageKey(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()));
 
-    if (nameUsageMatch.getStatus() != null) match.setStatus(nameUsageMatch.getStatus().name());
+    if (nameUsageMatch.getDiagnostics().getStatus() != null) match.setStatus(nameUsageMatch.getDiagnostics().getStatus().name());
     match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
     match.setNote(nameUsageMatch.getDiagnostics().getNote());
     match.setMatchType(nameUsageMatch.getDiagnostics().getMatchType());

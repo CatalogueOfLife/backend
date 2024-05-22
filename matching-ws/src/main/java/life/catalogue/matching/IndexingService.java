@@ -156,7 +156,7 @@ public class IndexingService {
     factory.getConfiguration().addMapper(IndexingMapper.class);
     factory.getConfiguration().addMapper(DatasetMapper.class);
 
-    // FIXME - resolve the magic keys...
+    // resolve the magic keys...
     Optional<Integer> datasetKey = Optional.empty();
     try {
       datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
@@ -263,7 +263,6 @@ public class IndexingService {
         }
         if (counter.get() % 100000 == 0) {
           LOG.info("Indexed: {} taxa", counter.get());
-          indexWriter.commit();
         }
 
         NameUsage nameUsage =

@@ -12,7 +12,7 @@ class NameNRankTest {
     assertName("Asteraceae Mill.", "Asteraceae", "Mill.");
     assertName("Lepidothrix iris L.", "Lepidothrix iris", "L.", "iris", "", null);
 
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setPhylum("Chordata");
     cl.setClazz("Aves");

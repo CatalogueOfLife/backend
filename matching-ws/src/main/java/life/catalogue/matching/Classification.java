@@ -2,7 +2,11 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LinneanClassificationImpl implements LinneanClassification {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "A set of higher taxa references", title = "Classification", type = "object")
+public class Classification implements LinneanClassification {
+
   String kingdom;
   String phylum;
   String clazz;

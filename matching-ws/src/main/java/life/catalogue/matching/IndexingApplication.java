@@ -1,6 +1,5 @@
 package life.catalogue.matching;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,7 +12,11 @@ import java.util.List;
 @Profile("indexing")
 public class IndexingApplication implements ApplicationRunner {
 
-  @Autowired IndexingService indexingService;
+  final IndexingService indexingService;
+
+  public IndexingApplication(IndexingService indexingService) {
+    this.indexingService = indexingService;
+  }
 
   @Override
   public void run(ApplicationArguments args) throws Exception {

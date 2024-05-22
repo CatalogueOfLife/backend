@@ -32,22 +32,16 @@ public class IOUtils {
     return in;
   }
 
-  static Map<String, String> streamToMap(
-      InputStream source, int key, int value, boolean trimToNull) {
+  static Map<String, String> streamToMap(InputStream source) {
     LineIterator lines = getLineIterator(source);
     Map<String, String> result = new HashMap<>();
-    int maxCols = key > value ? key : value + 1;
     while (lines.hasNext()) {
       String line = lines.nextLine();
       // ignore comments
       if (!ignore(line)) {
         String[] parts = TAB_DELIMITED.split(line);
-        if (maxCols <= parts.length) {
-          if (trimToNull) {
-            result.put(StringUtils.trimToNull(parts[key]), StringUtils.trimToNull(parts[value]));
-          } else {
-            result.put(parts[key], parts[value]);
-          }
+        if (parts.length >= 2) {
+          result.put(StringUtils.trimToNull(parts[0]), StringUtils.trimToNull(parts[1]));
         }
       }
     }

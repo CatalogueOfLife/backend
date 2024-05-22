@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
@@ -15,21 +17,27 @@ import org.gbif.nameparser.api.Rank;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
+@Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
 public class NameUsageMatch implements LinneanClassification {
 
+  @Schema(description = "If the matched usage is a synonym")
   boolean synonym = false;
+  @Schema(description = "The matched name usage")
   RankedName usage;
-  @JsonIgnore TaxonomicStatus status;
+  @Schema(description = "The accepted name usage for the match. This will only be populated when we've matched a synonym name usage.")
   RankedName acceptedUsage;
+  @Schema(description = "The classification of the accepted name usage. ")
   List<RankedName> classification = new ArrayList<>();
+  @Schema(description = "A list of similar matches with lower confidence scores ")
   List<NameUsageMatch> alternatives = new ArrayList<>();
+  @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
   Diagnostics diagnostics = new Diagnostics();
 
   private String nameFor(Rank rank) {
     return getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
-        .map(c -> c.getName())
+        .map(RankedName::getName)
         .orElse(null);
   }
 
@@ -37,7 +45,7 @@ public class NameUsageMatch implements LinneanClassification {
     return getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
-        .map(c -> c.getKey())
+        .map(RankedName::getKey)
         .orElse(null);
   }
 
@@ -73,7 +81,7 @@ public class NameUsageMatch implements LinneanClassification {
     return this.getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
-        .map(c -> c.getKey())
+        .map(RankedName::getKey)
         .orElse(null);
   }
 

@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.Closeables;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,7 +26,7 @@ public class HigherTaxaComparator {
           Rank.FAMILY, "family.txt");
   private static final Set<String> NON_NAMES = new HashSet<>();
 
-  private final Map<Rank, Map<String, String>> syn = new HashMap<>();
+  private final Map<Rank, Map<String, String>> synonyms = new HashMap<>();
   private final Map<String, Kingdom> kingdoms =
       Arrays.stream(Kingdom.values())
           .collect(Collectors.toMap(k -> norm(k.name()), Function.identity()));
@@ -88,26 +86,6 @@ public class HigherTaxaComparator {
   }
 
   /**
-   * Lookup higher taxa synonym dictionary across all ranks and return the first match found
-   *
-   * @param higherTaxon
-   * @return the looked up accepted name or the original higherTaxon
-   */
-  @VisibleForTesting
-  protected String lookup(String higherTaxon) {
-    if (higherTaxon == null) {
-      return null;
-    }
-    for (Rank r : syn.keySet()) {
-      String result = lookup(higherTaxon, r);
-      if (result != null) {
-        return result;
-      }
-    }
-    return higherTaxon;
-  }
-
-  /**
    * Lookup synonym for given higher rank. Can be null.
    *
    * @param higherTaxon higher rank name, case-insensitive
@@ -122,11 +100,11 @@ public class HigherTaxaComparator {
     if (isBlacklisted(higherTaxon)) {
       return null;
     }
-    if (syn.containsKey(rank)) {
+    if (synonyms.containsKey(rank)) {
       String normedHT = norm(higherTaxon);
-      Map<String, String> x = syn.get(rank);
-      if (syn.get(rank).containsKey(normedHT)) {
-        return syn.get(rank).get(normedHT);
+      Map<String, String> x = synonyms.get(rank);
+      if (synonyms.get(rank).containsKey(normedHT)) {
+        return synonyms.get(rank).get(normedHT);
       }
     }
     return higherTaxon;
@@ -134,20 +112,18 @@ public class HigherTaxaComparator {
 
   /**
    * Check for obvious, blacklisted garbage and return true if thats the case. The underlying set is
-   * hosted at http://rs.gbif.org/dictionaries/authority/blacklisted.txt
+   * hosted at <a href="http://rs.gbif.org/dictionaries/authority/blacklisted.txt">blacklisted.txt</a>
    */
   public boolean isBlacklisted(String name) {
     if (name != null) {
       name = norm(name);
-      if (NON_NAMES.contains(name)) {
-        return true;
-      }
+      return NON_NAMES.contains(name);
     }
     return false;
   }
 
   /**
-   * @return non empty uppercased string with normalized whitespace and all non latin letters
+   * @return non-empty uppercased string with normalized whitespace and all non latin letters
    *     replaced. Or null
    */
   protected static String norm(String x) {
@@ -162,13 +138,13 @@ public class HigherTaxaComparator {
 
   /**
    * @param file the synonym file on rs.gbif.org
-   * @return
+   * @return a map of synonyms
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
     URL url = RsGbifOrg.synonymUrl(file);
     LOG.info("Reading synonyms from " + url.toString());
     try (InputStream synIn = url.openStream()) {
-      return IOUtils.streamToMap(synIn, 0, 1, true);
+      return IOUtils.streamToMap(synIn);
     } catch (IOException e) {
       LOG.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
     }
@@ -178,7 +154,7 @@ public class HigherTaxaComparator {
   private Map<String, String> readSynonymStream(Rank rank, String filePath) {
     ClassLoader classLoader = getClass().getClassLoader();
     try (InputStream synIn = classLoader.getResourceAsStream(filePath)) {
-      return IOUtils.streamToMap(synIn, 0, 1, true);
+      return IOUtils.streamToMap(synIn);
     } catch (IOException e) {
       LOG.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
     }
@@ -187,10 +163,10 @@ public class HigherTaxaComparator {
 
   /** Reads blacklisted names from rs.gbif.org */
   private void readOnlineBlacklist() {
-    try {
-      URL url = RsGbifOrg.authorityUrl(RsGbifOrg.FILENAME_BLACKLIST);
-      LOG.debug("Reading " + url.toString());
-      readBlacklistStream(url.openStream());
+    URL url = RsGbifOrg.authorityUrl(RsGbifOrg.FILENAME_BLACKLIST);
+    try (InputStream in = url.openStream()) {
+      LOG.debug("Reading {}", url);
+      readBlacklistStream(in);
     } catch (IOException e) {
       LOG.warn("Cannot read online blacklist.", e);
     }
@@ -203,10 +179,8 @@ public class HigherTaxaComparator {
       NON_NAMES.addAll(IOUtils.streamToSet(in));
     } catch (IOException e) {
       LOG.warn("Cannot read blacklist. Use empty set instead.", e);
-    } finally {
-      Closeables.closeQuietly(in);
     }
-    LOG.debug("loaded " + NON_NAMES.size() + " blacklisted names");
+    LOG.debug("loaded {} blacklisted names", NON_NAMES.size());
   }
 
   /**
@@ -225,7 +199,7 @@ public class HigherTaxaComparator {
           Map<String, String> synonyms = readSynonymStream(rank, filePath);
           setSynonyms(rank, synonyms);
         } else {
-          LOG.error("Unable to find resource: {}", filePath);
+          LOG.error("Unable to find synonym file: {}", filePath);
         }
       }
     }
@@ -236,7 +210,7 @@ public class HigherTaxaComparator {
       if (blackIn != null) {
         readBlacklistStream(blackIn);
       } else {
-        LOG.error("Unable to find resource: {}", blacklistFilePath);
+        LOG.error("Unable to find blacklist file: {}", blacklistFilePath);
       }
     }
   }
@@ -256,10 +230,10 @@ public class HigherTaxaComparator {
 
   /**
    * Sets the synonym lookup map for a given rank. Names will be normalised and checked for
-   * existance of the same entry as key or value.
+   * existence of the same entry as key or value.
    *
-   * @param rank
-   * @param synonyms
+   * @param rank the rank to set synonyms for
+   * @param synonyms the synonym map to set
    */
   public void setSynonyms(Rank rank, Map<String, String> synonyms) {
     Map<String, String> synonymsNormed = new HashMap<>();
@@ -278,12 +252,12 @@ public class HigherTaxaComparator {
       }
     }
 
-    syn.put(rank, synonymsNormed);
+    this.synonyms.put(rank, synonymsNormed);
     LOG.debug("Loaded " + synonyms.size() + " " + rank.name() + " synonyms ");
 
     // also insert kingdom enum lookup in case of kingdom synonyms
     if (Rank.KINGDOM == rank) {
-      Map<String, String> map = syn.get(Rank.KINGDOM);
+      Map<String, String> map = this.synonyms.get(Rank.KINGDOM);
       if (map != null) {
         for (String syn : map.keySet()) {
           Kingdom k = null;
@@ -308,7 +282,7 @@ public class HigherTaxaComparator {
   /** @return the number of entries across all ranks */
   public int size() {
     int all = 0;
-    for (Rank r : syn.keySet()) {
+    for (Rank r : synonyms.keySet()) {
       all += size(r);
     }
     return all;
@@ -316,8 +290,8 @@ public class HigherTaxaComparator {
 
   /** @return the number of entries for a given rank */
   public int size(Rank rank) {
-    if (syn.containsKey(rank)) {
-      return syn.get(rank).size();
+    if (synonyms.containsKey(rank)) {
+      return synonyms.get(rank).size();
     }
     return 0;
   }

@@ -30,11 +30,8 @@ import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequest;
 
 /**
@@ -53,21 +50,23 @@ public class MatchController implements ErrorController {
   private static final String PATH = "/error";
 
   @Hidden
-  @RequestMapping(value = PATH, produces = "application/json")
-  public Map<String, Object> error(WebRequest aRequest){
-    Map<String, Object> body = getErrorAttributes(aRequest);
-    String traceRequested = aRequest.getParameter("trace");
-    if (StringUtils.isNotBlank(traceRequested) &&
-      (traceRequested.equalsIgnoreCase("true") || traceRequested.equalsIgnoreCase("on"))) {
-      String trace = (String) body.get("trace");
-      if (trace != null){
-        String[] lines = trace.split("\n\t");
-        body.put("trace", lines);
-      }
+  @GetMapping(value = PATH, produces = "application/json")
+  public Map<String, Object> error(WebRequest request) {
+    Map<String, Object> errorAttributes = getErrorAttributes(request);
+    String traceRequested = request.getParameter("trace");
+    if (isTraceRequested(traceRequested)) {
+      Optional.ofNullable(errorAttributes.get("trace"))
+        .map(Object::toString)
+        .ifPresent(trace -> errorAttributes.put("trace", trace.split("\n\t")));
     } else {
-      body.remove("trace");
+      errorAttributes.remove("trace");
     }
-    return body;
+    return errorAttributes;
+  }
+
+  private boolean isTraceRequested(String traceRequested) {
+    return StringUtils.isNotBlank(traceRequested) &&
+      (traceRequested.equalsIgnoreCase("true") || traceRequested.equalsIgnoreCase("on"));
   }
 
   private boolean getTraceParameter(HttpServletRequest request) {
@@ -75,7 +74,7 @@ public class MatchController implements ErrorController {
     if (parameter == null) {
       return false;
     }
-    return !"false".equals(parameter.toLowerCase());
+    return !"false".equalsIgnoreCase(parameter);
   }
 
   @Autowired
@@ -115,10 +114,42 @@ public class MatchController implements ErrorController {
     value = {"v2/metadata"},
     produces = "application/json")
   public IndexMetadata metadata(){
-
     return matchingService.getIndexMetadata();
   }
 
+  @Hidden
+  @GetMapping(
+    value = {"species/match", "match"},
+    produces = "application/json")
+  public NameUsageMatch matchOldPaths(
+    @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "name", required = false) String scientificName2,
+    @RequestParam(value = "scientificName", required = false) String scientificName,
+    @RequestParam(value = "authorship", required = false) String authorship2,
+    @RequestParam(value = "scientificNameAuthorship", required = false) String authorship,
+    @RequestParam(value = "rank", required = false) String rank2,
+    @RequestParam(value = "taxonRank", required = false) String rank,
+    @RequestParam(value = "genericName", required = false) String genericName,
+    @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
+    @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+    Classification classification,
+    @RequestParam(value = "strict", required = false) Boolean strict,
+    @RequestParam(value = "verbose", required = false) Boolean verbose,
+    HttpServletRequest response) {
+    return matchV2(
+      usageKey,
+      scientificName2, scientificName,
+      authorship, authorship2,
+      removeNulls(genericName),
+      removeNulls(specificEpithet),
+      removeNulls(infraspecificEpithet),
+      rank,
+      rank2,
+      classification,
+      bool(strict),
+      bool(verbose),
+      response);
+  }
 
   @Operation(
       operationId = "matchNames",
@@ -150,20 +181,20 @@ public class MatchController implements ErrorController {
             description = "Filters by taxonomic rank.",
             schema = @Schema(implementation = Rank.class)),
         @Parameter(name = "taxonRank", hidden = true),
-        @Parameter(name = "kingdom", description = "Kingdom to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "phylum", description = "Phylum to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "order", description = "Order to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "class", description = "Class to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "family", description = "Family to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "genus", description = "Genus to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "subgenus", description = "Subgenus to match.", in = ParameterIn.QUERY),
-        @Parameter(name = "species", description = "Species to match.", in = ParameterIn.QUERY),
+        @Parameter(name = "kingdom", description = "Kingdom to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "phylum", description = "Phylum to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "order", description = "Order to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "class", description = "Class to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "family", description = "Family to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "genus", description = "Genus to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "subgenus", description = "Subgenus to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "species", description = "Species to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
         @Parameter(
             name = "genericName",
             description =
                 "Generic part of the name to match when given as atomised parts instead of the full name parameter."),
-        @Parameter(name = "specificEpithet", description = "Specific epithet to match."),
-        @Parameter(name = "infraspecificEpithet", description = "Infraspecific epithet to match."),
+        @Parameter(name = "specificEpithet", description = "Specific epithet to match.", schema = @Schema(implementation = String.class)),
+        @Parameter(name = "infraspecificEpithet", description = "Infraspecific epithet to match.", schema = @Schema(implementation = String.class)),
         @Parameter(name = "classification", hidden = true),
         @Parameter(name = "arg10", hidden = true),
         @Parameter(
@@ -193,7 +224,7 @@ public class MatchController implements ErrorController {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
-      LinneanClassificationImpl classification,
+      Classification classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {
@@ -245,32 +276,38 @@ public class MatchController implements ErrorController {
       @Parameter(
         name = "kingdom",
         description = "Kingdom to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "phylum",
         description = "Phylum to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "order",
         description = "Order to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "class",
         description = "Class to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "family",
         description = "Family to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "genus",
         description = "Genus to match.",
-        in = ParameterIn.QUERY
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "genericName",
@@ -314,7 +351,7 @@ public class MatchController implements ErrorController {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
-      LinneanClassificationImpl classification,
+      Classification classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {

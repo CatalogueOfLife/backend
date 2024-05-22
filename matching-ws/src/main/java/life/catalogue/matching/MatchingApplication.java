@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.info.License;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -26,17 +25,25 @@ import java.text.NumberFormat;
 @Profile("web")
 public class MatchingApplication implements ApplicationRunner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MatchingService.class);
-  @Autowired protected MatchingService matchingService;
+  private static final Logger LOG = LoggerFactory.getLogger(MatchingApplication.class);
+
+  protected final MatchingService matchingService;
 
   @Value("${version}") String version;
   @Value("${licence}") String licence;
   @Value("${licence.url}") String licenceUrl;
 
+  public MatchingApplication(MatchingService matchingService) {
+    this.matchingService = matchingService;
+  }
+
   @Override
   public void run(ApplicationArguments args) {
     IndexMetadata metadata = matchingService.getIndexMetadata();
-    LOG.info("Web services started. Index size: {} taxa", NumberFormat.getInstance().format(metadata.getTaxonCount()));
+    LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
+      NumberFormat.getInstance().format(metadata.getTaxonCount()),
+      metadata.getSizeInMB() > 0 ? NumberFormat.getInstance().format(metadata.getSizeInMB()) + "MB" : "unknown"
+    );
   }
 
   @Bean

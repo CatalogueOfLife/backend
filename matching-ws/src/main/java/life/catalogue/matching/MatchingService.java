@@ -272,7 +272,7 @@ public class MatchingService {
     NameUsageMatch match;
 
     // When provided a usageKey is used exclusively
-    if (usageKey != null) {
+    if (StringUtils.isNotBlank(usageKey)) {
       match = datasetIndex.matchByUsageKey(usageKey);
 
       // maintain backward compatible API
@@ -334,7 +334,7 @@ public class MatchingService {
     // clean strings, replacing odd whitespace, iso controls and trimming
     scientificName = CleanupUtils.clean(scientificName);
     if (classification == null) {
-      classification = new LinneanClassificationImpl();
+      classification = new Classification();
     } else {
       cleanClassification(classification);
     }
@@ -630,7 +630,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank());
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
       // -25 - 0
       final int fuzzyMatchUnlikely = fuzzyMatchUnlikelyhood(canonicalName, m);
 
@@ -671,7 +671,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank()) * 2;
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()
@@ -711,7 +711,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = incNegScore(rankSimilarity(rank, m.getUsage().getRank()), 10);
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()

@@ -9,12 +9,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileStore;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import life.catalogue.api.vocab.MatchType;
@@ -33,6 +34,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Represents an index of a dataset.
+ */
 @Service
 public class DatasetIndex {
 
@@ -44,7 +48,7 @@ public class DatasetIndex {
   String indexPath;
 
   @Value("${working.dir}")
-  protected String workingDir = "/tmp/";
+  String workingDir = "/tmp/";
 
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
@@ -70,6 +74,11 @@ public class DatasetIndex {
     }
   }
 
+  /**
+   * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
+   * dataset title and key, and the build information.
+   * @return IndexMetadata
+   */
   public IndexMetadata getIndexMetadata(){
 
     IndexMetadata metadata = new IndexMetadata();
@@ -77,18 +86,21 @@ public class DatasetIndex {
     Path directoryPath = Path.of(indexPath);
     try {
       BasicFileAttributes attributes = Files.readAttributes(directoryPath, BasicFileAttributes.class);
-      FileTime creationTime = attributes.creationTime();
-      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-      String formattedCreationTime = dateFormat.format(creationTime.toMillis());
+      Instant creationTime = attributes.creationTime().toInstant();
+      DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+        .withZone(ZoneId.systemDefault());
+      String formattedCreationTime = dateFormatter.format(creationTime);
       metadata.setCreated(formattedCreationTime);
-
-      FileStore fileStore = Files.getFileStore(directoryPath);
-      long totalSpace = fileStore.getTotalSpace();
-      long usableSpace = fileStore.getUsableSpace();
-      long usedSpace = totalSpace - usableSpace;
-      if (usedSpace > 0) {
-        metadata.setSizeInMB((usedSpace / 1024) / 1024);
+      long totalSize = 0;
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(directoryPath)) {
+        for (Path entry : stream) {
+          if (!Files.isDirectory(entry)) {
+            totalSize += Files.size(entry);
+          }
+        }
       }
+      metadata.setSizeInMB((long) (totalSize / (1024.0 * 1024.0)));
+
     } catch (IOException e) {
       LOG.error("Cannot read index directory attributes", e);
     }
@@ -118,13 +130,17 @@ public class DatasetIndex {
     return metadata;
   }
 
+  /**
+   * Reads the git information from the git.json file in the working directory.
+   * @return Map<String, Object>
+   */
   public Map<String, Object> readGitInfo() {
     ObjectMapper mapper = new ObjectMapper();
-
+    final String filePath = workingDir + "/git.json";
     try {
-      if (new File(workingDir + "/git.json").exists()) {
+      if (new File(filePath).exists()) {
         // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(workingDir + "/git.json"));
+        JsonNode rootNode = mapper.readTree(new File(filePath));
 
         // Navigate to the author node
         String sha = rootNode.path("sha").asText();
@@ -140,7 +156,7 @@ public class DatasetIndex {
 
         return Map.of("sha", sha, "url", url, "html_url", html_url, "name", name, "email", email, "date", date, "message", message);
       } else {
-        LOG.warn("Git info not found at {}", workingDir + "/dataset.json");
+        LOG.warn("Git info not found at {}", filePath);
       }
     } catch (IOException e) {
       LOG.error("Cannot read index git information", e);
@@ -148,20 +164,26 @@ public class DatasetIndex {
     return Map.of();
   }
 
+  /**
+   * Reads the dataset information from the dataset.json file in the working directory.
+   * @return Map<String, Object>
+   */
   public Map<String, Object> readDatasetInfo() {
     ObjectMapper mapper = new ObjectMapper();
 
+    String filePath = workingDir + "/dataset.json";
+
     try {
-      if (new File(workingDir + "/dataset.json").exists()){
-        LOG.info("Loading dataset info from {}", workingDir + "/dataset.json");
+      if (new File(filePath).exists()){
+        LOG.info("Loading dataset info from {}", filePath);
         // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(workingDir + "/dataset.json"));
+        JsonNode rootNode = mapper.readTree(new File(filePath));
         // Navigate to the author node
         String datasetKey = rootNode.path("key").asText();
         String datasetTitle = rootNode.path("title").asText();
         return Map.of("datasetKey", datasetKey, "datasetTitle", datasetTitle);
       } else {
-        LOG.warn("Dataset info not found at {}", workingDir + "/dataset.json");
+        LOG.warn("Dataset info not found at {}", filePath);
       }
     } catch (IOException e) {
       LOG.error("Cannot read index dataset information", e);
@@ -228,7 +250,7 @@ public class DatasetIndex {
     try {
       TopDocs docs = getSearcher().search(query, 3);
       if (docs.totalHits.value > 0) {
-        return Optional.of(getSearcher().doc(docs.scoreDocs[0].doc));
+        return Optional.of(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
       } else {
         return Optional.empty();
       }
@@ -334,8 +356,7 @@ public class DatasetIndex {
     u.setSynonym(synonym);
 
     String status = doc.get(FIELD_STATUS);
-    u.setStatus(TaxonomicStatus.valueOf(status));
-    u.getDiagnostics().setStatus(status);
+    u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
 
     return u;
   }
@@ -389,7 +410,7 @@ public class DatasetIndex {
       TopDocs docs = searcher.search(q, maxMatches);
       if (docs.totalHits.value > 0) {
         for (ScoreDoc sdoc : docs.scoreDocs) {
-          NameUsageMatch match = fromDoc(searcher.doc(sdoc.doc));
+          NameUsageMatch match = fromDoc(searcher.storedFields().document(sdoc.doc));
           if (name.equalsIgnoreCase(match.getUsage().getCanonicalName())) {
             match.getDiagnostics().setMatchType(MatchType.EXACT);
             results.add(match);

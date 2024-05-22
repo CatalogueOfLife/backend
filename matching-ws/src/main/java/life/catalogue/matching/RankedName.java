@@ -2,8 +2,10 @@ package life.catalogue.matching;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.Objects;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.gbif.nameparser.api.Rank;
 
+@Schema(description = "A name with an identifier and a taxonomic rank", title = "RankedName", type = "object")
 public class RankedName {
   private String key;
   private String name;

@@ -356,7 +356,7 @@ public class MatchingServiceIT {
   @Test
   public void testHomonyms() {
     // Oenanthe
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     assertNoMatch("Oenanthe", cl);
 
     cl.setKingdom("Animalia");
@@ -367,7 +367,7 @@ public class MatchingServiceIT {
     assertMatch("Oenante", cl, 3034893, new IntRange(84, 95));
 
     // Acanthophora
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
     assertNoMatch("Acanthophora", cl);
 
     // there are 3 genera in animalia, 2 synonyms and 1 accepted but they differ at phylum level
@@ -418,7 +418,7 @@ public class MatchingServiceIT {
     assertMatch("Pima concolor", cl, 3925, new IntRange(90, 100));
 
     // Amphibia is a homonym genus, but also and most prominently a class!
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
     // non existing "species" name. Amphibia could either be the genus or the class. As we
     assertNoMatch("Amphibia eyecount", cl);
 
@@ -437,7 +437,7 @@ public class MatchingServiceIT {
   public void testHomonyms2() throws IOException {
     // this hits 2 species synonyms with no such name being accepted
     // nub match must pick one if the accepted name of all synonyms is the same!
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Plantae");
     cl.setFamily("Poaceae");
     assertMatch("Elytrigia repens", cl, 7522774, new IntRange(92, 100));
@@ -453,7 +453,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testHomonyms3() throws IOException {
-    assertMatch("Siphonophora", new LinneanClassificationImpl(), 1, new IntRange(90, 100));
+    assertMatch("Siphonophora", new Classification(), 1, new IntRange(90, 100));
   }
 
   @Test
@@ -560,7 +560,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testAuthorshipMatchingGIASIP() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     assertMatch("Bromus sterilis", cl, 8341523, new IntRange(95, 99));
     assertMatch("Bromus sterilis Guss.", cl, 8341523, new IntRange(99, 100));
     assertMatch("Bromus sterilis Gus", cl, 8341523, new IntRange(98, 100));
@@ -583,13 +583,13 @@ public class MatchingServiceIT {
     cl.setKingdom("Plantae");
     cl.setFamily("Oxalidaceae");
     assertMatch("Daphnia Korth", cl, 3626852, new IntRange(96, 100));
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
 
     assertMatch("Daphnia Rafinesque", cl, 7956551, new IntRange(88, 94));
     cl.setKingdom("Animalia");
     cl.setFamily("Calanidae");
     assertMatch("Daphnia Rafinesque", cl, 4333792, new IntRange(98, 100));
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
 
     assertMatch("Carpobrotus edulis", cl, 3084842, new IntRange(95, 99));
     assertMatch("Carpobrotus edulis N. E. Br.", cl, 3084842, new IntRange(98, 100));
@@ -604,7 +604,7 @@ public class MatchingServiceIT {
     assertMatch("Carpobrotus edulis L.Bolus", cl, 7475472, new IntRange(95, 100));
     assertMatch("Carpobrotus edulis Bolus", cl, 7475472, new IntRange(95, 100));
     assertMatch("Carpobrotus dulcis Bolus", cl, 3703510, new IntRange(95, 100));
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
 
     assertMatch("Celastrus orbiculatus", cl, 8104460, new IntRange(95, 99));
     assertMatch("Celastrus orbiculatus Murray", cl, 8104460, new IntRange(98, 100));
@@ -633,7 +633,7 @@ public class MatchingServiceIT {
 
   @Test
   public void testOtuMatching() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
 
     assertMatch("SH205817.07FU", cl, 9732858, new IntRange(95, 100));
 
@@ -666,7 +666,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testViruses() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     assertMatch("Inachis io", cl, 5881450, new IntRange(92, 100));
     assertMatch("Inachis io (Linnaeus)", cl, 5881450, new IntRange(95, 100));
     assertMatch("Inachis io NPV", cl, 8562651, new IntRange(95, 100));
@@ -685,7 +685,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testPOR2704() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Plantae");
     cl.setFamily("Scrophulariaceae"); // nowadays Plantaginaceae as in our nub/col
     assertMatch("Linaria pedunculata (L.) Chaz.", cl, 3172168, new IntRange(90, 100));
@@ -694,7 +694,7 @@ public class MatchingServiceIT {
   /** Classification names need to be parsed if they are no monomials already */
   @Test
   public void testClassificationWithAuthors() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Fungi Bartling, 1830");
     cl.setPhylum("Ascomycota Caval.-Sm., 1998");
     cl.setClazz("Lecanoromycetes, O.E. Erikss. & Winka, 1997");
@@ -707,7 +707,7 @@ public class MatchingServiceIT {
   /** Non existing species should match genus Quedius http://dev.gbif.org/issues/browse/POR-1712 */
   @Test
   public void testPOR1712() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setClazz("Hexapoda");
     cl.setFamily("Staphylinidae");
     cl.setGenus("Quedius");
@@ -722,7 +722,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testPOR2701() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setPhylum("Chordata");
     cl.setClazz("Mammalia");
     cl.setOrder("Carnivora");
@@ -740,7 +740,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testPOR2684() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Plantae");
     cl.setFamily("Labiatae");
     cl.setGenus("Brunella");
@@ -754,7 +754,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testPOR2469() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setPhylum("Arthropoda");
     cl.setClazz("Insecta");
@@ -771,7 +771,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testFeedback1379() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setFamily("Helicidae");
     assertMatch("iberus gualtieranus", cl, 4564258, new IntRange(95, 100));
     assertMatch("Iberus gualterianus", cl, 4564258, new IntRange(98, 100));
@@ -785,7 +785,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testPOR2607() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setFamily("Chrysomelidae");
     assertMatch("Oreina", cl, 6757727, new IntRange(95, 100));
@@ -806,7 +806,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testIndet() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     //    assertMatch("Peperomia induta", cl, 4189260, new IntRange(95, 100));
     //    assertMatch("Peperomia indet", cl, 3086367, MatchType.HIGHERRANK);
     assertMatch("Lacerta bilineata indet", cl, 6159243, new IntRange(95, 100));
@@ -821,13 +821,13 @@ public class MatchingServiceIT {
     assertMatch("Xysticus spec.", cl, 2164999, MatchType.HIGHERRANK);
 
     // http://www.gbif.org/occurrence/1061576151/verbatim
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
     cl.setFamily("Poaceae");
     cl.setGenus("Triodia");
     assertMatch("Triodia sp.", cl, 2702695);
 
     // http://www.gbif.org/occurrence/1037140379/verbatim
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
     cl.setKingdom("Plantae");
     cl.setFamily("XYRIDACEAE");
     cl.setGenus("Xyris");
@@ -837,7 +837,7 @@ public class MatchingServiceIT {
     assertMatch("Xyris kralii Wand.", cl, 2692599, MatchType.HIGHERRANK);
 
     // http://www.gbif.org/occurrence/144904719/verbatim
-    cl = new LinneanClassificationImpl();
+    cl = new Classification();
     cl.setKingdom("Plantae");
     cl.setFamily("GRAMINEAE");
     assertMatch(
@@ -850,7 +850,7 @@ public class MatchingServiceIT {
   @Test
   public void testImprovedMatching() throws IOException {
     // http://www.gbif.org/occurrence/164267402/verbatim
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     assertMatch("Zabidius novemaculeatus", cl, 2394331, new IntRange(98, 100));
     assertMatch("Zabideus novemaculeatus", cl, 2394331, new IntRange(75, 85));
 
@@ -875,7 +875,7 @@ public class MatchingServiceIT {
   /** Names that fuzzy match to higher species "Iberus gualtieranus" */
   @Test
   public void testIberusGualtieranus() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     assertMatch("Iberus gualterianus minor Serradell", cl, 4564258, new IntRange(90, 99));
 
     cl.setFamily("Helicidae");
@@ -885,7 +885,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/portal-feedback/issues/2930 */
   @Test
   public void higherOverFuzzy() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     // Stolas
     NameUsageMatch m = null;
     m = assertMatch("Stolas costaricensis", cl, 4734997, new IntRange(90, 99));
@@ -915,7 +915,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/192 */
   @Test
   public void subgenusJacea() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Plantae");
     // THIS SETS the genus too
     NameUsageMatch m = assertMatch("Centaurea subg. Jacea", cl, 7652419, MatchType.EXACT);
@@ -925,7 +925,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/196 */
   @Test
   public void mycenaFllavoalba() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Fungi");
     cl.setPhylum("Basidiomycota");
     cl.setClazz("Agaricomycetes");
@@ -943,7 +943,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/200 */
   @Test
   public void merganser() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
 
     NameUsageMatch m = assertMatch("Mergus merganser Linnaeus, 1758", cl, 2498370, MatchType.EXACT);
     assertEquals("Mergus merganser", m.getUsage().getCanonicalName());
@@ -956,7 +956,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/175 */
   @Test
   public void otuIncaseInsensitive() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
 
     assertMatch("AAA536-G10 sp003284565", cl, 10701019, MatchType.EXACT);
     assertMatch("aaa536-g10 sp003284565", cl, 10701019, MatchType.EXACT);
@@ -965,7 +965,7 @@ public class MatchingServiceIT {
 
   @Test
   public void npe() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
 
     assertNoMatch(null, cl);
     assertNoMatch("", cl);
@@ -974,7 +974,7 @@ public class MatchingServiceIT {
 
   @Test
   public void dinosaura() throws IOException {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setPhylum("Chordata");
     cl.setClazz("Reptilia");
@@ -998,7 +998,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/portal-feedback/issues/4532 */
   @Test
   public void testAuthorBrackets() throws Exception {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
 
     assertMatch("Eristalis lineata Harris, 1776", Rank.SPECIES, cl, 7834133, MatchType.EXACT);
@@ -1008,7 +1008,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/portal-feedback/issues/2935 */
   @Test
   public void aggregates() throws Exception {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setOrder("Diptera");
     cl.setFamily("Clusiidae");
@@ -1021,7 +1021,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/280 */
   @Test
   public void iris() throws Exception {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setPhylum("Chordata");
     cl.setClazz("Aves");
@@ -1036,7 +1036,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/289 */
   @Test
   public void shortCircuitUsageKey() {
-    LinneanClassification cl = new LinneanClassificationImpl();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setGenus("Ablabera");
     cl.setSpecies("rufipes");

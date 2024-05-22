@@ -37,13 +37,13 @@ public class NameNRank {
   /**
    * Construct the best possible full name with authorship and rank out of various input parameters
    *
-   * @param scientificName
-   * @param authorship
-   * @param specificEpithet
-   * @param infraSpecificEpithet
-   * @param rank
-   * @param classification
-   * @return
+   * @param scientificName the full scientific name
+   * @param authorship the authorship
+   * @param specificEpithet the species epithet
+   * @param infraSpecificEpithet the infraspecific epithet
+   * @param rank the rank
+   * @param classification the classification
+   * @return a new NameNRank instance
    */
   public static NameNRank build(
       @Nullable String scientificName,
@@ -55,7 +55,7 @@ public class NameNRank {
       @Nullable LinneanClassification classification) {
 
     // make sure we have a classification instance
-    classification = classification == null ? new LinneanClassificationImpl() : classification;
+    classification = classification == null ? new Classification() : classification;
     final String genus = clean(first(genericName, classification.getGenus()));
     // If given primarily trust the scientific name, especially since these can be unparsable names
     // like OTUs
@@ -80,7 +80,7 @@ public class NameNRank {
       Rank clRank = lowestRank(classification);
       if (genus == null && (clRank == null || clRank.isSuprageneric())) {
         // use epithets if existing - otherwise higher rank if given
-        if (any(specificEpithet, infraSpecificEpithet, authorship)) {
+        if (anyNonEmpty(specificEpithet, infraSpecificEpithet, authorship)) {
           // we dont have any genus or species binomen given, just epithets :(
           StringBuilder sb = new StringBuilder();
           sb.append("?"); // no genus
@@ -104,7 +104,6 @@ public class NameNRank {
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
         pn.setRank(rank);
         Authorship authorship1 = Authorship.authors(clean(authorship));
-        // FIXME is this ok ?
         pn.setCombinationAuthorship(authorship1);
         // see if species rank in classification can contribute sth
         if (exists(classification.getSpecies())) {
@@ -162,7 +161,7 @@ public class NameNRank {
     return x;
   }
 
-  private static boolean any(String... x) {
+  private static boolean anyNonEmpty(String... x) {
     if (x != null) {
       for (String y : x) {
         if (exists(y)) return true;
@@ -209,8 +208,8 @@ public class NameNRank {
     }
   }
 
-  private static boolean exists(@Nullable String x) {
-    return !StringUtils.isBlank(x);
+  private static boolean exists(String x) {
+    return StringUtils.isNotBlank(x);
   }
 
   @VisibleForTesting
