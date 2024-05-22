@@ -75,7 +75,7 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
-   * Final handler that can be implemented to e.g. persist jobs, or run notifications.
+   * Final handler that can be implemented to e.g. persist jobs, do final cleanups or run notifications.
    * The final job status is set along with potential exceptions and timestamps.
    * The method should only be fired when the job is truely done, i.e. status.isDone().
    *
