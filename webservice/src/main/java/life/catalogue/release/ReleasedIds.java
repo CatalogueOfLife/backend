@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
@@ -18,19 +19,31 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
  * Tracks released ids incl historic releases.
- * Each ID is only represented by the most recent, i.e. highest release attempt.
+ * Each ID is only represented by the most recent, i.e. usually the highest release attempt.
+ * As we mix identifiers from Release and XRelease there might be a more recent public release
+ * than the last one of the kind we are trying to release.
+ *
+ * For example we can do an extended release with based on a regular release which is newer than the last extended release.
+ * As release attempts are unique and sequential for all releases of the project there can be identifiers from the last regular release
+ * which have a higher attempt than the last XRelease.
  */
 public class ReleasedIds {
 
   private int maxKey = 0;
   private int maxAttempt = 0;
+  private final int lastAttempt; // attempt of last release of same origin
   private final Int2ObjectMap<ReleasedId> byId = new Int2ObjectOpenHashMap<>();
   private final Int2ObjectMap<ReleasedId[]> byNxId = new Int2ObjectOpenHashMap<>();
+
+  public ReleasedIds(Integer lastAttempt) {
+    this.lastAttempt = lastAttempt == null ? -999 : lastAttempt;
+  }
 
   public static class ReleasedId {
     public final int id;
     public final int nxId;
     public final int attempt;
+    public final boolean sameOrigin;
     public final MatchType matchType;
     public final Rank rank;
     public final String authorship;
@@ -41,14 +54,15 @@ public class ReleasedIds {
     /**
      * @throws IllegalArgumentException if the string id cannot be converted into an int, e.g. if it was a temp UUID
      */
-    public static ReleasedId create(SimpleNameWithNidx sn, int attempt) throws IllegalArgumentException {
-      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, sn);
+    public static ReleasedId create(SimpleNameWithNidx sn, int attempt, boolean sameOrigin) throws IllegalArgumentException {
+      return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, sameOrigin, sn);
     }
 
-    public ReleasedId(int id, int attempt, SimpleNameWithNidx sn) {
+    public ReleasedId(int id, int attempt, boolean sameOrigin, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
       this.attempt = attempt;
+      this.sameOrigin = sameOrigin;
       this.matchType = sn.getNamesIndexMatchType();
       this.rank = sn.getRank();
       this.authorship = sn.getAuthorship();
@@ -96,10 +110,10 @@ public class ReleasedIds {
   /**
    * @return IDs from the last (=max) attempt.
    */
-  public Int2IntMap maxAttemptIds(){
+  public Int2IntMap lastAttemptIds(){
     Int2IntMap ids = new Int2IntOpenHashMap();
     for (ReleasedId rid : byId.values()) {
-      if (rid.attempt == maxAttempt) {
+      if (rid.attempt == lastAttempt) {
         ids.put(rid.id, rid.attempt);
       }
     }
@@ -109,20 +123,24 @@ public class ReleasedIds {
   /**
    * @return number of IDs from the last (=max) attempt.
    */
-  public int maxAttemptIdCount(){
+  public int lastAttemptIdCount(){
     int counter = 0;
     for (ReleasedId rid : byId.values()) {
-      if (rid.attempt == maxAttempt) {
+      if (rid.attempt == lastAttempt) {
         counter++;
       }
     }
     return counter;
   }
 
+  public int getLastAttempt() {
+    return lastAttempt;
+  }
+
   void add (ReleasedId id) {
     if (byId.containsKey(id.id)) {
-      // ignore already existing ids, but make sure the existing attempt is more recent, i.e. higher!
-      if (byId.get(id.id).attempt < id.attempt) {
+      // ignore already existing ids, but make sure the existing attempt is more recent if it is from the same origin, i.e. higher!
+      if (id.sameOrigin && byId.get(id.id).attempt < id.attempt) {
         throw new IllegalStateException("Cannot add a newer ReleaseId "+ id.attempt + ":" + id.id +" than existing attempt " + byId.get(id.id).attempt);
       }
       return;

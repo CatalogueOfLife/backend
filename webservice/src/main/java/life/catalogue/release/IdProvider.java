@@ -75,10 +75,11 @@ public class IdProvider {
   private final Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
-  private final ReleasedIds ids = new ReleasedIds();
+  private final ReleasedIds ids;
   private final Int2IntBiMap dataset2attempt = new Int2IntBiMap();
-  private final List<Integer> ignoredReleases;
-  private final List<Integer> additionalReleases = new ArrayList<>();
+  private final Int2ObjectMap<Release> dataset2release = new Int2ObjectOpenHashMap<>();
+  private final List<Integer> ignoredReleases = new ArrayList<>();
+  private final IntList additionalReleases = new IntArrayList();
   private final AtomicInteger keySequence = new AtomicInteger();
   private final File reportDir;
   // id changes in this release
@@ -91,6 +92,17 @@ public class IdProvider {
   protected NameUsageMapper num;
   protected NameMatchMapper nmm;
 
+  static class Release {
+    final int key;
+    final int attempt;
+    final DatasetOrigin origin;
+
+    Release(int key, DatasetOrigin origin, int attempt) {
+      this.key = key;
+      this.origin = origin;
+      this.attempt = attempt;
+    }
+  }
   public IdProvider(int projectKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
     this.releaseDatasetKey = releaseDatasetKey;
     this.projectKey = projectKey;
@@ -101,28 +113,25 @@ public class IdProvider {
     reportDir = cfg.reportDir(projectKey, attempt);
     reportDir.mkdirs();
     dataset2attempt.put(releaseDatasetKey, attempt);
+    // load a map of all releases to their attempts and figure out last release
+    lastReleaseKey = loadReleaseAttempts();
+    // now build the main release identifier store
+    ids = new ReleasedIds(lastReleaseKey == null ? null : dataset2attempt.getValue(lastReleaseKey));
+    // create report dirs
+    File dir = cfg.reportDir(projectKey, attempt);
+    dir.mkdirs();
 
-    if (cfg.ignoredReleases != null && cfg.ignoredReleases.containsKey(projectKey)) {
-      ignoredReleases = cfg.ignoredReleases.get(projectKey);
+    if (cfg.restart != null) {
+      LOG.info("Use ID provider with no previous IDs. Start ID sequence with {} ({})", cfg.restart, encode(cfg.restart));
+      keySequence.set(cfg.restart);
+
     } else {
-      ignoredReleases = List.of();
+      // populate ids from db
+      loadPreviousReleaseIds();
+      LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.lastAttemptIdCount());
+      keySequence.set(ids.maxKey());
+      LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
     }
-    if (cfg.additionalReleases != null && cfg.additionalReleases.containsKey(projectKey)) {
-      additionalReleases.addAll(cfg.additionalReleases.get(projectKey));
-    }
-
-    try (SqlSession session = factory.openSession(true)) {
-      lastReleaseKey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, origin);
-      for (DatasetOrigin o : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
-        var rkey = session.getMapper(DatasetMapper.class).latestRelease(projectKey, true, ignoredReleases, o);
-        if (rkey != null && !rkey.equals(lastReleaseKey)) {
-          LOG.info("Add previous {} {} to list of releases to load", o, rkey);
-          additionalReleases.add(rkey);
-        }
-      }
-    }
-
-    init();
   }
 
   public static class InstableName implements DSID<String> {
@@ -345,29 +354,36 @@ public class IdProvider {
     }
   }
 
-  private void init(){
-    File dir = cfg.reportDir(projectKey, attempt);
-    dir.mkdirs();
-    // load a map of all releases to their attempts
-    loadReleaseAttempts();
-    if (cfg.restart != null) {
-      LOG.info("Use ID provider with no previous IDs. Start ID sequence with {} ({})", cfg.restart, encode(cfg.restart));
-      keySequence.set(cfg.restart);
-
-    } else {
-      // populate ids from db
-      loadPreviousReleaseIds();
-      LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.maxAttemptIdCount());
-      keySequence.set(ids.maxKey());
-      LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
-    }
+  @VisibleForTesting
+  protected void addRelease(Release release) {
+    dataset2release.put(release.key, release);
+    dataset2attempt.put(release.key, release.attempt);
   }
 
-  private void loadReleaseAttempts() {
+  @VisibleForTesting
+  protected Integer loadReleaseAttempts() {
+    Integer lrkey = null; // latest release key
+    if (cfg.ignoredReleases != null && cfg.ignoredReleases.containsKey(projectKey)) {
+      ignoredReleases.addAll(cfg.ignoredReleases.get(projectKey));
+    }
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.listReleases(projectKey).forEach(d -> {
-        if (d.getKey() != releaseDatasetKey && d.getAttempt() != null) {
+
+      for (DatasetOrigin o : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
+        var rkey = dm.latestRelease(projectKey, true, ignoredReleases, o);
+        if (rkey != null) {
+          if (o == origin) {
+            lrkey = rkey;
+          } else {
+            LOG.info("Add previous {} {} to list of releases to load", o, rkey);
+            additionalReleases.add(rkey);
+          }
+        }
+      }
+      // we now load all known release attempts as the usage archive can contain any of them
+      dm.listReleasesQuick(projectKey).forEach(d -> {
+        dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
+        if (d.getKey() != releaseDatasetKey) {
           if (ignoredReleases.contains(d.getKey())) {
             LOG.info("Configured to ignore release {}", d.getKey());
           } else {
@@ -377,6 +393,7 @@ public class IdProvider {
       });
       LOG.info("Found {} relevant past releases", dataset2attempt.size());
     }
+    return lrkey;
   }
 
   static class LoadStats {
@@ -407,18 +424,18 @@ public class IdProvider {
       } else {
         PgUtils.consume(
           () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
-          sn -> addReleaseId(lastReleaseKey, sn, stats)
+          sn -> addReleaseId(lastReleaseKey, origin, sn, stats)
         );
         LOG.info("Read {} from last {} {}. Total ids={}", stats, origin, lastReleaseKey, ids.size());
       }
 
       // load additional releases if configured
-      for (int dk : additionalReleases) {
+      for (var rk : additionalReleases) {
         PgUtils.consume(
-          () -> session.getMapper(NameUsageMapper.class).processNxIds(dk),
-          sn -> addReleaseId(dk, sn, stats)
+          () -> session.getMapper(NameUsageMapper.class).processNxIds(rk),
+          sn -> addReleaseId(rk, dataset2release.get(rk).origin, sn, stats)
         );
-        LOG.info("Read {} from past release {}. Total ids={}", stats, dk, ids.size());
+        LOG.info("Read {} from past release {}. Total ids={}", stats, rk, ids.size());
       }
 
       // always also include the archived names if they have not been processed before yet
@@ -426,7 +443,7 @@ public class IdProvider {
       LOG.info("Add archived names");
       PgUtils.consume(
         () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey),
-        sn -> addReleaseId(sn.getLastReleaseKey(), sn, stats)
+        sn -> addReleaseId(sn.getLastReleaseKey(), null, sn, stats)
       );
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
       //ids.log();
@@ -434,14 +451,14 @@ public class IdProvider {
   }
 
   @VisibleForTesting
-  protected void addReleaseId(int releaseDatasetKey, SimpleNameWithNidx sn, LoadStats stats){
+  protected void addReleaseId(int releaseDatasetKey, DatasetOrigin origin, SimpleNameWithNidx sn, LoadStats stats){
     stats.counter.incrementAndGet();
     if (sn.getNamesIndexId() == null) {
       stats.nomatches.incrementAndGet();
       LOG.info("Existing release id {}:{} without a names index id. Skip {}", releaseDatasetKey, sn.getId(), sn.getLabel());
     } else {
       try {
-        var rl = ReleasedId.create(sn, dataset2attempt.getValue(releaseDatasetKey));
+        var rl = ReleasedId.create(sn, dataset2attempt.getValue(releaseDatasetKey), origin == this.origin);
         ids.add(rl);
         LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, releaseDatasetKey, sn);
       } catch (IllegalArgumentException e) {
@@ -468,7 +485,7 @@ public class IdProvider {
   @VisibleForTesting
   protected void mapIds(Iterable<SimpleNameWithNidx> names){
     LOG.info("Map name usage IDs");
-    final int lastRelIds = ids.maxAttemptIdCount();
+    final int lastRelIds = ids.lastAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
          Writer nomatchWriter = buildNomatchWriter()
@@ -497,7 +514,7 @@ public class IdProvider {
       LOG.error("Failed to write ID reports for project " + projectKey, e);
     }
     // ids remaining from the current attempt will be deleted
-    deleted = ids.maxAttemptIds();
+    deleted = ids.lastAttemptIds();
     reused = lastRelIds - deleted.size();
     LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
   }

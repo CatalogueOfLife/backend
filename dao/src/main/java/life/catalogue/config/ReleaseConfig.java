@@ -24,10 +24,6 @@ public class ReleaseConfig {
   // project -> list of dataset keys of releases to ignore (e.g. they contain bad ids)
   public Map<Integer, List<Integer>> ignoredReleases;
 
-
-  // project -> list of dataset keys of releases to also include as a "backup" of the last release
-  public Map<Integer, List<Integer>> additionalReleases;
-
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 

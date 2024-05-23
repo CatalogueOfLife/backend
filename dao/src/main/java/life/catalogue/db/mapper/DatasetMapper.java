@@ -119,6 +119,50 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 
   /**
+   * Same as above, but returning just a minimal object which is much quicker to load
+   */
+  List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
+
+  class DatasetRelease {
+    private int key;
+    private int projectKey;
+    private int attempt;
+    private DatasetOrigin origin;
+
+    public int getKey() {
+      return key;
+    }
+
+    public void setKey(int key) {
+      this.key = key;
+    }
+
+    public int getProjectKey() {
+      return projectKey;
+    }
+
+    public void setProjectKey(int projectKey) {
+      this.projectKey = projectKey;
+    }
+
+    public int getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(int attempt) {
+      this.attempt = attempt;
+    }
+
+    public DatasetOrigin getOrigin() {
+      return origin;
+    }
+
+    public void setOrigin(DatasetOrigin origin) {
+      this.origin = origin;
+    }
+  }
+
+  /**
    * Looks for potential duplicates of a dataset by aggregating them on title and description.
    *
    * @param minCount minimum number of datasets to be considered a duplicate.

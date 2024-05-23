@@ -84,9 +84,18 @@ public class IdProviderTest {
         int datasetKey = 1000 + attempt;
         getDatasetAttemptMap().put(datasetKey, attempt);
         for (SimpleNameWithNidx sn : rel.getValue()) {
-          addReleaseId(datasetKey, sn, stats);
+          addReleaseId(datasetKey, DatasetOrigin.RELEASE, sn, stats);
         }
       }
+    }
+
+    @Override
+    protected Integer loadReleaseAttempts() {
+      int lastReleaseKey = 999;
+      int attempt = prevIdsByAttempt.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+      addRelease(new Release(lastReleaseKey, DatasetOrigin.RELEASE, attempt)); // we add the max attempt as the last release
+      super.loadReleaseAttempts();
+      return lastReleaseKey;
     }
   }
 

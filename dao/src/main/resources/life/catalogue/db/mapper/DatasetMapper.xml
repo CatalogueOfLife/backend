@@ -184,6 +184,10 @@
     <id property="key" column="key"/>
   </resultMap>
 
+  <resultMap id="releaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetRelease" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
+
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
     <id column="key"/>
     <result property="settings" column="settings" typeHandler="life.catalogue.db.type2.SettingsTypeHandler"/>
@@ -320,6 +324,13 @@
     FROM <include refid="FROM"/>
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.created, d.key
+  </select>
+
+  <select id="listReleasesQuick" resultMap="releaseResultMap">
+    SELECT key, source_key AS projectKey, attempt, origin
+    FROM dataset d
+    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    ORDER BY d.attempt, d.key
   </select>
 
   <select id="duplicates" resultMap="duplicateResultMap">

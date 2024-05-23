@@ -19,7 +19,7 @@ public class ReleasedIdsTest {
   ReleasedIds ids;
 
   void init(int max){
-    ids = new ReleasedIds();
+    ids = new ReleasedIds(max);
     counter = 0;
     while (counter < max) {
       ids.add(gen());
@@ -82,6 +82,6 @@ public class ReleasedIdsTest {
     sn.setNamesIndexMatchType(MatchType.EXACT);
     sn.setStatus(TaxonomicStatus.ACCEPTED);
     sn.setName("Abies");
-    return new ReleasedId(id, counter < 100000 ? 1 : 2, sn);
+    return new ReleasedId(id, counter < 100000 ? 1 : 2, true, sn);
   }
 }

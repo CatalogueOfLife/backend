@@ -108,7 +108,6 @@ public class IdProviderIT {
   public void ignoreLastRelease() throws Exception {
     var cfg = new ReleaseConfig();
     cfg.ignoredReleases = Map.of(projectKey, List.of(13));
-    cfg.additionalReleases = Map.of(projectKey, List.of(11));
     init(cfg);
 
     provider.mapIds();
