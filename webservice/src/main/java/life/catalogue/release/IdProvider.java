@@ -128,7 +128,7 @@ public class IdProvider {
     } else {
       // populate ids from db
       loadPreviousReleaseIds();
-      LOG.info("Last release attempt={} with {} IDs", ids.getMaxAttempt(), ids.lastAttemptIdCount());
+      LOG.info("Last release attempt={} with {} IDs", ids.getLastAttempt(), ids.lastAttemptIdCount());
       keySequence.set(ids.maxKey());
       LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
     }
@@ -615,7 +615,7 @@ public class IdProvider {
     }
     var rid = ids.remove(rm.rid.id);
     rm.name.setCanonicalId(rm.rid.id);
-    if (rm.rid.attempt < ids.getMaxAttempt()) {
+    if (rm.rid.attempt != ids.getLastAttempt()) {
       resurrected.put(rm.rid.id, rm.rid.attempt);
     }
     scores.remove(rm);

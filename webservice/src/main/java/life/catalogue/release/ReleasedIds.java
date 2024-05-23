@@ -30,7 +30,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 public class ReleasedIds {
 
   private int maxKey = 0;
-  private int maxAttempt = 0;
   private final int lastAttempt; // attempt of last release of same origin
   private final Int2ObjectMap<ReleasedId> byId = new Int2ObjectOpenHashMap<>();
   private final Int2ObjectMap<ReleasedId[]> byNxId = new Int2ObjectOpenHashMap<>();
@@ -154,10 +153,6 @@ public class ReleasedIds {
     if (id.id > maxKey) {
       maxKey = id.id;
     }
-    if (id.attempt > maxAttempt) {
-      maxAttempt = id.attempt;
-    }
-
   }
 
   public ReleasedId[] byNxId(int nxId) {
@@ -176,10 +171,4 @@ public class ReleasedIds {
     return maxKey;
   }
 
-  /**
-   * @return the maximum attempt in this list of all releases, i.e. the last or current attempt
-   */
-  public int getMaxAttempt() {
-    return maxAttempt;
-  }
 }
