@@ -1,7 +1,10 @@
 package life.catalogue.dw.jersey.writers;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import de.undercouch.citeproc.csl.CSLItemData;
 
+import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.csl.CslDataConverter;
@@ -27,33 +30,18 @@ import de.undercouch.citeproc.csl.CSLType;
 /**
  * Writer that generates BibTeX for reference instances.
  */
-@Produces({MoreMediaTypes.APP_BIBTEX})
+@Produces({MoreMediaTypes.APP_JSON_CSL})
 @Provider
-public class ReferenceBibtexBodyWriter implements MessageBodyWriter<Reference> {
+public class ReferenceCslBodyWriter implements MessageBodyWriter<Reference> {
+  private static ObjectWriter JSON_WRITER = ApiModule.MAPPER.writerFor(CSLItemData.class);
 
   @Override
   public boolean isWriteable(Class<?> type, Type type1, Annotation[] antns, MediaType mt) {
     return Reference.class.isAssignableFrom(type);
   }
 
-  static CSLItemData toCSL(Reference ref) {
-    CslData csl;
-    if (ref.getCsl() != null) {
-      csl = ref.getCsl();
-    } else {
-      csl = new CslData();
-      csl.setType(CSLType.WEBPAGE); // will become MISC in bibtex
-      csl.setTitle(ref.getCitation());
-    }
-    csl.setId(ref.getId());
-    return CslDataConverter.toCSLItemData(csl);
-  }
-
   @Override
   public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
-    MoreMediaTypes.setUTF8ContentType(mt, headers);
-    try (Writer w = UTF8IoUtils.writerFromStream(out)) {
-      w.write( CslUtil.toBibTexString(toCSL(ref)));
-    }
+    JSON_WRITER.writeValue(out, ReferenceBibtexBodyWriter.toCSL(ref));
   }
 }
