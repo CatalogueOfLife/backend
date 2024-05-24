@@ -72,7 +72,7 @@ public class NameUsageArchiver {
    * Creates and removes archived usages according to the existing id reports.
    * @param projectKey valid project key - not verified, must be existing
    * @param releaseKey valid release key - not verified, must not be deleted or private!
-   * @return number of archived usages, i.e. newly archived - resurrected ones
+   * @return change of number of archived usages, i.e. newly archived - resurrected ones
    */
   public int archiveRelease(int projectKey, int releaseKey) {
     final AtomicInteger counter = new AtomicInteger(0);

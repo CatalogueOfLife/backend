@@ -8,6 +8,7 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetExportDao;
@@ -70,7 +71,7 @@ public class PublicReleaseListener {
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
-      LOG.info("Publish release {} {} from project {} by user {}.", event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
+      LOG.info("Publish {} {} {} from project {} by user {}.", event.obj.getOrigin(), event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
       // publish DOI if exists
       if (event.obj.getDoi() != null) {
         LOG.info("Publish DOI {}", event.obj.getDoi());
@@ -78,14 +79,14 @@ public class PublicReleaseListener {
       }
 
       /**
-       * When a release gets published we need to modify the projects names archive.
+       * When a release gets published we need to modify the projects name archive.
        * For deleted ids a new entry in the names archive needs to be created.
        * For resurrected ids we need to remove them from the archive.
        */
       archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
 
-      // COL specifics
-      if (Datasets.COL == event.obj.getSourceKey()) {
+      // COL specifics, for now we do not issue DOI to XCOL sources or provide prepared downloads
+      if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
         LOG.info("Publish COL release specifics");
         publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);

@@ -49,7 +49,7 @@ CREATE TYPE INFOGROUP AS ENUM (
   'EXTINCT',
   'TEMPORAL_RANGE'
 );
-ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;;
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;
 ```
 
 ### 2024-02-14 add keep_original_name to decisions

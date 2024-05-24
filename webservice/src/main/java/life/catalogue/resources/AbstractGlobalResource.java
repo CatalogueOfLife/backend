@@ -40,7 +40,9 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer create(T obj, @Auth User user) {
-    obj.applyUser(user);
+    if (obj != null) {
+      obj.applyUser(user);
+    }
     return dao.create(obj, user.getKey());
   }
 

@@ -287,6 +287,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * This looks up the public release just before the given one, ignoring any intermediate private releases.
+   * Only previous releases with the same origin are considered!
    * @param key release dataset key
    */
   Integer previousRelease(@Param("key") int key);

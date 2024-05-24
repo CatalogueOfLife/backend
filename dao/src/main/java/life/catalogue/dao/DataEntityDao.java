@@ -28,6 +28,7 @@ public class DataEntityDao<K, T extends DataEntity<K>, M extends CRUD<K, T>> ext
   
   @Override
   public K create(T obj, int user) {
+    if (obj == null) throw new IllegalArgumentException("No content given");
     obj.applyUser(user);
     return super.create(obj, user);
   }

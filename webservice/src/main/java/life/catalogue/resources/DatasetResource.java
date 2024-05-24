@@ -74,6 +74,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return this.create(obj, user);
   }
 
+  @Override
+  public Integer create(Dataset obj, User user) {
+    if (obj != null) {
+      // always create private datasets only
+      obj.setPrivat(true);
+    }
+    return super.create(obj, user);
+  }
+
   @GET
   @VaryAccept
   public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
