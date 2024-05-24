@@ -249,6 +249,8 @@ public class XRelease extends ProjectRelease {
     buildSectorMetrics();
     // update metadata
     updateMetadata();
+    // write id reports
+    usageIdGen.report();
     // finally also call the shared part which e.g. archives metadata and creates source dataset records
     super.finalWork();
   }
