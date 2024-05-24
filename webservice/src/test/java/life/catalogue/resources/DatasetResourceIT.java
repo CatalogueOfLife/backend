@@ -71,7 +71,7 @@ public class DatasetResourceIT extends ResourceITBase {
     Integer key = editorCreds(base).post(json(d), Integer.class);
     d.setKey(key);
     
-    Dataset d2 = userCreds(base.path(key.toString())).get(Dataset.class);
+    Dataset d2 = editorCreds(base.path(key.toString())).get(Dataset.class);
     // new datasets are created as private ones
     assertTrue(d2.isPrivat());
 
