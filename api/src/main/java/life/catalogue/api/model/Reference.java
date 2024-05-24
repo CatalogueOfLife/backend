@@ -113,7 +113,7 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
   }
   
   public boolean isParsed() {
-    return csl != null;
+    return csl != null && csl.hasTitleContainerOrAuthor();
   }
   
   /**
