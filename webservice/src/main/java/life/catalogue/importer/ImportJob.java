@@ -255,16 +255,23 @@ public class ImportJob implements Runnable {
       try (SqlSession session = factory.openSession()) {
         String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
         if (Objects.equals(lastMD5, di.getMd5())) {
-          LOG.info("MD5 unchanged: {}", di.getMd5());
-          isModified = false;
           // replace archive with symlink to last archive to save space
           File lastArchive = cfg.normalizer.archive(datasetKey, dataset.getImportAttempt());
           if (lastArchive.exists()) {
-            Path lastReal = lastArchive.toPath().toRealPath();
-            if (archive.exists()) {
-              archive.delete();
+            // we have seen wrong MD5 hashes being stored (BDJ), so lets recalculate the last one from the file to make sure!
+            var lastMD5Redone = ChecksumUtils.getMD5Checksum(lastArchive);
+            if (lastMD5Redone.equals(lastMD5)) {
+              isModified = false;
+              LOG.info("MD5 unchanged: {}", di.getMd5());
+              Path lastReal = lastArchive.toPath().toRealPath();
+              if (archive.exists()) {
+                archive.delete();
+              }
+              Files.createSymbolicLink(archive.toPath(), lastReal);
+
+            } else {
+              LOG.info("MD5 stored for attempt {} differs from stored file. Consider archive {}#{} modified", dataset.getImportAttempt(), datasetKey, getAttempt());
             }
-            Files.createSymbolicLink(archive.toPath(), lastReal);
           }
         } else {
           LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());

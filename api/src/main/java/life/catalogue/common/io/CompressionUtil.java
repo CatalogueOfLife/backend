@@ -129,7 +129,7 @@ public class CompressionUtil {
     } catch (ArchiveException e) {
       // single, compressed file
       File targetFile = new File(directory, FilenameUtils.getBaseName(originalFilename));
-      LOG.debug("Decompressing single file: {} ", targetFile.getAbsolutePath());
+      LOG.info("No archive. Using single file: {} ", targetFile.getAbsolutePath());
       try (FileOutputStream out = new FileOutputStream(targetFile)) {
         IOUtils.copy(in, out);
       }
