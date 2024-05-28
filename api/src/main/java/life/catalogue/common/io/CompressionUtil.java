@@ -1,15 +1,18 @@
 package life.catalogue.common.io;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.*;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.CompressorException;
 import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FileUtils;
@@ -31,8 +34,7 @@ public class CompressionUtil {
   
   private static final Logger LOG = LoggerFactory.getLogger(CompressionUtil.class);
   private static final int BUFFER = 2048;
-  private static final String APPLE_RESOURCE_FORK = "__MACOSX";
-  
+
   /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
    * If nothing works leave file as it is.
@@ -97,12 +99,8 @@ public class CompressionUtil {
     try (ArchiveInputStream ain = new ArchiveStreamFactory().createArchiveInputStream(new BufferedInputStream(in))) {
       ArchiveEntry entry;
       while ((entry = ain.getNextEntry()) != null) {
-        // ignore resource fork directories and subfiles
-        if (entry.getName().toUpperCase().contains(APPLE_RESOURCE_FORK)) {
-          LOG.debug("Ignoring resource fork file: {}", entry.getName());
-        }
         // ignore hidden directories
-        else if (entry.isDirectory()) {
+        if (entry.isDirectory()) {
           if (isHiddenFile(new File(entry.getName()))) {
             LOG.debug("Ignoring hidden directory: {}", entry.getName());
           } else {
@@ -125,8 +123,8 @@ public class CompressionUtil {
         }
       }
       // remove the wrapping root directory and flatten structure
-      removeRootDirectory(directory);
-      return (directory.listFiles() == null) ? new ArrayList<>() : Arrays.asList(directory.listFiles());
+      removeRootDirectories(directory);
+      return listFiles(directory);
 
     } catch (ArchiveException e) {
       // single, compressed file
@@ -138,7 +136,15 @@ public class CompressionUtil {
       return List.of(targetFile);
     }
   }
-  
+
+  static List<File> listFiles(File root) throws IOException {
+    var rootPath = root.toPath();
+    return Files.walk(rootPath)
+      .filter(p -> !p.equals(rootPath))
+      .map(Path::toFile)
+      .collect(Collectors.toList());
+  }
+
   /**
    * Zip a directory with all files but skipping included subdirectories.
    * Only files directly within the directory are added to the archive.
@@ -227,12 +233,8 @@ public class CompressionUtil {
       Enumeration<? extends ZipEntry> entries = zf.entries();
       while (entries.hasMoreElements()) {
         ZipEntry entry = entries.nextElement();
-        // ignore resource fork directories and subfiles
-        if (entry.getName().toUpperCase().contains(APPLE_RESOURCE_FORK)) {
-          LOG.debug("Ignoring resource fork file: {}", entry.getName());
-        }
         // ignore hidden directories
-        else if (entry.isDirectory()) {
+        if (entry.isDirectory()) {
           if (isHiddenFile(new File(entry.getName()))) {
             LOG.debug("Ignoring hidden directory: {}", entry.getName());
           } else {
@@ -253,8 +255,8 @@ public class CompressionUtil {
       }
     }
     // remove the wrapping root directory and flatten structure
-    removeRootDirectory(directory);
-    return (directory.listFiles() == null) ? new ArrayList<>() : Arrays.asList(directory.listFiles());
+    removeRootDirectories(directory);
+    return listFiles(directory);
   }
   
   /**
@@ -274,15 +276,17 @@ public class CompressionUtil {
    * Removes a wrapping root directory and flatten its structure by moving all that root directory's files and
    * subdirectories up to the same level as the root directory.
    */
-  private static void removeRootDirectory(File directory) {
+  private static void removeRootDirectories(File directory) {
     File[] rootFiles = directory.listFiles((FileFilter) HiddenFileFilter.VISIBLE);
     if (rootFiles != null && rootFiles.length == 1) {
       File root = rootFiles[0];
       if (root.isDirectory()) {
         LOG.debug("Removing single root folder {} found in decompressed archive", root.getAbsoluteFile());
         for (File f : org.apache.commons.io.FileUtils.listFilesAndDirs(root, TrueFileFilter.TRUE, TrueFileFilter.TRUE)) {
-          File f2 = new File(directory, f.getName());
-          f.renameTo(f2);
+          if (!f.equals(root)) {
+            File f2 = new File(f.getAbsolutePath().replaceFirst(root.getAbsolutePath(), directory.getAbsolutePath()));
+            f.renameTo(f2);
+          }
         }
         root.delete();
       }
