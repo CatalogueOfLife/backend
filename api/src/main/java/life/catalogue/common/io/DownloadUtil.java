@@ -123,7 +123,7 @@ public class DownloadUtil {
     // execute
     try (CloseableHttpResponse response = hc.execute(get)) {
       final StatusLine status = response.getStatusLine();
-      
+      System.out.println(String.format("%s -> %s", status, get));
       if (status.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
         LOG.debug("Content not modified since last request");
         return false;

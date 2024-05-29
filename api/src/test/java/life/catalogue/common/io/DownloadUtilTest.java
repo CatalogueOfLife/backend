@@ -3,6 +3,11 @@ package life.catalogue.common.io;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import life.catalogue.api.vocab.Environment;
 
@@ -30,7 +35,45 @@ public class DownloadUtilTest {
     FileUtils.deleteQuietly(f);
     hc.close();
   }
-  
+
+  @Test
+  @Ignore("manual only")
+  public void testBdjRateLimiting() throws IOException, ExecutionException, InterruptedException {
+    DownloadUtil d = new DownloadUtil(hc);
+    var keys = new int[]{94202,98935,96601};
+    int attempt = 0;
+    File dir = new File("/Users/markus/Downloads/bdj");
+    if (dir.exists()) {
+      FileUtils.cleanDirectory(dir);
+    } else {
+      dir.mkdir();
+    }
+    List<Future<Boolean>> jobs = new ArrayList<>();
+    while (attempt<100) {
+      for (var key : keys) {
+        attempt++;
+        File down = new File(dir, attempt+"-"+key+".zip");
+        var uri = URI.create("https://bdj.pensoft.net/lib/ajax_srv/archive_download.php?archive_type=2&document_id="+key);
+        jobs.add(CompletableFuture.supplyAsync(() -> download(d, uri, down)));
+      }
+    }
+
+    for (var f : jobs) {
+      if (!f.get()) {
+        System.out.println("Failed job");
+      }
+    }
+  }
+
+  boolean download(DownloadUtil d, URI uri, File down) {
+    try {
+      d.download(uri, down);
+      return true;
+    } catch (DownloadException e) {
+      System.out.println(e);
+      return false;
+    }
+  }
   @Test(expected = DownloadException.class)
   public void downloadFail() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);

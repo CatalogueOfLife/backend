@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
@@ -237,6 +238,13 @@ public class ImportJob implements Runnable {
         } else {
           LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
           downloader.downloadIfModified(di.getDownloadUri(), archive);
+        }
+        // make sure we received a real archive and not just a plain text error response
+        // https://github.com/CatalogueOfLife/backend/issues/1327
+        var size = Files.size(archive.toPath());
+        // 22 bytes is the minimum zip file length, BDJ responds with 14 text bytes only
+        if (size < 22) {
+          throw new DownloadException(di.getDownloadUri(), "Tiny file with "+size+" bytes. Cannot be an archive");
         }
       }
 
