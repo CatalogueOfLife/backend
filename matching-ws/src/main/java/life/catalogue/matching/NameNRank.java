@@ -203,7 +203,7 @@ public class NameNRank {
   }
 
   private static void warnIfMissing(String name, @Nullable String epithet, String part) {
-    if (exists(epithet) && !name.toLowerCase().contains(epithet.toLowerCase())) {
+    if (exists(epithet) && name != null && !name.toLowerCase().contains(epithet.toLowerCase())) {
       LOG.warn("ScientificName >{}< missing {}: {}", name, part, epithet);
     }
   }

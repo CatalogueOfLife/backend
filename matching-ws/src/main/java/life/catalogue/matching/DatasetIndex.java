@@ -1,7 +1,7 @@
 package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
-import static life.catalogue.matching.IndexingService.analyzer;
+import static life.catalogue.matching.IndexingService.scientificNameAnalyzer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +29,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
 import org.gbif.nameparser.api.Rank;
 
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +44,8 @@ public class DatasetIndex {
   private static Logger LOG = LoggerFactory.getLogger(DatasetIndex.class);
 
   private IndexSearcher searcher;
+  private Map<String, IndexSearcher> identifierSearchers = new HashMap<>();
+  private Map<String, IndexSearcher> ancillarySearchers = new HashMap<>();
 
   @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
@@ -53,21 +56,73 @@ public class DatasetIndex {
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
   void init() {
-    if (new File(indexPath).exists()) {
-      LOG.info("Loading lucene index from {}", indexPath);
+
+    final String mainIndexPath = getMainIndexPath();
+
+    if (new File(mainIndexPath).exists()) {
+      LOG.info("Loading lucene index from {}", mainIndexPath);
       try {
-        initWithDir(new MMapDirectory(Path.of(indexPath)));
+        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
       } catch (IOException e) {
         LOG.warn("Cannot open lucene index. Index not available", e);
       }
+
+      // load identifier indexes
+      this.identifierSearchers = new HashMap<>();
+      if (Path.of(indexPath + "/identifiers").toFile().exists()) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of(indexPath + "/identifiers"))) {
+          for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+              try {
+                Directory identifierDir = new MMapDirectory(entry);
+                DirectoryReader reader = DirectoryReader.open(identifierDir);
+                identifierSearchers.put(entry.toFile().getName(), new IndexSearcher(reader));
+              } catch (IOException e) {
+                LOG.warn("Cannot open identifiers lucene index {}", entry, e);
+              }
+            }
+          }
+        } catch (IOException e) {
+          LOG.error("Cannot read identifiers index directory", e);
+        }
+      } else {
+        LOG.info("Identifiers indexes not found at {}", indexPath + "/identifiers");
+      }
+
+      // load ancillary indexes
+      this.ancillarySearchers = new HashMap<>();
+      if (Path.of(indexPath + "/ancillary").toFile().exists()) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of(indexPath + "/ancillary"))) {
+          for (Path entry : stream) {
+            if (Files.isDirectory(entry)) {
+              try {
+                Directory ancillaryDir = new MMapDirectory(entry);
+                DirectoryReader reader = DirectoryReader.open(ancillaryDir);
+                ancillarySearchers.put(entry.toFile().getName(), new IndexSearcher(reader));
+              } catch (IOException e) {
+                LOG.warn("Cannot open ancillary lucene index {}", entry, e);
+              }
+            }
+          }
+        } catch (IOException e) {
+          LOG.error("Cannot read ancillary index directory", e);
+        }
+      } else {
+        LOG.info("Ancillary indexes not found at {}", indexPath + "/ancillary");
+      }
+
     } else {
-      LOG.warn("Lucene index not found at {}", indexPath);
+      LOG.warn("Lucene index not found at {}", mainIndexPath);
     }
   }
 
-  void initWithDir(Directory indexDir) {
+  private @NotNull String getMainIndexPath() {
+    return indexPath + "/main";
+  }
+
+  void initWithDir(Directory indexDirectory) {
     try {
-      DirectoryReader reader = DirectoryReader.open(indexDir);
+      DirectoryReader reader = DirectoryReader.open(indexDirectory);
       this.searcher = new IndexSearcher(reader);
     } catch (IOException e) {
       LOG.warn("Cannot open lucene index. Index not available", e);
@@ -83,7 +138,7 @@ public class DatasetIndex {
 
     IndexMetadata metadata = new IndexMetadata();
     // get size on disk
-    Path directoryPath = Path.of(indexPath);
+    Path directoryPath = Path.of(getMainIndexPath());
     try {
       BasicFileAttributes attributes = Files.readAttributes(directoryPath, BasicFileAttributes.class);
       Instant creationTime = attributes.creationTime().toInstant();
@@ -225,7 +280,7 @@ public class DatasetIndex {
    * @return
    */
   public NameUsageMatch matchByUsageKey(String usageKey) {
-    Optional<Document> docOpt = getByUsageId(usageKey);
+    Optional<Document> docOpt = getByUsageKey(usageKey, true);
     if (docOpt.isPresent()) {
       Document doc = docOpt.get();
       NameUsageMatch match = fromDoc(doc);
@@ -245,13 +300,51 @@ public class DatasetIndex {
     }
   }
 
-  public Optional<Document> getByUsageId(String usageKey) {
-    Query query = new TermQuery(new Term(FIELD_ID, usageKey));
+  public static String escapeQueryChars(String s) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      // These are the special characters that need to be escaped
+      if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' ||
+        c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' ||
+        c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&' ||
+        c == '/' || Character.isWhitespace(c)) {
+        sb.append('\\');
+      }
+      sb.append(c);
+    }
+    return sb.toString();
+  }
+
+  public Optional<Document> getByUsageKey(String usageKey, boolean allowExternalIDs) {
+    Query query = new TermQuery(new Term(FIELD_ID, escapeQueryChars(usageKey)));
     try {
       TopDocs docs = getSearcher().search(query, 3);
       if (docs.totalHits.value > 0) {
         return Optional.of(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
-      } else {
+      } else if (allowExternalIDs) {
+
+        // if join indexes are present, add them to the match
+        if (identifierSearchers != null){
+          for (String datasetKey: identifierSearchers.keySet()){
+            IndexSearcher identifierSearcher = identifierSearchers.get(datasetKey);
+            Query identifierQuery = new TermQuery(new Term(FIELD_ID, usageKey));
+            LOG.info("Searching for identifier {} in dataset {}", usageKey, datasetKey);
+            TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
+            if (identifierDocs.totalHits.value > 0) {
+              Document identifierDoc = identifierSearcher.storedFields().document(identifierDocs.scoreDocs[0].doc);
+              final String joinID = identifierDoc.get(FIELD_JOIN_ID);
+              Query getByIDQuery = new TermQuery(new Term(FIELD_ID, joinID));
+              TopDocs docs2 = getSearcher().search(getByIDQuery, 3);
+              if (docs2.totalHits.value > 0) {
+                return Optional.of(getSearcher().storedFields().document(docs2.scoreDocs[0].doc));
+              } else {
+                LOG.warn("Cannot find usage {} in main lucene index after finding it in identifier index for {}", usageKey, datasetKey);
+                return Optional.empty();
+              }
+            }
+          }
+        }
         return Optional.empty();
       }
     } catch (IOException e) {
@@ -274,7 +367,7 @@ public class DatasetIndex {
     List<RankedName> higherTaxa = new ArrayList<>();
 
     while (parentID != null) {
-      Optional<Document> docOpt = getByUsageId(parentID);
+      Optional<Document> docOpt = getByUsageKey(parentID, false);
       if (docOpt.isEmpty()) {
         break;
       }
@@ -313,7 +406,7 @@ public class DatasetIndex {
 
     if (doc.get(FIELD_ACCEPTED_ID) != null) {
       synonym = true;
-      Optional<Document> accDocOpt = getByUsageId(doc.get(FIELD_ACCEPTED_ID));
+      Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID), false);
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
         u.setAcceptedUsage(
@@ -355,6 +448,26 @@ public class DatasetIndex {
     }
     u.setSynonym(synonym);
 
+    // if join indexes are present, add them to the match
+    for (String datasetKey: ancillarySearchers.keySet()){
+      IndexSearcher ancillarySearcher = ancillarySearchers.get(datasetKey);
+      Query query = new TermQuery(new Term(FIELD_JOIN_ID, doc.get(FIELD_ID) ));
+      try {
+        TopDocs docs = ancillarySearcher.search(query, 3);
+        if (docs.totalHits.value > 0) {
+          Document ancillaryDoc = ancillarySearcher.storedFields().document(docs.scoreDocs[0].doc);
+          String status = ancillaryDoc.get(FIELD_CATEGORY);
+          Status ancillaryStatus = new Status();
+          ancillaryStatus.setCategory(status);
+          ancillaryStatus.setDatasetKey(datasetKey);
+          ancillaryStatus.setDatasetTitle("");
+          u.getAdditionalStatus().add(ancillaryStatus);
+        }
+      } catch (IOException e) {
+        LOG.error("Cannot load usage {} from lucene index", doc.get(FIELD_ID), e);
+      }
+    }
+
     String status = doc.get(FIELD_STATUS);
     u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
 
@@ -363,7 +476,7 @@ public class DatasetIndex {
 
   public List<NameUsageMatch> matchByName(String name, boolean fuzzySearch, int maxMatches) {
     // use the same lucene analyzer to normalize input
-    final String analyzedName = LuceneUtils.analyzeString(analyzer, name).get(0);
+    final String analyzedName = LuceneUtils.analyzeString(scientificNameAnalyzer, name).get(0);
     LOG.debug(
         "Analyzed {} query \"{}\" becomes >>{}<<",
         fuzzySearch ? "fuzzy" : "straight",

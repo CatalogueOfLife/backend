@@ -30,6 +30,14 @@ public class Main {
     "Required for INDEX_DB and EXPORT_CSV modes")
   private String datasetId;
 
+  @Parameter(names = {"--clb.status.dataset.ids"}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
+    "Required for INDEX_DB and EXPORT_CSV modes")
+  private String statusDatasetIds;
+
+  @Parameter(names = {"--clb.identifier.dataset.ids"}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
+    "Required for INDEX_DB and EXPORT_CSV modes")
+  private String identifierDatasetIds;
+
   @Parameter(names = {"--index.path"}, description = "File system path to the pre-generated lucene index")
   private String indexPath = "/data/matching-ws/index";
 
@@ -61,7 +69,8 @@ public class Main {
       commander.usage();
     }
 
-    if ((app.mode == ExecutionMode.INDEX_DB || app.mode == ExecutionMode.EXPORT_CSV) && app.datasetId == null) {
+    if ((app.mode == ExecutionMode.INDEX_DB
+        || app.mode == ExecutionMode.EXPORT_CSV) && app.datasetId == null) {
       System.err.println("Missing required parameter for mode " + app.mode + " --clb.dataset.id");
       commander.usage();
       return;
@@ -73,10 +82,10 @@ public class Main {
 
       SpringApplication springApplication;
       switch (app.mode) {
-        case EXPORT_CSV, INDEX_CSV, INDEX_DB:
+        case EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
           springApplication = new SpringApplication(IndexingApplication.class);
           springApplication.setAdditionalProfiles("indexing");
-          springApplication.run( args).close();
+          springApplication.run(args).close();
           break;
         case WEB_APP:
           SpringApplication webApp = new SpringApplication(MatchingApplication.class);
@@ -89,6 +98,8 @@ public class Main {
 
   enum ExecutionMode {
     EXPORT_CSV,
+    INDEX_IUCN_CSV,
+    INDEX_IDENTIFIER_CSV,
     INDEX_CSV,
     INDEX_DB,
     WEB_APP

@@ -55,6 +55,18 @@ public class IndexingApplication implements ApplicationRunner {
         return;
       }
       indexingService.runDatasetIndexing(Integer.parseInt(datasetIds.get(0)));
+    } else if (Main.ExecutionMode.INDEX_IUCN_CSV.name().equals(mode)) {
+      if (datasetIds == null || datasetIds.isEmpty()) {
+        System.err.println("Missing required parameter --clb.dataset.id");
+        return;
+      }
+      indexingService.indexIUCN(datasetIds.get(0));
+    } else if (Main.ExecutionMode.INDEX_IDENTIFIER_CSV.name().equals(mode)) {
+      if (datasetIds == null || datasetIds.isEmpty()) {
+        System.err.println("Missing required parameter --clb.dataset.id");
+        return;
+      }
+      indexingService.indexIdentifiers(datasetIds.get(0));
     } else {
       System.err.println("Unrecognized mode: " + mode);
     }

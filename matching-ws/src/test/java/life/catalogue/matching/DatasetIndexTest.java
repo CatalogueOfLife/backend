@@ -15,13 +15,17 @@ package life.catalogue.matching;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import au.com.bytecode.opencsv.CSVReader;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
+
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
@@ -42,8 +46,9 @@ public class DatasetIndexTest {
   public static List<NameUsage> readTestNames() throws Exception {
     List<NameUsage> usages = Lists.newArrayList();
     // 1	2	Acanthophora Hulst, 1896	Geometridae	Lepidoptera	Insecta	Arthropoda	Animalia	GENUS
-    try (InputStream testFile = Resources.getResource("testNames.txt").openStream()) {
-      CSVReader reader = new CSVReader(new InputStreamReader(testFile), '\t', '"');
+    try (InputStream testFile = Resources.getResource("testNames.txt").openStream();
+      CSVReader reader = new CSVReaderBuilder(new InputStreamReader(testFile))
+        .withCSVParser(new CSVParserBuilder().withSeparator('\t').build()).build()) {
       String[] row = reader.readNext();
       while (row != null) {
         NameUsage n = NameUsage.builder().build();

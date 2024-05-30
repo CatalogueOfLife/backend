@@ -8,4 +8,7 @@ public class IndexConstants {
   static final String FIELD_RANK = "rank";
   static final String FIELD_STATUS = "status";
   static final String FIELD_PARENT_ID = "parentId";
+
+  static final String FIELD_CATEGORY = "category";
+  static final String FIELD_JOIN_ID = "joinId";
 }

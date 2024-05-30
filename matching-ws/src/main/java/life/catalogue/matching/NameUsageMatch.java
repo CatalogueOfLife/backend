@@ -32,6 +32,8 @@ public class NameUsageMatch implements LinneanClassification {
   List<NameUsageMatch> alternatives = new ArrayList<>();
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
   Diagnostics diagnostics = new Diagnostics();
+  @Schema(description = "Status information from external sources like IUCN Red List")
+  List<Status> additionalStatus = new ArrayList<>();
 
   private String nameFor(Rank rank) {
     return getClassification().stream()

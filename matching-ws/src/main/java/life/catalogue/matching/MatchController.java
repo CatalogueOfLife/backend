@@ -69,14 +69,6 @@ public class MatchController implements ErrorController {
       (traceRequested.equalsIgnoreCase("true") || traceRequested.equalsIgnoreCase("on"));
   }
 
-  private boolean getTraceParameter(HttpServletRequest request) {
-    String parameter = request.getParameter("trace");
-    if (parameter == null) {
-      return false;
-    }
-    return !"false".equalsIgnoreCase(parameter);
-  }
-
   @Autowired
   public MatchController(ErrorAttributes errorAttributes) {
     Assert.notNull(errorAttributes, "ErrorAttributes must not be null");
@@ -138,6 +130,7 @@ public class MatchController implements ErrorController {
     HttpServletRequest response) {
     return matchV2(
       usageKey,
+      null,null,null,
       scientificName2, scientificName,
       authorship, authorship2,
       removeNulls(genericName),
@@ -215,6 +208,9 @@ public class MatchController implements ErrorController {
       produces = "application/json")
   public NameUsageMatch matchV2(
       @RequestParam(value = "usageKey", required = false) String usageKey,
+      @RequestParam(value = "taxonID", required = false) String taxonID,
+      @RequestParam(value = "taxonConceptID", required = false) String taxonConceptID,
+      @RequestParam(value = "scientificNameID", required = false) String scientificNameID,
       @RequestParam(value = "name", required = false) String scientificName2,
       @RequestParam(value = "scientificName", required = false) String scientificName,
       @RequestParam(value = "authorship", required = false) String authorship2,
@@ -231,7 +227,7 @@ public class MatchController implements ErrorController {
     // ugly, i know, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
     return matchingService.match(
-        removeNulls(usageKey),
+        first(removeNulls(usageKey), removeNulls(taxonID), removeNulls(taxonConceptID), removeNulls(scientificNameID)),
         first(removeNulls(scientificName), removeNulls(scientificName2)),
         first(removeNulls(authorship), removeNulls(authorship2)),
         removeNulls(genericName),

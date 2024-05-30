@@ -2,22 +2,22 @@ package life.catalogue.matching;
 
 import static life.catalogue.matching.IndexConstants.*;
 
-import au.com.bytecode.opencsv.CSVReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -28,11 +28,12 @@ import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.*;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
+import org.apache.lucene.search.*;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -45,6 +46,7 @@ import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -52,6 +54,11 @@ import javax.ws.rs.NotFoundException;
 
 /**
  * Service to index a dataset from the Checklist Bank.
+ *
+ * /data/matching-ws/export/             - CSV exports from the Checklist Bank
+ * /data/matching-ws/index/main          - Main lucene index
+ * /data/matching-ws/index/identifiers   - Lucene indexes for IDs lookups
+ * /data/matching-ws/index/ancillary     - Lucene indexes for status values e.g. IUCN
  */
 @Service
 public class IndexingService {
@@ -63,6 +70,9 @@ public class IndexingService {
 
   @Value("${export.path:/tmp/matching-export}")
   String exportPath;
+
+  @Value("${temp.path:/tmp/matching-tmp}")
+  String tempIndexPath;
 
   @Value("${clb.url}")
   String clbUrl;
@@ -76,15 +86,18 @@ public class IndexingService {
   @Value("${clb.driver}")
   String clDriver;
 
+  @Autowired protected MatchingService matchingService;
+
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
 
-  protected static final ScientificNameAnalyzer analyzer = new ScientificNameAnalyzer();
+  protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
 
   protected static IndexWriterConfig getIndexWriterConfig() {
     Map<String, Analyzer> analyzerPerField = new HashMap<>();
     analyzerPerField.put(FIELD_SCIENTIFIC_NAME, new StandardAnalyzer());
-    PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper(analyzer, analyzerPerField);
+    analyzerPerField.put(FIELD_CANONICAL_NAME, scientificNameAnalyzer);
+    PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper( new KeywordAnalyzer(), analyzerPerField);
     return new IndexWriterConfig(aWrapper);
   }
 
@@ -147,6 +160,79 @@ public class IndexingService {
 
     // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
     // (parallelism) as opposed to the spring managed DataSource
+    final PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
+    // Create a session factory
+    SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
+    sessionFactoryBean.setDataSource(dataSource);
+    SqlSessionFactory factory = sessionFactoryBean.getObject();
+    assert factory != null;
+    factory.getConfiguration().addMapper(IndexingMapper.class);
+    factory.getConfiguration().addMapper(DatasetMapper.class);
+
+    // resolve the magic keys...
+    Optional<Integer> datasetKey = Optional.empty();
+    try {
+      datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
+    } catch (NumberFormatException ignored) {
+    }
+
+    if (datasetKey.isEmpty()) {
+      datasetKey = lookupDatasetKey(factory, datasetKeyInput);
+    }
+
+    if (datasetKey.isEmpty()) {
+      throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
+    }
+
+    final Integer validDatasetKey = datasetKey.get();
+
+    LOG.info("Writing dataset to file...");
+    final AtomicInteger counter = new AtomicInteger(0);
+    final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
+    FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
+    try (SqlSession session = factory.openSession(false);
+        final CSVWriter writer = new CSVWriter(new FileWriter(fileName))) {
+      StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
+        .withQuotechar('\'')
+        .withSeparator('$')
+        .build();
+      // Create index writer
+      consume(
+          () -> session.getMapper(IndexingMapper.class).getAllForDataset(validDatasetKey),
+          name -> {
+            try {
+              sbc.write(name);
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
+            counter.incrementAndGet();
+          });
+    } finally {
+      dataSource.forceCloseAll();
+    }
+
+    // write metadata file in JSON format
+    LOG.info("Records written to file {}: {}", fileName, counter.get());
+  }
+
+  @Transactional
+  public void indexIdentifiers(String datasetKey) throws Exception {
+    writeCLBToFile(datasetKey);
+    indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
+    writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/identifiers/" + datasetKey, false);
+  }
+
+  public void indexIUCN(String datasetKey) throws Exception {
+    writeCLBIUCNToFile(datasetKey);
+    indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
+    writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/ancillary/" + datasetKey, true);
+  }
+
+  @Transactional
+  public String writeCLBIUCNToFile(@NotNull final String datasetKeyInput) throws Exception {
+
+    // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
+    // (parallelism) as opposed to the spring managed DataSource
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
     // Create a session factory
     SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
@@ -178,43 +264,43 @@ public class IndexingService {
     final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
     try (SqlSession session = factory.openSession(false);
-        final CSVWriter writer = new CSVWriter(new FileWriter(fileName), '$')) {
+         final CSVWriter writer = new CSVWriter(new FileWriter(fileName))) {
+
+      final ObjectMapper objectMapper = new ObjectMapper();
+      final StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
+        .withQuotechar('\'')
+        .withSeparator('$')
+        .build();
+
       // Create index writer
       consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(validDatasetKey),
-          name -> {
-            try {
-              writer.writeNext(
-                  new String[] {
-                    name.id,
-                    name.parentId,
-                    name.scientificName,
-                    name.authorship,
-                    name.rank,
-                    name.status,
-                    name.nomenclaturalCode,
-                    name.sourceId,
-                    name.sourceDatasetKey,
-                    name.parentSourceId,
-                    name.parentSourceDatasetKey
-                  });
-            } catch (Exception e) {
-              throw new RuntimeException(e);
+        () -> session.getMapper(IndexingMapper.class).getAllWithExtensionForDataset(validDatasetKey),
+        nameUsage -> {
+          try {
+            if (StringUtils.isNotBlank(nameUsage.getExtension())){
+              // parse it
+              JsonNode node = objectMapper.readTree(nameUsage.getExtension());
+              nameUsage.setCategory(node.path("iucn:threatStatus").asText());
             }
-            counter.incrementAndGet();
-          });
+            sbc.write(nameUsage);
+
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+          counter.incrementAndGet();
+        });
     } finally {
       dataSource.forceCloseAll();
     }
 
     // write metadata file in JSON format
     LOG.info("Records written to file {}: {}", fileName, counter.get());
+    return fileName;
   }
 
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
     LOG.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
-
     IndexWriter writer = getIndexWriter(dir);
 
     // creates initial index segments
@@ -235,6 +321,110 @@ public class IndexingService {
     return new IndexWriter(dir, getIndexWriterConfig());
   }
 
+  public void writeJoinIndex(String tempIndexPath, String ancillaryIndexPath, boolean acceptedOnly) {
+
+    try {
+      // Load temp index directory
+      Directory tempDirectory = FSDirectory.open(Paths.get(tempIndexPath));
+      IndexReader tempReader = DirectoryReader.open(tempDirectory);
+      IndexSearcher searcher = new IndexSearcher(tempReader);
+
+      // Create ancillary index
+      Path indexDirectory = initialiseIndexDirectory(ancillaryIndexPath);
+      Directory ancillaryDirectory = FSDirectory.open(indexDirectory);
+      IndexWriterConfig config = getIndexWriterConfig();
+      config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+      IndexWriter ancillaryIndexWriter = new IndexWriter(ancillaryDirectory, getIndexWriterConfig());
+
+      // Construct a simple query to get all documents
+      TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+      ScoreDoc[] hits = results.scoreDocs;
+
+      AtomicInteger counter = new AtomicInteger(0);
+
+      // Write document data
+      for (ScoreDoc hit : hits) {
+
+        counter.incrementAndGet();
+        Document doc = searcher.storedFields().document(hit.doc);
+        Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
+
+        String status = doc.get(FIELD_STATUS);
+        if (status != null &&
+          acceptedOnly &&
+          !status.equals(TaxonomicStatus.ACCEPTED.name())) {
+          // skip synonyms, otherwise we would index them twice
+          continue;
+        }
+        String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
+        Classification classification = new Classification();
+        classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
+        classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
+        classification.setClazz(hierarchy.getOrDefault(Rank.CLASS.name(), ""));
+        classification.setOrder(hierarchy.getOrDefault(Rank.ORDER.name(), ""));
+        classification.setFamily(hierarchy.getOrDefault(Rank.FAMILY.name(), ""));
+        classification.setGenus(hierarchy.getOrDefault(Rank.GENUS.name(), ""));
+        classification.setSpecies(hierarchy.getOrDefault(Rank.SPECIES.name(), ""));
+
+        if (counter.get() % 100000 == 0) {
+          LOG.info("Indexed: {} taxa", counter.get());
+        }
+
+        // match to main dataset
+        NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
+        if (nameUsageMatch.getUsage() != null) {
+          doc.add(new StringField(FIELD_JOIN_ID,
+            nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
+            nameUsageMatch.getUsage().getKey(), Field.Store.YES));
+          ancillaryIndexWriter.addDocument(doc);
+        }
+      }
+
+      // close temp
+      tempReader.close();
+      tempDirectory.close();
+
+      // close ancillary
+      ancillaryIndexWriter.commit();
+      ancillaryIndexWriter.forceMerge(1);
+      ancillaryIndexWriter.close();
+      ancillaryDirectory.close();
+
+      LOG.info("Ancillary index written: {} documents.", counter.get());
+    } catch (Exception e) {
+      LOG.error("Error writing documents to CSV: {}", e.getMessage());
+    }
+  }
+
+  public Optional<Document> getById(IndexSearcher searcher, String id) {
+    Query query = new TermQuery(new Term(FIELD_ID, id));
+    try {
+      TopDocs docs = searcher.search(query, 3);
+      if (docs.totalHits.value > 0) {
+        return Optional.of(searcher.storedFields().document(docs.scoreDocs[0].doc));
+      } else {
+        return Optional.empty();
+      }
+    } catch (IOException e) {
+      LOG.error("Cannot load usage {} from lucene index", id, e);
+    }
+    return Optional.empty();
+  }
+
+  public Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
+    Map<String, String> classification = new HashMap<>();
+    while (id != null) {
+      Optional<Document> docOpt = getById(searcher, id);
+      if (docOpt.isEmpty()) {
+        break;
+      }
+      Document doc = docOpt.get();
+      classification.put(doc.get(FIELD_RANK), doc.get(FIELD_CANONICAL_NAME));
+      id = doc.get(FIELD_PARENT_ID);
+    }
+    return classification;
+  }
+
   @Transactional
   public void indexFile(String exportPath, String indexPath) throws Exception {
 
@@ -251,38 +441,26 @@ public class IndexingService {
     final AtomicInteger counter = new AtomicInteger(0);
     final String filePath = exportPath + "/index.csv";
 
-    try (CSVReader reader = new CSVReader(new FileReader(filePath), '$', '"');
-        IndexWriter indexWriter = new IndexWriter(directory, config)) {
+    try (Reader reader = new FileReader(filePath);
+         IndexWriter indexWriter = new IndexWriter(directory, config)) {
 
-      String[] row = reader.readNext();
-      while (row != null) {
-        if (row.length != 11) {
-          LOG.warn("Skipping row with invalid number of columns: {}", String.join(",", row));
-          row = reader.readNext();
-          continue;
-        }
+      CsvToBean<NameUsage> csvReader = new CsvToBeanBuilder(reader)
+        .withType(NameUsage.class)
+        .withSeparator('$')
+        .withIgnoreLeadingWhiteSpace(true)
+        .withIgnoreEmptyLine(true)
+        .build();
+
+      Iterator<NameUsage> iterator = csvReader.iterator();
+
+      while (iterator.hasNext()) {
         if (counter.get() % 100000 == 0) {
           LOG.info("Indexed: {} taxa", counter.get());
         }
-
-        NameUsage nameUsage =
-            NameUsage.builder()
-                .id(row[0])
-                .parentId(row[1])
-                .scientificName(row[2])
-                .authorship(row[3])
-                .rank(row[4])
-                .status(row[5])
-                .nomenclaturalCode(row[6])
-                .sourceId(row[7])
-                .sourceDatasetKey(row[8])
-                .parentSourceId(row[9])
-                .parentSourceDatasetKey(row[10])
-                .build();
+        NameUsage nameUsage = iterator.next();
         Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);
         counter.incrementAndGet();
-        row = reader.readNext();
       }
       LOG.info("Final index commit");
       indexWriter.commit();
@@ -362,59 +540,64 @@ public class IndexingService {
      cultivar or strain information. Infrageneric names are represented without a
      leading genus. Unicode characters are replaced by their matching ASCII characters."
     */
-    Rank rank = Rank.valueOf(nameUsage.rank);
+    Rank rank = Rank.valueOf(nameUsage.getRank());
 
     Optional<String> optCanonical = Optional.empty();
     try {
       NomCode nomCode = null;
-      if (!StringUtils.isEmpty(nameUsage.nomenclaturalCode)) {
-        nomCode = NomCode.valueOf(nameUsage.nomenclaturalCode);
+      if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
+        nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
       }
-      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.scientificName, rank, nomCode);
+      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
 
       // canonicalMinimal will construct the name without the hybrid marker and authorship
       String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
     } catch (UnparsableNameException | InterruptedException e) {
       // do nothing
-      LOG.debug("Unable to parse name to create canonical: {}", nameUsage.scientificName);
+      LOG.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
     }
 
-    final String canonical = optCanonical.orElse(nameUsage.scientificName);
+    final String canonical = optCanonical.orElse(nameUsage.getScientificName());
 
     // use custom precision step as we do not need range queries and prefer to save memory usage
     // instead
-    doc.add(new StringField(FIELD_ID, nameUsage.id, Field.Store.YES));
+    doc.add(new StringField(FIELD_ID, nameUsage.getId(), Field.Store.YES));
 
     // we only store accepted key, no need to index it
     // If the name is a synonym, then parentId name usage points
     // to the accepted name
-    if (nameUsage.status != null
-        && nameUsage.status.equals(TaxonomicStatus.SYNONYM.name())
-        && nameUsage.parentId != null) {
-      doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.parentId, Field.Store.YES));
+    if (StringUtils.isNotBlank(nameUsage.getStatus())
+        && nameUsage.getStatus().equals(TaxonomicStatus.SYNONYM.name())
+        && nameUsage.getParentId() != null) {
+      doc.add(new StringField(FIELD_ACCEPTED_ID, nameUsage.getParentId(), Field.Store.YES));
     }
 
     // analyzed name field - this is what we search upon
     doc.add(new TextField(FIELD_CANONICAL_NAME, canonical, Field.Store.YES));
 
     // store full name and classification only to return a full match object for hits
-    String nameComplete = nameUsage.scientificName;
-    if (StringUtils.isNotBlank(nameUsage.authorship)) {
-      nameComplete += " " + nameUsage.authorship;
+    String nameComplete = nameUsage.getScientificName();
+    if (StringUtils.isNotBlank(nameUsage.getAuthorship())) {
+      nameComplete += " " + nameUsage.getAuthorship();
     }
     doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
-    doc.add(new StringField(FIELD_RANK, nameUsage.rank, Field.Store.YES));
+    doc.add(new StringField(FIELD_RANK, nameUsage.getRank(), Field.Store.YES));
 
-    if (nameUsage.parentId != null && !nameUsage.parentId.equals(nameUsage.id)) {
-      doc.add(new StringField(FIELD_PARENT_ID, nameUsage.parentId, Field.Store.YES));
+    if (StringUtils.isNotBlank(nameUsage.getParentId()) && !nameUsage.getParentId().equals(nameUsage.getId())) {
+      doc.add(new StringField(FIELD_PARENT_ID, nameUsage.getParentId(), Field.Store.YES));
     }
 
-    if (nameUsage.status != null) {
-      doc.add(new StringField(FIELD_STATUS, nameUsage.status, Field.Store.YES));
+    if (StringUtils.isNotBlank(nameUsage.getStatus())) {
+      doc.add(new StringField(FIELD_STATUS, nameUsage.getStatus(), Field.Store.YES));
     }
+
+    if (StringUtils.isNotBlank(nameUsage.getCategory())) {
+      doc.add(new StringField(FIELD_CATEGORY, nameUsage.getCategory(), Field.Store.YES));
+    }
+
     return doc;
   }
 
