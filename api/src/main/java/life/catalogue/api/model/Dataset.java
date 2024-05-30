@@ -283,6 +283,10 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public CSLItemData toCSL() {
+    return toCSLBuilder().build();
+  }
+
+  public CSLItemDataBuilder toCSLBuilder() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
       .type(CSLType.DATASET)
@@ -321,7 +325,7 @@ public class Dataset extends DataEntity<Integer> {
       builder.publisherPlace(publisher.getAddress());
     }
     // no license, distributor, contributor
-    return builder.build();
+    return builder;
   }
 
   public Citation toCitation() {
