@@ -26,6 +26,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   public static Dataset createProjectSource() {
     Dataset d = new Dataset();
     DatasetMapperTest.populate(d);
+    d.setPrivat(true); // the default which is not stored in the archive
     d.setSourceKey(Datasets.COL);
     d.setAttempt(3);
     d.setGbifPublisherKey(null);

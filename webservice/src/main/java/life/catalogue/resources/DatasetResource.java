@@ -52,13 +52,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final JobExecutor exec;
   private final ProjectCopyFactory jobFactory;
 
-  private final AuthorlistGenerator authGen;
-
   public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
-    this.authGen = new AuthorlistGenerator(sourceDao);
     this.assembly = assembly;
     this.jobFactory = jobFactory;
     this.exec = exec;
@@ -72,15 +69,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public Integer createAlt(Dataset obj, @Auth User user) {
     return this.create(obj, user);
-  }
-
-  @Override
-  public Integer create(Dataset obj, User user) {
-    if (obj != null) {
-      // always create private datasets only
-      obj.setPrivat(true);
-    }
-    return super.create(obj, user);
   }
 
   @GET

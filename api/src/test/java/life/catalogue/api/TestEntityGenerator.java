@@ -287,6 +287,7 @@ public class TestEntityGenerator {
   
   public static Dataset newDataset(String title) {
     Dataset d = new Dataset();
+    d.setPrivat(false);
     d.setTitle(title);
     d.setAlias(title);
     d.setType(DatasetType.TAXONOMIC);

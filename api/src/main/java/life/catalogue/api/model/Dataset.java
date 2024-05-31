@@ -128,7 +128,7 @@ public class Dataset extends DataEntity<Integer> {
   // internal keys & flags
   private Integer key;
   private Integer sourceKey;
-  private boolean privat = false;
+  private boolean privat = true;
   @NotNull
   private DatasetType type;
   @NotNull

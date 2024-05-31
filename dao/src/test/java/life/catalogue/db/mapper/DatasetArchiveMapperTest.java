@@ -23,6 +23,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
   @Test
   public void archive() throws Exception {
     Dataset d1 = create();
+    d1.setPrivat(true); // this is the default and we dont store the property
 
     dmapper().create(d1);
     dmapper().updateLastImport(d1.getKey(), 3);

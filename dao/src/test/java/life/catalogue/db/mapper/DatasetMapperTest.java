@@ -34,6 +34,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   public static Dataset populate(Dataset d) {
+    d.setPrivat(false);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
@@ -634,12 +635,6 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     query.setHasSourceDataset(99); // non existing
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
-    // partial search not supported anymore!
-    // https://github.com/Sp2000/colplus-backend/issues/353
-//    query = DatasetSearchRequest.byQuery("wor");
-//    List<Dataset> res = mapper().search(query, null, new Page());
-//    assertEquals(1, res.size());
-
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
@@ -712,6 +707,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
     Dataset ds = new Dataset();
+    ds.setPrivat(false);
     ds.setTitle(title);
     if (author != null) {
       ds.setCreator(Agent.parse(List.of(author.split(";"))));

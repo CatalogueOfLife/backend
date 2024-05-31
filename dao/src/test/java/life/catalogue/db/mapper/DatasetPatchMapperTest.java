@@ -42,6 +42,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   @Test
   public void roundtripCrud() throws Exception {
     Dataset u1 = removeNonPatchProps(DatasetMapperTest.populate(new Dataset()));
+    u1.setPrivat(true); // we dont store private flag in patches and it defaults to true
     // source key must be an existing dataset
     u1.setKey(TestEntityGenerator.DATASET11.getKey());
     TestEntityGenerator.setUserDate(u1);
