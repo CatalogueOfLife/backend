@@ -264,9 +264,27 @@ public class XRelease extends ProjectRelease {
   }
 
   /**
-   * flag loops and nonexisting parents
+   * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
   private void flagLoops() {
+    // any chained synonyms?
+    try (SqlSession session = factory.openSession(true)) {
+      var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
+      if (chains != null && !chains.isEmpty()) {
+        LOG.error("{} chained synonyms found in xrelease {}", chains.size(),newDatasetKey);
+        throw new IllegalStateException(chains.size() + " chained synonyms found in xrelease " + newDatasetKey);
+      }
+    }
+
+    // any accepted names below synonyms?
+    try (SqlSession session = factory.openSession(true)) {
+      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
+      if (synParents != null && !synParents.isEmpty()) {
+        LOG.error("{} taxa found in xrelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
+        throw new IllegalStateException(synParents.size() + " taxa found in xrelease "+newDatasetKey+" with synonyms as their parent");
+      }
+    }
+
     // cut potential cycles in the tree?
     try (SqlSession session = factory.openSession(true)) {
       var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);

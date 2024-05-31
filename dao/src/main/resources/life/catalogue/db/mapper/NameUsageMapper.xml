@@ -804,13 +804,27 @@
     WHERE dataset_key=#{datasetKey}
   </delete>
 
+  <select id="detectParentSynoynms" parameterType="map" resultType="string">
+    SELECT u.id
+    FROM name_usage u
+      JOIN name_usage s ON u.parent_id=s.id AND s.dataset_key=u.dataset_key
+    WHERE NOT is_synonym(u.status) AND is_synonym(s.status) AND u.parent_id IS NOT NULL AND u.dataset_key=#{datasetKey}
+  </select>
+
+  <select id="detectChainedSynonyms" parameterType="map" resultType="string">
+    SELECT s1.id
+    FROM name_usage s1
+      JOIN name_usage s2 ON s1.parent_id=s2.id AND s1.dataset_key=s2.dataset_key
+    WHERE is_synonym(s1.status) AND is_synonym(s2.status) AND s1.parent_id IS NOT NULL AND s1.dataset_key=#{datasetKey}
+  </select>
+
   <select id="detectLoop" parameterType="map" resultType="string">
-    WITH RECURSIVE parents(id, depth) AS (
-      SELECT u.id, 1
+    WITH RECURSIVE parents(id) AS (
+      SELECT u.id
       FROM name_usage u
-      WHERE u.dataset_key=#{datasetKey}
+      WHERE NOT is_synonym(u.status) AND u.dataset_key=#{datasetKey}
     UNION ALL
-      SELECT c.id, p.depth + 1
+      SELECT c.id
       FROM name_usage c, parents p
       WHERE p.id = c.parent_id AND c.dataset_key=#{datasetKey}
       ) CYCLE id SET is_cycle USING path

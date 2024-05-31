@@ -29,6 +29,14 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void loops() throws Exception {
+    // just verify the sql at least
+    mapper().detectParentSynoynms(testDataRule.testData.key);
+    mapper().detectChainedSynonyms(testDataRule.testData.key);
+    mapper().detectLoop(testDataRule.testData.key);
+  }
+
+  @Test
   public void processTree() throws Exception {
     countHandler = new CountHandler();
     var ttp = TreeTraversalParameter.dataset(DATASET11.getKey());

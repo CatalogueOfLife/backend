@@ -401,7 +401,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
 
   /**
-   * Lists all usage ids of a given dataset that are involved in loops of the parent child classification.
+   * Lists all usage ids of taxa which have synonyms as their parent.
+   */
+  List<String> detectParentSynoynms(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Lists all usage ids of synonyms that have a synonym as their parent
+   */
+  List<String> detectChainedSynonyms(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Lists all usage ids of accepted names aka taxa a given dataset that are involved in loops of the parent child classification.
    */
   List<String> detectLoop(@Param("datasetKey") int datasetKey);
 
