@@ -74,8 +74,6 @@ public class DatasetResourceIT extends ResourceITBase {
     Dataset d2 = editorCreds(base.path(key.toString())).get(Dataset.class);
     // new datasets are created as private ones
     assertTrue(d2.isPrivat());
-
-    d2.setPrivat(false);
     assertEquals(nullifyVolatile(d2), nullifyVolatile(d));
   }
 
