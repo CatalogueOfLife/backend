@@ -42,6 +42,7 @@ import java.util.function.Supplier;
 import javax.validation.Validator;
 
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -296,6 +297,10 @@ public class XRelease extends ProjectRelease {
         }
         LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
       }
+
+    } catch (PersistenceException e) {
+      // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
+      LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
     }
 
     // look for non existing parents
