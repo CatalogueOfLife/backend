@@ -116,6 +116,21 @@ public class DatasetIndex {
     }
   }
 
+  protected void reinit() {
+
+    final String mainIndexPath = getMainIndexPath();
+    if (new File(mainIndexPath).exists()) {
+      LOG.info("Loading lucene index from {}", mainIndexPath);
+      try {
+        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+      } catch (IOException e) {
+        LOG.warn("Cannot open lucene index. Index not available", e);
+      }
+    } else {
+      LOG.warn("Lucene index not found at {}", mainIndexPath);
+    }
+  }
+
   private @NotNull String getMainIndexPath() {
     return indexPath + "/main";
   }
@@ -335,9 +350,9 @@ public class DatasetIndex {
               Document identifierDoc = identifierSearcher.storedFields().document(identifierDocs.scoreDocs[0].doc);
               final String joinID = identifierDoc.get(FIELD_JOIN_ID);
               Query getByIDQuery = new TermQuery(new Term(FIELD_ID, joinID));
-              TopDocs docs2 = getSearcher().search(getByIDQuery, 3);
-              if (docs2.totalHits.value > 0) {
-                return Optional.of(getSearcher().storedFields().document(docs2.scoreDocs[0].doc));
+              docs = getSearcher().search(getByIDQuery, 3);
+              if (docs.totalHits.value > 0) {
+                return Optional.of(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
               } else {
                 LOG.warn("Cannot find usage {} in main lucene index after finding it in identifier index for {}", usageKey, datasetKey);
                 return Optional.empty();

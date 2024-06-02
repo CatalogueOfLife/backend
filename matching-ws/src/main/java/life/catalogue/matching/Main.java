@@ -7,14 +7,24 @@ import com.beust.jcommander.Parameters;
 
 import org.springframework.boot.SpringApplication;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Main application class for the matching-ws module.
  */
 @Parameters(separators = "=")
 public class Main {
 
+  public static final String CLB_DATASET_ID = "clb.dataset.id";
+  public static final String CLB_IDENTIFIER_DATASET_IDS = "clb.identifier.dataset.ids";
+  public static final String CLB_IUCN_DATASET_ID = "clb.iucn.dataset.id";
+  public static final String EXPORT_PATH = "export.path";
+  public static final String INDEX_PATH = "index.path";
+  public static final String V_1_ENABLED = "v1.enabled";
+
   @Parameter(names = {"--mode"}, order = 1, description = "The mode to use, Defaults to WEB_APP, which will run the web services and will attempt to read the index" +
-    " from the --index.path ", converter = ExecutionModeConverter.class)
+    " from the --" + INDEX_PATH + " ", converter = ExecutionModeConverter.class)
   private ExecutionMode mode = ExecutionMode.WEB_APP;
 
   @Parameter(names = {"--clb.url"}, description = "ChecklistBank JDBC URL")
@@ -26,25 +36,23 @@ public class Main {
   @Parameter(names = {"--clb.password"}, description = "ChecklistBank database password")
   private String clbPassword;
 
-  @Parameter(names = {"--clb.dataset.id"}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
+  @Parameter(names = {"--" + CLB_DATASET_ID}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
     "Required for INDEX_DB and EXPORT_CSV modes")
   private String datasetId;
 
-  @Parameter(names = {"--clb.status.dataset.ids"}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
-    "Required for INDEX_DB and EXPORT_CSV modes")
-  private String statusDatasetIds;
+  @Parameter(names = {"--" + CLB_IUCN_DATASET_ID}, description = "ChecklistBank dataset ID for the IUCN checklist.")
+  private String statusDatasetId;
 
-  @Parameter(names = {"--clb.identifier.dataset.ids"}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
-    "Required for INDEX_DB and EXPORT_CSV modes")
-  private String identifierDatasetIds;
+  @Parameter(names = {"--" + CLB_IDENTIFIER_DATASET_IDS}, description = "ChecklistBank dataset IDs to index for identifier matching.", arity = 1)
+  private List<String> identifierDatasetIds = new ArrayList<>();
 
-  @Parameter(names = {"--index.path"}, description = "File system path to the pre-generated lucene index")
+  @Parameter(names = {"--" + INDEX_PATH}, description = "File system path to the pre-generated lucene index")
   private String indexPath = "/data/matching-ws/index";
 
-  @Parameter(names = {"--export.path"}, description = "File system path to write exports from ChecklistBank to")
+  @Parameter(names = {"--" + EXPORT_PATH}, description = "File system path to write exports from ChecklistBank to")
   private String exportPath = "/data/matching-ws/export";
 
-  @Parameter(names = {"--v1.enabled"}, description = "Enable v1 support for the web service", arity = 1)
+  @Parameter(names = {"--" + V_1_ENABLED}, description = "Enable v1 support for the web service", arity = 1)
   private boolean v1Enabled = false;
 
   @Parameter(names = {"--server.port"}, description = "Enable v1 support for the web service", arity = 1)
@@ -71,7 +79,7 @@ public class Main {
 
     if ((app.mode == ExecutionMode.INDEX_DB
         || app.mode == ExecutionMode.EXPORT_CSV) && app.datasetId == null) {
-      System.err.println("Missing required parameter for mode " + app.mode + " --clb.dataset.id");
+      System.err.println("Missing required parameter for mode " + app.mode + " --" + CLB_DATASET_ID);
       commander.usage();
       return;
     }
@@ -82,7 +90,7 @@ public class Main {
 
       SpringApplication springApplication;
       switch (app.mode) {
-        case EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
+        case BUILD_INDEX,EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
           springApplication = new SpringApplication(IndexingApplication.class);
           springApplication.setAdditionalProfiles("indexing");
           springApplication.run(args).close();
@@ -97,6 +105,7 @@ public class Main {
   }
 
   enum ExecutionMode {
+    BUILD_INDEX,
     EXPORT_CSV,
     INDEX_IUCN_CSV,
     INDEX_IDENTIFIER_CSV,

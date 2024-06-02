@@ -53,6 +53,8 @@ ENV APP_ARTIFACT=matching-ws
 
 # Set environment variables
 ARG CLB_DATASET_ID=""
+ARG CLB_IUCN_DATASET_ID=""
+ARG CLB_IDENTIFIER_DATASET_IDS=""
 ARG CLB_URL=""
 ARG CLB_USER=""
 ARG CLB_PASSWORD=""
@@ -73,16 +75,14 @@ COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.js
 # CSV export from checklistbank
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
         java -jar app.jar \
-        --mode=EXPORT_CSV \
+        --mode=BUILD_INDEX \
         --export.path=/data/$APP_ARTIFACT/exports \
         --clb.dataset.id=$CLB_DATASET_ID \
+        --clb.identifier.dataset.ids=$CLB_IDENTIFIER_DATASET_IDS \
+        --clb.iucn.dataset.id=$CLB_IUCN_DATASET_ID \
         --clb.url=$CLB_URL \
         --clb.user=$CLB_USER \
-        --clb.password=$CLB_PASSWORD && \
-        java -jar app.jar \
-        --mode=INDEX_CSV \
-        --export.path=/data/$APP_ARTIFACT/exports/$CLB_DATASET_ID \
-        --index.path=/data/$APP_ARTIFACT/index; \
+        --clb.password=$CLB_PASSWORD; \
     fi
 
 RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT

@@ -13,7 +13,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.CSVWriter;
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
@@ -155,6 +156,12 @@ public class IndexingService {
     }
   }
 
+  /**
+   * Writes an export of  the name usages in a checklist bank dataset to a CSV file.
+   *
+   * @param datasetKeyInput
+   * @throws Exception
+   */
   @Transactional
   public void writeCLBToFile(@NotNull final String datasetKeyInput) throws Exception {
 
@@ -185,16 +192,17 @@ public class IndexingService {
     }
 
     final Integer validDatasetKey = datasetKey.get();
+    final String directory = exportPath + "/" + datasetKeyInput;
+    final String fileName = directory + "/" + "index.csv";
 
-    LOG.info("Writing dataset to file...");
+    LOG.info("Writing dataset to file {}", fileName);
     final AtomicInteger counter = new AtomicInteger(0);
-    final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
-    FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
+
+    FileUtils.forceMkdir(new File(directory));
     try (SqlSession session = factory.openSession(false);
-        final CSVWriter writer = new CSVWriter(new FileWriter(fileName))) {
+        final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
       StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
         .withQuotechar('\'')
-        .withSeparator('$')
         .build();
       // Create index writer
       consume(
@@ -212,7 +220,7 @@ public class IndexingService {
     }
 
     // write metadata file in JSON format
-    LOG.info("Records written to file {}: {}", fileName, counter.get());
+    LOG.info("ChecklistBank export written to file {}: {}", fileName, counter.get());
   }
 
   @Transactional
@@ -222,6 +230,7 @@ public class IndexingService {
     writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/identifiers/" + datasetKey, false);
   }
 
+  @Transactional
   public void indexIUCN(String datasetKey) throws Exception {
     writeCLBIUCNToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
@@ -229,7 +238,7 @@ public class IndexingService {
   }
 
   @Transactional
-  public String writeCLBIUCNToFile(@NotNull final String datasetKeyInput) throws Exception {
+  public void writeCLBIUCNToFile(@NotNull final String datasetKeyInput) throws Exception {
 
     // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
     // (parallelism) as opposed to the spring managed DataSource
@@ -264,12 +273,11 @@ public class IndexingService {
     final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
     try (SqlSession session = factory.openSession(false);
-         final CSVWriter writer = new CSVWriter(new FileWriter(fileName))) {
+         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
 
       final ObjectMapper objectMapper = new ObjectMapper();
       final StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
         .withQuotechar('\'')
-        .withSeparator('$')
         .build();
 
       // Create index writer
@@ -294,8 +302,7 @@ public class IndexingService {
     }
 
     // write metadata file in JSON format
-    LOG.info("Records written to file {}: {}", fileName, counter.get());
-    return fileName;
+    LOG.info("ChecklistBank IUCN export written to file {}: {}", fileName, counter.get());
   }
 
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
@@ -309,7 +316,7 @@ public class IndexingService {
     for (NameUsage u : usages) {
       if (u != null && u.getId() != null) {
         writer.addDocument(toDoc(u));
-        counter++;
+        counter ++;
       }
     }
     writer.close();
@@ -392,7 +399,7 @@ public class IndexingService {
 
       LOG.info("Ancillary index written: {} documents.", counter.get());
     } catch (Exception e) {
-      LOG.error("Error writing documents to CSV: {}", e.getMessage());
+      LOG.error("Error writing documents to ancillary index: {}", e.getMessage(), e);
     }
   }
 
@@ -426,7 +433,11 @@ public class IndexingService {
   }
 
   @Transactional
-  public void indexFile(String exportPath, String indexPath) throws Exception {
+  public void createMainIndexFromFile(String exportPath, String indexPath) throws Exception {
+    indexFile(exportPath, indexPath + "/main");
+  }
+
+  private void indexFile(String exportPath, String indexPath) throws Exception {
 
     // Create index directory
     Path indexDirectory = initialiseIndexDirectory(indexPath);
@@ -540,7 +551,7 @@ public class IndexingService {
      cultivar or strain information. Infrageneric names are represented without a
      leading genus. Unicode characters are replaced by their matching ASCII characters."
     */
-    Rank rank = Rank.valueOf(nameUsage.getRank());
+     Rank rank = Rank.valueOf(nameUsage.getRank());
 
     Optional<String> optCanonical = Optional.empty();
     try {
