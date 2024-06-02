@@ -76,6 +76,7 @@ COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.js
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
         java -jar app.jar \
         --mode=BUILD_INDEX \
+        --index.path=/data/$APP_ARTIFACT/index \
         --export.path=/data/$APP_ARTIFACT/exports \
         --clb.dataset.id=$CLB_DATASET_ID \
         --clb.identifier.dataset.ids=$CLB_IDENTIFIER_DATASET_IDS \
