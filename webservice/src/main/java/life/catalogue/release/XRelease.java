@@ -271,17 +271,36 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
       if (chains != null && !chains.isEmpty()) {
-        LOG.error("{} chained synonyms found in xrelease {}", chains.size(),newDatasetKey);
-        throw new IllegalStateException(chains.size() + " chained synonyms found in xrelease " + newDatasetKey);
+        LOG.error("{} chained synonyms found in XRelease {}", chains.size(),newDatasetKey);
+
+        var num = session.getMapper(NameUsageMapper.class);
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        var key = DSID.<String>root(newDatasetKey);
+
+        for (var id : chains) {
+          key.id(id);
+          vsm.addIssue(key, Issue.CHAINED_SYNONYM);
+          var syn = num.getSimple(key);
+          num.updateParentId(key, syn.getParentId(), user);
+        }
       }
     }
 
-    // any accepted names below synonyms?
+    // any accepted names below synonyms? Move to accepted
     try (SqlSession session = factory.openSession(true)) {
       var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
       if (synParents != null && !synParents.isEmpty()) {
-        LOG.error("{} taxa found in xrelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
-        throw new IllegalStateException(synParents.size() + " taxa found in xrelease "+newDatasetKey+" with synonyms as their parent");
+        LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
+        var num = session.getMapper(NameUsageMapper.class);
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+
+        var key = DSID.<String>root(newDatasetKey);
+        for (var id : synParents) {
+          key.id(id);
+          vsm.addIssue(key, Issue.SYNONYM_PARENT);
+          var syn = num.getSimpleParent(key);
+          num.updateParentId(key, syn.getParentId(), user);
+        }
       }
     }
 
