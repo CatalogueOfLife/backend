@@ -217,6 +217,8 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
+    usageIdGen.removeIdsFromDataset(newDatasetKey);
+
     mergeSectors();
 
     updateState(ImportState.PROCESSING);

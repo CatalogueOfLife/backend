@@ -627,6 +627,28 @@ public class IdProvider {
     created.add(id);
   }
 
+  public void removeIdsFromDataset(int datasetKey) {
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      final AtomicInteger counter = new AtomicInteger(0);
+      final AtomicInteger removed = new AtomicInteger(0);
+      final AtomicInteger other = new AtomicInteger(0);
+      PgUtils.consume(() -> num.processIds(datasetKey, true), id -> {
+        try {
+          int intID = IdConverter.LATIN29.decode(id);
+          if (ids.remove(intID) != null) {
+            removed.incrementAndGet();
+          }
+          counter.incrementAndGet();
+        } catch (IllegalArgumentException e) {
+          // no stable id - just count
+          other.incrementAndGet();
+        }
+      });
+      LOG.info("Removed {} out of {} stable identifiers from dataset {}. Ignored {} other unstable identifiers", removed, counter, datasetKey, other);
+    }
+  }
+
   /**
    * For homonyms or names very much alike we must provide a deterministic rule
    * that selects a stable id based on all previous releases.
