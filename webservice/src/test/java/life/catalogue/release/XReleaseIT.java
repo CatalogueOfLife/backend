@@ -25,6 +25,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -201,6 +202,15 @@ public class XReleaseIT extends SectorSyncTestBase {
   public void syncAndCompare() throws Throwable {
     LOG.info("Project {}. Trees: {}", project, sources);
     testNum++;
+    // set project default settings
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var settings = dm.getSettings(Datasets.COL);
+      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
+      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR, EntityType.REFERENCE));
+      dm.updateSettings(Datasets.COL, settings, Users.TESTER);
+    }
+
     // load text trees & create sectors
     List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
     data.add(
