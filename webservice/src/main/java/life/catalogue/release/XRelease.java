@@ -223,14 +223,14 @@ public class XRelease extends ProjectRelease {
 
     updateState(ImportState.PROCESSING);
     // detect and group basionyms
-    if (xCfg.groupBasionyms) {
+    if (xCfg.homotypicConsolidation) {
       final LocalDateTime start = LocalDateTime.now();
       final var prios = new SectorPriority(getDatasetKey(), factory);
       var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
       if (xCfg.basionymExclusions != null) {
         hc.setBasionymExclusions(xCfg.basionymExclusions);
       }
-      hc.consolidate();
+      hc.consolidate(xCfg.homotypicConsolidationThreads);
       DateUtils.logDuration(LOG, hc.getClass(), start);
 
     } else {

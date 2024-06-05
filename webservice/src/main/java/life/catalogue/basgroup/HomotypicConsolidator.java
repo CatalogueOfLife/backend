@@ -9,9 +9,13 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.dao.TaxonDao;
+import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.authorship.BasionymGroup;
 import life.catalogue.matching.authorship.BasionymSorter;
@@ -21,6 +25,8 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -46,14 +52,11 @@ public class HomotypicConsolidator {
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
-  private final DSID<String> dsid;
   private final List<SimpleName> taxa;
   private Map<String, Set<String>> basionymExclusions = new HashMap<>();
   private final AuthorComparator authorComparator;
   private final BasionymSorter basSorter;
   private final Function<LinneanNameUsage, Integer> priorityFunc;
-  private int synCounter;
-  private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
   /**
    * @return a consolidator that will group an entire dataset family by family
@@ -91,7 +94,6 @@ public class HomotypicConsolidator {
   private HomotypicConsolidator(SqlSessionFactory factory, int datasetKey, List<SimpleName> taxa, Function<LinneanNameUsage, Integer> priorityFunc) {
     this.factory = factory;
     this.datasetKey = datasetKey;
-    this.dsid = DSID.root(datasetKey);
     this.priorityFunc = priorityFunc;
     this.taxa = taxa;
     authorComparator = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
@@ -103,326 +105,352 @@ public class HomotypicConsolidator {
   }
 
   public void consolidate() {
-    LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}", taxa.size(), datasetKey);
+    consolidate(4);
+  }
+  public void consolidate(int threads) {
+    LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
+    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
     for (var tax : taxa) {
-      consolidate(tax);
+      var task = new ConsolidatorTask(tax);
+      exec.submit(task);
     }
+    ExecutorUtils.shutdown(exec);
   }
 
   /**
    * Goes through all usages of a given parent taxon and tries to discover basionyms by comparing the specific or infraspecific epithet and the authorships.
    * As we often see missing brackets from author names we must code defensively and allow several original names in the data for a single epithet.
-   *
+   * <p>
    * Each homotypic group is then consolidated so that only one accepted name remains.
    */
-  private void consolidate(SimpleName tax) {
-    synCounter = 0;
-    int newBasionyms = 0;
-    int newBasionymRelations = 0;
-    int newHomotypicRelations = 0;
-    int newSpellingRelations = 0;
-    LOG.info("Detect homotypic relations within {}", tax);
-    final Map<String, List<LinneanNameUsage>> epithets = Maps.newHashMap();
-    final Set<String> ignore = basionymExclusions.get(tax.getName());
-    // key all names by their terminal epithet
-    try (SqlSession session = factory.openSession(true)) {
-      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+  private class ConsolidatorTask implements Runnable {
+    private final SimpleName tax;
+    private final DSID<String> dsid;
+    private int synCounter;
+    private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
-      TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
-      traversal.setSynonyms(true);
-      PgUtils.consume(()->num.processTreeLinneanUsage(traversal, false, false), nu -> {
-        // configured to be ignored?
-        if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
-          LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
-        } else if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()){
-          // ignore all supra specific names, autonyms and unparsed OTUs
-        } else {
-          // we transform it into a smaller object as we keep quite a few of those in memory
-          // consider to implement a native mapper method to process the tree
-          String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
-          if (!epithets.containsKey(epithet)) {
-            epithets.put(epithet, Lists.newArrayList(nu));
+    private ConsolidatorTask(SimpleName tax) {
+      this.tax = tax;
+      this.dsid = DSID.root(datasetKey);
+    }
+
+    @Override
+    public void run() {
+      synCounter = 0;
+      int newBasionyms = 0;
+      int newBasionymRelations = 0;
+      int newHomotypicRelations = 0;
+      int newSpellingRelations = 0;
+      LOG.info("Detect homotypic relations within {}", tax);
+      final Map<String, List<LinneanNameUsage>> epithets = Maps.newHashMap();
+      final Set<String> ignore = basionymExclusions.get(tax.getName());
+      // key all names by their terminal epithet
+      try (SqlSession session = factory.openSession(true)) {
+        NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+
+        TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
+        traversal.setSynonyms(true);
+        PgUtils.consume(() -> num.processTreeLinneanUsage(traversal, false, false), nu -> {
+          // configured to be ignored?
+          if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
+            LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
+          } else if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()) {
+            // ignore all supra specific names, autonyms and unparsed OTUs
           } else {
-            epithets.get(epithet).add(nu);
-          }
-        }
-      });
-      LOG.debug("{} distinct epithets found in {}", epithets.size(), tax);
-    }
-
-    // keep identity map of all usages
-    usages = new HashMap<>();
-    for (var lnus : epithets.values()) {
-      for (var lnu : lnus) {
-        usages.put(lnu.getId(), lnu);
-      }
-    }
-
-    // now compare authorships for each epithet group
-    for (var epithetGroup : epithets.entrySet()) {
-      var groups = basSorter.groupBasionyms(epithetGroup.getValue(), a -> a, this::flagMultipleBasionyms);
-      // go through groups and persistent basionym relations where needed
-      for (var group : groups) {
-        try (SqlSession session = factory.openSession(false)) {
-          NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-          // we only need to process groups that contain recombinations or duplicates
-          if (group.hasRecombinations() || group.hasBasionymDuplicates()) {
-            // if we have a basionym creating relations is straight forward
-            LinneanNameUsage basionym = null;
-            if (group.hasBasionym()) {
-              basionym = group.getBasionym();
-              for (var u : group.getRecombinations()) {
-                if (createRelationIfNotExisting(u, basionym, NomRelType.BASIONYM, nrm)) {
-                  newBasionymRelations++;
-                }
-              }
-              for (var u : group.getBasionymDuplicates()) {
-                if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                  newSpellingRelations++;
-                }
-              }
+            // we transform it into a smaller object as we keep quite a few of those in memory
+            // consider to implement a native mapper method to process the tree
+            String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
+            if (!epithets.containsKey(epithet)) {
+              epithets.put(epithet, Lists.newArrayList(nu));
             } else {
-              // pick any name and create homotypic relations instead of basionym ones
-              var all = group.getAll();
-              var hom = all.remove(0);
-              for (var u : all) {
-                if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
-                  newHomotypicRelations++;
+              epithets.get(epithet).add(nu);
+            }
+          }
+        });
+        LOG.debug("{} distinct epithets found in {}", epithets.size(), tax);
+      }
+
+      // keep identity map of all usages
+      usages = new HashMap<>();
+      for (var lnus : epithets.values()) {
+        for (var lnu : lnus) {
+          usages.put(lnu.getId(), lnu);
+        }
+      }
+
+      // now compare authorships for each epithet group
+      for (var epithetGroup : epithets.entrySet()) {
+        var groups = basSorter.groupBasionyms(epithetGroup.getValue(), a -> a, this::flagMultipleBasionyms);
+        // go through groups and persistent basionym relations where needed
+        for (var group : groups) {
+          try (SqlSession session = factory.openSession(false)) {
+            NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+            // we only need to process groups that contain recombinations or duplicates
+            if (group.hasRecombinations() || group.hasBasionymDuplicates()) {
+              // if we have a basionym creating relations is straight forward
+              LinneanNameUsage basionym = null;
+              if (group.hasBasionym()) {
+                basionym = group.getBasionym();
+                for (var u : group.getRecombinations()) {
+                  if (createRelationIfNotExisting(u, basionym, NomRelType.BASIONYM, nrm)) {
+                    newBasionymRelations++;
+                  }
                 }
-              }
-            }
-          }
-          // finally make sure we only have one accepted name!
-          session.commit();
-        }
-        // now make sure we only have a single accepted name
-        consolidate(tax, group);
-      }
-    }
-    LOG.info("Discovered {} new basionym, {} homotypic and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}", newBasionymRelations, newHomotypicRelations, newSpellingRelations, newBasionyms, synCounter, tax);
-    usages = null;
-  }
-
-  /**
-   *
-   * @param group first=originals, second=recombinations
-   */
-  private void flagMultipleBasionyms(Pair<List<LinneanNameUsage>, List<LinneanNameUsage>> group) {
-    try (SqlSession session = factory.openSession(false)) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      for (var u : group.first()) {
-        vsm.addIssue(dsid.id(u.getId()), Issue.MULTIPLE_BASIONYMS);
-        if (u.getStatus().isTaxon()) {
-          vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-        }
-      }
-      for (var u : group.second()) {
-        if (u.getStatus().isTaxon()) {
-          vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-        }
-      }
-      session.commit();
-    }
-  }
-
-  private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
-    if (!mapper.exists(datasetKey, from.getNameId(), to.getNameId(), relType)) {
-      var nr = new NameRelation();
-      nr.setDatasetKey(datasetKey);
-      nr.setType(relType);
-      nr.setNameId(from.getNameId());
-      nr.setRelatedNameId(to.getNameId());
-      nr.setCreatedBy(Users.HOMOTYPIC_GROUPER);
-      nr.setModifiedBy(Users.HOMOTYPIC_GROUPER);
-      mapper.create(nr);
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Make sure we only have at most one accepted name for each homotypical basionym group!
-   * An entire group can consist of synonyms without a problem and can also refer to different accepted names, e.g. with pro parte synonyms.
-   * If a previously accepted name needs to be turned into a synonym it will be made an ambiguous synonym
-   * if there are multiple accepted names existing for all synonyms, otherwise a regular synonym.
-   * <p>
-   * As we merge names from different taxonomies it is possible there are multiple accepted names (maybe via a synonym relation) in such a group.
-   * We always stick to the first combination with the highest priority and make all others
-   * a) synonyms of this if it is accepted
-   * b) synonyms of the primary's accepted name if it was a synonym itself.
-   * <p>
-   * If there are several usages with the same priority select one according to these rules:
-   *  1) prefer accepted over synonym, e.g. s.str vs s.l.
-   *  2) if multiple synonyms (senso lato) with different accepted names exist, pick the synonym with the homotypic accepted name that has the same epithet.
-   * <p>
-   * In case we have duplicates of the basionym treat them just as recombinations that need to be consolidated and synonymised to the primary accepted name.
-   *
-   * @param tax taxon context of all groups
-   * @param group homotypic group to consolidate
-   */
-  private void consolidate(SimpleName tax, BasionymGroup<LinneanNameUsage> group) {
-    if (group.size() > 1) {
-      LOG.info("Consolidate homotypic group {} with {} recombinations and basionym={} with {} duplicates in {}", group.getEpithet(), group.getRecombinations().size(), group.getBasionym(), group.getBasionymDuplicates().size(), tax);
-      final LinneanNameUsage primary = findPrimaryUsage(group);
-      if (primary==null) {
-        // we did not find a usage to trust. skip, but mark accepted names with issues
-        try (SqlSession session = factory.openSession(false)) {
-          VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-          for (var u : group.getAll()) {
-            if (u.getStatus().isTaxon()) {
-              vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-            }
-          }
-          session.commit();
-        }
-        return;
-      }
-
-      // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
-      final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
-      final Integer primaryPrio = priorityFunc.apply(primaryAcc);
-      try (SqlSession session = factory.openSession(false)) {
-        TaxonMapper tm = session.getMapper(TaxonMapper.class);
-        var num = session.getMapper(NameUsageMapper.class);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
-        }
-        Set<String> parents = Set.copyOf(tm.classificationIds(dsid.id(primaryAcc.getId())));
-        for (LinneanNameUsage u : group.getAll()) {
-          if (u.equals(primary)) continue;
-          if (parents.contains(u.getId())) { // this should catch autonym cases with an accepted species above
-            LOG.debug("Exclude parent {} from basionym consolidation of {}", u.getLabel(), primary.getLabel());
-
-          } else {
-            final Integer prio = priorityFunc.apply(u);
-            if (primaryPrio == null || prio == null || prio > primaryPrio) {
-              convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
-              // delete synonym with identical name? We have moved all children and changed the usage to a synonym, so there are no related records any longer
-              if (u.getLabel().equalsIgnoreCase(primaryAcc.getLabel())) {
-                delete(u, session);
+                for (var u : group.getBasionymDuplicates()) {
+                  if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
+                    newSpellingRelations++;
+                  }
+                }
               } else {
-                // does the accepted already have the exact same synonym?
-                var syns = num.listSimpleSynonyms(dsid.id(primaryAcc.getId()));
-                if (syns.stream().anyMatch(s -> !u.getId().equals(s.getId()) && u.getLabel().equalsIgnoreCase(s.getLabel()))) {
-                  delete(u, session);
+                // pick any name and create homotypic relations instead of basionym ones
+                var all = group.getAll();
+                var hom = all.remove(0);
+                for (var u : all) {
+                  if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
+                    newHomotypicRelations++;
+                  }
                 }
               }
-            } else {
-              // what shall we do now?
-              System.out.println(u);
             }
+            // finally make sure we only have one accepted name!
+            session.commit();
+          }
+          // now make sure we only have a single accepted name
+          consolidate(group);
+        }
+      }
+      LOG.info("Discovered {} new basionym, {} homotypic and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}", newBasionymRelations, newHomotypicRelations, newSpellingRelations, newBasionyms, synCounter, tax);
+      usages = null;
+    }
+
+    /**
+     * @param group first=originals, second=recombinations
+     */
+    private void flagMultipleBasionyms(Pair<List<LinneanNameUsage>, List<LinneanNameUsage>> group) {
+      try (SqlSession session = factory.openSession(false)) {
+        VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+        for (var u : group.first()) {
+          vsm.addIssue(dsid.id(u.getId()), Issue.MULTIPLE_BASIONYMS);
+          if (u.getStatus().isTaxon()) {
+            vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+          }
+        }
+        for (var u : group.second()) {
+          if (u.getStatus().isTaxon()) {
+            vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
           }
         }
         session.commit();
       }
     }
-  }
 
-  private void delete(LinneanNameUsage u, SqlSession session) {
-    VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    vsm.delete(dsid.id(u.getId()));
-    num.delete(dsid);
-  }
-
-  /**
-   * Converts the given taxon to a synonym of the given accepted usage.
-   * All included descendants, both synonyms and accepted children, are also changed to become synonyms of the accepted.
-   *
-   * The method also updates the already loaded group instances to reflect the status & parent changes.
-   * @param u taxon to convert to synonym
-   * @param accepted newly accepted parent of the new synonym
-   * @param issue optional issue to flag
-   */
-  public void convertToSynonym(LinneanNameUsage u, LinneanNameUsage accepted, @Nullable Issue issue, SqlSession session) {
-    VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-
-    if (!accepted.getStatus().isTaxon()) {
-      LOG.warn("Cannot convert usage {} into a synonym of the {} {}", u.getLabel(), accepted.getStatus(), accepted.getLabel());
-      return;
-    }
-    if (u.getId().equals(accepted.getId())) {
-      LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
-      return;
-    } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
-      LOG.info("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
-      return;
-    }
-
-    SimpleName previousParent = loadSN(u.getParentId());
-    if(u.getStatus().isSynonym()) {
-      LOG.info("Move {} from {} to {}", u, previousParent, accepted);
-    } else if (u.getRank().isGenusOrSuprageneric()) {
-      // pretty high ranks, dont do that!
-      LOG.warn("Trying to convert {} into a synonym of {}, but rank {} is too high. Abort", u, accepted, u.getRank());
-      return;
-
-    } else {
-      LOG.info("Convert {} into a synonym of {}", u, accepted);
-    }
-    if (previousParent != null) {
-      LOG.debug("Originally was treated as {} {} {}", u.getStatus(), u.getStatus().isSynonym() ? "of" : "taxon within", previousParent.getLabel());
-    }
-
-    // convert to synonym, removing old parent relation
-    if (issue != null) {
-      vsm.addIssue(dsid.id(u.getId()), issue);
-    }
-
-    // move all descendants!
-    TreeTraversalParameter treeParams = TreeTraversalParameter.dataset(datasetKey, u.getId());
-    treeParams.setSynonyms(true);
-    try (var cursor = num.processTreeSimple(treeParams)) {
-      for (var sn : cursor) {
-        if (sn.getId().equals(u.getId())) continue; // exclude root
-        if (sn.getParent().equals(accepted.getId())) continue; // the name was placed correctly already - how can that be?
-        if (sn.getId().equals(accepted.getId())) {
-          // avoid moving the main accepted usage - how can we even end up here?
-          LOG.warn("Trying to move the main accepted name {} to become a child of itself. Avoid!", accepted);
-          continue;
-        }
-        LOG.info("Also move descendant {} from {} to {}", sn, sn.getParent(), accepted);
-        updateParent(sn.getId(), accepted.getId(), num);
+    private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
+      if (!mapper.exists(datasetKey, from.getNameId(), to.getNameId(), relType)) {
+        var nr = new NameRelation();
+        nr.setDatasetKey(datasetKey);
+        nr.setType(relType);
+        nr.setNameId(from.getNameId());
+        nr.setRelatedNameId(to.getNameId());
+        nr.setCreatedBy(Users.HOMOTYPIC_GROUPER);
+        nr.setModifiedBy(Users.HOMOTYPIC_GROUPER);
+        mapper.create(nr);
+        return true;
       }
-      // persist usage instance changes
-      updateParentAndStatus(u.getId(), accepted.getId(), TaxonomicStatus.SYNONYM, num);
-    } catch (IOException | PersistenceException e) {
-      LOG.error("Failed to traverse descendants of "+u.getLabel(), e);
+      return false;
     }
+
+    /**
+     * Make sure we only have at most one accepted name for each homotypical basionym group!
+     * An entire group can consist of synonyms without a problem and can also refer to different accepted names, e.g. with pro parte synonyms.
+     * If a previously accepted name needs to be turned into a synonym it will be made an ambiguous synonym
+     * if there are multiple accepted names existing for all synonyms, otherwise a regular synonym.
+     * <p>
+     * As we merge names from different taxonomies it is possible there are multiple accepted names (maybe via a synonym relation) in such a group.
+     * We always stick to the first combination with the highest priority and make all others
+     * a) synonyms of this if it is accepted
+     * b) synonyms of the primary's accepted name if it was a synonym itself.
+     * <p>
+     * If there are several usages with the same priority select one according to these rules:
+     * 1) prefer accepted over synonym, e.g. s.str vs s.l.
+     * 2) if multiple synonyms (senso lato) with different accepted names exist, pick the synonym with the homotypic accepted name that has the same epithet.
+     * <p>
+     * In case we have duplicates of the basionym treat them just as recombinations that need to be consolidated and synonymised to the primary accepted name.
+     *
+     * @param group homotypic group to consolidate
+     */
+    private void consolidate(BasionymGroup<LinneanNameUsage> group) {
+      if (group.size() > 1) {
+        LOG.info("Consolidate homotypic group {} with {} recombinations and basionym={} with {} duplicates in {}", group.getEpithet(), group.getRecombinations().size(), group.getBasionym(), group.getBasionymDuplicates().size(), tax);
+        final LinneanNameUsage primary = findPrimaryUsage(group);
+        if (primary == null) {
+          // we did not find a usage to trust. skip, but mark accepted names with issues
+          try (SqlSession session = factory.openSession(false)) {
+            VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+            for (var u : group.getAll()) {
+              if (u.getStatus().isTaxon()) {
+                vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+              }
+            }
+            session.commit();
+          }
+          return;
+        }
+
+        // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
+        final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
+        final Integer primaryPrio = priorityFunc.apply(primaryAcc);
+        try (SqlSession session = factory.openSession(false)) {
+          TaxonMapper tm = session.getMapper(TaxonMapper.class);
+          var num = session.getMapper(NameUsageMapper.class);
+
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
+          }
+          Set<String> parents = Set.copyOf(tm.classificationIds(dsid.id(primaryAcc.getId())));
+          for (LinneanNameUsage u : group.getAll()) {
+            if (u.equals(primary)) continue;
+            if (parents.contains(u.getId())) { // this should catch autonym cases with an accepted species above
+              LOG.debug("Exclude parent {} from basionym consolidation of {}", u.getLabel(), primary.getLabel());
+
+            } else {
+              final Integer prio = priorityFunc.apply(u);
+              if (primaryPrio == null || prio == null || prio > primaryPrio) {
+                convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
+                // delete synonym with identical name? We have moved all children and changed the usage to a synonym, so there are no related records any longer
+                if (u.getLabel().equalsIgnoreCase(primaryAcc.getLabel())) {
+                  delete(u, session);
+                } else {
+                  // does the accepted already have the exact same synonym?
+                  var syns = num.listSimpleSynonyms(dsid.id(primaryAcc.getId()));
+                  if (syns.stream().anyMatch(s -> !u.getId().equals(s.getId()) && u.getLabel().equalsIgnoreCase(s.getLabel()))) {
+                    delete(u, session);
+                  }
+                }
+              } else {
+                // what shall we do now?
+                System.out.println(u);
+              }
+            }
+          }
+          session.commit();
+        }
+      }
+    }
+
+    private void delete(LinneanNameUsage u, SqlSession session) {
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      vsm.delete(dsid.id(u.getId()));
+      num.delete(dsid);
+    }
+
+    /**
+     * Converts the given taxon to a synonym of the given accepted usage.
+     * All included descendants, both synonyms and accepted children, are also changed to become synonyms of the accepted.
+     * <p>
+     * The method also updates the already loaded group instances to reflect the status & parent changes.
+     *
+     * @param u        taxon to convert to synonym
+     * @param accepted newly accepted parent of the new synonym
+     * @param issue    optional issue to flag
+     */
+    public void convertToSynonym(LinneanNameUsage u, LinneanNameUsage accepted, @Nullable Issue issue, SqlSession session) {
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+
+      if (!accepted.getStatus().isTaxon()) {
+        LOG.warn("Cannot convert usage {} into a synonym of the {} {}", u.getLabel(), accepted.getStatus(), accepted.getLabel());
+        return;
+      }
+      if (u.getId().equals(accepted.getId())) {
+        LOG.warn("Trying to convert {} into a synonym of itself is suspicious. Abort", u);
+        return;
+      } else if (u.getParentId().equals(accepted.getId()) && u.getStatus().isSynonym()) {
+        LOG.info("Trying to convert {} into a synonym of it's accepted name. Nothing to be done.", u);
+        return;
+      }
+
+      SimpleName previousParent = loadSN(u.getParentId());
+      if (u.getStatus().isSynonym()) {
+        LOG.info("Move {} from {} to {}", u, previousParent, accepted);
+      } else if (u.getRank().isGenusOrSuprageneric()) {
+        // pretty high ranks, dont do that!
+        LOG.warn("Trying to convert {} into a synonym of {}, but rank {} is too high. Abort", u, accepted, u.getRank());
+        return;
+
+      } else {
+        LOG.info("Convert {} into a synonym of {}", u, accepted);
+      }
+      if (previousParent != null) {
+        LOG.debug("Originally was treated as {} {} {}", u.getStatus(), u.getStatus().isSynonym() ? "of" : "taxon within", previousParent.getLabel());
+      }
+
+      // convert to synonym, removing old parent relation
+      if (issue != null) {
+        vsm.addIssue(dsid.id(u.getId()), issue);
+      }
+
+      // move all descendants!
+      TreeTraversalParameter treeParams = TreeTraversalParameter.dataset(datasetKey, u.getId());
+      treeParams.setSynonyms(true);
+      try (var cursor = num.processTreeSimple(treeParams)) {
+        for (var sn : cursor) {
+          if (sn.getId().equals(u.getId())) continue; // exclude root
+          if (sn.getParent().equals(accepted.getId())) continue; // the name was placed correctly already - how can that be?
+          if (sn.getId().equals(accepted.getId())) {
+            // avoid moving the main accepted usage - how can we even end up here?
+            LOG.warn("Trying to move the main accepted name {} to become a child of itself. Avoid!", accepted);
+            continue;
+          }
+          LOG.info("Also move descendant {} from {} to {}", sn, sn.getParent(), accepted);
+          updateParent(sn.getId(), accepted.getId(), num);
+        }
+        // persist usage instance changes
+        updateParentAndStatus(u.getId(), accepted.getId(), TaxonomicStatus.SYNONYM, num);
+      } catch (IOException | PersistenceException e) {
+        LOG.error("Failed to traverse descendants of " + u.getLabel(), e);
+      }
+    }
+
+    private void updateParent(String id, String parentId, NameUsageMapper num) {
+      num.updateParentId(dsid.id(id), parentId, Users.HOMOTYPIC_GROUPER);
+      // track change in our memory instances too
+      if (usages.containsKey(id)) {
+        var u = usages.get(id);
+        u.setParentId(parentId);
+      }
+    }
+
+    private void updateParentAndStatus(String id, String parentId, TaxonomicStatus status, NameUsageMapper num) {
+      num.updateParentAndStatus(dsid.id(id), parentId, status, Users.HOMOTYPIC_GROUPER);
+      synCounter++;
+      // track change in our memory instances too
+      if (usages.containsKey(id)) {
+        var u = usages.get(id);
+        u.setStatus(status);
+        u.setParentId(parentId);
+      }
+    }
+
+    private String names(Collection<LinneanNameUsage> usages) {
+      return usages.stream().map(LinneanNameUsage::getLabel).collect(Collectors.joining("; "));
+    }
+
+    private SimpleName loadSN(String id) {
+      try (SqlSession session = factory.openSession()) {
+        return session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, id));
+      }
+    }
+
   }
 
-  private void updateParent(String id, String parentId, NameUsageMapper num) {
-    num.updateParentId(dsid.id(id), parentId, Users.HOMOTYPIC_GROUPER);
-    // track change in our memory instances too
-    if (usages.containsKey(id)) {
-      var u = usages.get(id);
-      u.setParentId(parentId);
-    }
-  }
-
-  private void updateParentAndStatus(String id, String parentId, TaxonomicStatus status, NameUsageMapper num) {
-    num.updateParentAndStatus(dsid.id(id), parentId, status, Users.HOMOTYPIC_GROUPER);
-    synCounter++;
-    // track change in our memory instances too
-    if (usages.containsKey(id)) {
-      var u = usages.get(id);
-      u.setStatus(status);
-      u.setParentId(parentId);
-    }
-  }
-
-  private String names(Collection<LinneanNameUsage> usages) {
-    return usages.stream().map(LinneanNameUsage::getLabel).collect(Collectors.joining("; "));
-  }
 
   /**
    * From a list of usages believed to be homotypic select the most trusted usage.
    * If there are multiple usages from the most trusted source:
-   *  a) selected a random first one if they all point to the same accepted usage
-   *  b) return NULL if the source contains multiple accepted usages - this is either a bad taxonomy in the source
-   *  or we did a bad basionym detection and we would wrongly lump names.
+   * a) selected a random first one if they all point to the same accepted usage
+   * b) return NULL if the source contains multiple accepted usages - this is either a bad taxonomy in the source
+   * or we did a bad basionym detection and we would wrongly lump names.
    */
   @VisibleForTesting
   protected LinneanNameUsage findPrimaryUsage(BasionymGroup<LinneanNameUsage> group) {
@@ -459,7 +487,7 @@ public class HomotypicConsolidator {
         final var accID = u.getStatus().isSynonym() ? u.getParentId() : u.getId();
         accCounts.inc(accID);
       }
-      if (accCounts.size()>1) {
+      if (accCounts.size() > 1) {
         // the same dataset contains multiple accepted. It is either:
         // a) taxonomically inconsistent
         // b) has pro parte synonyms
@@ -476,11 +504,11 @@ public class HomotypicConsolidator {
           }
         }
 
-        List<LinneanNameUsage> acceptedStrict = CollectionUtils.find(accepted, a -> a.getStatus()==TaxonomicStatus.ACCEPTED);
+        List<LinneanNameUsage> acceptedStrict = CollectionUtils.find(accepted, a -> a.getStatus() == TaxonomicStatus.ACCEPTED);
         if (acceptedStrict.size() == 1) {
           var primary = acceptedStrict.get(0);
           LOG.debug("Prefer single accepted {} in basionym group with {} additional doubtful names out of {} usages from the most trusted sector {}",
-            primary.getLabel(), accCounts.size()-1, candidates.size(), sectorKey);
+            primary.getLabel(), accCounts.size() - 1, candidates.size(), sectorKey);
           return primary;
 
         } else if (acceptedStrict.size() > 1) {
@@ -505,7 +533,7 @@ public class HomotypicConsolidator {
           candidates.get(0).getLabel(), accCounts.size(), candidates.size(), sectorKey);
         return null;
 
-      } else if (candidates.size() > 1){
+      } else if (candidates.size() > 1) {
         // multiple candidates? Prefer accepted ones and species over infraspecifics
         candidates.sort(PREFERRED_STATUS_RANK_ORDER);
       }
@@ -533,9 +561,4 @@ public class HomotypicConsolidator {
     }
   }
 
-  private SimpleName loadSN(String id) {
-    try (SqlSession session = factory.openSession()) {
-      return session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, id));
-    }
-  }
 }

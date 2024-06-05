@@ -16,6 +16,6 @@ public class XReleaseConfigTest {
     assertNotNull(cfg.basionymExclusions);
     assertNotNull(cfg.homonymExclusions);
     assertTrue(cfg.homonymExclusions.isEmpty());
-    assertTrue(cfg.groupBasionyms);
+    assertTrue(cfg.homotypicConsolidation);
   }
 }

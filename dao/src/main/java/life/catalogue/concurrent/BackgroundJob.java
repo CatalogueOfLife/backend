@@ -35,7 +35,7 @@ public abstract class BackgroundJob implements Runnable {
   // the following are added by the JobExecutor before a job is submitted
   private @Nullable EmailNotification emailer;
   // you can expect the following to exist and never be null!
-  private JobConfig cfg;
+  protected JobConfig cfg;
   private User user;
   private Timer timer;
   // if true copies job logs into the results directory

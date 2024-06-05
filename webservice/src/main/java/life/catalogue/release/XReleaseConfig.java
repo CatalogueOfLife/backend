@@ -8,6 +8,7 @@ import java.util.*;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 public class XReleaseConfig {
@@ -56,7 +57,10 @@ public class XReleaseConfig {
    * If true algorithmic detecting and grouping of basionyms is executed.
    */
   @Valid
-  public boolean groupBasionyms = true;
+  public boolean homotypicConsolidation = true;
+
+  @Min(1)
+  public int homotypicConsolidationThreads = 4;
 
   /**
    * An optional set of issues that if found on the usage or name will trigger the exclusion of the usage in the merge syncs.

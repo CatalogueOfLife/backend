@@ -66,6 +66,6 @@ public class HomotypicConsolidationJob extends DatasetBlockingJob {
 
   @Override
   protected void runWithLock() throws Exception {
-    hc.consolidate();
+    hc.consolidate(Math.max(1, cfg.threads-1));
   }
 }
