@@ -227,7 +227,10 @@ public class MatchController implements ErrorController {
     // ugly, i know, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
     return matchingService.match(
-        first(removeNulls(usageKey), removeNulls(taxonID), removeNulls(taxonConceptID), removeNulls(scientificNameID)),
+        removeNulls(usageKey),
+        removeNulls(taxonID),
+        removeNulls(taxonConceptID),
+        removeNulls(scientificNameID),
         first(removeNulls(scientificName), removeNulls(scientificName2)),
         first(removeNulls(authorship), removeNulls(authorship2)),
         removeNulls(genericName),
@@ -360,6 +363,9 @@ public class MatchController implements ErrorController {
     Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
         matchingService.match(
             removeNulls(usageKey),
+            null,
+          null,
+          null,
             first(removeNulls(scientificName), removeNulls(scientificName2)),
             first(removeNulls(authorship), removeNulls(authorship2)),
             removeNulls(genericName),

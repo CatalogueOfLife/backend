@@ -37,7 +37,7 @@ class NameUsageBuilder {
       String subgenusKey,
       String speciesKey) {
 
-    NameUsageMatch m = new NameUsageMatch();
+    NameUsageMatch m = NameUsageMatch.builder().build();
     m.setUsage(new RankedName());
     m.getUsage().setKey(usageKey);
     m.getUsage().setName(scientificName);

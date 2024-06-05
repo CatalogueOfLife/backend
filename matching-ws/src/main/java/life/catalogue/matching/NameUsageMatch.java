@@ -8,7 +8,11 @@ import java.util.Optional;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -17,6 +21,7 @@ import org.gbif.nameparser.api.Rank;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
+@Builder
 @Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
 public class NameUsageMatch implements LinneanClassification {
 
@@ -31,7 +36,7 @@ public class NameUsageMatch implements LinneanClassification {
   @Schema(description = "A list of similar matches with lower confidence scores ")
   List<NameUsageMatch> alternatives = new ArrayList<>();
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
-  Diagnostics diagnostics = new Diagnostics();
+  Diagnostics diagnostics = Diagnostics.builder().build();
   @Schema(description = "Status information from external sources like IUCN Red List")
   List<Status> additionalStatus = new ArrayList<>();
 

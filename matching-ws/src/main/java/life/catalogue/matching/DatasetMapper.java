@@ -4,8 +4,11 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import org.apache.ibatis.annotations.Param;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 public interface DatasetMapper {
+
+  Optional<Dataset> getDataset(@Param("key") int key);
 
   /**
    * Looks up the dataset key of the latest release for a given project

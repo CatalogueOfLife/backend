@@ -22,8 +22,9 @@ public class Main {
   public static final String EXPORT_PATH = "export.path";
   public static final String INDEX_PATH = "index.path";
   public static final String V_1_ENABLED = "v1.enabled";
+  public static final String MODE = "mode";
 
-  @Parameter(names = {"--mode"}, order = 1, description = "The mode to use, Defaults to WEB_APP, which will run the web services and will attempt to read the index" +
+  @Parameter(names = {"--" + MODE}, order = 1, description = "The " + MODE + " to use, Defaults to WEB_APP, which will run the web services and will attempt to read the index" +
     " from the --" + INDEX_PATH + " ", converter = ExecutionModeConverter.class)
   private ExecutionMode mode = ExecutionMode.WEB_APP;
 
@@ -37,7 +38,7 @@ public class Main {
   private String clbPassword;
 
   @Parameter(names = {"--" + CLB_DATASET_ID}, description = "ChecklistBank dataset ID to create an index for or to export to CSV. " +
-    "Required for INDEX_DB and EXPORT_CSV modes")
+    "Required for INDEX_DB and EXPORT_CSV " + MODE + "s")
   private String datasetId;
 
   @Parameter(names = {"--" + CLB_IUCN_DATASET_ID}, description = "ChecklistBank dataset ID for the IUCN checklist.")
@@ -79,7 +80,7 @@ public class Main {
 
     if ((app.mode == ExecutionMode.INDEX_DB
         || app.mode == ExecutionMode.EXPORT_CSV) && app.datasetId == null) {
-      System.err.println("Missing required parameter for mode " + app.mode + " --" + CLB_DATASET_ID);
+      System.err.println("Missing required parameter for " + MODE + " " + app.mode + " --" + CLB_DATASET_ID);
       commander.usage();
       return;
     }
@@ -90,7 +91,7 @@ public class Main {
 
       SpringApplication springApplication;
       switch (app.mode) {
-        case BUILD_INDEX,EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
+        case BUILD_INDEX, EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
           springApplication = new SpringApplication(IndexingApplication.class);
           springApplication.setAdditionalProfiles("indexing");
           springApplication.run(args).close();

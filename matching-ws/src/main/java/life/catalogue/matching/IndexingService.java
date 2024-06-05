@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -22,6 +23,9 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -62,9 +66,8 @@ import javax.ws.rs.NotFoundException;
  * /data/matching-ws/index/ancillary     - Lucene indexes for status values e.g. IUCN
  */
 @Service
+@Slf4j
 public class IndexingService {
-
-  private static final Logger LOG = LoggerFactory.getLogger(IndexingService.class);
 
   @Value("${index.path:/tmp/matching-index}")
   String indexPath;
@@ -87,12 +90,16 @@ public class IndexingService {
   @Value("${clb.driver}")
   String clDriver;
 
-  @Autowired protected MatchingService matchingService;
+  protected final MatchingService matchingService;
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
 
   protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
+
+  public IndexingService(MatchingService matchingService) {
+    this.matchingService = matchingService;
+  }
 
   protected static IndexWriterConfig getIndexWriterConfig() {
     Map<String, Analyzer> analyzerPerField = new HashMap<>();
@@ -102,11 +109,29 @@ public class IndexingService {
     return new IndexWriterConfig(aWrapper);
   }
 
-  public Optional<Integer> lookupDatasetKey(SqlSessionFactory factory, String datasetKey) {
-    if (life.catalogue.common.text.StringUtils.hasContent(datasetKey)) {
-      Matcher m = REL_PATTERN.matcher(datasetKey);
+  /**
+   * Looks up a dataset by its key with support for release keys
+   * @param factory
+   * @param datasetKeyInput
+   * @return
+   */
+  private Optional<Dataset> lookupDataset(SqlSessionFactory factory, String datasetKeyInput) {
+
+    // resolve the magic keys...
+    Optional<Integer> datasetKey = Optional.empty();
+    try {
+      datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
+      return lookupDataset(factory, datasetKey.get());
+    } catch (NumberFormatException e) {
+    }
+
+    // otherwise, resolve magic key
+    if (datasetKey.isEmpty()) {
+      Matcher m = REL_PATTERN.matcher(datasetKeyInput);
       if (m.find()){
-        return Optional.of(releaseKeyFromMatch(factory, m));
+        Integer releaseDatasetKey = releaseKeyFromMatch(factory, m);
+        return lookupDataset(factory, releaseDatasetKey);
+
       }
     }
     return Optional.empty();
@@ -156,6 +181,13 @@ public class IndexingService {
     }
   }
 
+  private Optional<Dataset> lookupDataset(SqlSessionFactory factory, Integer key) throws NotFoundException {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      return  dm.getDataset(key);
+    }
+  }
+
   /**
    * Writes an export of  the name usages in a checklist bank dataset to a CSV file.
    *
@@ -177,28 +209,23 @@ public class IndexingService {
     factory.getConfiguration().addMapper(DatasetMapper.class);
 
     // resolve the magic keys...
-    Optional<Integer> datasetKey = Optional.empty();
-    try {
-      datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
-    } catch (NumberFormatException ignored) {
-    }
-
-    if (datasetKey.isEmpty()) {
-      datasetKey = lookupDatasetKey(factory, datasetKeyInput);
-    }
-
-    if (datasetKey.isEmpty()) {
+    Optional<Dataset> dataset =  lookupDataset(factory, datasetKeyInput);
+    if (dataset.isEmpty()) {
       throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
     }
 
-    final Integer validDatasetKey = datasetKey.get();
+    final Integer validDatasetKey = dataset.get().getKey();
     final String directory = exportPath + "/" + datasetKeyInput;
     final String fileName = directory + "/" + "index.csv";
+    final String metadata = directory + "/" + "metadata.json";
 
-    LOG.info("Writing dataset to file {}", fileName);
+    log.info("Writing dataset to file {}", fileName);
     final AtomicInteger counter = new AtomicInteger(0);
 
     FileUtils.forceMkdir(new File(directory));
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(new File(metadata), dataset.get());
+
     try (SqlSession session = factory.openSession(false);
         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
       StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
@@ -220,7 +247,7 @@ public class IndexingService {
     }
 
     // write metadata file in JSON format
-    LOG.info("ChecklistBank export written to file {}: {}", fileName, counter.get());
+    log.info("ChecklistBank export written to file {}: {}", fileName, counter.get());
   }
 
   @Transactional
@@ -252,26 +279,22 @@ public class IndexingService {
     factory.getConfiguration().addMapper(DatasetMapper.class);
 
     // resolve the magic keys...
-    Optional<Integer> datasetKey = Optional.empty();
-    try {
-      datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
-    } catch (NumberFormatException e) {
-    }
-
-    if (datasetKey.isEmpty()) {
-      datasetKey = lookupDatasetKey(factory, datasetKeyInput);
-    }
-
-    if (datasetKey.isEmpty()) {
+    Optional<Dataset> dataset =  lookupDataset(factory, datasetKeyInput);
+    if (dataset.isEmpty()) {
       throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
     }
 
-    final Integer validDatasetKey = datasetKey.get();
-
-    LOG.info("Writing dataset to file...");
+    log.info("Writing dataset to file...");
     final AtomicInteger counter = new AtomicInteger(0);
     final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
+    final String metadata = exportPath + "/" + datasetKeyInput  + "/" + "metadata.json";
+
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
+
+    // write metadata to file
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.writeValue(new File(metadata), dataset.get());
+
     try (SqlSession session = factory.openSession(false);
          final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
 
@@ -282,7 +305,7 @@ public class IndexingService {
 
       // Create index writer
       consume(
-        () -> session.getMapper(IndexingMapper.class).getAllWithExtensionForDataset(validDatasetKey),
+        () -> session.getMapper(IndexingMapper.class).getAllWithExtensionForDataset(dataset.get().getKey()),
         nameUsage -> {
           try {
             if (StringUtils.isNotBlank(nameUsage.getExtension())){
@@ -302,11 +325,11 @@ public class IndexingService {
     }
 
     // write metadata file in JSON format
-    LOG.info("ChecklistBank IUCN export written to file {}: {}", fileName, counter.get());
+    log.info("ChecklistBank IUCN export written to file {}: {}", fileName, counter.get());
   }
 
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
-    LOG.info("Start building a new RAM index");
+    log.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
     IndexWriter writer = getIndexWriter(dir);
 
@@ -320,7 +343,7 @@ public class IndexingService {
       }
     }
     writer.close();
-    LOG.info("Finished building nub index with {} usages", counter);
+    log.info("Finished building nub index with {} usages", counter);
     return dir;
   }
 
@@ -347,7 +370,8 @@ public class IndexingService {
       TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
       ScoreDoc[] hits = results.scoreDocs;
 
-      AtomicInteger counter = new AtomicInteger(0);
+      AtomicLong counter = new AtomicLong(0);
+      AtomicLong matchedCounter = new AtomicLong(0);
 
       // Write document data
       for (ScoreDoc hit : hits) {
@@ -374,16 +398,21 @@ public class IndexingService {
         classification.setSpecies(hierarchy.getOrDefault(Rank.SPECIES.name(), ""));
 
         if (counter.get() % 100000 == 0) {
-          LOG.info("Indexed: {} taxa", counter.get());
+          log.info("Indexed: {} taxa", counter.get());
         }
 
         // match to main dataset
-        NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
-        if (nameUsageMatch.getUsage() != null) {
-          doc.add(new StringField(FIELD_JOIN_ID,
-            nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
-            nameUsageMatch.getUsage().getKey(), Field.Store.YES));
-          ancillaryIndexWriter.addDocument(doc);
+        try {
+          NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
+          if (nameUsageMatch.getUsage() != null) {
+            doc.add(new StringField(FIELD_JOIN_ID,
+              nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
+                nameUsageMatch.getUsage().getKey(), Field.Store.YES));
+            ancillaryIndexWriter.addDocument(doc);
+            matchedCounter.incrementAndGet();
+          }
+        }catch (Exception e) {
+          log.error("Problem matching name from ancillary index " + scientificName, e.getMessage(), e);
         }
       }
 
@@ -397,9 +426,18 @@ public class IndexingService {
       ancillaryIndexWriter.close();
       ancillaryDirectory.close();
 
-      LOG.info("Ancillary index written: {} documents.", counter.get());
+      // load export metadata
+      ObjectMapper mapper = new ObjectMapper();
+      Dataset metadata = mapper.readValue(new FileReader(new File(tempIndexPath + "/metadata.json")), Dataset.class);
+      metadata.setTaxonCount(counter.get());
+      metadata.setMatchesToMainIndex(matchedCounter.get());
+
+      // write new metadata with counts
+      mapper.writeValue(new File(ancillaryIndexPath + "/metadata.json"), metadata);
+
+      log.info("Ancillary index written: {} documents.", counter.get());
     } catch (Exception e) {
-      LOG.error("Error writing documents to ancillary index: {}", e.getMessage(), e);
+      log.error("Error writing documents to ancillary index: {}", e.getMessage(), e);
     }
   }
 
@@ -413,7 +451,7 @@ public class IndexingService {
         return Optional.empty();
       }
     } catch (IOException e) {
-      LOG.error("Cannot load usage {} from lucene index", id, e);
+      log.error("Cannot load usage {} from lucene index", id, e);
     }
     return Optional.empty();
   }
@@ -448,9 +486,10 @@ public class IndexingService {
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
-    LOG.info("Indexing dataset from CSV...");
-    final AtomicInteger counter = new AtomicInteger(0);
+    log.info("Indexing dataset from CSV...");
+    final AtomicLong counter = new AtomicLong(0);
     final String filePath = exportPath + "/index.csv";
+    final String metadataPath = exportPath + "/metadata.json";
 
     try (Reader reader = new FileReader(filePath);
          IndexWriter indexWriter = new IndexWriter(directory, config)) {
@@ -466,21 +505,30 @@ public class IndexingService {
 
       while (iterator.hasNext()) {
         if (counter.get() % 100000 == 0) {
-          LOG.info("Indexed: {} taxa", counter.get());
+          log.info("Indexed: {} taxa", counter.get());
         }
         NameUsage nameUsage = iterator.next();
         Document doc = toDoc(nameUsage);
         indexWriter.addDocument(doc);
         counter.incrementAndGet();
       }
-      LOG.info("Final index commit");
+      log.info("Final index commit");
       indexWriter.commit();
-      LOG.info("Optimising index....");
+      log.info("Optimising index....");
       indexWriter.forceMerge(1);
-      LOG.info("Optimisation complete.");
+      log.info("Optimisation complete.");
     }
     // write metadata file in JSON format
-    LOG.info("Taxa indexed: {}", counter.get());
+    log.info("Taxa indexed: {}", counter.get());
+
+    // load export metadata
+    ObjectMapper mapper = new ObjectMapper();
+    Dataset metadata = mapper.readValue(new FileReader(metadataPath), Dataset.class);
+    metadata.setTaxonCount(counter.get());
+    metadata.setMatchesToMainIndex(counter.get());
+
+    // write new metadata with counts
+    mapper.writeValue(new File(indexPath + "/metadata.json"), metadata);
   }
 
   @Transactional
@@ -494,10 +542,6 @@ public class IndexingService {
     Path indexDirectory = initialiseIndexDirectory(indexPath);
     Directory directory = FSDirectory.open(indexDirectory);
 
-    // Create index writer configuration
-    IndexWriterConfig config = getIndexWriterConfig();
-    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
     // Create a session factory
     SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
     sessionFactoryBean.setDataSource(dataSource);
@@ -505,7 +549,12 @@ public class IndexingService {
     assert factory != null;
     factory.getConfiguration().addMapper(IndexingMapper.class);
 
-    LOG.info("Indexing dataset...");
+    // Create index writer configuration
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+
+
+    log.info("Indexing dataset...");
     final AtomicInteger counter = new AtomicInteger(0);
     try (SqlSession session = factory.openSession(false);
         IndexWriter indexWriter = new IndexWriter(directory, config)) {
@@ -516,7 +565,7 @@ public class IndexingService {
           name -> {
             try {
               if (counter.get() % 10000 == 0) {
-                LOG.info("Indexed: {} taxa", counter.get());
+                log.info("Indexed: {} taxa", counter.get());
               }
               Document doc = toDoc(name);
               indexWriter.addDocument(doc);
@@ -525,14 +574,14 @@ public class IndexingService {
             }
             counter.incrementAndGet();
           });
-      LOG.info("Final index commit");
+      log.info("Final index commit");
       indexWriter.commit();
-      LOG.info("Optimising index....");
+      log.info("Optimising index....");
       indexWriter.forceMerge(1);
-      LOG.info("Optimisation complete.");
+      log.info("Optimisation complete.");
     }
     // write metadata file in JSON format
-    LOG.info("Indexed: {}", counter.get());
+    log.info("Indexed: {}", counter.get());
   }
 
   private @NotNull Path initialiseIndexDirectory(String indexPath) throws IOException {
@@ -566,7 +615,7 @@ public class IndexingService {
       optCanonical = Optional.ofNullable(canonical);
     } catch (UnparsableNameException | InterruptedException e) {
       // do nothing
-      LOG.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+      log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
     }
 
     final String canonical = optCanonical.orElse(nameUsage.getScientificName());

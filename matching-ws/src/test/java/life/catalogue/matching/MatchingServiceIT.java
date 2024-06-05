@@ -177,7 +177,7 @@ public class MatchingServiceIT {
       IntRange confidence,
       Set<String> exclude) {
     NameUsageMatch best =
-        matcher.match(usageKey, name, null, null, null, null, rank, query, exclude, false, true);
+        matcher.match(usageKey, null, null, null, name, null, null, null, null, rank, query, exclude, false, true);
 
     print(name, best);
 
@@ -298,7 +298,7 @@ public class MatchingServiceIT {
 
   @Test
   public void testMatching() throws IOException, InterruptedException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new Classification();
     assertMatch("Anephlus", cl, "1100135", new IntRange(92, 95));
     assertMatch("Aneplus", cl, "1100050", new IntRange(90, 95));
 
@@ -318,7 +318,7 @@ public class MatchingServiceIT {
     // FIXME - im not sure what the sensible outcome is for this one....
     // assertMatch("Anmeplues", cl, "1", new IntRange(90, 100));
 
-    assertNoMatch("Anmeplues", new NameUsageMatch(), new IntRange(-10, 80));
+    assertNoMatch("Anmeplues", new Classification(), new IntRange(-10, 80));
   }
 
   /**
@@ -328,7 +328,7 @@ public class MatchingServiceIT {
    */
   @Test
   public void testBadPlantKingdom() throws IOException {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new Classification();
     // without kingdom snap to the bad animal record
     assertMatch("Sabia parviflora", cl, String.valueOf(7268473), new IntRange(96, 100));
 
@@ -341,7 +341,7 @@ public class MatchingServiceIT {
     assertMatch("Sabia parviflora", cl, "2409", new IntRange(80, 100));
 
     // without kingdom snap to the bad animal record
-    cl = new NameUsageMatch();
+    cl = new Classification();
     assertMatch("Tibetia tongolensis", cl, String.valueOf(7301567), new IntRange(96, 100));
 
     // hit the plant family
@@ -391,7 +391,7 @@ public class MatchingServiceIT {
     assertMatch("Acanthophora", cl, 2659277, new IntRange(97, 100));
 
     // species match
-    cl = new NameUsageMatch();
+    cl = new Classification();
     assertMatch("Puma concolor", cl, 2435099, new IntRange(98, 100));
 
     cl.setGenus("Puma");
@@ -528,7 +528,7 @@ public class MatchingServiceIT {
 
   @Test
   public void testAuthorshipMatching() throws IOException {
-    NameUsageMatch cl = new NameUsageMatch();
+    Classification cl = new Classification();
     assertMatch("Prunella alba", cl, 5608009, new IntRange(98, 100));
 
     assertMatch("Prunella alba Pall. ex M.Bieb.", cl, 5608009, new IntRange(100, 100));
@@ -816,7 +816,7 @@ public class MatchingServiceIT {
   @Test
   public void testBlogNames() throws IOException {
     // http://www.gbif.org/occurrence/164267402/verbatim
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new Classification();
     assertMatch("Xysticus sp.", cl, 2164999, MatchType.HIGHERRANK);
     assertMatch("Xysticus spec.", cl, 2164999, MatchType.HIGHERRANK);
 
@@ -861,7 +861,7 @@ public class MatchingServiceIT {
     // no name normalization on the genus, but a fuzzy match
     assertMatch("Zabideus novemaculeatus", cl, "2394331", MatchType.FUZZY, new IntRange(85, 95));
 
-    cl = new NameUsageMatch();
+    cl = new Classification();
     cl.setKingdom("Animalia");
     cl.setFamily("Yoldiidae");
     // genus match only
@@ -989,7 +989,7 @@ public class MatchingServiceIT {
   /** https://github.com/gbif/checklistbank/issues/247 */
   @Test
   public void testCommonHigherDenomiator() throws Exception {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new Classification();
     cl.setKingdom("Animalia");
 
     assertMatch("Jaspidia deceptoria Scopoli, 1763", Rank.FAMILY, cl, 7015, MatchType.HIGHERRANK);

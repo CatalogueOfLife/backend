@@ -46,5 +46,7 @@ public enum MatchType {
    * The matching alogrithm was unable to match a scientific name with sufficient confidence,
    * and matched a higher rank instead.
    */
-  HIGHERRANK;
+  HIGHERRANK
+  ;
+
 }

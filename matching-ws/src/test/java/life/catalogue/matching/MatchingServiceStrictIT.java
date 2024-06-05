@@ -36,7 +36,7 @@ public class MatchingServiceStrictIT {
   }
 
   private NameUsageMatch query(String name, Rank rank, Kingdom kingdom) {
-    LinneanClassification cl = new NameUsageMatch();
+    LinneanClassification cl = new Classification();
     cl.setKingdom(kingdom.name());
     return matcher.match(name, rank, cl, true);
   }
