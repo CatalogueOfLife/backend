@@ -142,11 +142,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       throw e; // rethrow real interruptions
 
     } catch (RuntimeException e) {
-      LOG.warn("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
+      LOG.error("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
       thrown++;
 
     } catch (Exception e) {
-      LOG.warn("Fatal error. Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
+      LOG.error("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
       thrown++;
       throw new RuntimeException(e);
     }

@@ -24,8 +24,8 @@ import life.catalogue.dao.DatasetInfoCache;
  */
 public class CacheControlResponseFilter implements ContainerResponseFilter {
   public static final String DONT_CACHE = "dont-cache";
-  private static final long AGE1 = TimeUnit.HOURS.toSeconds(1);
-  private static final long AGE24 = TimeUnit.HOURS.toSeconds(24);
+  private static final long AGE_EXTERNAL = TimeUnit.HOURS.toSeconds(1);
+  private static final long AGE_RELEASE = TimeUnit.DAYS.toSeconds(7);
   private static final Pattern STATIC_PATH  = Pattern.compile("^(vocab|openapi|version)");
   private static final Set<String> METHODS  = Set.of(HttpMethod.GET, HttpMethod.HEAD);
 
@@ -34,7 +34,7 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
     // we allow resources to turn off caching for certain requests by using the dont cache property
     if (req.getMethod() != null && METHODS.contains(req.getMethod()) && req.getProperty(CacheControlResponseFilter.DONT_CACHE) == null) {
       if (STATIC_PATH.matcher(req.getUriInfo().getPath()).find()) {
-        allowCaching(resp, AGE1);
+        allowCaching(resp, AGE_EXTERNAL, true);
         return;
       }
       Integer datasetKey = FilterUtils.datasetKeyOrNull(req.getUriInfo());
@@ -42,12 +42,12 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
         try {
           var info = DatasetInfoCache.CACHE.info(datasetKey, true);
           if (info.origin.isRelease()) {
-            // its a release, we can cache it for longer!
-            allowCaching(resp, AGE24);
+            // its a (x)release, we can cache it for longer!
+            allowCaching(resp, AGE_RELEASE, true);
             return;
           } else if (info.origin == DatasetOrigin.EXTERNAL) {
             // thats also rather static information, but allow it to change more often
-            allowCaching(resp, AGE1);
+            allowCaching(resp, AGE_EXTERNAL, false);
             return;
           }
         } catch (NotFoundException e) {
@@ -58,8 +58,11 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
     preventCaching(resp);
   }
 
-  private void allowCaching(ContainerResponseContext resp, long ageInSeconds){
+  private void allowCaching(ContainerResponseContext resp, long ageInSeconds, boolean allowBrowserCache){
     resp.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, "public, max-age=" + ageInSeconds + ", s-maxage=" + ageInSeconds);
+    if (!allowBrowserCache) {
+      resp.getHeaders().putSingle("x-remove-cache-control", "true");
+    }
   }
 
   private void preventCaching(ContainerResponseContext resp){

@@ -484,7 +484,7 @@ public class XRelease extends ProjectRelease {
     }
 
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
-    DateUtils.logDuration(LOG, getClass(), start);
+    DateUtils.logDuration(LOG, "Merging sectors", start);
   }
 
   public int getFailedSyncs() {
