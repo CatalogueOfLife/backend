@@ -72,16 +72,23 @@ public class AuthorshipNormalizer {
   }
   
   /**
+   * We combine both regular and ex authors to a list of normalised strings.
+   *
    * @return queue of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
    * Umlaut transliterations reduced to single letter
    */
   public static List<String> normalize(Authorship authorship) {
-    return authorship == null ? Collections.EMPTY_LIST : normalize(authorship.getAuthors());
-  }
-  
-  private static List<String> normalize(List<String> authors) {
-    if (authors == null || authors.isEmpty()) {
+    if (authorship == null) return Collections.EMPTY_LIST;
+
+    final List<String> authors = new ArrayList<>();
+    if (authorship.getAuthors() != null) {
+      authors.addAll(authorship.getAuthors());
+    }
+    if (authorship.getExAuthors() != null) {
+      authors.addAll(authorship.getExAuthors());
+    }
+    if (authors.isEmpty()) {
       return Collections.EMPTY_LIST;
     }
     List<String> normed = new ArrayList<>(authors.size());

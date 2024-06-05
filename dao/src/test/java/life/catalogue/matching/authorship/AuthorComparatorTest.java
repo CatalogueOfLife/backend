@@ -128,7 +128,6 @@ public class AuthorComparatorTest {
    * Ignore the ex author and allow for swapped authors as ex is used differently in zoology and botany
    */
   @Test
-  @Ignore("not implemented")
   public void compareEx() throws Exception {
     Name p1 = new Name();
     Name p2 = new Name();
