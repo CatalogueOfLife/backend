@@ -115,7 +115,7 @@ import static org.junit.Assert.*;
       assertEqual(comp.normalizeName(n), "doring", "walther");
       
       n.getCombinationAuthorship().setExAuthors(Lists.newArrayList("Käsekuchen"));
-      assertEqual(comp.normalizeName(n), "doring", "walther");
+      assertEqual(comp.normalizeName(n), "doring", "kasekuchen", "walther");
   
       n.setBasionymAuthorship(cr("1904", "B.C.Tremendous", "L.", "Linne"));
       n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("BBC Tremendous", "L"));

@@ -187,21 +187,17 @@ public class BasionymSorterTest {
     );
 
     Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
-    assertEquals(3, groups.size());
+    assertEquals(2, groups.size());
     for (BasionymGroup<FormattableName> g : groups) {
       assertFalse(g.getRecombinations().isEmpty());
       switch (g.getRecombinations().get(0).getBasionymAuthorship().toString()) {
         case "Booth ex G.Kirchn.":
-          assertEquals(2, g.getRecombinations().size());
+          // Kirchn. is the abbreviation for Emil Otto Oskar Kirchner
+          assertEquals(3, g.getRecombinations().size());
           assertNotNull(g.getBasionym());
           break;
         case "T.Kirchn.":
           // author comparison has to be very strict and must treat different initials as relevant
-          assertEquals(1, g.getRecombinations().size());
-          assertNull(g.getBasionym());
-          break;
-        case "Booth ex Kirchn.":
-          // Kirchn. is the abbreviation for Emil Otto Oskar Kirchner
           assertEquals(1, g.getRecombinations().size());
           assertNull(g.getBasionym());
           break;
