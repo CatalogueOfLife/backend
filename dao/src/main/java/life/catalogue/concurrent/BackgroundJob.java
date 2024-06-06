@@ -270,7 +270,7 @@ public abstract class BackgroundJob implements Runnable {
    * Return the fixed prefix to be used for email notification freemarker templates.
    * If null is returned no notification will be done. The prefix will be appended with the final status of the job to find the appropriate template.
    *
-   * See also getEmailData() whcih supplies the data model to render the freemarker template.
+   * See also getEmailData() which supplies the data model to render the freemarker template.
    */
   @JsonIgnore
   public String getEmailTemplatePrefix() {

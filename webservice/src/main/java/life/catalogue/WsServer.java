@@ -408,6 +408,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
+    j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory()));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
     j.register(new DuplicateResource(dupeDao));

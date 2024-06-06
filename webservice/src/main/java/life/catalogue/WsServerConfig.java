@@ -112,6 +112,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   public JobConfig job = new JobConfig();
 
+  @Valid
+  public JobConfig docker = new JobConfig();
+
   /**
    * The name parser timeout in milliseconds
    */
