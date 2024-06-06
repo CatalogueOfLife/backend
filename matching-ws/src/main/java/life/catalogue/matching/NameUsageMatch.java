@@ -7,12 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import life.catalogue.api.vocab.TaxonomicStatus;
-
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -41,6 +37,8 @@ public class NameUsageMatch implements LinneanClassification {
   List<Status> additionalStatus = new ArrayList<>();
 
   private String nameFor(Rank rank) {
+    if (classification == null)
+      return null;
     return getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
@@ -49,6 +47,8 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   private String keyFor(Rank rank) {
+    if (classification == null)
+      return null;
     return getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
@@ -57,8 +57,11 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   private void setNameFor(String value, Rank rank) {
+    if (classification == null) {
+      this.classification = new ArrayList<>();
+    }
     Optional<RankedName> name =
-        this.getClassification().stream().filter(c -> c.getRank().equals(rank)).findFirst();
+        this.classification.stream().filter(c -> c.getRank().equals(rank)).findFirst();
     if (name.isPresent()) {
       name.get().setName(value);
       name.get().setCanonicalName(value);
@@ -67,7 +70,7 @@ public class NameUsageMatch implements LinneanClassification {
       newRank.setRank(rank);
       newRank.setName(value);
       newRank.setCanonicalName(value);
-      this.getClassification().add(newRank);
+      this.classification.add(newRank);
     }
   }
 

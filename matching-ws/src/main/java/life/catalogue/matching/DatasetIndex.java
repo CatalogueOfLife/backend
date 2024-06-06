@@ -57,6 +57,7 @@ public class DatasetIndex {
   final static NameUsageMatch NO_MATCH = NameUsageMatch.builder()
     .diagnostics(
       Diagnostics.builder()
+        .confidence(100)
         .matchType(MatchType.NONE)
         .build())
     .build();
