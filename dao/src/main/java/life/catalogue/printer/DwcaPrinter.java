@@ -39,6 +39,11 @@ public abstract class DwcaPrinter extends RowTermPrinter{
                SqlSessionFactory factory, Writer writer) throws IOException {
       super(params, ranks, extinct, countRank, taxonCounter, factory, writer, TabularFormat.TSV);
     }
+
+    @Override
+    public void write(SimpleName sn) {
+      super.write(sn);
+    }
   }
   public static class CSV extends DwcaPrinter{
     public CSV(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,

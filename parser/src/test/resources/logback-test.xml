@@ -11,6 +11,7 @@
         </encoder>
     </appender>
 
+    <logger name="ch.qos.logback" level="WARN" />
     <logger name="org.gbif" level="INFO"/>
     <!--
     <logger name="life.catalogue.parser" level="DEBUG"/>

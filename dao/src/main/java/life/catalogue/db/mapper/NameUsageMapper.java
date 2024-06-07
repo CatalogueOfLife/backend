@@ -213,6 +213,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Nullable @Param("maxRank") Rank maxRank);
 
   /**
+   * Iterates over all usages for a given dataset in any order and returns simple names.
+   */
+  Cursor<SimpleName> processDatasetSimple(@Param("datasetKey") int datasetKey);
+
+  /**
    * Iterates over all bare names for a given dataset, optionally filtered by a minimum/maximum rank to include.
    */
   Cursor<BareName> processDatasetBareNames(@Param("datasetKey") int datasetKey,

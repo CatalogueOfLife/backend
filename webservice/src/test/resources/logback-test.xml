@@ -19,7 +19,7 @@
     <reportDir>/Users/markus/Downloads/joblogs/report</reportDir>
    </appender>
 -->
-    <logger name="ch.qos.logback.classic" level="WARN"/>
+    <logger name="ch.qos.logback" level="WARN"/>
     <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
     <logger name="life.catalogue" level="INFO"/>
     <logger name="life.catalogue.importer" level="INFO"/>

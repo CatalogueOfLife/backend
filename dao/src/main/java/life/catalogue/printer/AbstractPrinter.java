@@ -72,7 +72,11 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
     counter.clear();
     try {
       session = factory.openSession(true);
-      PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+      if (ordered || params.hasFilter()) {
+        PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+      } else {
+        PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processDatasetSimple(params.getDatasetKey()), this);
+      }
       postIter();
     } finally {
       close();

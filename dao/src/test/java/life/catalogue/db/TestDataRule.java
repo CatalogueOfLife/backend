@@ -349,6 +349,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
     ScriptRunner runner = new ScriptRunner(session.getConnection());
     runner.setSendFullScript(true);
+    runner.setLogWriter(null); // dont print the SQL to stdout
 
     if (!testData.none) {
       System.out.format("Load %s test data\n\n", testData);
@@ -378,6 +379,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       ScriptRunner runner = new ScriptRunner(session.getConnection());
       runner.setSendFullScript(true);
       runner.setStopOnError(true);
+      runner.setLogWriter(null); // don't write to stdout
       runner.runScript(Resources.getResourceAsReader(InitDbUtils.DATA_FILE));
 
       copyGlobalTable(pgc, "dataset");

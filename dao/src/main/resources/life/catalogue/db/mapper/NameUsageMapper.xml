@@ -559,6 +559,12 @@
     </where>
   </select>
 
+  <select id="processDatasetSimple">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key=#{datasetKey}
+  </select>
+
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT
     <include refid="life.catalogue.db.mapper.NameMapper.nameCols">
