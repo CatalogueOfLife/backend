@@ -1,26 +1,20 @@
 package life.catalogue.matching;
 
-import com.github.dockerjava.api.async.ResultCallbackTemplate;
-import com.github.dockerjava.api.command.LogContainerCmd;
-import com.github.dockerjava.api.model.Frame;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.config.NormalizerConfig;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.printer.DwcaPrinter;
+import life.catalogue.printer.PrinterFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
-
-import life.catalogue.printer.DwcaPrinter;
-import life.catalogue.printer.PrinterFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -29,9 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallbackTemplate;
+import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Bind;
+import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.DockerClientBuilder;
 
 /**
  * Jonathan Rees Listtool integration
@@ -39,7 +35,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
  * https://github.com/gbif/gbif-docker-images/blob/feature/checklist-image/checklist-tools/Dockerfile
  */
 public class TaxonomicAlignJob extends BackgroundJob {
-  private static final String IMAGE = "docker.gbif.org/clb-listtools:0.0.5";
+  private static final String IMAGE = "docker.gbif.org/clb-listtools:0.0.1";
   private static final Logger LOG = LoggerFactory.getLogger(TaxonomicAlignJob.class);
   private final int datasetKey1;
   private final String root1;
@@ -52,14 +48,16 @@ public class TaxonomicAlignJob extends BackgroundJob {
   private SimpleName taxon2;
   private final JobResult result;
   private final SqlSessionFactory factory;
+  private final DockerClient client;
   private final File tmpDir;
   private final File src;
   protected final File src1;
   protected final File src2;
 
 
-  public TaxonomicAlignJob(int userKey, int datasetKey1, String root1, int datasetKey2, String root2, SqlSessionFactory factory, NormalizerConfig cfg) throws IOException {
+  public TaxonomicAlignJob(int userKey, int datasetKey1, String root1, int datasetKey2, String root2, SqlSessionFactory factory, DockerClient client, NormalizerConfig cfg) throws IOException {
     super(userKey);
+    this.client = client;
     this.factory = factory;
     this.datasetKey1 = datasetKey1;
     this.root1 = root1;
@@ -70,11 +68,11 @@ public class TaxonomicAlignJob extends BackgroundJob {
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var num = session.getMapper(NameUsageMapper.class);
-      dataset  = dm.getOrThrow(datasetKey1, Dataset.class);
+      dataset = dm.getOrThrow(datasetKey1, Dataset.class);
       dataset2 = dm.getOrThrow(datasetKey2, Dataset.class);
       if (root1 != null) {
         var key = DSID.of(datasetKey1, root1);
-        taxon  = num.getSimple(key);
+        taxon = num.getSimple(key);
         if (taxon == null) throw NotFoundException.notFound(Taxon.class, key);
       }
       if (root2 != null) {
@@ -114,38 +112,36 @@ public class TaxonomicAlignJob extends BackgroundJob {
     LOG.info("Export data");
     copyData();
 
-    final String dname = "job-"+getKey();
+    final String dname = "job-" + getKey();
     LOG.info("Create docker container {} from image {}", dname, IMAGE);
-    try (DockerClient docker = DockerClientBuilder.getInstance().build()) {
-      var container = docker.createContainerCmd(IMAGE)
-        .withCmd("./execute.sh")
-        .withName(dname)
-        .withAttachStdout(true)
-        .withAttachStderr(true)
-        .withTty(true)
-        .withBinds(
-          new Bind(src.getAbsolutePath(), new Volume("/home/gbif/source")),
-          new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
-        )
-        .exec();
+    var container = client.createContainerCmd(IMAGE)
+      .withCmd("./execute.sh")
+      .withName(dname)
+      .withAttachStdout(true)
+      .withAttachStderr(true)
+      .withTty(true)
+      .withBinds(
+        new Bind(src.getAbsolutePath(), new Volume("/home/gbif/source")),
+        new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
+      )
+      .exec();
 
-      try {
-        LOG.info("Starting container {} and align names using listtools", container.getId());
-        docker.startContainerCmd(container.getId()).exec();
+    try {
+      LOG.info("Starting container {} and align names using listtools", container.getId());
+      client.startContainerCmd(container.getId()).exec();
 
-        var callback = docker.waitContainerCmd(container.getId()).start();
-        callback.awaitCompletion();
+      var callback = client.waitContainerCmd(container.getId()).start();
+      callback.awaitCompletion();
 
-        dumpDockerLogs(docker, container.getId(), new File(tmpDir, "align.log"));
+      dumpDockerLogs(client, container.getId(), new File(tmpDir, "align.log"));
 
-      } catch (Exception e){
-        LOG.error("Error running taxonomic alignment job {}", getKey(), e);
-        throw e;
+    } catch (Exception e) {
+      LOG.error("Error running taxonomic alignment job {}", getKey(), e);
+      throw e;
 
-      } finally {
-        LOG.info("Removing container {}", container.getId());
-        docker.removeContainerCmd(container.getId()).exec();
-      }
+    } finally {
+      LOG.info("Removing container {}", container.getId());
+      client.removeContainerCmd(container.getId()).exec();
     }
   }
 
@@ -199,12 +195,13 @@ public class TaxonomicAlignJob extends BackgroundJob {
     if (other instanceof TaxonomicAlignJob) {
       var oth = (TaxonomicAlignJob) other;
       return datasetKey1 == oth.datasetKey1 &&
-              datasetKey2 == oth.datasetKey2 &&
-              Objects.equals(root1, oth.root1) &&
-              Objects.equals(root2, oth.root2);
+        datasetKey2 == oth.datasetKey2 &&
+        Objects.equals(root1, oth.root1) &&
+        Objects.equals(root2, oth.root2);
     }
     return super.isDuplicate(other);
   }
+
   @Override
   public String getEmailTemplatePrefix() {
     return "taxalign";

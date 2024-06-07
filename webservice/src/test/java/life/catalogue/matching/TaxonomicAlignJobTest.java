@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.github.dockerjava.api.DockerClient;
+
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.BackgroundJob;
@@ -14,6 +16,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,11 +33,20 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
 
   @Rule
   public final TestDataRule dataRule = TestDataRule.apple();
+  DockerClient docker;
+
+  @Before
+  public void init() {
+    docker = PgSetupRule.getDockerClient();
+    System.out.println(docker);
+  }
 
   @Override
   public BackgroundJob buildJob() {
     try {
-      return new TaxonomicAlignJob(Users.TESTER, dataRule.testData.key, null, dataRule.testData.key, null, SqlSessionFactoryRule.getSqlSessionFactory(), new NormalizerConfig());
+      return new TaxonomicAlignJob(Users.TESTER, dataRule.testData.key, null, dataRule.testData.key, null,
+        SqlSessionFactoryRule.getSqlSessionFactory(), docker, new NormalizerConfig()
+      );
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -48,8 +60,8 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
   }
 
   class TaxonomicAlignJobTestData extends TaxonomicAlignJob {
-    public TaxonomicAlignJobTestData(int userKey, int datasetKey1, String root1, int datasetKey2, String root2, SqlSessionFactory factory, NormalizerConfig cfg) throws IOException {
-      super(userKey, datasetKey1, root1, datasetKey2, root2, factory, cfg);
+    public TaxonomicAlignJobTestData(int userKey, int datasetKey1, String root1, int datasetKey2, String root2) throws IOException {
+      super(userKey, datasetKey1, root1, datasetKey2, root2, SqlSessionFactoryRule.getSqlSessionFactory(), docker, new NormalizerConfig());
     }
 
     @Override
@@ -61,7 +73,7 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
 
   @Test
   public void alignmentFixedData() throws Exception {
-    var job = new TaxonomicAlignJobTestData(Users.TESTER, dataRule.testData.key, null, dataRule.testData.key, null, SqlSessionFactoryRule.getSqlSessionFactory(), new NormalizerConfig());
+    var job = new TaxonomicAlignJobTestData(Users.TESTER, dataRule.testData.key, null, dataRule.testData.key, null);
     job.run();
     assertTrue(job.isFinished());
   }

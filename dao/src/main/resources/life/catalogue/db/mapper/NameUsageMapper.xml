@@ -559,7 +559,7 @@
     </where>
   </select>
 
-  <select id="processDatasetSimple">
+  <select id="processDatasetSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE u.dataset_key=#{datasetKey}

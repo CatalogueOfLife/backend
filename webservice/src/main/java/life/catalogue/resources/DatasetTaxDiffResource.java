@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import com.github.dockerjava.api.DockerClient;
+
 import io.dropwizard.auth.Auth;
 
 import life.catalogue.WsServerConfig;
@@ -20,12 +22,14 @@ import java.io.IOException;
 @Produces(MediaType.APPLICATION_JSON)
 public class DatasetTaxDiffResource {
   private final JobExecutor exec;
+  private final DockerClient docker;
   private final SqlSessionFactory factory;
   private final WsServerConfig cfg;
 
-  public DatasetTaxDiffResource(JobExecutor exec, SqlSessionFactory factory, WsServerConfig cfg) {
+  public DatasetTaxDiffResource(JobExecutor exec, SqlSessionFactory factory, DockerClient docker, WsServerConfig cfg) {
     this.cfg = cfg;
     this.exec = exec;
+    this.docker = docker;
     this.factory = factory;
   }
 
@@ -36,7 +40,7 @@ public class DatasetTaxDiffResource {
                                @QueryParam("root") String root,
                                @QueryParam("root2") String root2,
                                @Auth User user) throws IOException {
-    var job = new TaxonomicAlignJob(user.getKey(), key, root, key2, root2, factory, cfg.normalizer);
+    var job = new TaxonomicAlignJob(user.getKey(), key, root, key2, root2, factory, docker, cfg.normalizer);
     exec.submit(job);
     return job;
   }

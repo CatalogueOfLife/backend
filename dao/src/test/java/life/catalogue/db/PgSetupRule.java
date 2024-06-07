@@ -1,5 +1,7 @@
 package life.catalogue.db;
 
+import com.github.dockerjava.api.DockerClient;
+
 import life.catalogue.common.func.ThrowingSupplier;
 import life.catalogue.dao.Partitioner;
 
@@ -113,6 +115,10 @@ public class PgSetupRule extends SqlSessionFactoryRule {
     shutdownDbPool();
     PG_CONTAINER.stop();
     cfg = prev;
+  }
+
+  public static DockerClient getDockerClient() {
+    return PG_CONTAINER == null ? null : PG_CONTAINER.getDockerClient();
   }
 
 }

@@ -25,6 +25,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import life.catalogue.matching.DockerConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +76,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public GbifConfig gbif = new GbifConfig();
 
   @Valid
+  @NotNull
+  public DockerConfig docker = new DockerConfig();
+
+  @Valid
   public DoiConfig doi;
 
   @Valid
@@ -111,9 +117,6 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
 
   @Valid
   public JobConfig job = new JobConfig();
-
-  @Valid
-  public JobConfig docker = new JobConfig();
 
   /**
    * The name parser timeout in milliseconds
