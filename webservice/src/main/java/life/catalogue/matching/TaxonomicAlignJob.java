@@ -7,6 +7,7 @@ import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.command.PullImageResultCallback;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -35,6 +36,8 @@ import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Volume;
+
+import javax.ws.rs.ProcessingException;
 
 /**
  * Jonathan Rees Listtool integration
@@ -145,6 +148,10 @@ public class TaxonomicAlignJob extends BackgroundJob {
     // do we need to pull the image from the registry?
     try {
       client.inspectImageCmd(IMAGE_VERSION).exec();
+
+    } catch (ProcessingException e) {
+      throw new UnavailableException("No docker environment existing for processing taxonomic alignments");
+
     } catch (com.github.dockerjava.api.exception.NotFoundException e) {
       LOG.info("Pulling docker image {} from registry", IMAGE_VERSION);
       client.pullImageCmd(IMAGE)

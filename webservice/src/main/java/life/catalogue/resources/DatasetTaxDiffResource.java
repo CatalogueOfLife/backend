@@ -2,6 +2,8 @@ package life.catalogue.resources;
 
 import com.github.dockerjava.api.DockerClient;
 
+import com.google.common.base.Preconditions;
+
 import io.dropwizard.auth.Auth;
 
 import life.catalogue.WsServerConfig;
