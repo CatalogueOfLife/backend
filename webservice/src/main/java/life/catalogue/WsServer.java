@@ -1,11 +1,5 @@
 package life.catalogue;
 
-import com.github.dockerjava.api.DockerClient;
-
-import com.github.dockerjava.core.DockerClientBuilder;
-
-import com.github.dockerjava.core.DockerClientConfig;
-
 import life.catalogue.admin.jobs.cron.CronExecutor;
 import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
@@ -25,8 +19,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
-import life.catalogue.printer.DatasetDiffService;
-import life.catalogue.printer.SectorDiffService;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
@@ -61,6 +53,8 @@ import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
+import life.catalogue.printer.DatasetDiffService;
+import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
@@ -93,6 +87,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.DockerClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
@@ -289,7 +284,8 @@ public class WsServer extends Application<WsServerConfig> {
 
     // Docker
     DockerClient docker = cfg.docker.newDockerClient();
-
+    env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
+    
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, bus);
 
