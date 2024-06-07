@@ -285,7 +285,7 @@ public class WsServer extends Application<WsServerConfig> {
     // Docker
     DockerClient docker = cfg.docker.newDockerClient();
     env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
-    
+
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, bus);
 

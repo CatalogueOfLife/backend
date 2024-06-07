@@ -2,14 +2,13 @@ package life.catalogue.matching;
 
 import com.github.dockerjava.api.command.CreateContainerResponse;
 
-import com.github.dockerjava.api.command.InspectImageResponse;
-
 import com.github.dockerjava.api.command.PullImageResultCallback;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.config.NormalizerConfig;
@@ -21,7 +20,13 @@ import life.catalogue.printer.PrinterFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -45,10 +50,11 @@ import javax.ws.rs.ProcessingException;
  * https://github.com/gbif/gbif-docker-images/blob/feature/checklist-image/checklist-tools/Dockerfile
  */
 public class TaxonomicAlignJob extends BackgroundJob {
-  private static final String IMAGE = "docker.gbif.org/clb-listtools";
-  private static final String VERSION = "0.0.1";
-  private static final String IMAGE_VERSION = IMAGE +":"+ VERSION;
   private static final Logger LOG = LoggerFactory.getLogger(TaxonomicAlignJob.class);
+  private static final String IMAGE = "docker.gbif.org/clb-listtools";
+  private static final String VERSION = "0.0.2";
+  private static final String IMAGE_VERSION = IMAGE +":"+ VERSION;
+
   private final int datasetKey1;
   private final String root1;
   private final int datasetKey2;
@@ -95,6 +101,10 @@ public class TaxonomicAlignJob extends BackgroundJob {
     }
     this.result = new JobResult(getKey());
     this.tmpDir = cfg.scratchDir(getKey());
+    FileUtils.forceMkdir(tmpDir);
+    // we need to open permissions for the work directory as the docker user writing files is different
+    PathUtils.setPermission777(tmpDir.toPath());
+
     this.src = new File(tmpDir, "sources");
     this.src1 = new File(src, "a");
     this.src2 = new File(src, "b");

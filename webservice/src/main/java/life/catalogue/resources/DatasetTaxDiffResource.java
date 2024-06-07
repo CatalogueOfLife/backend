@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType;
 
 import java.io.IOException;
 
-@Path("/dataset/{key}/taxdiff")
+@Path("/dataset/{key}/taxalign")
 @SuppressWarnings("static-method")
 @Produces(MediaType.APPLICATION_JSON)
 public class DatasetTaxDiffResource {

@@ -38,13 +38,12 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
   @Before
   public void init() {
     docker = PgSetupRule.getDockerClient();
-    System.out.println(docker);
   }
 
   @Override
   public BackgroundJob buildJob() {
     try {
-      return new TaxonomicAlignJob(Users.TESTER, dataRule.testData.key, null, dataRule.testData.key, null,
+      return new TaxonomicAlignJob(Users.TESTER, dataRule.testData.key, "root-1", dataRule.testData.key, "root-2",
         SqlSessionFactoryRule.getSqlSessionFactory(), docker, new NormalizerConfig()
       );
     } catch (IOException e) {
