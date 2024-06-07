@@ -52,6 +52,7 @@
     <commons-compress.version>1.22</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
     <copy_down.version>1.1</copy_down.version>
+    <docker-client.version>3.2.13</docker-client.version><!--keep in sync with test containers -->
     <dropwizard.version>2.1.12</dropwizard.version>
     <dwc-api.version>1.47</dwc-api.version>
     <dwca-io.version>2.13</dwca-io.version>
@@ -602,6 +603,13 @@
         <artifactId>reflectasm</artifactId>
         <version>${kryo-reflectasm.version}</version>
         <type>bundle</type>
+      </dependency>
+
+      <!-- docker -->
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java</artifactId>
+        <version>${docker-client.version}</version>
       </dependency>
 
       <!-- elastic -->

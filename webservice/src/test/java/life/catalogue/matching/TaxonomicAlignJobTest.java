@@ -31,7 +31,6 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
   @Rule
   public final TestDataRule dataRule = TestDataRule.apple();
 
-
   @Override
   public BackgroundJob buildJob() {
     try {

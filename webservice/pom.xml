@@ -16,13 +16,6 @@
   </properties>
 
   <dependencies>
-    <!--
-    -->
-    <dependency>
-      <groupId>com.github.docker-java</groupId>
-      <artifactId>docker-java</artifactId>
-      <version>3.2.13</version><!--keep in sync with test containers -->
-    </dependency>
     <!-- Dropwizard -->
     <dependency>
       <groupId>io.dropwizard</groupId>
@@ -207,6 +200,11 @@
       <groupId>org.elasticsearch.client</groupId>
       <artifactId>elasticsearch-rest-client</artifactId>
       <version>${elasticsearch.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java</artifactId>
     </dependency>
 
     <!-- collections & CSV -->
