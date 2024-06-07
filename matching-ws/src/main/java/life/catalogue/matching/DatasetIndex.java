@@ -39,6 +39,10 @@ import org.springframework.stereotype.Service;
 
 /**
  * Represents an index of a dataset.
+ * This class provides the entry point search methods for an index, and
+ * methods to retrieve metadata about the index.
+ *
+ * This class has knowledge of Lucene indexes and how to query them.
  */
 @Slf4j
 @Service
@@ -62,7 +66,6 @@ public class DatasetIndex {
         .build())
     .build();
 
-
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
   void init() {
@@ -79,66 +82,56 @@ public class DatasetIndex {
       }
 
       // load identifier indexes
-      this.identifierSearchers = new HashMap<>();
-      final Path identifiersPath = Path.of(indexPath + "/identifiers");
-      if (identifiersPath.toFile().exists()) {
-
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(identifiersPath)) {
-          for (Path entry : stream) {
-            if (Files.isDirectory(entry)) {
-              try {
-                // load the metadata for index
-                // get the dataset key from the index name
-                ObjectMapper mapper = new ObjectMapper();
-                Dataset dataset = mapper.readValue(new FileReader(entry.resolve("metadata.json").toFile()),
-                  Dataset.class);
-
-                // add the prefix mapping
-                dataset.setPrefixMapping(prefixMapping.get(dataset.getKey()).getPrefixMapping());
-
-                Directory identifierDir = new MMapDirectory(entry);
-                DirectoryReader reader = DirectoryReader.open(identifierDir);
-                identifierSearchers.put(dataset, new IndexSearcher(reader));
-              } catch (IOException e) {
-                log.warn("Cannot open identifiers lucene index {}", entry, e);
-              }
-            }
-          }
-        } catch (IOException e) {
-          log.error("Cannot read identifiers index directory", e);
-        }
-      } else {
-        log.info("Identifiers indexes not found at {}", indexPath + "/identifiers");
-      }
+      this.identifierSearchers = initialiseAdditionalIndexes("identifiers");
 
       // load ancillary indexes
-      this.ancillarySearchers = new HashMap<>();
-      if (Path.of(indexPath + "/ancillary").toFile().exists()) {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of(indexPath + "/ancillary"))) {
-          for (Path entry : stream) {
-            if (Files.isDirectory(entry)) {
-              try {
-                Directory ancillaryDir = new MMapDirectory(entry);
-                DirectoryReader reader = DirectoryReader.open(ancillaryDir);
-                ObjectMapper mapper = new ObjectMapper();
-                Dataset dataset = mapper.readValue(new FileReader(entry.resolve("metadata.json").toFile()),
-                  Dataset.class);
-                ancillarySearchers.put(dataset, new IndexSearcher(reader));
-              } catch (IOException e) {
-                log.warn("Cannot open ancillary lucene index {}", entry, e);
-              }
-            }
-          }
-        } catch (IOException e) {
-          log.error("Cannot read ancillary index directory", e);
-        }
-      } else {
-        log.info("Ancillary indexes not found at {}", indexPath + "/ancillary");
-      }
+      this.ancillarySearchers = initialiseAdditionalIndexes("ancillary");
 
     } else {
       log.warn("Lucene index not found at {}", mainIndexPath);
     }
+  }
+
+  protected void reinit() {
+
+    final String mainIndexPath = getMainIndexPath();
+    if (new File(mainIndexPath).exists()) {
+      log.info("Loading lucene index from {}", mainIndexPath);
+      try {
+        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+      } catch (IOException e) {
+        log.warn("Cannot open lucene index. Index not available", e);
+      }
+    } else {
+      log.warn("Lucene index not found at {}", mainIndexPath);
+    }
+  }
+
+  private HashMap<Dataset, IndexSearcher> initialiseAdditionalIndexes(String directoryName) {
+    HashMap<Dataset, IndexSearcher> searchers = new HashMap<>();
+    if (Path.of(indexPath + "/" + directoryName).toFile().exists()) {
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of(indexPath + "/" + directoryName))) {
+        for (Path entry : stream) {
+          if (Files.isDirectory(entry)) {
+            try {
+              Directory ancillaryDir = new MMapDirectory(entry);
+              DirectoryReader reader = DirectoryReader.open(ancillaryDir);
+              ObjectMapper mapper = new ObjectMapper();
+              Dataset dataset = mapper.readValue(new FileReader(entry.resolve("metadata.json").toFile()),
+                Dataset.class);
+              searchers.put(dataset, new IndexSearcher(reader));
+            } catch (IOException e) {
+              log.warn("Cannot open {} lucene index {}", directoryName, entry, e);
+            }
+          }
+        }
+      } catch (IOException e) {
+        log.error("Cannot read " + directoryName + " index directory", e);
+      }
+    } else {
+      log.info("Ancillary indexes not found at {}", indexPath + "/" + directoryName);
+    }
+    return searchers;
   }
 
   private Map<Integer, Dataset> loadPrefixMapping() {
@@ -162,21 +155,6 @@ public class DatasetIndex {
     }
   }
 
-  protected void reinit() {
-
-    final String mainIndexPath = getMainIndexPath();
-    if (new File(mainIndexPath).exists()) {
-      log.info("Loading lucene index from {}", mainIndexPath);
-      try {
-        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
-      } catch (IOException e) {
-        log.warn("Cannot open lucene index. Index not available", e);
-      }
-    } else {
-      log.warn("Lucene index not found at {}", mainIndexPath);
-    }
-  }
-
   private @NotNull String getMainIndexPath() {
     return indexPath + "/main";
   }
@@ -185,6 +163,28 @@ public class DatasetIndex {
     try {
       DirectoryReader reader = DirectoryReader.open(indexDirectory);
       this.searcher = new IndexSearcher(reader);
+    } catch (IOException e) {
+      log.warn("Cannot open lucene index. Index not available", e);
+    }
+  }
+
+  void initWithIdentifierDir(Dataset dataset, Directory indexDirectory) {
+    try {
+      DirectoryReader reader = DirectoryReader.open(indexDirectory);
+      IndexSearcher searcher = new IndexSearcher(reader);
+      this.identifierSearchers.put(dataset, searcher);
+
+    } catch (IOException e) {
+      log.warn("Cannot open lucene index. Index not available", e);
+    }
+  }
+
+  void initWithAncillaryDir(Dataset dataset, Directory indexDirectory) {
+    try {
+      DirectoryReader reader = DirectoryReader.open(indexDirectory);
+      IndexSearcher searcher = new IndexSearcher(reader);
+      this.ancillarySearchers.put(dataset, searcher);
+
     } catch (IOException e) {
       log.warn("Cannot open lucene index. Index not available", e);
     }
@@ -221,9 +221,9 @@ public class DatasetIndex {
       log.error("Cannot read index directory attributes", e);
     }
 
-    metadata.setDatasetTitle((String) readDatasetInfo().getOrDefault("datasetTitle", null));
-    metadata.setDatasetKey((String) readDatasetInfo().getOrDefault("datasetKey", null));
-    metadata.setBuildInfo(readGitInfo());
+    metadata.setDatasetTitle((String) getDatasetInfo().getOrDefault("datasetTitle", null));
+    metadata.setDatasetKey((String) getDatasetInfo().getOrDefault("datasetKey", null));
+    metadata.setBuildInfo(getGitInfo());
 
     // number of taxa
     IndexReader reader = getSearcher().getIndexReader();
@@ -250,7 +250,7 @@ public class DatasetIndex {
    * Reads the git information from the git.json file in the working directory.
    * @return Map<String, Object>
    */
-  public Map<String, Object> readGitInfo() {
+  public Map<String, Object> getGitInfo() {
     ObjectMapper mapper = new ObjectMapper();
     final String filePath = workingDir + "/git.json";
     try {
@@ -284,7 +284,7 @@ public class DatasetIndex {
    * Reads the dataset information from the dataset.json file in the working directory.
    * @return Map<String, Object>
    */
-  public Map<String, Object> readDatasetInfo() {
+  public Map<String, Object> getDatasetInfo() {
     ObjectMapper mapper = new ObjectMapper();
 
     String filePath = workingDir + "/dataset.json";
@@ -316,16 +316,59 @@ public class DatasetIndex {
   /**
    * Creates a new in memory lucene index from the given list of usages.
    *
-   * @param usages
    * @return
    * @throws IOException
    */
-  public static DatasetIndex newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
-    Directory dir = IndexingService.newMemoryIndex(usages);
+  public static DatasetIndex newDatasetIndex(Directory mainIndexDir) throws IOException {
     DatasetIndex datasetIndex = new DatasetIndex();
-    datasetIndex.initWithDir(dir);
+    datasetIndex.initWithDir(mainIndexDir);
     return datasetIndex;
   }
+
+  /**
+   * Creates a new in memory lucene index from the given list of usages.
+   *
+   * @return
+   * @throws IOException
+   */
+  public static DatasetIndex newDatasetIndex(Directory mainIndexDir, Map<Dataset, Directory> idIndexes) throws IOException {
+    DatasetIndex datasetIndex = newDatasetIndex(mainIndexDir);
+    for (Dataset dataset: idIndexes.keySet()){
+      datasetIndex.initWithIdentifierDir(dataset, idIndexes.get(dataset));
+    }
+    return datasetIndex;
+  }
+
+//  /**
+//   * Creates a new in memory lucene index from the given list of usages.
+//   *
+//   * @param usages
+//   * @return
+//   * @throws IOException
+//   */
+//  public static DatasetIndex newMemoryDatasetIndex(MatchingService matchingService, Iterable<NameUsage> usages, Iterable<NameUsage> idUsages) throws IOException {
+//
+//    Directory mainDir = IndexingService.newMemoryIndex(usages);
+//
+//    //initialise main index
+//    DatasetIndex datasetIndex = new DatasetIndex();
+//    datasetIndex.initWithDir(mainDir);
+//
+//    // initialise identifier index
+//    Directory idDir = IndexingService.newMemoryIndex(usages);
+//
+//    // join the index
+//    IndexingService.createJoinIndex(matchingService, mainDir, idDir, false);
+//
+//
+//    // dataset index
+//    DatasetIndex datasetIndex = new DatasetIndex();
+//    datasetIndex.initWithDir(mainDir, idDir);
+//
+//
+//    return datasetIndex;
+//  }
+
 
   private IndexSearcher getSearcher() {
     if (searcher == null) {
@@ -337,14 +380,14 @@ public class DatasetIndex {
   /**
    * Lookup a name usage by its usage key.
    *
-   * @param usageKey
-   * @return
+   * @param usageKey the usage key to lookup
+   * @return NameUsageMatch
    */
   public NameUsageMatch matchByUsageKey(String usageKey) {
     return matchByKey(usageKey, this::getByUsageKey);
   }
 
-  public static String escapeQueryChars(String s) {
+  private static String escapeQueryChars(String s) {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
@@ -360,7 +403,7 @@ public class DatasetIndex {
     return sb.toString();
   }
 
-  public Optional<Document> getByUsageKey(String usageKey) {
+  private Optional<Document> getByUsageKey(String usageKey) {
     Query query = new TermQuery(new Term(FIELD_ID, escapeQueryChars(usageKey)));
     try {
       TopDocs docs = getSearcher().search(query, 3);
@@ -373,7 +416,7 @@ public class DatasetIndex {
     return Optional.empty();
   }
 
-  public NameUsageMatch matchByKey(String key, Function<String, Optional<Document>> func){
+  private NameUsageMatch matchByKey(String key, Function<String, Optional<Document>> func){
 
     Optional<Document> optDoc = func.apply(key);
     if (optDoc.isPresent()) {
@@ -420,7 +463,7 @@ public class DatasetIndex {
             }
           }
 
-          if (!key.startsWith(dataset.prefix)) {
+          if ((dataset.prefix == null || !key.startsWith(dataset.prefix)) || dataset.prefix.equals("*")) {
             // only search indexes with matching prefixes
             continue;
           }
@@ -441,7 +484,7 @@ public class DatasetIndex {
                 .diagnostics(
                   Diagnostics.builder()
                     .matchType(MatchType.NONE)
-                    .issues(List.of(ignoredIssue))
+                    .issues(new ArrayList<MatchIssue>(List.of(ignoredIssue)))
                     .note("Multiple matches found for the identifier")
                     .build())
                 .synonym(false)
@@ -463,12 +506,23 @@ public class DatasetIndex {
                 .diagnostics(
                   Diagnostics.builder()
                     .matchType(MatchType.NONE)
-                    .issues(List.of(ignoredIssue))
+                    .issues(new ArrayList<MatchIssue>(List.of(ignoredIssue)))
                     .note("Identifier recognised in {}, but not matching in main index" + dataset.getKey())
                     .build())
                 .synonym(false)
                 .build();
             }
+          } else {
+            log.info("Identifier {} not found in dataset {}", key, dataset.getKey());
+            return NameUsageMatch.builder()
+              .diagnostics(
+                Diagnostics.builder()
+                  .matchType(MatchType.NONE)
+                  .issues(new ArrayList<MatchIssue>(List.of(notFoundIssue)))
+                  .note("Not found for the identifier")
+                  .build())
+              .synonym(false)
+              .build();
           }
         }
       } catch (IOException e) {
@@ -489,7 +543,7 @@ public class DatasetIndex {
    * @param parentID
    * @return
    */
-  public List<RankedName> loadHigherTaxa(String parentID) {
+  private List<RankedName> loadHigherTaxa(String parentID) {
 
     List<RankedName> higherTaxa = new ArrayList<>();
 

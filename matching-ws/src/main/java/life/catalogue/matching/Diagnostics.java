@@ -10,6 +10,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 public class Diagnostics {
   @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
   MatchType matchType;
-  @JsonIgnore
+  @Schema(description = "Issues encountered during the match process")
   List<MatchIssue> issues = new ArrayList<>();
   @Schema(description = "Confidence level in percent")
   Integer confidence;

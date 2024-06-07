@@ -40,7 +40,7 @@ public class DatasetIndexTest {
   public static void buildMatcher() throws Exception {
     HigherTaxaComparator syn = new HigherTaxaComparator();
     syn.loadClasspathDicts("dicts");
-    index = DatasetIndex.newMemoryIndex(readTestNames());
+    index = DatasetIndex.newDatasetIndex(IndexingService.newMemoryIndex(readTestNames()));
   }
 
   public static List<NameUsage> readTestNames() throws Exception {

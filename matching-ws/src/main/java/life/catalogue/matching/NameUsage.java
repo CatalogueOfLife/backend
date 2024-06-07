@@ -37,5 +37,5 @@ public class NameUsage {
   String category;
 
   @CsvBindByName(column = "extension")
-  private String extension;
+  String extension;
 }

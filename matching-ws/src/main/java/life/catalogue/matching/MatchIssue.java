@@ -2,6 +2,7 @@ package life.catalogue.matching;
 
 public enum MatchIssue {
 
+  NO_MATCH,
   /**
    * The name was matched to two name usages, with the same confidence, but different classifications.
    */

@@ -23,7 +23,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.apache.lucene.store.Directory;
+
 import org.gbif.nameparser.api.*;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
@@ -41,7 +45,8 @@ public class MatchingTestConfiguration {
 
   @Bean
   public static DatasetIndex provideIndex() throws IOException {
-    return DatasetIndex.newMemoryIndex(loadIndexFromV1Responses());
+    Directory dir = IndexingService.newMemoryIndex(loadIndexFromV1Responses());
+    return DatasetIndex.newDatasetIndex(dir);
   }
 
   @Bean

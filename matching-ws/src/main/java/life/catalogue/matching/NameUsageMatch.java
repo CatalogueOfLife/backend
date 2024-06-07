@@ -95,6 +95,18 @@ public class NameUsageMatch implements LinneanClassification {
         .orElse(null);
   }
 
+  @JsonIgnore
+  public void addMatchIssue(MatchIssue issue) {
+    if (diagnostics == null) {
+      diagnostics = Diagnostics.builder().build();
+    }
+    if (diagnostics.getIssues() == null){
+      diagnostics.setIssues(new ArrayList<>());
+    }
+
+    diagnostics.getIssues().add(issue);
+  }
+
   @Override
   @JsonIgnore
   public String getKingdom() {

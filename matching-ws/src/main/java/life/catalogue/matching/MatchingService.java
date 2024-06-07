@@ -22,7 +22,6 @@ import life.catalogue.matching.similarity.StringSimilarity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
@@ -33,6 +32,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * Matching service that matches a scientific name to a name usage in the index.
+ * This uses a DatasetIndex to query the index and match names.
+ *
+ * This is higher level service that uses the DatasetIndex to match names.
+ */
 @Slf4j
 @Service
 public class MatchingService {
@@ -188,14 +193,7 @@ public class MatchingService {
   }
 
   public static String first(String... values) {
-    if (values != null) {
-      for (String val : values) {
-        if (!StringUtils.isBlank(val)) {
-          return val;
-        }
-      }
-    }
-    return null;
+    return NameNRank.first(values);
   }
 
   /**
@@ -318,7 +316,7 @@ public class MatchingService {
           idMatch.getDiagnostics().setTimeTaken(watch.getTime());
           return idMatch;
       } else {
-        sciNameMatch.getDiagnostics().getIssues().add(MatchIssue.TAXON_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchIssue.TAXON_ID_NOT_FOUND);
       }
     }
 
@@ -335,7 +333,7 @@ public class MatchingService {
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());
         return idMatch;
       } else {
-        sciNameMatch.getDiagnostics().getIssues().add(MatchIssue.TAXON_CONCEPT_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchIssue.TAXON_CONCEPT_ID_NOT_FOUND);
       }
     }
 
@@ -352,7 +350,7 @@ public class MatchingService {
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());
         return idMatch;
       } else {
-        sciNameMatch.getDiagnostics().getIssues().add(MatchIssue.SCIENTIFIC_NAME_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchIssue.SCIENTIFIC_NAME_ID_NOT_FOUND);
       }
     }
 
@@ -372,7 +370,7 @@ public class MatchingService {
       if (!Objects.equals(idMatch.getUsage().getKey(), sciNameMatch.getUsage().getKey())) {
         log.warn("Inconsistent match for taxonID[{}]: {} vs {}",
           idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), sciNameMatch.getUsage().getCanonicalName());
-        idMatch.getDiagnostics().getIssues().add(MatchIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
+        idMatch.addMatchIssue(MatchIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
       }
     }
   }
@@ -393,7 +391,7 @@ public class MatchingService {
         if (!idMatch.getUsage().getCanonicalName().equalsIgnoreCase(canonicalName)) {
           log.warn("Inconsistent scientific name for taxonID[{}]: {} vs {}",
             idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), scientificName);
-          idMatch.getDiagnostics().getIssues().add(MatchIssue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT);
+          idMatch.addMatchIssue(MatchIssue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT);
         }
       } catch (Exception e){
         log.warn("Failed to parse scientific name in consistency check {}", scientificName, e);
@@ -842,11 +840,11 @@ public class MatchingService {
       Rank rank,
       LinneanClassification lc,
       Set<String> exclude,
-      final MatchingMode mode,
+      @NotNull final MatchingMode mode,
       final boolean verbose) {
 
     if (Strings.isNullOrEmpty(canonicalName)) {
-      return noMatch(100, List.of(MatchIssue.NO_NAME_SUPPLIED), "No name given", null);
+      return noMatch(100, MatchIssue.NO_NAME_SUPPLIED, "No name given", null);
     }
 
     // first try our manual hackmap
@@ -866,6 +864,8 @@ public class MatchingService {
       case HIGHER:
         matches = queryHigher(canonicalName, rank, lc, verbose);
         break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + mode);
     }
 
     // exclude any matches against the explicit exclusion list
@@ -942,7 +942,7 @@ public class MatchingService {
             if (!isMatch(best)) {
               return noMatch(
                   99,
-                List.of(MatchIssue.MULTIPLE_MATCHES_SAME_CONFIDENCE),
+                MatchIssue.MULTIPLE_MATCHES_SAME_CONFIDENCE,
                   "Multiple equal matches for " + canonicalName,
                   verbose ? matches : null);
             }
@@ -963,7 +963,7 @@ public class MatchingService {
           < (mode == MatchingMode.HIGHER ? MIN_CONFIDENCE_FOR_HIGHER_MATCHES : MIN_CONFIDENCE)) {
         return noMatch(
             99,
-          List.of(MatchIssue.LOW_CONFIDENCE),
+          MatchIssue.LOW_CONFIDENCE,
             "No match because of too little confidence",
             verbose ? matches : null);
       }
@@ -981,7 +981,7 @@ public class MatchingService {
       return best;
     }
 
-    return noMatch(100, List.of(), null, null);
+    return noMatch(100, MatchIssue.NO_MATCH, null, null);
   }
 
   /**
@@ -1036,7 +1036,7 @@ public class MatchingService {
     }
     return noMatch(
         99,
-        List.of(MatchIssue.NO_LOWEST_DENOMINATOR),
+        MatchIssue.NO_LOWEST_DENOMINATOR,
         "No lowest denominator in equal matches for " + canonicalName,
         null);
   }
@@ -1145,9 +1145,13 @@ public class MatchingService {
 
   private static NameUsageMatch noMatch(
       int confidence,
-      @NotNull List<MatchIssue> issues,
+      @NotNull MatchIssue issue,
       String note,
       List<NameUsageMatch> alternatives) {
+
+    List<MatchIssue> issues = new ArrayList<>();
+    issues.add(issue);
+
     return NameUsageMatch.builder()
         .diagnostics(
             Diagnostics.builder()
@@ -1158,6 +1162,23 @@ public class MatchingService {
                 .build())
         .alternatives(alternatives)
         .build();
+  }
+
+  private static NameUsageMatch noMatch(
+    int confidence,
+    @NotNull List<MatchIssue> issues,
+    String note,
+    List<NameUsageMatch> alternatives) {
+    return NameUsageMatch.builder()
+      .diagnostics(
+        Diagnostics.builder()
+          .matchType(MatchType.NONE)
+          .confidence(confidence)
+          .issues(issues)
+          .note(note)
+          .build())
+      .alternatives(alternatives)
+      .build();
   }
 
   private int fuzzyMatchUnlikelyhood(String canonicalName, NameUsageMatch m) {

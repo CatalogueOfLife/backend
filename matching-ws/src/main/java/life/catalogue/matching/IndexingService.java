@@ -49,9 +49,6 @@ import org.gbif.nameparser.api.UnparsableNameException;
 import org.gbif.nameparser.util.NameFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -351,97 +348,132 @@ public class IndexingService {
     return new IndexWriter(dir, getIndexWriterConfig());
   }
 
-  public void writeJoinIndex(String tempIndexPath, String ancillaryIndexPath, boolean acceptedOnly) {
+
+  /**
+   *
+   * @param tempNameUsageIndexPath
+   * @param joinIndexPath
+   * @param acceptedOnly
+   */
+  private void writeJoinIndex(String tempNameUsageIndexPath, String joinIndexPath, boolean acceptedOnly) {
 
     try {
       // Load temp index directory
-      Directory tempDirectory = FSDirectory.open(Paths.get(tempIndexPath));
-      IndexReader tempReader = DirectoryReader.open(tempDirectory);
-      IndexSearcher searcher = new IndexSearcher(tempReader);
+      Directory tempDirectory = FSDirectory.open(Paths.get(tempNameUsageIndexPath));
 
       // Create ancillary index
-      Path indexDirectory = initialiseIndexDirectory(ancillaryIndexPath);
+      Path indexDirectory = initialiseIndexDirectory(joinIndexPath);
       Directory ancillaryDirectory = FSDirectory.open(indexDirectory);
-      IndexWriterConfig config = getIndexWriterConfig();
-      config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-      IndexWriter ancillaryIndexWriter = new IndexWriter(ancillaryDirectory, getIndexWriterConfig());
 
-      // Construct a simple query to get all documents
-      TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
-      ScoreDoc[] hits = results.scoreDocs;
-
-      AtomicLong counter = new AtomicLong(0);
-      AtomicLong matchedCounter = new AtomicLong(0);
-
-      // Write document data
-      for (ScoreDoc hit : hits) {
-
-        counter.incrementAndGet();
-        Document doc = searcher.storedFields().document(hit.doc);
-        Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
-
-        String status = doc.get(FIELD_STATUS);
-        if (status != null &&
-          acceptedOnly &&
-          !status.equals(TaxonomicStatus.ACCEPTED.name())) {
-          // skip synonyms, otherwise we would index them twice
-          continue;
-        }
-        String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
-        Classification classification = new Classification();
-        classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
-        classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
-        classification.setClazz(hierarchy.getOrDefault(Rank.CLASS.name(), ""));
-        classification.setOrder(hierarchy.getOrDefault(Rank.ORDER.name(), ""));
-        classification.setFamily(hierarchy.getOrDefault(Rank.FAMILY.name(), ""));
-        classification.setGenus(hierarchy.getOrDefault(Rank.GENUS.name(), ""));
-        classification.setSpecies(hierarchy.getOrDefault(Rank.SPECIES.name(), ""));
-
-        if (counter.get() % 100000 == 0) {
-          log.info("Indexed: {} taxa", counter.get());
-        }
-
-        // match to main dataset
-        try {
-          NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
-          if (nameUsageMatch.getUsage() != null) {
-            doc.add(new StringField(FIELD_JOIN_ID,
-              nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
-                nameUsageMatch.getUsage().getKey(), Field.Store.YES));
-            ancillaryIndexWriter.addDocument(doc);
-            matchedCounter.incrementAndGet();
-          }
-        }catch (Exception e) {
-          log.error("Problem matching name from ancillary index " + scientificName, e.getMessage(), e);
-        }
-      }
-
-      // close temp
-      tempReader.close();
-      tempDirectory.close();
-
-      // close ancillary
-      ancillaryIndexWriter.commit();
-      ancillaryIndexWriter.forceMerge(1);
-      ancillaryIndexWriter.close();
-      ancillaryDirectory.close();
+      // create the join index
+      Long[] counters = createJoinIndex(matchingService, tempDirectory, ancillaryDirectory, acceptedOnly, true);
 
       // load export metadata
       ObjectMapper mapper = new ObjectMapper();
-      Dataset metadata = mapper.readValue(new FileReader(new File(tempIndexPath + "/metadata.json")), Dataset.class);
-      metadata.setTaxonCount(counter.get());
-      metadata.setMatchesToMainIndex(matchedCounter.get());
+      Dataset metadata = mapper.readValue(
+        new FileReader(tempNameUsageIndexPath + "/metadata.json"),
+        Dataset.class);
+      metadata.setTaxonCount(counters[0]);
+      metadata.setMatchesToMainIndex(counters[1]);
 
       // write new metadata with counts
-      mapper.writeValue(new File(ancillaryIndexPath + "/metadata.json"), metadata);
+      mapper.writeValue(new File(joinIndexPath + "/metadata.json"), metadata);
 
-      log.info("Ancillary index written: {} documents.", counter.get());
+      log.info("Ancillary index written: {} documents, {} matched to main index", counters[0], counters[1]);
     } catch (Exception e) {
       log.error("Error writing documents to ancillary index: {}", e.getMessage(), e);
     }
   }
 
-  public Optional<Document> getById(IndexSearcher searcher, String id) {
+  /**
+   * Create a join index from a temp index and the main index
+   * @param tempUsageIndexDirectory
+   * @param outputDirectory
+   * @param acceptedOnly
+   * @throws Exception
+   */
+  public static Long[] createJoinIndex(MatchingService matchingService,
+                                       Directory tempUsageIndexDirectory,
+                                       Directory outputDirectory,
+                                       boolean acceptedOnly,
+                                       boolean closeDirectoryOnExit)
+    throws IOException {
+
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+    IndexWriter joinIndexWriter = new IndexWriter(outputDirectory, getIndexWriterConfig());
+
+    // Construct a simple query to get all documents
+    IndexReader tempReader = DirectoryReader.open(tempUsageIndexDirectory);
+    IndexSearcher searcher = new IndexSearcher(tempReader);
+    TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+    ScoreDoc[] hits = results.scoreDocs;
+
+    AtomicLong counter = new AtomicLong(0);
+    AtomicLong matchedCounter = new AtomicLong(0);
+
+    // Write document data
+    for (ScoreDoc hit : hits) {
+
+      counter.incrementAndGet();
+      Document doc = searcher.storedFields().document(hit.doc);
+      Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
+
+      String status = doc.get(FIELD_STATUS);
+      if (status != null &&
+        acceptedOnly &&
+        !status.equals(TaxonomicStatus.ACCEPTED.name())) {
+        // skip synonyms, otherwise we would index them twice
+        continue;
+      }
+      String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
+      Classification classification = new Classification();
+      classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
+      classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
+      classification.setClazz(hierarchy.getOrDefault(Rank.CLASS.name(), ""));
+      classification.setOrder(hierarchy.getOrDefault(Rank.ORDER.name(), ""));
+      classification.setFamily(hierarchy.getOrDefault(Rank.FAMILY.name(), ""));
+      classification.setGenus(hierarchy.getOrDefault(Rank.GENUS.name(), ""));
+      classification.setSpecies(hierarchy.getOrDefault(Rank.SPECIES.name(), ""));
+
+      if (counter.get() % 100000 == 0) {
+        log.info("Indexed: {} taxa", counter.get());
+      }
+
+      // match to main dataset
+      try {
+        NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
+        if (nameUsageMatch.getUsage() != null) {
+          doc.add(new StringField(FIELD_JOIN_ID,
+            nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
+              nameUsageMatch.getUsage().getKey(), Field.Store.YES));
+          joinIndexWriter.addDocument(doc);
+          matchedCounter.incrementAndGet();
+        } else {
+          log.debug("No match for {}", scientificName);
+        }
+      }catch (Exception e) {
+        log.error("Problem matching name from ancillary index " + scientificName, e.getMessage(), e);
+      }
+    }
+
+    // close temp
+    tempReader.close();
+    tempUsageIndexDirectory.close();
+
+    // close ancillary
+    joinIndexWriter.commit();
+    joinIndexWriter.forceMerge(1);
+    joinIndexWriter.close();
+
+    if (closeDirectoryOnExit) {
+      outputDirectory.close();
+    }
+
+    return new Long[]{counter.get(), matchedCounter.get()};
+  }
+
+  private static Optional<Document> getById(IndexSearcher searcher, String id) {
     Query query = new TermQuery(new Term(FIELD_ID, id));
     try {
       TopDocs docs = searcher.search(query, 3);
@@ -456,7 +488,7 @@ public class IndexingService {
     return Optional.empty();
   }
 
-  public Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
+  public static Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
     Map<String, String> classification = new HashMap<>();
     while (id != null) {
       Optional<Document> docOpt = getById(searcher, id);
