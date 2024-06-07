@@ -1,12 +1,13 @@
 package life.catalogue.matching;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
+import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
+import com.github.dockerjava.transport.DockerHttpClient;
 
 import javax.validation.constraints.NotNull;
-
-import java.util.Set;
-import java.util.UUID;
 
 /**
  * Configs to inform about the docker environment to be used
@@ -15,15 +16,28 @@ import java.util.UUID;
 public class DockerConfig {
 
   @NotNull
-  public String registry = "docker.gbif.org";
+  public String host = "unix:///var/run/docker.sock"; // tcp://docker.baeldung.com:2376
 
   @NotNull
-  public String host = "localhost";
+  public String registry = "docker.gbif.org";
 
-  public DockerClientConfig toDockerCfg() {
-    return DefaultDockerClientConfig.createDefaultConfigBuilder()
+  public String registryUsername;
+  public String registryPassword;
+
+  public DockerClient newDockerClient() {
+    var dcfg = DefaultDockerClientConfig.createDefaultConfigBuilder()
       .withDockerHost(host)
       .withRegistryUrl(registry)
+      .withRegistryUsername(registryUsername)
+      .withRegistryPassword(registryPassword)
+      .build();
+
+    DockerHttpClient hcl = new JerseyDockerHttpClient.Builder()
+      .dockerHost(dcfg.getDockerHost())
+      .build();
+
+    return DockerClientBuilder.getInstance(dcfg)
+      .withDockerHttpClient(hcl)
       .build();
   }
 }

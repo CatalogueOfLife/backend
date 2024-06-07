@@ -288,8 +288,7 @@ public class WsServer extends Application<WsServerConfig> {
     }
 
     // Docker
-    DockerClientConfig dockerCfg = cfg.docker.toDockerCfg();
-    DockerClient docker = DockerClientBuilder.getInstance(dockerCfg).build();
+    DockerClient docker = cfg.docker.newDockerClient();
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, bus);

@@ -1,5 +1,11 @@
 package life.catalogue.matching;
 
+import com.github.dockerjava.api.command.CreateContainerResponse;
+
+import com.github.dockerjava.api.command.InspectImageResponse;
+
+import com.github.dockerjava.api.command.PullImageResultCallback;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.common.io.CompressionUtil;
@@ -15,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -35,7 +42,9 @@ import com.github.dockerjava.api.model.Volume;
  * https://github.com/gbif/gbif-docker-images/blob/feature/checklist-image/checklist-tools/Dockerfile
  */
 public class TaxonomicAlignJob extends BackgroundJob {
-  private static final String IMAGE = "docker.gbif.org/clb-listtools:0.0.1";
+  private static final String IMAGE = "docker.gbif.org/clb-listtools";
+  private static final String VERSION = "0.0.1";
+  private static final String IMAGE_VERSION = IMAGE +":"+ VERSION;
   private static final Logger LOG = LoggerFactory.getLogger(TaxonomicAlignJob.class);
   private final int datasetKey1;
   private final String root1;
@@ -112,20 +121,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
     LOG.info("Export data");
     copyData();
 
-    final String dname = "job-" + getKey();
-    LOG.info("Create docker container {} from image {}", dname, IMAGE);
-    var container = client.createContainerCmd(IMAGE)
-      .withCmd("./execute.sh")
-      .withName(dname)
-      .withAttachStdout(true)
-      .withAttachStderr(true)
-      .withTty(true)
-      .withBinds(
-        new Bind(src.getAbsolutePath(), new Volume("/home/gbif/source")),
-        new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
-      )
-      .exec();
-
+    var container = buildContainer();
     try {
       LOG.info("Starting container {} and align names using listtools", container.getId());
       client.startContainerCmd(container.getId()).exec();
@@ -143,6 +139,32 @@ public class TaxonomicAlignJob extends BackgroundJob {
       LOG.info("Removing container {}", container.getId());
       client.removeContainerCmd(container.getId()).exec();
     }
+  }
+
+  private CreateContainerResponse buildContainer() throws InterruptedException {
+    // do we need to pull the image from the registry?
+    try {
+      client.inspectImageCmd(IMAGE_VERSION).exec();
+    } catch (com.github.dockerjava.api.exception.NotFoundException e) {
+      LOG.info("Pulling docker image {} from registry", IMAGE_VERSION);
+      client.pullImageCmd(IMAGE)
+        .withTag(VERSION)
+        .exec(new PullImageResultCallback())
+        .awaitCompletion(30, TimeUnit.SECONDS);
+    }
+    final String dname = "job-" + getKey();
+    LOG.info("Create docker container {} from image {}", dname, IMAGE_VERSION);
+    return client.createContainerCmd(IMAGE_VERSION)
+      .withCmd("./execute.sh")
+      .withName(dname)
+      .withAttachStdout(true)
+      .withAttachStderr(true)
+      .withTty(true)
+      .withBinds(
+        new Bind(src.getAbsolutePath(), new Volume("/home/gbif/source")),
+        new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
+      )
+      .exec();
   }
 
   static class LogContainerResultCallback extends ResultCallbackTemplate<LogContainerResultCallback, Frame> implements AutoCloseable {

@@ -63,3 +63,6 @@ job:
   threads: 2
   queue: 100
   downloadURI: "http://localhost"
+docker:
+  registry: docker.gbif.org
+  host: unix:///var/run/docker.sock
