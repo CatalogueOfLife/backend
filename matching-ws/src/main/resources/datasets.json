@@ -25,6 +25,7 @@
     "prefix": "urn:lsid:ipni.org:names:",
     "prefixMapping": [
       "http://marinespecies.org/data.php?id=",
+      "https://marinespecies.org/data.php?id=",
       "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
     ]
   },
@@ -33,5 +34,12 @@
     "gbifKey": "dbaa27eb-29e7-4cbb-8eab-3f689cfce116",
     "title": "UK Species Inventory",
     "prefix": "NBN"
+  },
+  {
+    "key": "2041",
+    "gbifKey": "de8934f4-a136-481c-a87a-b0b202b80a31",
+    "title": "Dyntaxa. Svensk taxonomisk databas",
+    "prefix": "Dyntaxa"
   }
+
 ]

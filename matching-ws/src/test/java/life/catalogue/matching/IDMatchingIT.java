@@ -55,6 +55,7 @@ public class IDMatchingIT {
     dataset.setAlias("DUMMY_IDS");
     dataset.setTitle("Dummy dataset for testing");
     dataset.setPrefix("ext-");
+    dataset.setPrefixMapping(List.of("other-ext-", "other-ext2-"));
     dataset.setTaxonCount(counts[0]);
     dataset.setMatchesToMainIndex(counts[1]);
     datasetIndex.initWithIdentifierDir(dataset, joinIndex);
@@ -79,8 +80,42 @@ public class IDMatchingIT {
   @Test
   public void testJoinLeafTaxa(){
 
+    NameUsageMatch match1 = matcher.match(
+      null, "ext-6", null, null, null, null,
+      null,null,null, null, null, null,
+      false, false
+    );
+
+    assertNotNull(match1);
+    assertNotNull(match1.getUsage());
+    assertEquals("1011638", match1.getUsage().getKey());
+
     NameUsageMatch match2 = matcher.match(
       null, null, null, null, "Abacion tesselatum", null,
+      null,null,null, null, null, null,
+      false, false
+    );
+
+    assertNotNull(match2);
+    assertNotNull(match2.getUsage());
+    assertEquals("1011638", match2.getUsage().getKey());
+  }
+
+  @Test
+  public void testJoinLeafTaxaWithPrefix(){
+
+    NameUsageMatch match1 = matcher.match(
+      null, "other-ext-", null, null, "Abacion tesselatum", null,
+      null,null,null, null, null, null,
+      false, false
+    );
+
+    assertNotNull(match1);
+    assertNotNull(match1.getUsage());
+    assertEquals("1011638", match1.getUsage().getKey());
+
+    NameUsageMatch match2 = matcher.match(
+      null, "other-ext2-", null, null, "Abacion tesselatum", null,
       null,null,null, null, null, null,
       false, false
     );
