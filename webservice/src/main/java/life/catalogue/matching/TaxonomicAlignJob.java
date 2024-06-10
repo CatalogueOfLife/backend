@@ -160,7 +160,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
       .withAttachStderr(true)
       .withTty(true)
       .withBinds(
-        new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
+        new Bind(tmpDir.getAbsolutePath(), new Volume("/home/col/work"))
       )
       .exec();
   }
