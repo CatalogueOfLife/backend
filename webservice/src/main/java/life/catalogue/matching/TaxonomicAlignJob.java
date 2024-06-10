@@ -59,10 +59,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
   private final JobResult result;
   private final SqlSessionFactory factory;
   private final DockerClient client;
-  private final File tmpDir;
-  private final File src;
-  protected final File src1;
-  protected final File src2;
+  protected final File tmpDir; // work directory
 
 
   public TaxonomicAlignJob(int userKey, int datasetKey1, String root1, int datasetKey2, String root2, SqlSessionFactory factory, DockerClient client, NormalizerConfig cfg) throws IOException {
@@ -96,21 +93,14 @@ public class TaxonomicAlignJob extends BackgroundJob {
     FileUtils.forceMkdir(tmpDir);
     // we need to open permissions for the work directory as the docker user writing files is different
     PathUtils.setPermission777(tmpDir.toPath());
-
-    this.src = new File(tmpDir, "sources");
-    this.src1 = new File(src, "a");
-    this.src2 = new File(src, "b");
-    FileUtils.forceMkdir(src1);
-    FileUtils.forceMkdir(src2);
   }
 
   protected void copyData() throws IOException {
-    copyData(src1, datasetKey1, root1);
-    copyData(src2, datasetKey2, root2);
+    copyData(new File(tmpDir, "a_Taxon.tsv"), datasetKey1, root1);
+    copyData(new File(tmpDir, "b_Taxon.tsv"), datasetKey2, root2);
   }
 
-  private void copyData(File dir, int datasetKey, String taxonID) throws IOException {
-    File f = new File(dir, "Taxon.tsv");
+  private void copyData(File f, int datasetKey, String taxonID) throws IOException {
     try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
       var ttp = TreeTraversalParameter.dataset(datasetKey, taxonID);
       var printer = PrinterFactory.dataset(DwcaPrinter.TSV.class, ttp, null, null, null, null, factory, writer);
@@ -170,7 +160,6 @@ public class TaxonomicAlignJob extends BackgroundJob {
       .withAttachStderr(true)
       .withTty(true)
       .withBinds(
-        new Bind(src.getAbsolutePath(), new Volume("/home/gbif/source")),
         new Bind(tmpDir.getAbsolutePath(), new Volume("/home/gbif/work"))
       )
       .exec();

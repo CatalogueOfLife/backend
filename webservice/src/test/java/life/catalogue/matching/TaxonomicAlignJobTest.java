@@ -65,8 +65,8 @@ public class TaxonomicAlignJobTest extends EmailNotificationTemplateTest {
 
     @Override
     protected void copyData() throws IOException {
-      FileUtils.copyDirectory(Resources.toFile("taxalign/a"), src1);
-      FileUtils.copyDirectory(Resources.toFile("taxalign/b"), src2);
+      FileUtils.copyFile(Resources.toFile("taxalign/a/Taxon.tsv"), new File(tmpDir, "a_Taxon.tsv"));
+      FileUtils.copyFile(Resources.toFile("taxalign/b/Taxon.tsv"), new File(tmpDir, "b_Taxon.tsv"));
     }
   }
 
