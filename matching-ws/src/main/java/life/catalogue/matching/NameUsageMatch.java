@@ -107,6 +107,14 @@ public class NameUsageMatch implements LinneanClassification {
     diagnostics.getIssues().add(issue);
   }
 
+  @JsonIgnore
+  public void addAdditionalStatus(Status status) {
+    if (additionalStatus == null) {
+      additionalStatus = new ArrayList<>();
+    }
+    additionalStatus.add(status);
+  }
+
   @Override
   @JsonIgnore
   public String getKingdom() {

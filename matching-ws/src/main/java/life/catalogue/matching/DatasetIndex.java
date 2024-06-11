@@ -643,7 +643,7 @@ public class DatasetIndex {
           ancillaryStatus.setDatasetKey(dataset.getKey().toString());
           ancillaryStatus.setGbifKey(dataset.getGbifKey());
           ancillaryStatus.setDatasetAlias(dataset.getAlias());
-          u.getAdditionalStatus().add(ancillaryStatus);
+          u.addAdditionalStatus(ancillaryStatus);
         }
       } catch (IOException e) {
         log.error("Cannot load usage {} from lucene index", doc.get(FIELD_ID), e);
