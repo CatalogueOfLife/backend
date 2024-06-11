@@ -82,10 +82,10 @@ public class DatasetIndex {
       }
 
       // load identifier indexes
-      this.identifierSearchers = initialiseAdditionalIndexes("identifiers");
+      this.identifierSearchers = initialiseAdditionalIndexes("identifiers", prefixMapping);
 
       // load ancillary indexes
-      this.ancillarySearchers = initialiseAdditionalIndexes("ancillary");
+      this.ancillarySearchers = initialiseAdditionalIndexes("ancillary", prefixMapping);
 
     } else {
       log.warn("Lucene index not found at {}", mainIndexPath);
@@ -107,7 +107,7 @@ public class DatasetIndex {
     }
   }
 
-  private HashMap<Dataset, IndexSearcher> initialiseAdditionalIndexes(String directoryName) {
+  private HashMap<Dataset, IndexSearcher> initialiseAdditionalIndexes(String directoryName, Map<Integer, Dataset> prefixMapping) {
     HashMap<Dataset, IndexSearcher> searchers = new HashMap<>();
     if (Path.of(indexPath + "/" + directoryName).toFile().exists()) {
       try (DirectoryStream<Path> stream = Files.newDirectoryStream(Path.of(indexPath + "/" + directoryName))) {
@@ -119,6 +119,14 @@ public class DatasetIndex {
               ObjectMapper mapper = new ObjectMapper();
               Dataset dataset = mapper.readValue(new FileReader(entry.resolve("metadata.json").toFile()),
                 Dataset.class);
+
+              // apply prefix mapping
+              Dataset prefixDatasetConfig = prefixMapping.get(dataset.getKey());
+              if (prefixDatasetConfig != null) {
+                dataset.setPrefix(prefixDatasetConfig.getPrefix());
+                dataset.setPrefixMapping(prefixDatasetConfig.getPrefixMapping());
+              }
+
               searchers.put(dataset, new IndexSearcher(reader));
             } catch (IOException e) {
               log.warn("Cannot open {} lucene index {}", directoryName, entry, e);
