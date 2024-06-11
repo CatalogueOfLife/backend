@@ -175,6 +175,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
     public void onNext(Frame item) {
       try {
         log.append(new String(item.getPayload()).trim());
+        log.append('\n');
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
