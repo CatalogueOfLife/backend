@@ -22,7 +22,7 @@
     "key": "2011",
     "gbifKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
     "title": "WoRMS",
-    "prefix": "urn:lsid:ipni.org:names:",
+    "prefix": "urn:lsid:marinespecies.org:taxname:",
     "prefixMapping": [
       "http://marinespecies.org/data.php?id=",
       "https://marinespecies.org/data.php?id=",
@@ -41,5 +41,4 @@
     "title": "Dyntaxa. Svensk taxonomisk databas",
     "prefix": "Dyntaxa"
   }
-
 ]
