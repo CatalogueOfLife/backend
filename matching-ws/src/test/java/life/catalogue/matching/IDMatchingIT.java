@@ -47,7 +47,8 @@ public class IDMatchingIT {
       tempJoinIndex,
       joinIndex,
       false,
-      false
+      false,
+      1
     );
 
     Dataset dataset = new Dataset();
