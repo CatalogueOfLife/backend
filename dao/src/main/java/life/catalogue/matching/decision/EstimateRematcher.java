@@ -40,7 +40,7 @@ public class EstimateRematcher extends RematcherBase<SpeciesEstimate, RematchReq
       obj.getTarget().setParent(null);
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(u == null ? null : u.getId());
-      if (updateCounter(old.getTarget().getId(), obj.getTarget().getId())) {
+      if (updateCounter(true, old.getTarget().getId(), obj.getTarget().getId())) {
         dao.update(obj, old, userKey, session);
       }
     }

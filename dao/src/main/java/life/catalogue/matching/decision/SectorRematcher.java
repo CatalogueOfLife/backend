@@ -63,7 +63,9 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       }
     }
     // counter
-    if (updateCounter(old.getSubjectID(), obj.getSubjectID(),   old.getTargetID(), obj.getTargetID())) {
+    if (updateCounter(obj.getSubject() != null, old.getSubjectID(), obj.getSubjectID(),
+                      obj.getTarget()  != null, old.getTargetID(), obj.getTargetID())
+    ) {
       dao.update(obj, old, userKey, session);
     }
   }

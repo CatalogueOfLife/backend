@@ -1,10 +1,7 @@
 package life.catalogue.matching.decision;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetScopedEntity;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -81,7 +78,7 @@ public abstract class RematcherBase<
     }
   
     public int getTotal() {
-      return broken + updated + unchanged;
+      return updated + unchanged;
     }
 
     @Override
@@ -120,29 +117,23 @@ public abstract class RematcherBase<
   /**
    * @return true if the simple name id was changed
    */
-  boolean updateCounter(String idBefore, String idAfter) {
-    boolean changed = !Objects.equals(idBefore, idAfter);
-    if (idAfter == null) {
-      counter.broken++;
-    } else if (changed) {
-      counter.updated++;
-    } else {
-      counter.unchanged++;
-    }
-    return changed;
+  boolean updateCounter(boolean hasSubject, String idBefore, String idAfter) {
+    return updateCounter(hasSubject, idBefore, idAfter, false, null, null);
   }
 
   /**
    * @return true if the simple name id was changed
    */
-  boolean updateCounter(String sIdBefore, String sIdAfter, String tIdBefore, String tIdAfter) {
+  boolean updateCounter(boolean hasSubject, String sIdBefore, String sIdAfter, boolean hasTarget, String tIdBefore, String tIdAfter) {
     boolean changed = !Objects.equals(sIdBefore, sIdAfter) || !Objects.equals(tIdBefore, tIdAfter);
-    if (sIdAfter == null || tIdAfter == null) {
-      counter.broken++;
-    } else if (changed) {
+    if (changed) {
       counter.updated++;
     } else {
       counter.unchanged++;
+    }
+    // broken separately from (un)changed
+    if (hasSubject && sIdAfter == null || hasTarget && tIdAfter == null) {
+      counter.broken++;
     }
     return changed;
   }

@@ -57,7 +57,14 @@ public class ReleaseAction {
       return 0;
     }
 
-    String uri = CitationUtils.fromTemplate(release, url);
+    String uri = null;
+    try {
+      uri = CitationUtils.fromTemplate(release, url);
+    } catch (IllegalArgumentException e) {
+      LOG.warn("Bad URL template for action {} {}: {}", method, uri, e.getMessage());
+      return -1;
+    }
+
     var req = RequestBuilder.create(method.trim().toUpperCase())
       .setUri(uri)
       .build();
