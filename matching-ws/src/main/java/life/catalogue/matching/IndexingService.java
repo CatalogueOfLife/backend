@@ -450,7 +450,7 @@ public class IndexingService {
 
     exec.shutdown();
     try {
-      if (!exec.awaitTermination(5, TimeUnit.MINUTES)) {
+      if (!exec.awaitTermination(30, TimeUnit.MINUTES)) {
         log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
         exec.shutdownNow();
       }
@@ -627,7 +627,7 @@ public class IndexingService {
 
       exec.shutdown();
       try {
-        if (!exec.awaitTermination(5, TimeUnit.MINUTES)) {
+        if (!exec.awaitTermination(30, TimeUnit.MINUTES)) {
           log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
           exec.shutdownNow();
         }
