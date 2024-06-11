@@ -291,6 +291,19 @@ public class ProjectRelease extends AbstractProjectCopy {
         exportManager.submit(req, user);
       }
     }
+    // generic hooks
+    if (cfg.release.actions != null && cfg.release.actions.containsKey(datasetKey)) {
+      // reload dataset metadata
+      final Dataset d;
+      try (SqlSession session = factory.openSession(true)) {
+        d = session.getMapper(DatasetMapper.class).get(newDatasetKey);
+      }
+      for (var action : cfg.release.actions.get(datasetKey)) {
+        if (!action.onPublish) {
+          action.call(client, d);
+        }
+      }
+    }
   }
 
   @Override

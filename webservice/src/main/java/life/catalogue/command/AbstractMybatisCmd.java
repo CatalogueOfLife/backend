@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 
 import javax.ws.rs.client.Client;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.CommonProperties;
@@ -45,6 +46,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   Client jerseyClient;
   ExecutorService exec;
   private final boolean jersey;
+  CloseableHttpClient httpClient;
 
   public AbstractMybatisCmd(String name, String description) {
     this(name, false, description);
@@ -92,7 +94,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
       if (jersey) {
         final String userAgent = "ColCli/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
         bootstrap.addBundle(new ColJerseyBundle());
-        var httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
+        httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
           .using(cfg.client)
           .build(userAgent);
         exec = Executors.newFixedThreadPool(4);

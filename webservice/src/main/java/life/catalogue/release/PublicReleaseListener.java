@@ -30,12 +30,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.Subscribe;
+
+import javax.ws.rs.client.Client;
 
 
 /**
@@ -54,11 +57,13 @@ public class PublicReleaseListener {
   private final DoiService doiService;
   private final DatasetConverter converter;
   private final NameUsageArchiver archiver;
+  private final CloseableHttpClient httpClient;
 
-  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, DatasetExportDao dao, DoiService doiService, DatasetConverter converter) {
+  public PublicReleaseListener(WsServerConfig cfg, SqlSessionFactory factory, CloseableHttpClient httpClient, DatasetExportDao dao, DoiService doiService, DatasetConverter converter) {
     this.cfg = cfg;
     this.factory = factory;
     this.dao = dao;
+    this.httpClient = httpClient;
     this.doiService = doiService;
     this.converter = converter;
     this.archiver = new NameUsageArchiver(factory);
@@ -91,6 +96,15 @@ public class PublicReleaseListener {
         publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);
         copyExportsToColDownload(event.obj, true);
+      }
+
+      // generic hooks
+      if (cfg.release.actions != null && cfg.release.actions.containsKey(event.obj.getSourceKey())) {
+        for (var action : cfg.release.actions.get(event.obj.getSourceKey())) {
+          if (action.onPublish) {
+            action.call(httpClient, event.obj);
+          }
+        }
       }
     }
   }

@@ -121,7 +121,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
+    copy = new PublicReleaseListener(cfg, factory, httpClient, exportDao, doiService, converter);
   }
 
   @Override

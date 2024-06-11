@@ -465,7 +465,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       bus.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
+    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     bus.register(doiUpdater);
     bus.register(uCache);
     bus.register(exportManager);

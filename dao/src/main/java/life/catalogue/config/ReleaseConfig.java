@@ -24,6 +24,9 @@ public class ReleaseConfig {
   // project -> list of dataset keys of releases to ignore (e.g. they contain bad ids)
   public Map<Integer, List<Integer>> ignoredReleases;
 
+  // project -> list of action hook URLs to be called after successful releases
+  public Map<Integer, List<ReleaseAction>> actions;
+
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 
