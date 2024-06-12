@@ -88,11 +88,11 @@ public class InitCmd extends AbstractPromptCmd {
     }
     
     // cleanup names index
-    if (cfg.namesIndexFile != null && cfg.namesIndexFile.exists()) {
-      LOG.info("Clear names index at {}", cfg.namesIndexFile.getAbsolutePath());
-      if (!cfg.namesIndexFile.delete()) {
-        LOG.error("Unable to delete names index at {}", cfg.namesIndexFile.getAbsolutePath());
-        throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndexFile.getAbsolutePath());
+    if (cfg.namesIndex.file != null && cfg.namesIndex.file.exists()) {
+      LOG.info("Clear names index at {}", cfg.namesIndex.file.getAbsolutePath());
+      if (!cfg.namesIndex.file.delete()) {
+        LOG.error("Unable to delete names index at {}", cfg.namesIndex.file.getAbsolutePath());
+        throw new IllegalStateException("Unable to delete names index at " + cfg.namesIndex.file.getAbsolutePath());
       }
     }
     

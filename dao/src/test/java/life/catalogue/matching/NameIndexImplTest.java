@@ -61,7 +61,7 @@ public class NameIndexImplTest {
       }}
     ).when(mapper).create(any());
 
-    ni = NameIndexFactory.memory(factory, aNormalizer).started();
+    ni = NameIndexFactory.memory(NamesIndexConfig.memory(512), factory, aNormalizer).started();
     assertEquals(0, ni.size());
   }
 

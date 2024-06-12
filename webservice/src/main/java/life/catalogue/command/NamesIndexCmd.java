@@ -12,6 +12,7 @@ import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.NamesIndexConfig;
 import life.catalogue.pgcopy.PgBinaryReader;
 import life.catalogue.pgcopy.PgBinarySplitter;
 import life.catalogue.pgcopy.PgBinaryWriter;
@@ -117,8 +118,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   private static File indexBuildFile(WsServerConfig cfg) throws IOException {
     File f = null;
-    if (cfg.namesIndexFile != null) {
-      f = new File(cfg.namesIndexFile.getParent(), "nidx-build");
+    if (cfg.namesIndex.file != null) {
+      f = new File(cfg.namesIndex.file.getParent(), "nidx-build");
       if (f.exists()) {
         throw new IllegalStateException("NamesIndex file already exists: " + f.getAbsolutePath());
       }
@@ -148,7 +149,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   private void rebuildFileOnly() throws Exception {
     LOG.info("Rebuild index file at {}", nidxFile);
-    NameIndex ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, true);
+    NameIndex ni = NameIndexFactory.persistentOrMemory(NamesIndexConfig.file(nidxFile, 1024), factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
     LOG.info("Done rebuilding index file at {}", nidxFile);
   }
@@ -169,7 +170,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     }
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet
-    ni = NameIndexFactory.persistentOrMemory(nidxFile, factory, AuthorshipNormalizer.INSTANCE, false);
+    var ncfg = NamesIndexConfig.file(nidxFile, 1024);
+    ncfg.verification = false;
+    ni = NameIndexFactory.persistentOrMemory(ncfg, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
 
     String limit = "";

@@ -27,6 +27,8 @@ import javax.validation.constraints.NotNull;
 
 import life.catalogue.matching.DockerConfig;
 
+import life.catalogue.matching.NamesIndexConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,17 +132,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Min(1)
   public int diffTimeout = 30;
 
-  /**
-   * Names index kvp file to persist map on disk.
-   * If empty will use a passthrough index that always returns no matches
-   */
-  public File namesIndexFile;
-
-  /**
-   * If true verifies the existing names index file if it is in sync with the latest index in the database.
-   * For a large names index reloading it from the database can take an hour.
-   */
-  public boolean namesIndexVerification = true;
+  @Valid
+  @NotNull
+  public NamesIndexConfig namesIndex = new NamesIndexConfig();
 
   /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.

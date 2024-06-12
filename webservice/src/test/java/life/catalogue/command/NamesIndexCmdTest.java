@@ -5,6 +5,8 @@ import life.catalogue.matching.NameIndexMapDBStore;
 
 import life.catalogue.matching.NameIndexStore;
 
+import life.catalogue.matching.NamesIndexConfig;
+
 import org.gbif.nameparser.api.Authorship;
 
 import org.gbif.nameparser.api.Rank;
@@ -23,7 +25,7 @@ public class NamesIndexCmdTest {
 
   @Test
   public void kryo() throws Exception {
-    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
+    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB(),512);
     store.start();
     var idx = new IndexName();
     idx.setKey(778899);

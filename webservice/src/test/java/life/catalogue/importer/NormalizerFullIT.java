@@ -9,6 +9,8 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.NameIndexFactory;
 
+import life.catalogue.matching.NamesIndexConfig;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +35,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
+    return NameIndexFactory.memory(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
   }
   
   @Test

@@ -290,8 +290,8 @@ public class WsServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img, bus);
 
     // name index
-    if (cfg.namesIndexFile != null) {
-      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
+    if (cfg.namesIndex.file != null) {
+      ni = NameIndexFactory.persistent(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
       // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
       managedService.manage(Component.NamesIndex, ni);
       env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));

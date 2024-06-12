@@ -25,6 +25,8 @@ import java.net.URI;
 
 import javax.validation.Validator;
 
+import life.catalogue.matching.NamesIndexConfig;
+
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
@@ -93,7 +95,7 @@ public class ImportManagerDebugging {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(),
-        NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
+        NameIndexFactory.memory(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
       diDao, datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img, null), jobExecutor, validator, null);
     importManager.start();
   }

@@ -26,7 +26,7 @@ public class NameIndexMapDBStoreTest {
     dbf = File.createTempFile("colNidxStore",".db");
     dbf.delete();
     maker = DBMaker.fileDB(dbf).fileMmapEnableIfSupported();
-    db = new NameIndexMapDBStore(maker, dbf);
+    db = new NameIndexMapDBStore(maker, dbf, 1024);
     db.start();
   }
 
@@ -65,7 +65,7 @@ public class NameIndexMapDBStoreTest {
 
     // now shutdown and reopen
     db.stop();
-    db = new NameIndexMapDBStore(maker, dbf);
+    db = new NameIndexMapDBStore(maker, dbf, 1024);
     db.start();
 
     assertEquals(9, db.count());

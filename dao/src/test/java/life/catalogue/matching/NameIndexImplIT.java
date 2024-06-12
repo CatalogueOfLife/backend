@@ -70,7 +70,7 @@ public class NameIndexImplIT {
         session.getMapper(NamesIndexMapper.class).truncate();
       }
     }
-    ni = NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.memory(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
     if (erase) {
       assertEquals(0, ni.size());
     } else {
@@ -79,7 +79,7 @@ public class NameIndexImplIT {
   }
 
   void setupPersistent(File location) throws Exception {
-    ni = NameIndexFactory.persistent(location, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer, true).started();
+    ni = NameIndexFactory.persistent(NamesIndexConfig.file(location, 1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
   }
 
   @Test

@@ -53,8 +53,8 @@ public class NameIndexMapDBStore implements NameIndexStore {
    */
   static class NameIndexKryoPool extends Pool<Kryo> {
 
-    public NameIndexKryoPool() {
-      super(true, true, 1024);
+    public NameIndexKryoPool(int size) {
+      super(true, true, size);
     }
 
     @Override
@@ -79,18 +79,18 @@ public class NameIndexMapDBStore implements NameIndexStore {
     }
   }
   
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker) throws DBException.DataCorruption {
-    this(dbMaker, null);
+  public NameIndexMapDBStore(DBMaker.Maker dbMaker, int poolSize) throws DBException.DataCorruption {
+    this(dbMaker, null, poolSize);
   }
 
   /**
    * @param dbMaker
    * @param dbFile the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with corrupted db files
    */
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFile) {
+  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFile, int poolSize) {
     this.dbFile = dbFile;
     this.dbMaker = dbMaker;
-    pool = new NameIndexKryoPool();
+    pool = new NameIndexKryoPool(poolSize);
   }
 
   @Override

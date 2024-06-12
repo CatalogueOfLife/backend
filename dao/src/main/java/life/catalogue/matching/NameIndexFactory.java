@@ -160,39 +160,38 @@ public class NameIndexFactory {
 
   /**
    * Returns a persistent index if location is given, otherwise an in memory one
-   * @param verifyIndex if true the index is verified and rebuild if not consistent with the database
    */
-  public static NameIndexImpl persistentOrMemory(@Nullable File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer, boolean verifyIndex) throws IOException {
+  public static NameIndexImpl persistentOrMemory(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
     NameIndexImpl ni;
-    if (location == null) {
-      ni = memory(sqlFactory, aNormalizer);
+    if (cfg.file == null) {
+      ni = memory(cfg, sqlFactory, aNormalizer);
     } else {
-      ni = persistent(location, sqlFactory, aNormalizer, verifyIndex);
+      ni = persistent(cfg, sqlFactory, aNormalizer);
     }
     return ni;
   }
 
-  public static NameIndexImpl memory(SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
+  public static NameIndexImpl memory(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
     LOG.info("Use volatile in memory names index");
-    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB());
+    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB(), cfg.kryoPoolSize);
     return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, true);
   }
 
   /**
    * Creates or opens a persistent mapdb names index for the names index.
    */
-  public static NameIndexImpl persistent(File location, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer, boolean verifyIndex) throws IOException {
-    if (!location.exists()) {
-      FileUtils.forceMkdirParent(location);
-      LOG.info("Create persistent names index at {}", location.getAbsolutePath());
+  public static NameIndexImpl persistent(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
+    if (!cfg.file.exists()) {
+      FileUtils.forceMkdirParent(cfg.file);
+      LOG.info("Create persistent names index at {}", cfg.file.getAbsolutePath());
     } else {
-      LOG.info("Use persistent names index at {}", location.getAbsolutePath());
+      LOG.info("Use persistent names index at {}", cfg.file.getAbsolutePath());
     }
     DBMaker.Maker maker = DBMaker
-        .fileDB(location)
+        .fileDB(cfg.file)
         .fileMmapEnableIfSupported();
-    NameIndexStore store = new NameIndexMapDBStore(maker, location);
-    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, verifyIndex);
+    NameIndexStore store = new NameIndexMapDBStore(maker, cfg.file, cfg.kryoPoolSize);
+    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, cfg.verification);
   }
   
 }
