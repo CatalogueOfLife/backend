@@ -143,13 +143,13 @@ public class MatchingService {
     //    initHackMap();
   }
 
-  public IndexMetadata getIndexMetadata() {
+  public APIMetadata getIndexMetadata() {
 
     // read JSON from file, if not available generate from datasetIndex
     File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
       if (!metadata.exists()) {
-        IndexMetadata metadata1 = datasetIndex.getIndexMetadata();
+        APIMetadata metadata1 = datasetIndex.getAPIMetadata();
         //serialise to file
         ObjectMapper mapper = new ObjectMapper();
         FileWriter writer = new FileWriter(metadata);
@@ -158,7 +158,7 @@ public class MatchingService {
       } else {
         // read from file
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(metadata, IndexMetadata.class);
+        return mapper.readValue(metadata, APIMetadata.class);
       }
     } catch (Exception e) {
       log.error("Failed to read index metadata from {}", metadata, e);

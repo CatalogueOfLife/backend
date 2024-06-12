@@ -39,21 +39,21 @@ public class MatchingApplication implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    IndexMetadata metadata = matchingService.getIndexMetadata();
+    APIMetadata metadata = matchingService.getIndexMetadata();
     LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
-      NumberFormat.getInstance().format(metadata.getTaxonCount()),
-      metadata.getSizeInMB() > 0 ? NumberFormat.getInstance().format(metadata.getSizeInMB()) + "MB" : "unknown"
+      NumberFormat.getInstance().format(metadata.getMainIndex().getTaxonCount()),
+      metadata.getMainIndex().getSizeInMB() > 0 ? NumberFormat.getInstance().format(metadata.getMainIndex().getSizeInMB()) + "MB" : "unknown"
     );
   }
 
   @Bean
   public OpenAPI customOpenAPI() {
-    IndexMetadata metadata = matchingService.getIndexMetadata();
-    String title = metadata.getDatasetTitle() != null ?
-      metadata.getDatasetTitle() + " Matching Service API" :
+    APIMetadata metadata = matchingService.getIndexMetadata();
+    String title = metadata.getMainIndex().getDatasetTitle() != null ?
+      metadata.getMainIndex().getDatasetTitle() + " Matching Service API" :
       "COL Matching Service API";
     String description = "API for matching scientific names to taxa in the checklist" +
-      (metadata.getDatasetTitle() != null ? " " + metadata.getDatasetTitle() : "");
+      (metadata.getMainIndex().getDatasetTitle() != null ? " " + metadata.getMainIndex().getDatasetTitle() : "");
 
     OpenAPI openAPI = new OpenAPI()
       .info(new Info()
@@ -64,10 +64,10 @@ public class MatchingApplication implements ApplicationRunner {
           .name(licence)
           .url(licenceUrl)));
 
-    if (metadata.getDatasetKey() != null) {
+    if (metadata.getMainIndex().getDatasetKey() != null) {
       openAPI.externalDocs(new ExternalDocumentation()
-        .description(metadata.getDatasetTitle())
-        .url("https://checklistbank.org/dataset/" + metadata.getDatasetKey()));
+        .description(metadata.getMainIndex().getDatasetTitle())
+        .url("https://checklistbank.org/dataset/" + metadata.getMainIndex().getDatasetKey()));
     }
 
     return openAPI;

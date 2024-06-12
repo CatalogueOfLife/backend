@@ -105,7 +105,7 @@ public class MatchController implements ErrorController {
   @GetMapping(
     value = {"v2/metadata"},
     produces = "application/json")
-  public IndexMetadata metadata(){
+  public APIMetadata metadata(){
     return matchingService.getIndexMetadata();
   }
 

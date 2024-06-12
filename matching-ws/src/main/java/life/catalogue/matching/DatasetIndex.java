@@ -203,11 +203,11 @@ public class DatasetIndex {
    * dataset title and key, and the build information.
    * @return IndexMetadata
    */
-  public IndexMetadata getIndexMetadata(){
+  public APIMetadata getAPIMetadata(){
 
-    IndexMetadata metadata = new IndexMetadata();
+    APIMetadata metadata = new APIMetadata();
     // get size on disk
-    Path directoryPath = Path.of(getMainIndexPath());
+    Path directoryPath = Path.of(indexPath);
     try {
       BasicFileAttributes attributes = Files.readAttributes(directoryPath, BasicFileAttributes.class);
       Instant creationTime = attributes.creationTime().toInstant();
@@ -215,6 +215,41 @@ public class DatasetIndex {
         .withZone(ZoneId.systemDefault());
       String formattedCreationTime = dateFormatter.format(creationTime);
       metadata.setCreated(formattedCreationTime);
+    } catch (IOException e) {
+      log.error("Cannot read index directory attributes", e);
+    }
+
+    metadata.setMainIndex(getIndexMetadata(indexPath + "/main", getSearcher().getIndexReader()));
+
+    for (Dataset dataset: identifierSearchers.keySet()){
+      metadata.getIdentifierIndexes().add(
+        getIndexMetadata(indexPath + "/identifiers/" + dataset.getKey(),
+          identifierSearchers.get(dataset).getIndexReader()));
+    }
+
+    for (Dataset dataset: ancillarySearchers.keySet()){
+      metadata.getAncillaryIndexes().add(
+        getIndexMetadata(indexPath + "/ancillary/" + dataset.getKey(),
+          ancillarySearchers.get(dataset).getIndexReader()));
+    }
+
+    metadata.setBuildInfo(getGitInfo());
+    return metadata;
+  }
+
+
+  /**
+   * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
+   * dataset title and key, and the build information.
+   * @return IndexMetadata
+   */
+  public IndexMetadata getIndexMetadata(String indexPath, IndexReader reader){
+
+    IndexMetadata metadata = new IndexMetadata();
+
+    // get size on disk
+    Path directoryPath = Path.of(indexPath);
+    try {
       long totalSize = 0;
       try (DirectoryStream<Path> stream = Files.newDirectoryStream(directoryPath)) {
         for (Path entry : stream) {
@@ -229,14 +264,15 @@ public class DatasetIndex {
       log.error("Cannot read index directory attributes", e);
     }
 
-    metadata.setDatasetTitle((String) getDatasetInfo().getOrDefault("datasetTitle", null));
-    metadata.setDatasetKey((String) getDatasetInfo().getOrDefault("datasetKey", null));
-    metadata.setBuildInfo(getGitInfo());
+    Map<String, Object> datasetInfo = getDatasetInfo(indexPath);
+    metadata.setDatasetTitle((String) datasetInfo.getOrDefault("datasetTitle", null));
+    metadata.setDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
+    metadata.setGbifKey((String) datasetInfo.getOrDefault("gbifKey", null));
 
     // number of taxa
-    IndexReader reader = getSearcher().getIndexReader();
-    int numDocs = reader.numDocs();
-    metadata.setTaxonCount((long) numDocs);
+    metadata.setTaxonCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
+    metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault("matchesToMainIndex", 0)));
+
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
       rankCounts.put(Rank.KINGDOM.name(), getCountForRank(reader, Rank.KINGDOM));
@@ -292,10 +328,9 @@ public class DatasetIndex {
    * Reads the dataset information from the dataset.json file in the working directory.
    * @return Map<String, Object>
    */
-  public Map<String, Object> getDatasetInfo() {
+  public Map<String, Object> getDatasetInfo(String indexPath) {
     ObjectMapper mapper = new ObjectMapper();
-
-    String filePath = workingDir + "/dataset.json";
+    String filePath = indexPath + "/metadata.json";
 
     try {
       if (new File(filePath).exists()){
@@ -305,7 +340,16 @@ public class DatasetIndex {
         // Navigate to the author node
         String datasetKey = rootNode.path("key").asText();
         String datasetTitle = rootNode.path("title").asText();
-        return Map.of("datasetKey", datasetKey, "datasetTitle", datasetTitle);
+        String gbifKey = rootNode.path("gbifKey").asText();
+        String taxonCount = rootNode.path("taxonCount").asText();
+        String matchesToMainIndex = rootNode.path("matchesToMainIndex").asText();
+        return Map.of(
+          "datasetKey", datasetKey,
+          "datasetTitle", datasetTitle,
+          "gbifKey", gbifKey,
+          "taxonCount", taxonCount,
+          "matchesToMainIndex", matchesToMainIndex
+        );
       } else {
         log.warn("Dataset info not found at {}", filePath);
       }
