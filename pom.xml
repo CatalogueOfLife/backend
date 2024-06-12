@@ -573,6 +573,11 @@
         <artifactId>docker-java</artifactId>
         <version>${docker-client.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.docker-java</groupId>
+        <artifactId>docker-java-transport-httpclient5</artifactId>
+        <version>${docker-client.version}</version>
+      </dependency>
 
       <!-- elastic -->
       <dependency>

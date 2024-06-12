@@ -4,6 +4,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
@@ -32,7 +33,7 @@ public class DockerConfig {
       .withRegistryPassword(registryPassword)
       .build();
 
-    DockerHttpClient hcl = new JerseyDockerHttpClient.Builder()
+    DockerHttpClient hcl = new ApacheDockerHttpClient.Builder()
       .dockerHost(dcfg.getDockerHost())
       .build();
 
