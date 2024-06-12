@@ -41,8 +41,8 @@
     than the Stax implementation JDK provides, but also works better and avoids some known issues like adding
     unnecessary namespace prefixes -->
     <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>woodstox-core-asl</artifactId>
+      <groupId>com.fasterxml.woodstox</groupId>
+      <artifactId>woodstox-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.codehaus.woodstox</groupId>

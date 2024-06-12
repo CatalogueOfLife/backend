@@ -1,9 +1,5 @@
 package life.catalogue.doi.service;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-
-import jakarta.ws.rs.core.Configuration;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -20,9 +16,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.After;
@@ -30,8 +23,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import static org.junit.Assert.*;
 
@@ -47,7 +42,7 @@ public class DataCiteServiceIT {
 
   @Before
   public void setup() throws IOException {
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider(ApiModule.MAPPER);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
     cfg.register(new UserAgentFilter());
