@@ -25,8 +25,4 @@ public class DataFormatDetectorTest {
     assertEquals(DataFormat.ACEF, DataFormatDetector.detectFormat(Resources.toPath("acef/1")));
   }
 
-  @Test
-  @Ignore("work in progress")
-  public void isProxyDescriptor() {
-  }
 }

@@ -6,7 +6,6 @@
 
   <!-- Always good to have it in here for debugging -->
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <withJansi>true</withJansi>
     <encoder>
       <pattern>dataset=%X{dataset} %-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
     </encoder>
