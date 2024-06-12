@@ -1,5 +1,7 @@
 package life.catalogue;
 
+import io.dropwizard.core.Configuration;
+
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
@@ -21,9 +23,9 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import life.catalogue.matching.DockerConfig;
 
@@ -34,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 
 

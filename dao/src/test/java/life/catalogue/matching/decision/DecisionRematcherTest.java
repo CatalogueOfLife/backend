@@ -15,8 +15,8 @@ import life.catalogue.es.NameUsageIndexService;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;

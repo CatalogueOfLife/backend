@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.jaxrs2.integration.JaxrsOpenApiContextBuilder;

@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

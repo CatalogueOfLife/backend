@@ -9,11 +9,11 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Comparator;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.

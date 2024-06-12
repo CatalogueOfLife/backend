@@ -16,8 +16,8 @@ import life.catalogue.doi.service.DoiService;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;

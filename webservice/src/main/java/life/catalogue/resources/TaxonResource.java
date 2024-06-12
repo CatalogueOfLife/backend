@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;

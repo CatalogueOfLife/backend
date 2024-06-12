@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.dropwizard.cli.ConfiguredCommand;
+import io.dropwizard.core.cli.ConfiguredCommand;
+import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.jackson.Jackson;
-import io.dropwizard.setup.Bootstrap;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 

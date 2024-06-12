@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import javax.annotation.Priority;
+import org.glassfish.jersey.server.internal.LocalizationMessages;
+import org.glassfish.jersey.server.model.AnnotatedMethod;
+
+import io.dropwizard.auth.Auth;
+import jakarta.annotation.Priority;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -12,11 +16,6 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.DynamicFeature;
 import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.FeatureContext;
-
-import org.glassfish.jersey.server.internal.LocalizationMessages;
-import org.glassfish.jersey.server.model.AnnotatedMethod;
-
-import io.dropwizard.auth.Auth;
 
 /**
  * Makes sure that if a non optional @Auth annotation exists the securit context is provided.

@@ -23,7 +23,7 @@ public class TaxonResourceIT extends ResourceITBase {
   private final int datasetKey = TestEntityGenerator.DATASET11.getKey();
 
   @Rule
-  public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.apple(null); //TODO: RULE.getSqlSessionFactory());
   
   public TaxonResourceIT() {
     super("/dataset/11/taxon");
@@ -38,7 +38,7 @@ public class TaxonResourceIT extends ResourceITBase {
   
   @Test
   public void create() throws Exception {
-    RULE.startNamesIndex();
+    //TODO: RULE.startNamesIndex();
     Taxon t = createTaxon();
     t.setId( adminCreds(base).post(json(t), String.class) );
 

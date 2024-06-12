@@ -9,7 +9,7 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

@@ -7,7 +7,7 @@ import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Configs to inform about the docker environment to be used

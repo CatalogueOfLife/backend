@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.exception;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 

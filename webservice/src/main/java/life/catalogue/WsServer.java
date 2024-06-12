@@ -1,5 +1,7 @@
 package life.catalogue;
 
+import io.dropwizard.core.setup.Bootstrap;
+
 import life.catalogue.admin.jobs.cron.CronExecutor;
 import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
@@ -63,19 +65,24 @@ import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.CookieSpecSupport;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+
+import org.apache.hc.core5.util.Timeout;
+import org.apache.http.client.config.CookieSpecs;
+
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
-import javax.validation.Validator;
-import jakarta.ws.rs.client.Client;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hc.core5.http.client.config.CookieSpecs;
-import org.apache.hc.core5.http.client.config.RequestConfig;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;
@@ -92,15 +99,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 
-import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import jakarta.ws.rs.client.Client;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -240,7 +247,7 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
     // validation
-    Validator validator = env.getValidator();
+    var validator = env.getValidator();
 
     // job executor
     UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
@@ -505,11 +512,11 @@ public class WsServer extends Application<WsServerConfig> {
   public static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
     final String cookiePolicy =
         cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
+
     return RequestConfig.custom()
         .setCookieSpec(cookiePolicy)
-        .setSocketTimeout((int) cfg.getTimeout().toMilliseconds())
-        .setConnectTimeout((int) cfg.getConnectionTimeout().toMilliseconds())
-        .setConnectionRequestTimeout((int) cfg.getConnectionRequestTimeout().toMilliseconds())
+        .setConnectTimeout(Timeout.of(cfg.getConnectionTimeout().toMilliseconds(), TimeUnit.MILLISECONDS))
+        .setConnectionRequestTimeout(Timeout.of(cfg.getConnectionRequestTimeout().toMilliseconds(), TimeUnit.MILLISECONDS))
         .build();
   }
 }

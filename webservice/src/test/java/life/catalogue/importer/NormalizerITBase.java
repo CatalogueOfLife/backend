@@ -33,8 +33,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;

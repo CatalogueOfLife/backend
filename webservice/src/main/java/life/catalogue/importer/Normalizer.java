@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;

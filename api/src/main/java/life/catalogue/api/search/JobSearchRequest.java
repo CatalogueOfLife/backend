@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.print.attribute.standard.JobPriority;
+
 import jakarta.ws.rs.QueryParam;
 
 public class JobSearchRequest {

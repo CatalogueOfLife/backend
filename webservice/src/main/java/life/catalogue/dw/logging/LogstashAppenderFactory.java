@@ -6,15 +6,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Strings;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.spi.DeferredProcessingAware;
-import io.dropwizard.logging.AbstractAppenderFactory;
-import io.dropwizard.logging.async.AsyncAppenderFactory;
-import io.dropwizard.logging.filter.LevelFilterFactory;
-import io.dropwizard.logging.layout.LayoutFactory;
-import io.dropwizard.util.Strings;
+import io.dropwizard.logging.common.AbstractAppenderFactory;
+import io.dropwizard.logging.common.async.AsyncAppenderFactory;
+import io.dropwizard.logging.common.filter.LevelFilterFactory;
+import io.dropwizard.logging.common.layout.LayoutFactory;
 
 /**
  * An abstract Logstash appender factory using MDC fields to provide additional configurable logstash fields for regular logging.
@@ -49,7 +49,7 @@ abstract class LogstashAppenderFactory<E extends DeferredProcessingAware> extend
 
   @Override
   public Appender<E> build(LoggerContext context, String applicationName, LayoutFactory<E> layoutFactory,
-                                       LevelFilterFactory<E> levelFilterFactory, AsyncAppenderFactory<E> asyncAppenderFactory) {
+                           LevelFilterFactory<E> levelFilterFactory, AsyncAppenderFactory<E> asyncAppenderFactory) {
     final String customJson = customFieldJson(applicationName);
     Appender<E> appender = buildAppender(context, customJson);
     appender.setContext(context);

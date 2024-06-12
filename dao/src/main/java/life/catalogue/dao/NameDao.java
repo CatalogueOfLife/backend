@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

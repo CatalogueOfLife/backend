@@ -6,8 +6,9 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
-import org.apache.hc.core5.http.impl.client.HttpClients;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class GBIFAuthenticationTest {
   
   @Test
   @Ignore("GBIF service needs to be mocked - this uses live services")
-  public void getUser() {
+  public void getUser() throws URISyntaxException {
     User u = gbif.getFullGbifUser("colplus");
     Assert.assertNotNull(u);
   }

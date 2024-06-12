@@ -18,7 +18,7 @@ import life.catalogue.es.NameUsageIndexService;
 
 import java.time.LocalDateTime;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;

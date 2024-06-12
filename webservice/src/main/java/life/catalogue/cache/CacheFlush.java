@@ -1,16 +1,15 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.FlushDatasetCache;
 
 import java.net.URI;
 
-import jakarta.ws.rs.core.UriBuilder;
-
-import life.catalogue.api.event.FlushDatasetCache;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import com.google.common.eventbus.Subscribe;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 
 /**

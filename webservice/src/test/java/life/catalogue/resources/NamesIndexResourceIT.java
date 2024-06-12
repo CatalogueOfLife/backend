@@ -21,7 +21,7 @@ public class NamesIndexResourceIT extends ResourceITBase {
 
   @Test
   public void match() throws Exception {
-    RULE.startNamesIndex();
+    //TODO: RULE.startNamesIndex();
     NameMatch match = userCreds(base.queryParam("q", "Abies alba Mill."))
       .get(NameMatch.class);
 

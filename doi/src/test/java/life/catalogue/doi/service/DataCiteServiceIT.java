@@ -1,5 +1,7 @@
 package life.catalogue.doi.service;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+
 import jakarta.ws.rs.core.Configuration;
 
 import life.catalogue.api.jackson.ApiModule;
@@ -46,7 +48,7 @@ public class DataCiteServiceIT {
   @Before
   public void setup() throws IOException {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-    Configuration cfg = new ClientConfig(jacksonJsonProvider);
+    ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
     cfg.register(new UserAgentFilter());
 

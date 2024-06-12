@@ -28,8 +28,8 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.util.*;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;

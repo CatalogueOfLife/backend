@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.DataFormat;
-
 import life.catalogue.api.vocab.TabularFormat;
 
 import org.gbif.nameparser.api.Rank;

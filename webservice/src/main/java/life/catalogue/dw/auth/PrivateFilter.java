@@ -6,20 +6,19 @@ import life.catalogue.db.mapper.DatasetMapper;
 import java.io.IOException;
 import java.util.function.IntPredicate;
 
-import javax.annotation.Priority;
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.NotAuthorizedException;
-import jakarta.ws.rs.Priorities;
-import jakarta.ws.rs.container.ContainerRequestContext;
-import jakarta.ws.rs.container.ContainerRequestFilter;
-import jakarta.ws.rs.core.SecurityContext;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import it.unimi.dsi.fastutil.ints.Int2BooleanMap;
 import it.unimi.dsi.fastutil.ints.Int2BooleanMaps;
 import it.unimi.dsi.fastutil.ints.Int2BooleanOpenHashMap;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.SecurityContext;
 
 /**
  * Avoids unprivileged access to private datasets. A user has to be at least a reviewer with read access to pass this filter.

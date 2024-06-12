@@ -1,15 +1,18 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TaxGroup;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import life.catalogue.api.vocab.TaxGroup;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 

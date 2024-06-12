@@ -17,17 +17,14 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.NamesIndexConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 
-import javax.validation.Validator;
-
-import life.catalogue.matching.NamesIndexConfig;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -39,6 +36,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 
 import io.dropwizard.client.HttpClientBuilder;
+import jakarta.validation.Validator;
 
 @Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)

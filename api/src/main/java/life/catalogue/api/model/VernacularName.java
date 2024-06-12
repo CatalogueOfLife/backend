@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.Sex;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 
 public class VernacularName extends DatasetScopedEntity<Integer> implements ExtensionEntity {
 

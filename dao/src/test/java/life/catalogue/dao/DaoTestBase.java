@@ -7,8 +7,8 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

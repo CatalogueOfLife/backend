@@ -8,7 +8,7 @@
  import java.io.InputStream;
  import java.util.UUID;
 
- import javax.validation.Validator;
+ import jakarta.validation.Validator;
 
  import org.assertj.core.api.Assertions;
  import org.junit.Test;

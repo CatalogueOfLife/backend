@@ -1,7 +1,5 @@
 package life.catalogue.api.vocab;
 
-import java.util.UUID;
-
 /**
  * Constants for dataset keys mostly.
  */

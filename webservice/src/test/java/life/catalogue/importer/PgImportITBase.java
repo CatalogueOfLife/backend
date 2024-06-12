@@ -29,8 +29,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;

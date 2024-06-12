@@ -5,7 +5,7 @@ import life.catalogue.db.PgDbConfig;
 import java.net.URI;
 import java.nio.file.Path;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.

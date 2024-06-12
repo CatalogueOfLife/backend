@@ -1,27 +1,17 @@
 package life.catalogue.command;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.SearchItem;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-
-import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
-import com.github.dockerjava.transport.DockerHttpClient;
-
-import io.dropwizard.setup.Bootstrap;
-
 import life.catalogue.WsServerConfig;
 
-import life.catalogue.api.vocab.DataFormat;
-
-import net.sourceforge.argparse4j.inf.Namespace;
-
-import net.sourceforge.argparse4j.inf.Subparser;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import com.github.dockerjava.api.DockerClient;
+
+import io.dropwizard.core.setup.Bootstrap;
+import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Command that connects to configured docker registry and lists all available images

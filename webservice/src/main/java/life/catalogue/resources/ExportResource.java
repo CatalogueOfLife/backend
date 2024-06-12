@@ -14,8 +14,8 @@ import life.catalogue.dw.jersey.MoreHttpHeaders;
 
 import java.util.UUID;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

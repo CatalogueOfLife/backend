@@ -2,23 +2,20 @@ package life.catalogue.dw.jersey;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
-import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
 import life.catalogue.dw.jersey.filter.*;
 import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import com.google.common.eventbus.Subscribe;
 
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Various custom jersey providers bundled together for CoL.

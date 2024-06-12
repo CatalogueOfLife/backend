@@ -4,7 +4,7 @@ import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 
-import org.apache.hc.core5.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

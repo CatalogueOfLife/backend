@@ -11,12 +11,14 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
-import life.catalogue.db.*;
+import life.catalogue.db.NameMatchingRule;
+import life.catalogue.db.PgSetupRule;
+import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.printer.TxtTreeDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
@@ -24,17 +26,15 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.printer.TxtTreeDataRule;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
-import org.apache.hc.core5.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.*;
@@ -46,6 +46,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

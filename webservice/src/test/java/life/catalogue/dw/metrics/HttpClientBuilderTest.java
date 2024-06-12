@@ -1,21 +1,19 @@
 package life.catalogue.dw.metrics;
 
-import io.dropwizard.client.JerseyClientConfiguration;
-import io.dropwizard.client.ssl.TlsConfiguration;
-import io.dropwizard.setup.Environment;
-
-import io.dropwizard.util.Duration;
-
 import life.catalogue.common.io.DownloadUtil;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
+import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.client.ssl.TlsConfiguration;
+import io.dropwizard.core.setup.Environment;
+import io.dropwizard.util.Duration;
 
 import static org.junit.Assert.assertEquals;
 

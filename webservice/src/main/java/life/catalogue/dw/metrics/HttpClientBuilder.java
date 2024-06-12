@@ -1,14 +1,14 @@
 package life.catalogue.dw.metrics;
 
 
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.core5.http.config.Registry;
-import org.apache.hc.core5.http.conn.socket.ConnectionSocketFactory;
-import org.apache.hc.core5.http.protocol.HttpRequestExecutor;
+import org.apache.hc.core5.http.impl.io.HttpRequestExecutor;
 
-import com.codahale.metrics.httpclient.InstrumentedHttpClientConnectionManager;
+import com.codahale.metrics.httpclient5.InstrumentedHttpClientConnectionManager;
 import com.google.common.annotations.VisibleForTesting;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Http client builder that overrides the default Dropwizard one to not use a user agent with version as the name

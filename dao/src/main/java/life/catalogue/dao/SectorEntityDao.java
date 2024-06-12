@@ -9,7 +9,7 @@ import life.catalogue.db.DatasetPageable;
 
 import java.util.UUID;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import life.catalogue.db.DatasetProcessable;
 

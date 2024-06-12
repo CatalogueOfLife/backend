@@ -11,10 +11,13 @@ import life.catalogue.es.nu.NameUsageFieldLookup;
 import life.catalogue.es.query.*;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hc.core5.http.StatusLine;
+import org.apache.http.StatusLine;
 import org.elasticsearch.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -2,7 +2,9 @@ package life.catalogue.api.vocab;
 
 import org.gbif.nameparser.api.NomCode;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Informal and common broad grouping of large taxonomic groups.

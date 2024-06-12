@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 

@@ -43,7 +43,7 @@ public class GZipFileAppender<E> extends FileAppender<E> {
    */
   @Override
   public void openFile(String file_name) throws IOException {
-    lock.lock();
+    streamWriteLock.lock();
     try {
       File file = new File(file_name);
       boolean result = FileUtil.createMissingParentDirectories(file);
@@ -53,7 +53,7 @@ public class GZipFileAppender<E> extends FileAppender<E> {
       GZIPOutputStream gzipos = new GZIPOutputStream(new FileOutputStream(file), true);
       setOutputStream(gzipos);
     } finally {
-      lock.unlock();
+      streamWriteLock.unlock();
     }
   }
 

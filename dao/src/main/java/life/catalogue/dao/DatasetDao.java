@@ -36,8 +36,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;

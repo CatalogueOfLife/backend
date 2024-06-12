@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,6 +27,7 @@ import com.google.common.eventbus.EventBus;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import jakarta.validation.Validator;
 
 public class UserDao extends EntityDao<Integer, User, UserMapper> {
 

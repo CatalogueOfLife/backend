@@ -87,14 +87,14 @@
       <artifactId>metrics-core</artifactId>
     </dependency>
 
-    <!-- javax -->
+    <!-- jakarta -->
     <dependency>
       <groupId>jakarta.ws.rs</groupId>
       <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
     </dependency>
 
     <!-- JACKSON2 -->
@@ -218,15 +218,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.hibernate</groupId>
+      <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
-      <version>6.1.2.Final</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
-      <artifactId>javax.el</artifactId>
-      <version>3.0.1-b11</version>
+      <artifactId>jakarta.el</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

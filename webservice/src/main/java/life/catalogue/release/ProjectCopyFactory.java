@@ -10,9 +10,9 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 

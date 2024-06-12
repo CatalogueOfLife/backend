@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
-import io.dropwizard.cli.Cli;
-import io.dropwizard.cli.Command;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.core.cli.Cli;
+import io.dropwizard.core.cli.Command;
+import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.util.JarLocation;
 
 import static org.mockito.Mockito.mock;

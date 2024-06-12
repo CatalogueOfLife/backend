@@ -9,7 +9,7 @@ import life.catalogue.db.mapper.VernacularNameMapper;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;

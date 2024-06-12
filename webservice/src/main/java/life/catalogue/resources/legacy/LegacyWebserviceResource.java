@@ -17,8 +17,8 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import java.net.URI;
 import java.util.List;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;

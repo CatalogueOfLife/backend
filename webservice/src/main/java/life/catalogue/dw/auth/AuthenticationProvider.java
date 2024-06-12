@@ -4,7 +4,7 @@ import life.catalogue.api.model.User;
 
 import java.util.Optional;
 
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 public interface AuthenticationProvider {
   

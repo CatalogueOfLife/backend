@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
@@ -18,6 +16,7 @@ import javax.annotation.Nonnull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 /**
  * A parsed or unparsed name that belongs to the names index.

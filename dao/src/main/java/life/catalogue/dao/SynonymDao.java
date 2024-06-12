@@ -12,7 +12,7 @@ import life.catalogue.es.NameUsageIndexService;
 
 import java.util.List;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

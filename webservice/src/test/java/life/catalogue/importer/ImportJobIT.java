@@ -19,9 +19,7 @@ import life.catalogue.matching.NameIndexFactory;
 
 import java.net.URI;
 
-import javax.validation.Validator;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -36,6 +34,7 @@ import com.google.common.io.Files;
 
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.util.Duration;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.fail;
 

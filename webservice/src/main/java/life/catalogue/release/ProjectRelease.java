@@ -1,7 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -30,15 +33,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.validation.Validator;
-import jakarta.ws.rs.core.UriBuilder;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);

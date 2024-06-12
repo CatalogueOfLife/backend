@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 public class AuthorlistGenerator {
   private final Validator validator;

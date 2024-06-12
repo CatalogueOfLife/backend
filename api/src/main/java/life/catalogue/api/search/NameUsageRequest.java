@@ -7,15 +7,15 @@ import org.gbif.nameparser.api.Rank;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import javax.validation.constraints.Size;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MultivaluedMap;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+
+import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import static life.catalogue.api.util.VocabularyUtils.lookupEnum;
 

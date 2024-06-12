@@ -17,8 +17,8 @@ import life.catalogue.img.ImageService;
 
 import java.net.URI;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.junit.Before;
 import org.junit.ClassRule;

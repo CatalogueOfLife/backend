@@ -205,10 +205,10 @@
         <version>1.15</version>
       </dependency>
 
-		<dependency>
-			<groupId>javax.validation</groupId>
-			<artifactId>validation-api</artifactId>
-		</dependency>
+        <dependency>
+          <groupId>jakarta.validation</groupId>
+          <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>org.gbif</groupId>
 			<artifactId>dwc-api</artifactId>
@@ -240,22 +240,15 @@
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
-      <!-- hibernate validator in tests includes javax.el -->
+      <!-- hibernate validator in tests includes jakarta.el -->
       <dependency>
         <groupId>org.hibernate.validator</groupId>
         <artifactId>hibernate-validator</artifactId>
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>javax.el</groupId>
-        <artifactId>javax.el-api</artifactId>
-        <version>3.0.0</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
         <groupId>org.glassfish</groupId>
-        <artifactId>javax.el</artifactId>
-        <version>3.0.0</version>
+        <artifactId>jakarta.el</artifactId>
         <scope>test</scope>
       </dependency>
 

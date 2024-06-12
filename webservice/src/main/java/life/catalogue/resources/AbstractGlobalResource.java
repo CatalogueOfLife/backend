@@ -6,7 +6,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 

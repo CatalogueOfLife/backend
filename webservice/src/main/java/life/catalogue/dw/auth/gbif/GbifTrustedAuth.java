@@ -1,6 +1,7 @@
 package life.catalogue.dw.auth.gbif;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -9,8 +10,8 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import jakarta.ws.rs.core.HttpHeaders;
 
+import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.client.methods.HttpUriRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,12 +77,12 @@ public class GbifTrustedAuth {
     
     sb.append(req.getMethod());
     sb.append(NEWLINE);
-    sb.append(getCanonicalizedPath(req.getURI()));
+    sb.append(getCanonicalizedPath(req));
   
     appendHeader(sb, req.getFirstHeader(HttpHeaders.CONTENT_TYPE), false);
     appendHeader(sb, req.getFirstHeader(HEADER_GBIF_USER), true);
     
-    LOG.debug("GBIF auth string to sign:\n{}", sb.toString());
+    LOG.debug("GBIF auth string to sign:\n{}", sb);
     return sb.toString();
   }
   
@@ -99,8 +100,12 @@ public class GbifTrustedAuth {
   /**
    * @return an absolute uri of the resource path alone, excluding host, scheme and query parameters
    */
-  private static String getCanonicalizedPath(URI uri) {
-    return uri.normalize().getPath();
+  private static String getCanonicalizedPath(HttpUriRequest req) {
+    try {
+      return req.getUri().normalize().getPath();
+    } catch (URISyntaxException e) {
+      return req.getRequestUri();
+    }
   }
   
   private static String buildAuthHeader(String applicationKey, String signature) {
@@ -140,7 +145,7 @@ public class GbifTrustedAuth {
     request.addHeader(HEADER_GBIF_USER, user);
     
     // the canonical path header
-    request.addHeader(HEADER_ORIGINAL_REQUEST_URL, getCanonicalizedPath(request.getURI()));
+    request.addHeader(HEADER_ORIGINAL_REQUEST_URL, getCanonicalizedPath(request));
     
     // build the unique string to sign
     final String stringToSign = buildStringToSign(request);
@@ -151,7 +156,7 @@ public class GbifTrustedAuth {
     // build authorization header string
     String header = buildAuthHeader(appKey, signature);
     // add authorization header
-    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getURI(), user, header);
+    LOG.debug("Adding authentication header to request {} for proxied user {} : {}", request.getRequestUri(), user, header);
     request.addHeader(HttpHeaders.AUTHORIZATION, header);
   }
   

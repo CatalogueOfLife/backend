@@ -1,7 +1,5 @@
 package life.catalogue.api.vocab;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 /**
  * Various external data formats supported by the application
  */

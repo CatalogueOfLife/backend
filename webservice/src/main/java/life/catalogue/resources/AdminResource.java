@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
@@ -32,7 +30,6 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.NameIndex;
 import life.catalogue.matching.RematchJob;
-import life.catalogue.admin.jobs.RematchSchedulerJob;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
@@ -42,22 +39,23 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Validator;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 @Path("/admin")
 @Hidden

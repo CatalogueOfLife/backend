@@ -43,10 +43,10 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -91,8 +91,8 @@ public class ImportManager implements Managed, Idle {
   private final Counter failed;
 
   public ImportManager(WsServerConfig cfg, MetricRegistry registry, CloseableHttpClient client, EventBus bus,
-      SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
-      NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
+                       SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
+                       NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.cfg = cfg;
     this.bus = bus;
     this.factory = factory;

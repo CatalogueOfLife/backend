@@ -13,8 +13,8 @@ import life.catalogue.es.query.Query;
 
 import java.io.IOException;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.junit.After;
 import org.junit.Before;

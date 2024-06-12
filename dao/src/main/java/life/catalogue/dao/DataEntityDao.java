@@ -3,7 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 

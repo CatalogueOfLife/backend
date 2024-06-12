@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.postgresql.jdbc.PgConnection;

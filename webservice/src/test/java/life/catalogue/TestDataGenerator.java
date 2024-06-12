@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
-import javax.validation.Validation;
+import jakarta.validation.Validation;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;

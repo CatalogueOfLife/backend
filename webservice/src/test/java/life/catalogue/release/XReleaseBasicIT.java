@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import javax.validation.Validation;
+import jakarta.validation.Validation;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

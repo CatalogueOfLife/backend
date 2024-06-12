@@ -16,9 +16,9 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hc.core5.http.client.methods.CloseableHttpResponse;
-import org.apache.hc.core5.http.client.methods.HttpGet;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,7 +119,7 @@ public class DistributedArchiveService {
         HttpGet get = new HttpGet(fd.url);
         try (CloseableHttpResponse resp = client.execute(get)) {
           if (resp.getEntity() == null) {
-            LOG.error("Could not get remote resource {}: {}", fd.url, resp.getStatusLine());
+            LOG.error("Could not get remote resource {}: {}", fd.url, resp.getCode());
             continue;
           }
           ZipEntry zipEntry = new ZipEntry(fd.name);

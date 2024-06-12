@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.QueryParam;
 
 public class SectorSearchRequest extends BaseDecisionSearchRequest {

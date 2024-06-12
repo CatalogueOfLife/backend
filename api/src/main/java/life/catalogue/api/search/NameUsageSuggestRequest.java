@@ -2,10 +2,10 @@ package life.catalogue.api.search;
 
 import java.util.Objects;
 
-import jakarta.ws.rs.QueryParam;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.ws.rs.QueryParam;
 
 public class NameUsageSuggestRequest extends NameUsageRequest {
 

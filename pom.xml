@@ -67,6 +67,7 @@
     <hk2.version>2.5.0-b32</hk2.version>
     <icu4j.version>72.1</icu4j.version>
     <jakarta.xml.version>2.3.3</jakarta.xml.version>
+    <jakarta.el.version>4.0.1</jakarta.el.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
     <javers.version>6.8.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
@@ -94,7 +95,6 @@
     <text-tree.version>1.4.1-SNAPSHOT</text-tree.version>
     <tika.version>1.22</tika.version>
     <twelvemonkeys.version>3.9.4</twelvemonkeys.version>
-    <validation-api.version>2.0.0.Final</validation-api.version>
     <woodstox.version>4.4.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
     <univocity-parsers.version>2.9.1</univocity-parsers.version>
@@ -379,11 +379,11 @@
         <version>${hk2.version}</version>
       </dependency>
 
-      <!-- javax -->
       <dependency>
-        <groupId>javax.validation</groupId>
-        <artifactId>validation-api</artifactId>
-        <version>${validation-api.version}</version>
+        <groupId>org.glassfish</groupId>
+        <artifactId>jakarta.el</artifactId>
+        <version>${jakarta.el.version}</version>
+        <scope>test</scope>
       </dependency>
 
       <!-- JAXB for java 11 -->
@@ -608,18 +608,6 @@
         <groupId>org.elasticsearch</groupId>
         <artifactId>elasticsearch</artifactId>
         <version>${elasticsearch.version}</version>
-      </dependency>
-
-      <!-- httpcore needs at least 4.4.7 for dropwizard. ES 6.5 uses 4.4.5 still -->
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore-nio</artifactId>
-        <version>${httpcore.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpcore</artifactId>
-        <version>${httpcore.version}</version>
       </dependency>
 
       <!-- unicode, transliterations

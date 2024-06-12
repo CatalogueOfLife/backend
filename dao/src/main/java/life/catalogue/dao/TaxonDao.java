@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

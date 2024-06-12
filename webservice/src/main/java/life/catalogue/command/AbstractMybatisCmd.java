@@ -13,9 +13,7 @@ import life.catalogue.dw.jersey.ColJerseyBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import jakarta.ws.rs.client.Client;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.CommonProperties;
@@ -30,7 +28,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.core.setup.Bootstrap;
+import jakarta.ws.rs.client.Client;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 

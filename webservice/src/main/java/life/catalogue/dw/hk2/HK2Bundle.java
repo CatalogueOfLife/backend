@@ -13,18 +13,17 @@ import org.glassfish.jersey.servlet.ServletProperties;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 
-import io.dropwizard.Application;
-import io.dropwizard.Bundle;
-import io.dropwizard.ConfiguredBundle;
-import io.dropwizard.cli.Command;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.cli.Command;
+import io.dropwizard.core.setup.AdminEnvironment;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.servlets.tasks.Task;
-import io.dropwizard.setup.AdminEnvironment;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
 
 import static org.glassfish.hk2.utilities.ServiceLocatorUtilities.bind;
 
@@ -54,7 +53,6 @@ public class HK2Bundle<T> implements ConfiguredBundle<T> {
   public void initialize(Bootstrap<?> bootstrap) {
     this.application = bootstrap.getApplication();
 
-    listServices(Bundle.class).forEach(bootstrap::addBundle);
     listServices(ConfiguredBundle.class).forEach(bootstrap::addBundle);
     listServices(Command.class).forEach(bootstrap::addCommand);
   }
@@ -74,7 +72,7 @@ public class HK2Bundle<T> implements ConfiguredBundle<T> {
 
     listServices(Managed.class).forEach(lifecycle::manage);
     listServices(LifeCycle.class).forEach(lifecycle::manage);
-    listServices(LifeCycle.Listener.class).forEach(lifecycle::addLifeCycleListener);
+    listServices(LifeCycle.Listener.class).forEach(lifecycle::addEventListener);
     listServices(ServerLifecycleListener.class).forEach(lifecycle::addServerLifecycleListener);
     listServices(Task.class).forEach(admin::addTask);
 

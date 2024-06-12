@@ -3,14 +3,14 @@ package life.catalogue.api.model;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.QueryParam;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 /**
  * A page used for requesting or responding to a pageable service.

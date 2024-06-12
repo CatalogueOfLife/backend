@@ -10,10 +10,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-import jakarta.ws.rs.QueryParam;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import jakarta.ws.rs.QueryParam;
 
 import static life.catalogue.common.tax.SciNameNormalizer.removeDagger;
 import static life.catalogue.common.tax.SciNameNormalizer.removeHybridMarker;

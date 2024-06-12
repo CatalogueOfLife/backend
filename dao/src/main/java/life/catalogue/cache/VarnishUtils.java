@@ -2,20 +2,22 @@ package life.catalogue.cache;
 
 import java.net.URI;
 
-import org.apache.hc.core5.http.client.methods.CloseableHttpResponse;
-import org.apache.hc.core5.http.client.methods.HttpRequestBase;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class VarnishUtils {
   private static final Logger LOG = LoggerFactory.getLogger(VarnishUtils.class);
 
-  public static class HttpBan extends HttpRequestBase {
+  public static class HttpBan extends BasicClassicHttpRequest {
     public static final String METHOD_NAME = "BAN";
 
     public HttpBan(URI uri) {
-      this.setURI(uri);
+      super(METHOD_NAME, uri);
     }
 
     @Override
@@ -35,7 +37,7 @@ public class VarnishUtils {
     // execute
     LOG.info("BAN varnish cache at {}", uri);
     try (CloseableHttpResponse response = client.execute(ban)) {
-      return response.getStatusLine().getStatusCode();
+      return response.getCode();
     } catch (Exception e) {
       LOG.warn("Failed to BAN {}: {}", uri, e.getMessage());
       return -1;

@@ -1,7 +1,5 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.text.StringUtils;
 
@@ -14,6 +12,8 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class JobResult extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(JobResult.class);

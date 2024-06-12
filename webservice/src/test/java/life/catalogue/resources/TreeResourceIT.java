@@ -4,10 +4,10 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
 
-import jakarta.ws.rs.core.GenericType;
-
 import org.junit.Rule;
 import org.junit.Test;
+
+import jakarta.ws.rs.core.GenericType;
 
 import static life.catalogue.ApiUtils.userCreds;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +50,7 @@ public class TreeResourceIT extends ResourceITBase {
   static GenericType<ResultPage<TreeNodeProps>> RESP_TYPE = new GenericType<ResultPage<TreeNodeProps>>() {};
   
   @Rule
-  public TestDataRule testDataRule = TestDataRule.apple(RULE.getSqlSessionFactory());
+  public TestDataRule testDataRule = TestDataRule.apple(null); //TODO: RULE.getSqlSessionFactory());
   
   public TreeResourceIT() {
     super("/dataset");

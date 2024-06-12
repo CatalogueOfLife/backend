@@ -13,7 +13,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 

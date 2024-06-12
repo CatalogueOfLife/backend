@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;

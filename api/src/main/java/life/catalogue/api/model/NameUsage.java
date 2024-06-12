@@ -5,9 +5,9 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.function.Function;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  *

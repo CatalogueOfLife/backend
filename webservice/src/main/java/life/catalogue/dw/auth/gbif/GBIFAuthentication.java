@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.ws.rs.core.HttpHeaders;
-
-import org.apache.hc.core5.http.client.methods.CloseableHttpResponse;
-import org.apache.hc.core5.http.client.methods.HttpGet;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +23,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
+
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
  * Authentication provider that delegates authentication to the BASIC scheme using the
@@ -103,7 +103,7 @@ public class GBIFAuthentication implements AuthenticationProvider {
     HttpGet get = new HttpGet(loginUri);
     get.addHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader(username, password));
     try (CloseableHttpResponse resp = http.execute(get)) {
-      if (resp.getStatusLine().getStatusCode() == 200) {
+      if (resp.getCode() == 200) {
         // we retrieve the username from the response as we can also authenticate with the email address
         GUser gbif = OM.readValue(resp.getEntity().getContent(), GUser.class);
         if (gbif != null && gbif.userName != null && !username.equalsIgnoreCase(gbif.userName)) {
@@ -130,10 +130,10 @@ public class GBIFAuthentication implements AuthenticationProvider {
     HttpGet get = new HttpGet(userUri.resolve(username));
     gbifAuth.signRequest(get);
     try (CloseableHttpResponse resp = http.execute(get)) {
-      if (resp.getStatusLine().getStatusCode() == 200) {
+      if (resp.getCode() == 200) {
         return fromJson(resp.getEntity().getContent());
       }
-      LOG.info("No success retrieving GBIF user {}: {}", username, resp.getStatusLine());
+      LOG.info("No success retrieving GBIF user {}: {}", username, resp.getCode());
     } catch (Exception e) {
       LOG.info("Failed to retrieve GBIF user {}", username, e);
     }

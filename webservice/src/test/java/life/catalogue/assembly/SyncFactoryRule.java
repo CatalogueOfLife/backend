@@ -8,8 +8,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;

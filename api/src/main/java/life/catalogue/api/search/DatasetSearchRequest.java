@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.validation.constraints.Min;
-import jakarta.ws.rs.QueryParam;
-
 import com.google.common.base.Preconditions;
+
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.QueryParam;
 
 public class DatasetSearchRequest {
   

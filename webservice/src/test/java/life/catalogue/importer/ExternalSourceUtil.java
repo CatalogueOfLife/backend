@@ -10,8 +10,8 @@ import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
-import org.apache.hc.core5.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 
 import com.google.common.base.Strings;
 import com.google.common.io.MoreFiles;

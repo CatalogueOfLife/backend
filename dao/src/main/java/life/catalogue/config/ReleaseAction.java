@@ -2,18 +2,13 @@ package life.catalogue.config;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.common.text.SimpleTemplate;
 
-import org.apache.hc.core5.http.client.methods.CloseableHttpResponse;
-import org.apache.hc.core5.http.client.methods.HttpGet;
-import org.apache.hc.core5.http.client.methods.RequestBuilder;
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 /**
  * Action to be called after a release with the URL being a templated allowed to contain
@@ -65,13 +60,13 @@ public class ReleaseAction {
       return -1;
     }
 
-    var req = RequestBuilder.create(method.trim().toUpperCase())
+    var req = ClassicRequestBuilder.create(method.trim().toUpperCase())
       .setUri(uri)
       .build();
     // execute
     LOG.info("{} {}", method, uri);
     try (CloseableHttpResponse response = client.execute(req)) {
-      return response.getStatusLine().getStatusCode();
+      return response.getCode();
     } catch (Exception e) {
       LOG.error("Failed to {} {}: {}", method, uri, e.getMessage());
       return -1;

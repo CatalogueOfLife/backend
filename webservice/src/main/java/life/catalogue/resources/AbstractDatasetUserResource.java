@@ -6,11 +6,10 @@ import life.catalogue.dw.auth.Roles;
 
 import java.util.List;
 
-import javax.annotation.security.RolesAllowed;
+import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-
-import io.dropwizard.auth.Auth;
 
 @SuppressWarnings("static-method")
 @Produces(MediaType.APPLICATION_JSON)

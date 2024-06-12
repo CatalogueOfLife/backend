@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
-import jakarta.ws.rs.QueryParam;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.QueryParam;
 
 public class NameUsageSearchRequest extends NameUsageRequest {
 

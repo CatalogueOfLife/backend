@@ -5,9 +5,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.doi.service.UserAgentFilter;
 
-import jakarta.ws.rs.client.Client;
-
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
@@ -20,14 +18,15 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.dropwizard.Configuration;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Configuration;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.validation.Validators;
-import io.dropwizard.setup.Environment;
+import jakarta.ws.rs.client.Client;
 
 public class JerseyClientRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(JerseyClientRule.class);

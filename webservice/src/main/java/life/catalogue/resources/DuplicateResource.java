@@ -10,7 +10,7 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;

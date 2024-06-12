@@ -7,16 +7,16 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
-import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import com.google.common.eventbus.Subscribe;
 
-import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.auth.AuthValueFactoryProvider;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 
 /**
  * Wires up authentication against the GBIF registry and authorization based on CoL user roles.
