@@ -768,11 +768,13 @@ CREATE TABLE dataset (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(creator), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(publisher), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(editor), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
+      setweight(to_tsvector('dataset', f_unaccent( left(
+        coalesce(description, '') ||
+        coalesce(agent_str(publisher), '') ||
+        coalesce(agent_str(creator), '') ||
+        coalesce(agent_str(editor), '') ||
+        coalesce(agent_str(contributor), '')
+      , 1024*1024))), 'D')
   ) STORED,
   EXCLUDE (doi WITH =) WHERE (deleted IS null)
 );

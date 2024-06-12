@@ -37,18 +37,21 @@ public class MatchingDao {
    * @param name
    * @param datasetKey
    */
-  List<? extends NameUsage> matchDataset(SimpleName name, int datasetKey) {
-    List<NameUsageBase> matches = new ArrayList<>();
+  MatchingResult matchDataset(SimpleName name, int datasetKey) {
+    var result = new MatchingResult(name);
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
       if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
+        result.ignore(t, "Authorship differs");
         continue;
       }
       if (name.getStatus() != null && !Objects.equals(name.getStatus(), t.getStatus())) {
+        result.ignore(t, "Status differs");
         continue;
       }
       if (name.getCode() != null && t.getName().getCode() != null && !name.getCode().equals(t.getName().getCode())) {
+        result.ignore(t, "Code differs");
         continue;
       }
       if (name.getParent() != null) {
@@ -66,12 +69,13 @@ public class MatchingDao {
           // but we need to be graceful to allow both
           !name.getParent().equalsIgnoreCase(parent.getScientificName()) && !name.getParent().equalsIgnoreCase(t.getParentId())
         )) {
+          result.ignore(t, "Parent differs");
           continue;
         }
       }
-      matches.add(t);
+      result.addMatch(t);
     }
-    return matches;
+    return result;
   }
 
   /**

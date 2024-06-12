@@ -157,35 +157,36 @@ public abstract class RematcherBase<
    * @return the unique match or null
    */
   private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
-    List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
-    if (matches.isEmpty()) {
-      LOG.warn("{} {} from project {} cannot be rematched to dataset {} - lost {}",
-        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
-    } else if (matches.size() > 1) {
+    var result = mdao.matchDataset(sn, datasetKey);
+    LOG.info("Match {} {} from project {} to dataset {}: {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, result);
+
+    if (result.isEmpty()) {
+      LOG.warn("{} {} cannot be rematched - lost {}.", obj.getClass().getSimpleName(), obj.getKey(), sn);
+    } else if (result.size() > 1) {
       // keep the existing id if it still matches!
       if (sn.getId() != null) {
-        for (NameUsage nu : matches){
+        for (NameUsage nu : result.getMatches()){
           if (nu.getId().equals(sn.getId())) {
-            LOG.info("{} {} from project {} matches multiple usages in dataset {} - existing usage {} still matching",
-              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+            LOG.info("{} {} matches multiple usages in dataset {} - existing usage {} still matching",
+              obj.getClass().getSimpleName(), obj.getKey(), datasetKey, sn);
             return nu;
           }
         }
       }
-      // if we havent found the previous id, try with the original id
+      // if we haven't found the previous id, try with the original id
       if (originalId != null) {
-        for (NameUsage nu : matches){
+        for (NameUsage nu : result.getMatches()){
           if (nu.getId().equals(originalId)) {
-            LOG.info("{} {} from project {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
-              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, originalId, nu.getLabel());
+            LOG.info("{} {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
+              obj.getClass().getSimpleName(), obj.getKey(), datasetKey, originalId, nu.getLabel());
             return nu;
           }
         }
       }
-      LOG.warn("{} {} from project {} cannot be uniquely rematched to dataset {} - multiple names like {}",
-        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+      LOG.warn("{} {} cannot be uniquely rematched to dataset {} - multiple names like {}",
+        obj.getClass().getSimpleName(), obj.getKey(), datasetKey, sn);
     } else {
-      return matches.get(0);
+      return result.getMatches().get(0);
     }
     return null;
   }

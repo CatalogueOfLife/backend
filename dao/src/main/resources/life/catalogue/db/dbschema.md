@@ -14,6 +14,35 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-06-11 limit full text search dataset content
+```
+ALTER TABLE dataset ADD column
+doc2 tsvector GENERATED ALWAYS AS (
+setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(taxonomic_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent( left(
+coalesce(description, '') ||
+coalesce(agent_str(publisher), '') ||
+coalesce(agent_str(creator), '') ||
+coalesce(agent_str(editor), '') ||
+coalesce(agent_str(contributor), '')
+, 1024*1024))), 'D')
+) STORED;
+
+ALTER TABLE dataset DROP column doc;
+ALTER TABLE dataset RENAME column doc2 to doc;
+```
+
 #### 2024-05-08 new code
 ```
 ALTER TYPE NOMCODE ADD VALUE 'PHYLOGENETIC';
