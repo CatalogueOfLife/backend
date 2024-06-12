@@ -6,8 +6,8 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.db.TestDataRule;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.core.MediaType;
 
 import org.javers.core.Javers;
 import org.javers.core.JaversBuilder;

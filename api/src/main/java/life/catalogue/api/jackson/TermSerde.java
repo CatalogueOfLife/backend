@@ -76,7 +76,7 @@ public class TermSerde {
       if (jp.getCurrentToken() == JsonToken.VALUE_STRING || jp.getCurrentToken() == JsonToken.FIELD_NAME) {
         return TERMFACTORY.findTerm(jp.getText());
       }
-      throw ctxt.mappingException("Expected value string or field name");
+      throw ctxt.wrongTokenException(jp, Term.class, JsonToken.VALUE_STRING, "Expected value string or field name");
     }
   }
 

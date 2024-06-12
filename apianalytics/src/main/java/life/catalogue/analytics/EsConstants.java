@@ -2,8 +2,8 @@ package life.catalogue.analytics;
 
 import java.util.function.Supplier;
 
-import org.apache.http.entity.ContentType;
-import org.apache.http.protocol.HTTP;
+import org.apache.hc.core5.http.entity.ContentType;
+import org.apache.hc.core5.http.protocol.HTTP;
 import org.elasticsearch.client.RequestOptions;
 
 public class EsConstants {

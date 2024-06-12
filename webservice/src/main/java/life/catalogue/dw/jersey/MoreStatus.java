@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 /**
  *

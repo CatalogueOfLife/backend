@@ -8,8 +8,8 @@ import life.catalogue.db.mapper.UserMapper;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

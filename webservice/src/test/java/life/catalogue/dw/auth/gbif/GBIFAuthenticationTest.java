@@ -7,7 +7,7 @@ import life.catalogue.common.util.YamlUtils;
 
 import java.io.IOException;
 
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.core5.http.impl.client.HttpClients;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;

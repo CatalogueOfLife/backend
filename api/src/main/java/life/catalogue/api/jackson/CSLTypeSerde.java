@@ -2,6 +2,8 @@ package life.catalogue.api.jackson;
 
 import java.io.IOException;
 
+import org.gbif.dwc.terms.Term;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +56,7 @@ public class CSLTypeSerde {
       if (jp.getCurrentToken() == JsonToken.VALUE_STRING) {
         return parse(jp.getText());
       }
-      throw ctxt.mappingException("Expected String as CSLType");
+      throw ctxt.wrongTokenException(jp, Term.class, JsonToken.VALUE_STRING, "Expected String as CSLType");
     }
   }
 }

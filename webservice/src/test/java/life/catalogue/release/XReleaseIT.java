@@ -33,8 +33,8 @@ import java.util.*;
 import javax.validation.Validation;
 import javax.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.HttpClientBuilder;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.*;

@@ -8,8 +8,8 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import javax.validation.constraints.Size;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;

@@ -1,7 +1,7 @@
 package life.catalogue.dw.jersey.exception;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Converts a UnsupportedOperationException into a http 501 not implemented.

@@ -6,10 +6,10 @@ import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.text.SimpleTemplate;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.RequestBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.client.methods.CloseableHttpResponse;
+import org.apache.hc.core5.http.client.methods.HttpGet;
+import org.apache.hc.core5.http.client.methods.RequestBuilder;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

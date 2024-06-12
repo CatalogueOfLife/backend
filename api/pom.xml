@@ -15,6 +15,10 @@
   <packaging>jar</packaging>
   <name>COL API</name>
 
+  <properties>
+    <jena.version>4.10.0</jena.version>
+  </properties>
+
   <build>
     <resources>
       <resource>
@@ -85,16 +89,12 @@
 
     <!-- javax -->
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
     </dependency>
 
     <!-- JACKSON2 -->
@@ -147,9 +147,14 @@
 
     <!-- other -->
     <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
+      <groupId>org.apache.httpcomponents.client5</groupId>
+      <artifactId>httpclient5</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.httpcomponents.core5</groupId>
+      <artifactId>httpcore5</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>it.unimi.dsi</groupId>
       <artifactId>fastutil</artifactId>
@@ -174,13 +179,13 @@
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-core</artifactId>
       <scope>test</scope>
-      <version>4.6.1</version>
+      <version>${jena.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>jena-tdb</artifactId>
       <scope>test</scope>
-      <version>4.6.1</version>
+      <version>${jena.version}</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

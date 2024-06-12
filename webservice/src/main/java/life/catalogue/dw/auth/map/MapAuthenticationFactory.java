@@ -9,7 +9,7 @@ import java.util.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

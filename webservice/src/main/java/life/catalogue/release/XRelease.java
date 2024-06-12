@@ -41,7 +41,7 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

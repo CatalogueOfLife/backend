@@ -2,8 +2,8 @@ package life.catalogue.dw.jersey.exception;
 
 import life.catalogue.api.exception.UnavailableException;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Converts a UnavailableException into a http 503 response.

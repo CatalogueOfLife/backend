@@ -12,7 +12,7 @@ import life.catalogue.matching.UsageMatcherGlobal;
 
 import javax.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 

@@ -5,9 +5,9 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.doi.service.UserAgentFilter;
 
-import javax.ws.rs.client.Client;
+import jakarta.ws.rs.client.Client;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;

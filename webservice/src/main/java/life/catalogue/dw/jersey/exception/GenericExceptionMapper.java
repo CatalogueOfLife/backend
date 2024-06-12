@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.exception;
 
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.Provider;
 
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 

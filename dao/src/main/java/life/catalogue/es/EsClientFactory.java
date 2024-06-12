@@ -2,9 +2,9 @@ package life.catalogue.es;
 
 import life.catalogue.concurrent.NamedThreadFactory;
 
-import org.apache.http.HttpHost;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.client.config.RequestConfig;
+import org.apache.hc.core5.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.slf4j.Logger;

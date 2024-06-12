@@ -19,7 +19,7 @@ import java.io.Writer;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.ProcessingException;
+import jakarta.ws.rs.ProcessingException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;

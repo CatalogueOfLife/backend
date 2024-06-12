@@ -70,12 +70,12 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 
 import javax.validation.Validator;
-import javax.ws.rs.client.Client;
+import jakarta.ws.rs.client.Client;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.client.config.CookieSpecs;
+import org.apache.hc.core5.http.client.config.RequestConfig;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;

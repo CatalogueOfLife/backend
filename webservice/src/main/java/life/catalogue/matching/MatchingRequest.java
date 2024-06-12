@@ -7,8 +7,8 @@ import java.io.File;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.commons.io.FilenameUtils;
 

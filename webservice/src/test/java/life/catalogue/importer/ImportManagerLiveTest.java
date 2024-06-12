@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;

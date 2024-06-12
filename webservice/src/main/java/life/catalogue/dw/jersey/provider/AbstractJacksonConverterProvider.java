@@ -7,10 +7,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.ext.ParamConverter;
-import javax.ws.rs.ext.ParamConverterProvider;
+import jakarta.ws.rs.BadRequestException;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

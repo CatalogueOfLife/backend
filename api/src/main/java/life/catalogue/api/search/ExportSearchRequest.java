@@ -9,7 +9,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 /**
  * Watch out - null values mean different things.

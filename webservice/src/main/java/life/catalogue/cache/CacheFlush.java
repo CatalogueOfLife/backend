@@ -4,11 +4,11 @@ import life.catalogue.api.event.DatasetChanged;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import life.catalogue.api.event.FlushDatasetCache;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 
 import com.google.common.eventbus.Subscribe;
 

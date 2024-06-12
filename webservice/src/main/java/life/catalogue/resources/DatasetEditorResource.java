@@ -3,7 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.model.User;
 import life.catalogue.dao.AuthorizationDao;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 
 @Path("/dataset/{key}/editor")
 @SuppressWarnings("static-method")

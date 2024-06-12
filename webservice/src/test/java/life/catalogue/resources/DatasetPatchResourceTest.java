@@ -6,7 +6,7 @@ import life.catalogue.dw.jersey.provider.DatasetPatchMessageBodyRW;
 
 import java.lang.reflect.Method;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;

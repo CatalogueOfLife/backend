@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;

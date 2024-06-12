@@ -5,8 +5,8 @@ import org.gbif.nameparser.util.UnicodeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 

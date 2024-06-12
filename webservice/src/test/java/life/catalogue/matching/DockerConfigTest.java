@@ -2,7 +2,7 @@ package life.catalogue.matching;
 
 import org.junit.Test;
 
-import javax.ws.rs.ProcessingException;
+import jakarta.ws.rs.ProcessingException;
 
 import java.net.UnknownHostException;
 import java.util.Optional;

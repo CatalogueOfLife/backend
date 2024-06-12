@@ -1,5 +1,7 @@
 package life.catalogue.doi.service;
 
+import jakarta.ws.rs.core.Configuration;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DOI;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -16,8 +18,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
@@ -44,7 +46,7 @@ public class DataCiteServiceIT {
   @Before
   public void setup() throws IOException {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
-    ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
+    Configuration cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
     cfg.register(new UserAgentFilter());
 

@@ -5,7 +5,7 @@ import life.catalogue.db.mapper.*;
 
 import java.util.UUID;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.junit.Test;

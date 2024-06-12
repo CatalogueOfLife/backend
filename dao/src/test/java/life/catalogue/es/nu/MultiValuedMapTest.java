@@ -2,8 +2,8 @@ package life.catalogue.es.nu;
 
 import java.util.Arrays;
 
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 import org.junit.Test;
 

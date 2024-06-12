@@ -2,17 +2,17 @@
 
  import javax.net.ssl.SSLContext;
 
- import org.apache.http.config.Registry;
- import org.apache.http.config.RegistryBuilder;
- import org.apache.http.conn.socket.ConnectionSocketFactory;
- import org.apache.http.conn.socket.PlainConnectionSocketFactory;
- import org.apache.http.conn.ssl.NoopHostnameVerifier;
- import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
- import org.apache.http.conn.ssl.SSLContexts;
- import org.apache.http.conn.ssl.TrustStrategy;
- import org.apache.http.impl.client.CloseableHttpClient;
- import org.apache.http.impl.client.HttpClients;
- import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+ import org.apache.hc.core5.http.config.Registry;
+ import org.apache.hc.core5.http.config.RegistryBuilder;
+ import org.apache.hc.core5.http.conn.socket.ConnectionSocketFactory;
+ import org.apache.hc.core5.http.conn.socket.PlainConnectionSocketFactory;
+ import org.apache.hc.core5.http.conn.ssl.NoopHostnameVerifier;
+ import org.apache.hc.core5.http.conn.ssl.SSLConnectionSocketFactory;
+ import org.apache.hc.core5.http.conn.ssl.SSLContexts;
+ import org.apache.hc.core5.http.conn.ssl.TrustStrategy;
+ import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
+ import org.apache.hc.core5.http.impl.client.HttpClients;
+ import org.apache.hc.core5.http.impl.conn.BasicHttpClientConnectionManager;
 
 public class HttpClientUtils {
   private static CloseableHttpClient client;

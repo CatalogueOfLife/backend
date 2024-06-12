@@ -7,8 +7,8 @@ import life.catalogue.dw.auth.Roles;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 

@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import io.dropwizard.auth.Auth;
 

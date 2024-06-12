@@ -11,13 +11,12 @@ import java.time.temporal.TemporalAccessor;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,25 +121,25 @@ public class DownloadUtil {
     
     // execute
     try (CloseableHttpResponse response = hc.execute(get)) {
-      final StatusLine status = response.getStatusLine();
+      final int status = response.getCode();
       System.out.println(String.format("%s -> %s", status, get));
-      if (status.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
+      if (status == HttpStatus.SC_NOT_MODIFIED) {
         LOG.debug("Content not modified since last request");
         return false;
         
-      } else if (status.getStatusCode() / 100 == 2) {
+      } else if (status / 100 == 2) {
         // write to file only when download succeeds
         saveToFile(response, downloadTo);
         LOG.debug("Successfully downloaded {} to {}", url, downloadTo.getAbsolutePath());
         return true;
         
       } else {
-        LOG.error("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status.getStatusCode());
+        LOG.error("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status);
         StringBuilder sb = new StringBuilder()
             .append("http ")
-            .append(status.getStatusCode())
+            .append(status)
             .append(" ")
-            .append(status.getReasonPhrase())
+            .append(response.getReasonPhrase())
             .append(" for URL ")
             .append(url);
         throw new DownloadException(url, sb.toString());

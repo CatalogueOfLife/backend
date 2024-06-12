@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.validation.constraints.Min;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 import com.google.common.base.Preconditions;
 

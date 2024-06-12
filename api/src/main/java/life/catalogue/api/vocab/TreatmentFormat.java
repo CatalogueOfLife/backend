@@ -2,7 +2,7 @@ package life.catalogue.api.vocab;
 
 import life.catalogue.common.ws.MoreMediaTypes;
 
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MediaType;
 
 public enum TreatmentFormat {
 

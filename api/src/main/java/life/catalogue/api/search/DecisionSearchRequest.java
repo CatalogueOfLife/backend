@@ -4,7 +4,7 @@ import life.catalogue.api.model.EditorialDecision;
 
 import java.util.Objects;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 public class DecisionSearchRequest extends BaseDecisionSearchRequest {
 

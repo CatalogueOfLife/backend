@@ -4,10 +4,10 @@ import life.catalogue.api.util.ObjectUtils;
 
 import java.io.IOException;
 
-import javax.ws.rs.HttpMethod;
-import javax.ws.rs.container.*;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.HttpMethod;
+import jakarta.ws.rs.container.*;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Handles CORS requests both preflight and simple (GET, POST or HEAD) CORS requests.

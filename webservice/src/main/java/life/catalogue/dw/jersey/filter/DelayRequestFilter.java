@@ -3,8 +3,8 @@ package life.catalogue.dw.jersey.filter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
 
 import com.google.common.base.Preconditions;
 

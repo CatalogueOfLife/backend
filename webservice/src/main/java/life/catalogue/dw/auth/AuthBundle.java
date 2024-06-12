@@ -7,7 +7,7 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 

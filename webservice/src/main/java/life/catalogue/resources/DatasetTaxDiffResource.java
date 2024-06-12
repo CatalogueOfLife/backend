@@ -14,8 +14,8 @@ import life.catalogue.matching.TaxonomicAlignJob;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import java.io.IOException;
 

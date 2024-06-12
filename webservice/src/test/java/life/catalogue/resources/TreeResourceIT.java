@@ -4,7 +4,7 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.TreeNode;
 import life.catalogue.db.TestDataRule;
 
-import javax.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.GenericType;
 
 import org.junit.Rule;
 import org.junit.Test;

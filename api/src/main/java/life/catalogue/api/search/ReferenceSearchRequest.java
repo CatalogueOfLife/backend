@@ -5,7 +5,7 @@ import life.catalogue.api.vocab.Issue;
 import java.util.List;
 import java.util.Objects;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.StringUtils;
 

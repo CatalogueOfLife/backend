@@ -7,8 +7,8 @@ import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
 import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

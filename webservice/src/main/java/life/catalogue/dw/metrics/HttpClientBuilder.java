@@ -1,9 +1,9 @@
 package life.catalogue.dw.metrics;
 
 
-import org.apache.http.config.Registry;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.protocol.HttpRequestExecutor;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.conn.socket.ConnectionSocketFactory;
+import org.apache.hc.core5.http.protocol.HttpRequestExecutor;
 
 import com.codahale.metrics.httpclient.InstrumentedHttpClientConnectionManager;
 import com.google.common.annotations.VisibleForTesting;

@@ -3,8 +3,8 @@ package life.catalogue.api.datapackage;
 import java.util.List;
 import java.util.Objects;
 
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 public class PackageDescriptor {
   

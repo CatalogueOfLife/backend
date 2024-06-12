@@ -11,11 +11,12 @@ import life.catalogue.parser.CSLTypeParser;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,7 @@ public class DoiResolver {
     request.addHeader(HttpHeaders.ACCEPT, MoreMediaTypes.APP_JSON_CSL);
 
     try (var resp = http.execute(request)) {
-      if (resp.getStatusLine().getStatusCode() / 100 == 2) {
+      if (resp.getCode() / 100 == 2) {
         HttpEntity entity = resp.getEntity();
         if (entity != null) {
           // return it as a String
@@ -53,15 +54,15 @@ public class DoiResolver {
           return c;
         }
       } else {
-        LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getStatusLine());
-        if (resp.getStatusLine().getStatusCode() == 404) {
+        LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getCode());
+        if (resp.getCode() == 404) {
           issues.addIssue(Issue.DOI_NOT_FOUND);
         } else {
           issues.addIssue(Issue.DOI_UNRESOLVED);
         }
       }
 
-    } catch (IOException e) {
+    } catch (IOException | ParseException e) {
       LOG.error("Error resolving DOI {}", doi, e);
     }
 

@@ -13,8 +13,8 @@ import life.catalogue.db.TestDataRule;
 
 import java.util.List;
 
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.GenericType;
+import jakarta.ws.rs.core.Response;
 
 import org.junit.Ignore;
 import org.junit.Rule;

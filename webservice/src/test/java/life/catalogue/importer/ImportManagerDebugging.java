@@ -27,7 +27,7 @@ import javax.validation.Validator;
 
 import life.catalogue.matching.NamesIndexConfig;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.core5.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;

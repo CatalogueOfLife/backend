@@ -4,7 +4,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 public class BaseDecisionSearchRequest {
 
