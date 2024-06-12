@@ -2,8 +2,8 @@ package life.catalogue.analytics;
 
 import java.util.function.Supplier;
 
-import org.apache.hc.core5.http.entity.ContentType;
-import org.apache.hc.core5.http.protocol.HTTP;
+import org.apache.hc.core5.http.ContentType;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.elasticsearch.client.RequestOptions;
 
 public class EsConstants {
@@ -135,7 +135,7 @@ public class EsConstants {
   static final Supplier<RequestOptions> HEADERS =
     () -> {
       RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
-      builder.addHeader(HTTP.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
+      builder.addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
       return builder.build();
     };
 }
