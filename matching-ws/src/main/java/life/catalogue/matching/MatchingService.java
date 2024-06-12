@@ -233,6 +233,14 @@ public class MatchingService {
     match.setAlternatives(alts);
   }
 
+  public List<ExternalID> matchID(String identifier){
+    return datasetIndex.lookupIdentifier(identifier);
+  }
+
+  public List<ExternalID> matchID(String datasetID, String identifier){
+    return datasetIndex.lookupIdentifier(datasetID, identifier);
+  }
+
   public NameUsageMatch match(
       @Nullable String scientificName,
       @Nullable LinneanClassification classification,

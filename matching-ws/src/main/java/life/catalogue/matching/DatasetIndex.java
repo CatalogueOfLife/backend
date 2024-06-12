@@ -495,6 +495,90 @@ public class DatasetIndex {
   }
 
   /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param identifier the identifier to match
+   * @return IDMatchResult with the document, datasetKey, and flags
+   */
+  public List<ExternalID> lookupIdentifier(@NotNull String identifier)  {
+    List<ExternalID> results = new ArrayList<>();
+
+    try {
+      // if join indexes are present, add them to the match
+      if (identifierSearchers != null && !identifierSearchers.isEmpty()) {
+        for (Dataset dataset : identifierSearchers.keySet()) {
+          // find the index and search it
+          IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
+          Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
+          TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
+
+          if (identifierDocs.totalHits.value > 0) {
+            Document identifierDoc = identifierSearcher.storedFields().document(identifierDocs.scoreDocs[0].doc);
+            results.add(toExternalID(identifierDoc, dataset.getKey().toString()));
+          }
+        }
+      }
+    } catch (IOException e) {
+      log.error("Problem querying external ID indexes with {}", identifier, e);
+    }
+    // no indexes available
+    return results;
+  }
+
+  /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param datasetID the datasetKey to match
+   * @param identifier the identifier to match
+   * @return IDMatchResult with the document, datasetKey, and flags
+   */
+  public List<ExternalID> lookupIdentifier(@NotNull String datasetID, @NotNull String identifier)  {
+    List<ExternalID> results = new ArrayList<>();
+
+    try {
+      // if join indexes are present, add them to the match
+      if (identifierSearchers != null && !identifierSearchers.isEmpty()) {
+        for (Dataset dataset : identifierSearchers.keySet()) {
+
+          // use the prefix mapping
+          if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
+
+            // find the index and search it
+            IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
+            Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
+            TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
+
+            if (identifierDocs.totalHits.value > 0) {
+              Document identifierDoc = identifierSearcher.storedFields().
+                document(identifierDocs.scoreDocs[0].doc);
+
+              results.add(toExternalID(identifierDoc, dataset.getKey().toString()));
+            }
+          }
+        }
+      }
+    } catch (IOException e) {
+      log.error("Problem querying external ID indexes with {}", identifier, e);
+    }
+    // no indexes available
+    return results;
+  }
+
+  private static ExternalID toExternalID(Document doc, String datasetKey) {
+    return ExternalID.builder()
+      .id(doc.get(FIELD_ID))
+      .datasetKey(datasetKey)
+      .scientificName(doc.get(FIELD_SCIENTIFIC_NAME))
+      .rank(doc.get(FIELD_RANK))
+      .parentID(doc.get(FIELD_PARENT_ID))
+      .status(doc.get(FIELD_STATUS))
+      .mainIndexID(doc.get(FIELD_JOIN_ID))
+      .build();
+  }
+
+  /**
    * Matches an external ID
    * @param key the external ID to match
    * @return IDMatchResult with the document, datasetKey, and flags
