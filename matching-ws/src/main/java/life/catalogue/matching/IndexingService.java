@@ -67,6 +67,13 @@ import javax.ws.rs.NotFoundException;
 @Slf4j
 public class IndexingService {
 
+  public static final String METADATA_JSON = "metadata.json";
+  public static final String INDEX_CSV = "index.csv";
+  public static final String MAIN_INDEX_DIR = "main";
+  public static final String IUCN_THREAT_STATUS = "iucn:threatStatus";
+  public static final String IDENTIFIERS_DIR = "identifiers";
+  public static final String ANCILLARY_DIR = "ancillary";
+
   @Value("${index.path:/tmp/matching-index}")
   String indexPath;
 
@@ -210,15 +217,15 @@ public class IndexingService {
     factory.getConfiguration().addMapper(DatasetMapper.class);
 
     // resolve the magic keys...
-    Optional<Dataset> dataset =  lookupDataset(factory, datasetKeyInput);
+    Optional<Dataset> dataset = lookupDataset(factory, datasetKeyInput);
     if (dataset.isEmpty()) {
       throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
     }
 
     final Integer validDatasetKey = dataset.get().getKey();
     final String directory = exportPath + "/" + datasetKeyInput;
-    final String fileName = directory + "/" + "index.csv";
-    final String metadata = directory + "/" + "metadata.json";
+    final String fileName = directory + "/" + INDEX_CSV;
+    final String metadata = directory + "/" + METADATA_JSON;
 
     log.info("Writing dataset to file {}", fileName);
     final AtomicInteger counter = new AtomicInteger(0);
@@ -263,14 +270,14 @@ public class IndexingService {
   public void indexIdentifiers(String datasetKey) throws Exception {
     writeCLBToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
-    writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/identifiers/" + datasetKey, false);
+    writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/" + IDENTIFIERS_DIR + "/" + datasetKey, false);
   }
 
   @Transactional
   public void indexIUCN(String datasetKey) throws Exception {
     writeCLBIUCNToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
-    writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/ancillary/" + datasetKey, true);
+    writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/" + ANCILLARY_DIR + "/" + datasetKey, true);
   }
 
   @Transactional
@@ -295,8 +302,8 @@ public class IndexingService {
 
     log.info("Writing dataset to file...");
     final AtomicInteger counter = new AtomicInteger(0);
-    final String fileName = exportPath + "/" + datasetKeyInput + "/" + "index.csv";
-    final String metadata = exportPath + "/" + datasetKeyInput  + "/" + "metadata.json";
+    final String fileName = exportPath + "/" + datasetKeyInput + "/" + INDEX_CSV;
+    final String metadata = exportPath + "/" + datasetKeyInput  + "/" + METADATA_JSON;
 
     FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
 
@@ -320,7 +327,7 @@ public class IndexingService {
             if (StringUtils.isNotBlank(nameUsage.getExtension())){
               // parse it
               JsonNode node = objectMapper.readTree(nameUsage.getExtension());
-              nameUsage.setCategory(node.path("iucn:threatStatus").asText());
+              nameUsage.setCategory(node.path(IUCN_THREAT_STATUS).asText());
             }
             sbc.write(nameUsage);
 
@@ -382,17 +389,17 @@ public class IndexingService {
       // load export metadata
       ObjectMapper mapper = new ObjectMapper();
       Dataset metadata = mapper.readValue(
-        new FileReader(tempNameUsageIndexPath + "/metadata.json"),
+        new FileReader(tempNameUsageIndexPath + "/" + METADATA_JSON),
         Dataset.class);
       metadata.setTaxonCount(counters[0]);
       metadata.setMatchesToMainIndex(counters[1]);
 
       // write new metadata with counts
-      mapper.writeValue(new File(joinIndexPath + "/metadata.json"), metadata);
+      mapper.writeValue(new File(joinIndexPath + "/" + METADATA_JSON), metadata);
 
-      log.info("Ancillary index written: {} documents, {} matched to main index", counters[0], counters[1]);
+      log.info("Ancillary index written: {} documents, {} matched to " + MAIN_INDEX_DIR + " index", counters[0], counters[1]);
     } catch (Exception e) {
-      log.error("Error writing documents to ancillary index: {}", e.getMessage(), e);
+      log.error("Error writing documents to " + ANCILLARY_DIR + " index: {}", e.getMessage(), e);
     }
   }
 
@@ -446,7 +453,7 @@ public class IndexingService {
     //final batch
     exec.submit(new JoinIndexTask(matchingService, searcher, joinIndexWriter, batch, acceptedOnly, matchedCounter));
 
-    log.info("Finished reading CSV file. Indexing remaining taxa...");
+    log.info("Finished reading CSV file. Indexing re" + MAIN_INDEX_DIR + "ing taxa...");
 
     exec.shutdown();
     try {
@@ -531,7 +538,7 @@ public class IndexingService {
               log.debug("No match for {}", scientificName);
             }
           } catch (Exception e) {
-            log.error("Problem matching name from ancillary index " + scientificName, e.getMessage(), e);
+            log.error("Problem matching name from " + ANCILLARY_DIR + " index " + scientificName, e.getMessage(), e);
           }
         }
         writer.flush();
@@ -573,7 +580,7 @@ public class IndexingService {
 
   @Transactional
   public void createMainIndexFromFile(String exportPath, String indexPath) throws Exception {
-    indexFile(exportPath, indexPath + "/main");
+    indexFile(exportPath, indexPath + "/" + MAIN_INDEX_DIR);
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {
@@ -589,8 +596,8 @@ public class IndexingService {
     // Create a session factory
     log.info("Indexing dataset from CSV...");
     final AtomicLong counter = new AtomicLong(0);
-    final String filePath = exportPath + "/index.csv";
-    final String metadataPath = exportPath + "/metadata.json";
+    final String filePath = exportPath + "/" + INDEX_CSV;
+    final String metadataPath = exportPath + "/" + METADATA_JSON;
 
     ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
       5000L, TimeUnit.MILLISECONDS,
@@ -623,7 +630,7 @@ public class IndexingService {
       //final batch
       exec.submit(new IndexingTask(indexWriter, batch));
 
-      log.info("Finished reading CSV file. Indexing remaining taxa...");
+      log.info("Finished reading CSV file. Indexing re" + MAIN_INDEX_DIR + "ing taxa...");
 
       exec.shutdown();
       try {
@@ -654,7 +661,7 @@ public class IndexingService {
     metadata.setMatchesToMainIndex(counter.get());
 
     // write new metadata with counts
-    mapper.writeValue(new File(indexPath + "/metadata.json"), metadata);
+    mapper.writeValue(new File(indexPath + "/" + METADATA_JSON), metadata);
   }
 
   class YourThreadFactory implements ThreadFactory {

@@ -22,7 +22,10 @@ public class APIMetadata {
   String created;
   @Schema(description = "Git build information")
   Map<String, Object> buildInfo = new HashMap<>();
+  @Schema(description = "The main index metadata", type = "object", implementation = IndexMetadata.class)
   IndexMetadata mainIndex;
+  @Schema(description = "The list of identifier indexes", type = "array", implementation = IndexMetadata.class)
   List<IndexMetadata> identifierIndexes = new ArrayList<>();
+  @Schema(description = "The list of ancillary indexes", type = "array", implementation = IndexMetadata.class)
   List<IndexMetadata> ancillaryIndexes = new ArrayList<>();
 }

@@ -30,7 +30,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         fi \
     fi
 
-# cache a copy of the dataset metadata from checklistbank
+# Cache a copy of the dataset metadata from checklistbank for tracking
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
         curl -o /app/backend/dataset.json $CLB_API_URL/dataset/$CLB_DATASET_ID.json; \
     else \

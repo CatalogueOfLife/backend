@@ -1,13 +1,16 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Dataset {
-
   private Integer key;
   private String gbifKey;
   private String title;
