@@ -33,12 +33,12 @@
     "key": "7888",
     "gbifKey": "dbaa27eb-29e7-4cbb-8eab-3f689cfce116",
     "title": "UK Species Inventory",
-    "prefix": "NBN"
+    "prefix": "*"
   },
   {
     "key": "2041",
     "gbifKey": "de8934f4-a136-481c-a87a-b0b202b80a31",
     "title": "Dyntaxa. Svensk taxonomisk databas",
-    "prefix": "Dyntaxa"
+    "prefix": "urn:lsid:dyntaxa.se:Taxon:"
   }
 ]
