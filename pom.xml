@@ -55,7 +55,6 @@
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.22</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <copy_down.version>1.1</copy_down.version>
     <docker-client.version>3.2.13</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>1.47</dwc-api.version>
     <dwca-io.version>2.13</dwca-io.version>
@@ -65,7 +64,6 @@
     <gbif-api.version>1.16.2</gbif-api.version>
     <hikaricp.version>5.1.0</hikaricp.version>
     <icu4j.version>75.1</icu4j.version>
-    <jakarta.xml.version>2.3.3</jakarta.xml.version>
     <jakarta.el.version>4.0.1</jakarta.el.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
     <javers.version>6.8.0</javers.version>
@@ -99,22 +97,20 @@
 
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <depgraph-maven-plugin>4.0.3</depgraph-maven-plugin>
-    <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
-    <jaxb2_commons.version>0.12.0</jaxb2_commons.version>
+    <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
     <maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>3.6.1</maven-dependency-plugin.version>
-    <maven-enforcer-plugin.version>3.4.1</maven-enforcer-plugin.version>
+    <maven-dependency-plugin.version>3.7.0</maven-dependency-plugin.version>
+    <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
-    <maven-install-plugin.version>3.1.1</maven-install-plugin.version>
-    <maven-jar-plugin.version>3.3.0</maven-jar-plugin.version>
+    <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
+    <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
     <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
-    <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
-    <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+    <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
+    <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
     <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
     <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
-    <xjc-guava-plugin.version>0.3</xjc-guava-plugin.version>
 
     <!-- default maven properties to define the postgres server for running tests.
     To use a different server please activate a personal profile -->
@@ -365,19 +361,6 @@
         <artifactId>jakarta.el</artifactId>
         <version>${jakarta.el.version}</version>
         <scope>test</scope>
-      </dependency>
-
-      <!-- JAXB for java 11 -->
-      <dependency>
-        <groupId>jakarta.xml.bind</groupId>
-        <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.sun.xml.bind</groupId>
-        <artifactId>jaxb-impl</artifactId>
-        <version>${jakarta.xml.version}</version>
-        <scope>runtime</scope>
       </dependency>
 
       <!-- Tvelve Monkeys image format extensions -->
