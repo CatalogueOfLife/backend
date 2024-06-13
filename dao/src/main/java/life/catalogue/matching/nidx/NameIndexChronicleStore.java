@@ -132,7 +132,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     }
   }
 
-
   @Override
   public void stop() {
     keys.close();
@@ -142,7 +141,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public boolean hasStarted() {
-    return keys.isOpen();
+    return keys != null && keys.isOpen();
   }
 
   @Override

@@ -32,12 +32,15 @@ abstract class NameIndexStoreTest {
     dir = TempFile.directory();
     cfg.file = dir.file;
     db = create();
+    assertFalse(db.hasStarted());
     db.start();
+    assertTrue(db.hasStarted());
   }
 
   @After
   public void cleanup() throws Exception {
     db.stop();
+    assertFalse(db.hasStarted());
     dir.close();
   }
 
