@@ -4,12 +4,7 @@ package life.catalogue.dw.health;
 import com.codahale.metrics.health.HealthCheck;
 import com.github.dockerjava.api.DockerClient;
 
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
 import life.catalogue.matching.DockerConfig;
-import life.catalogue.matching.NameIndex;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * Checks that the docker environment is accessible.

@@ -16,8 +16,8 @@ import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NamesIndexConfig;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,7 +93,7 @@ public class ImportManagerDebugging {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(),
-        NameIndexFactory.memory(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
+        NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
       diDao, datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img, null), jobExecutor, validator, null);
     importManager.start();
   }

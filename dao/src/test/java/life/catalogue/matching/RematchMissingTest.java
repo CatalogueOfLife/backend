@@ -5,11 +5,16 @@ import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+
+import life.catalogue.matching.nidx.NamesIndexConfig;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
 
 public class RematchMissingTest {
 
@@ -20,8 +25,8 @@ public class RematchMissingTest {
   public TestDataRule testDataRule = TestDataRule.apple();
 
   @Test
-  public void run() {
-    NameIndex nidx = NameIndexFactory.memory(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
+  public void run() throws IOException {
+    NameIndex nidx = NameIndexFactory.build(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
     DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
     var task = new RematchMissing(m, testDataRule.testData.key);
     task.run();

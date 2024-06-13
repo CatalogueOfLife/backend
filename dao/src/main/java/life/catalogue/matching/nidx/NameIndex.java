@@ -1,4 +1,4 @@
-package life.catalogue.matching;
+package life.catalogue.matching.nidx;
 
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;

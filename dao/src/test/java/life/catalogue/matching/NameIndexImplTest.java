@@ -9,6 +9,10 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexImpl;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.*;
@@ -26,7 +30,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -61,7 +64,7 @@ public class NameIndexImplTest {
       }}
     ).when(mapper).create(any());
 
-    ni = NameIndexFactory.memory(NamesIndexConfig.memory(512), factory, aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), factory, aNormalizer).started();
     assertEquals(0, ni.size());
   }
 

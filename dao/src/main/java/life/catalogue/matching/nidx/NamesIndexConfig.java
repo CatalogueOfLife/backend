@@ -1,10 +1,14 @@
-package life.catalogue.matching;
-
-import javax.annotation.Nullable;
+package life.catalogue.matching.nidx;
 
 import java.io.File;
 
+import javax.annotation.Nullable;
+
+import jakarta.validation.constraints.NotNull;
+
 public class NamesIndexConfig {
+
+  public enum Store {MAPDB, CHRONICLE}
 
   public static NamesIndexConfig memory(int poolsize){
     var cfg = new NamesIndexConfig();
@@ -35,5 +39,8 @@ public class NamesIndexConfig {
   public boolean verification = true;
 
   public int kryoPoolSize = 1024;
+
+  @NotNull
+  public Store type = Store.MAPDB;
 
 }

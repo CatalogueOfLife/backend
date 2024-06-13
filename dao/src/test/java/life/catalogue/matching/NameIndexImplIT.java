@@ -12,12 +12,14 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
 import life.catalogue.printer.TxtTreeDataRule;
@@ -70,7 +72,7 @@ public class NameIndexImplIT {
         session.getMapper(NamesIndexMapper.class).truncate();
       }
     }
-    ni = NameIndexFactory.memory(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
     if (erase) {
       assertEquals(0, ni.size());
     } else {
@@ -79,7 +81,7 @@ public class NameIndexImplIT {
   }
 
   void setupPersistent(File location) throws Exception {
-    ni = NameIndexFactory.persistent(NamesIndexConfig.file(location, 1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.file(location, 1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
   }
 
   @Test

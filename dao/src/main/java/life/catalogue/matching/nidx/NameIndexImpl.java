@@ -1,4 +1,4 @@
-package life.catalogue.matching;
+package life.catalogue.matching.nidx;
 
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -11,6 +11,8 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.Equality;
+import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.NameType;

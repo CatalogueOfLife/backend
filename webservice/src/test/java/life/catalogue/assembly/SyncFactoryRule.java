@@ -5,7 +5,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.NameMatchingRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import jakarta.validation.Validation;

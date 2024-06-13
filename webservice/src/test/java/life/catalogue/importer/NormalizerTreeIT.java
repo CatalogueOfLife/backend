@@ -10,7 +10,7 @@ import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.RankedName;
 import life.catalogue.importer.neo.printer.PrinterUtils;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.io.File;
 import java.io.FileWriter;

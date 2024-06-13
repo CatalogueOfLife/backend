@@ -17,8 +17,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.NomCode;
 

@@ -7,12 +7,8 @@ import life.catalogue.api.vocab.IgnoreReason;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.matching.NameIndex;
-
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NameIndexImplTest;
+import life.catalogue.matching.nidx.NameIndex;
 
 import life.catalogue.release.UsageIdGen;
 
@@ -25,10 +21,7 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
 import java.util.Map;
 import java.util.Set;

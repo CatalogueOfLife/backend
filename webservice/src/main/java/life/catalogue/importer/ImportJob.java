@@ -30,7 +30,7 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
@@ -39,7 +39,6 @@ import life.catalogue.metadata.DoiResolver;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;

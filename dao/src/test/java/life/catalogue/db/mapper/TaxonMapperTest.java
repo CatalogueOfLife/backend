@@ -9,7 +9,7 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.db.MybatisTestUtils;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
 

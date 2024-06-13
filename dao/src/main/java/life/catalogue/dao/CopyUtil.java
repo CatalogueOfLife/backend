@@ -16,8 +16,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.matching.NameIndex;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 

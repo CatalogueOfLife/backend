@@ -1,5 +1,5 @@
 
-package life.catalogue.matching;
+package life.catalogue.matching.nidx;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
@@ -7,15 +7,12 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -161,37 +158,38 @@ public class NameIndexFactory {
   /**
    * Returns a persistent index if location is given, otherwise an in memory one
    */
-  public static NameIndexImpl persistentOrMemory(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) throws IOException {
-    NameIndexImpl ni;
-    if (cfg.file == null) {
-      ni = memory(cfg, sqlFactory, aNormalizer);
-    } else {
-      ni = persistent(cfg, sqlFactory, aNormalizer);
-    }
-    return ni;
+  public static NameIndexImpl build(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) {
+    NameIndexStore store = buildStore(cfg);
+    return new NameIndexImpl(store, aNormalizer, sqlFactory, cfg.verification);
   }
 
-  public static NameIndexImpl memory(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) {
-    LOG.info("Use volatile in memory names index");
-    NameIndexStore store = new NameIndexMapDBStore(DBMaker.memoryDB(), cfg.kryoPoolSize);
-    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, true);
-  }
+  private static NameIndexStore buildStore(NamesIndexConfig cfg) {
+    try {
+      if (cfg.file == null) {
+        LOG.info("Create {} memory names index", cfg.type);
+        if (cfg.type == NamesIndexConfig.Store.CHRONICLE) {
+          return new NameIndexChronicleStore(cfg);
+        }
+        return new NameIndexMapDBStore(DBMaker.memoryDB(), cfg.kryoPoolSize);
 
-  /**
-   * Creates or opens a persistent mapdb names index for the names index.
-   */
-  public static NameIndexImpl persistent(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer authorshipNormalizer) throws IOException {
-    if (!cfg.file.exists()) {
-      FileUtils.forceMkdirParent(cfg.file);
-      LOG.info("Create persistent names index at {}", cfg.file.getAbsolutePath());
-    } else {
-      LOG.info("Use persistent names index at {}", cfg.file.getAbsolutePath());
+      } else {
+        if(!cfg.file.exists()) {
+          FileUtils.forceMkdirParent(cfg.file);
+          LOG.info("Create new persistent {} names index at {}", cfg.type, cfg.file.getAbsolutePath());
+        } else {
+          LOG.info("Use persistent {} names index at {}", cfg.type, cfg.file.getAbsolutePath());
+        }
+        if (cfg.type == NamesIndexConfig.Store.CHRONICLE) {
+          return new NameIndexChronicleStore(cfg);
+        } else {
+          DBMaker.Maker maker = DBMaker
+            .fileDB(cfg.file)
+            .fileMmapEnableIfSupported();
+          return new NameIndexMapDBStore(maker, cfg.file, cfg.kryoPoolSize);
+        }
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    DBMaker.Maker maker = DBMaker
-        .fileDB(cfg.file)
-        .fileMmapEnableIfSupported();
-    NameIndexStore store = new NameIndexMapDBStore(maker, cfg.file, cfg.kryoPoolSize);
-    return new NameIndexImpl(store, authorshipNormalizer, sqlFactory, cfg.verification);
   }
-  
 }

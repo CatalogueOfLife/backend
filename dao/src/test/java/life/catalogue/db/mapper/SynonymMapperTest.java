@@ -10,7 +10,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.util.List;
 import java.util.UUID;

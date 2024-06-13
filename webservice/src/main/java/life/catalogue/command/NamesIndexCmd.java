@@ -10,9 +10,9 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.PgConfig;
 import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.MatchingException;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NamesIndexConfig;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.pgcopy.PgBinaryReader;
 import life.catalogue.pgcopy.PgBinarySplitter;
 import life.catalogue.pgcopy.PgBinaryWriter;
@@ -149,7 +149,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   private void rebuildFileOnly() throws Exception {
     LOG.info("Rebuild index file at {}", nidxFile);
-    NameIndex ni = NameIndexFactory.persistentOrMemory(NamesIndexConfig.file(nidxFile, 1024), factory, AuthorshipNormalizer.INSTANCE);
+    NameIndex ni = NameIndexFactory.build(NamesIndexConfig.file(nidxFile, 1024), factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
     LOG.info("Done rebuilding index file at {}", nidxFile);
   }
@@ -172,7 +172,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     // setup new nidx using the session factory with the nidx schema - which has no names yet
     var ncfg = NamesIndexConfig.file(nidxFile, 1024);
     ncfg.verification = false;
-    ni = NameIndexFactory.persistentOrMemory(ncfg, factory, AuthorshipNormalizer.INSTANCE);
+    ni = NameIndexFactory.build(ncfg, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
 
     String limit = "";

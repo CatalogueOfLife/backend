@@ -1,14 +1,13 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.model.User;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.util.function.BiConsumer;

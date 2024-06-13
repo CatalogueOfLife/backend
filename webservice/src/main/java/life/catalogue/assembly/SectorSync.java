@@ -11,7 +11,7 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;

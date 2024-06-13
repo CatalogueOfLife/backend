@@ -1,28 +1,22 @@
 package life.catalogue.matching;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.EventBus;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.matching.nidx.NameIndex;
 
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
-
-import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);

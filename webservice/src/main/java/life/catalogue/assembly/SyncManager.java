@@ -14,7 +14,7 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.SectorImportMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.utils.NamedThreadFactory;
 

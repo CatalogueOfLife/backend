@@ -24,7 +24,7 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.printer.TxtTreeDataRule;
 

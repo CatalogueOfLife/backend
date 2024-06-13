@@ -6,10 +6,10 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.PgSetupRule;
 import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.TestDataRule;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
-import life.catalogue.matching.NamesIndexConfig;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -35,7 +35,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.memory(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
+    return NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
   }
   
   @Test

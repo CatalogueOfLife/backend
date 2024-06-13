@@ -24,7 +24,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
 

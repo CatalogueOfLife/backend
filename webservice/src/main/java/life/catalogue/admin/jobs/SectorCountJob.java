@@ -7,7 +7,7 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import jakarta.validation.Validator;
 

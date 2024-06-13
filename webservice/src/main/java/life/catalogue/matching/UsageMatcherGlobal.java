@@ -15,6 +15,8 @@ import life.catalogue.db.mapper.NameUsageMapper;
 
 import life.catalogue.matching.authorship.AuthorComparator;
 
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Rank;

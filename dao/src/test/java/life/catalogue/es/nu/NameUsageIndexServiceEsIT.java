@@ -17,7 +17,7 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.*;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
 

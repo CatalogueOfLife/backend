@@ -17,7 +17,7 @@ import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 import life.catalogue.printer.TxtTreeDataRule;

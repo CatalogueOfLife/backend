@@ -10,7 +10,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.MatchedParentStack;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.UsageMatch;
 import life.catalogue.matching.UsageMatcherGlobal;
 

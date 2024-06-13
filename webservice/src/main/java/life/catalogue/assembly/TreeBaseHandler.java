@@ -7,12 +7,10 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
 
 import life.catalogue.release.UsageIdGen;
-
-import org.antlr.v4.runtime.misc.Array2DHashSet;
 
 import org.gbif.nameparser.api.*;
 

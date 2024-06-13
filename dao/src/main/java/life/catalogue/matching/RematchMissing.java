@@ -1,18 +1,10 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.concurrent.BackgroundJob;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-
+import life.catalogue.matching.nidx.NameIndex;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
 
 public class RematchMissing implements Runnable {

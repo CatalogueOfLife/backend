@@ -1,22 +1,14 @@
 package life.catalogue.command;
 
 import life.catalogue.api.model.IndexName;
-import life.catalogue.matching.NameIndexMapDBStore;
+import life.catalogue.matching.nidx.NameIndexMapDBStore;
 
-import life.catalogue.matching.NameIndexStore;
-
-import life.catalogue.matching.NamesIndexConfig;
-
-import org.gbif.nameparser.api.Authorship;
+import life.catalogue.matching.nidx.NameIndexStore;
 
 import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
 import org.mapdb.DBMaker;
-
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  *

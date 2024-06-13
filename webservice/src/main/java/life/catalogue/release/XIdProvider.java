@@ -4,9 +4,8 @@ import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.config.ReleaseConfig;
 
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.io.IOException;

@@ -14,8 +14,8 @@ import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import org.gbif.dwc.terms.Term;

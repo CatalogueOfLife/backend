@@ -29,7 +29,7 @@ import jakarta.validation.constraints.NotNull;
 
 import life.catalogue.matching.DockerConfig;
 
-import life.catalogue.matching.NamesIndexConfig;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

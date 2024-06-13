@@ -28,7 +28,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.GlobalMatcherJob;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.resources.legacy.IdMap;
 

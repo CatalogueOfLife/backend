@@ -6,13 +6,12 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.NameInterpreter;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexImpl;
-import life.catalogue.matching.NameIndexMapDBStore;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexImpl;
+import life.catalogue.matching.nidx.NameIndexMapDBStore;
 import life.catalogue.matching.NidxExportJob;
 
 import org.gbif.nameparser.api.NomCode;

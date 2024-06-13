@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NamesIndexConfig;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.matching.RematchJob;
 
 import java.util.function.Supplier;
@@ -49,7 +49,7 @@ public class NameMatchingRule extends ExternalResource {
     SqlSessionFactory factory = factorySupplier.get();
     LOG.info("Setup in-memory names index");
     if (nidx == null || !reuseNidx) {
-      nidx = NameIndexFactory.memory(NamesIndexConfig.memory(1024), factory, AuthorshipNormalizer.INSTANCE);
+      nidx = NameIndexFactory.build(NamesIndexConfig.memory(1024), factory, AuthorshipNormalizer.INSTANCE);
       nidx.start();
     }
     if (matchAll) {

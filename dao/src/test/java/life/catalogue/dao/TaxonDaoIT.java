@@ -12,7 +12,7 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

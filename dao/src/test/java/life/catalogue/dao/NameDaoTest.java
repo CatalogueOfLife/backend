@@ -9,7 +9,7 @@ import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.util.*;
 

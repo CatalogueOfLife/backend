@@ -49,8 +49,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
@@ -65,9 +65,7 @@ import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
-import org.apache.hc.client5.http.config.ConnectionConfig;
 import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.CookieSpecSupport;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import org.apache.hc.core5.util.Timeout;
@@ -79,8 +77,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
-
-import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -298,7 +294,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     if (cfg.namesIndex.file != null) {
-      ni = NameIndexFactory.persistent(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
+      ni = NameIndexFactory.build(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
       // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
       managedService.manage(Component.NamesIndex, ni);
       env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));

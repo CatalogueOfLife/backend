@@ -6,7 +6,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NameMatchMapper;
 
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.RematchJob;
 
 import org.apache.ibatis.session.SqlSession;

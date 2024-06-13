@@ -8,7 +8,7 @@ import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

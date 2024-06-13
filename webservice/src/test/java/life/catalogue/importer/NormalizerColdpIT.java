@@ -10,7 +10,7 @@ import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

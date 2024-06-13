@@ -20,7 +20,7 @@ import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.txttree.TxtTreeInserter;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;

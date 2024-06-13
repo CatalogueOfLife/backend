@@ -1,4 +1,4 @@
-package life.catalogue.matching;
+package life.catalogue.matching.nidx;
 
 import com.google.common.base.Function;
 
