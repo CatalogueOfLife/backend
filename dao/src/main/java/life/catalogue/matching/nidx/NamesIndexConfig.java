@@ -4,6 +4,7 @@ import java.io.File;
 
 import javax.annotation.Nullable;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public class NamesIndexConfig {
@@ -42,5 +43,11 @@ public class NamesIndexConfig {
 
   @NotNull
   public Store type = Store.MAPDB;
+
+  /**
+   * Maximum numbers of names index entries supported by a chronicle store
+   */
+  @Min(1_000)
+  public int maxEntries = 50_000_000;
 
 }

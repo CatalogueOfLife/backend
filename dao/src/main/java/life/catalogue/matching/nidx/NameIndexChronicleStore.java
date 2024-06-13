@@ -95,21 +95,25 @@ public class NameIndexChronicleStore implements NameIndexStore {
     idn.setRank(Rank.SPECIES);
     idn.setGenus("Abies");
     idn.setSpecificEpithet("alba");
+    idn.setCreatedBy(2);
+    idn.setModifiedBy(3);
+    idn.setCreated(LocalDateTime.now());
+    idn.setModified(LocalDateTime.now());
     idn.setCombinationAuthorship(Authorship.yearAuthors("1988", "Miller"));
 
     var b1 = ChronicleMapBuilder.of(Integer.class, IndexName.class)
       .name("keys")
       .valueMarshaller(marshaller)
       .averageValue(idn)
-      .entries(10_000_000);
+      .entries(cfg.maxEntries);
     var b2 = ChronicleMapBuilder.of(String.class, int[].class)
       .name("names")
-      .entries(12_000_000)
+      .entries(cfg.maxEntries/2)
       .averageKey("Abies alba")
       .averageValue(new int[]{3456,2345,657});
     var b3 = ChronicleMapBuilder.of(Integer.class, int[].class)
       .name("canonical")
-      .entries(4_000_000)
+      .entries(cfg.maxEntries/2)
       .averageValue(new int[]{3456,2345,65117});
 
     try {
