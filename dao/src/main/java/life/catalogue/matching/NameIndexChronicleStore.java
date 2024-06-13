@@ -1,158 +1,136 @@
 package life.catalogue.matching;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
-import life.catalogue.common.kryo.FastUtilsSerializers;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+
+import net.openhft.chronicle.map.ChronicleMap;
+
+import net.openhft.chronicle.map.ChronicleMapBuilder;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
+import org.mapdb.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.mapdb.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 /**
- * NameIndexStore implementation that is backed by a mapdb using kryo serialization.
+ * NameIndexStore implementation that is backed by a persistent Chronicle map.
  */
-public class NameIndexMapDBStore implements NameIndexStore {
-  private static final Logger LOG = LoggerFactory.getLogger(NameIndexMapDBStore.class);
+public class NameIndexChronicleStore implements NameIndexStore {
+  private static final Logger LOG = LoggerFactory.getLogger(NameIndexChronicleStore.class);
 
-  private File dbFile;
-  private final DBMaker.Maker dbMaker;
-  private final Pool<Kryo> pool;
-  private DB db;
+  private File dir;
+  private final NamesIndexConfig cfg;
   private Atomic.Long created; //datetime
   // main nidx instances by their key
-  private Map<Integer, IndexName> keys; // main nidx instances by their key
-  private Map<String, int[]> names; // group of same names by their canonical name key
-  private Map<Integer, int[]> canonical; // canonical group of names by canonicalID
+  private final File keysF;
+  private final File namesF;
+  private final File canonicalF;
+  private ChronicleMap<Integer, IndexName> keys; // main nidx instances by their key
+  private ChronicleMap<String, int[]> names; // group of same names by their canonical name key
+  private ChronicleMap<Integer, int[]> canonical; // canonical group of names by canonicalID
 
-  /**
-   * We use a separate kryo pool for the names index to avoid too often changes to the serialisation format
-   * that then requires us to rebuilt the names index mapdb file. Register just the needed classes, no more.
-   */
-  static class NameIndexKryoPool extends Pool<Kryo> {
+  public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
+    this.cfg = cfg;
+    this.dir = cfg.file;
 
-    public NameIndexKryoPool(int size) {
-      super(true, true, size);
-    }
-
-    @Override
-    public Kryo create() {
-      Kryo kryo = new Kryo();
-      kryo.setRegistrationRequired(true);
-      kryo.register(IndexName.class);
-      kryo.register(Authorship.class);
-      kryo.register(Rank.class);
-      kryo.register(LocalDateTime.class);
-      kryo.register(ArrayList.class);
-      kryo.register(HashMap.class);
-      kryo.register(HashSet.class);
-      kryo.register(int[].class);
-      kryo.register(ObjectArrayList.class, new FastUtilsSerializers.ArrayListSerializer());
-      try {
-        kryo.register(Class.forName("java.util.Arrays$ArrayList"));
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
+    if (dir == null) {
+      keysF = null;
+      namesF = null;
+      canonicalF = null;
+    } else {
+      if (!dir.exists()) {
+        FileUtils.forceMkdir(dir);
       }
-      return kryo;
+      keysF = new File(dir, "keys");
+      namesF = new File(dir, "names");
+      canonicalF = new File(dir, "canonical");
     }
   }
-  
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker, int poolSize) throws DBException.DataCorruption {
-    this(dbMaker, null, poolSize);
-  }
 
-  /**
-   * @param dbMaker
-   * @param dbFile the db file if the maker creates a file based db. Slightly defeats the purpose, but we wanna deal with corrupted db files
-   */
-  public NameIndexMapDBStore(DBMaker.Maker dbMaker, @Nullable File dbFile, int poolSize) {
-    this.dbFile = dbFile;
-    this.dbMaker = dbMaker;
-    pool = new NameIndexKryoPool(poolSize);
+  private boolean inMem() {
+    return dir == null;
   }
 
   @Override
   public void start() {
+    var idn = new IndexName();
+    idn.setKey(345632);
+    idn.setScientificName("Abies alba");
+    idn.setAuthorship("Miller, 1988");
+    idn.setCanonicalId(1345);
+    idn.setRank(Rank.SPECIES);
+    idn.setGenus("Abies");
+    idn.setSpecificEpithet("alba");
+    idn.setCombinationAuthorship(Authorship.yearAuthors("1988", "Miller"));
+
+    var b1 = ChronicleMapBuilder.of(Integer.class, IndexName.class)
+      .name("keys")
+      .averageValue(idn)
+      .entries(10_000_000);
+    var b2 = ChronicleMapBuilder.of(String.class, int[].class)
+      .name("names")
+      .entries(12_000_000)
+      .averageKey("Abies alba");
+    var b3 = ChronicleMapBuilder.of(Integer.class, int[].class)
+      .name("canonical")
+      .entries(4_000_000);
+
     try {
-      db = dbMaker.make();
-    } catch (DBException.DataCorruption e) {
-      if (dbFile != null) {
-        LOG.warn("NamesIndex mapdb was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
-        dbFile.delete();
-        db = dbMaker.make();
+      keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
+      names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
+      canonical = inMem() ? b3.create() : b3.createPersistedTo(canonicalF);
+
+    } catch (IOException e) {
+      if (dir != null) {
+        LOG.warn("NamesIndex store was corrupt. Remove and rebuild index from scratch. {}", e.getMessage());
+        try {
+          FileUtils.cleanDirectory(dir);
+          keys = inMem() ? b1.create() : b1.createPersistedTo(keysF);
+          names = inMem() ? b2.create() : b2.createPersistedTo(namesF);
+          canonical = inMem() ? b3.create() : b3.createPersistedTo(canonicalF);
+        } catch (IOException ex) {
+          throw new RuntimeException(ex);
+        }
       } else {
-        throw e;
+        throw new RuntimeException("Fatal exception when creating a new in memory nidx storage", e);
       }
     }
-
-    final String dateName = "created";
-    if (db.exists(dateName)) {
-      created = db.atomicLong(dateName).open();
-    } else {
-      created = db.atomicLong(dateName).create();
-      setCreatedToNow();
-    }
-
-    keys = db.hashMap("keys")
-      .keySerializer(Serializer.INTEGER)
-      .valueSerializer(new MapDbObjectSerializer<>(IndexName.class, pool, 128))
-      .counterEnable()
-      //.valueInline()
-      //.valuesOutsideNodesEnable()
-      .createOrOpen();
-    names = db.hashMap("names")
-      .keySerializer(Serializer.STRING_ASCII)
-      .valueSerializer(Serializer.INT_ARRAY)
-      //.valueInline()
-      //.valuesOutsideNodesEnable()
-      .createOrOpen();
-    canonical = db.hashMap("canonical")
-      .keySerializer(Serializer.INTEGER)
-      .valueSerializer(Serializer.INT_ARRAY)
-      //.valueInline()
-      //.valuesOutsideNodesEnable()
-      .createOrOpen();
   }
 
 
   @Override
   public void stop() {
-    if (db != null) {
-      db.close();
-      db = null;
-    }
+    keys.close();
+    names.close();
+    canonical.close();
   }
 
   @Override
   public boolean hasStarted() {
-    return db != null;
+    return keys.isOpen();
   }
 
   @Override
   public IndexName get(Integer key) {
-    avail();
     return keys.get(key);
   }
 
@@ -195,7 +173,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
 
   @Override
   public List<IndexName> get(String key) {
-    avail();
     List<IndexName> matches = new ArrayList<>();
     if (names.containsKey(key)) {
       for (int k : names.get(key)) {
@@ -207,7 +184,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
   
   @Override
   public boolean containsKey(String key) {
-    avail();
     return names.containsKey(key);
   }
 
@@ -252,7 +228,6 @@ public class NameIndexMapDBStore implements NameIndexStore {
    */
   @Override
   public void add(String key, IndexName name) {
-    avail();
     check(name);
 
     LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
@@ -307,7 +282,4 @@ public class NameIndexMapDBStore implements NameIndexStore {
     Preconditions.checkNotNull(n.getScientificName(), "scientificName required");
   }
 
-  private void avail() throws UnavailableException {
-    if (db == null) throw UnavailableException.unavailable("names index");
-  }
 }

@@ -64,7 +64,6 @@
     <gbif-api.version>1.16.2</gbif-api.version>
     <hikaricp.version>5.1.0</hikaricp.version>
     <icu4j.version>75.1</icu4j.version>
-    <jakarta.el.version>4.0.1</jakarta.el.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
     <javers.version>6.8.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
@@ -354,13 +353,6 @@
         <version>${dropwizard.version}</version>
         <type>pom</type>
         <scope>import</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.glassfish</groupId>
-        <artifactId>jakarta.el</artifactId>
-        <version>${jakarta.el.version}</version>
-        <scope>test</scope>
       </dependency>
 
       <!-- Tvelve Monkeys image format extensions -->
