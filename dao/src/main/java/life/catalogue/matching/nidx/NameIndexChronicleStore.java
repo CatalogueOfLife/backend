@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 
 import net.openhft.chronicle.bytes.Bytes;
@@ -58,6 +59,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
   private ChronicleMap<Integer, IndexName> keys; // main nidx instances by their key
   private ChronicleMap<String, int[]> names; // group of same names by their canonical name key
   private ChronicleMap<Integer, int[]> canonical; // canonical group of names by canonicalID
+  private boolean started = false;
 
   public NameIndexChronicleStore(NamesIndexConfig cfg) throws IOException {
     this.cfg = cfg;
@@ -130,10 +132,12 @@ public class NameIndexChronicleStore implements NameIndexStore {
         throw new RuntimeException("Fatal exception when creating a new in memory nidx storage", e);
       }
     }
+    started = true;
   }
 
   @Override
   public void stop() {
+    started = false;
     keys.close();
     names.close();
     canonical.close();
@@ -141,11 +145,12 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public boolean hasStarted() {
-    return keys != null && keys.isOpen();
+    return keys != null && started;
   }
 
   @Override
   public IndexName get(Integer key) {
+    assertOnline();
     return keys.get(key);
   }
 
@@ -161,22 +166,21 @@ public class NameIndexChronicleStore implements NameIndexStore {
     return null;
   }
 
-  public int[] debugCanonical(Integer key) {
-    return canonical.get(key);
-  }
-
   @Override
   public Iterable<IndexName> all() {
+    assertOnline();
     return keys.values();
   }
 
   @Override
   public int count() {
+    assertOnline();
     return keys.size();
   }
 
   @Override
   public void clear() {
+    assertOnline();
     keys.clear();
     names.clear();
     canonical.clear();
@@ -184,6 +188,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public List<IndexName> get(String key) {
+    assertOnline();
     List<IndexName> matches = new ArrayList<>();
     if (names.containsKey(key)) {
       for (int k : names.get(key)) {
@@ -192,14 +197,16 @@ public class NameIndexChronicleStore implements NameIndexStore {
     }
     return matches;
   }
-  
+
   @Override
   public boolean containsKey(String key) {
+    assertOnline();
     return names.containsKey(key);
   }
 
   @Override
   public List<IndexName> delete(int id, Function<IndexName, String> keyFunc) {
+    assertOnline();
     List<IndexName> removed = new ArrayList<>();
     var n = keys.remove(id);
     removed.add(n);
@@ -239,6 +246,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
    */
   @Override
   public void add(String key, IndexName name) {
+    assertOnline();
     check(name);
 
     LOG.debug("Insert {}{} #{} keyed on >{}<", name.isCanonical() ? "canonical ":"", name.getLabelWithRank(), name.getKey(), key);
