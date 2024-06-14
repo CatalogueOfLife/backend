@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,6 +13,7 @@ import lombok.Data;
  * Metadata about an index.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Schema(description = "Metadata about an index", title = "IndexMetadata", type = "object")
 public class IndexMetadata {
@@ -24,9 +26,9 @@ public class IndexMetadata {
   @Schema(description = "The size of the index in MB")
   Long sizeInMB = 0L;
   @Schema(description = "The number of name usages in the index")
-  Long taxonCount = 0L;
+  Long nameUsageCount = 0L;
   @Schema(description = "The number of name usages matched to main index")
-  Long matchesToMain = 0L;
-  @Schema(description = "Counts of taxa by rank")
-  Map<String, Long> taxaByRankCount = new HashMap<>();
+  Long matchesToMain;
+  @Schema(description = "Counts of name usages by rank")
+  Map<String, Long> nameUsageByRankCount = new HashMap<>();
 }

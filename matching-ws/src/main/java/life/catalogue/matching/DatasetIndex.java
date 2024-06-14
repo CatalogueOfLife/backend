@@ -219,18 +219,18 @@ public class DatasetIndex {
       log.error("Cannot read index directory attributes", e);
     }
 
-    metadata.setMainIndex(getIndexMetadata(indexPath + "/main", getSearcher().getIndexReader()));
+    metadata.setMainIndex(getIndexMetadata(indexPath + "/main", getSearcher().getIndexReader(), true));
 
     for (Dataset dataset: identifierSearchers.keySet()){
       metadata.getIdentifierIndexes().add(
         getIndexMetadata(indexPath + "/identifiers/" + dataset.getKey(),
-          identifierSearchers.get(dataset).getIndexReader()));
+          identifierSearchers.get(dataset).getIndexReader(),false));
     }
 
     for (Dataset dataset: ancillarySearchers.keySet()){
       metadata.getAncillaryIndexes().add(
         getIndexMetadata(indexPath + "/ancillary/" + dataset.getKey(),
-          ancillarySearchers.get(dataset).getIndexReader()));
+          ancillarySearchers.get(dataset).getIndexReader(), false));
     }
 
     metadata.setBuildInfo(getGitInfo());
@@ -243,7 +243,7 @@ public class DatasetIndex {
    * dataset title and key, and the build information.
    * @return IndexMetadata
    */
-  public IndexMetadata getIndexMetadata(String indexPath, IndexReader reader){
+  public IndexMetadata getIndexMetadata(String indexPath, IndexReader reader, boolean isMain){
 
     IndexMetadata metadata = new IndexMetadata();
 
@@ -270,8 +270,10 @@ public class DatasetIndex {
     metadata.setGbifKey((String) datasetInfo.getOrDefault("gbifKey", null));
 
     // number of taxa
-    metadata.setTaxonCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
-    metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault("matchesToMainIndex", 0)));
+    metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
+    if (!isMain) {
+      metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault("matchesToMainIndex", 0)));
+    }
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
@@ -283,7 +285,7 @@ public class DatasetIndex {
       rankCounts.put(Rank.GENUS.name(), getCountForRank(reader, Rank.GENUS));
       rankCounts.put(Rank.SPECIES.name(), getCountForRank(reader, Rank.SPECIES));
       rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(reader, Rank.SUBSPECIES));
-      metadata.setTaxaByRankCount(rankCounts);
+      metadata.setNameUsageByRankCount(rankCounts);
     } catch (IOException e) {
       log.error("Cannot read index information", e);
     }
@@ -376,51 +378,6 @@ public class DatasetIndex {
     datasetIndex.initWithDir(mainIndexDir);
     return datasetIndex;
   }
-
-  /**
-   * Creates a new in memory lucene index from the given list of usages.
-   *
-   * @return
-   * @throws IOException
-   */
-  public static DatasetIndex newDatasetIndex(Directory mainIndexDir, Map<Dataset, Directory> idIndexes) throws IOException {
-    DatasetIndex datasetIndex = newDatasetIndex(mainIndexDir);
-    for (Dataset dataset: idIndexes.keySet()){
-      datasetIndex.initWithIdentifierDir(dataset, idIndexes.get(dataset));
-    }
-    return datasetIndex;
-  }
-
-//  /**
-//   * Creates a new in memory lucene index from the given list of usages.
-//   *
-//   * @param usages
-//   * @return
-//   * @throws IOException
-//   */
-//  public static DatasetIndex newMemoryDatasetIndex(MatchingService matchingService, Iterable<NameUsage> usages, Iterable<NameUsage> idUsages) throws IOException {
-//
-//    Directory mainDir = IndexingService.newMemoryIndex(usages);
-//
-//    //initialise main index
-//    DatasetIndex datasetIndex = new DatasetIndex();
-//    datasetIndex.initWithDir(mainDir);
-//
-//    // initialise identifier index
-//    Directory idDir = IndexingService.newMemoryIndex(usages);
-//
-//    // join the index
-//    IndexingService.createJoinIndex(matchingService, mainDir, idDir, false);
-//
-//
-//    // dataset index
-//    DatasetIndex datasetIndex = new DatasetIndex();
-//    datasetIndex.initWithDir(mainDir, idDir);
-//
-//
-//    return datasetIndex;
-//  }
-
 
   private IndexSearcher getSearcher() {
     if (searcher == null) {
@@ -634,7 +591,10 @@ public class DatasetIndex {
             TopDocs docs = getSearcher().search(getByIDQuery, 3);
             if (docs.totalHits.value > 0) {
               // success - build the name match
-              return fromDoc(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
+              NameUsageMatch idMatch = fromDoc(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
+              idMatch.getDiagnostics().setConfidence(100);
+              idMatch.getDiagnostics().setMatchType(MatchType.EXACT);
+              return idMatch;
             } else {
               log.warn("Cannot find usage {} in main lucene index after " +
                 "finding it in identifier index for {}", key, dataset.getKey());
@@ -775,7 +735,7 @@ public class DatasetIndex {
           Document ancillaryDoc = ancillarySearcher.storedFields().document(docs.scoreDocs[0].doc);
           String status = ancillaryDoc.get(FIELD_CATEGORY);
           Status ancillaryStatus = new Status();
-          ancillaryStatus.setCategory(status);
+          ancillaryStatus.setStatus(status);
           ancillaryStatus.setDatasetKey(dataset.getKey().toString());
           ancillaryStatus.setGbifKey(dataset.getGbifKey());
           ancillaryStatus.setDatasetAlias(dataset.getAlias());

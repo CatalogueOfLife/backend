@@ -32,5 +32,6 @@ public class Diagnostics {
   String note;
   @Schema(description = "Time taken to perform the match in milliseconds")
   long timeTaken;
-
+  @Schema(description = "A list of similar matches with lower confidence scores ")
+  List<NameUsageMatch> alternatives = new ArrayList<>();
 }

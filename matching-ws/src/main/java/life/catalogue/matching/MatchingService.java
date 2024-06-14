@@ -188,7 +188,7 @@ public class MatchingService {
   private static NameUsageMatch higherMatch(NameUsageMatch match, NameUsageMatch firstMatch) {
     match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
     // FIXME
-    addAlternatives(match, firstMatch.getAlternatives());
+    addAlternatives(match, firstMatch.getDiagnostics().getAlternatives());
     return match;
   }
 
@@ -201,8 +201,8 @@ public class MatchingService {
    * infinite recursions my clearing all alternate matches on the arguments
    */
   private static void addAlternatives(NameUsageMatch match, List<NameUsageMatch> alts) {
-    if (match.getAlternatives() != null && alts != null) {
-      alts.addAll(match.getAlternatives());
+    if (match.getDiagnostics().getAlternatives() != null && alts != null) {
+      alts.addAll(match.getDiagnostics().getAlternatives());
     }
     setAlternatives(match, alts);
   }
@@ -224,13 +224,14 @@ public class MatchingService {
             || keys.contains(m.getUsage().getKey())) {
           // same usage, remove!
           iter.remove();
-        } else if (m.getAlternatives() != null && !m.getAlternatives().isEmpty()) {
-          m.setAlternatives(List.of());
+        } else if (m.getDiagnostics().getAlternatives() != null
+          && !m.getDiagnostics().getAlternatives().isEmpty()) {
+          m.getDiagnostics().setAlternatives(List.of());
         }
         keys.add(m.getUsage().getKey());
       }
     }
-    match.setAlternatives(alts);
+    match.getDiagnostics().setAlternatives(alts);
   }
 
   public List<ExternalID> matchID(String identifier){
@@ -624,7 +625,7 @@ public class MatchingService {
         100,
         match1.getDiagnostics().getIssues(),
         match1.getDiagnostics().getNote(),
-        verbose ? match1.getAlternatives() : null);
+        verbose ? match1.getDiagnostics().getAlternatives() : null);
   }
 
   private boolean nextAboveGenusDiffers(LinneanClassification cl, NameUsageMatch cl2) {
@@ -1167,8 +1168,8 @@ public class MatchingService {
                 .confidence(confidence)
                 .issues(issues)
                 .note(note)
+                .alternatives(alternatives)
                 .build())
-        .alternatives(alternatives)
         .build();
   }
 
@@ -1184,8 +1185,8 @@ public class MatchingService {
           .confidence(confidence)
           .issues(issues)
           .note(note)
+          .alternatives(alternatives)
           .build())
-      .alternatives(alternatives)
       .build();
   }
 

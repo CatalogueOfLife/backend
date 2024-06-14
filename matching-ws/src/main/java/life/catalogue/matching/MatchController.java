@@ -30,7 +30,6 @@ import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
@@ -145,6 +144,48 @@ public class MatchController implements ErrorController {
       response);
   }
 
+  @Hidden
+  @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
+  @GetMapping(
+    value = {"v2/species/match2"},
+    produces = "application/json")
+  public NameUsageMatch matchV2LegacyPath(
+    @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "taxonID", required = false) String taxonID,
+    @RequestParam(value = "taxonConceptID", required = false) String taxonConceptID,
+    @RequestParam(value = "scientificNameID", required = false) String scientificNameID,
+    @RequestParam(value = "name", required = false) String scientificName2,
+    @RequestParam(value = "scientificName", required = false) String scientificName,
+    @RequestParam(value = "authorship", required = false) String authorship2,
+    @RequestParam(value = "scientificNameAuthorship", required = false) String authorship,
+    @RequestParam(value = "rank", required = false) String rank2,
+    @RequestParam(value = "taxonRank", required = false) String rank,
+    @RequestParam(value = "genericName", required = false) String genericName,
+    @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
+    @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+    Classification classification,
+    @RequestParam(value = "strict", required = false) Boolean strict,
+    @RequestParam(value = "verbose", required = false) Boolean verbose,
+    HttpServletRequest response) {
+    // ugly, i know, but jackson/spring isn't working with @JsonProperty
+    classification.setClazz(response.getParameter("class"));
+    return matchingService.match(
+      removeNulls(usageKey),
+      removeNulls(taxonID),
+      removeNulls(taxonConceptID),
+      removeNulls(scientificNameID),
+      first(removeNulls(scientificName), removeNulls(scientificName2)),
+      first(removeNulls(authorship), removeNulls(authorship2)),
+      removeNulls(genericName),
+      removeNulls(specificEpithet),
+      removeNulls(infraspecificEpithet),
+      parseRank(first(removeNulls(rank), removeNulls(rank2))),
+      clean(classification),
+      Set.of(),
+      bool(strict),
+      bool(verbose));
+  }
+
   @Operation(
       operationId = "matchNames",
       summary = "Fuzzy name match service (Version 2)",
@@ -246,7 +287,7 @@ public class MatchController implements ErrorController {
 
   @Operation(
     operationId = "matchNames",
-    summary = "Legacy fuzzy name match service (Version 1)",
+    summary = "Legacy fuzzy name match service (Version 1 - flat format)",
     description = "Fuzzy matches scientific names against the GBIF Backbone Taxonomy with the optional " +
       "classification provided. If a classification is provided and strict is not set to true, the default matching " +
       "will also try to match against these if no direct match is found for the name parameter alone.\n\n" +
@@ -340,7 +381,7 @@ public class MatchController implements ErrorController {
   @GetMapping(
       value = {"v1/species/match"},
       produces = "application/json")
-  public Object matchV1(
+  public Object matchFlatV1(
       @RequestParam(value = "usageKey", required = false) String usageKey,
       @RequestParam(value = "name", required = false) String scientificName2,
       @RequestParam(value = "scientificName", required = false) String scientificName,
@@ -361,7 +402,7 @@ public class MatchController implements ErrorController {
     }
 
     classification.setClazz(response.getParameter("class"));
-    Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
+    Optional<NameUsageMatchFlatV1> optionalNameUsageMatchV1 = NameUsageMatchFlatV1.createFrom(
         matchingService.match(
             removeNulls(usageKey),
             null,
@@ -377,6 +418,147 @@ public class MatchController implements ErrorController {
             Set.of(),
             bool(strict),
             bool(verbose)));
+
+    if (optionalNameUsageMatchV1.isPresent()) {
+      return optionalNameUsageMatchV1.get();
+    } else {
+      return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+    }
+  }
+
+  @Operation(
+    operationId = "matchNames",
+    summary = "Legacy fuzzy name match service (Version 1 - nested format)",
+    description = "Fuzzy matches scientific names against the GBIF Backbone Taxonomy with the optional " +
+      "classification provided. If a classification is provided and strict is not set to true, the default matching " +
+      "will also try to match against these if no direct match is found for the name parameter alone.\n\n" +
+      "Additionally, a lookup may be performed by providing the usageKey which will short-circuit the name-based matching " +
+      "and ONLY use the given key, either finding the concept or returning no match.",
+    extensions = @Extension(name = "Order", properties = @ExtensionProperty(name = "Order", value = "0130"))
+  )
+  @Tag(name = "Searching names")
+  @Parameters(
+    value = {
+      @Parameter(
+        name = "name",
+        description = "The scientific name to fuzzy match against. May include the authorship and year"
+      ),
+      @Parameter(name = "scientificName", hidden = true),
+      @Parameter(
+        name = "authorship",
+        description = "The scientific name authorship to fuzzy match against."
+      ),
+      @Parameter(name = "scientificNameAuthorship", hidden = true),
+      @Parameter(
+        name = "rank",
+        description = "Filters by taxonomic rank as given in our https://api.gbif.org/v1/enumeration/basic/Rank[Rank enum].",
+        schema = @Schema(implementation = org.gbif.api.vocabulary.Rank.class)
+      ),
+      @Parameter(name = "taxonRank", hidden = true),
+      @Parameter(
+        name = "kingdom",
+        description = "Kingdom to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "phylum",
+        description = "Phylum to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "order",
+        description = "Order to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "class",
+        description = "Class to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "family",
+        description = "Family to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "genus",
+        description = "Genus to match.",
+        in = ParameterIn.QUERY,
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "genericName",
+        description = "Generic part of the name to match when given as atomised parts instead of the full name parameter."
+      ),
+      @Parameter(
+        name = "specificEpithet",
+        description = "Specific epithet to match."
+      ),
+      @Parameter(
+        name = "infraspecificEpithet",
+        description = "Infraspecific epithet to match."
+      ),
+      @Parameter(name = "classification", hidden = true),
+      @Parameter(
+        name = "strict",
+        description = "If true it fuzzy matches only the given name, but never a taxon in the upper classification."
+      ),
+      @Parameter(
+        name = "verbose",
+        description = "If true it shows alternative matches which were considered but then rejected."
+      ),
+      @Parameter(
+        name = "usageKey",
+        description = "The usage key to look up. When provided, all other fields are ignored."
+      )
+    }
+  )
+  @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
+  @GetMapping(
+    value = {"v1/species/match2"},
+    produces = "application/json")
+  public Object matchV1(
+    @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "name", required = false) String scientificName2,
+    @RequestParam(value = "scientificName", required = false) String scientificName,
+    @RequestParam(value = "authorship", required = false) String authorship2,
+    @RequestParam(value = "scientificNameAuthorship", required = false) String authorship,
+    @RequestParam(value = "rank", required = false) String rank2,
+    @RequestParam(value = "taxonRank", required = false) String rank,
+    @RequestParam(value = "genericName", required = false) String genericName,
+    @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
+    @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
+    Classification classification,
+    @RequestParam(value = "strict", required = false) Boolean strict,
+    @RequestParam(value = "verbose", required = false) Boolean verbose,
+    HttpServletRequest response) {
+
+    if (!v1Enabled) {
+      return Map.of("message", "API v1 is disabled. Please use v2 instead.");
+    }
+
+    classification.setClazz(response.getParameter("class"));
+    Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
+      matchingService.match(
+        removeNulls(usageKey),
+        null,
+        null,
+        null,
+        first(removeNulls(scientificName), removeNulls(scientificName2)),
+        first(removeNulls(authorship), removeNulls(authorship2)),
+        removeNulls(genericName),
+        removeNulls(specificEpithet),
+        removeNulls(infraspecificEpithet),
+        parseRank(first(removeNulls(rank), removeNulls(rank2))),
+        clean(classification),
+        Set.of(),
+        bool(strict),
+        bool(verbose)));
 
     if (optionalNameUsageMatchV1.isPresent()) {
       return optionalNameUsageMatchV1.get();

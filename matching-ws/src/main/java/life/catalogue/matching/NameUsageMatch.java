@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import io.swagger.v3.oas.annotations.media.Schema;
-
 import lombok.Builder;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
@@ -29,8 +28,6 @@ public class NameUsageMatch implements LinneanClassification {
   RankedName acceptedUsage;
   @Schema(description = "The classification of the accepted name usage. ")
   List<RankedName> classification = new ArrayList<>();
-  @Schema(description = "A list of similar matches with lower confidence scores ")
-  List<NameUsageMatch> alternatives = new ArrayList<>();
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
   Diagnostics diagnostics = Diagnostics.builder().build();
   @Schema(description = "Status information from external sources like IUCN Red List")

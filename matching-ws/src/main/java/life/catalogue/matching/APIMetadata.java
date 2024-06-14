@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +15,7 @@ import java.util.Map;
  * Metadata about an index.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 @Schema(description = "Metadata about the index and software used to access the index through webservices",
   title = "APIMetadata", type = "object")

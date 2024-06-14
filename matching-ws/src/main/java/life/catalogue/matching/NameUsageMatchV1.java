@@ -1,115 +1,128 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
-import lombok.Data;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
+import lombok.Data;
+
 /**
- * Version 1 of the name usage match response object.
- * This class is used to serialize the response of the name usage matching service in the v1 format
- * and to read legacy integration test data to create an index for matching tests.
+ * Version 1 name usage match with legacy integer keys.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
-public class NameUsageMatchV1 implements Serializable {
+@Builder
+@Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
+public class NameUsageMatchV1 {
 
-  @Serial
-  private static final long serialVersionUID = -8927655067465421358L;
-  private Integer usageKey;
-  private Integer acceptedUsageKey;
-  private String scientificName;
-  private String canonicalName;
-  private String rank;
-  private String status;
-  private Integer confidence;
-  private String note;
-  private MatchType matchType;
-  private List<NameUsageMatchV1> alternatives;
-  private String kingdom;
-  private String phylum;
-  private Boolean synonym;
+  @Schema(description = "If the matched usage is a synonym")
+  boolean synonym = false;
+  @Schema(description = "The matched name usage")
+  RankedNameV1 usage;
+  @Schema(description = "The accepted name usage for the match. This will only be populated when we've matched a synonym name usage.")
+  RankedNameV1 acceptedUsage;
+  @Schema(description = "The classification of the accepted name usage. ")
+  List<RankedNameV1> classification = new ArrayList<>();
+  @Schema(description = "A list of similar matches with lower confidence scores ")
+  List<NameUsageMatchV1> alternatives = new ArrayList<>();
+  @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
+  DiagnosticsV1 diagnostics = DiagnosticsV1.builder().build();
 
-  @JsonProperty("class")
-  private String clazz;
+  @Data
+  @Builder
+  @Schema(description = "A name with an identifier and a taxonomic rank", title = "RankedName", type = "object")
+  public static class RankedNameV1 {
+    @Schema(description = "The identifier for the name usage")
+    private Integer key;
+    @Schema(description = "The name usage")
+    private String name;
+    @JsonIgnore
+    private String canonicalName;
+    @Schema(description = "The taxonomic rank for the name usage")
+    private Rank rank;
+  }
 
-  private String order;
-  private String family;
-  private String genus;
-  private String subgenus;
-  private String species;
-  private Integer kingdomKey;
-  private Integer phylumKey;
-  private Integer classKey;
-  private Integer orderKey;
-  private Integer familyKey;
-  private Integer genusKey;
-  private Integer subgenusKey;
-  private Integer speciesKey;
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @Data
+  @Builder
+  @Schema(description = "Diagnostics for a name match including the type of match and confidence level", title = "Diagnostics", type = "object")
+  public static class DiagnosticsV1 {
+    @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
+    MatchType matchType;
+    @Schema(description = "Confidence level in percent")
+    Integer confidence;
+    @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")
+    TaxonomicStatus status;
+    @Schema(description = "Additional notes about the match")
+    String note;
+    @Schema(description = "Time taken to perform the match in milliseconds")
+    long timeTaken;
+    @Schema(description = "A list of similar matches with lower confidence scores ")
+    List<NameUsageMatchV1> alternatives = new ArrayList<>();
+  }
 
   public static Optional<NameUsageMatchV1> createFrom(NameUsageMatch nameUsageMatch) {
-    if (nameUsageMatch == null) return Optional.empty();
-
+    if (nameUsageMatch == null)
+      return Optional.empty();
     try {
-      //check if usageKey is a number
-      Integer.parseInt(nameUsageMatch.getUsage().getKey());
+      NameUsageMatchV1Builder builder = NameUsageMatchV1.builder();
+      builder.synonym(nameUsageMatch.isSynonym());
+      builder.usage(RankedNameV1.builder()
+        .key(Integer.parseInt(nameUsageMatch.getUsage().getKey()))
+        .name(nameUsageMatch.getUsage().getName())
+        .rank(nameUsageMatch.getUsage().getRank())
+        .build()
+      );
+      if (nameUsageMatch.getAcceptedUsage() != null) {
+        builder.acceptedUsage(RankedNameV1.builder()
+          .key(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()))
+          .name(nameUsageMatch.getAcceptedUsage().getName())
+          .rank(nameUsageMatch.getAcceptedUsage().getRank())
+          .build()
+        );
+      }
+      if (nameUsageMatch.getClassification() != null) {
+        List<RankedNameV1> classification = new ArrayList<>();
+        for (RankedName cl : nameUsageMatch.getClassification()) {
+          classification.add(
+            RankedNameV1.builder()
+              .key(Integer.parseInt(cl.getKey()))
+              .name(cl.getName())
+              .rank(cl.getRank()).build())
+          ;
+        }
+        builder.classification(classification);
+      }
+
+      if (nameUsageMatch.getDiagnostics() != null) {
+        DiagnosticsV1.DiagnosticsV1Builder diagBuilder = DiagnosticsV1.builder();
+        diagBuilder.matchType(nameUsageMatch.getDiagnostics().getMatchType());
+        diagBuilder.confidence(nameUsageMatch.getDiagnostics().getConfidence());
+        diagBuilder.status(nameUsageMatch.getDiagnostics().getStatus());
+        diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
+        diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
+        if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
+          List<NameUsageMatchV1> alts = new ArrayList<>();
+          for (NameUsageMatch alt : nameUsageMatch.getDiagnostics().getAlternatives()) {
+            alts.add(createFrom(alt).get());
+          }
+          diagBuilder.alternatives(alts);
+        }
+        builder.diagnostics(diagBuilder.build());
+      }
+      return Optional.of(builder.build());
     } catch (NumberFormatException e) {
       return Optional.empty();
     }
-
-    NameUsageMatchV1 match = new NameUsageMatchV1();
-    if (nameUsageMatch.getUsage() != null) {
-      match.setUsageKey(Integer.parseInt(nameUsageMatch.getUsage().getKey()));
-      match.setScientificName(nameUsageMatch.getUsage().getName());
-      match.setCanonicalName(nameUsageMatch.getUsage().getCanonicalName());
-      match.setRank(nameUsageMatch.getUsage().getRank().name());
-    }
-    if (nameUsageMatch.getAcceptedUsage() != null)
-      match.setAcceptedUsageKey(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()));
-
-    if (nameUsageMatch.getDiagnostics().getStatus() != null) match.setStatus(nameUsageMatch.getDiagnostics().getStatus().name());
-    match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
-    match.setNote(nameUsageMatch.getDiagnostics().getNote());
-    match.setMatchType(nameUsageMatch.getDiagnostics().getMatchType());
-    if (nameUsageMatch.getAlternatives() != null)
-      match.setAlternatives(
-          nameUsageMatch.getAlternatives().stream()
-              .map(NameUsageMatchV1::createFrom)
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .collect(Collectors.toList()));
-    match.setKingdom(nameUsageMatch.getKingdom());
-    match.setPhylum(nameUsageMatch.getPhylum());
-    match.setClazz(nameUsageMatch.getClazz());
-    match.setOrder(nameUsageMatch.getOrder());
-    match.setFamily(nameUsageMatch.getFamily());
-    match.setGenus(nameUsageMatch.getGenus());
-    match.setSubgenus(nameUsageMatch.getSubgenus());
-    match.setSpecies(nameUsageMatch.getSpecies());
-
-    if (nameUsageMatch.getHigherRankKey(Rank.KINGDOM) != null)
-      match.setKingdomKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.KINGDOM)));
-    if (nameUsageMatch.getHigherRankKey(Rank.PHYLUM) != null)
-      match.setPhylumKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.PHYLUM)));
-    if (nameUsageMatch.getHigherRankKey(Rank.CLASS) != null)
-      match.setClassKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.CLASS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.ORDER) != null)
-      match.setOrderKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.ORDER)));
-    if (nameUsageMatch.getHigherRankKey(Rank.FAMILY) != null)
-      match.setFamilyKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.FAMILY)));
-    if (nameUsageMatch.getHigherRankKey(Rank.GENUS) != null)
-      match.setGenusKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.GENUS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.SUBGENUS) != null)
-      match.setSubgenusKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SUBGENUS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.SPECIES) != null)
-      match.setSpeciesKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SPECIES)));
-    return Optional.of(match);
   }
 }

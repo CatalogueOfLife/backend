@@ -41,7 +41,7 @@ public class MatchingApplication implements ApplicationRunner {
   public void run(ApplicationArguments args) {
     APIMetadata metadata = matchingService.getIndexMetadata();
     LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
-      NumberFormat.getInstance().format(metadata.getMainIndex().getTaxonCount()),
+      NumberFormat.getInstance().format(metadata.getMainIndex().getNameUsageCount()),
       metadata.getMainIndex().getSizeInMB() > 0 ? NumberFormat.getInstance().format(metadata.getMainIndex().getSizeInMB()) + "MB" : "unknown"
     );
   }
