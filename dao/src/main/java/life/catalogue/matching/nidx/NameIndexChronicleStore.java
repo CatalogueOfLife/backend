@@ -1,5 +1,28 @@
 package life.catalogue.matching.nidx;
 
+import life.catalogue.api.model.IndexName;
+
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.Rank;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
@@ -9,46 +32,21 @@ import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.IndexName;
-
 import net.openhft.chronicle.bytes.Bytes;
-import net.openhft.chronicle.core.util.ReadResolvable;
 import net.openhft.chronicle.hash.serialization.BytesReader;
 import net.openhft.chronicle.hash.serialization.BytesWriter;
+import net.openhft.chronicle.hash.serialization.StatefulCopyable;
 import net.openhft.chronicle.map.ChronicleMap;
-
 import net.openhft.chronicle.map.ChronicleMapBuilder;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.Rank;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.mapdb.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * NameIndexStore implementation that is backed by a persistent Chronicle map.
  */
 public class NameIndexChronicleStore implements NameIndexStore {
   private static final Logger LOG = LoggerFactory.getLogger(NameIndexChronicleStore.class);
-  private final IndexNameBytesMarshaller marshaller = new IndexNameBytesMarshaller();
+  private static final NameIndexKryoPool POOL = new NameIndexKryoPool(512);
+  private static final IndexNameBytesMarshaller MARSHALLER = new IndexNameBytesMarshaller();
 
-  private final Pool<Kryo> pool;
   private File dir;
   private final NamesIndexConfig cfg;
   private long created; //datetime
@@ -65,8 +63,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
     this.cfg = cfg;
     this.dir = cfg.file;
     this.created = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC);
-    pool = new NameIndexKryoPool(cfg.kryoPoolSize);
-
     if (dir == null) {
       keysF = null;
       namesF = null;
@@ -103,7 +99,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
     var b1 = ChronicleMapBuilder.of(Integer.class, IndexName.class)
       .name("keys")
-      .valueMarshaller(marshaller)
+      .valueMarshaller(MARSHALLER)
       .averageValue(idn)
       .entries(cfg.maxEntries);
     var b2 = ChronicleMapBuilder.of(String.class, int[].class)
@@ -300,7 +296,7 @@ public class NameIndexChronicleStore implements NameIndexStore {
 
   @Override
   public Pool<Kryo> kryo() {
-    return pool;
+    return POOL;
   }
 
   void check(IndexName n){
@@ -310,13 +306,14 @@ public class NameIndexChronicleStore implements NameIndexStore {
     Preconditions.checkNotNull(n.getScientificName(), "scientificName required");
   }
 
-  final class IndexNameBytesMarshaller implements BytesWriter<IndexName>, BytesReader<IndexName> {
+  final static class IndexNameBytesMarshaller implements BytesWriter<IndexName>, BytesReader<IndexName> {
 
     @NotNull
     @Override
     public IndexName read(Bytes in, @Nullable IndexName using) {
-      Kryo kryo = pool.obtain();
+      Kryo kryo = null;
       try {
+        kryo = POOL.obtain();
         int size = in.readInt();
         byte[] bytes = new byte[size];
         in.read(bytes);
@@ -325,14 +322,17 @@ public class NameIndexChronicleStore implements NameIndexStore {
         }
         return kryo.readObject(new Input(bytes), IndexName.class);
       } finally {
-        pool.free(kryo);
+        if (kryo != null) {
+          POOL.free(kryo);
+        }
       }
     }
 
     @Override
     public void write(Bytes out, @NotNull IndexName value) {
-      Kryo kryo = pool.obtain();
+      Kryo kryo = null;
       try {
+        kryo = POOL.obtain();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
         Output output = new Output(buffer, 128);
         kryo.writeObject(output, value);
@@ -341,7 +341,9 @@ public class NameIndexChronicleStore implements NameIndexStore {
         out.writeInt(bytes.length);
         out.write(bytes);
       } finally {
-        pool.free(kryo);
+        if (kryo != null) {
+          POOL.free(kryo);
+        }
       }
     }
   }

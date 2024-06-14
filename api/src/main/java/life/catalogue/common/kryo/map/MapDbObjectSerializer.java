@@ -32,8 +32,9 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
   
   @Override
   public void serialize(DataOutput2 out, T value) throws IOException {
-    Kryo kryo = pool.obtain();
+    Kryo kryo = null;
     try {
+      kryo = pool.obtain();
       ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
       Output output = new Output(buffer, bufferSize);
       kryo.writeObject(output, value);
@@ -42,21 +43,26 @@ public class MapDbObjectSerializer<T> extends GroupSerializerObjectArray<T> {
       DataIO.packInt(out, bytes.length);
       out.write(bytes);
     } finally {
-      pool.free(kryo);
+      if (kryo != null) {
+        pool.free(kryo);
+      }
     }
   }
   
   @Override
   public T deserialize(DataInput2 in, int available) throws IOException {
     if (available == 0) return null;
-    Kryo kryo = pool.obtain();
+    Kryo kryo = null;
     try {
+      kryo = pool.obtain();
       int size = DataIO.unpackInt(in);
       byte[] ret = new byte[size];
       in.readFully(ret);
       return kryo.readObject(new Input(ret), clazz);
     } finally {
-      pool.free(kryo);
+      if (kryo != null) {
+        pool.free(kryo);
+      }
     }
   }
   
