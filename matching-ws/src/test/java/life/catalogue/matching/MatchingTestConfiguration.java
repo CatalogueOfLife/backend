@@ -81,7 +81,7 @@ public class MatchingTestConfiguration {
         InputStream json = IOUtils.classpathStream(file);
         if (json != null) {
           try {
-            NameUsageMatchV1 m = mapper.readValue(json, NameUsageMatchV1.class);
+            NameUsageMatchFlatV1 m = mapper.readValue(json, NameUsageMatchFlatV1.class);
             for (NameUsage u : extractUsagesFromV1Responses(m)) {
               if (u != null) {
                 NameUsage existing = usages.get(u.getId());
@@ -127,7 +127,7 @@ public class MatchingTestConfiguration {
    *
    * @return a list of NameUsage instances, including the main usage and all alternatives.
    */
-  private static List<NameUsage> extractUsagesFromV1Responses(NameUsageMatchV1 m) {
+  private static List<NameUsage> extractUsagesFromV1Responses(NameUsageMatchFlatV1 m) {
     Map<String, NameUsage> usages = new HashMap<>();
 
     NameUsage u = NameUsage.builder().build();
@@ -337,7 +337,7 @@ public class MatchingTestConfiguration {
     }
   }
 
-  private static void setStatus(NameUsageMatchV1 source, NameUsage target) {
+  private static void setStatus(NameUsageMatchFlatV1 source, NameUsage target) {
     if (source.getSynonym()) {
       target.setStatus(TaxonomicStatus.SYNONYM.toString());
     } else {
@@ -349,7 +349,7 @@ public class MatchingTestConfiguration {
     }
   }
 
-  private static String getParentKey(NameUsageMatchV1 m, Rank aboveRank) {
+  private static String getParentKey(NameUsageMatchFlatV1 m, Rank aboveRank) {
     if (aboveRank.ordinal() > Rank.SPECIES.ordinal()
         && m.getSpeciesKey() != null
         && !m.getUsageKey().equals(m.getSpeciesKey())
@@ -381,7 +381,7 @@ public class MatchingTestConfiguration {
     return null;
   }
 
-  private static void setParent(NameUsageMatchV1 m, NameUsage u) {
+  private static void setParent(NameUsageMatchFlatV1 m, NameUsage u) {
 
     if (m.getSynonym()) {
 

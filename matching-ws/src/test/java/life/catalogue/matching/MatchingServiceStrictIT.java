@@ -92,8 +92,8 @@ public class MatchingServiceStrictIT {
       System.out.println("diag: " + best.getDiagnostics().getNote());
     }
 
-    if (best.getAlternatives() != null && !best.getAlternatives().isEmpty()) {
-      for (NameUsageMatch m : best.getAlternatives()) {
+    if (best.getDiagnostics().getAlternatives() != null && !best.getDiagnostics().getAlternatives().isEmpty()) {
+      for (NameUsageMatch m : best.getDiagnostics().getAlternatives()) {
         System.out.println(
             "  Alt: "
                 + m.getUsage().getName()

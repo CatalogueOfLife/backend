@@ -48,7 +48,7 @@ class NameUsageBuilder {
     m.getDiagnostics().setConfidence(confidence);
     m.getDiagnostics().setNote(note);
     m.getDiagnostics().setMatchType(matchType);
-    m.setAlternatives(alternatives);
+    m.getDiagnostics().setAlternatives(alternatives);
     m.setKingdom(kingdom);
     m.setPhylum(phylum);
     m.setClazz(clazz);

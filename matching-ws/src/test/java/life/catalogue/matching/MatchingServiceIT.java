@@ -117,8 +117,8 @@ public class MatchingServiceIT {
                   best.getFamily()));
       System.out.println("  " + best.getDiagnostics().getNote());
     }
-    if (best.getAlternatives() != null) {
-      for (NameUsageMatch m : best.getAlternatives()) {
+    if (best.getDiagnostics().getAlternatives() != null) {
+      for (NameUsageMatch m : best.getDiagnostics().getAlternatives()) {
         System.out.println(
             "  Alt: "
                 + m.getUsage().getName()
