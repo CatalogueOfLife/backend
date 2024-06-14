@@ -80,6 +80,11 @@ public class NameIndexFactory {
       }
 
       @Override
+      public NameIndexStore store() {
+        return null;
+      }
+
+      @Override
       public boolean hasStarted() {
         return true;
       }
@@ -145,6 +150,11 @@ public class NameIndexFactory {
 
       @Override
       public void reset() {
+      }
+
+      @Override
+      public NameIndexStore store() {
+        return null;
       }
 
       @Override

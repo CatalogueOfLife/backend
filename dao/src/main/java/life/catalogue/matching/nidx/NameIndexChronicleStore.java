@@ -298,6 +298,11 @@ public class NameIndexChronicleStore implements NameIndexStore {
     return LocalDateTime.ofEpochSecond(created, 0, ZoneOffset.UTC);
   }
 
+  @Override
+  public Pool<Kryo> kryo() {
+    return pool;
+  }
+
   void check(IndexName n){
     Preconditions.checkNotNull(n.getKey(), "key required");
     Preconditions.checkNotNull(n.getCanonicalId(), "canonicalID required");

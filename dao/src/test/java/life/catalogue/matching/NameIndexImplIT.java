@@ -19,6 +19,7 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexStore;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
@@ -29,14 +30,12 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
@@ -44,9 +43,12 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class NameIndexImplIT {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
@@ -57,6 +59,17 @@ public class NameIndexImplIT {
   
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
+
+  @Parameterized.Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.stream(NamesIndexConfig.Store.values())
+      .map(s -> new Object[]{s})
+      .collect(Collectors.toList());
+  }
+
+  public NameIndexImplIT(NamesIndexConfig.Store type) {
+    this.ni = ni;
+  }
 
   @After
   public void stop() throws Exception {

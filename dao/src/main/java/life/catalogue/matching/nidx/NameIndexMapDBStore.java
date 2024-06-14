@@ -263,6 +263,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
     return LocalDateTime.ofEpochSecond(created.get(), 0, ZoneOffset.UTC);
   }
 
+  @Override
+  public Pool<Kryo> kryo() {
+    return pool;
+  }
+
   void check(IndexName n){
     Preconditions.checkNotNull(n.getKey(), "key required");
     Preconditions.checkNotNull(n.getCanonicalId(), "canonicalID required");

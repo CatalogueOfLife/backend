@@ -107,4 +107,6 @@ public interface NameIndex extends Managed, AutoCloseable {
     stop();
   }
 
+  NameIndexStore store();
+
 }

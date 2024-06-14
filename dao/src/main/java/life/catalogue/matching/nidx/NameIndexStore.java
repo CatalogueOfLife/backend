@@ -1,5 +1,8 @@
 package life.catalogue.matching.nidx;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.Managed;
 
@@ -55,4 +58,6 @@ public interface NameIndexStore extends Managed {
    * DateTime the store was first created or entirely cleared.
    */
   LocalDateTime created();
+
+  Pool<Kryo> kryo();
 }

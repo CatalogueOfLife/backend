@@ -14,6 +14,8 @@ import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.matching.nidx.NameIndexMapDBStore;
 import life.catalogue.matching.NidxExportJob;
 
+import life.catalogue.matching.nidx.NameIndexStore;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -57,16 +59,22 @@ public class NamesIndexResource {
   @GET
   @Path("metadata")
   public NidxMetadata getCreated() {
-    return new NidxMetadata(ni.created(), ni.size());
+    return new NidxMetadata(ni.store());
   }
 
   public static class NidxMetadata {
+    public final String type;
     public final LocalDateTime created;
     public final int size;
+    public final int kryoFree;
+    public final int kryoPeak;
 
-    public NidxMetadata(LocalDateTime created, int size) {
-      this.created = created;
-      this.size = size;
+    public NidxMetadata(NameIndexStore store) {
+      this.created = store.created();
+      this.size = store.count();
+      this.kryoFree = store.kryo().getPeak();
+      this.kryoPeak = store.kryo().getFree();
+      this.type = store.getClass().getSimpleName();
     }
   }
 
@@ -130,19 +138,7 @@ public class NamesIndexResource {
   @Path("compact")
   @RolesAllowed({Roles.ADMIN})
   public void compact() {
-    store().compact();
-  }
-
-  @GET
-  @Hidden
-  @Path("debug/{key}")
-  @RolesAllowed({Roles.ADMIN})
-  public int[] debugCanonical(@PathParam("key") int key) {
-    return store().debugCanonical(key);
-  }
-
-  private NameIndexMapDBStore store() {
-    return ((NameIndexImpl) ni).store();
+    ni.store().compact();
   }
 
 }

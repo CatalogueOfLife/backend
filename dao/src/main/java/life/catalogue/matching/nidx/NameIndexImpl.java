@@ -343,8 +343,9 @@ public class NameIndexImpl implements NameIndex {
     return store.count();
   }
 
-  public NameIndexMapDBStore store() {
-    return (NameIndexMapDBStore) store;
+  @Override
+  public NameIndexStore store() {
+    return store;
   }
 
   @Override
