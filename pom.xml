@@ -72,7 +72,6 @@
     <junit.version>5.10.2</junit.version>
     <kryo.version>5.6.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
-    <logstash-logback.version>7.4</logstash-logback.version>
     <lombok.version>1.18.30</lombok.version>
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>3.3.3</mockito.version>
