@@ -582,9 +582,9 @@
 
       <!-- logging -->
       <dependency>
-        <groupId>net.logstash.logback</groupId>
-        <artifactId>logstash-logback-encoder</artifactId>
-        <version>${logstash-logback.version}</version>
+        <groupId>co.elastic.logging</groupId>
+        <artifactId>logback-ecs-encoder</artifactId>
+        <version>1.6.0</version>
       </dependency>
 
       <!-- commons -->

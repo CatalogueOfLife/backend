@@ -169,10 +169,6 @@
         <groupId>jakarta.validation</groupId>
         <artifactId>jakarta.validation-api</artifactId>
       </dependency>
-      <dependency>
-        <groupId>net.logstash.logback</groupId>
-        <artifactId>logstash-logback-encoder</artifactId>
-      </dependency>
 
       <!-- TEST SCOPE -->
       <dependency>

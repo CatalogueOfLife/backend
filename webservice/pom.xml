@@ -314,6 +314,10 @@
       <groupId>net.logstash.logback</groupId>
       <artifactId>logstash-logback-encoder</artifactId>
     </dependency>
+    <dependency>
+      <groupId>co.elastic.logging</groupId>
+      <artifactId>logback-ecs-encoder</artifactId>
+    </dependency>
 
     <!-- TEST SCOPE -->
     <dependency>

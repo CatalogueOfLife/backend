@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
@@ -79,8 +80,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @VaryAccept
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    LoggingUtils.setDatasetMDC(datasetKey, getClass());
     var key = new DSIDValue<>(datasetKey, id);
-    return dao.getOr404(key);
+    var t = dao.getOr404(key);
+    LOG.info("Found {}", t);
+    LoggingUtils.setDatasetMDC(datasetKey, getClass());
+    return t;
   }
 
   @GET
