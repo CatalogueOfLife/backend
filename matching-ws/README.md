@@ -116,9 +116,9 @@ Where in this example `53131` is the key for the IUCN dataset in checklistbank.
 
 Generated indexes are split into 3 directories, under the main index directory 
 (typically `/data/matching-ws/index`)
-* `/data/matching-ws/index/main` - the main index for the checklist/dataset
-* `/data/matching-ws/index/identifiers` - contains 0..n identifier indexes, allowing the matching of LSID for recognised persistent identifiers
-* `/data/matching-ws/index/ancillary` - contains 0..n ancillary indexes, providing status information associated with name usages e.g. IUCN
+* `/main` - the main index for the checklist/dataset
+* `/identifiers` - contains 0..n identifier indexes, allowing the matching of LSID for recognised persistent identifiers
+* `/ancillary` - contains 0..n ancillary indexes, providing status information associated with name usages e.g. IUCN
 
 The index generation tool generates the index and a `metadata.json`
 in the index directory. The JSON contains some statistics on the generated index.
