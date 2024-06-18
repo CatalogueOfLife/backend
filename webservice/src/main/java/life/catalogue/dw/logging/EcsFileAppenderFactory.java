@@ -6,11 +6,14 @@ import ch.qos.logback.core.OutputStreamAppender;
 
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import co.elastic.logging.AdditionalField;
+import co.elastic.logging.EcsJsonSerializer;
 import co.elastic.logging.logback.EcsEncoder;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import io.dropwizard.logging.common.FileAppenderFactory;
+
+import life.catalogue.api.util.ObjectUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,13 +31,16 @@ import io.dropwizard.logging.common.layout.LayoutFactory;
 /**
  * A logback appender factory using the standardized ECS JSON logging from elasticsearch.
  * All MDC fields are included as root level properties.
- * The Dropwizard applicationName is added as the application field.
- * Apart from that this logger can be configured to add the following fields to the JSON:
- *  - environment: any value e.g. prod, dev
+ * The Dropwizard applicationName is added as the service.name ECS field.
+ * Apart from that this logger can be configured to add the following fields
+ *  - environment: any value e.g. prod, dev. Will be mapped to ECS service.environment
+ *  - version: any value e.g. prod, dev. Will be mapped to ECS service.version
  *  - fields: an optional map of further fixed values to add to logs
  */
 @JsonTypeName("ecs-file")
 public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
+  public static String VERSION;
+  String version;
   String environment;
   Map<String, String> fields;
 
@@ -48,10 +54,22 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
     this.environment = environment;
   }
 
+  @JsonProperty
+  public String getVersion() {
+    return version;
+  }
+
+  @JsonProperty
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
+  @JsonProperty
   public Map<String, String> getFields() {
     return fields;
   }
 
+  @JsonProperty
   public void setFields(Map<String, String> fields) {
     this.fields = fields;
   }
@@ -64,13 +82,15 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
 
     var enc = new EcsEncoder();
     enc.setContext(context);
+
     if (applicationName != null) {
-      enc.addAdditionalField(new AdditionalField("application", applicationName));
       enc.setServiceName(applicationName);
     }
     if (environment != null) {
-      enc.addAdditionalField(new AdditionalField("environment", environment));
       enc.setServiceEnvironment(environment);
+    }
+    if (version != null || VERSION != null) {
+      enc.setServiceVersion(ObjectUtils.coalesce(version, VERSION));
     }
     if (fields != null) {
       for (var f : fields.entrySet()) {
