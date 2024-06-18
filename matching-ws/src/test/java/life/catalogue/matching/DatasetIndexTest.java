@@ -27,6 +27,11 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.index.DatasetIndex;
+import life.catalogue.matching.model.NameUsage;
+import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.service.IndexingService;
+import life.catalogue.matching.util.HigherTaxaComparator;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;

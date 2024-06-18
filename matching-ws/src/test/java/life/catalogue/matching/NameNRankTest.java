@@ -2,6 +2,9 @@ package life.catalogue.matching;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import life.catalogue.matching.model.Classification;
+import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.NameNRank;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
 

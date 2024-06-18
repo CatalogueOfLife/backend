@@ -25,6 +25,12 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.matching.model.Classification;
+import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.NameParsers;
+
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,7 +49,7 @@ public class MatchingServiceIT {
   }
 
   private NameUsageMatch assertMatch(
-      String name, LinneanClassification query, Integer expectedKey) {
+    String name, LinneanClassification query, Integer expectedKey) {
     return assertMatch(name, query, String.valueOf(expectedKey), null, new IntRange(1, 100));
   }
 

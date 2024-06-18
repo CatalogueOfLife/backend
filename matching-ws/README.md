@@ -1,6 +1,6 @@
 # Matching index and web services
 
-This module of the backend repository provides a tool for generating a Lucene search index for a taxonomy,
+This module of the `backend` repository provides a tool for generating a Lucene search index for a taxonomy,
 along with a set of web services that utilize these indexes. The primary purpose of these indexes and 
 web services is to match scientific names and classifications, typically derived from occurrence and event datasets.
 
@@ -13,9 +13,9 @@ However, the index can also be generated from a CSV file with the following colu
 * `parentID` - an identifier for the parent name usage
 * `scientificName` - the canonical scientific name, without authorship
 * `authorship` - the authorship for this name usage
-* `rank` - the taxonomic rank e.g. GENUS. See the Rank enumeration for a list of recognised values.
-* `status` - the taxonomic status of the usage e.g. ACCEPTED, SYNONYM. See the TaxonomicStatus enumeration for a list of recognised values.
-* `nomenclaturalCode` - the nomenclatural code for this usage e.g. ZOOLOGICAL. See the NomCode enumeration for a list of recognised values.
+* `rank` - the taxonomic rank e.g. GENUS. See the [Rank](https://github.com/gbif/name-parser/blob/master/name-parser-api/src/main/java/org/gbif/nameparser/api/Rank.java) enumeration for a list of recognised values.
+* `status` - the taxonomic status of the usage e.g. ACCEPTED, SYNONYM. See the [TaxonomicStatus](../api/src/main/java/life/catalogue/api/vocab/TaxonomicStatus.java) enumeration for a list of recognised values.
+* `nomenclaturalCode` - the nomenclatural code for this usage e.g. ZOOLOGICAL. See the [NomCode](https://github.com/gbif/name-parser/blob/master/name-parser-api/src/main/java/org/gbif/nameparser/api/NomCode.java) enumeration for a list of recognised values.
 
 ### Generating an index from ChecklistBank database
 
@@ -55,10 +55,8 @@ mvn clean install spring-boot:repackage
 
 ## Building docker images
 
-
-
 ### Software only
-To build a software only docker image, run the following command:
+To build a software only docker image, run the following command from the root directory of this module (backend/matching-ws):
 ```bash
 docker buildx build \
 --platform linux/amd64 . -t matching-ws:v1 

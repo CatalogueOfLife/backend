@@ -26,6 +26,14 @@ import java.util.Map;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.matching.index.DatasetIndex;
+import life.catalogue.matching.model.NameUsage;
+import life.catalogue.matching.model.NameUsageMatchFlatV1;
+import life.catalogue.matching.service.IndexingService;
+import life.catalogue.matching.util.HigherTaxaComparator;
+import life.catalogue.matching.util.IOUtils;
+
+import life.catalogue.matching.util.NameParsers;
 import org.apache.lucene.store.Directory;
 
 import org.gbif.nameparser.api.*;

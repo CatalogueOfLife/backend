@@ -3,6 +3,9 @@ package life.catalogue.matching;
 import java.util.List;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.model.Diagnostics;
+import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.model.RankedName;
 import lombok.Builder;
 import org.gbif.nameparser.api.Rank;
 

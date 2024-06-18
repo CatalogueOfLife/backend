@@ -12,6 +12,8 @@ import java.util.List;
 
 /**
  * Main application class for the matching-ws module.
+ * This is the class to run from the command line, or from within
+ * a docker container.
  */
 @Parameters(separators = "=")
 public class Main {

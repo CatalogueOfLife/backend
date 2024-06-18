@@ -1,6 +1,10 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.index.DatasetIndex;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.service.IndexingService;
+import life.catalogue.matching.service.MatchingService;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.gbif.nameparser.api.Rank;

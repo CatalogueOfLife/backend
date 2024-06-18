@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 import java.util.TreeSet;
+
+import life.catalogue.matching.util.IOUtils;
 import org.gbif.api.model.checklistbank.NameUsageMatch;
 import org.junit.jupiter.api.Assertions;
 

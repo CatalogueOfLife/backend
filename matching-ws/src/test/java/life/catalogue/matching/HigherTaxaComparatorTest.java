@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+
+import life.catalogue.matching.util.HigherTaxaComparator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
 

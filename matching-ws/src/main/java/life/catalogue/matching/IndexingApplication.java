@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import life.catalogue.matching.index.DatasetIndex;
+import life.catalogue.matching.service.IndexingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;

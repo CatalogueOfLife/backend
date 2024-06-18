@@ -13,8 +13,8 @@
  */
 package life.catalogue.matching;
 
-import static life.catalogue.matching.MatchingService.normConfidence;
-import static life.catalogue.matching.MatchingService.rankSimilarity;
+import static life.catalogue.matching.service.MatchingService.normConfidence;
+import static life.catalogue.matching.service.MatchingService.rankSimilarity;
 import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
