@@ -46,6 +46,9 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
   public static String VERSION;
   String version;
   String environment;
+  boolean includeOrigin = false;
+  boolean includeMarkers = false;
+  boolean stackTraceAsArray = false;
   Map<String, String> fields;
 
   @JsonProperty
@@ -69,6 +72,36 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
   }
 
   @JsonProperty
+  public boolean isIncludeOrigin() {
+    return includeOrigin;
+  }
+
+  @JsonProperty
+  public void setIncludeOrigin(boolean includeOrigin) {
+    this.includeOrigin = includeOrigin;
+  }
+
+  @JsonProperty
+  public boolean isIncludeMarkers() {
+    return includeMarkers;
+  }
+
+  @JsonProperty
+  public void setIncludeMarkers(boolean includeMarkers) {
+    this.includeMarkers = includeMarkers;
+  }
+
+  @JsonProperty
+  public boolean isStackTraceAsArray() {
+    return stackTraceAsArray;
+  }
+
+  @JsonProperty
+  public void setStackTraceAsArray(boolean stackTraceAsArray) {
+    this.stackTraceAsArray = stackTraceAsArray;
+  }
+
+  @JsonProperty
   public Map<String, String> getFields() {
     return fields;
   }
@@ -86,6 +119,9 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
 
     var enc = new ClbEcsEncoder();
     enc.setContext(context);
+    enc.setIncludeMarkers(includeMarkers);
+    enc.setIncludeOrigin(includeOrigin);
+    enc.setStackTraceAsArray(stackTraceAsArray);
 
     if (applicationName != null) {
       enc.setServiceName(applicationName);
