@@ -3,6 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
@@ -225,11 +226,13 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setTitle("Catalogue of the Alucitoidea of the World");
     d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
     d.setEditor(Agent.parse(List.of("Hobern, Donald")));
-    d.setVersion("1.0.21.199 (18 Jul 2021)");
-    d.setIssued(FuzzyDate.of(2021,7,18));
     d.setUrl(URI.create("https://alucitoidea.hobern.net"));
     d.setDoi(DOI.col("e456fgvzb"));
-    d.setContainerTitle("Catalogue of Life Checklist");
+    // these are taken from the container (=COL) for sources by the mapper
+    d.setVersion("Annual Edition 2024");
+    d.setIssued(FuzzyDate.of(2024,6,18));
+    d.setPublisher(Agent.organisation("Catalogue of Life", null, "Amsterdam", null, Country.NETHERLANDS));
+    d.setContainerTitle("Catalogue of Life");
     d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
 
     System.out.println(CslUtil.buildCitation(d.toCSL()));

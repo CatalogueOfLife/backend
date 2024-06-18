@@ -8,13 +8,12 @@
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     con.key AS containerKey,
     con.title AS containerTitle,
+    con.publisher AS containerPublisher,
+    con.issued AS containerIssued,
+    con.version AS containerVersion,
     con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
   </sql>
 
-  <!--
-      d.description,
-      d.contributor,
-    -->
   <sql id="SELECT_SIMPLE">
     d.key,
     d.doi,
@@ -84,15 +83,17 @@
     <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
   </resultMap>
 
-  <resultMap id="datasetSourceReleaseResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
+  <resultMap id="datasetSourceReleaseResultMap" type="Dataset" extends="datasetSourceProjectResultMap">
     <id property="key" column="key"/>
-    <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <collection property="source" ofType="Citation" column="{datasetKey=key, releaseKey=dataset_key}" select="life.catalogue.db.mapper.CitationMapper.listRelease" />
   </resultMap>
 
   <resultMap id="datasetSourceProjectResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     <id property="key" column="key"/>
     <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
+    <result property="publisher" column="containerPublisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="issued" column="containerIssued" />
+    <result property="version" column="containerVersion" />
   </resultMap>
 
   <sql id="SECTOR_SUBJECT_DATASETS">
