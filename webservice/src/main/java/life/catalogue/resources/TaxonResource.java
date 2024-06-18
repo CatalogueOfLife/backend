@@ -18,6 +18,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
@@ -81,10 +82,10 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     LoggingUtils.setDatasetMDC(datasetKey, getClass());
+    LoggingUtils.setJobMDC(UUID.randomUUID(), getClass());
     var key = new DSIDValue<>(datasetKey, id);
     var t = dao.getOr404(key);
     LOG.info("Found {}", t);
-    LoggingUtils.setDatasetMDC(datasetKey, getClass());
     return t;
   }
 

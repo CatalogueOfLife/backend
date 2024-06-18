@@ -25,6 +25,10 @@ public class LoggingUtils {
   public static final String MDC_KEY_ATTEMPT = "attempt";
   public static final String MDC_KEY_SOURCE = "source";
 
+  public static String getMDC(String key) {
+    return MDC.get(key);
+  }
+
   public static void setJobMDC(UUID key, Class<?> jobClass) {
     MDC.put(MDC_KEY_JOB, key.toString());
     MDC.put(MDC_KEY_TASK, jobClass.getSimpleName());
@@ -39,7 +43,6 @@ public class LoggingUtils {
 
   /**
    * Sets the dataset key in MDC if it does not exist yet.
-   * @return true if a new datasetKey has been set, false if the same key already existed before.
    */
   public static void setDatasetMDC(int datasetKey, Class<?> source) {
     MDC.put(MDC_KEY_DATASET_TASK, source.getSimpleName());

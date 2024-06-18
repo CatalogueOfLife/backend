@@ -15,6 +15,8 @@ import io.dropwizard.logging.common.FileAppenderFactory;
 
 import life.catalogue.api.util.ObjectUtils;
 
+import life.catalogue.common.util.LoggingUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +29,8 @@ import io.dropwizard.logging.common.AbstractAppenderFactory;
 import io.dropwizard.logging.common.async.AsyncAppenderFactory;
 import io.dropwizard.logging.common.filter.LevelFilterFactory;
 import io.dropwizard.logging.common.layout.LayoutFactory;
+
+import org.slf4j.MDC;
 
 /**
  * A logback appender factory using the standardized ECS JSON logging from elasticsearch.
@@ -80,7 +84,7 @@ public class EcsFileAppenderFactory extends FileAppenderFactory<ILoggingEvent> {
     OutputStreamAppender<ILoggingEvent> appender = appender(context);
     appender.setName("ecs-file-appender");
 
-    var enc = new EcsEncoder();
+    var enc = new ClbEcsEncoder();
     enc.setContext(context);
 
     if (applicationName != null) {
