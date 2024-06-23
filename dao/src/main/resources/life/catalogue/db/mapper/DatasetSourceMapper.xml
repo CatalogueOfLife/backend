@@ -91,9 +91,7 @@
   <resultMap id="datasetSourceProjectResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap">
     <id property="key" column="key"/>
     <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="publisher" column="containerPublisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
-    <result property="issued" column="containerIssued" />
-    <result property="version" column="containerVersion" />
+    <result property="containerPublisher" column="containerPublisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
   </resultMap>
 
   <sql id="SECTOR_SUBJECT_DATASETS">

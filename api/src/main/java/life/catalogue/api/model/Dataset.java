@@ -170,6 +170,9 @@ public class Dataset extends DataEntity<Integer> {
   private String containerTitle;
   @Valid
   private List<Agent> containerCreator;
+  private String containerVersion;
+  private Agent containerPublisher;
+  private FuzzyDate containerIssued;
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
@@ -228,6 +231,9 @@ public class Dataset extends DataEntity<Integer> {
     this.containerKey = other.containerKey;
     this.containerTitle = other.containerTitle;
     this.containerCreator = other.containerCreator;
+    this.containerVersion = other.containerVersion;
+    this.containerPublisher = other.containerPublisher;
+    this.containerIssued = other.containerIssued;
     this.geographicScope = other.geographicScope;
     this.taxonomicScope = other.taxonomicScope;
     this.temporalScope = other.temporalScope;
@@ -298,16 +304,10 @@ public class Dataset extends DataEntity<Integer> {
     if (keyword != null && !keyword.isEmpty()) {
       builder.keyword(String.join(", ", keyword));
     }
-    if (containerTitle != null) {
+    if (publisher != null && publisher.getOrganisation() != null) {
       builder
-        .type(CSLType.CHAPTER)
-        .author(toNamesArray(unique(merge(creator, editor))))
-        .containerTitle(containerTitle)
-        .containerAuthor(toNamesArray(containerCreator));
-    } else {
-      builder
-        .author(toNamesArray(creator))
-        .editor(toNamesArray(editor));
+        .publisher(publisher.getOrganisation())
+        .publisherPlace(publisher.getAddress());
     }
     if (doi != null) {
       builder.DOI(doi.toString());
@@ -318,9 +318,25 @@ public class Dataset extends DataEntity<Integer> {
     if (issued != null) {
       builder.issued(issued.toCSLDate());
     }
-    if (publisher != null && publisher.getOrganisation() != null) {
-      builder.publisher(publisher.getOrganisation());
-      builder.publisherPlace(publisher.getAddress());
+    if (containerTitle != null) {
+      builder
+        .type(CSLType.CHAPTER)
+        .author(toNamesArray(unique(merge(creator, editor))))
+        .containerTitle(containerTitle)
+        .containerAuthor(toNamesArray(containerCreator))
+        .version(containerVersion);
+      if (containerIssued != null) {
+        builder.issued(containerIssued.toCSLDate());
+      }
+      if (containerPublisher != null && containerPublisher.getOrganisation() != null) {
+        builder
+          .publisher(containerPublisher.getOrganisation())
+          .publisherPlace(containerPublisher.getAddress());
+      }
+    } else {
+      builder
+        .author(toNamesArray(creator))
+        .editor(toNamesArray(editor));
     }
     // no license, distributor, contributor
     return builder;
@@ -337,21 +353,29 @@ public class Dataset extends DataEntity<Integer> {
     c.setVersion(version);
     c.setIssn(issn);;
     c.setDoi(doi);
-    if (containerTitle != null) {
-      c.setType(CSLType.CHAPTER);
-      c.setAuthor(toNames(unique(merge(creator, editor))));
-      c.setContainerTitle(containerTitle);
-      c.setContainerAuthor(toNames(containerCreator));
-    } else {
-      c.setAuthor(toNames(creator));
-      c.setEditor(toNames(editor));
-    }
     if (url != null) {
       c.setUrl(url.toString());
     }
     if (publisher != null && publisher.getOrganisation() != null) {
       c.setPublisher(publisher.getOrganisation());
       c.setPublisherPlace(publisher.getAddress());
+    }
+    if (containerTitle != null) {
+      c.setType(CSLType.CHAPTER);
+      c.setAuthor(toNames(unique(merge(creator, editor))));
+      c.setContainerTitle(containerTitle);
+      c.setContainerAuthor(toNames(containerCreator));
+      c.setVersion(containerVersion);
+      if (containerIssued != null) {
+        c.setIssued(containerIssued);
+      }
+      if (containerPublisher != null && containerPublisher.getOrganisation() != null) {
+        c.setPublisher(containerPublisher.getOrganisation());
+        c.setPublisherPlace(containerPublisher.getAddress());
+      }
+    } else {
+      c.setAuthor(toNames(creator));
+      c.setEditor(toNames(editor));
     }
     // no license, distributor, contributor
     return c;
@@ -538,6 +562,30 @@ public class Dataset extends DataEntity<Integer> {
     this.containerCreator = containerCreator;
   }
 
+  public String getContainerVersion() {
+    return containerVersion;
+  }
+
+  public void setContainerVersion(String containerVersion) {
+    this.containerVersion = containerVersion;
+  }
+
+  public Agent getContainerPublisher() {
+    return containerPublisher;
+  }
+
+  public void setContainerPublisher(Agent containerPublisher) {
+    this.containerPublisher = containerPublisher;
+  }
+
+  public FuzzyDate getContainerIssued() {
+    return containerIssued;
+  }
+
+  public void setContainerIssued(FuzzyDate containerIssued) {
+    this.containerIssued = containerIssued;
+  }
+
   @JsonIgnore
   public String getAliasOrTitle() {
     return ObjectUtils.coalesce(alias, title);
@@ -555,6 +603,7 @@ public class Dataset extends DataEntity<Integer> {
     processAgent(publisher, processor);
     processAllAgents(contributor, processor);
     processAllAgents(containerCreator, processor);
+    processAgent(containerPublisher, processor);
   }
 
   private void processAgent(Agent agent, Consumer<Agent> processor){
@@ -878,6 +927,9 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(containerKey, dataset.containerKey)
            && Objects.equals(containerTitle, dataset.containerTitle)
            && Objects.equals(containerCreator, dataset.containerCreator)
+           && Objects.equals(containerVersion, dataset.containerVersion)
+           && Objects.equals(containerPublisher, dataset.containerPublisher)
+           && Objects.equals(containerIssued, dataset.containerIssued)
            && Objects.equals(geographicScope, dataset.geographicScope)
            && Objects.equals(taxonomicScope, dataset.taxonomicScope)
            && Objects.equals(temporalScope, dataset.temporalScope)
@@ -896,7 +948,7 @@ public class Dataset extends DataEntity<Integer> {
       attempt, lastImportAttempt, lastImportState, imported, deleted,
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
-      containerKey, containerTitle, containerCreator,
+      containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
       geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, urlFormatter, source);
   }
 

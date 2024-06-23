@@ -98,9 +98,9 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     d.setContainerKey(col.getKey());
     d.setContainerTitle(col.getTitle());
     d.setContainerCreator(col.getCreator());
-    d.setPublisher(col.getPublisher());
-    d.setVersion(col.getVersion());
-    d.setIssued(col.getIssued());
+    d.setContainerPublisher(col.getPublisher());
+    d.setContainerVersion(col.getVersion());
+    d.setContainerIssued(col.getIssued());
 
     commit();
     assertEquals(d2, d);
@@ -148,9 +148,9 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     rs.setContainerKey(col.getKey());
     rs.setContainerTitle(col.getTitle());
     rs.setContainerCreator(col.getCreator());
-    rs.setPublisher(col.getPublisher());
-    rs.setVersion(col.getVersion());
-    rs.setIssued(col.getIssued());
+    rs.setContainerPublisher(col.getPublisher());
+    rs.setContainerVersion(col.getVersion());
+    rs.setContainerIssued(col.getIssued());
     assertEquals(rs2, rs);
 
     // now try to list sources
