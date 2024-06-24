@@ -36,6 +36,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
 
     removeDbCreatedProps(d1);
     Dataset d2 = removeDbCreatedProps(mapper().get(Datasets.COL, d1.getKey()));
+    // if the equal fails on container properties make sure these properties are listed in Dataset.PATCH_PROPS
     assertEquals(d1, d2);
   }
 
