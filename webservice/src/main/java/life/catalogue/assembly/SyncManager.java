@@ -242,30 +242,47 @@ public class SyncManager implements Managed, Idle {
   }
 
   /**
+   * Tries to queue a sync job.
+   * If it cannot be queued it updates the import metrics state.
+   *
    * @return true if it was actually queued
    * @throws IllegalArgumentException
    * @throws UnavailableException if sync manager or names index are not started
    */
   private synchronized boolean queueJob(SectorRunnable job, boolean blockMergeSyncs) throws IllegalArgumentException {
-    nameIndex.assertOnline();
-    this.assertOnline();
-    // is this sector already syncing?
-    if (syncs.containsKey(job.sectorKey)) {
-      LOG.info("{} already queued or running", job.sector);
-      // ignore
-      return false;
+    try {
+      nameIndex.assertOnline();
+      this.assertOnline();
+      // is this sector already syncing?
+      if (syncs.containsKey(job.sectorKey)) {
+        // ignore
+        return rejectJob(job, String.format("%s already queued or running", job.sector));
 
-    } else if (blockMergeSyncs && Sector.Mode.MERGE == job.sector.getMode()){
-      // block merge sector syncs
-      LOG.info("Merge sectors blocked in project, skip sync of sector {}", job.sector);
-      return false;
+      } else if (blockMergeSyncs && Sector.Mode.MERGE == job.sector.getMode()){
+        // block merge sector syncs
+        return rejectJob(job, String.format("Merge sectors blocked in project, skip sync of sector %s", job.sector));
 
-    } else {
-      assertStableData(job);
-      syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
-      LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
-      return true;
+      } else {
+        assertStableData(job);
+        syncs.put(job.sectorKey, new SectorFuture(job, exec.submit(job)));
+        LOG.info("Queued {} for {} targeting {}", job.getClass().getSimpleName(), job.sector, job.sector.getTarget());
+        return true;
+      }
+
+    } catch (RuntimeException e) {
+      rejectJob(job, e.getMessage());
+      throw e;
     }
+  }
+
+  private boolean rejectJob(SectorRunnable job, String reason) {
+    LOG.info(reason);
+    try (SqlSession session = factory.openSession(true)) {
+      job.state.setState(ImportState.FAILED);
+      job.state.setFinished(LocalDateTime.now());
+      session.getMapper(SectorImportMapper.class).update(job.state);
+    }
+    return false;
   }
   
   /**
