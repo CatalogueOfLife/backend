@@ -20,7 +20,6 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriBuilder;
-import jakarta.ws.rs.core.UriInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +46,9 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
   private static final Pattern REL_PATH = Pattern.compile("dataset/" + REL_PATTERN_STR);
 
-  private static final String COL_PREFIX = "(X?COL)";
-  private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_PREFIX + "(20\\d\\d)$");
-  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_PREFIX + "(20\\d\\d)", Pattern.CASE_INSENSITIVE);
+  private static final String COL_ALIAS = "(X?COL)(?:20)?(\\d\\d)(?:\\.(1?\\d))?";
+  private static final Pattern COL_PATTERN = Pattern.compile("^" + COL_ALIAS + "$");
+  private static final Pattern COL_PATH = Pattern.compile("dataset/" + COL_ALIAS, Pattern.CASE_INSENSITIVE);
 
   private static final String GBIF_PATTERN_STR = "gbif-([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})";
   @VisibleForTesting
@@ -127,7 +126,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     } else {
       m = COL_PATH.matcher(path);
       if (m.find()) {
-        key = releaseKeyFromYear(m);
+        key = releaseKeyFromAlias(m);
         if (builder != null && req != null) {
           builder.replacePath(m.replaceFirst("dataset/" + key));
           req.setProperty(ORIGINAL_DATASET_KEY_PROPERTY, m.group(1) + m.group(2));
@@ -164,7 +163,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       } else {
         m = COL_PATTERN.matcher(datasetKey);
         if (m.find()){
-          return Optional.of(releaseKeyFromYear(m));
+          return Optional.of(releaseKeyFromAlias(m));
         } else {
           m = GBIF_PATTERN.matcher(datasetKey);
           if (m.find()){
@@ -210,13 +209,23 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     return releaseKey;
   }
 
-  private Integer releaseKeyFromYear(Matcher m) {
+  private Integer releaseKeyFromAlias(Matcher m) {
+    final boolean extended = m.group(1).startsWith("X");
     // parsing cannot fail, we have a pattern
     int year = Integer.parseInt(m.group(2));
-    final boolean extended = m.group(1).startsWith("X");
-    Integer releaseKey = cache.getColAnnualRelease(year, extended);
+    // month is optional
+    Integer releaseKey;
+    if (m.group(3) == null) {
+      releaseKey = cache.getColRelease(year, extended);
+    } else {
+      releaseKey = cache.getColRelease(year, Integer.parseInt(m.group(3)), extended);
+    }
     if (releaseKey == null) {
-      throw new NotFoundException( (extended ? "XCOL" : "COL") + " Annual Checklist " + year + " was never released");
+      String alias = m.group(1)+m.group(2);
+      if (m.group(3) != null) {
+        alias = alias + "." + m.group(3);
+      }
+      throw new NotFoundException( alias + " was never released");
     }
     return releaseKey;
   }

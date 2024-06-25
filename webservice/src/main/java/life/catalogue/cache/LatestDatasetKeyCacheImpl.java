@@ -48,12 +48,12 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
                                                                           .maximumSize(MAX_SIZE)
                                                                           .expireAfterWrite(1, TimeUnit.HOURS)
                                                                           .build(k -> lookupLatest(k, true, true));
-  private final LoadingCache<Integer, Integer> annualReleases = Caffeine.newBuilder()
-                                                                        .maximumSize(50)
-                                                                        .build(y -> lookupAnnualRelease(y, false));
-  private final LoadingCache<Integer, Integer> annualXReleases = Caffeine.newBuilder()
-                                                                        .maximumSize(50)
-                                                                        .build(y -> lookupAnnualRelease(y, true));
+  private final LoadingCache<Integer, Integer> colReleases = Caffeine.newBuilder()
+                                                                        .maximumSize(100)
+                                                                        .build(y -> lookupColRelease(y, false));
+  private final LoadingCache<Integer, Integer> colXReleases = Caffeine.newBuilder()
+                                                                        .maximumSize(100)
+                                                                        .build(y -> lookupColRelease(y, true));
   private final LoadingCache<UUID, Integer> gbif2clb = Caffeine.newBuilder()
                                                                          .maximumSize(MAX_SIZE)
                                                                          .build(this::lookupByGbif);
@@ -92,8 +92,9 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   }
 
   @Override
-  public @Nullable Integer getColAnnualRelease(int year, boolean extended) {
-    return extended ? annualXReleases.get(year) : annualReleases.get(year);
+  public @Nullable Integer getColRelease(int year, int month, boolean extended) {
+    int key = year * 100 + month;
+    return extended ? colXReleases.get(key) : colReleases.get(key);
   }
 
   @Override
@@ -139,14 +140,27 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
     }
   }
 
-  private Integer lookupAnnualRelease(int year, boolean extended) {
-    final String col = extended ? "XCOL" : "COL";
+  private Integer lookupColRelease(int key, boolean extended) {
+    int year = key / 100;
+    int month = key % 100;
+
+    StringBuilder alias = new StringBuilder();
+    if (extended) {
+      alias.append("X");
+    }
+    alias.append("COL");
+    alias.append(String.format("%02d", year));
+    if (month > 0) {
+      alias.append(".");
+      alias.append(month);
+    }
+
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSearchRequest req = new DatasetSearchRequest();
-      req.setAlias(String.format("%s%02d", col, year - 2000));
+      req.setAlias(alias.toString());
       req.setPrivat(false);
-      if (year >= 2021 || extended) {
+      if (year >= 21 || extended) {
         // proper releases
         req.setReleasedFrom(Datasets.COL);
       } else {
@@ -156,7 +170,7 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
       var resp = dm.search(req, null, new Page());
       if (resp != null && !resp.isEmpty()) {
         if (resp.size() > 1) {
-          LOG.warn("Multiple public {} releases found with alias {}", col, req.getAlias());
+          LOG.warn("Multiple public releases found with alias {}", req.getAlias());
         }
         return resp.get(0).getKey();
       }

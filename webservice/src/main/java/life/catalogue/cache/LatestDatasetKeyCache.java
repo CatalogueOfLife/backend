@@ -2,8 +2,6 @@ package life.catalogue.cache;
 
 import java.util.UUID;
 
-import life.catalogue.es.NameUsageIndexService;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -16,7 +14,18 @@ public interface LatestDatasetKeyCache {
 
   @Nullable Integer getReleaseByAttempt(int projectKey, int attempt);
 
-  @Nullable Integer getColAnnualRelease(int year, boolean extended);
+  default @Nullable Integer getColRelease(int year, boolean extended) {
+    return getColRelease(year, 0, extended);
+  }
+
+  /**
+   *
+   * @param year 2 digits only after 2000, e.g. 24 for 2024
+   * @param month 0 for annual release
+   * @param extended
+   * @return
+   */
+  @Nullable Integer getColRelease(int year, int month, boolean extended);
 
   @Nullable Integer getDatasetKeyByGbif(UUID gbif);
 
@@ -47,7 +56,7 @@ public interface LatestDatasetKeyCache {
       }
 
       @Override
-      public @Nullable Integer getColAnnualRelease(int year, boolean extended) {
+      public @Nullable Integer getColRelease(int year, int month, boolean extended) {
         return null;
       }
 
