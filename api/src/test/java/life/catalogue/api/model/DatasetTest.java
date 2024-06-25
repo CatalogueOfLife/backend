@@ -19,9 +19,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- *
- */
+
 public class DatasetTest extends SerdeTestBase<Dataset> {
   private static Set<?> IGNORE = Set.of(License.class);
 

@@ -298,7 +298,6 @@ public class Dataset extends DataEntity<Integer> {
     builder
       .type(CSLType.DATASET)
       .shortTitle(alias)
-      .title(title)
       .version(version)
       .ISSN(issn);
     if (key != null) {
@@ -322,8 +321,18 @@ public class Dataset extends DataEntity<Integer> {
       builder.issued(issued.toCSLDate());
     }
     if (containerTitle != null) {
+      // we change the title of a source to append the source version which otherwise would be lost
+      StringBuilder chapter = new StringBuilder();
+      chapter.append(title);
+      if (version != null) {
+        chapter
+          .append(" (version ")
+          .append(version)
+          .append(")");
+      }
       builder
         .type(CSLType.CHAPTER)
+        .title(chapter.toString())
         .author(toNamesArray(unique(merge(creator, editor))))
         .containerTitle(containerTitle)
         .containerAuthor(toNamesArray(containerCreator))
@@ -338,6 +347,7 @@ public class Dataset extends DataEntity<Integer> {
       }
     } else {
       builder
+        .title(title)
         .author(toNamesArray(creator))
         .editor(toNamesArray(editor));
     }
