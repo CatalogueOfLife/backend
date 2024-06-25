@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.LinneanNameUsage;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -123,9 +124,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
           var sp = parents.find(Rank.SPECIES);
           if (sp == null) {
             issues.addIssue(Issue.PARENT_SPECIES_MISSING);
-          } else if (sp.isParsed()
-                    && !Objects.equals(sn.getGenus(), sp.getGenus())
-                    || !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet())
+          } else if (sp.isParsed() && (
+              !Objects.equals(sn.getGenus(), sp.getGenus()) ||
+              !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }
@@ -133,8 +134,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
           // we have a binomial, compare genus only
           if (genus == null) {
             issues.addIssue(Issue.MISSING_GENUS);
-          } else if (genus.isParsed()
-                   && !Objects.equals(sn.getGenus(), genus.getGenus())
+          } else if (genus.isParsed() &&
+              // genus should only have uninomial populated, but play safe here
+              !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }

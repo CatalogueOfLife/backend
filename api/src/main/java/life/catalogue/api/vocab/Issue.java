@@ -248,7 +248,7 @@ public enum Issue {
       "The denormalized classification could not be applied to the name usage. " +
           "For example if the id based classification has no ranks."),
   
-  PARENT_NAME_MISMATCH(NAME_USAGE, Level.ERROR,
+  PARENT_NAME_MISMATCH(NAME_USAGE, Level.WARNING,
       "The (accepted) bi/trinomial name does not match the parent genus/species. " +
           "For example the species Picea alba with a parent genus Abies is a mismatch."),
 
