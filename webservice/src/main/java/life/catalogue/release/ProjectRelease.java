@@ -321,19 +321,4 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
   }
 
-  public static class IdPreviewRelease extends ProjectRelease {
-    public IdPreviewRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService, DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager, DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-      super(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
-    }
-
-    @Override
-    void prepWork() throws Exception {
-      settings.disable(Setting.RELEASE_REMOVE_BARE_NAMES);
-      super.prepWork();
-      // turn off map ids which will prevent the tables from being deleted on error!
-      mapIds = false;
-      // now fail to ignore the rest of the release procedure
-      throw new RuntimeException("WE ONLY WANT THE PREPARATION STEP TO RUN AND SAVE ID MAP TABLES");
-    }
-  }
 }

@@ -119,5 +119,10 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   void delete(@Param("key") DSID<String> key);
 
+  /**
+   * Removes all issues from all verbatim source records of the given project
+   * @param projectKey
+   */
+  void removeAllIssues(@Param("projectKey") int projectKey);
 }
 

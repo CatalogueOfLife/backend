@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -164,7 +165,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     // validate next higher concrete parent rank
     if (!sn.getRank().isUncomparable()) {
       parents.getLowestConcreteRank(true).ifPresent(r -> {
-        if (r.lowerOrEqualsTo(sn.getRank())) {
+        if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
           issues.addIssue(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
         }
       });

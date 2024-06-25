@@ -668,6 +668,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return copy;
   }
 
+  public NameUsageIndexService getIndexService() {
+    return indexService;
+  }
+
   /**
    * Reads a specific copy by its attempt from the dataset metadata archive.
    */

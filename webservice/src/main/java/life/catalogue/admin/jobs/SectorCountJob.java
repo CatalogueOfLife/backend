@@ -30,7 +30,7 @@ public class SectorCountJob extends DatasetBlockingJob {
     super(datasetKey, userKey, JobPriority.HIGH);
     this.factory = factory;
     this.indexService = indexService;
-    DaoUtils.requireProject(datasetKey);
+    DaoUtils.requireProjectOrRelease(datasetKey);
     this.validator = validator;
   }
 

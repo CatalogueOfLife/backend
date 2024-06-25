@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.admin.jobs.ValidationJob;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -234,20 +235,17 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @POST
+  @Path("/{key}/validate")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void validate(@PathParam("key") int key, @Auth User user) {
+    exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
+  }
+
+  @POST
   @Path("/{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void release(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildRelease(key, user.getKey());
-    exec.submit(job);
-  }
-
-  @POST
-  @Hidden
-  @Path("/{key}/preprelease")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN})
-  public void preprelease(@PathParam("key") int key, @Auth User user) {
-    var job = jobFactory.buildPrepRelease(key, user.getKey());
     exec.submit(job);
   }
 

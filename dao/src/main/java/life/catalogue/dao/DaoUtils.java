@@ -20,8 +20,8 @@ public class DaoUtils {
   private static final Logger LOG = LoggerFactory.getLogger(DaoUtils.class);
 
 
-  public static void requireManaged(int datasetKey) throws NotFoundException {
-    requireManaged(datasetKey, "Only data from managed datasets can be modified.");
+  public static void requireProject(int datasetKey) throws NotFoundException {
+    requireProject(datasetKey, "Only data from projects can be modified.");
   }
 
   /**
@@ -30,7 +30,7 @@ public class DaoUtils {
    * @throws NotFoundException if deleted or not existing
    * @throws IllegalArgumentException if not managed
    */
-  public static void requireManaged(int datasetKey, String message) throws NotFoundException {
+  public static void requireProject(int datasetKey, String message) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     if (origin != DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
@@ -40,8 +40,8 @@ public class DaoUtils {
   /**
    * Makes sure the datasets origin is a project and is either managed or released
    */
-  public static void requireProject(int datasetKey) throws NotFoundException {
-    requireProject(datasetKey, "Only data from managed datasets can be modified.");
+  public static void requireProjectOrRelease(int datasetKey) throws NotFoundException {
+    requireProjectOrRelease(datasetKey, "Only data from projects or releases can be modified.");
   }
 
   /**
@@ -50,14 +50,14 @@ public class DaoUtils {
    * @throws NotFoundException if deleted or not existing
    * @throws IllegalArgumentException if not managed or released
    */
-  public static void requireProject(int datasetKey, String message) throws NotFoundException {
+  public static void requireProjectOrRelease(int datasetKey, String message) throws NotFoundException {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
     if (origin == null || !origin.isProjectOrRelease()) {
       throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
     }
   }
 
-  public static boolean isManagedOrRelease(int datasetKey) {
+  public static boolean isProjectOrRelease(int datasetKey) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey, true).origin;
     if (origin != null) {
       return origin.isProjectOrRelease();

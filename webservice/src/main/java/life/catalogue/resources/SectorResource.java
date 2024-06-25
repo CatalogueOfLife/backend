@@ -111,7 +111,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
-    DaoUtils.requireManaged(datasetKey);
+    DaoUtils.requireProject(datasetKey);
     assembly.sync(datasetKey, request, user);
   }
 
@@ -158,7 +158,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
-    DaoUtils.requireManaged(datasetKey);
+    DaoUtils.requireProject(datasetKey);
     assembly.cancel(DSID.of(datasetKey, id), user.getKey());
   }
 
@@ -189,7 +189,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public SectorImport getSyncAttempt(@PathParam("key") int datasetKey, @PathParam("id") int id,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey);
+    DaoUtils.requireProject(datasetKey);
     return session.getMapper(SectorImportMapper.class).get(DSID.of(datasetKey, id), attempt);
   }
 
