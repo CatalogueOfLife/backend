@@ -45,7 +45,7 @@ public class PortalPageRendererIT {
     }
 
     @Override
-    public @Nullable Integer getColRelease(int year, boolean ext) {
+    public @Nullable Integer getColRelease(int year, int month, boolean extended) {
       return null;
     }
 
