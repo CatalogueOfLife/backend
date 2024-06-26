@@ -3,7 +3,6 @@ package life.catalogue.matching.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,6 @@ import org.gbif.nameparser.api.Rank;
 @Data
 public class NameUsageMatchFlatV1 implements Serializable {
 
-  @Serial
   private static final long serialVersionUID = -8927655067465421358L;
   private Integer usageKey;
   private Integer acceptedUsageKey;

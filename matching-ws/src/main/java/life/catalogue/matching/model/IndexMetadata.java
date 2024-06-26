@@ -15,7 +15,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data
-@Schema(description = "Metadata about an specific section of the index (e.g. main or identifier index)  ", title = "IndexMetadata", type = "object")
+@Schema(description = "Metadata about an specific section of the index (e.g. main or identifier index)", title = "IndexMetadata", type = "object")
 public class IndexMetadata {
   @Schema(description = "The dataset key")
   String datasetKey;

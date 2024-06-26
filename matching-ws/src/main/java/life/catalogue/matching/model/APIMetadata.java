@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -20,10 +21,10 @@ import java.util.Map;
 @Schema(description = "Metadata about the index and software used to access the index through webservices",
   title = "APIMetadata", type = "object")
 public class APIMetadata {
-  @Schema(description = "When the index was created")
+  @Schema(description = "When the index was created. Typically the build date of the docker image", format = "date-time")
   String created;
-  @Schema(description = "Git build information")
-  Map<String, Object> buildInfo = new HashMap<>();
+  @Schema(description = "Software version information", type = "object", implementation = BuildInfo.class)
+  BuildInfo buildInfo ;
   @Schema(description = "The main index metadata", type = "object", implementation = IndexMetadata.class)
   IndexMetadata mainIndex;
   @Schema(description = "The list of identifier indexes", type = "array", implementation = IndexMetadata.class)

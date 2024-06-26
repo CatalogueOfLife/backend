@@ -23,9 +23,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.stream.Collectors;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
 import life.catalogue.matching.model.NameUsageMatchFlatV1;
@@ -323,7 +322,7 @@ public class MatchingTestConfiguration {
                           .build());
               });
     }
-    return usages.values().stream().toList();
+    return usages.values().stream().collect(Collectors.toUnmodifiableList());
   }
 
   public static boolean isViralName(String name) {

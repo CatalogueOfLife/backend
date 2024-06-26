@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +25,8 @@ import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
+
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -37,8 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
- * The MatchController provides a RESTful API for fuzzy matching of scientific names against a checklist.
+ * The MatchController provides a REST-ful API for fuzzy matching of scientific names against a checklist.
  */
 @RestController
 public class MatchController implements ErrorController {
@@ -171,7 +174,7 @@ public class MatchController implements ErrorController {
     @RequestParam(value = "strict", required = false) Boolean strict,
     @RequestParam(value = "verbose", required = false) Boolean verbose,
     HttpServletRequest response) {
-    // ugly, i know, but jackson/spring isn't working with @JsonProperty
+    // ugly, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
     return matchingService.match(
       removeNulls(usageKey),
@@ -207,19 +210,30 @@ public class MatchController implements ErrorController {
   @Parameters(
       value = {
         @Parameter(
+          name = "usageKey",
+          description = "The usage key to look up. When provided, all other fields are ignored."),
+        @Parameter(name = "taxonID", description = "The taxonID to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "taxonConceptID", description = "The taxonConceptID to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "scientificNameID", description = "The scientificNameID to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(
             name = "name",
+            deprecated = true,
             description =
                 "The scientific name to fuzzy match against. May include the authorship and year"),
-        @Parameter(name = "scientificName", hidden = true),
+        @Parameter(name = "scientificName", description =
+          "The scientific name to fuzzy match against. May include the authorship and year"),
         @Parameter(
             name = "authorship",
             description = "The scientific name authorship to fuzzy match against."),
         @Parameter(name = "scientificNameAuthorship", hidden = true),
+        @Parameter(name = "classification", hidden = true),
         @Parameter(
             name = "rank",
             description = "Filters by taxonomic rank.",
+            deprecated = true,
             schema = @Schema(implementation = Rank.class)),
-        @Parameter(name = "taxonRank", hidden = true),
+        @Parameter(name = "taxonRank", description = "Filters by taxonomic rank.",
+          schema = @Schema(implementation = Rank.class)),
         @Parameter(name = "kingdom", description = "Kingdom to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
         @Parameter(name = "phylum", description = "Phylum to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
         @Parameter(name = "order", description = "Order to match.", in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
@@ -234,8 +248,6 @@ public class MatchController implements ErrorController {
                 "Generic part of the name to match when given as atomised parts instead of the full name parameter."),
         @Parameter(name = "specificEpithet", description = "Specific epithet to match.", schema = @Schema(implementation = String.class)),
         @Parameter(name = "infraspecificEpithet", description = "Infraspecific epithet to match.", schema = @Schema(implementation = String.class)),
-        @Parameter(name = "classification", hidden = true),
-        @Parameter(name = "arg10", hidden = true),
         @Parameter(
             name = "strict",
             description =
@@ -244,9 +256,7 @@ public class MatchController implements ErrorController {
             name = "verbose",
             description =
                 "If true it shows alternative matches which were considered but then rejected."),
-        @Parameter(
-            name = "usageKey",
-            description = "The usage key to look up. When provided, all other fields are ignored.")
+
       })
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
   @GetMapping(
@@ -266,11 +276,11 @@ public class MatchController implements ErrorController {
       @RequestParam(value = "genericName", required = false) String genericName,
       @RequestParam(value = "specificEpithet", required = false) String specificEpithet,
       @RequestParam(value = "infraspecificEpithet", required = false) String infraspecificEpithet,
-      Classification classification,
+      @ParameterObject Classification classification,
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {
-    // ugly, i know, but jackson/spring isn't working with @JsonProperty
+    // ugly, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
     return matchingService.match(
         removeNulls(usageKey),

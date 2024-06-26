@@ -9,6 +9,7 @@ public class Classification implements LinneanClassification {
 
   String kingdom;
   String phylum;
+  @Schema(name = "class")
   String clazz;
   String order;
   String family;

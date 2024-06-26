@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import life.catalogue.matching.model.Classification;
 import life.catalogue.matching.model.LinneanClassification;
-import life.catalogue.matching.model.NameNRank;
+import life.catalogue.matching.index.NameNRank;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
 

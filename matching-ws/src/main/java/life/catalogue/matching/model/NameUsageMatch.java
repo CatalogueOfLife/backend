@@ -26,11 +26,11 @@ public class NameUsageMatch implements LinneanClassification {
   RankedName usage;
   @Schema(description = "The accepted name usage for the match. This will only be populated when we've matched a synonym name usage.")
   RankedName acceptedUsage;
-  @Schema(description = "The classification of the accepted name usage. ")
+  @Schema(description = "The classification of the accepted name usage.")
   List<RankedName> classification = new ArrayList<>();
-  @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
+  @Schema(description = "Diagnostics for a name match including the type of match and confidence level",  implementation = Diagnostics.class)
   Diagnostics diagnostics = Diagnostics.builder().build();
-  @Schema(description = "Status information from external sources like IUCN Red List")
+  @Schema(description = "Status information from external sources such as IUCN Red List")
   List<Status> additionalStatus = new ArrayList<>();
 
   private String nameFor(Rank rank) {
@@ -93,7 +93,7 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   @JsonIgnore
-  public void addMatchIssue(MatchIssue issue) {
+  public void addMatchIssue(Issue issue) {
     if (diagnostics == null) {
       diagnostics = Diagnostics.builder().build();
     }

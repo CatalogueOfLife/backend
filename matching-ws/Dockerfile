@@ -12,12 +12,13 @@ ENV CLB_API_URL="https://api.checklistbank.org"
 ENV BACKEND_BRANCH="matching-ws"
 
 # Clone the backend repository
+RUN rm -Rf backend
 RUN git clone https://github.com/CatalogueOfLife/backend.git
 WORKDIR /app/backend
 RUN git checkout $BACKEND_BRANCH
 
 # Build all the CLB modules
-RUN mvn install -DskipTests
+RUN mvn clean install -DskipTests
 
 # Store git commit id and log
 RUN curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/$(git rev-parse HEAD)"
@@ -39,7 +40,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 
 # Build the Maven project and create a exec file
 WORKDIR /app/backend/matching-ws
-RUN mvn install spring-boot:repackage
+RUN mvn clean install spring-boot:repackage
 
 # Copy the executable JAR file from the builder image to the new image
 FROM openjdk:17.0.1-jdk-slim

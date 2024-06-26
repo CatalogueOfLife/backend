@@ -444,7 +444,8 @@ public class IndexingService {
 
     ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
       5000L, TimeUnit.MILLISECONDS,
-      new ArrayBlockingQueue<Runnable>(indexingThreads * 2, true), new ThreadPoolExecutor.CallerRunsPolicy());
+      new ArrayBlockingQueue<Runnable>(indexingThreads * 2, true),
+      new ThreadPoolExecutor.CallerRunsPolicy());
 
     List<Document> batch = new ArrayList<>();
     // Write document data
@@ -539,11 +540,13 @@ public class IndexingService {
 
           // match to main dataset
           try {
+            // use strict matching for classification to classification matching
             NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
             if (nameUsageMatch.getUsage() != null) {
               doc.add(new StringField(FIELD_JOIN_ID,
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
-                  nameUsageMatch.getUsage().getKey(), Field.Store.YES));
+                  nameUsageMatch.getUsage().getKey(), Field.Store.YES)
+              );
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
             } else {

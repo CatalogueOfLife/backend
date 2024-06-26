@@ -4,13 +4,16 @@
                   converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%highlight(%clr([${LOG_LEVEL_PATTERN:-%4p}]) %clr([%logger{0}]){magenta} %msg%n)</pattern>
+      <pattern>%highlight(%boldGreen([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]){magenta} %msg%n)</pattern>
     </encoder>
   </appender>
   <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
   <root level="WARN">
     <appender-ref ref="CONSOLE" />
   </root>
   <logger name="org.springframework.web" level="ERROR"/>
   <logger name="life.catalogue" level="INFO"/>
+  <!-- Suppress INFO logs from org.apache.catalina.core -->
+  <logger name="org.apache.catalina.core" level="ERROR"/>
 </configuration>

@@ -3,7 +3,6 @@ package life.catalogue.matching.index;
 import static life.catalogue.matching.util.IndexConstants.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,7 +17,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
@@ -39,6 +37,8 @@ import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Represents an index of a dataset.
@@ -238,7 +238,7 @@ public class DatasetIndex {
           ancillarySearchers.get(dataset).getIndexReader(), false));
     }
 
-    metadata.setBuildInfo(getGitInfo());
+    getGitInfo().ifPresent(metadata::setBuildInfo);
     return metadata;
   }
 
@@ -301,7 +301,7 @@ public class DatasetIndex {
    * Reads the git information from the git.json file in the working directory.
    * @return Map<String, Object>
    */
-  public Map<String, Object> getGitInfo() {
+  public Optional<BuildInfo> getGitInfo() {
     ObjectMapper mapper = new ObjectMapper();
     final String filePath = workingDir + "/git.json";
     try {
@@ -321,14 +321,22 @@ public class DatasetIndex {
         String email = authorNode.path("email").asText();
         String date = authorNode.path("date").asText();
 
-        return Map.of("sha", sha, "url", url, "html_url", html_url, "name", name, "email", email, "date", date, "message", message);
+        return Optional.of(BuildInfo.builder()
+          .sha(sha)
+          .url(url)
+          .html_url(html_url)
+          .message(message)
+          .name(name)
+          .email(email)
+          .date(date)
+          .build());
       } else {
         log.warn("Git info not found at {}", filePath);
       }
     } catch (IOException e) {
       log.error("Cannot read index git information", e);
     }
-    return Map.of();
+    return Optional.empty();
   }
 
   /**
@@ -545,7 +553,7 @@ public class DatasetIndex {
    * @param key the external ID to match
    * @return IDMatchResult with the document, datasetKey, and flags
    */
-  public NameUsageMatch matchByExternalKey(String key, MatchIssue notFoundIssue, MatchIssue ignoredIssue) {
+  public NameUsageMatch matchByExternalKey(String key, Issue notFoundIssue, Issue ignoredIssue) {
 
     // if join indexes are present, add them to the match
     if (identifierSearchers != null && !identifierSearchers.isEmpty()){
@@ -582,7 +590,7 @@ public class DatasetIndex {
                 .diagnostics(
                   Diagnostics.builder()
                     .matchType(MatchType.NONE)
-                    .issues(new ArrayList<MatchIssue>(List.of(ignoredIssue)))
+                    .issues(new ArrayList<Issue>(List.of(ignoredIssue)))
                     .note("Multiple matches found for the identifier")
                     .build())
                 .synonym(false)
@@ -607,7 +615,7 @@ public class DatasetIndex {
                 .diagnostics(
                   Diagnostics.builder()
                     .matchType(MatchType.NONE)
-                    .issues(new ArrayList<MatchIssue>(List.of(ignoredIssue)))
+                    .issues(new ArrayList<Issue>(List.of(ignoredIssue)))
                     .note("Identifier recognised in {}, but not matching in main index" + dataset.getKey())
                     .build())
                 .synonym(false)
@@ -619,7 +627,7 @@ public class DatasetIndex {
               .diagnostics(
                 Diagnostics.builder()
                   .matchType(MatchType.NONE)
-                  .issues(new ArrayList<MatchIssue>(List.of(notFoundIssue)))
+                  .issues(new ArrayList<Issue>(List.of(notFoundIssue)))
                   .note("Not found for the identifier")
                   .build())
               .synonym(false)

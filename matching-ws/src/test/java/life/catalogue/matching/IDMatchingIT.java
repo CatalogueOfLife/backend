@@ -142,7 +142,7 @@ public class IDMatchingIT {
     assertNotNull(match3);
     assertNotNull(match3.getUsage());
     assertEquals("1011638", match3.getUsage().getKey());
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT));
   }
 
   @Test
@@ -155,7 +155,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.TAXON_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_ID_NOT_FOUND));
   }
 
   @Test
@@ -168,7 +168,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.TAXON_CONCEPT_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_CONCEPT_ID_NOT_FOUND));
   }
 
   @Test
@@ -181,7 +181,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.SCIENTIFIC_NAME_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.SCIENTIFIC_NAME_ID_NOT_FOUND));
   }
 
 
@@ -195,7 +195,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.TAXON_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_ID_NOT_FOUND));
   }
 
   @Test
@@ -208,7 +208,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.TAXON_CONCEPT_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_CONCEPT_ID_NOT_FOUND));
   }
 
   @Test
@@ -221,7 +221,7 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.SCIENTIFIC_NAME_ID_NOT_FOUND));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.SCIENTIFIC_NAME_ID_NOT_FOUND));
   }
 
   @Test
@@ -234,6 +234,6 @@ public class IDMatchingIT {
     );
 
     assertNotNull(match3);
-    assertTrue(match3.getDiagnostics().getIssues().contains(MatchIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS));
+    assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS));
   }
 }

@@ -69,9 +69,9 @@ volume with the docker container.
 To build a docker image, and generate a lucene index as part of the build, run the following command:
 ```bash
 docker buildx build \
---platform linux/amd64 . -t matching-ws:v1 
+--platform linux/amd64 . -t matching-ws:v1 \
 --build-arg CLB_DATASET_ID=3LXRC \
---build-arg CLB_URL=http://api.checklistbank.org \ 
+--build-arg CLB_URL=http://api.checklistbank.org \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
 ```
@@ -80,9 +80,9 @@ docker buildx build \
 To build a docker image, and generate a lucene index as part of the build, run the following command:
 ```bash
 docker buildx build \
---platform linux/amd64 . -t matching-ws:v1 
---build-arg INDEX_CSV_PATH=/data/matching-ws/export
---build-arg CLB_URL=http://api.checklistbank.org \ 
+--platform linux/amd64 . -t matching-ws:v1 \
+--build-arg INDEX_CSV_PATH=/data/matching-ws/export \
+--build-arg CLB_URL=http://api.checklistbank.org \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
 ```
@@ -92,7 +92,9 @@ docker buildx build \
 Pre-built Docker images can be pulled from the Docker repository at docker.gbif.org and run as follows:
 ```bash
 docker pull docker.gbif.org/matching-ws:1.0-SNAPSHOT-3LXRC
-docker run  -d --platform linux/arm64 -p 8080:8080 --name matching-ws-3LXRC matching-ws:1.0-SNAPSHOT-3LXRC  docker.gbif.org
+docker run  -d --platform linux/arm64 -p 8080:8080 \
+--name matching-ws-3LXRC \
+matching-ws:1.0-SNAPSHOT-3LXRC  docker.gbif.org
 ```
 
 ### Indexing additional identifier & IUCN status 
@@ -102,11 +104,11 @@ that may be provided in occurrence records using the darwin core fields  `taxonI
 
 ```bash
 docker buildx build \
---platform linux/amd64 . -t matching-ws:v1 
+--platform linux/amd64 . -t matching-ws:v1 \
 --build-arg CLB_DATASET_ID=3LXRC \
 --build-arg CLB_IUCN_DATASET_ID=53131 \
 --build-arg CLB_IDENTIFIER_DATASET_IDS=2011,2006,7888 \
---build-arg CLB_URL=http://api.checklistbank.org \ 
+--build-arg CLB_URL=http://api.checklistbank.org \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
 ```
@@ -153,15 +155,15 @@ allowing the mapping of strings such as `http://marinespecies.org/data.php?id=12
 persistent identifier format e.g. `urn:lsid:marinespecies.org:taxname:123`
 
 ```json
-  {
-    "key": "2011",
-    "gbifKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
-    "title": "WoRMS",
-    "prefix": "urn:lsid:marinespecies.org:taxname:",
-    "prefixMapping": [
-      "http://marinespecies.org/data.php?id=",
-      "https://marinespecies.org/data.php?id=",
-      "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
-    ]
-  }
+{
+  "key": "2011",
+  "gbifKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+  "title": "WoRMS",
+  "prefix": "urn:lsid:marinespecies.org:taxname:",
+  "prefixMapping": [
+    "http://marinespecies.org/data.php?id=",
+    "https://marinespecies.org/data.php?id=",
+    "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
+  ]
+}
 ```

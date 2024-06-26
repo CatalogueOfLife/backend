@@ -20,8 +20,10 @@ import java.util.List;
 public class Diagnostics {
   @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
   MatchType matchType;
-  @Schema(description = "Issues encountered during the match process")
-  List<MatchIssue> issues = new ArrayList<>();
+  @Schema(description = "Issues with the name usage match that has been returned")
+  List<Issue> issues = new ArrayList<>();
+  @Schema(description = "Issues encountered during steps of the match process")
+  List<ProcessFlag> processingFlags = new ArrayList<>();
   @Schema(description = "Confidence level in percent")
   Integer confidence;
   @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")

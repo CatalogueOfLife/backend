@@ -1,4 +1,4 @@
-package life.catalogue.matching.model;
+package life.catalogue.matching.index;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import life.catalogue.matching.model.Classification;
+import life.catalogue.matching.model.LinneanClassification;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
@@ -172,7 +174,7 @@ public class NameNRank {
 
   private static void appendIfExists(StringBuilder sb, @Nullable String x) {
     if (exists(x)) {
-      if (!sb.isEmpty()) {
+      if (sb.length() > 0) {
         sb.append(" ");
       }
       sb.append(x.trim());
@@ -265,7 +267,8 @@ public class NameNRank {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof NameNRank nameNRank)) return false;
+    if (!(o instanceof NameNRank )) return false;
+    NameNRank nameNRank = (NameNRank) o;
     return Objects.equals(name, nameNRank.name) && rank == nameNRank.rank;
   }
 

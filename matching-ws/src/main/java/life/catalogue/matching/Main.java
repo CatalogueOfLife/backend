@@ -68,6 +68,7 @@ public class Main {
   private boolean help;
 
   public static void main(String[] args) throws Exception {
+    System.setProperty("java.util.logging.SimpleFormatter.format", ""); // hides the tomcat startup logs
     Main app = new Main();
     JCommander commander = JCommander.newBuilder()
       .addObject(app)
@@ -93,7 +94,32 @@ public class Main {
 
       SpringApplication springApplication;
       switch (app.mode) {
-        case BUILD_INDEX, EXPORT_CSV, INDEX_CSV, INDEX_DB, INDEX_IUCN_CSV, INDEX_IDENTIFIER_CSV:
+        case BUILD_INDEX:
+          springApplication = new SpringApplication(IndexingApplication.class);
+          springApplication.setAdditionalProfiles("indexing");
+          springApplication.run(args).close();
+          break;
+        case EXPORT_CSV:
+          springApplication = new SpringApplication(IndexingApplication.class);
+          springApplication.setAdditionalProfiles("indexing");
+          springApplication.run(args).close();
+          break;
+        case INDEX_CSV:
+          springApplication = new SpringApplication(IndexingApplication.class);
+          springApplication.setAdditionalProfiles("indexing");
+          springApplication.run(args).close();
+          break;
+        case INDEX_DB:
+          springApplication = new SpringApplication(IndexingApplication.class);
+          springApplication.setAdditionalProfiles("indexing");
+          springApplication.run(args).close();
+          break;
+        case INDEX_IDENTIFIER_CSV:
+          springApplication = new SpringApplication(IndexingApplication.class);
+          springApplication.setAdditionalProfiles("indexing");
+          springApplication.run(args).close();
+          break;
+        case INDEX_IUCN_CSV:
           springApplication = new SpringApplication(IndexingApplication.class);
           springApplication.setAdditionalProfiles("indexing");
           springApplication.run(args).close();

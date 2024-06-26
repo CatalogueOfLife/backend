@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -33,10 +34,10 @@ public class NameUsageMatchV1 {
   RankedNameV1 acceptedUsage;
   @Schema(description = "The classification of the accepted name usage. ")
   List<RankedNameV1> classification = new ArrayList<>();
-  @Schema(description = "A list of similar matches with lower confidence scores ")
-  List<NameUsageMatchV1> alternatives = new ArrayList<>();
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
   DiagnosticsV1 diagnostics = DiagnosticsV1.builder().build();
+  @Schema(description = "Issues with the name usage match that has been returned")
+  List<Issue> issues = new ArrayList<>();
 
   @Data
   @Builder
@@ -112,14 +113,17 @@ public class NameUsageMatchV1 {
         diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
         diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
         if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
-          List<NameUsageMatchV1> alts = new ArrayList<>();
-          for (NameUsageMatch alt : nameUsageMatch.getDiagnostics().getAlternatives()) {
-            alts.add(createFrom(alt).get());
-          }
+          List<NameUsageMatchV1> alts = nameUsageMatch.getDiagnostics().getAlternatives().stream()
+            .map(NameUsageMatchV1::createFrom)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
           diagBuilder.alternatives(alts);
         }
         builder.diagnostics(diagBuilder.build());
+        builder.issues(nameUsageMatch.getDiagnostics().getIssues());
       }
+
       return Optional.of(builder.build());
     } catch (NumberFormatException e) {
       return Optional.empty();

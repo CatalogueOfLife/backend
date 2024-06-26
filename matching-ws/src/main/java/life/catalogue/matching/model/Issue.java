@@ -1,24 +1,6 @@
 package life.catalogue.matching.model;
 
-public enum MatchIssue {
-
-  NO_MATCH,
-  /**
-   * The name was matched to two name usages, with the same confidence, but different classifications.
-   */
-  MULTIPLE_MATCHES_SAME_CONFIDENCE,
-  /**
-   * Unable to match the name to any name usage in the checklist with a confidence above the min threshold.
-   */
-  LOW_CONFIDENCE,
-  /**
-   * No scientific name was supplied in the record.
-   */
-  NO_NAME_SUPPLIED,
-  /**
-   * Unable to match to the lowest common higher rank from all best equal matches
-   */
-  NO_LOWEST_DENOMINATOR,
+public enum Issue {
 
   /**
    * Indicates one of the following:
@@ -28,9 +10,9 @@ public enum MatchIssue {
    * The ID found a concept in the checklist that did not map to the backbone
    * A different ID was used, or the record names were used, as no ID lookup successfully linked to the backbone
    */
-  SCIENTIFIC_NAME_ID_IGNORED,
-  TAXON_CONCEPT_ID_IGNORED,
-  TAXON_ID_IGNORED,
+  TAXON_MATCH_SCIENTIFIC_NAME_ID_IGNORED,
+  TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED,
+  TAXON_MATCH_TAXON_ID_IGNORED,
 
   /**
    * Indicates one of the following:
