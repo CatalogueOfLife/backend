@@ -21,6 +21,7 @@
       <logback.version>1.2.11</logback.version>
       <mybatis-spring-boot.version>2.3.1</mybatis-spring-boot.version>
       <gbif-common.version>0.60</gbif-common.version>
+      <jackson.version>2.17.0</jackson.version>
   </properties>
   <dependencies>
     <!-- COL -->
@@ -232,17 +233,17 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.17.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.17.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>2.17.0</version>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>com.opencsv</groupId>
@@ -284,14 +285,14 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>2.7.18</version>
+        <version>${spring-boot.version}</version>
         <configuration>
           <classifier>exec</classifier>
         </configuration>
         <executions>
           <execution>
             <configuration>
-              <mainClass>life.catalogue.matching.MatchingApplication</mainClass>
+              <mainClass>life.catalogue.matching.Main</mainClass>
             </configuration>
           </execution>
         </executions>

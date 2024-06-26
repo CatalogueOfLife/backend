@@ -43,7 +43,7 @@ WORKDIR /app/backend/matching-ws
 RUN mvn clean install spring-boot:repackage
 
 # Copy the executable JAR file from the builder image to the new image
-FROM eclipse-temurin:11-jdk-alpine
+FROM openjdk:11
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
