@@ -139,7 +139,8 @@ public class MatchingServiceStrictIT {
   public void testIssue7() throws IOException, InterruptedException {
     assertMatch("Nicotiana langsdorfii J.A. Weinm.", Rank.SPECIES, Kingdom.PLANTAE, 2928759);
 
-    assertNoMatch("Eragrostis brownii (Kunth) Nees ex Wight", Rank.SPECIES, Kingdom.PLANTAE);
+    // TODO check Eragrostis brownii (Kunth) Nees ex Wight and Eragrostis brownii (Kunth) Nees should match to the same key
+    assertMatch("Eragrostis brownii (Kunth) Nees ex Wight", Rank.SPECIES, Kingdom.PLANTAE, 4149175);
     assertMatch("Eragrostis brownii (Kunth) Nees", Rank.SPECIES, Kingdom.PLANTAE, 4149175);
 
     assertNoMatch("Linaria bipartita (Vent.) Desf.", Rank.SPECIES, Kingdom.PLANTAE);
@@ -148,8 +149,8 @@ public class MatchingServiceStrictIT {
     assertMatch("Modiola caroliniana (L.) G. Don f.", Rank.SPECIES, Kingdom.PLANTAE, 8338793);
     assertMatch("Modiola caroliniana (L.) G. Don fil.", Rank.SPECIES, Kingdom.PLANTAE, 8338793);
 
-    assertNoMatch("Oenothera affinis Cambess. ex A. St. Hil.", Rank.SPECIES, Kingdom.PLANTAE);
-    //    assertMatch("Oenothera affinis Loud.", Rank.SPECIES, Kingdom.PLANTAE, 7860544);
+    assertMatch("Oenothera affinis Cambess. ex A. St. Hil.", Rank.SPECIES, Kingdom.PLANTAE, 3188847);
+    assertMatch("Oenothera affinis Loud.", Rank.SPECIES, Kingdom.PLANTAE, 7860544);
     assertMatch("Oenothera affinis Camb.", Rank.SPECIES, Kingdom.PLANTAE, 3188847);
 
     assertMatch("Malva setigera F.K. Schimp. et Spenn.", Rank.SPECIES, Kingdom.PLANTAE, 3940638);

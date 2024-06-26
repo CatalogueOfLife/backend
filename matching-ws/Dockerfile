@@ -18,7 +18,7 @@ WORKDIR /app/backend
 RUN git checkout $BACKEND_BRANCH
 
 # Build all the CLB modules
-RUN mvn clean install -DskipTests
+RUN mvn clean package -DskipTests
 
 # Store git commit id and log
 RUN curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/$(git rev-parse HEAD)"
@@ -40,7 +40,9 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 
 # Build the Maven project and create a exec file
 WORKDIR /app/backend/matching-ws
-RUN mvn clean install spring-boot:repackage
+
+# Run tests - full backend tests require additional services (e.g. ES)
+RUN mvn verify
 
 # Copy the executable JAR file from the builder image to the new image
 FROM openjdk:11

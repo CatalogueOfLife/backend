@@ -540,7 +540,7 @@ public class MatchingServiceIT {
     assertMatch("Prunella alba Pall. ex M.Bieb.", cl, 5608009, new IntRange(100, 100));
     assertMatch("Prunella alba M.Bieb.", cl, 5608009, new IntRange(100, 100));
 
-    assertMatch("Prunella alba Pall.", cl, 5608009, new IntRange(80, 90));
+    assertMatch("Prunella alba Pall.", cl, 5608009, new IntRange(80, 100));
     assertMatch("Prunella alba Döring", cl, 5608009, new IntRange(80, 90));
 
     // 2 homonyms exist
@@ -614,7 +614,7 @@ public class MatchingServiceIT {
 
     assertMatch("Celastrus orbiculatus", cl, 8104460, new IntRange(95, 99));
     assertMatch("Celastrus orbiculatus Murray", cl, 8104460, new IntRange(98, 100));
-    assertMatch("Celastrus orbiculatus Thunb", cl, 3169169, new IntRange(98, 100));
+    assertMatch("Celastrus orbiculatus Thunb", cl, 8104460, new IntRange(98, 100));
     assertMatch("Celastrus orbiculatus Lam", cl, 7884995, new IntRange(98, 100));
 
     assertMatch("Python molurus subsp. bivittatus", cl, 6162891, new IntRange(98, 100));

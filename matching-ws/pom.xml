@@ -291,6 +291,9 @@
         </configuration>
         <executions>
           <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
             <configuration>
               <mainClass>life.catalogue.matching.Main</mainClass>
             </configuration>
