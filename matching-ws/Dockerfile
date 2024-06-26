@@ -18,7 +18,7 @@ WORKDIR /app/backend
 RUN git checkout $BACKEND_BRANCH
 
 # Build all the CLB modules
-RUN mvn clean package -DskipTests
+RUN mvn clean install package -DskipTests
 
 # Store git commit id and log
 RUN curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/$(git rev-parse HEAD)"
