@@ -336,11 +336,12 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.link, remarksTerm, altIdTerm, v);
     if (opt.isPresent()) {
       Name n = opt.get().getName();
-      // gender & agreement exist only in ColDP
+      // etymology, gender & agreement exist only in ColDP
       // for simplicity we interpret them here and not in the base class
       n.setGenderAgreement(bool(v, ColdpTerm.genderAgreement));
       n.setGender(SafeParser.parse(GenderParser.PARSER, v.get(ColdpTerm.gender)).orNull(Issue.GENDER_INVALID, v));
-
+      n.setEtymology(v.get(ColdpTerm.etymology));
+      
       // publishedIn
       n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));
       setReference(v, refIdTerm, rid -> {
