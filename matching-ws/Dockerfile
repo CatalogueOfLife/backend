@@ -1,5 +1,5 @@
 # Use an official Maven runtime as a parent image
-FROM maven:3.8.5-openjdk-17 AS builder
+FROM maven:3.8.5-openjdk-11 AS builder
 
 # Set the working directory in the container
 WORKDIR /app
@@ -43,7 +43,7 @@ WORKDIR /app/backend/matching-ws
 RUN mvn clean install spring-boot:repackage
 
 # Copy the executable JAR file from the builder image to the new image
-FROM openjdk:17.0.1-jdk-slim
+FROM eclipse-temurin:11-jdk-alpine
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
