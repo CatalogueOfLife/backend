@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <conversionRule conversionWord="highlight"
+                  converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%highlight(%blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))</pattern>
+    </encoder>
+  </appender>
+  <root level="WARN">
+    <appender-ref ref="CONSOLE" />
+  </root>
+  <logger name="life.catalogue" level="INFO"/>
+  <logger name="life.catalogue.common.tax" level="ERROR"/>
+  <logger name="org.springframework.web" level="ERROR"/>
+  <!-- Suppress INFO logs from org.apache.catalina.core -->
+  <logger name="org.apache.catalina.core" level="ERROR"/>
+</configuration>

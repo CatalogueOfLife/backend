@@ -50,12 +50,19 @@ public class AuthorshipNormalizer {
   
   private static AuthorshipNormalizer createWithAuthormap() {
     Map<String, String> map = new HashMap<>();
-    Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
-      var value = row[0];
-      for (int i = 1; i < row.length; i++) {
-        map.put(row[i], value);
+    try {
+      Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
+        var value = row[0];
+        for (int i = 1; i < row.length; i++) {
+          map.put(row[i], value);
+        }
+      });
+    } catch (Exception e) {
+      LOG.warn("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME);
+      if (LOG.isDebugEnabled()){
+        LOG.debug("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
       }
-    });
+    }
     return new AuthorshipNormalizer(map);
   }
   

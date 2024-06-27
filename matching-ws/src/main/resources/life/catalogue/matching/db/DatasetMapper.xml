@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.matching.db.DatasetMapper">
+  <select id="latestRelease" resultType="integer">
+    SELECT key FROM dataset
+    WHERE source_key = #{key} AND deleted IS NULL
+    <if test="origin != null">AND origin = #{origin}::DATASETORIGIN</if>
+    <if test="public">AND NOT private</if>
+    <if test="ignore != null and !ignore.isEmpty()">
+      AND key NOT IN <foreach item="k" collection="ignore" open="(" separator="," close=")">#{k}</foreach>
+    </if>
+    ORDER BY created DESC
+    LIMIT 1
+  </select>
+  <select id="releaseAttempt" resultType="integer">
+    SELECT key FROM dataset
+    WHERE source_key = #{key} AND deleted IS NULL AND attempt = #{attempt}
+    LIMIT 1
+  </select>
+  <select id="getDataset" resultType="life.catalogue.matching.model.Dataset">
+    SELECT key, gbif_key as gbifKey, title, alias FROM dataset
+    WHERE key = #{key}
+    LIMIT 1
+  </select>
+</mapper>
