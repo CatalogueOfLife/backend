@@ -1057,7 +1057,7 @@ J J Davis	Davis	John Jefferson Davis
 D A Webb	D.A.Webb	David Allardice Webb
 J W Dawson	Dawson	John William Dawson
 D Brândză	D.Brândză.	Dimitrie Brândză
-D.C.	DC.	Augustin Pyramus de Candolle	A P de Candolle
+A P de Candolle	D.C.	DC.	Augustin Pyramus de Candolle
 D C Eaton	D.C.Eaton	Daniel Cady Eaton
 D C McClintock	D.C.McClint.	David Charles McClintock
 D Stuart	D.C.Stuart	D.C. Stuart
