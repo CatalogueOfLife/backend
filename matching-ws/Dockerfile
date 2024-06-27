@@ -12,20 +12,20 @@ ENV CLB_API_URL="https://api.checklistbank.org"
 ARG GIT_BRANCH=""
 
 # Local builds - run from root of backend
-COPY .. /app/backend
-WORKDIR /app/backend
+#COPY .. /app/backend
+#WORKDIR /app/backend
 
 # Run a script to validate the arguments
-#RUN if [ -z "$GIT_BRANCH" ]; then \
-#        echo "Error: GIT_BRANCH is not set." >&2; \
-#        exit 1; \
-#    fi
+RUN if [ -z "$GIT_BRANCH" ]; then \
+        echo "Error: GIT_BRANCH is not set." >&2; \
+        exit 1; \
+    fi
 
 # Clone the backend repository
-#RUN rm -Rf backend
-#RUN git clone https://github.com/CatalogueOfLife/backend.git
-#WORKDIR /app/backend
-#RUN git checkout $GIT_BRANCH
+RUN rm -Rf backend
+RUN git clone https://github.com/CatalogueOfLife/backend.git
+WORKDIR /app/backend
+RUN git checkout $GIT_BRANCH
 
 # Build all the CLB modules
 RUN mvn clean install package -DskipTests
