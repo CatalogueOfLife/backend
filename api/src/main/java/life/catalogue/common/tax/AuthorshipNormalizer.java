@@ -51,8 +51,10 @@ public class AuthorshipNormalizer {
   private static AuthorshipNormalizer createWithAuthormap() {
     Map<String, String> map = new HashMap<>();
     Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
-      map.put(row[0], row[2]);
-      map.put(row[1], row[2]);
+      var value = row[0];
+      for (int i = 1; i < row.length; i++) {
+        map.put(row[i], value);
+      }
     });
     return new AuthorshipNormalizer(map);
   }
@@ -64,6 +66,9 @@ public class AuthorshipNormalizer {
       String key = normalize(entry.getKey());
       String val = normalize(entry.getValue());
       if (key != null && val != null) {
+        if (map.containsKey(key) && !map.get(key).equals(val)) {
+          LOG.warn("Authormap contains duplicate key {} for {} - verbatim={} - previous standard value={}", key, val, entry.getKey(), map.get(key));
+        }
         map.put(key, val);
       }
     }
