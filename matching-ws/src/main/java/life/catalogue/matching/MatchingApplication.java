@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import java.text.NumberFormat;
+import java.util.Optional;
 
 /**
  * Main application class for the matching-ws module.
@@ -41,36 +42,46 @@ public class MatchingApplication implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    APIMetadata metadata = matchingService.getIndexMetadata();
-    LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
-      NumberFormat.getInstance().format(metadata.getMainIndex().getNameUsageCount()),
-      metadata.getMainIndex().getSizeInMB() > 0 ? NumberFormat.getInstance().format(metadata.getMainIndex().getSizeInMB()) + "MB" : "unknown"
-    );
+
+    Optional<APIMetadata> metadata = matchingService.getIndexMetadata();
+    if (metadata.isEmpty()) {
+      LOG.error("No main index found. Cannot start web services");
+      return;
+    }
+
+    metadata.ifPresent(m -> {
+      LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
+      NumberFormat.getInstance().format(
+        m.getMainIndex().getNameUsageCount()),
+        m.getMainIndex().getSizeInMB() > 0 ? NumberFormat.getInstance().format(m.getMainIndex().getSizeInMB()) + "MB" : "unknown");
+    });
   }
 
   @Bean
   public OpenAPI customOpenAPI() {
-    APIMetadata metadata = matchingService.getIndexMetadata();
-    String title = metadata.getMainIndex().getDatasetTitle() != null ?
-      metadata.getMainIndex().getDatasetTitle() + " Matching Service API" :
-      "COL Matching Service API";
-    String description = "API for matching scientific names to taxa in the checklist" +
-      (metadata.getMainIndex().getDatasetTitle() != null ? " " + metadata.getMainIndex().getDatasetTitle() : "");
+    Optional<APIMetadata> metadata = matchingService.getIndexMetadata();
+    OpenAPI openAPI = new OpenAPI();
+    metadata.ifPresent(m -> {
+      String title = m.getMainIndex().getDatasetTitle() != null ?
+        m.getMainIndex().getDatasetTitle() + " Matching Service API" :
+        "COL Matching Service API";
+      String description = "API for matching scientific names to taxa in the checklist" +
+        (m.getMainIndex().getDatasetTitle() != null ? " " + m.getMainIndex().getDatasetTitle() : "");
 
-    OpenAPI openAPI = new OpenAPI()
-      .info(new Info()
-        .title(title)
-        .description(description)
-        .version(version)
-        .license(new License()
-          .name(licence)
-          .url(licenceUrl)));
+          openAPI.info(new Info()
+          .title(title)
+          .description(description)
+          .version(version)
+          .license(new License()
+            .name(licence)
+            .url(licenceUrl)));
 
-    if (metadata.getMainIndex().getDatasetKey() != null) {
-      openAPI.externalDocs(new ExternalDocumentation()
-        .description(metadata.getMainIndex().getDatasetTitle())
-        .url("https://checklistbank.org/dataset/" + metadata.getMainIndex().getDatasetKey()));
-    }
+      if (m.getMainIndex().getDatasetKey() != null) {
+        openAPI.externalDocs(new ExternalDocumentation()
+          .description(m.getMainIndex().getDatasetTitle())
+          .url("https://checklistbank.org/dataset/" + m.getMainIndex().getDatasetKey()));
+      }
+    });
 
     return openAPI;
   }

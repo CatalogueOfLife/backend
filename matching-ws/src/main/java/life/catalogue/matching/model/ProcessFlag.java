@@ -1,7 +1,7 @@
 package life.catalogue.matching.model;
 
 /**
- * Flags to indicate the outcome of certain steps in the process of matching a name to a name usage.
+ * Flags to indicate the outcome of certain steps in the process of matching a name/classification to a name usage.
  */
 public enum ProcessFlag {
 

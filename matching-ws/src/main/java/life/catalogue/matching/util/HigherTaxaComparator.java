@@ -15,12 +15,16 @@ import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HigherTaxaComparator {
 
   private final Logger LOG = LoggerFactory.getLogger(HigherTaxaComparator.class);
+
+  Dictionaries dictionaries;
+
   private static final Map<Rank, String> SYNONYM_FILENAMES =
       Map.of(
           Rank.KINGDOM, "kingdom.txt",
@@ -35,8 +39,9 @@ public class HigherTaxaComparator {
       Arrays.stream(Kingdom.values())
           .collect(Collectors.toMap(k -> norm(k.name()), Function.identity()));
 
-  public HigherTaxaComparator() {
+  public HigherTaxaComparator(Dictionaries dictionaries) {
     try {
+      this.dictionaries = dictionaries;
       loadOnlineDicts();
     } catch (Exception e) {
       LOG.error("Failed to load dictionary files from classpath", e);
@@ -145,7 +150,7 @@ public class HigherTaxaComparator {
    * @return a map of synonyms
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
-    URL url = RsGbifOrg.synonymUrl(file);
+    URL url = dictionaries.synonymUrl(file);
     LOG.info("Reading synonyms from " + url.toString());
     try (InputStream synIn = url.openStream()) {
       return IOUtils.streamToMap(synIn);
@@ -167,7 +172,7 @@ public class HigherTaxaComparator {
 
   /** Reads blacklisted names from rs.gbif.org */
   private void readOnlineBlacklist() {
-    URL url = RsGbifOrg.authorityUrl(RsGbifOrg.FILENAME_BLACKLIST);
+    URL url = dictionaries.authorityUrl(Dictionaries.FILENAME_BLACKLIST);
     try (InputStream in = url.openStream()) {
       LOG.debug("Reading {}", url);
       readBlacklistStream(in);
@@ -209,7 +214,7 @@ public class HigherTaxaComparator {
     }
 
     // read blacklisted names
-    String blacklistFilePath = classpathFolder + "/" + RsGbifOrg.FILENAME_BLACKLIST;
+    String blacklistFilePath = classpathFolder + "/" + Dictionaries.FILENAME_BLACKLIST;
     try (InputStream blackIn = classLoader.getResourceAsStream(blacklistFilePath)) {
       if (blackIn != null) {
         readBlacklistStream(blackIn);
@@ -221,8 +226,7 @@ public class HigherTaxaComparator {
 
   /** Reloads all synonym files found on rs.gbif.org replacing existing mappings. */
   public void loadOnlineDicts() {
-    LOG.info("Reloading dictionary files from rs.gbif.org ...");
-
+    LOG.info("Loading dictionary files ...");
     for (Rank rank : SYNONYM_FILENAMES.keySet()) {
       Map<String, String> synonyms = readSynonymUrl(rank, SYNONYM_FILENAMES.get(rank));
       setSynonyms(rank, synonyms);

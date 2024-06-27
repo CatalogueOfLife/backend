@@ -31,6 +31,7 @@ import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
 import life.catalogue.matching.model.NameUsageMatch;
 import life.catalogue.matching.service.IndexingService;
+import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
 import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
@@ -41,9 +42,12 @@ public class DatasetIndexTest {
 
   private static DatasetIndex index;
 
+  private static String dictionaryUrl = "/dictionaries/";
+
   @BeforeAll
   public static void buildMatcher() throws Exception {
-    HigherTaxaComparator syn = new HigherTaxaComparator();
+    Dictionaries dict = new Dictionaries(dictionaryUrl);
+    HigherTaxaComparator syn = new HigherTaxaComparator(dict);
     syn.loadClasspathDicts("dicts");
     index = DatasetIndex.newDatasetIndex(IndexingService.newMemoryIndex(readTestNames()));
   }

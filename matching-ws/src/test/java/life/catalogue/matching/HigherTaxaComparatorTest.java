@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
+import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
@@ -29,14 +30,14 @@ public class HigherTaxaComparatorTest {
 
   @Test
   public void testReloading() throws IOException {
-    HigherTaxaComparator htl = new HigherTaxaComparator();
+    HigherTaxaComparator htl = new HigherTaxaComparator(Dictionaries.createDefault());
     htl.loadClasspathDicts("dicts");
     assertTrue(htl.size() > 10);
   }
 
   @Test
   public void testKingdoms() throws IOException {
-    HigherTaxaComparator htl = new HigherTaxaComparator();
+    HigherTaxaComparator htl = new HigherTaxaComparator(Dictionaries.createDefault());
     htl.loadClasspathDicts("dicts");
     // Animalia varieties
     assertEquals("Animalia", htl.lookup("Animalia", Rank.KINGDOM));
@@ -49,7 +50,7 @@ public class HigherTaxaComparatorTest {
 
   @Test
   public void testBlacklist() throws IOException {
-    HigherTaxaComparator htl = new HigherTaxaComparator();
+    HigherTaxaComparator htl = new HigherTaxaComparator(Dictionaries.createDefault());
     htl.loadClasspathDicts("dicts");
 
     assertFalse(htl.isBlacklisted("Animals"));

@@ -29,6 +29,7 @@ import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
 import life.catalogue.matching.model.NameUsageMatchFlatV1;
 import life.catalogue.matching.service.IndexingService;
+import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
 import life.catalogue.matching.util.IOUtils;
 
@@ -59,7 +60,7 @@ public class MatchingTestConfiguration {
   @Bean
   public static HigherTaxaComparator provideSynonyms() throws IOException {
     LOG.info("Loading synonym dictionaries from classpath ...");
-    HigherTaxaComparator syn = new HigherTaxaComparator();
+    HigherTaxaComparator syn = new HigherTaxaComparator(Dictionaries.createDefault());
     syn.loadClasspathDicts("dicts");
     return syn;
   }

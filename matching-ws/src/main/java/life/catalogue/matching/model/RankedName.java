@@ -5,6 +5,9 @@ import java.util.Objects;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.gbif.nameparser.api.Rank;
 
+/**
+ * A name with an identifier and a taxonomic rank.
+ */
 @Schema(description = "A name with an identifier and a taxonomic rank", title = "RankedName", type = "object")
 public class RankedName {
   @Schema(description = "The identifier for the name usage")

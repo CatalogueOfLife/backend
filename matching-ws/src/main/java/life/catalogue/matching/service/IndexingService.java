@@ -79,12 +79,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class IndexingService {
 
-  public static final String METADATA_JSON = "metadata.json";
-  public static final String INDEX_CSV = "index.csv";
   public static final String MAIN_INDEX_DIR = "main";
-  public static final String IUCN_THREAT_STATUS = "iucn:threatStatus";
   public static final String IDENTIFIERS_DIR = "identifiers";
   public static final String ANCILLARY_DIR = "ancillary";
+  public static final String METADATA_JSON = "metadata.json";
+  public static final String GIT_JSON = "git.json";
+  public static final String INDEX_CSV = "index.csv";
+  public static final String IUCN_THREAT_STATUS = "iucn:threatStatus";
 
   @Value("${index.path:/tmp/matching-index}")
   String indexPath;
@@ -131,9 +132,9 @@ public class IndexingService {
 
   /**
    * Looks up a dataset by its key with support for release keys
-   * @param factory
-   * @param datasetKeyInput
-   * @return
+   * @param factory MyBatis session factory
+   * @param datasetKeyInput a dataset key or a release key
+   * @return the dataset or empty if not found
    */
   private Optional<Dataset> lookupDataset(SqlSessionFactory factory, String datasetKeyInput) {
 
@@ -211,8 +212,8 @@ public class IndexingService {
   /**
    * Writes an export of  the name usages in a checklist bank dataset to a CSV file.
    *
-   * @param datasetKeyInput
-   * @throws Exception
+   * @param datasetKeyInput a dataset key or a release key
+   * @throws Exception if the dataset key is invalid or the export fails
    */
   @Transactional
   public void writeCLBToFile(@NotNull final String datasetKeyInput) throws Exception {

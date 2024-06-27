@@ -1,8 +1,10 @@
 package life.catalogue.matching.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Information about the build of the software
@@ -10,6 +12,8 @@ import lombok.Data;
 @Data
 @Builder
 @Schema(description = "", title = "BuildInfo", type = "object")
+@AllArgsConstructor
+@NoArgsConstructor
 public class BuildInfo {
   @Schema(description = "The git commit the code was built from")
   String sha;

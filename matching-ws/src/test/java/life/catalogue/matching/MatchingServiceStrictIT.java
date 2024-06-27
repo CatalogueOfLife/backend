@@ -24,6 +24,8 @@ import life.catalogue.matching.model.Kingdom;
 import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.model.NameUsageMatch;
 import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.Dictionaries;
+
 import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,7 +39,10 @@ public class MatchingServiceStrictIT {
   public static void buildMatcher() throws IOException {
     matcher =
         new MatchingService(
-            MatchingTestConfiguration.provideIndex(), MatchingTestConfiguration.provideSynonyms());
+          MatchingTestConfiguration.provideIndex(),
+          MatchingTestConfiguration.provideSynonyms(),
+          Dictionaries.createDefault()
+        );
   }
 
   private NameUsageMatch query(String name, Rank rank, Kingdom kingdom) {

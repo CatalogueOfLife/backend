@@ -1,7 +1,7 @@
 package life.catalogue.matching.controller;
 
-import static life.catalogue.matching.util.CleanupUtils.clean;
 import static life.catalogue.matching.service.MatchingService.first;
+import static life.catalogue.matching.util.CleanupUtils.*;
 
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +23,7 @@ import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import org.springdoc.api.annotations.ParameterObject;
@@ -46,9 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 public class MatchController implements ErrorController {
 
-  @Autowired
-  MatchingService matchingService;
-
+  private final MatchingService matchingService;
   private final ErrorAttributes errorAttributes;
 
   @Value("${v1.enabled:false}")
@@ -72,14 +70,14 @@ public class MatchController implements ErrorController {
   }
 
   private boolean isTraceRequested(String traceRequested) {
-    return StringUtils.isNotBlank(traceRequested) &&
-      (traceRequested.equalsIgnoreCase("true") || traceRequested.equalsIgnoreCase("on"));
+    return "true".equalsIgnoreCase(traceRequested) || "on".equalsIgnoreCase(traceRequested);
   }
 
   @Autowired
-  public MatchController(ErrorAttributes errorAttributes) {
+  public MatchController(ErrorAttributes errorAttributes, MatchingService matchingService) {
     Assert.notNull(errorAttributes, "ErrorAttributes must not be null");
     this.errorAttributes = errorAttributes;
+    this.matchingService = matchingService;
   }
 
   private Map<String, Object> getErrorAttributes(WebRequest request) {
@@ -112,7 +110,7 @@ public class MatchController implements ErrorController {
   @GetMapping(
     value = {"v2/metadata"},
     produces = "application/json")
-  public APIMetadata metadata(){
+  public Optional<APIMetadata> metadata(){
     return matchingService.getIndexMetadata();
   }
 
@@ -397,6 +395,9 @@ public class MatchController implements ErrorController {
       produces = "application/json")
   public Object matchFlatV1(
       @RequestParam(value = "usageKey", required = false) String usageKey,
+      @RequestParam(value = "taxonID", required = false) String taxonID,
+      @RequestParam(value = "taxonConceptID", required = false) String taxonConceptID,
+      @RequestParam(value = "scientificNameID", required = false) String scientificNameID,
       @RequestParam(value = "name", required = false) String scientificName2,
       @RequestParam(value = "scientificName", required = false) String scientificName,
       @RequestParam(value = "authorship", required = false) String authorship2,
@@ -419,9 +420,9 @@ public class MatchController implements ErrorController {
     Optional<NameUsageMatchFlatV1> optionalNameUsageMatchV1 = NameUsageMatchFlatV1.createFrom(
         matchingService.match(
             removeNulls(usageKey),
-            null,
-          null,
-          null,
+            removeNulls(taxonID),
+            removeNulls(taxonConceptID),
+            removeNulls(scientificNameID),
             first(removeNulls(scientificName), removeNulls(scientificName2)),
             first(removeNulls(authorship), removeNulls(authorship2)),
             removeNulls(genericName),
@@ -538,6 +539,9 @@ public class MatchController implements ErrorController {
     produces = "application/json")
   public Object matchV1(
     @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "taxonID", required = false) String taxonID,
+    @RequestParam(value = "taxonConceptID", required = false) String taxonConceptID,
+    @RequestParam(value = "scientificNameID", required = false) String scientificNameID,
     @RequestParam(value = "name", required = false) String scientificName2,
     @RequestParam(value = "scientificName", required = false) String scientificName,
     @RequestParam(value = "authorship", required = false) String authorship2,
@@ -559,10 +563,11 @@ public class MatchController implements ErrorController {
     classification.setClazz(response.getParameter("class"));
     Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
       matchingService.match(
+
         removeNulls(usageKey),
-        null,
-        null,
-        null,
+        removeNulls(taxonID),
+        removeNulls(taxonConceptID),
+        removeNulls(scientificNameID),
         first(removeNulls(scientificName), removeNulls(scientificName2)),
         first(removeNulls(authorship), removeNulls(authorship2)),
         removeNulls(genericName),
@@ -581,17 +586,6 @@ public class MatchController implements ErrorController {
     }
   }
 
-  public static String removeNulls(String value) {
-    if (value != null) {
-      value = StringUtils.trimToEmpty(value);
-      if (value.equalsIgnoreCase("null")) {
-        return null;
-      }
-      return value;
-    }
-    return null;
-  }
-
   private Rank parseRank(String value) {
     try {
       if (!Objects.isNull(value) && !value.isEmpty()) {
@@ -604,9 +598,5 @@ public class MatchController implements ErrorController {
       // throw new UnparsableException("Rank", value);
     }
     return null;
-  }
-
-  private boolean bool(Boolean bool) {
-    return bool != null && bool;
   }
 }

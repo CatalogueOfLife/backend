@@ -29,6 +29,7 @@ import life.catalogue.matching.model.Classification;
 import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.model.NameUsageMatch;
 import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.NameParsers;
 
 import org.gbif.nameparser.api.ParsedName;
@@ -45,7 +46,7 @@ public class MatchingServiceIT {
   public static void buildMatcher() throws IOException {
     matcher =
         new MatchingService(
-            MatchingTestConfiguration.provideIndex(), MatchingTestConfiguration.provideSynonyms());
+            MatchingTestConfiguration.provideIndex(), MatchingTestConfiguration.provideSynonyms(), Dictionaries.createDefault());
   }
 
   private NameUsageMatch assertMatch(

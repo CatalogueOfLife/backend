@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Metadata about an index.
+ * Metadata about this API and about the indexes behind the API.
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)

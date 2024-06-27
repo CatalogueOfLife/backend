@@ -19,8 +19,11 @@ import java.util.List;
 @RestController
 public class IDController {
 
-  @Autowired
-  MatchingService matchingService;
+  final MatchingService matchingService;
+
+  public IDController(MatchingService matchingService) {
+    this.matchingService = matchingService;
+  }
 
   @Operation(
     operationId = "idLookupByDataset",

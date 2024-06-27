@@ -58,10 +58,9 @@ mvn clean install spring-boot:repackage
 ### Software only
 To build a software only docker image, run the following command from the root directory of this module (backend/matching-ws):
 ```bash
-docker buildx build \
---platform linux/amd64 . -t matching-ws:v1 
+docker buildx build --platform linux/amd64 . -t matching-ws:1.0-SNAPSHOT
 ```
-For this image to be of use, an lucene index must be pre-generated and mounted as a docker
+For this image to be of use, a lucene index must be pre-generated and mounted as a docker
 volume with the docker container.
 
 
@@ -85,6 +84,14 @@ docker buildx build \
 --build-arg CLB_URL=http://api.checklistbank.org \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
+```
+
+### Local docker builds for development purposes
+
+For local development, the following command can be used to build a docker image.
+Run this from the root of the cloned copy of the `backend` repository:
+```bash
+docker build -f matching-ws/Dockerfile . -t matching-local-build
 ```
 
 ## Running docker image

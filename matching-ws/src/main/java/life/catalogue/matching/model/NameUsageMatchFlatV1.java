@@ -12,7 +12,7 @@ import lombok.Data;
 import org.gbif.nameparser.api.Rank;
 
 /**
- * Version 1 of the name usage match response object.
+ * Version 1 of the name usage match response object. This is the flattered version of the NameUsageMatch object.
  * This class is used to serialize the response of the name usage matching service in the v1 format
  * and to read legacy integration test data to create an index for matching tests.
  */

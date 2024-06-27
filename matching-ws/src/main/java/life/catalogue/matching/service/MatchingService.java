@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -23,10 +24,7 @@ import life.catalogue.matching.index.NameNRank;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
-import life.catalogue.matching.util.CleanupUtils;
-import life.catalogue.matching.util.HigherTaxaComparator;
-import life.catalogue.matching.util.NameParsers;
-import life.catalogue.matching.util.RankUtils;
+import life.catalogue.matching.util.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,14 +35,12 @@ import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.api.UnparsableNameException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
  * Matching service that matches a scientific name to a name usage in the index.
  * This uses a DatasetIndex to query the index and match names.
- *
  * This is higher level service that uses the DatasetIndex to match names.
  */
 @Slf4j
@@ -53,6 +49,9 @@ public class MatchingService {
 
   @Value("${working.dir}")
   protected String metadataFilePath = "/tmp/";
+
+  @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
+  protected String dictionariesUrl = "https://rs.gbif.org/dictionaries/";
 
   private static final int MIN_CONFIDENCE = 80;
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
@@ -68,10 +67,8 @@ public class MatchingService {
   private static final List<Rank> DWC_RANKS_REVERSE =
       ImmutableList.copyOf(Lists.reverse(Rank.DWC_RANKS));
   private static final ConfidenceOrder CONFIDENCE_ORDER = new ConfidenceOrder();
-  @Autowired
-  HigherTaxaComparator htComp;
-  // name string to usageId
-  private final Map<String, NameUsageMatch> hackMap = new HashMap<>();
+
+  final HigherTaxaComparator htComp;
   private final StringSimilarity sim = new ScientificNameSimilarity();
 
   private static final Set<NameType> STRICT_MATCH_TYPES =
@@ -97,18 +94,17 @@ public class MatchingService {
     HIGHER_RANKS = ImmutableList.copyOf(ranks);
   }
 
-  private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
-
-  private final AuthorComparator authComp = createAuthorComparator();
+  private final AuthorComparator authComp;
 
   private final static Pattern TAB_PAT = Pattern.compile("\t");
 
-  private static AuthorComparator createAuthorComparator() {
+  private AuthorComparator createAuthorComparator() {
     Map<String, String> map = new HashMap<>();
-
-    try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(AUTHOR_MAP_FILENAME);
-         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-
+    URL url = dictionaries.authorityUrl( "authormap.txt");
+    try (
+      InputStream inputStream = new BufferedInputStream(url.openStream());
+      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+      log.info("Loading author abbreviation map from {}", url);
       reader.lines()
         .map(TAB_PAT::split)
         .forEach(row -> {
@@ -119,11 +115,10 @@ public class MatchingService {
             log.warn("Invalid row format: {}", Arrays.toString(row));
           }
         });
-
     } catch (IOException e) {
-      log.warn("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
+      log.error("Failed to load author abbreviation map from {}", "authormap.txt", e);
     } catch (Exception e) {
-      log.error("Unexpected error while loading author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
+      log.error("Unexpected error while loading author abbreviation map from {}", "authormap.txt", e);
     }
 
     return new AuthorComparator(new AuthorshipNormalizer(map));
@@ -135,24 +130,17 @@ public class MatchingService {
     HIGHER
   }
 
-  @Autowired
   DatasetIndex datasetIndex;
+  Dictionaries dictionaries;
 
-  //  /**
-  //   * @param htComp
-  //   */
-  //  @Autowired
-  //  public MatchingService() {
-  //    initHackMap();
-  //  }
-
-  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp) {
+  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp, Dictionaries dictionaries) {
     this.datasetIndex = datasetIndex;
     this.htComp = htComp;
-    //    initHackMap();
+    this.dictionaries = dictionaries;
+    this.authComp = createAuthorComparator();
   }
 
-  public APIMetadata getIndexMetadata() {
+  public Optional<APIMetadata> getIndexMetadata() {
 
     // read JSON from file, if not available generate from datasetIndex
     File metadata = new File(metadataFilePath + "/index-metadata.json");
@@ -163,31 +151,16 @@ public class MatchingService {
         ObjectMapper mapper = new ObjectMapper();
         FileWriter writer = new FileWriter(metadata);
         mapper.writeValue(writer, metadata1);
-        return metadata1;
+        return Optional.of(metadata1);
       } else {
         // read from file
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(metadata, APIMetadata.class);
+        return Optional.of(mapper.readValue(metadata, APIMetadata.class));
       }
     } catch (Exception e) {
       log.error("Failed to read index metadata from {}", metadata, e);
     }
-    return null;
-  }
-
-  private void initHackMap() {
-    // TODO: load the map from configs
-    // FIXME
-    //    if (nubIndex.getDatasetKey() != null &&
-    // nubIndex.getDatasetKey().equals(Constants.NUB_DATASET_KEY)) {
-    //      LOG.debug("Add entries to hackmap for GBIF Backbone ...");
-    //      try {
-    //        hackMap.put("radiolaria", nubIndex.matchByUsageId(7));
-    //        hackMap.put("hepatic", nubIndex.matchByUsageId(9));
-    //      } catch (Exception e) {
-    //        LOG.debug("Hackmap entry not existing, skip", e.getMessage());
-    //      }
-    //    }
+    return Optional.empty();
   }
 
   private static boolean isMatch(@Nullable NameUsageMatch match) {
@@ -863,11 +836,6 @@ public class MatchingService {
 
     if (Strings.isNullOrEmpty(canonicalName)) {
       return noMatch(100, ProcessFlag.NO_NAME_SUPPLIED, "No name given", null);
-    }
-
-    // first try our manual hackmap
-    if (hackMap.containsKey(canonicalName.toLowerCase())) {
-      return hackMap.get(canonicalName.toLowerCase());
     }
 
     // do the matching

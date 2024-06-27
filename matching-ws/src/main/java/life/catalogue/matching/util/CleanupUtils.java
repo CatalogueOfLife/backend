@@ -4,6 +4,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import life.catalogue.matching.model.LinneanClassification;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.Normalizer;
 import java.util.regex.Pattern;
 
@@ -42,5 +44,17 @@ public class CleanupUtils {
     classification.setSubgenus(clean(classification.getSubgenus()));
     classification.setSpecies(clean(classification.getSpecies()));
     return classification;
+  }
+
+  public static String removeNulls(String value) {
+    if (value == null) {
+      return null;
+    }
+    value = StringUtils.trimToEmpty(value);
+    return "null".equalsIgnoreCase(value) ? null : value;
+  }
+
+  public static boolean bool(Boolean bool) {
+    return bool != null && bool;
   }
 }

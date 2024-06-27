@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
+import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
 
@@ -93,7 +94,7 @@ public class DatasetIndex {
       this.ancillarySearchers = initialiseAdditionalIndexes("ancillary", prefixMapping);
 
     } else {
-      log.warn("Lucene index not found at {}", mainIndexPath);
+      log.warn("Main lucene index not found at {}", mainIndexPath);
     }
   }
 
@@ -101,14 +102,14 @@ public class DatasetIndex {
 
     final String mainIndexPath = getMainIndexPath();
     if (new File(mainIndexPath).exists()) {
-      log.info("Loading lucene index from {}", mainIndexPath);
+      log.info("Reinitialising lucene index from {}", mainIndexPath);
       try {
         initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
     } else {
-      log.warn("Lucene index not found at {}", mainIndexPath);
+      log.warn("Unable to reinitialise. Main lucene index not found at {}", mainIndexPath);
     }
   }
 
@@ -139,7 +140,7 @@ public class DatasetIndex {
           }
         }
       } catch (IOException e) {
-        log.error("Cannot read " + directoryName + " index directory", e);
+        log.error("Cannot read {} index directory", directoryName, e);
       }
     } else {
       log.info("Ancillary indexes not found at {}", indexPath + "/" + directoryName);
@@ -160,7 +161,7 @@ public class DatasetIndex {
       Dataset[] datasets = mapper.readValue(inputStream, Dataset[].class);
 
       return Arrays.stream(datasets)
-        .peek(dataset -> log.info("Loaded dataset {}", dataset))
+        .peek(dataset -> log.info("Loaded dataset {} [{}]", dataset.getTitle(), dataset.getKey()))
         .collect(Collectors.toMap(Dataset::getKey, dataset -> dataset));
     } catch (IOException e) {
       log.warn("Cannot read dataset prefix mapping file", e);
@@ -192,17 +193,6 @@ public class DatasetIndex {
     }
   }
 
-  void initWithAncillaryDir(Dataset dataset, Directory indexDirectory) {
-    try {
-      DirectoryReader reader = DirectoryReader.open(indexDirectory);
-      IndexSearcher searcher = new IndexSearcher(reader);
-      this.ancillarySearchers.put(dataset, searcher);
-
-    } catch (IOException e) {
-      log.warn("Cannot open lucene index. Index not available", e);
-    }
-  }
-
   /**
    * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
    * dataset title and key, and the build information.
@@ -224,24 +214,23 @@ public class DatasetIndex {
       log.error("Cannot read index directory attributes", e);
     }
 
-    metadata.setMainIndex(getIndexMetadata(indexPath + "/main", getSearcher().getIndexReader(), true));
+    metadata.setMainIndex(getIndexMetadata(indexPath + "/" + IndexingService.MAIN_INDEX_DIR, getSearcher().getIndexReader(), true));
 
     for (Dataset dataset: identifierSearchers.keySet()){
       metadata.getIdentifierIndexes().add(
-        getIndexMetadata(indexPath + "/identifiers/" + dataset.getKey(),
+        getIndexMetadata(indexPath + "/" + IndexingService.IDENTIFIERS_DIR + "/" + dataset.getKey(),
           identifierSearchers.get(dataset).getIndexReader(),false));
     }
 
     for (Dataset dataset: ancillarySearchers.keySet()){
       metadata.getAncillaryIndexes().add(
-        getIndexMetadata(indexPath + "/ancillary/" + dataset.getKey(),
+        getIndexMetadata(indexPath + "/" + IndexingService.ANCILLARY_DIR + "/" + dataset.getKey(),
           ancillarySearchers.get(dataset).getIndexReader(), false));
     }
 
     getGitInfo().ifPresent(metadata::setBuildInfo);
     return metadata;
   }
-
 
   /**
    * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
@@ -303,7 +292,7 @@ public class DatasetIndex {
    */
   public Optional<BuildInfo> getGitInfo() {
     ObjectMapper mapper = new ObjectMapper();
-    final String filePath = workingDir + "/git.json";
+    final String filePath = workingDir + "/" + IndexingService.GIT_JSON;
     try {
       if (new File(filePath).exists()) {
         // Read JSON file and parse to JsonNode
@@ -345,7 +334,7 @@ public class DatasetIndex {
    */
   public Map<String, Object> getDatasetInfo(String indexPath) {
     ObjectMapper mapper = new ObjectMapper();
-    String filePath = indexPath + "/metadata.json";
+    String filePath = indexPath + "/" + IndexingService.METADATA_JSON;
 
     try {
       if (new File(filePath).exists()){
@@ -628,7 +617,7 @@ public class DatasetIndex {
                 Diagnostics.builder()
                   .matchType(MatchType.NONE)
                   .issues(new ArrayList<Issue>(List.of(notFoundIssue)))
-                  .note("Not found for the identifier")
+                  .note("Identifier not found")
                   .build())
               .synonym(false)
               .build();
@@ -649,8 +638,8 @@ public class DatasetIndex {
    *
    * <p>TODO: this might be the naive approach. Need to check performance vs MapDB.
    *
-   * @param parentID
-   * @return
+   * @param parentID the parentID to start from
+   * @return List<RankedName>
    */
   private List<RankedName> loadHigherTaxa(String parentID) {
 
@@ -675,8 +664,8 @@ public class DatasetIndex {
   /**
    * Converts a lucene document into a NameUsageMatch object.
    *
-   * @param doc
-   * @return
+   * @param doc the lucene document to convert to a NameUsageMatch
+   * @return NameUsageMatch
    */
   private NameUsageMatch fromDoc(Document doc) {
 

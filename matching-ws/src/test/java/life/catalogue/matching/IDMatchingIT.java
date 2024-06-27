@@ -5,6 +5,8 @@ import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.Dictionaries;
+
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.gbif.nameparser.api.Rank;
@@ -28,9 +30,8 @@ public class IDMatchingIT {
 
     // create the main datasetIndex
     final DatasetIndex datasetIndex = MatchingTestConfiguration.provideIndex();
-
     matcher =
-      new MatchingService(datasetIndex, MatchingTestConfiguration.provideSynonyms());
+      new MatchingService(datasetIndex, MatchingTestConfiguration.provideSynonyms(), Dictionaries.createDefault());
 
     // create the join index
     List<NameUsage> usages = List.of(
