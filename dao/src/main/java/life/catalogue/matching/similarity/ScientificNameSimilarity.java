@@ -60,12 +60,6 @@ public class ScientificNameSimilarity implements StringSimilarity {
   }
   
   private double similarity(String x1, String x2) {
-    // First letter must match
-    if (x1.charAt(0) != x2.charAt(0)) {
-      LOG.debug("'{}' is not at all like '{}' ('{}'≠'{}')", x1, x2, x1.charAt(0), x2.charAt(0));
-      return 0;
-    }
-    
     // Very short epithets must match exactly
     if (x1.length() < MUST_MATCH || x2.length() < MUST_MATCH) {
       if (x1.equals(x2)) {
@@ -76,7 +70,13 @@ public class ScientificNameSimilarity implements StringSimilarity {
         return 0;
       }
     }
-    
+
+    // First letter must match
+    if (x1.charAt(0) != x2.charAt(0)) {
+      LOG.debug("'{}' is not at all like '{}' ('{}'≠'{}')", x1, x2, x1.charAt(0), x2.charAt(0));
+      return 0;
+    }
+
     // Longer ones can have one change in the first MUST_MATCH letters
     // TODO: Consider whether the first letters must match exactly.
     String x1head = x1.substring(0, MUST_MATCH);
