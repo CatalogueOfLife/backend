@@ -798,17 +798,20 @@ public class Normalizer implements Callable<Boolean> {
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private NeoUsage createHigherTaxon(String uninomial, Rank rank) throws InterruptedException {
+  private NeoUsage createHigherTaxon(String name, Rank rank) throws InterruptedException {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
+    var eName = new ExtinctName(name);
+
     Name n = new Name();
-    var eName = new ExtinctName(uninomial);
-    n.setUninomial(eName.name);
     n.setRank(rank);
-    n.rebuildScientificName();
+    n.setScientificName(eName.name);
     n.setCode(dataset.getCode());
-    // determine type - can e.g. be placeholders
-    n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
+    // parses the instance and determines the type - can e.g. be placeholders
+    NameParser.PARSER.parse(n, IssueContainer.VOID);
+    // reset rank as parser might have infered ranks from the name!
+    n.setRank(rank);
+
     t.usage.setName(n);
     if (eName.extinct || Boolean.TRUE.equals(dataset.getExtinct())) {
       t.asTaxon().setExtinct(true);

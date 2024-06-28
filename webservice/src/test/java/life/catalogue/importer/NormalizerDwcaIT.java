@@ -578,6 +578,29 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1335
+   */
+  @Test
+  public void subgenera() throws Exception {
+    var settings = new DatasetSettings();
+
+    normalize(51, settings);
+    printTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.usages().all().forEach( un -> {
+        var u = store.usageWithName(un.getId());
+        var n = u.getNeoName().getName();
+        if (n.getRank().isInfragenericStrictly()) {
+          assertNotNull(n.getInfragenericEpithet());
+          assertNull(n.getUninomial());
+          assertNull(n.getSpecificEpithet());
+        }
+      });
+    }
+  }
+
   @Test
   @Ignore
   public void testExternal() throws Exception {

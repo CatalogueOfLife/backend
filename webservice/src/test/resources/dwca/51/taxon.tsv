@@ -1,0 +1,19 @@
+taxonID	nomenclaturalCode	taxonRank	scientificName	kingdom	family	genus	subgenus
+
+1		species	Aglaostigma gibbosum (Fallén, 1808)	Animalia	Tenthredinidae	Aglaostigma	Aglaostigma (Aglaostigma)
+
+11		species	Aglaostigma (Aglaostigma) gibbosum (Fallén, 1808)	Animalia	Toninidae	Aglaostigma	Aglaostigma
+12		subgenus	Aglaostigma (Aglaostigma) Kirby, 1882	Animalia	Toninidae	Aglaostigma	Aglaostigma (Aglaostigma)
+
+21		species	Aglaostigma gibbosum (Fallén, 1808)	Animalia	Carlaidae	Aglaostigma	Aglaostigma (Aglaostigma)
+22		subgenus	Aglaostigma (Aglaostigma) Kirby, 1882	Animalia	Carlaidae	Aglaostigma	Aglaostigma (Aglaostigma)
+
+31		species	Aglaostigma gibbosum (Fallén, 1808)	Animalia	Piidae	Aglaostigma	Aglaostigma (Aglaostigma)
+32		subgenus	Aglaostigma (Aglaostigma) Kirby, 1882	Animalia	Piidae	Aglaostigma	Aglaostigma (Aglaostigma)
+33		genus	Aglaostigma Kirby, 1882	Animalia	Piidae	Aglaostigma	
+
+100	zoological	species	Aglaostigma gibbosum (Fallén, 1808)	Animalia	Animalidae	Aglaostigma	Aglaostigma (Aglaostigma)
+101	zoological	species	Aglaostigma gibbosum (Fallén, 1808)	Animalia	Animaliidae	Aglaostigma	Aglaostigma
+
+111	botanical	species	Aglaostigma gibbosum (Fallén, 1808)	Plantae	Plantaceae	Aglaostigma	Aglaostigma subg. Aglaostigma
+112	botanical	species	Aglaostigma gibbosum (Fallén, 1808)	Plantae	Plantacicaceae	Aglaostigma	Aglaostigma
