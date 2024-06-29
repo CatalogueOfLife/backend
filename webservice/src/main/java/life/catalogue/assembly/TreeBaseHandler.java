@@ -141,6 +141,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // remove accordingTo?
     if (!sector.isCopyAccordingTo()) {
       nu.setAccordingToId(null);
+      nu.setAccordingTo(null);
     }
     if (sector.isRemoveOrdinals() && nu.isTaxon()) {
       ((Taxon)nu).setOrdinal(null);

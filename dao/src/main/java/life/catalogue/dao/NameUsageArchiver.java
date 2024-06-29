@@ -161,6 +161,9 @@ public class NameUsageArchiver {
       batchSession.commit();
       LOG.info("Copied {} name usages into the project archive {} as their stable IDs were deleted in release {}.", counter, projectKey, releaseKey);
       LOG.info("Deleted {} resurrected name usages from the project archive {}.", delCounter, projectKey);
+
+    } catch (Throwable e) {
+      LOG.error("Failed to archive names for project {}.", projectKey, e);
     }
     return counter.get() - delCounter.get();
   }

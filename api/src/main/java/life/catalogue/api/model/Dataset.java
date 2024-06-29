@@ -879,6 +879,18 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
+  public void addContainer(Dataset container) {
+    if (container == null) {
+      container = new Dataset();
+    }
+    containerKey = container.containerKey;
+    containerTitle = container.containerTitle;
+    containerCreator = container.containerCreator;
+    containerVersion = container.containerVersion;
+    containerPublisher = container.containerPublisher;
+    containerIssued = container.containerIssued;
+  }
+
   public String getIssn() {
     return issn;
   }
@@ -969,4 +981,5 @@ public class Dataset extends DataEntity<Integer> {
   public String toString() {
     return "Dataset " + key + ": " + attempt;
   }
+
 }

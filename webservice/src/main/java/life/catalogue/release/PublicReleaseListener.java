@@ -77,16 +77,8 @@ public class PublicReleaseListener {
       LOG.info("Publish {} {} {} from project {} by user {}.", event.obj.getOrigin(), event.obj.getKey(), event.obj.getAliasOrTitle(), event.obj.getSourceKey(), event.obj.getModifiedBy());
       // publish DOI if exists
       if (event.obj.getDoi() != null) {
-        LOG.info("Publish DOI {}", event.obj.getDoi());
         doiService.publishSilently(event.obj.getDoi());
       }
-
-      /**
-       * When a release gets published we need to modify the projects name archive.
-       * For deleted ids a new entry in the names archive needs to be created.
-       * For resurrected ids we need to remove them from the archive.
-       */
-      archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
 
       // COL specifics, for now we do not issue DOI to XCOL sources or provide prepared downloads
       if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
@@ -95,6 +87,11 @@ public class PublicReleaseListener {
         updateColDoiUrls(event.obj);
         copyExportsToColDownload(event.obj, true);
       }
+
+      // When a release gets published we need to modify the projects name archive.
+      // For deleted ids a new entry in the names archive needs to be created.
+      // For resurrected ids we need to remove them from the archive.
+      archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
 
       // generic hooks
       if (cfg.release.actions != null && cfg.release.actions.containsKey(event.obj.getSourceKey())) {

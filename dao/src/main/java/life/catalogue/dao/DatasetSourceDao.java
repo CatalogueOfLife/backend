@@ -103,6 +103,7 @@ public class DatasetSourceDao {
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
+      final var container = session.getMapper(DatasetMapper.class).get(datasetKey);
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease()) {
         sources = psm.listReleaseSourcesSimple(datasetKey);
@@ -113,6 +114,7 @@ public class DatasetSourceDao {
         final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
         sources.forEach(d -> patch(d, datasetKey, pm));
       }
+      sources.forEach(d -> d.addContainer(container));
     }
     return sources;
   }
