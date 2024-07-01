@@ -2,10 +2,7 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.util.YamlUtils;
@@ -879,16 +876,21 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
-  public void addContainer(Dataset container) {
+  public void addContainer(Dataset container, DatasetSettings settings) {
     if (container == null) {
       container = new Dataset();
     }
-    containerKey = container.containerKey;
-    containerTitle = container.containerTitle;
-    containerCreator = container.containerCreator;
-    containerVersion = container.containerVersion;
-    containerPublisher = container.containerPublisher;
-    containerIssued = container.containerIssued;
+    containerKey = container.key;
+    containerTitle = container.title;
+    containerVersion = container.version;
+    containerPublisher = container.publisher;
+    containerIssued = container.issued;
+    if (container.creator != null) {
+      // limit the max container creators
+      // con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
+      var max = ObjectUtils.coalesce(settings.getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS), 100);
+      containerCreator = container.creator.size() > max ? new ArrayList<>(container.creator.subList(0, max)) : new ArrayList<>(container.creator);
+    }
   }
 
   public String getIssn() {

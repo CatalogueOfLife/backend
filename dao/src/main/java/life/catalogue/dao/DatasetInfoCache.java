@@ -92,6 +92,10 @@ public class DatasetInfoCache {
       throw new IllegalArgumentException("Dataset "+key+" is not of origin " + Arrays.toString(origins));
     }
 
+    public int keyOrProjectKey() throws NotFoundException {
+      return origin.isRelease() ? sourceKey : key;
+    }
+
     @Override
     public String toString() {
       return "DS " + key +
@@ -162,11 +166,7 @@ public class DatasetInfoCache {
    * @throws NotFoundException
    */
   public int keyOrProjectKey(int datasetKey) throws NotFoundException {
-    return keyOrProjectKey(get(datasetKey, true));
-  }
-
-  public int keyOrProjectKey(DatasetInfo info) throws NotFoundException {
-    return info.origin.isRelease() ? info.sourceKey : info.key;
+    return get(datasetKey, true).keyOrProjectKey();
   }
 
   /**

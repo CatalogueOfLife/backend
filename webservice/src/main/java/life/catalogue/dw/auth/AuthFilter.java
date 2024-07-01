@@ -173,7 +173,7 @@ public class AuthFilter implements ContainerRequestFilter {
     try {
       // use the project key to evaluate permissions
       var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-      int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
+      int masterKey = info.keyOrProjectKey();
       return user.isAdmin() || user.isEditor(masterKey) || user.isReviewer(masterKey) || user.isPublisher(info.publisherKey);
     } catch (NotFoundException e) {
       return false;
@@ -194,7 +194,7 @@ public class AuthFilter implements ContainerRequestFilter {
       try {
         // use the project key to evaluate permissions
         var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-        int masterKey = DatasetInfoCache.CACHE.keyOrProjectKey(info);
+        int masterKey = info.keyOrProjectKey();
         return user.isAdmin() || user.isEditor(masterKey) || user.isPublisher(info.publisherKey);
       } catch (NotFoundException e) {
       }
