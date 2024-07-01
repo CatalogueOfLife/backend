@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.dockerjava.api.DockerClient;
 
 import life.catalogue.api.vocab.Users;
