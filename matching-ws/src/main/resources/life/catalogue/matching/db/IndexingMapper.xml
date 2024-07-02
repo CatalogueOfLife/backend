@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="life.catalogue.matching.db.IndexingMapper">
+    <select id="getAllForDataset"
+            resultType="life.catalogue.matching.model.NameUsage"
+            resultOrdered="true"
+            fetchSize="10" resultSetType="FORWARD_ONLY">
+      SELECT
+        nu.id as id,
+        nu.parent_id as parentId,
+        n.scientific_name as scientificName,
+        n.authorship as authorship,
+        n.rank as rank,
+        nu.status as status,
+        n.code as nomenclaturalCode,
+        '' as extension,
+        '' as category
+      FROM
+        name_usage nu
+      INNER JOIN
+        name n on n.id = nu.name_id AND n.dataset_key=#{datasetKey}
+      WHERE
+        nu.dataset_key = #{datasetKey}
+    </select>
+
+  <select id="getAllWithExtensionForDataset"
+          resultType="life.catalogue.matching.model.NameUsage"
+          resultOrdered="true"
+          fetchSize="10" resultSetType="FORWARD_ONLY">
+    SELECT
+      nu.id as id,
+      nu.parent_id as parentId,
+      n.scientific_name as scientificName,
+      n.authorship as authorship,
+      n.rank as rank,
+      nu.status as status,
+      n.code as nomenclaturalCode,
+      v.terms as extension,
+      '' as category
+    FROM
+      name_usage nu
+        INNER JOIN
+      name n on n.id = nu.name_id AND n.dataset_key=#{datasetKey}
+        LEFT JOIN
+      distribution d on d.taxon_id = nu.id AND d.dataset_key=#{datasetKey}
+        LEFT JOIN
+      verbatim v on v.id = d.verbatim_key AND v.dataset_key=#{datasetKey}
+    WHERE
+      nu.dataset_key = #{datasetKey}
+  </select>
+
+</mapper>
