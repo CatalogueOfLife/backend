@@ -271,14 +271,14 @@ public class IndexingService {
   }
 
   @Transactional
-  public void indexIdentifiers(String datasetKey) throws Exception {
+  public void indexIdentifiers(@NotNull String datasetKey) throws Exception {
     writeCLBToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
     writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/" + IDENTIFIERS_DIR + "/" + datasetKey, false);
   }
 
   @Transactional
-  public void indexIUCN(String datasetKey) throws Exception {
+  public void indexIUCN(@NotNull String datasetKey) throws Exception {
     writeCLBIUCNToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
     writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/" + ANCILLARY_DIR + "/" + datasetKey, true);
@@ -465,7 +465,7 @@ public class IndexingService {
     //final batch
     exec.submit(new JoinIndexTask(matchingService, searcher, joinIndexWriter, batch, acceptedOnly, matchedCounter));
 
-    log.info("Finished reading CSV file. Indexing re" + MAIN_INDEX_DIR + "ing taxa...");
+    log.info("Finished reading CSV file. Creating join index...");
 
     exec.shutdown();
     try {
@@ -519,15 +519,13 @@ public class IndexingService {
         for (Document doc : docs) {
 
           Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
-
+          String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
           String status = doc.get(FIELD_STATUS);
-          if (status != null &&
-            acceptedOnly &&
-            !status.equals(TaxonomicStatus.ACCEPTED.name())) {
+          if (acceptedOnly && !isAccepted(status)) {
             // skip synonyms, otherwise we would index them twice
             continue;
           }
-          String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
+
           Classification classification = new Classification();
           classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
           classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
@@ -557,11 +555,14 @@ public class IndexingService {
         }
         writer.flush();
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error("Error writing documents to " + ANCILLARY_DIR + " index: {}", e.getMessage(), e);
       }
     }
-  }
 
+    private boolean isAccepted(String status) {
+      return status != null && !status.equals(TaxonomicStatus.ACCEPTED.name());
+    }
+  }
 
   private static Optional<Document> getById(IndexSearcher searcher, String id) {
     Query query = new TermQuery(new Term(FIELD_ID, id));
@@ -593,8 +594,9 @@ public class IndexingService {
   }
 
   @Transactional
-  public void createMainIndexFromFile(String exportPath, String indexPath) throws Exception {
-    indexFile(exportPath, indexPath + "/" + MAIN_INDEX_DIR);
+  public void createMainIndex(String datasetId) throws Exception {
+    writeCLBToFile(datasetId);
+    indexFile(exportPath + "/" + datasetId, indexPath + "/" + MAIN_INDEX_DIR);
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {
@@ -658,11 +660,7 @@ public class IndexingService {
         Thread.currentThread().interrupt();
       }
 
-      log.info("Final index commit");
-      indexWriter.commit();
-      log.info("Optimising index....");
-      indexWriter.forceMerge(1);
-      log.info("Optimisation complete.");
+      finishIndex(indexWriter);
     }
 
     // write metadata file in JSON format
@@ -703,7 +701,7 @@ public class IndexingService {
         writer.flush();
         nameUsages.clear();
       } catch (IOException e) {
-        e.printStackTrace();
+        log.error("Problem writing document to index: {}", e.getMessage(), e);
       }
     }
   }
@@ -716,7 +714,7 @@ public class IndexingService {
     PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
 
     // Create index directory
-    Path indexDirectory = initialiseIndexDirectory(indexPath);
+    Path indexDirectory = initialiseIndexDirectory(indexPath + "/" + MAIN_INDEX_DIR);
     Directory directory = FSDirectory.open(indexDirectory);
 
     // Create a session factory
@@ -729,7 +727,6 @@ public class IndexingService {
     // Create index writer configuration
     IndexWriterConfig config = getIndexWriterConfig();
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
 
     log.info("Indexing dataset...");
     final AtomicInteger counter = new AtomicInteger(0);
@@ -751,14 +748,18 @@ public class IndexingService {
             }
             counter.incrementAndGet();
           });
-      log.info("Final index commit");
-      indexWriter.commit();
-      log.info("Optimising index....");
-      indexWriter.forceMerge(1);
-      log.info("Optimisation complete.");
+      finishIndex(indexWriter);
     }
     // write metadata file in JSON format
     log.info("Indexed: {}", counter.get());
+  }
+
+  private static void finishIndex(IndexWriter indexWriter) throws IOException {
+    log.info("Final index commit");
+    indexWriter.commit();
+    log.info("Optimising index....");
+    indexWriter.forceMerge(1);
+    log.info("Optimisation complete.");
   }
 
   private @NotNull Path initialiseIndexDirectory(String indexPath) throws IOException {
@@ -825,6 +826,10 @@ public class IndexingService {
 
     if (StringUtils.isNotBlank(nameUsage.getParentId()) && !nameUsage.getParentId().equals(nameUsage.getId())) {
       doc.add(new StringField(FIELD_PARENT_ID, nameUsage.getParentId(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getNomenclaturalCode())) {
+      doc.add(new StringField(FIELD_NOMENCLATURAL_CODE, nameUsage.getNomenclaturalCode(), Field.Store.YES));
     }
 
     if (StringUtils.isNotBlank(nameUsage.getStatus())) {

@@ -154,7 +154,7 @@ public class HigherTaxaComparator {
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
     URL url = dictionaries.synonymUrl(file);
-    log.info("Reading synonyms from " + url.toString());
+    log.debug("Reading synonyms from " + url.toString());
     try (InputStream synIn = url.openStream()) {
       return IOUtils.streamToMap(synIn);
     } catch (IOException e) {
@@ -200,7 +200,7 @@ public class HigherTaxaComparator {
    * rs.gbif.org.
    */
   public void loadClasspathDicts(String classpathFolder) throws IOException {
-    log.info("Reloading dictionary files from classpath ...");
+    log.debug("Reloading dictionary files from classpath ...");
 
     ClassLoader classLoader = getClass().getClassLoader();
 
@@ -229,7 +229,7 @@ public class HigherTaxaComparator {
 
   /** Reloads all synonym files found on rs.gbif.org replacing existing mappings. */
   public void loadOnlineDicts() {
-    log.info("Loading dictionary files ...");
+    log.debug("Loading dictionary files ...");
     for (Rank rank : SYNONYM_FILENAMES.keySet()) {
       Map<String, String> synonyms = readSynonymUrl(rank, SYNONYM_FILENAMES.get(rank));
       setSynonyms(rank, synonyms);

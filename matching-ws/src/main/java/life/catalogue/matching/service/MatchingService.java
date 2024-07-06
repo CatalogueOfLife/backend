@@ -1,5 +1,7 @@
 package life.catalogue.matching.service;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -53,8 +55,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class MatchingService {
 
-  @Value("${working.dir}")
-  protected String metadataFilePath = "/tmp/";
+  @Value("${working.path:/tmp/}")
+  protected String metadataFilePath;
 
   @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
   protected String dictionariesUrl = "https://rs.gbif.org/dictionaries/";
@@ -110,7 +112,7 @@ public class MatchingService {
     try (
       InputStream inputStream = new BufferedInputStream(url.openStream());
       BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-      log.info("Loading author abbreviation map from {}", url);
+      log.debug("Loading author abbreviation map from {}", url);
       reader.lines()
         .map(TAB_PAT::split)
         .forEach(row -> {
@@ -166,13 +168,18 @@ public class MatchingService {
   public Optional<APIMetadata> getAPIMetadata() {
 
     // read JSON from file, if not available generate from datasetIndex
+    if (!datasetIndex.getIsInitialised()) {
+      return Optional.empty();
+    }
+
     File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
-      if (!metadata.exists()) {
+      if (!metadata.exists() ) {
         APIMetadata metadata1 = datasetIndex.getAPIMetadata();
         //serialise to file
         ObjectMapper mapper = new ObjectMapper();
         FileWriter writer = new FileWriter(metadata);
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.writeValue(writer, metadata1);
         return Optional.of(metadata1);
       } else {
@@ -242,6 +249,10 @@ public class MatchingService {
    */
   public List<ExternalID> matchID(String identifier){
     return datasetIndex.lookupIdentifier(identifier);
+  }
+
+  public List<ExternalID> lookupJoins(String identifier){
+    return datasetIndex.lookupJoins(identifier);
   }
 
   /**
@@ -1180,7 +1191,7 @@ public class MatchingService {
 
     return NameUsageMatch.builder()
         .diagnostics(
-            Diagnostics.builder()
+            NameUsageMatch.Diagnostics.builder()
                 .matchType(MatchType.NONE)
                 .confidence(confidence)
                 .issues(new ArrayList<>())
@@ -1198,7 +1209,7 @@ public class MatchingService {
     List<NameUsageMatch> alternatives) {
     return NameUsageMatch.builder()
       .diagnostics(
-        Diagnostics.builder()
+        NameUsageMatch.Diagnostics.builder()
           .matchType(MatchType.NONE)
           .confidence(confidence)
           .issues(issues)

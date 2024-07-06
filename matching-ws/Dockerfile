@@ -60,10 +60,9 @@ FROM openjdk:11
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
-ENV JVM_OPTIONS="-Xmx2g -Xms2g"
+ENV JVM_OPTIONS="-Xms1g -Xmx4g"
 ENV USER=matching
 ENV APP_ARTIFACT=matching-ws
-ENV V1_ENABLED="true"
 
 # Set environment variables
 ARG CLB_DATASET_ID=""
@@ -83,13 +82,15 @@ WORKDIR /opt/gbif/$APP_ARTIFACT
 
 # Copy the executable JAR file from the builder image to the new image
 COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
+COPY --from=builder /app/backend/matching-ws/src/main/resources/bootstrap.yaml /opt/gbif/$APP_ARTIFACT/bootstrap.yaml
 COPY --from=builder /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
 COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
 
 # CSV export from checklistbank
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
-        java -jar app.jar \
-        --mode=BUILD_INDEX \
+        java $JVM_OPTIONS -jar app.jar \
+        --spring.cloud.bootstrap.location=/opt/gbif/$APP_ARTIFACT/bootstrap.yaml \
+        --mode=INDEX \
         --index.path=/data/$APP_ARTIFACT/index \
         --export.path=/data/$APP_ARTIFACT/exports \
         --clb.dataset.id=$CLB_DATASET_ID \
@@ -105,4 +106,4 @@ RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 USER $USER
 EXPOSE $SERVER_PORT
 
-CMD java $JVM_OPTIONS -jar app.jar --server.port=$SERVER_PORT --v1.enabled=$V1_ENABLED --working.dir=/opt/gbif/$APP_ARTIFACT
+CMD java $JVM_OPTIONS -jar app.jar --server.port=$SERVER_PORT --working.dir=/opt/gbif/$APP_ARTIFACT --mode=RUN --spring.cloud.bootstrap.location=/opt/gbif/$APP_ARTIFACT/bootstrap.yaml

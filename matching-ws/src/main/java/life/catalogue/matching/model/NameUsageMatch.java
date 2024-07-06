@@ -1,13 +1,21 @@
 package life.catalogue.matching.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
-import lombok.Data;
+
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import lombok.*;
+
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 /**
@@ -278,5 +286,75 @@ public class NameUsageMatch implements LinneanClassification {
   @JsonIgnore
   public void setSpeciesKey(String v) {
     setKeyFor(v, Rank.SPECIES);
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @Data
+  @Builder
+  @Schema(description = "Diagnostics for a name match including the type of match and confidence level", title = "Diagnostics", type = "object")
+  public static class Diagnostics {
+    @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
+    MatchType matchType;
+    @Schema(description = "Issues with the name usage match that has been returned")
+    List<Issue> issues;
+    @Schema(description = "Issues encountered during steps of the match process")
+    List<ProcessFlag> processingFlags;
+    @Schema(description = "Confidence level in percent")
+    Integer confidence;
+    @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")
+    TaxonomicStatus status;
+    @Schema(description = "Additional notes about the match")
+    String note;
+    @Schema(description = "Time taken to perform the match in milliseconds")
+    long timeTaken;
+    @Schema(description = "A list of similar matches with lower confidence scores ")
+    List<NameUsageMatch> alternatives;
+  }
+
+  /**
+   * A name with an identifier and a taxonomic rank.
+   */
+  @Schema(description = "A name with an identifier and a taxonomic rank", title = "RankedName", type = "object")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @ToString
+  @Builder
+  public static class RankedName implements Serializable {
+
+    private static final long serialVersionUID = 3423423423423L;
+
+    @Schema(description = "The identifier for the name usage")
+    private String key;
+    @Schema(description = "The name usage")
+    private String name;
+    @JsonIgnore private String canonicalName;
+    @JsonIgnore private String parentID;
+    @Schema(description = "The taxonomic rank for the name usage")
+    private Rank rank;
+    @Schema(description = "The nomenclatural code for the name usage")
+    private NomCode code;
+  }
+
+  /**
+   * A status value derived from a dataset or external source. E.g. IUCN Red List status.
+   */
+  @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
+  @Schema(description = "A status value derived from a dataset or external source. E.g. IUCN Red List status.",
+    title = "Status", type = "object")
+  public static class Status {
+    @Schema(description = "The dataset key for the dataset that the status is associated with")
+    private String datasetKey;
+    @Schema(description = "The dataset alias for the dataset that the status is associated with")
+    private String datasetAlias;
+    @Schema(description = "The gbif registry key for the dataset that the status is associated with")
+    private String gbifKey;
+    @Schema(description = "The status value")
+    private String status;
+    @Schema(description = "The ID in the source dataset for this status. e.g. the IUCN ID for this taxon")
+    private String sourceId;
   }
 }

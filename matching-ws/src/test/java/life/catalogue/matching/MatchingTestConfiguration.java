@@ -28,6 +28,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
 import life.catalogue.matching.model.NameUsageMatchFlatV1;
+import life.catalogue.matching.model.NameUsageMatchV1;
 import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
@@ -349,7 +350,7 @@ public class MatchingTestConfiguration {
     if (source.getSynonym()) {
       target.setStatus(TaxonomicStatus.SYNONYM.toString());
     } else {
-      if (source.getStatus() != null && source.getStatus().equals("DOUBTFUL")) {
+      if (source.getStatus() != null && source.getStatus().equals(NameUsageMatchV1.TaxonomicStatusV1.DOUBTFUL)) {
         target.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED.toString());
       } else {
         target.setStatus(TaxonomicStatus.ACCEPTED.toString());
