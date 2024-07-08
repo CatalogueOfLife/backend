@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-07-08 new match type for ported GBIF matching
+```
+ALTER TYPE MATCHTYPE ADD VALUE 'HIGHERRANK';
+```
+
+
 #### 2024-06-11 limit full text search dataset content
 ```
 ALTER TABLE dataset ADD column
