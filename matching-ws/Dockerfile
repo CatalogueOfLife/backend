@@ -1,0 +1,108 @@
+# Use an official Maven runtime as a parent image
+FROM maven:3.8.5-openjdk-11 AS builder
+
+# Set the working directory in the container
+WORKDIR /app
+
+ARG CLB_DATASET_ID=""
+ARG CLB_URL=""
+ARG CLB_USER=""
+ARG CLB_PASSWORD=""
+ENV CLB_API_URL="https://api.checklistbank.org"
+ARG GIT_BRANCH=""
+
+# Local builds - run from root of backend
+#COPY .. /app/backend
+#WORKDIR /app/backend
+
+# Run a script to validate the arguments
+RUN if [ -z "$GIT_BRANCH" ]; then \
+        echo "Error: GIT_BRANCH is not set." >&2; \
+        exit 1; \
+    fi
+
+# Clone the backend repository
+RUN rm -Rf backend
+RUN git clone https://github.com/CatalogueOfLife/backend.git
+WORKDIR /app/backend
+RUN git checkout $GIT_BRANCH
+
+# Build all the CLB modules
+RUN mvn clean install package -DskipTests
+
+# Build the Maven project and create a exec file
+WORKDIR /app/backend/matching-ws
+
+# Run tests - full backend tests require additional services (e.g. ES)
+RUN mvn clean install package
+
+# Store git commit id and log
+RUN curl -o /app/backend/git.json -H "Accept: application/vnd.github+json" "https://api.github.com/repos/catalogueoflife/backend/commits/$(git rev-parse HEAD)"
+
+# Run a script to validate the arguments
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
+        if [ -z "$CLB_URL" ] || [ -z "$CLB_USER" ] || [ -z "$CLB_PASSWORD" ]; then \
+            echo "Error: CLB_URL, CLB_USER, and CLB_PASSWORD must be set when CLB_DATASET_ID is set." >&2; \
+            exit 1; \
+        fi \
+    fi
+
+# Cache a copy of the dataset metadata from checklistbank for tracking
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
+        curl -o /app/backend/dataset.json $CLB_API_URL/dataset/$CLB_DATASET_ID.json; \
+    else \
+        echo "{}" > /app/backend/dataset.json; \
+    fi
+
+# Copy the executable JAR file from the builder image to the new image
+FROM openjdk:11
+
+# Set environment variables
+ARG DEBIAN_FRONTEND=noninteractive
+ENV SERVER_PORT=8080
+ENV JVM_OPTIONS="-Xmx2g -Xms2g"
+ENV USER=matching
+ENV APP_ARTIFACT=matching-ws
+ENV V1_ENABLED="true"
+
+# Set environment variables
+ARG CLB_DATASET_ID=""
+ARG CLB_IUCN_DATASET_ID=""
+ARG CLB_IDENTIFIER_DATASET_IDS=""
+ARG CLB_URL=""
+ARG CLB_USER=""
+ARG CLB_PASSWORD=""
+
+# Directories and perms
+RUN mkdir -p /data/$APP_ARTIFACT && \
+    groupadd -r $USER -g 1000 && useradd -r -g $USER -u 1000 -m $USER && \
+    chown -R $USER:$USER /data/$APP_ARTIFACT
+
+# Set the working directory in the container
+WORKDIR /opt/gbif/$APP_ARTIFACT
+
+# Copy the executable JAR file from the builder image to the new image
+COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
+COPY --from=builder /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
+COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
+
+# CSV export from checklistbank
+RUN if [ -n "$CLB_DATASET_ID" ]; then \
+        java -jar app.jar \
+        --mode=BUILD_INDEX \
+        --index.path=/data/$APP_ARTIFACT/index \
+        --export.path=/data/$APP_ARTIFACT/exports \
+        --clb.dataset.id=$CLB_DATASET_ID \
+        --clb.identifier.dataset.ids=$CLB_IDENTIFIER_DATASET_IDS \
+        --clb.iucn.dataset.id=$CLB_IUCN_DATASET_ID \
+        --clb.url=$CLB_URL \
+        --clb.user=$CLB_USER \
+        --clb.password=$CLB_PASSWORD; \
+    fi
+
+RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+
+USER $USER
+EXPOSE $SERVER_PORT
+
+CMD java $JVM_OPTIONS -jar app.jar --server.port=$SERVER_PORT --v1.enabled=$V1_ENABLED --working.dir=/opt/gbif/$APP_ARTIFACT

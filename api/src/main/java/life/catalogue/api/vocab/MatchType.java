@@ -35,6 +35,13 @@ public enum MatchType {
    * A name which is not supported in the names index and can never be matched or added.
    * For example placeholder names.
    */
-  UNSUPPORTED;
+  UNSUPPORTED,
+
+  /**
+   * The matching alogrithm was unable to match a scientific name with sufficient confidence,
+   * and matched a higher rank instead.
+   */
+  HIGHERRANK
+  ;
 
 }
