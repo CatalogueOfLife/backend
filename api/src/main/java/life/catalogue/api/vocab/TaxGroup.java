@@ -165,10 +165,10 @@ public enum TaxGroup {
   }
 
   public URI getIcon() {
-    return URI.create("https://images.phylopic.org/images/" + phylopic + "/thumbnail/"+SIZE+".png");
+    return phylopic == null ? null : URI.create("https://images.phylopic.org/images/" + phylopic + "/thumbnail/"+SIZE+".png");
   }
   public URI getIconSVG() {
-    return URI.create("https://images.phylopic.org/images/" + phylopic + "/vector.svg");
+    return phylopic == null ? null : URI.create("https://images.phylopic.org/images/" + phylopic + "/vector.svg");
   }
 
   public String getPhylopic() {
