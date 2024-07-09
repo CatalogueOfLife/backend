@@ -80,7 +80,6 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   );
 
   int threads = 6;
-  File nidxFile;
   File buildDir;
   private NameIndex ni;
 
@@ -116,29 +115,27 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     return String.format("Rebuilt names index and rematch all datasets with data in pg schema %s in db %s on %s.\n", BUILD_SCHEMA, cfg.db.database, cfg.db.host);
   }
 
-  private static File indexBuildFile(WsServerConfig cfg) throws IOException {
-    File f = null;
+  private static void updateNidxConfig(WsServerConfig cfg) throws IOException {
     if (cfg.namesIndex.file != null) {
-      f = new File(cfg.namesIndex.file.getParent(), "nidx-build");
-      if (f.exists()) {
-        throw new IllegalStateException("NamesIndex file already exists: " + f.getAbsolutePath());
+      cfg.namesIndex.file = new File(cfg.namesIndex.file.getParent(), "nidx-build");
+      if (cfg.namesIndex.file.exists()) {
+        throw new IllegalStateException("NamesIndex file already exists: " + cfg.namesIndex.file.getAbsolutePath());
       }
-      FileUtils.createParentDirectories(f);
-      System.out.println("Creating new names index at " + f.getAbsolutePath());
+      FileUtils.createParentDirectories(cfg.namesIndex.file);
+      System.out.println("Creating new names index at " + cfg.namesIndex.file.getAbsolutePath());
     } else {
       System.out.println("Creating new in memory names index");
     }
-    return f;
   }
 
   @Override
   public void execute() throws Exception {
-    nidxFile = indexBuildFile(cfg);
+    updateNidxConfig(cfg);
     buildDir = cfg.normalizer.scratchDir("nidx-build");
     if (buildDir.exists()) {
       LOG.info("Clear build directory at {}", buildDir);
+      FileUtils.deleteQuietly(buildDir);
     }
-    FileUtils.deleteQuietly(nidxFile);
 
     if (ns.getBoolean(ARG_FILE_ONLY)) {
       rebuildFileOnly();
@@ -148,10 +145,10 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   }
 
   private void rebuildFileOnly() throws Exception {
-    LOG.info("Rebuild index file at {}", nidxFile);
-    NameIndex ni = NameIndexFactory.build(NamesIndexConfig.file(nidxFile, 1024), factory, AuthorshipNormalizer.INSTANCE);
+    LOG.info("Rebuild index file at {}", cfg.namesIndex.file);
+    NameIndex ni = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
-    LOG.info("Done rebuilding index file at {}", nidxFile);
+    LOG.info("Done rebuilding {} index file at {}", cfg.namesIndex.type, cfg.namesIndex.file);
   }
 
   private void rematchAll() throws Exception {
@@ -159,7 +156,9 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       threads = ns.getInt(ARG_THREADS);
       Preconditions.checkArgument(threads > 0, "Needs at least one matcher thread");
     }
-    LOG.warn("Rebuilt names index at {} and rematch all names with {} threads using build folder {} and pg schema {} in db {} on {}.", nidxFile, threads, buildDir, BUILD_SCHEMA, cfg.db.database, cfg.db.host);
+    LOG.warn("Rebuilt {} names index at {} and rematch all names with {} threads using build folder {} and pg schema {} in db {} on {}.",
+      cfg.namesIndex.type, cfg.namesIndex.file, threads, buildDir, BUILD_SCHEMA, cfg.db.database, cfg.db.host
+    );
     // use a factory that changes the default pg search_path to "nidx" so we don't interfere with the index currently live
     factory = new SqlSessionFactoryWithPath(factory, BUILD_SCHEMA);
 
@@ -170,9 +169,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     }
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet
-    var ncfg = NamesIndexConfig.file(nidxFile, 1024);
-    ncfg.verification = false;
-    ni = NameIndexFactory.build(ncfg, factory, AuthorshipNormalizer.INSTANCE);
+    cfg.namesIndex.verification = false;
+    ni = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
 
     String limit = "";
