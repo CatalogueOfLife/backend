@@ -1,5 +1,7 @@
 package life.catalogue.api.vocab;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.NomCode;
 
 import java.net.URI;
@@ -83,7 +85,7 @@ public enum TaxGroup {
     this(phylopic,null, parents);
   }
   TaxGroup(String phylopic, String description, TaxGroup... parents) {
-    this.phylopic = phylopic;
+    this.phylopic = StringUtils.trimToNull(phylopic);
     this.description = description;
     if (parents != null) {
       for (var p : parents) {
@@ -94,13 +96,13 @@ public enum TaxGroup {
   }
 
   TaxGroup(String phylopic, String description, NomCode code1, NomCode code2) {
-    this.phylopic = phylopic;
+    this.phylopic = StringUtils.trimToNull(phylopic);
     this.description = description;
     this.codes.add(code1);
     this.codes.add(code2);
   }
   TaxGroup(String phylopic, String description, NomCode code, TaxGroup... parents) {
-    this.phylopic = phylopic;
+    this.phylopic = StringUtils.trimToNull(phylopic);
     this.description = description;
     this.codes.add(code);
     if (parents != null) {

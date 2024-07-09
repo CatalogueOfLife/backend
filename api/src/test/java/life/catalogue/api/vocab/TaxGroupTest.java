@@ -49,6 +49,21 @@ public class TaxGroupTest {
   }
 
   @Test
+  public void phylopics() {
+    for (var g : TaxGroup.values()) {
+      if (g.name().startsWith("Other")) {
+        assertNull(g.getPhylopic());
+        assertNull(g.getIcon());
+        assertNull(g.getIconSVG());
+      } else {
+        assertNotNull(g.getPhylopic());
+        assertNotNull(g.getIcon());
+        assertNotNull(g.getIconSVG());
+      }
+    }
+  }
+
+  @Test
   public void disparate() {
     assertTrue(Angiosperms.isDisparateTo(OtherEukaryotes));
     assertTrue(Angiosperms.isDisparateTo(Prokaryotes));
