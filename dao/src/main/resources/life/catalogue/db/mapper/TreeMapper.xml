@@ -55,7 +55,8 @@
     <if test="type != null">
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
         LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
-        LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{catalogueKey} AND s.subject_dataset_key=#{datasetKey} AND s.placeholder_rank IS NULL
+        LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{catalogueKey} AND s.subject_dataset_key=#{datasetKey}
+          AND s.placeholder_rank IS NULL AND s.mode != 'MERGE'
       </if>
       <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
         LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
