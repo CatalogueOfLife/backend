@@ -3,7 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.TaxonSectorCountMap;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.List;
 

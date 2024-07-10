@@ -228,7 +228,7 @@ public class TxtTreeInserter implements NeoInserter {
     if(synonym) {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), TaxonomicStatus.SYNONYM);
     } else {
-      TaxonomicStatus status = pnu.isDoubtful() || rmBoolean(PROV, tn, v) ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
+      TaxonomicStatus status = rmBoolean(PROV, tn, v) || tn.provisional || pnu.isDoubtful() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status);
       var t = u.asTaxon();
       t.setOrdinal(ordinal);

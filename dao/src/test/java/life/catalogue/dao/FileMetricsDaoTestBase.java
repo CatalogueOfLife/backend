@@ -1,9 +1,7 @@
 package life.catalogue.dao;
 
-import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
-import java.io.BufferedReader;
 import java.util.Iterator;
 import java.util.stream.Stream;
 

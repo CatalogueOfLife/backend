@@ -5,9 +5,9 @@ import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 

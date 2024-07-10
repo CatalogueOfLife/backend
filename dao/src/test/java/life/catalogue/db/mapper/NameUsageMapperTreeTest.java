@@ -1,7 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.ArrayList;
 import java.util.HashSet;

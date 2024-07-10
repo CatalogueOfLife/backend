@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;

@@ -3,11 +3,11 @@ package life.catalogue.command;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.SqlSessionFactoryWithPath;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import java.io.File;
 import java.util.ArrayList;

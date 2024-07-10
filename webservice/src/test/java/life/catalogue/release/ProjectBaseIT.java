@@ -4,10 +4,9 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgConnectionRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
@@ -19,6 +18,8 @@ import java.net.URI;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+
+import life.catalogue.junit.TreeRepoRule;
 
 import org.junit.Before;
 import org.junit.ClassRule;

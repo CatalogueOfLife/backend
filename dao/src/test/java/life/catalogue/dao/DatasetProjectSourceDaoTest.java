@@ -1,8 +1,7 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.junit.Test;
 

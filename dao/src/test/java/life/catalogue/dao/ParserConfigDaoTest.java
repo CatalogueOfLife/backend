@@ -4,8 +4,8 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;

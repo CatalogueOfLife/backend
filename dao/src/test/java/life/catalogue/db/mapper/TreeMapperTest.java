@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.db.MybatisTestUtils;
+import life.catalogue.junit.MybatisTestUtils;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

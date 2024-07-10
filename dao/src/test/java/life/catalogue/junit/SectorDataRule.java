@@ -1,9 +1,8 @@
-package life.catalogue.printer;
+package life.catalogue.junit;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.SectorDao;
-import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 
 import java.util.List;

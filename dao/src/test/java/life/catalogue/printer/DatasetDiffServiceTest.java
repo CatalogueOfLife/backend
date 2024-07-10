@@ -2,7 +2,7 @@ package life.catalogue.printer;
 
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.FileMetricsDatasetDao;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 

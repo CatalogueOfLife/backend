@@ -4,6 +4,9 @@ This module of the `backend` repository provides a tool for generating a Lucene 
 along with a set of web services that utilize these indexes. The primary purpose of these indexes and 
 web services is to match scientific names and classifications, typically derived from occurrence and event datasets.
 
+The implementation is ported from the previous GBIF codebase and does not share much in common
+with the main matching API of ChecklistBank.
+
 ## Dependencies
 
 The matching index and web services depend on:

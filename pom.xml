@@ -86,7 +86,7 @@
     <simple-mail.version>8.0.0</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
     <testcontainers.version>1.17.6</testcontainers.version>
-    <text-tree.version>1.4.1-SNAPSHOT</text-tree.version>
+    <text-tree.version>1.5.0</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.11.0</twelvemonkeys.version>
     <woodstox.version>6.6.2</woodstox.version>
@@ -101,6 +101,7 @@
     <maven-dependency-plugin.version>3.7.0</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
+    <maven-graalvm-plugin.version>0.10.1</maven-graalvm-plugin.version>
     <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
     <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
     <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
@@ -967,6 +968,11 @@
             <releaseProfiles>col-release</releaseProfiles>
             <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.graalvm.buildtools</groupId>
+          <artifactId>native-maven-plugin</artifactId>
+          <version>${maven-graalvm-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>

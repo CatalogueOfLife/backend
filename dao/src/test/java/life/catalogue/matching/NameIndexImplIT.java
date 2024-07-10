@@ -13,9 +13,9 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.nidx.NameIndex;
@@ -23,7 +23,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import org.apache.commons.io.FileUtils;
 

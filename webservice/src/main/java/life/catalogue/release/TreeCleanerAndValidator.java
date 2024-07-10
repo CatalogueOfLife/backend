@@ -1,8 +1,9 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.LinneanNameUsage;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
@@ -52,10 +53,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   final SqlSessionFactory factory;
   final int datasetKey;
-  final ParentStack<LinneanNameUsage> parents;
+  final ParentStack<XLinneanNameUsage> parents;
 
-  private LinneanNameUsage genus;
-  private Integer genusYear;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
   private int maxDepth = 0;
@@ -70,17 +69,18 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
   }
 
+  static class XLinneanNameUsage extends LinneanNameUsage {
+    public Integer authorYear;
+    public XLinneanNameUsage(LinneanNameUsage u) {
+      super(u);
+    }
+  }
   /**
    * To be called from the parent stack when a taxon gets removed from the stack
    * It considers to remove empty genera and creates missing autonyms
    * @param taxon
    */
-  void endClassificationStack(ParentStack.SNC<LinneanNameUsage> taxon) {
-    // remove tracked genus
-    if (taxon.usage.getRank() == Rank.GENUS) {
-      genus = null;
-      genusYear = null;
-    }
+  void endClassificationStack(ParentStack.SNC<XLinneanNameUsage> taxon) {
     // remove empty genera?
     if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
       LOG.info("Remove empty {}", taxon.usage);
@@ -105,14 +105,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   }
 
   @Override
-  public void accept(LinneanNameUsage sn) {
+  public void accept(LinneanNameUsage lnu) {
+    var sn = new XLinneanNameUsage(lnu);
     counter.incrementAndGet();
     final IssueContainer issues = IssueContainer.simple();
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
-    Integer authorYear = null; // TODO: parse year only once and share it with name validator?
     try {
-      authorYear = NameValidator.parseYear(sn);
+      sn.authorYear = NameValidator.parseYear(sn);
     } catch (NumberFormatException e) {
       // already flagged by name validator above!
     }
@@ -120,6 +120,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     if (sn.getRank().isSpeciesOrBelow()) {
       // flag parent mismatches
       if (sn.isParsed()) {
+        var genus = parents.getByRank(Rank.GENUS);
         if (sn.getRank().isInfraspecific()) {
           // we have a trinomial, compare species
           var sp = parents.find(Rank.SPECIES);
@@ -146,22 +147,17 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
         if (!issues.hasIssue(Issue.PARENT_NAME_MISMATCH)
             && !issues.hasIssue(Issue.MISSING_GENUS)
             && !issues.hasIssue(Issue.UNLIKELY_YEAR)
-            && genusYear != null
-            && authorYear != null
-            && genusYear > authorYear
+            && genus != null && genus.authorYear != null
+            && sn.authorYear != null
+            && genus.authorYear > sn.authorYear
         ) {
             // flag if the accepted bi/trinomial the ones that have an earlier publication date!
             issues.addIssue(Issue.PUBLISHED_BEFORE_GENUS);
         }
-
-        // TODO: create missing autonyms
       }
     }
-    if (sn.getRank() == Rank.GENUS) {
-      genus = sn;
-      genusYear = authorYear;
-    }
     parents.push(sn);
+
     // validate next higher concrete parent rank
     if (!sn.getRank().isUncomparable()) {
       parents.getLowestConcreteRank(true).ifPresent(r -> {

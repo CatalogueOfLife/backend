@@ -8,7 +8,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.*;
-import life.catalogue.db.MybatisTestUtils;
+import life.catalogue.junit.MybatisTestUtils;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;

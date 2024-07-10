@@ -5,7 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.es.NameUsageIndexService;

@@ -1,7 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.db.CopyDataset;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSession;
 

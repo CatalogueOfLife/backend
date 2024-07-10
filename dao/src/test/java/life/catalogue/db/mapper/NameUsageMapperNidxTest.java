@@ -2,7 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.Set;
 import java.util.stream.Collectors;

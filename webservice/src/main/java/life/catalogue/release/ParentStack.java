@@ -108,6 +108,17 @@ public class ParentStack<T extends NameUsageCore> {
     return Optional.empty();
   }
 
+  public T getByRank(Rank rank) {
+    var iter = parents.descendingIterator();
+    while (iter.hasNext()) {
+      var p = iter.next();
+      if (p.usage.getRank() == rank) {
+        return p.usage;
+      }
+    }
+    return null;
+  }
+
   public void push(T nu) {
     if (parents.isEmpty()) {
       // the very first entry can point to a missing parent, e.g. when we iterate over subtrees only

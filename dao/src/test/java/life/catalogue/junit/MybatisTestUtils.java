@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;

@@ -4,7 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.FileMetricsDao;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.io.BufferedReader;
 import java.io.File;

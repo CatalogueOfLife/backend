@@ -5,7 +5,6 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
@@ -13,6 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+
+import life.catalogue.junit.TestDataRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

@@ -1,8 +1,8 @@
 package life.catalogue;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.release.IdProviderIT;

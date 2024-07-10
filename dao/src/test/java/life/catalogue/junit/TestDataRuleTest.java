@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;

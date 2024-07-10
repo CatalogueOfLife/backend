@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.junit.Test;
 

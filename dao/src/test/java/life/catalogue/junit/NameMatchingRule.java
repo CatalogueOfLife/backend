@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 

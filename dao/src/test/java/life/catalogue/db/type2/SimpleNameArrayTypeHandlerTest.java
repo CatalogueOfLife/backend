@@ -1,7 +1,7 @@
 package life.catalogue.db.type2;
 
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.junit.PgSetupRule;
 
 import org.gbif.nameparser.api.Rank;
 

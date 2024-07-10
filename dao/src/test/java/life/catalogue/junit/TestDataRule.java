@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.CSVUtils;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.InitDbUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;

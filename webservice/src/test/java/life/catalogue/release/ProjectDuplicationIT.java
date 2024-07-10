@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.assembly.SectorSyncIT;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.importer.PgImportRule;
 
 import org.gbif.nameparser.api.NomCode;

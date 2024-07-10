@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import com.github.dockerjava.api.DockerClient;
 
@@ -9,6 +9,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Duration;
+
+import life.catalogue.db.InitDbUtils;
+import life.catalogue.db.PgConfig;
+import life.catalogue.db.PgUtils;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;

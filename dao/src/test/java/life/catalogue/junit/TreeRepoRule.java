@@ -1,4 +1,4 @@
-package life.catalogue.dao;
+package life.catalogue.junit;
 
 import java.io.File;
 import java.io.IOException;

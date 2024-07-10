@@ -11,7 +11,7 @@ import life.catalogue.common.io.TempFile;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;

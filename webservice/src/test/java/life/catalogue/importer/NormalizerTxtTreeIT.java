@@ -5,11 +5,9 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.db.PgSetupRule;
+import life.catalogue.junit.PgSetupRule;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
-
-import org.checkerframework.checker.units.qual.A;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;

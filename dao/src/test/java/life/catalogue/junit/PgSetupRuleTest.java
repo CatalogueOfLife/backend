@@ -1,4 +1,4 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -82,7 +82,7 @@ public class PgSetupRuleTest {
     }
   }
   
-  static List<Class<? extends Enum<?>>> listEnums(boolean coldpOnly) throws IOException {
+  public static List<Class<? extends Enum<?>>> listEnums(boolean coldpOnly) throws IOException {
     ClassPath cp = ClassPath.from(DatasetType.class.getClassLoader());
     List<Class<? extends Enum<?>>> enums = new ArrayList<>();
     addPackageEnums(cp, enums, DatasetType.class.getPackage());

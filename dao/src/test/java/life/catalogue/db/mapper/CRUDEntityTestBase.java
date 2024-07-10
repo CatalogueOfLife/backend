@@ -3,11 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
-import life.catalogue.db.TestDataRule;
-
-import java.util.List;
-
-import org.junit.Test;
+import life.catalogue.junit.TestDataRule;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

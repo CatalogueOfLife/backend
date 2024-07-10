@@ -16,6 +16,12 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import life.catalogue.junit.MybatisTestUtils;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+
+import life.catalogue.junit.TestDataRule;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;

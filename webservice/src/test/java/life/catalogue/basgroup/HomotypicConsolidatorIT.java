@@ -2,18 +2,17 @@ package life.catalogue.basgroup;
 
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.assembly.SectorSyncIT;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import java.io.IOException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;

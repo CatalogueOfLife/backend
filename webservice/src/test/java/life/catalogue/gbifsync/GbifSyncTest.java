@@ -5,8 +5,8 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import java.util.Set;
 import java.util.UUID;

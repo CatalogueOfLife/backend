@@ -1,17 +1,18 @@
-package life.catalogue.printer;
+package life.catalogue.junit;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
+
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
@@ -228,7 +229,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
         t.setOrdinal(ordinal);
       }
       var status = TaxonomicStatus.ACCEPTED;
-      if (tn.infos.containsKey(TxtTreeTerm.PROV.name())) {
+      if (tn.provisional || tn.infos.containsKey(TxtTreeTerm.PROV.name())) {
         status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
       }
 

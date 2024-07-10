@@ -9,12 +9,13 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
+import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import java.net.URI;

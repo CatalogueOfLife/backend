@@ -4,7 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.SimpleName;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.List;
 import java.util.Map;

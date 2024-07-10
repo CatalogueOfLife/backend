@@ -1,6 +1,5 @@
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.dockerjava.api.DockerClient;
 
 import life.catalogue.api.vocab.Users;
@@ -8,15 +7,14 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.config.NormalizerConfig;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;

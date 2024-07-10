@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
-import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
+import static life.catalogue.junit.PgSetupRule.getSqlSessionFactory;
 import static org.junit.Assert.*;
 
 /*

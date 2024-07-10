@@ -1,9 +1,11 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import life.catalogue.dao.DatasetInfoCache;
 
 import java.sql.SQLException;
 
+import life.catalogue.db.MybatisFactory;
+import life.catalogue.db.PgConfig;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;

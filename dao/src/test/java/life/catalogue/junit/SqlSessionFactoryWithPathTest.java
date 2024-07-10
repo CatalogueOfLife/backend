@@ -1,7 +1,9 @@
-package life.catalogue.db;
+package life.catalogue.junit;
 
 import java.sql.Connection;
 import java.sql.Statement;
+
+import life.catalogue.db.SqlSessionFactoryWithPath;
 
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.session.SqlSession;
