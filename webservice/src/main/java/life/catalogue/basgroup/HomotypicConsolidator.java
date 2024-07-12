@@ -327,8 +327,8 @@ public class HomotypicConsolidator {
                   }
                 }
               } else {
-                // what shall we do now?
-                System.out.println(u);
+                // TODO: what shall we do now?
+                LOG.info("Priorities wrong, keep usage: {}", u);
               }
             }
           }
