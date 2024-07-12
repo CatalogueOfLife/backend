@@ -3,6 +3,7 @@ package life.catalogue.printer;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.TaxonCounter;
 
 import org.gbif.nameparser.api.Rank;
@@ -60,13 +61,16 @@ public class TextTreePrinter extends AbstractTreePrinter {
 
   protected void start(SimpleName u) throws IOException {
     writer.write(StringUtils.repeat(' ', level * indentation));
-    if (u.isExtinct()) {
-      writer.write(Tree.EXTINCT_SYMBOL);
-    }
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(Tree.SYNONYM_SYMBOL);
     }
     //TODO: flag basionyms
+    if (u.isExtinct()) {
+      writer.write(Tree.EXTINCT_SYMBOL);
+    }
+    if (u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED) {
+      writer.write(Tree.PROVISIONAL_SYMBOL);
+    }
     writer.write(u.getName());
     if (u.getAuthorship() != null) {
       writer.write(" ");
