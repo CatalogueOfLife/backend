@@ -183,7 +183,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // parent can be null here, but we will skip synonyms that have no matched parent in ignoreUsage() below
       parent = usage(parents.secondLast().match);
     } else {
-      // as last resort this yields the parent stacks root taxon, e.g. incertae sedis
+      // otherwise use the parent stacks lowest taxon or root, e.g. incertae sedis
       parent = usage(parents.lowestParentMatch());
     }
 
@@ -214,22 +214,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
-    // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
-    // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
-    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
-      parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
-    ) {
-      nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-    }
-    if (parent != null && parent.status.isSynonym()) {
-      // use accepted instead
-      var sn = num.getSimpleParent(targetKey.id(parent.id));
-      parent = usage(sn);
-    }
-
     // finally create or update records
     SimpleNameWithNidx sn = null;
     if (match.isMatch()) {
+      // *** UPDATE ***
       update(nu, match);
       sn = match.usage;
       mod.createOrthVarRel = false; // dont create new name relations for spelling corrections
@@ -238,6 +226,31 @@ public class TreeMergeHandler extends TreeBaseHandler {
       LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
 
     } else {
+      // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
+      // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
+      if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
+        parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
+      ) {
+        nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      }
+      if (parent != null && parent.status.isSynonym()) {
+        // use accepted instead
+        var p = num.getSimpleParent(targetKey.id(parent.id));
+        // make sure rank hierarchy makes sense - can be distorted by synonyms
+        if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
+          while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
+            p = num.getSimpleParent(targetKey.id(p.getId()));
+          }
+          if (p == null) {
+            // nothing to attach to. Better skip this taxon, but include children
+            LOG.debug("Ignore name which links to a synonym and for which we cannot find a suitable parent: {}", nu.getLabel());
+            ignored++;
+            return;
+          }
+        }
+        parent = usage(p);
+      }
+
       // only add a new name if we do not have already multiple names that we cannot clearly match
       // track if we are outside of the sector target
       Issue[] issues;
@@ -247,6 +260,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       } else {
         issues = new Issue[0];
       }
+      // *** CREATE ***
       sn = create(nu, parent, issues);
       parents.setMatch(sn);
       matcher.add(nu);
