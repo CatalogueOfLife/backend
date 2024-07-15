@@ -38,7 +38,7 @@ public enum MatchType {
   UNSUPPORTED,
 
   /**
-   * The matching alogrithm was unable to match a scientific name with sufficient confidence,
+   * The matching algorithm was unable to match a scientific name with sufficient confidence,
    * and matched a higher rank instead.
    */
   HIGHERRANK

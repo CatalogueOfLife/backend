@@ -245,9 +245,14 @@ public class UsageMatcherGlobal {
 
   private static boolean ranksDiffer(Rank r1, Rank r2) {
     var eq = RankComparator.compare(r1, r2);
-    if (eq == Equality.UNKNOWN && (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED)) {
-      // require suprageneric ranks for unranked matches
-      return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+    if (eq == Equality.UNKNOWN) {
+      if (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED) {
+        // require suprageneric ranks for unranked matches
+        return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+      } else if (r1.isUncomparable() || r2.isUncomparable()) {
+        // we want subspecies & infraspecific or subgenus & infrageneric name not to differ
+        return false;
+      }
     }
     return eq == Equality.DIFFERENT;
   }
@@ -288,6 +293,9 @@ public class UsageMatcherGlobal {
   private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
+    // if set to true during filtering the final match will be a snap, not a true match
+    boolean snap = false;
+
     // if we need to set alternatives keep them before we modify the candidates list
     final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
 
@@ -296,7 +304,7 @@ public class UsageMatcherGlobal {
 
     // only allow potentially matching ranks if a rank was supplied (external queries often have no rank!)
     // name match requests from outside often come with no rank
-    // we dont want them to be filtered by rank, so we check for the usage origin OTHER which the matching resource sets!
+    // we dont want them to be filtered by rank, so we allow unranked
     if (nu.getRank() != null && nu.getRank() != Rank.UNRANKED) {
       existing.removeIf(u -> ranksDiffer(u.getRank(), nu.getRank()));
       // require strict rank match in case it exists at least once
@@ -306,8 +314,15 @@ public class UsageMatcherGlobal {
     }
 
     // remove canonical matches between 2 qualified, non suprageneric names
-    if (qualifiedName && !nu.getRank().isSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()));
+    // for genus matches we keep the canonical matches and compare their family further down
+    if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
+      existing.removeIf(u -> u.hasAuthorship()
+        && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()) // nidx encodes the exact rank,
+        // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
+        && (u.getRank() == nu.getRank()
+          || ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u, nu.getName()))
+        )
+      );
     }
 
     // from here on we need the classification of all candidates
@@ -315,6 +330,19 @@ public class UsageMatcherGlobal {
     final var existingWithCl = existing.stream()
                                  .map(ex -> uCache.withClassification(datasetKey, ex, loader))
                                  .collect(Collectors.toList());
+
+    // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
+    if (qualifiedName && nu.getRank() == Rank.GENUS) {
+      existingWithCl.removeIf(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()) && !sameFamily(u, parents));
+      // snap if there is just one genus left?
+      snap = !existingWithCl.isEmpty() && existingWithCl.stream()
+        .allMatch(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()));
+    }
+
+    // shortcut if no candidates are left
+    if (existingWithCl.isEmpty()) {
+      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+    }
 
     if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
       // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
@@ -400,6 +428,9 @@ public class UsageMatcherGlobal {
     }
 
     if (existingWithCl.size() == 1) {
+      if (snap) {
+        return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
+      }
       return UsageMatch.match(existingWithCl.get(0), datasetKey, alt);
     }
 
@@ -497,6 +528,23 @@ public class UsageMatcherGlobal {
       LOG.debug("{} ambiguous names matched for {} in source {}. Pick randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
       return UsageMatch.match(MatchType.AMBIGUOUS, existingWithCl.get(0), datasetKey, alt);
     }
+  }
+
+  /**
+   * Rematches with the same rank to see if nidx still differ
+   * @return true if the names, applied with the same rank, match to the same nidx
+   */
+  private boolean sameNidxWithoutRank(SimpleNameCached u, Name name) {
+    var volName = new Name(name); // we copy the instance to not change the original
+    volName.setRank(u.getRank());
+    var match = nameIndex.match(volName, false, false);
+    return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
+  }
+
+  private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<MatchedParentStack.MatchedUsage> parents) {
+    var fam1 = u.getClassification().stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
+    var fam2 = parents.stream().filter(n -> n.usage.getRank()==Rank.FAMILY).findFirst();
+    return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().usage.getName());
   }
 
   private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<MatchedParentStack.MatchedUsage> parents) {

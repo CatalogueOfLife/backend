@@ -35,7 +35,7 @@ public class RankComparator {
     return Equality.DIFFERENT;
   }
 
-  private static Equality compareVagueRanks(Rank vague, Rank r2) {
+  public static Equality compareVagueRanks(Rank vague, Rank r2) {
     switch (vague) {
       case SUPRAGENERIC_NAME:
         if (r2.isSuprageneric()) {

@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -81,6 +82,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"author-dupes", List.of("iucn", "beetles", "swiss", "taxref", "taiwan", "plazi1")},
       {"rankorder", List.of("itis", "wcvp", "wfo", "tpl")},
       {"vernacular", List.of("v1", "v2")}, // extended trees
       {"sector-parents", List.of("none", "subject", "target", "subject-target")},
@@ -183,6 +185,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   @Test
   public void syncAndCompare() throws Throwable {
+    Logger LOG = LoggerFactory.getLogger(getClass());
+    LOG.info("HELLO sec");
     for (var s : sectors) {
       sync(s, mergeCfg);
     }

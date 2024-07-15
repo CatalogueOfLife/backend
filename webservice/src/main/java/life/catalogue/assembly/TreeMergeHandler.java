@@ -9,10 +9,8 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
-import life.catalogue.matching.MatchedParentStack;
+import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.UsageMatch;
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import life.catalogue.release.UsageIdGen;
 
@@ -401,22 +399,35 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
       Name pn = null;
-      if (nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship()) {
+      if ((nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship())
+        || (!nu.getName().getRank().isUncomparable() && existing.usage.getRank().isUncomparable())
+      ) {
         pn = loadFromDB(existing.usage.getId());
-        upd.add(InfoGroup.AUTHORSHIP);
-        pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
-        pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
-        pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
-        pn.rebuildAuthorship();
+
+        if (nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship()) {
+          upd.add(InfoGroup.AUTHORSHIP);
+          pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
+          pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
+          pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
+          pn.rebuildAuthorship();
+          existing.usage.setAuthorship(pn.getAuthorship());
+          LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
+        }
+        if (!nu.getName().getRank().isUncomparable() && existing.usage.getRank().isUncomparable()
+          && RankComparator.compareVagueRanks(existing.usage.getRank(), nu.getName().getRank()) != Equality.DIFFERENT
+        ) {
+          upd.add(InfoGroup.RANK);
+          pn.setRank(nu.getName().getRank());
+          existing.usage.setRank(pn.getRank());
+          LOG.debug("Updated {} with rank {}", pn.getScientificName(), pn.getRank());
+        }
         // also update the original match as we cache and reuse that
-        existing.usage.setAuthorship(pn.getAuthorship());
         if (nu.getName().getNamesIndexId() != existing.usage.getNamesIndexId()) {
           existing.usage.setNamesIndexId(nu.getName().getNamesIndexId());
           // update name match in db
           nmm.update(pn, nu.getName().getNamesIndexId(), nu.getName().getNamesIndexType());
           batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
         }
-        LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
       }
       if (existing.usage.getPublishedInID() == null && nu.getName().getPublishedInId() != null) {
         pn = pn != null ? pn : loadFromDB(existing.usage.getId());

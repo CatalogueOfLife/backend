@@ -10,14 +10,7 @@
       <pattern>dataset=%X{dataset} %-4relative [%thread] %-5level %logger{35} - %msg %n</pattern>
     </encoder>
   </appender>
-  <!--
-  <appender name="JOBLOGS" class="life.catalogue.dw.logging.JobAppender">
-    <filter class="life.catalogue.dw.logging.MDCJobFilter" />
-    <directory>/Users/markus/Downloads/joblogs</directory>
-    <downloadDir>/Users/markus/Downloads/joblogs/download</downloadDir>
-    <reportDir>/Users/markus/Downloads/joblogs/report</reportDir>
-   </appender>
--->
+
     <logger name="ch.qos.logback" level="WARN"/>
     <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
     <logger name="life.catalogue" level="INFO"/>
@@ -44,7 +37,6 @@
   -->
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>
-    <appender-ref ref="JOBLOGS"/>
   </root>
 
 </configuration>
