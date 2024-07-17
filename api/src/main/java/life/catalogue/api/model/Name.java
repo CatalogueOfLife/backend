@@ -310,8 +310,18 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   }
 
   /**
-   * @return a ParsedName instance representing this name
+   * @return a copy of the name without authorship
    */
+  public static Name copyCanonical(Name copy) {
+    return newBuilder(copy)
+      .authorship(null)
+      .combinationAuthorship(null)
+      .basionymAuthorship(null)
+      .sanctioningAuthor(null)
+      .namesIndexId(null)
+      .namesIndexType(null)
+      .build();
+  }
   public static ParsedName toParsedName(Name n) {
     ParsedName pn = new ParsedName();
     pn.setUninomial(n.getUninomial());

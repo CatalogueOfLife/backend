@@ -19,6 +19,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -33,6 +34,7 @@ import static life.catalogue.common.text.StringUtils.removeWhitespace;
 public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
+  private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final UsageCache uCache;
@@ -161,6 +163,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var nusn = matcher.toSimpleName(nu);
     parents.push(nusn);
 
+    final boolean qualifiedName = nu.getName().hasAuthorship();
+
     // ignore doubtfully marked usages in classification, e-g- wrong rank ordering
     if (parents.isDoubtful()) {
       ignored++;
@@ -173,6 +177,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // that writes new usages to the release which might not be flushed to the database
     UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, false);
     LOG.debug("{} matches {}", nu.getLabel(), match);
+    if (qualifiedName && !match.isMatch() && nu.isTaxon() && nu.getRank().isSpeciesOrBelow()) {
+      var nCanon = Name.copyCanonical(nu.getName());
+      var tCanon = new Taxon(nu);
+      tCanon.setName(nCanon);
+      match = matcher.matchWithParents(targetDatasetKey, tCanon, parents.classification(), false, false);
+      if (match.isMatch() && sameLowClassification(match.usage.getClassification(), parents.classification())) {
+        // make sure the species is in the same genus or family
+        LOG.debug("Accepted {} {} has canonical match within the same family subtree", nu.getRank(), nu.getLabel());
+        match = UsageMatch.ignore(match);
+      }
+    }
 
     // figure out closest matched parent that we can use to attach to
     Usage parent;
@@ -266,6 +281,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     processEnd(sn, mod);
+  }
+
+  private static boolean sameLowClassification(List<SimpleNameCached> cl1, List<MatchedParentStack.MatchedUsage> cl2) {
+    Set<String> names1 = cl1.stream()
+      .filter(n -> LOW_RANKS.contains(n.getRank()))
+      .map(n -> n.getName().toLowerCase())
+      .collect(Collectors.toSet());
+    return !names1.isEmpty() && cl2.stream()
+      .filter(n -> LOW_RANKS.contains(n.usage.getRank()))
+      .anyMatch(n -> names1.contains(n.usage.getName().toLowerCase()));
   }
 
   private static boolean containsID(List<SimpleNameCached> usages,  String id){
