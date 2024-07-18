@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import jakarta.ws.rs.QueryParam;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -100,6 +102,14 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    *                Use -42 for admins and other roles that should always see all private datasets
    */
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
+
+  /**
+   * Filters datasets to only list those that contribute as a source dataset with at least one sector to a given project.
+   */
+  List<DatasetSimple> suggest(@Param("q") String query,
+                              @Param("contributesTo") Integer contributesTo,
+                              @Param("inclMerge") boolean inclMergeSources
+  );
 
   /**
    * List all dataset keys filtered by a search request.

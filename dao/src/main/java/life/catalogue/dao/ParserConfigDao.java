@@ -10,6 +10,8 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
 
+import org.apache.ibatis.cursor.Cursor;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 
@@ -155,4 +157,9 @@ public class ParserConfigDao {
     }
   }
 
+  public List<ParserConfig> list() {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(ParserConfigMapper.class).list();
+    }
+  }
 }

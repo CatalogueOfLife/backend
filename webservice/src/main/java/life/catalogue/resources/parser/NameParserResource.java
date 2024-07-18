@@ -5,8 +5,11 @@ import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -40,9 +43,12 @@ public class NameParserResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
   private final ParserConfigDao dao;
+  private final SqlSessionFactory factory;
 
   public NameParserResource(SqlSessionFactory factory) {
     dao = new ParserConfigDao(factory);
+    this.factory = factory;
+
   }
 
   public static class CRName implements IssueContainer {

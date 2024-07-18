@@ -121,6 +121,14 @@ public class DatasetSourceDao {
     return sources;
   }
 
+  public List<DatasetSimple> suggest(int datasetKey, String query, boolean inclMergeSources){
+    DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      return dm.suggest(query, datasetKey, inclMergeSources);
+    }
+  }
+
   public List<Dataset> listReleaseSources(int datasetKey){
     DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE);
     try (SqlSession session = factory.openSession()) {

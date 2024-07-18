@@ -13,6 +13,14 @@
     <include refid="size"/> AS size
   </sql>
 
+  <sql id="SELECT_SIMPLE">
+    d.key,
+    d.alias,
+    d.title,
+    d.issued,
+    d.version
+  </sql>
+
   <sql id="size">coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)))</sql>
 
   <sql id="COLS">
@@ -167,6 +175,10 @@
     </if>
   </sql>
 
+  <resultMap id="datasetSimpleResultMap" type="DatasetSimple" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
+
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
@@ -296,6 +308,24 @@
       </otherwise>
     </choose>
     <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="suggest" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM dataset d
+    WHERE d.deleted IS NULL
+      AND exists(
+          SELECT 1 FROM sector s
+          WHERE s.dataset_key=#{contributesTo} AND s.subject_dataset_key=d.key
+        <if test="!inclMerge">
+          AND s.mode != 'MERGE'
+        </if>
+      )
+      <if test="q != null">
+        AND (f_unaccent(alias) ILIKE '%SPecie%' OR f_unaccent(title) ILIKE '%SPecie%')
+      </if>
+    ORDER BY alias NULLS LAST, title
+    LIMIT 25
   </select>
 
   <select id="searchKeys" resultType="integer">
