@@ -111,8 +111,6 @@ public class NameNRank {
         pn.setSpecificEpithet(clean(specificEpithet));
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
         pn.setRank(rank);
-        Authorship authorship1 = Authorship.authors(clean(authorship));
-        pn.setCombinationAuthorship(authorship1);
         // see if species rank in classification can contribute sth
         if (exists(classification.getSpecies())) {
           Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
@@ -123,11 +121,16 @@ public class NameNRank {
             if (pn.getSpecificEpithet() == null) {
               pn.setSpecificEpithet(m.group(2));
             }
-          } else if (StringUtils.isAllLowerCase(classification.getSpecies())
+          } else if (pn.getSpecificEpithet() == null && StringUtils.isAllLowerCase(classification.getSpecies())
               && !clean(classification.getSpecies()).contains(" ")) {
             // sometimes the field is wrongly used as the species epithet
             pn.setSpecificEpithet(clean(classification.getSpecies()));
           }
+        }
+        // append author - we don't break it down into parsed name authorships but keep it as one thing
+        var cleanAuth = clean(authorship);
+        if (cleanAuth != null) {
+          return new NameNRank(pn.canonicalNameComplete() + " " + cleanAuth, rank);
         }
         return new NameNRank(pn.canonicalNameComplete(), rank);
       }
