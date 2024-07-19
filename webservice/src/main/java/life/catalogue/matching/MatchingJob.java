@@ -149,7 +149,7 @@ public class MatchingJob extends DatasetBlockingJob {
                                    new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
         // match
         if (req.getUpload() != null) {
-          LOG.info("Match uploaded names from {}", req.getUpload());
+          LOG.info("Match uploaded names from {} file {}", req.getFormat(), req.getUpload());
           var mstream = streamUpload();
           writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
           // delete file upload
@@ -294,7 +294,7 @@ public class MatchingJob extends DatasetBlockingJob {
   }
   private MappedStream streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
-    final AbstractParser<?> parser = req.getUpload().getName().endsWith("csv") ?
+    final AbstractParser<?> parser = req.getFormat() == TabularFormat.CSV ?
                                TabReader.newParser(CsvReader.csvSetting()) :
                                TabReader.newParser(CsvReader.tsvSetting());
 

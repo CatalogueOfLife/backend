@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class MatchingRequest extends TreeTraversalParameter {
 
   @NotNull
-  @DefaultValue("CSV")
+  @DefaultValue("TSV")
   @QueryParam("format")
   private TabularFormat format;
   @QueryParam("sourceDatasetKey")
