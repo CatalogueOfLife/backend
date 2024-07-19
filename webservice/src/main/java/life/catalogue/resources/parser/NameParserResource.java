@@ -5,11 +5,8 @@ import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -238,7 +235,7 @@ public class NameParserResource {
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
   public String createConfig(@Valid ParserConfig config, @Auth User user) {
-    dao.putName(config, user.getKey());
+    dao.add(config, user.getKey());
     return config.getId();
   }
 
@@ -249,7 +246,7 @@ public class NameParserResource {
     List<String> ids = new ArrayList<>(configs.size());
     for (ParserConfig pc : configs) {
       if (pc == null) continue;
-      dao.putName(pc, user.getKey());
+      dao.add(pc, user.getKey());
       ids.add(pc.getId());
     }
     return ids;

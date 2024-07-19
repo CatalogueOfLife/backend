@@ -82,7 +82,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   public ParserConfigs configs() {
-    return parserInternal.getConfigs();
+    return parserInternal.configs();
   }
 
   /**

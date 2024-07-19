@@ -1,9 +1,22 @@
 package life.catalogue.matching.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Strings;
-import com.google.common.collect.*;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.matching.Equality;
+import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.matching.index.DatasetIndex;
+import life.catalogue.matching.index.NameNRank;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.similarity.ScientificNameSimilarity;
+import life.catalogue.matching.similarity.StringSimilarity;
+import life.catalogue.matching.util.CleanupUtils;
+import life.catalogue.matching.util.Dictionaries;
+import life.catalogue.matching.util.HigherTaxaComparator;
+import life.catalogue.matching.util.NameParsers;
+
+import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -14,29 +27,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.matching.*;
-import life.catalogue.matching.authorship.AuthorComparator;
-import life.catalogue.matching.index.DatasetIndex;
-import life.catalogue.matching.index.NameNRank;
-import life.catalogue.matching.model.*;
-import life.catalogue.matching.similarity.ScientificNameSimilarity;
-import life.catalogue.matching.similarity.StringSimilarity;
-import life.catalogue.matching.util.*;
 
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.api.UnparsableNameException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Matching service that matches a scientific name to a name usage in the index.

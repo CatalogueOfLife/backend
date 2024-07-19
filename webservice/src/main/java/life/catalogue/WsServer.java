@@ -258,9 +258,9 @@ public class WsServer extends Application<WsServerConfig> {
     env.lifecycle().manage(cron);
 
     // name parser
-    ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
-    dao.loadParserConfigs();
     NameParser.PARSER.register(env.metrics());
+    NameParser.PARSER.configs().loadFromCLB();
+
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
 

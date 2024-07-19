@@ -6,17 +6,13 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.api.vocab.Origin;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.ParserConfigMapper;
 import life.catalogue.parser.NameParser;
-
-import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.ParsedName;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
@@ -50,23 +46,6 @@ public class ParserConfigDao {
     return name.trim();
   }
 
-  public int loadParserConfigs() {
-    AtomicInteger counter = new AtomicInteger();
-    try (SqlSession session = factory.openSession(true)) {
-      ParserConfigMapper pcm = session.getMapper(ParserConfigMapper.class);
-      LOG.info("Start loading parser configs");
-      PgUtils.consume(
-        pcm::process,
-        pc -> {
-          addToParser(pc);
-          counter.incrementAndGet();
-        }
-      );
-      LOG.info("Loaded {} parser configs", counter);
-    }
-    return counter.get();
-  }
-
   public ParserConfig get(String id) {
     try (SqlSession session = factory.openSession(true)) {
       return session.getMapper(ParserConfigMapper.class).get(id);
@@ -84,7 +63,10 @@ public class ParserConfigDao {
     }
   }
 
-  public void putName(ParserConfig obj, int user) {
+  /**
+   * Add a config to the parser, overwriting potentially existing one with the same ID
+   */
+  public void add(ParserConfig obj, int user) {
     // try to create an id based on given sciname and authorship
     if (obj.getId() == null) {
       obj.updateID();
@@ -96,6 +78,9 @@ public class ParserConfigDao {
       throw new IllegalArgumentException("ID must concatenate name and authorship with a pipe symbol");
     }
     obj.setCreatedBy(user);
+    obj.setOrigin(Origin.USER);
+    LOG.info("Add config for {} by user {}", obj.getId(), user);
+
     // default name type
     if (obj.getType() == null) {
       obj.setType(NameType.SCIENTIFIC);
@@ -107,34 +92,8 @@ public class ParserConfigDao {
       pcm.create(obj);
     }
     // update parser
-    addToParser(obj);
-  }
-
-  public static void addToParser(ParserConfig obj){
-    LOG.debug("Add config for {}", obj.getId());
-    // defaults
-    obj.setOrigin(Origin.USER);
-    if (obj.getType() == null) {
-      obj.setType(NameType.SCIENTIFIC);
-    }
-
-    ParsedName pn = Name.toParsedName(obj);
-    pn.setNomenclaturalNote(null);
-    pn.setState(ParsedName.State.COMPLETE); // if we leave state None we get unparsed issues when parsing this name
-    pn.setTaxonomicNote(obj.getTaxonomicNote());
-    pn.setExtinct(obj.getExtinct());
-    NameParser.PARSER.configs().setName(concat(obj.getScientificName(), obj.getAuthorship()), pn);
-    // configure name without authorship and authorship standalone if we have that
-    if (obj.getAuthorship() != null && obj.hasAuthorship()) {
-      NameParser.PARSER.configs().setAuthorship(obj.getAuthorship(), pn);
-
-      ParsedName pnNoAuthor = new ParsedName();
-      pnNoAuthor.copy(pn);
-      pnNoAuthor.setCombinationAuthorship(null);
-      pnNoAuthor.setBasionymAuthorship(null);
-      pnNoAuthor.setSanctioningAuthor(null);
-      NameParser.PARSER.configs().setName(obj.getScientificName(), pnNoAuthor);
-    }
+    ParsedName pn = obj.toParsedName();
+    NameParser.PARSER.configs().add(obj.getScientificName(), obj.getAuthorship(), pn);
   }
 
   public void deleteName(String id, int user) {

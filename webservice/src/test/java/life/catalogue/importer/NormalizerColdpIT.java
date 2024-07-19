@@ -12,6 +12,8 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
+import life.catalogue.parser.NameParser;
+
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
@@ -334,7 +336,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
   public void aspilota() throws Exception {
     // before we run this we configure the name parser to do better
     // then we check that it really worked and no issues get attached
-    ParserConfigDao.addToParser(NormalizerTxtTreeIT.aspilotaCfg());
+    var pcfg = NormalizerTxtTreeIT.aspilotaCfg();
+    NameParser.PARSER.configs().add(pcfg.getScientificName(), pcfg.getAuthorship(), pcfg.toParsedName());
 
     normalize(5);
     store.dump();

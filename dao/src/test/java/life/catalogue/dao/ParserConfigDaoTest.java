@@ -34,7 +34,7 @@ public class ParserConfigDaoTest {
     cfg.setCombinationAuthorship(Authorship.yearAuthors("1977", "zur Straßen"));
 
     assertParsed("Jezzinothrips cretacicus", "zur Strassen, 1973", Rank.SPECIES, "1973","zur Strassen");
-    dao.putName(cfg, Users.TESTER);
+    dao.add(cfg, Users.TESTER);
     assertParsed("Jezzinothrips cretacicus", "zur Strassen, 1973", Rank.SPECIES, "1977","zur Straßen");
     assertParsed("Jezzinothrips cretacicus", "zur Strassen,1973", Rank.SPECIES, "1977","zur Straßen");
     assertParsed("Jezzinothrips  cretacicus", " zur  Strassen , 1973 ", Rank.SPECIES, "1977","zur Straßen");
