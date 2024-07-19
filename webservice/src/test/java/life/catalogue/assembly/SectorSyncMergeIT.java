@@ -1,6 +1,5 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -9,20 +8,18 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.dao.*;
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
+import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.NameDao;
+import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.junit.TreeRepoRule;
-import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.junit.*;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
-import life.catalogue.junit.TxtTreeDataRule;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.release.XReleaseConfig;
 
 import org.gbif.nameparser.api.Rank;
@@ -30,12 +27,12 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.util.*;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
@@ -44,6 +41,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -186,8 +186,6 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   @Test
   public void syncAndCompare() throws Throwable {
-    Logger LOG = LoggerFactory.getLogger(getClass());
-    LOG.info("HELLO sec");
     for (var s : sectors) {
       sync(s, mergeCfg);
     }
