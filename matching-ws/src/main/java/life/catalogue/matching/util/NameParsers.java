@@ -13,13 +13,6 @@ import java.io.IOException;
 @Slf4j
 public class NameParsers {
   public static final NameParserGBIF INSTANCE = new NameParserGBIF(20000);
-  static {
-    try {
-      INSTANCE.configs().loadFromCLB();
-    } catch (Exception e) {
-      log.error("Failed to load name parser configs from CLB", e);
-    }
-  }
 
   private NameParsers() {};
 }

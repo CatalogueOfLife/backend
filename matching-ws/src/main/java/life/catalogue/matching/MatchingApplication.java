@@ -8,6 +8,8 @@ import io.swagger.v3.oas.models.info.License;
 
 import life.catalogue.matching.model.APIMetadata;
 import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.NameParsers;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,7 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Optional;
 
@@ -46,6 +49,17 @@ public class MatchingApplication implements ApplicationRunner {
     Optional<APIMetadata> metadata = matchingService.getAPIMetadata();
     if (metadata.isEmpty()) {
       LOG.error("No main index found. Cannot start web services");
+      return;
+    }
+
+    try {
+      LOG.info("Loading name parser configs from ChecklistBank");
+      NameParsers.INSTANCE.configs().loadFromCLB();
+    } catch (IOException e) {
+      LOG.error("Failed to load name parser configs from CLB", e);
+      return;
+    } catch (InterruptedException e) {
+      LOG.warn("Interrupted. Stop web services", e);
       return;
     }
 
