@@ -120,7 +120,7 @@
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.module</groupId>
-      <artifactId>jackson-module-afterburner</artifactId>
+      <artifactId>jackson-module-blackbird</artifactId>
     </dependency>
 
     <!-- commons -->

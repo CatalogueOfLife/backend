@@ -1,5 +1,7 @@
 package life.catalogue.api.jackson;
 
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
+
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -30,7 +32,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 
@@ -85,9 +86,8 @@ public class ApiModule extends SimpleModule {
     
     mapper.registerModule(new ApiModule());
     
-    // flaky with java 11
-    // if broken consider the experimental replacement blackbird: https://github.com/stevenschlansker/jackson-blackbird
-    mapper.registerModule(new AfterburnerModule());
+    // replaces AfterBurner since java 11
+    mapper.registerModule(new BlackbirdModule());
   
     mapper.addHandler(new CslArrayMismatchHandler());
 
