@@ -1,5 +1,7 @@
 package life.catalogue.matching;
 
+import com.google.common.base.Supplier;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -243,12 +245,19 @@ public class UsageMatcherGlobal {
     }
   }
 
-  private static boolean ranksDiffer(Rank r1, Rank r2) {
+  private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<MatchedParentStack.MatchedUsage> r2parents) {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN) {
       if (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED) {
-        // require suprageneric ranks for unranked matches
-        return !(supraGenericOrUnranked(r1) && supraGenericOrUnranked(r2));
+        // difficult. Some cases like Biota (genus) should not match Biota (unranked) = Life
+        // others like an unranked genus should match to its genus.
+        // we compare the next concrete parent rank instead to make sure we dont see invalid rank orders and avoid the Biota match
+        Rank concreteRank = r1 == Rank.UNRANKED ? r2 : r1;
+        Optional<Rank> rankParent = r1 == Rank.UNRANKED ? r1pSupplier.get() : r2parents.stream()
+          .map(u -> u.usage.getRank())
+          .filter(r -> !r.isUncomparable())
+          .findFirst();
+        return !rankParent.isPresent() || rankParent.get().lowerThan(concreteRank);
       } else if (r1.isUncomparable() || r2.isUncomparable()) {
         // we want subspecies & infraspecific or subgenus & infrageneric name not to differ
         return false;
@@ -306,7 +315,7 @@ public class UsageMatcherGlobal {
     // name match requests from outside often come with no rank
     // we dont want them to be filtered by rank, so we allow unranked
     if (nu.getRank() != null && nu.getRank() != Rank.UNRANKED) {
-      existing.removeIf(u -> ranksDiffer(u.getRank(), nu.getRank()));
+      existing.removeIf(u -> ranksDiffer(u.getRank(), () -> concreteParentRank(datasetKey, u), nu.getRank(), parents));
       // require strict rank match in case it exists at least once
       if (existing.size() > 1 && contains(existing, nu.getRank())) {
         existing.removeIf(u -> u.getRank() != nu.getRank());
@@ -528,6 +537,15 @@ public class UsageMatcherGlobal {
       LOG.debug("{} ambiguous names matched for {} in source {}. Pick randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
       return UsageMatch.match(MatchType.AMBIGUOUS, existingWithCl.get(0), datasetKey, alt);
     }
+  }
+
+  private Optional<Rank> concreteParentRank(int datasetKey, SimpleNameCached u) {
+    var loader = loaders.getOrDefault(datasetKey, defaultLoader);
+    SimpleNameClassified<SimpleNameCached> cl = uCache.withClassification(datasetKey, u, loader);
+    return cl.getClassification() == null ? Optional.empty() : cl.getClassification().stream()
+      .map(SimpleName::getRank)
+      .filter(r -> !r.isUncomparable())
+      .findFirst();
   }
 
   /**
