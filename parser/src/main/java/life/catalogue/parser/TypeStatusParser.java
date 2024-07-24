@@ -19,6 +19,7 @@ public class TypeStatusParser extends EnumParser<TypeStatus> {
       if (t.name().endsWith("TYPE")) {
         String base = t.name().replaceFirst("TYPE$", "").toLowerCase();
         add(base, t);
+        add(base+"typ", t);
         add(base+"typo", t);
         add(base+"typus", t);
       }
