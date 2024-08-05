@@ -1,12 +1,12 @@
 package life.catalogue.matching;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.ParameterException;
-import com.beust.jcommander.Parameters;
+import com.beust.jcommander.*;
 
 import org.springframework.boot.SpringApplication;
 
+import sun.misc.Unsafe;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +21,10 @@ public class Main {
   public static final String CLB_DATASET_ID = "clb.dataset.id";
   public static final String CLB_IDENTIFIER_DATASET_IDS = "clb.identifier.dataset.ids";
   public static final String CLB_IUCN_DATASET_ID = "clb.iucn.dataset.id";
-  public static final String EXPORT_PATH = "export.path";
-  public static final String INDEX_PATH = "index.path";
-  public static final String V_1_ENABLED = "v1.enabled";
   public static final String MODE = "mode";
 
-  @Parameter(names = {"--" + MODE}, order = 1, description = "The " + MODE + " to use, Defaults to WEB_APP, which will run the web services and will attempt to read the index" +
-    " from the --" + INDEX_PATH + " ", converter = ExecutionModeConverter.class)
-  private ExecutionMode mode = ExecutionMode.WEB_APP;
+  @Parameter(names = {"--" + MODE}, order = 1, description = "The " + MODE + " to use, Defaults to INDEX_RUN", converter = ExecutionModeConverter.class)
+  private ExecutionMode mode = ExecutionMode.INDEX_AND_RUN;
 
   @Parameter(names = {"--clb.url"}, description = "ChecklistBank JDBC URL")
   private String clbUrl = "jdbc:postgresql://localhost:5432/clb";
@@ -49,15 +45,6 @@ public class Main {
   @Parameter(names = {"--" + CLB_IDENTIFIER_DATASET_IDS}, description = "ChecklistBank dataset IDs to index for identifier matching.", arity = 1)
   private List<String> identifierDatasetIds = new ArrayList<>();
 
-  @Parameter(names = {"--" + INDEX_PATH}, description = "File system path to the pre-generated lucene index")
-  private String indexPath = "/data/matching-ws/index";
-
-  @Parameter(names = {"--" + EXPORT_PATH}, description = "File system path to write exports from ChecklistBank to")
-  private String exportPath = "/data/matching-ws/export";
-
-  @Parameter(names = {"--" + V_1_ENABLED}, description = "Enable v1 support for the web service", arity = 1)
-  private boolean v1Enabled = false;
-
   @Parameter(names = {"--server.port"}, description = "Enable v1 support for the web service", arity = 1)
   private Integer serverPort = 8080;
 
@@ -68,73 +55,47 @@ public class Main {
   private boolean help;
 
   public static void main(String[] args) throws Exception {
+    disableWarning();
     System.setProperty("java.util.logging.SimpleFormatter.format", ""); // hides the tomcat startup logs
     Main app = new Main();
     JCommander commander = JCommander.newBuilder()
       .addObject(app)
+      .acceptUnknownOptions(true)
       .build();
 
     try {
-      commander.parse(args);
+      commander.parseWithoutValidation(args);
     } catch (ParameterException e) {
       System.err.println(e.getMessage());
       commander.usage();
     }
 
-    if ((app.mode == ExecutionMode.INDEX_DB
-        || app.mode == ExecutionMode.EXPORT_CSV) && app.datasetId == null) {
-      System.err.println("Missing required parameter for " + MODE + " " + app.mode + " --" + CLB_DATASET_ID);
-      commander.usage();
-      return;
-    }
-
     if (app.help) {
       commander.usage();
     } else {
-
-      SpringApplication springApplication;
-      switch (app.mode) {
-        case BUILD_INDEX:
-          startIndexing(args);
-          break;
-        case EXPORT_CSV:
-          startIndexing(args);
-          break;
-        case INDEX_CSV:
-          startIndexing(args);
-          break;
-        case INDEX_DB:
-          startIndexing(args);
-          break;
-        case INDEX_IDENTIFIER_CSV:
-          startIndexing(args);
-          break;
-        case INDEX_IUCN_CSV:
-          startIndexing(args);
-          break;
-        case WEB_APP:
-          SpringApplication webApp = new SpringApplication(MatchingApplication.class);
-          webApp.setAdditionalProfiles("web");
-          webApp.run( args);
-          break;
-      }
+      SpringApplication webApp = new SpringApplication(MatchingApplication.class);
+      webApp.setAdditionalProfiles("web");
+      webApp.run(args);
     }
   }
 
-  private static void startIndexing( String[] args) {
-    SpringApplication springApplication = new SpringApplication(IndexingApplication.class);
-    springApplication.setAdditionalProfiles("indexing");
-    springApplication.run(args).close();
+  public static void disableWarning() {
+    try {
+      Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+      theUnsafe.setAccessible(true);
+      Unsafe u = (Unsafe) theUnsafe.get(null);
+      Class cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+      Field logger = cls.getDeclaredField("logger");
+      u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
+    } catch (Exception e) {
+      // ignore
+    }
   }
 
   enum ExecutionMode {
-    BUILD_INDEX,
-    EXPORT_CSV,
-    INDEX_IUCN_CSV,
-    INDEX_IDENTIFIER_CSV,
-    INDEX_CSV,
-    INDEX_DB,
-    WEB_APP
+    RUN,
+    INDEX,
+    INDEX_AND_RUN
   }
 
   static class ExecutionModeConverter implements com.beust.jcommander.IStringConverter<ExecutionMode> {

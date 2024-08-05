@@ -3,9 +3,8 @@ package life.catalogue.matching;
 import java.util.List;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.model.Diagnostics;
 import life.catalogue.matching.model.NameUsageMatch;
-import life.catalogue.matching.model.RankedName;
+
 import lombok.Builder;
 import org.gbif.nameparser.api.Rank;
 
@@ -40,13 +39,13 @@ class NameUsageBuilder {
       String subgenusKey,
       String speciesKey) {
 
-    NameUsageMatch m = NameUsageMatch.builder().diagnostics(Diagnostics.builder().build()).build();
-    m.setUsage(new RankedName());
-    m.getUsage().setKey(usageKey);
-    m.getUsage().setName(scientificName);
-    m.getUsage().setCanonicalName(canonicalName);
-    m.getUsage().setRank(rank);
-    m.setAcceptedUsage(new RankedName(acceptedUsageKey, null, null));
+    NameUsageMatch m = NameUsageMatch.builder().diagnostics(NameUsageMatch.Diagnostics.builder().build()).build();
+    m.setUsage(NameUsageMatch.RankedName.builder()
+        .key(usageKey)
+        .name(scientificName)
+        .canonicalName(canonicalName)
+        .rank(rank).build());
+    m.setAcceptedUsage(NameUsageMatch.RankedName.builder().key(acceptedUsageKey).build());
     m.getDiagnostics().setStatus(status);
     m.getDiagnostics().setConfidence(confidence);
     m.getDiagnostics().setNote(note);

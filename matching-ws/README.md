@@ -82,7 +82,7 @@ To build a docker image, and generate a lucene index as part of the build, run t
 docker buildx build \
 --platform linux/amd64 . -t matching-ws:v1 \
 --build-arg CLB_DATASET_ID=3LXRC \
---build-arg CLB_URL=http://api.checklistbank.org \
+--build-arg CLB_URL=jdbc:postgresql://localhost:5432/clb \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
 ```
@@ -93,7 +93,7 @@ To build a docker image, and generate a lucene index as part of the build, run t
 docker buildx build \
 --platform linux/amd64 . -t matching-ws:v1 \
 --build-arg INDEX_CSV_PATH=/data/matching-ws/export \
---build-arg CLB_URL=http://api.checklistbank.org \
+--build-arg CLB_URL=jdbc:postgresql://localhost:5432/clb \
 --build-arg CLB_USER=*** \
 --build-arg CLB_PASSWORD=****
 ```
@@ -197,4 +197,31 @@ persistent identifier format e.g. `urn:lsid:marinespecies.org:taxname:123`
     "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
   ]
 }
+```
+
+## Logging
+
+Adjust logging levels dynamically using the following commands.
+
+### View request
+
+Running the following to view incoming requests in the logs:
+
+```bash
+curl -i -X POST -H 'Content-Type: application/json' \
+-d '{"configuredLevel": "INFO"}' \
+http://localhost:8080/actuator/loggers/life.catalogue.matching.controller
+```
+
+### Running the application without docker
+
+To run the application without docker, and use standalone java
+the following command can be used:
+
+```bash
+java \
+-Dlogging.config=file:///opt/gbif/services/matching-ws/logback.xml \
+-jar matching-ws-1.0-SNAPSHOT-exec.jar \
+--spring.config.location=/opt/gbif/services/matching-ws/application.yml 
+--spring.cloud.bootstrap.location=/opt/gbif/services/matching-ws/bootstrap.yml 
 ```

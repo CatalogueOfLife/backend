@@ -12,13 +12,17 @@ import io.swagger.v3.oas.annotations.extensions.ExtensionProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.gbif.nameparser.api.Rank;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +32,7 @@ import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
@@ -37,6 +42,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * The MatchController provides a REST-ful API for fuzzy matching of scientific names against a checklist.
  */
+@Slf4j
 @RestController
 public class MatchController implements ErrorController {
 
@@ -46,10 +52,10 @@ public class MatchController implements ErrorController {
   @Value("${v1.enabled:false}")
   protected boolean v1Enabled = false;
 
-  private static final String PATH = "/error";
+  private static final String ERROR_PATH = "/error";
 
   @Hidden
-  @GetMapping(value = PATH, produces = "application/json")
+  @GetMapping(value = ERROR_PATH, produces = "application/json")
   public Map<String, Object> error(WebRequest request) {
     Map<String, Object> errorAttributes = getErrorAttributes(request);
     String traceRequested = request.getParameter("trace");
@@ -169,23 +175,25 @@ public class MatchController implements ErrorController {
     @RequestParam(value = "strict", required = false) Boolean strict,
     @RequestParam(value = "verbose", required = false) Boolean verbose,
     HttpServletRequest response) {
-    // ugly, but jackson/spring isn't working with @JsonProperty
-    classification.setClazz(response.getParameter("class"));
-    return matchingService.match(
-      removeNulls(usageKey),
-      removeNulls(taxonID),
-      removeNulls(taxonConceptID),
-      removeNulls(scientificNameID),
-      first(removeNulls(scientificName), removeNulls(scientificName2)),
-      first(removeNulls(authorship), removeNulls(authorship2)),
-      removeNulls(genericName),
-      removeNulls(specificEpithet),
-      removeNulls(infraspecificEpithet),
-      parseRank(first(removeNulls(rank), removeNulls(rank2))),
-      clean(classification),
+    return matchV2(
+      usageKey,
+      taxonID,
+      taxonConceptID,
+      scientificNameID,
+      scientificName2,
+      scientificName,
+      authorship2,
+      authorship,
+      rank2,
+      rank,
+      genericName,
+      specificEpithet,
+      infraspecificEpithet,
+      classification,
       exclude,
-      bool(strict),
-      bool(verbose));
+      strict,
+      verbose,
+      response);
   }
 
   @Operation(
@@ -276,9 +284,12 @@ public class MatchController implements ErrorController {
       @RequestParam(value = "strict", required = false) Boolean strict,
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {
+
+    StopWatch watch = new StopWatch();
+    watch.start();
     // ugly, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
-    return matchingService.match(
+    NameUsageMatch nameUsageMatch = matchingService.match(
         removeNulls(usageKey),
         removeNulls(taxonID),
         removeNulls(taxonConceptID),
@@ -293,6 +304,14 @@ public class MatchController implements ErrorController {
         exclude,
         bool(strict),
         bool(verbose));
+    watch.stop();
+    log("v2/species/match", scientificName, watch);
+    nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
+    return nameUsageMatch;
+  }
+
+  private static void log(String requestPath, String query, StopWatch watch) {
+    log.info("[{}ms] {}: {}", String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)), requestPath, query);
   }
 
   @Operation(
@@ -411,32 +430,45 @@ public class MatchController implements ErrorController {
       @RequestParam(value = "verbose", required = false) Boolean verbose,
       HttpServletRequest response) {
 
-    if (!v1Enabled) {
-      return Map.of("message", "API v1 is disabled. Please use v2 instead.");
-    }
+    try {
 
-    classification.setClazz(response.getParameter("class"));
-    Optional<NameUsageMatchFlatV1> optionalNameUsageMatchV1 = NameUsageMatchFlatV1.createFrom(
+      if (!v1Enabled) {
+        return Map.of("message", "API v1 is disabled. Please use v2 instead.");
+      }
+
+      StopWatch watch = new StopWatch();
+      watch.start();
+
+      classification.setClazz(response.getParameter("class"));
+      String scientificNameToUse = first(removeNulls(scientificName), removeNulls(scientificName2));
+      Optional<NameUsageMatchFlatV1> optionalNameUsageMatchV1 = NameUsageMatchFlatV1.createFrom(
         matchingService.match(
-            removeNulls(usageKey),
-            removeNulls(taxonID),
-            removeNulls(taxonConceptID),
-            removeNulls(scientificNameID),
-            first(removeNulls(scientificName), removeNulls(scientificName2)),
-            first(removeNulls(authorship), removeNulls(authorship2)),
-            removeNulls(genericName),
-            removeNulls(specificEpithet),
-            removeNulls(infraspecificEpithet),
-            parseRank(first(removeNulls(rank), removeNulls(rank2))),
-            clean(classification),
-            exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
-            bool(strict),
-            bool(verbose)));
+          removeNulls(usageKey),
+          removeNulls(taxonID),
+          removeNulls(taxonConceptID),
+          removeNulls(scientificNameID),
+          scientificNameToUse,
+          first(removeNulls(authorship), removeNulls(authorship2)),
+          removeNulls(genericName),
+          removeNulls(specificEpithet),
+          removeNulls(infraspecificEpithet),
+          parseRank(first(removeNulls(rank), removeNulls(rank2))),
+          clean(classification),
+          exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
+          bool(strict),
+          bool(verbose)));
 
-    if (optionalNameUsageMatchV1.isPresent()) {
-      return optionalNameUsageMatchV1.get();
-    } else {
-      return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+      watch.stop();
+      log("v1/species/match", scientificNameToUse, watch);
+
+      if (optionalNameUsageMatchV1.isPresent()) {
+        return optionalNameUsageMatchV1.get();
+      } else {
+        return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+      }
+    } catch (Exception e){
+      log.error(e.getMessage(), e);
+      return null;
     }
   }
 
@@ -536,6 +568,7 @@ public class MatchController implements ErrorController {
   @GetMapping(
     value = {"v1/species/match2"},
     produces = "application/json")
+  @Hidden
   public Object matchV1(
     @RequestParam(value = "usageKey", required = false) String usageKey,
     @RequestParam(value = "taxonID", required = false) String taxonID,
@@ -559,15 +592,18 @@ public class MatchController implements ErrorController {
     if (!v1Enabled) {
       return Map.of("message", "API v1 is disabled. Please use v2 instead.");
     }
+    StopWatch watch = new StopWatch();
+    watch.start();
 
     classification.setClazz(response.getParameter("class"));
+    String scientificNameToUse = first(removeNulls(scientificName), removeNulls(scientificName2));
     Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
       matchingService.match(
         removeNulls(usageKey),
         removeNulls(taxonID),
         removeNulls(taxonConceptID),
         removeNulls(scientificNameID),
-        first(removeNulls(scientificName), removeNulls(scientificName2)),
+        scientificNameToUse,
         first(removeNulls(authorship), removeNulls(authorship2)),
         removeNulls(genericName),
         removeNulls(specificEpithet),
@@ -578,10 +614,145 @@ public class MatchController implements ErrorController {
         bool(strict),
         bool(verbose)));
 
+    watch.stop();
+    log("v1/species/match", scientificNameToUse, watch);
+
     if (optionalNameUsageMatchV1.isPresent()) {
+      optionalNameUsageMatchV1.get().getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
       return optionalNameUsageMatchV1.get();
     } else {
       return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
     }
+  }
+
+  //  http://checklistbank-matching-ws-gbif:8080/v1/species?datasetKey=2d59e5db-57ad-41ff-97d6-11f5fb264527&sourceId=urn%3Alsid%3Amarinespecies.org%3At
+  // v1/species/2494686/iucnRedListCategory
+  @Hidden
+  @GetMapping(
+    value = {"v1/species"},
+    produces = "application/json")
+  public ExternalIDV1Response matchBySourceID(
+    @RequestParam(value = "datasetKey", required = true) String datasetKey,
+    @RequestParam(value = "sourceId", required = true) String sourceId
+    ) {
+    StopWatch watch = new StopWatch();
+    watch.start();
+    List<ExternalID> externalIDs = matchingService.matchID(datasetKey, sourceId);
+
+    if (externalIDs == null || externalIDs.isEmpty()) {
+      return new ExternalIDV1Response(new ArrayList<>());
+    }
+    List<ExternalIDV1> results = externalIDs.stream().map(externalID ->
+      ExternalIDV1.builder()
+        .key(Integer.parseInt(externalID.getMainIndexID()))
+        .nubKey(Integer.parseInt(externalID.getMainIndexID()))
+        .scientificName(externalID.getScientificName()).build()).collect(Collectors.toList());
+    watch.stop();
+    log("v1/species", sourceId, watch);
+    return new ExternalIDV1Response(results);
+  }
+
+  // v1/species/2494686/iucnRedListCategory
+  @Hidden
+  @GetMapping(
+    value = {"v1/species/{usageKey}/iucnRedListCategory"},
+    produces = "application/json")
+  public Map<String, Object> iucnRedListV1(@PathVariable(value = "usageKey", required = false) String usageKey) {
+    StopWatch watch = new StopWatch();
+    watch.start();
+    // match by usageKey
+    NameUsageMatch match = matchingService.match(usageKey, null, null, null, null, null,
+      null, null, null, null, null, Set.of(),
+      true,
+      false);
+
+    List<NameUsageMatch.Status> statusList = match.getAdditionalStatus();
+    if (statusList == null || statusList.isEmpty() || statusList.get(0).getStatus() == null) {
+      return Map.of();
+    }
+    NameUsageMatch.Status status = statusList.get(0);
+    String formatted = formatIucn(status.getStatus());
+    if (formatted == null || formatted.isEmpty()) {
+      return Map.of();
+    }
+
+    String scientificName = match.getAcceptedUsage() != null ? match.getAcceptedUsage().getCanonicalName() : match.getUsage().getCanonicalName();
+
+    try {
+      IUCN iucn = IUCN.valueOf(formatted); // throws IllegalArgumentException if not found
+      watch.stop();
+      log("v1/species/iucnRedListCategory", usageKey, watch);
+      return Map.of(
+        "category", iucn.name(),
+        "usageKey", Integer.parseInt(usageKey),
+        "scientificName", scientificName,
+        "taxonomicStatus", NameUsageMatchV1.TaxonomicStatusV1.convert(
+          match.getDiagnostics().getStatus()),
+        "iucnTaxonID", status.getSourceId(),
+        "code", iucn.code
+      );
+    } catch (IllegalArgumentException e) {
+      log.error("IUCN category not found: {}", formatted, e);
+      return Map.of(
+        "category", status.getStatus(),
+        "usageKey", Integer.parseInt(usageKey),
+        "scientificName", scientificName,
+        "taxonomicStatus", match.getDiagnostics().getStatus(),
+        "iucnTaxonID", status.getSourceId(),
+        "code", status.getStatus()
+      );
+    }
+  }
+
+  String formatIucn(String original){
+    if (original == null) {
+      return null;
+    }
+    // Trim the string
+    String trimmed = original.trim();
+    // Convert to uppercase
+    String uppercased = trimmed.toUpperCase();
+    // Replace any whitespace with a single underscore
+    return uppercased.replaceAll("\\s+", "_");
+  }
+
+   enum IUCN {
+    EXTINCT("EX"),
+    EXTINCT_IN_THE_WILD("EW"),
+    CRITICALLY_ENDANGERED ("CR"),
+    ENDANGERED ("EN"),
+    VULNERABLE ("VU"),
+    NEAR_THREATENED ("NT"),
+    CONSERVATION_DEPENDENT ("CD"),
+    LEAST_CONCERN ("LC"),
+    DATA_DEFICIENT ("DD"),
+    NOT_EVALUATED ("NE");
+
+    private final String code;
+
+    IUCN(String code) {
+      this.code = code;
+    }
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ExternalIDV1 {
+    int key;
+    Integer nubKey;
+    String scientificName;
+  }
+
+  /**
+   * Contains a partial NameUsageSearchResponse mapping, with the fields necessary to lookup concepts within a checklist and locate
+   * their equivalent backbone taxon id.
+   */
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class ExternalIDV1Response {
+    List<ExternalIDV1> results;
   }
 }
