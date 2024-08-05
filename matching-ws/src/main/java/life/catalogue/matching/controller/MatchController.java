@@ -48,10 +48,6 @@ public class MatchController implements ErrorController {
 
   private final MatchingService matchingService;
   private final ErrorAttributes errorAttributes;
-
-  @Value("${v1.enabled:false}")
-  protected boolean v1Enabled = false;
-
   private static final String ERROR_PATH = "/error";
 
   @Hidden
@@ -431,11 +427,6 @@ public class MatchController implements ErrorController {
       HttpServletRequest response) {
 
     try {
-
-      if (!v1Enabled) {
-        return Map.of("message", "API v1 is disabled. Please use v2 instead.");
-      }
-
       StopWatch watch = new StopWatch();
       watch.start();
 
@@ -589,9 +580,6 @@ public class MatchController implements ErrorController {
     @RequestParam(value = "verbose", required = false) Boolean verbose,
     HttpServletRequest response) {
 
-    if (!v1Enabled) {
-      return Map.of("message", "API v1 is disabled. Please use v2 instead.");
-    }
     StopWatch watch = new StopWatch();
     watch.start();
 
