@@ -5,6 +5,9 @@ import static life.catalogue.matching.util.IndexConstants.*;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,17 +20,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriterBuilder;
 import com.opencsv.ICSVWriter;
-import com.opencsv.bean.CsvToBean;
-import com.opencsv.bean.CsvToBeanBuilder;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.opencsv.bean.*;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import life.catalogue.matching.db.DatasetMapper;
-import life.catalogue.matching.db.IndexingMapper;
 
 import life.catalogue.matching.index.ScientificNameAnalyzer;
 import life.catalogue.matching.model.Classification;
@@ -43,7 +44,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.datasource.pooled.PooledDataSource;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -66,6 +66,8 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.sql.DataSource;
 
 /**
  * Service to index a dataset from the Checklist Bank.
@@ -101,6 +103,9 @@ public class IndexingService {
 
   @Value("${indexing.threads:6}")
   Integer indexingThreads;
+
+  @Value("${indexing.fetchsize:50000}")
+  Integer dbFetchSize;
 
   protected final MatchingService matchingService;
 
@@ -209,57 +214,91 @@ public class IndexingService {
   @Transactional
   public void writeCLBToFile(@NotNull final String datasetKeyInput) throws Exception {
 
-    // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
-    // (parallelism) as opposed to the spring managed DataSource
-    final PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
-    // Create a session factory
-    SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
+    try (HikariDataSource dataSource = getDataSource()) {
+      final SqlSessionFactory factory = getSqlSessionFactory(dataSource);
+      // resolve the magic keys...
+      Optional<Dataset> dataset = lookupDataset(factory, datasetKeyInput);
+      if (dataset.isEmpty()) {
+        throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
+      }
+
+      final AtomicInteger counter = new AtomicInteger(0);
+      final String directory = exportPath + "/" + datasetKeyInput;
+      FileUtils.forceMkdir(new File(directory));
+
+      final String metadata = directory + "/" + METADATA_JSON;
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(new File(metadata), dataset.get());
+
+      final String fileName = directory + "/" + INDEX_CSV;
+      log.info("Writing dataset to file {}", fileName);
+      final String query = "SELECT " +
+        "nu.id as id, " +
+        "nu.parent_id as parentId, " +
+        "n.scientific_name as scientificName, " +
+        "n.authorship as authorship, " +
+        "n.rank as rank, " +
+        "nu.status as status, " +
+        "n.code as nomenclaturalCode, " +
+        "'' as extension, " +
+        "'' as category " +
+        "FROM name_usage nu " +
+        "INNER JOIN " +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        " WHERE " +
+        "nu.dataset_key = " + dataset.get().getKey();
+
+      try (
+        final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();
+        Connection conn = dataSource.getConnection();
+        Statement st = conn.createStatement()) {
+
+        conn.setAutoCommit(false);
+        st.setFetchSize(dbFetchSize);
+
+        StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
+          .withQuotechar('\'')
+          .build();
+
+        try (ResultSet rs = st.executeQuery(query)) {
+          while (rs.next()) {
+            NameUsage name = new NameUsage(
+              rs.getString("id"),
+              rs.getString("parentId"),
+              rs.getString("scientificName"),
+              rs.getString("authorship"),
+              rs.getString("status"),
+              rs.getString("rank"),
+              rs.getString("nomenclaturalCode"),
+              rs.getString("category"),
+              rs.getString("extension")
+            );
+
+            sbc.write(cleanNameUsage(name));
+            counter.incrementAndGet();
+          }
+        }
+      }
+      // write metadata file in JSON format
+      log.info("ChecklistBank export written to file {}: {}", fileName, counter.get());
+    }
+  }
+
+  private static SqlSessionFactory getSqlSessionFactory(DataSource dataSource) throws Exception {
+    final SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
     sessionFactoryBean.setDataSource(dataSource);
     SqlSessionFactory factory = sessionFactoryBean.getObject();
     assert factory != null;
-    factory.getConfiguration().addMapper(IndexingMapper.class);
     factory.getConfiguration().addMapper(DatasetMapper.class);
+    return factory;
+  }
 
-    // resolve the magic keys...
-    Optional<Dataset> dataset = lookupDataset(factory, datasetKeyInput);
-    if (dataset.isEmpty()) {
-      throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
-    }
-
-    final Integer validDatasetKey = dataset.get().getKey();
-    final String directory = exportPath + "/" + datasetKeyInput;
-    final String fileName = directory + "/" + INDEX_CSV;
-    final String metadata = directory + "/" + METADATA_JSON;
-
-    log.info("Writing dataset to file {}", fileName);
-    final AtomicInteger counter = new AtomicInteger(0);
-
-    FileUtils.forceMkdir(new File(directory));
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(new File(metadata), dataset.get());
-
-    try (SqlSession session = factory.openSession(false);
-        final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
-      StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
-        .withQuotechar('\'')
-        .build();
-      // Create index writer
-      consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(validDatasetKey),
-          name -> {
-            try {
-              sbc.write(cleanNameUsage(name));
-            } catch (Exception e) {
-              throw new RuntimeException(e);
-            }
-            counter.incrementAndGet();
-          });
-    } finally {
-      dataSource.forceCloseAll();
-    }
-
-    // write metadata file in JSON format
-    log.info("ChecklistBank export written to file {}: {}", fileName, counter.get());
+  private HikariDataSource getDataSource() {
+    HikariConfig hikariConfig = new HikariConfig();
+    hikariConfig.setJdbcUrl(clbUrl);
+    hikariConfig.setUsername(clbUser);
+    hikariConfig.setPassword(clPassword);
+    return new HikariDataSource(hikariConfig);
   }
 
   private NameUsage cleanNameUsage(NameUsage name) {
@@ -272,6 +311,9 @@ public class IndexingService {
 
   @Transactional
   public void indexIdentifiers(@NotNull String datasetKey) throws Exception {
+    if (StringUtils.isBlank(datasetKey)) {
+      return;
+    }
     writeCLBToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
     writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/" + IDENTIFIERS_DIR + "/" + datasetKey, false);
@@ -279,6 +321,9 @@ public class IndexingService {
 
   @Transactional
   public void indexIUCN(@NotNull String datasetKey) throws Exception {
+    if (StringUtils.isBlank(datasetKey)) {
+      return;
+    }
     writeCLBIUCNToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
     writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/" + ANCILLARY_DIR + "/" + datasetKey, true);
@@ -287,65 +332,93 @@ public class IndexingService {
   @Transactional
   public void writeCLBIUCNToFile(@NotNull final String datasetKeyInput) throws Exception {
 
-    // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
-    // (parallelism) as opposed to the spring managed DataSource
-    PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
-    // Create a session factory
-    SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
-    sessionFactoryBean.setDataSource(dataSource);
-    SqlSessionFactory factory = sessionFactoryBean.getObject();
-    assert factory != null;
-    factory.getConfiguration().addMapper(IndexingMapper.class);
-    factory.getConfiguration().addMapper(DatasetMapper.class);
+    try (HikariDataSource dataSource = getDataSource()) {
+      // Create a session factory
+      final SqlSessionFactory factory = getSqlSessionFactory(dataSource);
 
-    // resolve the magic keys...
-    Optional<Dataset> dataset =  lookupDataset(factory, datasetKeyInput);
-    if (dataset.isEmpty()) {
-      throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
-    }
+      // resolve the magic keys...
+      Optional<Dataset> dataset = lookupDataset(factory, datasetKeyInput);
+      if (dataset.isEmpty()) {
+        throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
+      }
 
-    log.info("Writing dataset to file...");
-    final AtomicInteger counter = new AtomicInteger(0);
-    final String fileName = exportPath + "/" + datasetKeyInput + "/" + INDEX_CSV;
-    final String metadata = exportPath + "/" + datasetKeyInput  + "/" + METADATA_JSON;
 
-    FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
+      final AtomicInteger counter = new AtomicInteger(0);
+      final String fileName = exportPath + "/" + datasetKeyInput + "/" + INDEX_CSV;
+      final String metadata = exportPath + "/" + datasetKeyInput + "/" + METADATA_JSON;
 
-    // write metadata to file
-    ObjectMapper mapper = new ObjectMapper();
-    mapper.writeValue(new File(metadata), dataset.get());
+      FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
 
-    try (SqlSession session = factory.openSession(false);
-         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build()) {
+      log.info("Writing dataset to file {}", fileName);
 
-      final ObjectMapper objectMapper = new ObjectMapper();
-      final StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
-        .withQuotechar('\'')
-        .build();
+      // write metadata to file
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(new File(metadata), dataset.get());
 
-      // Create index writer
-      consume(
-        () -> session.getMapper(IndexingMapper.class).getAllWithExtensionForDataset(dataset.get().getKey()),
-        nameUsage -> {
-          try {
-            if (StringUtils.isNotBlank(nameUsage.getExtension())){
-              // parse it
-              JsonNode node = objectMapper.readTree(nameUsage.getExtension());
-              nameUsage.setCategory(node.path(IUCN_THREAT_STATUS).asText());
+      final String query = "SELECT " +
+        "nu.id as id, " +
+        "nu.parent_id as parentId, " +
+        "n.scientific_name as scientificName, " +
+        "n.authorship as authorship, " +
+        "n.rank as rank, " +
+        "nu.status as status, " +
+        "n.code as nomenclaturalCode, " +
+        "v.terms as extension, " +
+        "'' as category " +
+        "FROM " +
+        "name_usage nu " +
+        " INNER JOIN " +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        " LEFT JOIN " +
+        "distribution d on d.taxon_id = nu.id AND d.dataset_key = " + dataset.get().getKey() +
+        " LEFT JOIN " +
+        "verbatim v on v.id = d.verbatim_key AND v.dataset_key = " + dataset.get().getKey() +
+        " WHERE " +
+        "nu.dataset_key = " + dataset.get().getKey();
+
+      try (
+        final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();
+        Connection conn = dataSource.getConnection();
+        Statement st = conn.createStatement()) {
+
+        conn.setAutoCommit(false);
+        st.setFetchSize(dbFetchSize);
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        StatefulBeanToCsv<NameUsage> sbc = new StatefulBeanToCsvBuilder<NameUsage>(writer)
+          .withQuotechar('\'')
+          .build();
+
+        try (ResultSet rs = st.executeQuery(query)) {
+          while (rs.next()) {
+            NameUsage nameUsage = new NameUsage(
+              rs.getString("id"),
+              rs.getString("parentId"),
+              rs.getString("scientificName"),
+              rs.getString("authorship"),
+              rs.getString("status"),
+              rs.getString("rank"),
+              rs.getString("nomenclaturalCode"),
+              rs.getString("category"),
+              rs.getString("extension")
+            );
+            try {
+              if (StringUtils.isNotBlank(nameUsage.getExtension())) {
+                // parse it
+                JsonNode node = objectMapper.readTree(nameUsage.getExtension());
+                nameUsage.setCategory(node.path(IUCN_THREAT_STATUS).asText());
+              }
+              sbc.write(nameUsage);
+              counter.incrementAndGet();
+            } catch (Exception e) {
+              throw new RuntimeException(e);
             }
-            sbc.write(nameUsage);
-
-          } catch (Exception e) {
-            throw new RuntimeException(e);
           }
-          counter.incrementAndGet();
-        });
-    } finally {
-      dataSource.forceCloseAll();
+        }
+      }
+      // write metadata file in JSON format
+      log.info("ChecklistBank IUCN export written to file {}: {}", fileName, counter.get());
     }
-
-    // write metadata file in JSON format
-    log.info("ChecklistBank IUCN export written to file {}: {}", fileName, counter.get());
   }
 
   public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
@@ -704,54 +777,6 @@ public class IndexingService {
         log.error("Problem writing document to index: {}", e.getMessage(), e);
       }
     }
-  }
-
-  @Transactional
-  public void runDatasetIndexing(final Integer datasetKey) throws Exception {
-
-    // I am seeing better results with this MyBatis Pooling DataSource for Cursor queries
-    // (parallelism) as opposed to the spring managed DataSource
-    PooledDataSource dataSource = new PooledDataSource(clDriver, clbUrl, clbUser, clPassword);
-
-    // Create index directory
-    Path indexDirectory = initialiseIndexDirectory(indexPath + "/" + MAIN_INDEX_DIR);
-    Directory directory = FSDirectory.open(indexDirectory);
-
-    // Create a session factory
-    SqlSessionFactoryBean sessionFactoryBean = new SqlSessionFactoryBean();
-    sessionFactoryBean.setDataSource(dataSource);
-    SqlSessionFactory factory = sessionFactoryBean.getObject();
-    assert factory != null;
-    factory.getConfiguration().addMapper(IndexingMapper.class);
-
-    // Create index writer configuration
-    IndexWriterConfig config = getIndexWriterConfig();
-    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-
-    log.info("Indexing dataset...");
-    final AtomicInteger counter = new AtomicInteger(0);
-    try (SqlSession session = factory.openSession(false);
-        IndexWriter indexWriter = new IndexWriter(directory, config)) {
-
-      // Create index writer
-      consume(
-          () -> session.getMapper(IndexingMapper.class).getAllForDataset(datasetKey),
-          name -> {
-            try {
-              if (counter.get() % 10000 == 0) {
-                log.info("Indexed: {} taxa", counter.get());
-              }
-              Document doc = toDoc(name);
-              indexWriter.addDocument(doc);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-            counter.incrementAndGet();
-          });
-      finishIndex(indexWriter);
-    }
-    // write metadata file in JSON format
-    log.info("Indexed: {}", counter.get());
   }
 
   private static void finishIndex(IndexWriter indexWriter) throws IOException {
