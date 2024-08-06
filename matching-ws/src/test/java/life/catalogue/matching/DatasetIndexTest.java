@@ -42,7 +42,7 @@ public class DatasetIndexTest {
 
   private static DatasetIndex index;
 
-  private static String dictionaryUrl = "/dictionaries/";
+  private static String dictionaryUrl = "dictionaries/";
 
   @BeforeAll
   public static void buildMatcher() throws Exception {

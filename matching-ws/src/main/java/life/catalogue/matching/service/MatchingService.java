@@ -165,7 +165,7 @@ public class MatchingService {
    *
    * @return the metadata or empty if it could not be read or generated
    */
-  public Optional<APIMetadata> getAPIMetadata() {
+  public Optional<APIMetadata> getAPIMetadata(boolean regenerate) {
 
     // read JSON from file, if not available generate from datasetIndex
     if (!datasetIndex.getIsInitialised()) {
@@ -174,7 +174,7 @@ public class MatchingService {
 
     File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
-      if (!metadata.exists() ) {
+      if (!metadata.exists()  || regenerate) {
         APIMetadata metadata1 = datasetIndex.getAPIMetadata();
         //serialise to file
         ObjectMapper mapper = new ObjectMapper();
@@ -270,7 +270,12 @@ public class MatchingService {
       @Nullable LinneanClassification classification,
       boolean strict) {
     return match(
-        null, null, null, null, scientificName, null, null, null, null, null, classification, null, strict, false);
+        NameUsageQuery.builder()
+          .scientificName(scientificName)
+          .classification(classification)
+          .strict(strict)
+          .verbose(false).build()
+    );
   }
 
   public NameUsageMatch match(
@@ -279,70 +284,69 @@ public class MatchingService {
       @Nullable LinneanClassification classification,
       boolean strict) {
     return match(
-        null, null, null, null, scientificName, null, null, null, null, rank, classification, null, strict, false);
+      NameUsageQuery.builder()
+        .scientificName(scientificName)
+        .rank(rank)
+        .classification(classification)
+        .strict(strict)
+        .verbose(false).build()
+    );
   }
 
-  public NameUsageMatch match(
-    @Nullable String usageKey,
-    @Nullable String taxonID,
-    @Nullable String taxonConceptID,
-    @Nullable String scientificNameID,
-    @Nullable String scientificName,
-    @Nullable String authorship,
-    @Nullable String genericName,
-    @Nullable String specificEpithet,
-    @Nullable String infraSpecificEpithet,
-    @Nullable Rank rank,
-    @Nullable LinneanClassification classification,
-    Set<String> exclude,
-    boolean strict,
-    boolean verbose) {
+  public NameUsageMatch match(NameUsageQuery query) {
 
     StopWatch watch = new StopWatch();
     watch.start();
 
     // When provided a usageKey is used exclusively
-    if (StringUtils.isNotBlank(usageKey)) {
-      NameUsageMatch match = datasetIndex.matchByUsageKey(usageKey);
+    if (StringUtils.isNotBlank(query.usageKey)) {
+      NameUsageMatch match = datasetIndex.matchByUsageKey(query.usageKey);
       match
         .getDiagnostics()
         .setNote("All provided names were ignored since the usageKey was provided");
       watch.stop();
       match.getDiagnostics().setTimeTaken(watch.getTime());
       log.debug(
-        "{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), usageKey, watch);
+        "{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), query.usageKey, watch);
       return match;
     }
 
     // match by scientific name + classification
-    NameUsageMatch sciNameMatch = matchByClassification(scientificName,
-      authorship, genericName, specificEpithet,
-      infraSpecificEpithet, rank, classification,
-      exclude, strict, verbose);
+    NameUsageMatch sciNameMatch = matchByClassification(
+      query.scientificName,
+      query.authorship,
+      query.genericName,
+      query.specificEpithet,
+      query.infraSpecificEpithet,
+      query.rank,
+      query.classification,
+      query.exclude,
+      query.strict,
+      query.verbose);
 
     if (isMatch(sciNameMatch)) {
       log.debug(
         "{} Match of {} >{}< to {} [{}] in {}",
         sciNameMatch.getDiagnostics().getMatchType(),
-        rank,
-        scientificName,
+        query.rank,
+        query.scientificName,
         sciNameMatch.getUsage().getKey(),
         sciNameMatch.getUsage().getName(),
         watch);
     }
 
     // Match with taxonID
-    if (StringUtils.isNotBlank(taxonID)) {
+    if (StringUtils.isNotBlank(query.taxonID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
-        taxonID,
+        query.taxonID,
         Issue.TAXON_ID_NOT_FOUND,
         Issue.TAXON_MATCH_TAXON_ID_IGNORED
         );
       log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), taxonConceptID, watch);
+        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
 
       if (isMatch(idMatch)) {
-          checkScientificNameAndIDConsistency(idMatch, scientificName, rank);
+          checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
           checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
           watch.stop();
           idMatch.getDiagnostics().setTimeTaken(watch.getTime());
@@ -353,13 +357,13 @@ public class MatchingService {
     }
 
     // Match with taxonConceptID
-    if (StringUtils.isNotBlank(taxonConceptID)) {
+    if (StringUtils.isNotBlank(query.taxonConceptID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
-        taxonConceptID, Issue.TAXON_CONCEPT_ID_NOT_FOUND, Issue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
+        query.taxonConceptID, Issue.TAXON_CONCEPT_ID_NOT_FOUND, Issue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
       log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), taxonConceptID, watch);
+        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
       if (isMatch(idMatch)){
-        checkScientificNameAndIDConsistency(idMatch, scientificName, rank);
+        checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
         watch.stop();
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());
@@ -370,13 +374,13 @@ public class MatchingService {
     }
 
     // Match with scientificNameID
-    if (StringUtils.isNotBlank(scientificNameID)) {
-      NameUsageMatch idMatch = datasetIndex.matchByExternalKey(scientificNameID,
+    if (StringUtils.isNotBlank(query.scientificNameID)) {
+      NameUsageMatch idMatch = datasetIndex.matchByExternalKey(query.scientificNameID,
         Issue.SCIENTIFIC_NAME_ID_NOT_FOUND, Issue.TAXON_MATCH_SCIENTIFIC_NAME_ID_IGNORED);
       log.debug(
-        "{} Match of scientificNameID[{}] in {}", idMatch.getDiagnostics().getMatchType(), scientificNameID, watch);
+        "{} Match of scientificNameID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.scientificNameID, watch);
       if (isMatch(idMatch)) {
-        checkScientificNameAndIDConsistency(idMatch, scientificName, rank);
+        checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
         watch.stop();
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());

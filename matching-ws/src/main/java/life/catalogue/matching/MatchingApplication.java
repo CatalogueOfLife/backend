@@ -26,9 +26,7 @@ import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static life.catalogue.matching.Main.*;
 
@@ -71,14 +69,12 @@ public class MatchingApplication implements ApplicationRunner {
 
     // if index does not exist, run indexing
     if (Main.ExecutionMode.INDEX.equals(mode) || Main.ExecutionMode.INDEX_AND_RUN.equals(mode)) {
-      if (!datasetIndex.exists(indexPath)) {
-        try {
-          runIndexingIfRequired(args);
-        } catch (Exception e) {
-          log.error("Failed to run indexing", e);
-        }
-      } else {
-        log.info("Index available at {}", indexPath);
+      try {
+        runIndexingIfRequired(args);
+        matchingService.getAPIMetadata(true);
+      } catch (Exception e) {
+        log.error("Failed to run indexing", e);
+        throw new RuntimeException(e);
       }
     }
 
@@ -91,7 +87,7 @@ public class MatchingApplication implements ApplicationRunner {
   }
 
   private void initialiseWebapp() {
-    Optional<APIMetadata> metadata = matchingService.getAPIMetadata();
+    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(false);
     if (metadata.isEmpty()) {
       log.error("No main index found. Cannot start web services");
       return;
@@ -139,6 +135,7 @@ public class MatchingApplication implements ApplicationRunner {
     for (String id : identifierDatasetIds) {
         indexingService.indexIdentifiers(id);
     }
+
     log.info("Indexing completed");
   }
 
@@ -169,14 +166,21 @@ public class MatchingApplication implements ApplicationRunner {
   private List<String> getIdentifierDatasetIds(ApplicationArguments args) {
     List<String> identifierDatasetIds = configuredIdentifierDatasetIds;
     if (args.getOptionValues(CLB_IDENTIFIER_DATASET_IDS) != null && !args.getOptionValues(Main.CLB_IDENTIFIER_DATASET_IDS).isEmpty()) {
-      identifierDatasetIds = args.getOptionValues(Main.CLB_IDENTIFIER_DATASET_IDS);
+      List<String> ids = args.getOptionValues(Main.CLB_IDENTIFIER_DATASET_IDS);
+      if (ids != null) {
+        for (String id : ids) {
+          if (id != null) {
+            identifierDatasetIds.addAll(Arrays.asList(id.split(",")));
+          }
+        }
+      }
     }
     return identifierDatasetIds;
   }
 
   @Bean
   public OpenAPI customOpenAPI() {
-    Optional<APIMetadata> metadata = matchingService.getAPIMetadata();
+    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(false);
     OpenAPI openAPI = new OpenAPI();
     metadata.ifPresent(m -> {
       String title = m.getMainIndex().getDatasetTitle() != null ?
