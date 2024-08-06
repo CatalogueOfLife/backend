@@ -327,6 +327,9 @@ public class MatchController implements ErrorController {
         name = "name",
         description = "The scientific name to fuzzy match against. May include the authorship and year"
       ),
+      @Parameter(name = "taxonID", hidden = true),
+      @Parameter(name = "taxonConceptID", hidden = true),
+      @Parameter(name = "scientificNameID", hidden = true),
       @Parameter(name = "scientificName", hidden = true),
       @Parameter(
         name = "authorship",
