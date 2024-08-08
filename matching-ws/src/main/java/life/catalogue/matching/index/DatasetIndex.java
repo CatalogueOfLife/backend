@@ -144,6 +144,7 @@ public class DatasetIndex {
               if (prefixDatasetConfig != null) {
                 dataset.setPrefix(prefixDatasetConfig.getPrefix());
                 dataset.setPrefixMapping(prefixDatasetConfig.getPrefixMapping());
+                dataset.setRemovePrefixForMatching(prefixDatasetConfig.getRemovePrefixForMatching());
               }
 
               searchers.put(dataset, new IndexSearcher(reader));
@@ -192,6 +193,7 @@ public class DatasetIndex {
     try {
       DirectoryReader reader = DirectoryReader.open(indexDirectory);
       this.searcher = new IndexSearcher(reader);
+      this.isInitialised = true;
     } catch (IOException e) {
       log.warn("Cannot open lucene index. Index not available", e);
     }
@@ -202,7 +204,6 @@ public class DatasetIndex {
       DirectoryReader reader = DirectoryReader.open(indexDirectory);
       IndexSearcher searcher = new IndexSearcher(reader);
       this.identifierSearchers.put(dataset, searcher);
-
     } catch (IOException e) {
       log.warn("Cannot open lucene index. Index not available", e);
     }
@@ -231,18 +232,18 @@ public class DatasetIndex {
         log.error("Cannot read index directory attributes", e);
       }
 
-      metadata.setMainIndex(getIndexMetadata(indexPath + "/" + MAIN_INDEX_DIR, getSearcher().getIndexReader(), true));
+      metadata.setMainIndex(getIndexMetadata(indexPath + "/" + MAIN_INDEX_DIR, getSearcher(), true));
 
       for (Dataset dataset : identifierSearchers.keySet()) {
         metadata.getIdentifierIndexes().add(
           getIndexMetadata(indexPath + "/" + IDENTIFIERS_DIR + "/" + dataset.getKey(),
-            identifierSearchers.get(dataset).getIndexReader(), false));
+            identifierSearchers.get(dataset), false));
       }
 
       for (Dataset dataset : ancillarySearchers.keySet()) {
         metadata.getAncillaryIndexes().add(
           getIndexMetadata(indexPath + "/" + ANCILLARY_DIR + "/" + dataset.getKey(),
-            ancillarySearchers.get(dataset).getIndexReader(), false));
+            ancillarySearchers.get(dataset), false));
       }
     }
 
@@ -255,7 +256,7 @@ public class DatasetIndex {
    * dataset title and key, and the build information.
    * @return IndexMetadata
    */
-  private IndexMetadata getIndexMetadata(String indexPath, IndexReader reader, boolean isMain){
+  private IndexMetadata getIndexMetadata(String indexPath, IndexSearcher searcher, boolean isMain){
 
     IndexMetadata metadata = new IndexMetadata();
 
@@ -289,14 +290,14 @@ public class DatasetIndex {
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
-      rankCounts.put(Rank.KINGDOM.name(), getCountForRank(reader, Rank.KINGDOM));
-      rankCounts.put(Rank.PHYLUM.name(), getCountForRank(reader, Rank.PHYLUM));
-      rankCounts.put(Rank.CLASS.name(), getCountForRank(reader, Rank.CLASS));
-      rankCounts.put(Rank.ORDER.name(), getCountForRank(reader, Rank.ORDER));
-      rankCounts.put(Rank.FAMILY.name(), getCountForRank(reader, Rank.FAMILY));
-      rankCounts.put(Rank.GENUS.name(), getCountForRank(reader, Rank.GENUS));
-      rankCounts.put(Rank.SPECIES.name(), getCountForRank(reader, Rank.SPECIES));
-      rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(reader, Rank.SUBSPECIES));
+      rankCounts.put(Rank.KINGDOM.name(), getCountForRank(searcher, Rank.KINGDOM));
+      rankCounts.put(Rank.PHYLUM.name(), getCountForRank(searcher, Rank.PHYLUM));
+      rankCounts.put(Rank.CLASS.name(), getCountForRank(searcher, Rank.CLASS));
+      rankCounts.put(Rank.ORDER.name(), getCountForRank(searcher, Rank.ORDER));
+      rankCounts.put(Rank.FAMILY.name(), getCountForRank(searcher, Rank.FAMILY));
+      rankCounts.put(Rank.GENUS.name(), getCountForRank(searcher, Rank.GENUS));
+      rankCounts.put(Rank.SPECIES.name(), getCountForRank(searcher, Rank.SPECIES));
+      rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(searcher, Rank.SUBSPECIES));
       metadata.setNameUsageByRankCount(rankCounts);
     } catch (IOException e) {
       log.error("Cannot read index information", e);
@@ -382,7 +383,7 @@ public class DatasetIndex {
     return Map.of();
   }
 
-  private long getCountForRank(IndexReader reader, Rank rank) throws IOException {
+  private long getCountForRank(IndexSearcher searcher, Rank rank) throws IOException {
     Query query = new TermQuery(new Term(FIELD_RANK, rank.name()));
     return searcher.search(query, new TotalHitCountCollectorManager());
   }
@@ -481,7 +482,7 @@ public class DatasetIndex {
 
           if (identifierDocs.totalHits.value > 0) {
             Document identifierDoc = identifierSearcher.storedFields().document(identifierDocs.scoreDocs[0].doc);
-            results.add(toExternalID(identifierDoc, dataset.getKey().toString()));
+            results.add(toExternalID(identifierDoc, dataset));
           }
         }
       }
@@ -507,6 +508,12 @@ public class DatasetIndex {
       // if join indexes are present, add them to the match
       if (identifierSearchers != null && !identifierSearchers.isEmpty()) {
         for (Dataset dataset : identifierSearchers.keySet()) {
+
+          // if configured, remove the prefix
+          if (dataset.getRemovePrefixForMatching()){
+            identifier = identifier.replace(dataset.getPrefix(), "");
+          }
+
           // find the index and search it
           IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
           Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
@@ -514,7 +521,7 @@ public class DatasetIndex {
 
           if (identifierDocs.totalHits.value > 0) {
             Document identifierDoc = identifierSearcher.storedFields().document(identifierDocs.scoreDocs[0].doc);
-            results.add(toExternalID(identifierDoc, dataset.getKey().toString()));
+            results.add(toExternalID(identifierDoc, dataset));
           }
         }
       }
@@ -544,6 +551,11 @@ public class DatasetIndex {
           // use the prefix mapping
           if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
 
+            // if configured, remove the prefix
+            if (dataset.getRemovePrefixForMatching()){
+              identifier = identifier.replace(dataset.getPrefix(), "");
+            }
+
             // find the index and search it
             IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
             Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
@@ -553,7 +565,7 @@ public class DatasetIndex {
               Document identifierDoc = identifierSearcher.storedFields().
                 document(identifierDocs.scoreDocs[0].doc);
 
-              results.add(toExternalID(identifierDoc, dataset.getKey().toString()));
+              results.add(toExternalID(identifierDoc, dataset));
             }
           }
         }
@@ -565,10 +577,12 @@ public class DatasetIndex {
     return results;
   }
 
-  private static ExternalID toExternalID(Document doc, String datasetKey) {
+  private static ExternalID toExternalID(Document doc, Dataset dataset) {
     return ExternalID.builder()
       .id(doc.get(FIELD_ID))
-      .datasetKey(datasetKey)
+      .datasetKey(dataset.getKey().toString())
+      .gbifKey(dataset.getGbifKey())
+      .datasetTitle(dataset.getTitle())
       .scientificName(doc.get(FIELD_SCIENTIFIC_NAME))
       .rank(doc.get(FIELD_RANK))
       .parentID(doc.get(FIELD_PARENT_ID))
@@ -600,12 +614,18 @@ public class DatasetIndex {
             }
           }
 
-          if ((dataset.getPrefix() == null || !key.startsWith(dataset.getPrefix())) || dataset.getPrefix().equals("*")) {
+          if (
+            (dataset.getPrefix() == null || !key.startsWith(dataset.getPrefix()))
+              && !dataset.getPrefix().equals("*")) {
             // only search indexes with matching prefixes
             continue;
           }
 
-          log.info("Searching for identifier {} in dataset {}", key, dataset.getKey());
+          log.debug("Searching for identifier {} in dataset {}", key, dataset.getKey());
+
+          if (dataset.getRemovePrefixForMatching()){
+            key = key.replace(dataset.getPrefix(), "");
+          }
 
           // find the index and search it
           IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
@@ -817,6 +837,12 @@ public class DatasetIndex {
   }
 
   public List<NameUsageMatch> matchByName(String name, boolean fuzzySearch, int maxMatches) {
+
+    if (!isInitialised || this.searcher == null) {
+      log.warn("Lucene index not loaded. Cannot match name {}", name);
+      return new ArrayList<>();
+    }
+
     // use the same lucene analyzer to normalize input
     final String analyzedName = LuceneUtils.analyzeString(scientificNameAnalyzer, name).get(0);
     log.debug(
@@ -860,6 +886,10 @@ public class DatasetIndex {
   }
 
   private List<NameUsageMatch> search(Query q, String name, boolean fuzzySearch, int maxMatches) {
+    if (this.searcher == null) {
+      log.warn("Lucene index not loaded. Cannot search for name {}", name);
+      return new ArrayList<>();
+    }
     List<NameUsageMatch> results = new ArrayList<>();
     try {
       TopDocs docs = searcher.search(q, maxMatches);

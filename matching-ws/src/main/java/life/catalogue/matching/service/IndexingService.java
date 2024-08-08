@@ -3,6 +3,8 @@ package life.catalogue.matching.service;
 import static life.catalogue.matching.util.IndexConstants.*;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -214,6 +216,15 @@ public class IndexingService {
   @Transactional
   public void writeCLBToFile(@NotNull final String datasetKeyInput) throws Exception {
 
+    final String directory = exportPath + "/" + datasetKeyInput;
+    final String fileName = directory + "/" + INDEX_CSV;
+    Path path = Paths.get(fileName);
+
+    if (Files.exists(path) && Files.size(path) > 0) {
+      log.info("File {} already exists, skipping export", fileName);
+      return;
+    }
+
     try (HikariDataSource dataSource = getDataSource()) {
       final SqlSessionFactory factory = getSqlSessionFactory(dataSource);
       // resolve the magic keys...
@@ -223,14 +234,13 @@ public class IndexingService {
       }
 
       final AtomicInteger counter = new AtomicInteger(0);
-      final String directory = exportPath + "/" + datasetKeyInput;
+
       FileUtils.forceMkdir(new File(directory));
 
       final String metadata = directory + "/" + METADATA_JSON;
       ObjectMapper mapper = new ObjectMapper();
       mapper.writeValue(new File(metadata), dataset.get());
 
-      final String fileName = directory + "/" + INDEX_CSV;
       log.info("Writing dataset to file {}", fileName);
       final String query = "SELECT " +
         "nu.id as id, " +
@@ -314,23 +324,61 @@ public class IndexingService {
     if (StringUtils.isBlank(datasetKey)) {
       return;
     }
+    final String joinIndexPath = indexPath + "/" + IDENTIFIERS_DIR + "/" + datasetKey;
+    if (indexExists(joinIndexPath)){
+      log.info("Index for dataset {} available", datasetKey);
+      return;
+    }
+
     writeCLBToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
-    writeJoinIndex( tempIndexPath + "/"  + datasetKey, indexPath + "/" + IDENTIFIERS_DIR + "/" + datasetKey, false);
+    writeJoinIndex( tempIndexPath + "/"  + datasetKey, joinIndexPath, false);
   }
 
   @Transactional
   public void indexIUCN(@NotNull String datasetKey) throws Exception {
+    final String joinIndexPath = indexPath + "/" + ANCILLARY_DIR + "/" + datasetKey;
+    if (indexExists(joinIndexPath)){
+      log.info("Index for dataset {} available", datasetKey);
+      return;
+    }
+
     if (StringUtils.isBlank(datasetKey)) {
       return;
     }
     writeCLBIUCNToFile(datasetKey);
     indexFile(exportPath  + "/" + datasetKey, tempIndexPath + "/" + datasetKey);
-    writeJoinIndex( tempIndexPath + "/" + datasetKey, indexPath + "/" + ANCILLARY_DIR + "/" + datasetKey, true);
+    writeJoinIndex( tempIndexPath + "/" + datasetKey, joinIndexPath, true);
+  }
+
+  private static boolean indexExists(String joinIndexPath) throws IOException {
+    Path path = Paths.get(joinIndexPath);
+    if (Files.exists(path) && Files.isDirectory(path)) {
+      try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+        // Check if the directory is non-empty by checking if there's at least one entry
+        boolean isEmpty = !stream.iterator().hasNext();
+        if (isEmpty) {
+          return false;
+        }
+      }
+    }
+    Path metadataPath = Paths.get(joinIndexPath + "/" + METADATA_JSON);
+    if (!Files.exists(metadataPath) || Files.size(metadataPath) == 0) {
+      return false;
+    }
+
+    // check for metadata file
+    return true;
   }
 
   @Transactional
   public void writeCLBIUCNToFile(@NotNull final String datasetKeyInput) throws Exception {
+
+    final String fileName = exportPath + "/" + datasetKeyInput + "/" + INDEX_CSV;
+    if (Files.exists(Paths.get(fileName))) {
+      log.info("File {} already exists, skipping export", fileName);
+      return;
+    }
 
     try (HikariDataSource dataSource = getDataSource()) {
       // Create a session factory
@@ -342,9 +390,8 @@ public class IndexingService {
         throw new IllegalArgumentException("Invalid dataset key: " + datasetKeyInput);
       }
 
-
       final AtomicInteger counter = new AtomicInteger(0);
-      final String fileName = exportPath + "/" + datasetKeyInput + "/" + INDEX_CSV;
+
       final String metadata = exportPath + "/" + datasetKeyInput + "/" + METADATA_JSON;
 
       FileUtils.forceMkdir(new File(exportPath + "/" + datasetKeyInput));
@@ -668,8 +715,13 @@ public class IndexingService {
 
   @Transactional
   public void createMainIndex(String datasetId) throws Exception {
+    final String mainIndexPath = indexPath + "/" + MAIN_INDEX_DIR;
+    if (indexExists(mainIndexPath)){
+      log.info("Main index already exists at path {}", mainIndexPath);
+      return;
+    }
     writeCLBToFile(datasetId);
-    indexFile(exportPath + "/" + datasetId, indexPath + "/" + MAIN_INDEX_DIR);
+    indexFile(exportPath + "/" + datasetId, mainIndexPath);
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {

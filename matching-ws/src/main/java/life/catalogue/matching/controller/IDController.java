@@ -36,9 +36,9 @@ public class IDController {
         "verification that an external ID for a specific dataset  (e.g. WoRMS)  has been indexed and to check if " +
         "the ID has been associated with a taxon in the main index. ")
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
-  @Tag(name = "ID lookup services")
+  @Tag(name = "ID lookup services", description = "Services for checking which identifiers have been indexes and which are joined to the main index")
   @GetMapping(
-    value = {"v2/id/{datasetId}/{identifier}"},
+    value = {"v2/species/match/id/{datasetId}/{identifier}"},
     produces = "application/json")
   public List<ExternalID> matchV2(
     @PathVariable(value = "datasetId", required = false) String datasetId,
@@ -47,7 +47,7 @@ public class IDController {
     watch.start();
     List<ExternalID> ids = matchingService.matchID(datasetId, identifier);
     watch.stop();
-    log.info("v2/id/datasetId: {} {}, time: {}ms", datasetId, identifier, watch.getTime(TimeUnit.MILLISECONDS));
+    log.info("v2/species/match/id/datasetId: {} {}, time: {}ms", datasetId, identifier, watch.getTime(TimeUnit.MILLISECONDS));
     return ids;
   }
 
@@ -61,7 +61,7 @@ public class IDController {
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
   @Tag(name = "ID lookup services")
   @GetMapping(
-    value = {"v2/id/{identifier}"},
+    value = {"v2/species/match/id/{identifier}"},
     produces = "application/json")
   public List<ExternalID> matchV2(
     @PathVariable(value = "identifier", required = false) String identifier) {
@@ -78,12 +78,11 @@ public class IDController {
     summary = "ID join lookup service",
     description =
       "A lookup service, largely intended for debug purposes, to enable " +
-        "verification that an external ID has been indexed and to check if " +
-        "the ID has been associated with a taxon in the main index. ")
+        "view which external IDS are joined to a name usage in the main index.")
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
   @Tag(name = "ID lookup services")
   @GetMapping(
-    value = {"v2/joins/{identifier}"},
+    value = {"v2/species/match/joins/{identifier}"},
     produces = "application/json")
   public List<ExternalID> joins(
     @PathVariable(value = "identifier", required = false) String identifier) {

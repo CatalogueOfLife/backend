@@ -1,7 +1,5 @@
 package life.catalogue.matching.controller;
 
-import static life.catalogue.matching.util.CleanupUtils.*;
-
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,7 +24,6 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.gbif.nameparser.api.Rank;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -36,7 +33,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -49,25 +45,6 @@ public class MatchController implements ErrorController {
   private final MatchingService matchingService;
   private final ErrorAttributes errorAttributes;
   private static final String ERROR_PATH = "/error";
-
-  @Hidden
-  @GetMapping(value = ERROR_PATH, produces = "application/json")
-  public Map<String, Object> error(WebRequest request) {
-    Map<String, Object> errorAttributes = getErrorAttributes(request);
-    String traceRequested = request.getParameter("trace");
-    if (isTraceRequested(traceRequested)) {
-      Optional.ofNullable(errorAttributes.get("trace"))
-        .map(Object::toString)
-        .ifPresent(trace -> errorAttributes.put("trace", trace.split("\n\t")));
-    } else {
-      errorAttributes.remove("trace");
-    }
-    return errorAttributes;
-  }
-
-  private boolean isTraceRequested(String traceRequested) {
-    return "true".equalsIgnoreCase(traceRequested) || "on".equalsIgnoreCase(traceRequested);
-  }
 
   @Autowired
   public MatchController(ErrorAttributes errorAttributes, MatchingService matchingService) {
@@ -102,12 +79,12 @@ public class MatchController implements ErrorController {
     @Extension(
       name = "Order",
       properties = @ExtensionProperty(name = "Order", value = "0130")))
-  @Tag(name = "Searching names")
+  @Tag(name = "Metadata", description = "Metadata about the matching service, including details on the indexes and software")
   @GetMapping(
-    value = {"v2/metadata"},
+    value = {"v2/species/match/metadata"},
     produces = "application/json")
   public Optional<APIMetadata> metadata(){
-    return matchingService.getAPIMetadata();
+    return matchingService.getAPIMetadata(false);
   }
 
   @Hidden
@@ -116,6 +93,9 @@ public class MatchController implements ErrorController {
     produces = "application/json")
   public NameUsageMatch matchOldPaths(
     @RequestParam(value = "usageKey", required = false) String usageKey,
+    @RequestParam(value = "taxonID", required = false) String taxonID,
+    @RequestParam(value = "taxonConceptID", required = false) String taxonConceptID,
+    @RequestParam(value = "scientificNameID", required = false) String scientificNameID,
     @RequestParam(value = "name", required = false) String scientificName2,
     @RequestParam(value = "scientificName", required = false) String scientificName,
     @RequestParam(value = "authorship", required = false) String authorship2,
@@ -132,18 +112,18 @@ public class MatchController implements ErrorController {
     HttpServletRequest response) {
     return matchV2(
       usageKey,
-      null,null,null,
+      taxonID,taxonConceptID,scientificNameID,
       scientificName2, scientificName,
       authorship, authorship2,
-      removeNulls(genericName),
-      removeNulls(specificEpithet),
-      removeNulls(infraspecificEpithet),
+      genericName,
+      specificEpithet,
+      infraspecificEpithet,
       rank,
       rank2,
       classification,
       exclude,
-      bool(strict),
-      bool(verbose),
+      strict,
+      verbose,
       response);
   }
 
@@ -205,7 +185,7 @@ public class MatchController implements ErrorController {
           @Extension(
               name = "Order",
               properties = @ExtensionProperty(name = "Order", value = "0130")))
-  @Tag(name = "Searching names")
+  @Tag(name = "Searching names", description = "Matching services for scientific names and taxon identifiers")
   @Parameters(
       value = {
         @Parameter(
@@ -244,17 +224,26 @@ public class MatchController implements ErrorController {
         @Parameter(
             name = "genericName",
             description =
-                "Generic part of the name to match when given as atomised parts instead of the full name parameter."),
+                "Generic part of the name to match when given as atomised parts instead of the full name parameter.",
+          schema = @Schema(implementation = String.class)),
         @Parameter(name = "specificEpithet", description = "Specific epithet to match.", schema = @Schema(implementation = String.class)),
         @Parameter(name = "infraspecificEpithet", description = "Infraspecific epithet to match.", schema = @Schema(implementation = String.class)),
         @Parameter(
+          name = "exclude",
+          description = "An array of usage keys to exclude from the match.",
+          schema = @Schema(implementation = String[].class)
+        ),
+        @Parameter(
             name = "strict",
             description =
-                "If true it fuzzy matches only the given name, but never a taxon in the upper classification."),
+                "If true it fuzzy matches only the given name, but never a taxon in the upper classification.",
+          schema = @Schema(implementation = Boolean.class)
+        ),
         @Parameter(
             name = "verbose",
             description =
-                "If true it shows alternative matches which were considered but then rejected."),
+                "If true it shows alternative matches which were considered but then rejected.",
+            schema = @Schema(implementation = Boolean.class))
 
       })
   @ApiResponse(responseCode = "200", description = "Name usage suggestions found")
@@ -285,29 +274,29 @@ public class MatchController implements ErrorController {
     watch.start();
     // ugly, but jackson/spring isn't working with @JsonProperty
     classification.setClazz(response.getParameter("class"));
-    NameUsageMatch nameUsageMatch = matchingService.match(
-        removeNulls(usageKey),
-        removeNulls(taxonID),
-        removeNulls(taxonConceptID),
-        removeNulls(scientificNameID),
-        first(removeNulls(scientificName), removeNulls(scientificName2)),
-        first(removeNulls(authorship), removeNulls(authorship2)),
-        removeNulls(genericName),
-        removeNulls(specificEpithet),
-        removeNulls(infraspecificEpithet),
-        parseRank(first(removeNulls(rank), removeNulls(rank2))),
-        clean(classification),
+    NameUsageQuery query = NameUsageQuery.create(
+        usageKey,
+        taxonID,
+        taxonConceptID,
+        scientificNameID,
+        scientificName,
+        scientificName2,
+        authorship,
+        authorship2,
+        genericName,
+        specificEpithet,
+        infraspecificEpithet,
+        rank,
+        rank2,
+        classification,
         exclude,
-        bool(strict),
-        bool(verbose));
+        strict,
+        verbose);
+    NameUsageMatch nameUsageMatch = matchingService.match(query);
     watch.stop();
-    log("v2/species/match", scientificName, watch);
+    log("v2/species/match", query, watch);
     nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
     return nameUsageMatch;
-  }
-
-  private static void log(String requestPath, String query, StopWatch watch) {
-    log.info("[{}ms] {}: {}", String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)), requestPath, query);
   }
 
   @Operation(
@@ -320,7 +309,7 @@ public class MatchController implements ErrorController {
       "and ONLY use the given key, either finding the concept or returning no match.",
     extensions = @Extension(name = "Order", properties = @ExtensionProperty(name = "Order", value = "0130"))
   )
-  @Tag(name = "Searching names")
+  @Tag(name = "Searching names", description = "Matching services for scientific names and taxon identifiers")
   @Parameters(
     value = {
       @Parameter(
@@ -434,26 +423,30 @@ public class MatchController implements ErrorController {
       watch.start();
 
       classification.setClazz(response.getParameter("class"));
-      String scientificNameToUse = first(removeNulls(scientificName), removeNulls(scientificName2));
+      NameUsageQuery query = NameUsageQuery.create(
+        usageKey,
+        taxonID,
+        taxonConceptID,
+        scientificNameID,
+        scientificName,
+        scientificName2,
+        authorship,
+        authorship2,
+        genericName,
+        specificEpithet,
+        infraspecificEpithet,
+        rank,
+        rank2,
+        classification,
+        exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
+        strict,
+        verbose);
+
       Optional<NameUsageMatchFlatV1> optionalNameUsageMatchV1 = NameUsageMatchFlatV1.createFrom(
-        matchingService.match(
-          removeNulls(usageKey),
-          removeNulls(taxonID),
-          removeNulls(taxonConceptID),
-          removeNulls(scientificNameID),
-          scientificNameToUse,
-          first(removeNulls(authorship), removeNulls(authorship2)),
-          removeNulls(genericName),
-          removeNulls(specificEpithet),
-          removeNulls(infraspecificEpithet),
-          parseRank(first(removeNulls(rank), removeNulls(rank2))),
-          clean(classification),
-          exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
-          bool(strict),
-          bool(verbose)));
+        matchingService.match(query));
 
       watch.stop();
-      log("v1/species/match", scientificNameToUse, watch);
+      log("v1/species/match", query,  watch);
 
       if (optionalNameUsageMatchV1.isPresent()) {
         return optionalNameUsageMatchV1.get();
@@ -476,17 +469,19 @@ public class MatchController implements ErrorController {
       "and ONLY use the given key, either finding the concept or returning no match.",
     extensions = @Extension(name = "Order", properties = @ExtensionProperty(name = "Order", value = "0130"))
   )
-  @Tag(name = "Searching names")
+  @Tag(name = "Searching names", description = "Matching services for scientific names and taxon identifiers")
   @Parameters(
     value = {
       @Parameter(
         name = "name",
-        description = "The scientific name to fuzzy match against. May include the authorship and year"
+        description = "The scientific name to fuzzy match against. May include the authorship and year",
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(name = "scientificName", hidden = true),
       @Parameter(
         name = "authorship",
-        description = "The scientific name authorship to fuzzy match against."
+        description = "The scientific name authorship to fuzzy match against.",
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(name = "scientificNameAuthorship", hidden = true),
       @Parameter(
@@ -533,28 +528,39 @@ public class MatchController implements ErrorController {
       ),
       @Parameter(
         name = "genericName",
-        description = "Generic part of the name to match when given as atomised parts instead of the full name parameter."
+        description = "Generic part of the name to match when given as atomised parts instead of the full name parameter.",
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "specificEpithet",
-        description = "Specific epithet to match."
+        description = "Specific epithet to match.",
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(
         name = "infraspecificEpithet",
-        description = "Infraspecific epithet to match."
+        description = "Infraspecific epithet to match.",
+        schema = @Schema(implementation = String.class)
       ),
       @Parameter(name = "classification", hidden = true),
       @Parameter(
         name = "strict",
-        description = "If true it fuzzy matches only the given name, but never a taxon in the upper classification."
+        description = "If true it fuzzy matches only the given name, but never a taxon in the upper classification.",
+        schema = @Schema(implementation = Boolean.class)
       ),
       @Parameter(
         name = "verbose",
-        description = "If true it shows alternative matches which were considered but then rejected."
+        description = "If true it shows alternative matches which were considered but then rejected.",
+        schema = @Schema(implementation = Boolean.class)
       ),
       @Parameter(
         name = "usageKey",
-        description = "The usage key to look up. When provided, all other fields are ignored."
+        description = "The usage key to look up. When provided, all other fields are ignored.",
+        schema = @Schema(implementation = String.class)
+      ),
+      @Parameter(
+        name = "exclude",
+        description = "An array of usage keys to exclude from the match.",
+        schema = @Schema(implementation = Integer[].class)
       )
     }
   )
@@ -587,26 +593,29 @@ public class MatchController implements ErrorController {
     watch.start();
 
     classification.setClazz(response.getParameter("class"));
-    String scientificNameToUse = first(removeNulls(scientificName), removeNulls(scientificName2));
+    NameUsageQuery query = NameUsageQuery.create(
+      usageKey,
+      taxonID,
+      taxonConceptID,
+      scientificNameID,
+      scientificName,
+      scientificName2,
+      authorship,
+      authorship2,
+      genericName,
+      specificEpithet,
+      infraspecificEpithet,
+      rank,
+      rank2,
+      classification,
+      exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
+      strict,
+      verbose);
     Optional<NameUsageMatchV1> optionalNameUsageMatchV1 = NameUsageMatchV1.createFrom(
-      matchingService.match(
-        removeNulls(usageKey),
-        removeNulls(taxonID),
-        removeNulls(taxonConceptID),
-        removeNulls(scientificNameID),
-        scientificNameToUse,
-        first(removeNulls(authorship), removeNulls(authorship2)),
-        removeNulls(genericName),
-        removeNulls(specificEpithet),
-        removeNulls(infraspecificEpithet),
-        parseRank(first(removeNulls(rank), removeNulls(rank2))),
-        clean(classification),
-        exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
-        bool(strict),
-        bool(verbose)));
+      matchingService.match(query));
 
     watch.stop();
-    log("v1/species/match", scientificNameToUse, watch);
+    log("v1/species/match2", query, watch);
 
     if (optionalNameUsageMatchV1.isPresent()) {
       optionalNameUsageMatchV1.get().getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
@@ -652,10 +661,10 @@ public class MatchController implements ErrorController {
     StopWatch watch = new StopWatch();
     watch.start();
     // match by usageKey
-    NameUsageMatch match = matchingService.match(usageKey, null, null, null, null, null,
+    NameUsageMatch match = matchingService.match(new NameUsageQuery(usageKey, null, null, null, null, null,
       null, null, null, null, null, Set.of(),
       true,
-      false);
+      false));
 
     List<NameUsageMatch.Status> statusList = match.getAdditionalStatus();
     if (statusList == null || statusList.isEmpty() || statusList.get(0).getStatus() == null) {
@@ -692,6 +701,53 @@ public class MatchController implements ErrorController {
         "iucnTaxonID", status.getSourceId(),
         "code", status.getStatus()
       );
+    }
+  }
+
+  @Hidden
+  @GetMapping(value = ERROR_PATH, produces = "application/json")
+  public Map<String, Object> error(WebRequest request) {
+    Map<String, Object> errorAttributes = getErrorAttributes(request);
+    String traceRequested = request.getParameter("trace");
+    if (isTraceRequested(traceRequested)) {
+      Optional.ofNullable(errorAttributes.get("trace"))
+        .map(Object::toString)
+        .ifPresent(trace -> errorAttributes.put("trace", trace.split("\n\t")));
+    } else {
+      errorAttributes.remove("trace");
+    }
+    return errorAttributes;
+  }
+
+  private boolean isTraceRequested(String traceRequested) {
+    return "true".equalsIgnoreCase(traceRequested) || "on".equalsIgnoreCase(traceRequested);
+  }
+
+  private static void log(String requestPath, String query, StopWatch watch) {
+    log.info("[{}ms] {}: {}", String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)), requestPath, query);
+  }
+
+  private static void log(String requestPath, NameUsageQuery query, StopWatch watch) {
+    if (log.isInfoEnabled()) {
+      StringJoiner joiner = new StringJoiner(", ");
+
+      addIfNotNull(joiner, query.usageKey);
+      addIfNotNull(joiner, query.taxonID);
+      addIfNotNull(joiner, query.taxonConceptID);
+      addIfNotNull(joiner, query.scientificNameID);
+      addIfNotNull(joiner, query.scientificName);
+
+      log.info("[{}ms] [{}] {}",
+        String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)),
+        requestPath,
+        joiner.toString()
+      );
+    }
+  }
+
+  private static void addIfNotNull(StringJoiner joiner, Object value) {
+    if (Objects.nonNull(value)) {
+      joiner.add(value.toString());
     }
   }
 

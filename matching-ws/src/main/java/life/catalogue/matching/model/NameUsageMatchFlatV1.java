@@ -2,12 +2,11 @@ package life.catalogue.matching.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import life.catalogue.api.vocab.MatchType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
 
@@ -18,6 +17,7 @@ import org.gbif.nameparser.api.Rank;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
+@Schema(description = "A version 1 name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatchV1Flat", type = "object")
 public class NameUsageMatchFlatV1 implements Serializable {
 
   private static final long serialVersionUID = -8927655067465421358L;

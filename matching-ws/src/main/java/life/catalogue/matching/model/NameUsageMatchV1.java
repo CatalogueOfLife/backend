@@ -23,7 +23,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 @Builder
-@Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
+@Schema(description = "A version 1 name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatchV1", type = "object")
 public class NameUsageMatchV1 {
 
   @Schema(description = "If the matched usage is a synonym")

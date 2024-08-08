@@ -28,6 +28,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.matching.model.Classification;
 import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.model.NameUsageQuery;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.NameParsers;
@@ -184,7 +185,7 @@ public class MatchingServiceIT {
       IntRange confidence,
       Set<String> exclude) {
     NameUsageMatch best =
-        matcher.match(usageKey, null, null, null, name, null, null, null, null, rank, query, exclude, false, true);
+        matcher.match(new NameUsageQuery(usageKey, null, null, null, name, null, null, null, null, rank, query, exclude, false, true));
 
     print(name, best);
 
