@@ -433,7 +433,7 @@ public class DatasetIndex {
   }
 
   private Optional<Document> getByUsageKey(String usageKey) {
-    Query query = new TermQuery(new Term(FIELD_ID, escapeQueryChars(usageKey)));
+    Query query = new TermQuery(new Term(FIELD_ID, usageKey));
     try {
       TopDocs docs = getSearcher().search(query, 3);
       if (docs.totalHits.value > 0) {
@@ -599,6 +599,11 @@ public class DatasetIndex {
    * @return NameUsageMatch
    */
   public NameUsageMatch matchByExternalKey(String key, Issue notFoundIssue, Issue ignoredIssue) {
+
+    NameUsageMatch usageMatch = matchByUsageKey(key);
+    if (usageMatch.getDiagnostics().getMatchType() != MatchType.NONE) {
+      return usageMatch;
+    }
 
     // if join indexes are present, add them to the match
     if (identifierSearchers != null && !identifierSearchers.isEmpty()){
