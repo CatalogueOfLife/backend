@@ -259,7 +259,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name parser
     NameParser.PARSER.register(env.metrics());
-    NameParser.PARSER.configs().loadFromCLB();
+    //NameParser.PARSER.configs().loadFromCLB();
 
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));

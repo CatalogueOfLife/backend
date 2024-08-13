@@ -19,8 +19,12 @@ public class ExternalID {
     private String id;
     @Schema(description = "The main index identifier that the external identifier was matched to")
     private String mainIndexID;
-    @Schema(description = "The dataset key of the main index identifier")
+    @Schema(description = "The gbif key of the dataset containing the joined external ID")
+    private String gbifKey;
+    @Schema(description = "The dataset key of the joined external ID")
     private String datasetKey;
+    @Schema(description = "The dataset title of the joined external ID")
+    private String datasetTitle;
     @Schema(description = "The parent ID of the external identifier")
     private String parentID;
     @Schema(description = "The scientific name associated with the external identifier")

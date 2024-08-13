@@ -16,7 +16,8 @@
     "prefix": "urn:lsid:ipni.org:names:",
     "prefixMapping": [
       "https://www.ipni.org/n/"
-    ]
+    ],
+    "removePrefixForMatching": true
   },
   {
     "key": "2011",

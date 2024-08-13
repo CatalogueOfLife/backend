@@ -6,74 +6,181 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 
+import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.APIMetadata;
+import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.NameParsers;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 import java.text.NumberFormat;
-import java.util.Optional;
+import java.util.*;
+
+import static life.catalogue.matching.Main.*;
 
 /**
  * Main class to run the web services.
  */
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
 @Profile("web")
+@Slf4j
 public class MatchingApplication implements ApplicationRunner {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MatchingApplication.class);
-
+  protected final ApplicationContext appContext;
+  protected final IndexingService indexingService;
   protected final MatchingService matchingService;
+  protected final DatasetIndex datasetIndex;
 
   @Value("${version}") String version;
-  @Value("${licence}") String licence;
+  @Value("${licence.name}") String licence;
   @Value("${licence.url}") String licenceUrl;
+  @Value("${mode:INDEX_AND_RUN}") String configuredMode;
+  @Value("${clb.dataset.id: }") String configuredDatasetId;
+  @Value("${clb.identifier.dataset.ids: }") List<String> configuredIdentifierDatasetIds;
+  @Value("${clb.iucn.dataset.id: }") String configuredIucnDatasetId;
+  @Value("${index.path:/tmp/matching-index}") String indexPath;
+  @Value("${export.path:/tmp/matching-export}") String exportPath;
 
-  public MatchingApplication(MatchingService matchingService) {
+  public MatchingApplication(MatchingService matchingService,
+                             IndexingService indexingService,
+                             DatasetIndex datasetIndex, ApplicationContext appContext) {
     this.matchingService = matchingService;
+    this.indexingService = indexingService;
+    this.datasetIndex = datasetIndex;
+    this.appContext = appContext;
   }
 
   @Override
   public void run(ApplicationArguments args) {
 
-    Optional<APIMetadata> metadata = matchingService.getAPIMetadata();
+    ExecutionMode mode = getMode(args);
+
+    // if index does not exist, run indexing
+    if (Main.ExecutionMode.INDEX.equals(mode) || Main.ExecutionMode.INDEX_AND_RUN.equals(mode)) {
+      try {
+        runIndexingIfRequired(args);
+        matchingService.getAPIMetadata(true);
+      } catch (Exception e) {
+        log.error("Failed to run indexing", e);
+        throw new RuntimeException(e);
+      }
+    }
+
+    // if mode is INDEX  exit after indexing
+    if (Main.ExecutionMode.INDEX.equals(mode)) {
+      SpringApplication.exit(appContext);
+    } else {
+      initialiseWebapp();
+    }
+  }
+
+  private void initialiseWebapp() {
+    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(false);
     if (metadata.isEmpty()) {
-      LOG.error("No main index found. Cannot start web services");
+      log.error("No main index found. Cannot start web services");
       return;
     }
 
     try {
-      LOG.info("Loading name parser configs from ChecklistBank");
+      log.info("Loading name parser configs from ChecklistBank");
       NameParsers.INSTANCE.configs().loadFromCLB();
     } catch (IOException e) {
-      LOG.error("Failed to load name parser configs from CLB", e);
-      return;
+      log.error("Failed to load name parser configs from CLB", e);
     } catch (InterruptedException e) {
-      LOG.warn("Interrupted. Stop web services", e);
-      return;
+      log.warn("Interrupted. Failed to load name parser configs from CLB.", e);
     }
 
     metadata.ifPresent(m -> {
-      LOG.info("Web services started. Index size: {} taxa, size on disk: {}",
+      if (m.getBuildInfo() != null) {
+        log.info("Git commit ID: {}", m.getBuildInfo().getSha());
+      }
+      log.info("Web services started. Index size: {} taxa, size on disk: {}",
       NumberFormat.getInstance().format(
         m.getMainIndex().getNameUsageCount()),
         m.getMainIndex().getSizeInMB() > 0 ? NumberFormat.getInstance().format(m.getMainIndex().getSizeInMB()) + "MB" : "unknown");
     });
   }
 
+  private void runIndexingIfRequired(ApplicationArguments args) throws Exception {
+
+    // get dataset IDs, allowing for command line overrides
+    final String datasetId = getMainDatasetId(args);
+    final String iucnDatasetId = getIucnDatasetId(args);
+    final List<String> identifierDatasetIds = getIdentifierDatasetIds(args);
+
+    // build the main index
+    indexingService.createMainIndex(datasetId);
+
+    // reinitialise dataset index for the new index
+    datasetIndex.reinit();
+
+    // build iucn index
+    if (Objects.nonNull(iucnDatasetId)) {
+      indexingService.indexIUCN(iucnDatasetId);
+    }
+
+    // build identifier indexes
+    for (String id : identifierDatasetIds) {
+        indexingService.indexIdentifiers(id);
+    }
+
+    log.info("Indexing completed");
+  }
+
+  private ExecutionMode getMode(ApplicationArguments args) {
+    ExecutionMode mode = configuredMode != null ? ExecutionMode.valueOf(configuredMode) : ExecutionMode.INDEX_AND_RUN;
+    if (args.getOptionValues(Main.MODE) != null && !args.getOptionValues(Main.MODE).isEmpty()) {
+      mode = ExecutionMode.valueOf(args.getOptionValues(Main.MODE).get(0));
+    }
+    return mode;
+  }
+
+  private String getMainDatasetId(ApplicationArguments args) {
+    String datasetId = configuredDatasetId;
+    if (args.getOptionValues(Main.CLB_DATASET_ID) != null && !args.getOptionValues(Main.CLB_DATASET_ID).isEmpty()) {
+      datasetId = args.getOptionValues(Main.CLB_DATASET_ID).get(0);
+    }
+    return datasetId;
+  }
+
+  private String getIucnDatasetId(ApplicationArguments args) {
+    String datasetId = configuredIucnDatasetId;
+    if (args.getOptionValues(CLB_IUCN_DATASET_ID) != null && !args.getOptionValues(Main.CLB_IUCN_DATASET_ID).isEmpty()) {
+      datasetId = args.getOptionValues(Main.CLB_IUCN_DATASET_ID).get(0);
+    }
+    return datasetId;
+  }
+
+  private List<String> getIdentifierDatasetIds(ApplicationArguments args) {
+    List<String> identifierDatasetIds = configuredIdentifierDatasetIds;
+    if (args.getOptionValues(CLB_IDENTIFIER_DATASET_IDS) != null && !args.getOptionValues(Main.CLB_IDENTIFIER_DATASET_IDS).isEmpty()) {
+      List<String> ids = args.getOptionValues(Main.CLB_IDENTIFIER_DATASET_IDS);
+      if (ids != null) {
+        for (String id : ids) {
+          if (id != null) {
+            identifierDatasetIds.addAll(Arrays.asList(id.split(",")));
+          }
+        }
+      }
+    }
+    return identifierDatasetIds;
+  }
+
   @Bean
   public OpenAPI customOpenAPI() {
-    Optional<APIMetadata> metadata = matchingService.getAPIMetadata();
+    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(false);
     OpenAPI openAPI = new OpenAPI();
     metadata.ifPresent(m -> {
       String title = m.getMainIndex().getDatasetTitle() != null ?
@@ -99,5 +206,4 @@ public class MatchingApplication implements ApplicationRunner {
 
     return openAPI;
   }
-
 }

@@ -4,7 +4,7 @@
                   converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%highlight(%blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))</pattern>
+      <pattern> %highlight(%boldGreen([%date{'yyyy-MM-dd HH:mm:ss'}]) %blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))</pattern>
     </encoder>
   </appender>
   <root level="WARN">

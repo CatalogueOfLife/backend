@@ -11,6 +11,7 @@ public class IndexConstants {
   public static final String FIELD_RANK = "rank";
   public static final String FIELD_STATUS = "status";
   public static final String FIELD_PARENT_ID = "parentId";
+  public static final String FIELD_NOMENCLATURAL_CODE = "nomcode";
   public static final String FIELD_CATEGORY = "category";
   public static final String FIELD_JOIN_ID = "joinId";
   public static final String MAIN_INDEX_DIR = "main";

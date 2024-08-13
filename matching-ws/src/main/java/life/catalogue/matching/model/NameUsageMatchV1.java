@@ -23,7 +23,7 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 @Builder
-@Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
+@Schema(description = "A version 1 name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatchV1", type = "object")
 public class NameUsageMatchV1 {
 
   @Schema(description = "If the matched usage is a synonym")
@@ -63,7 +63,7 @@ public class NameUsageMatchV1 {
     @Schema(description = "Confidence level in percent")
     Integer confidence;
     @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")
-    TaxonomicStatus status;
+    TaxonomicStatusV1 status;
     @Schema(description = "Additional notes about the match")
     String note;
     @Schema(description = "Time taken to perform the match in milliseconds")
@@ -78,12 +78,14 @@ public class NameUsageMatchV1 {
     try {
       NameUsageMatchV1Builder builder = NameUsageMatchV1.builder();
       builder.synonym(nameUsageMatch.isSynonym());
-      builder.usage(RankedNameV1.builder()
-        .key(Integer.parseInt(nameUsageMatch.getUsage().getKey()))
-        .name(nameUsageMatch.getUsage().getName())
-        .rank(nameUsageMatch.getUsage().getRank())
-        .build()
-      );
+      if (nameUsageMatch.getUsage() != null) {
+        builder.usage(RankedNameV1.builder()
+          .key(Integer.parseInt(nameUsageMatch.getUsage().getKey()))
+          .name(nameUsageMatch.getUsage().getName())
+          .rank(nameUsageMatch.getUsage().getRank())
+          .build()
+        );
+      }
       if (nameUsageMatch.getAcceptedUsage() != null) {
         builder.acceptedUsage(RankedNameV1.builder()
           .key(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()))
@@ -94,7 +96,7 @@ public class NameUsageMatchV1 {
       }
       if (nameUsageMatch.getClassification() != null) {
         List<RankedNameV1> classification = new ArrayList<>();
-        for (RankedName cl : nameUsageMatch.getClassification()) {
+        for (NameUsageMatch.RankedName cl : nameUsageMatch.getClassification()) {
           classification.add(
             RankedNameV1.builder()
               .key(Integer.parseInt(cl.getKey()))
@@ -109,7 +111,7 @@ public class NameUsageMatchV1 {
         DiagnosticsV1.DiagnosticsV1Builder diagBuilder = DiagnosticsV1.builder();
         diagBuilder.matchType(MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
         diagBuilder.confidence(nameUsageMatch.getDiagnostics().getConfidence());
-        diagBuilder.status(nameUsageMatch.getDiagnostics().getStatus());
+        diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getDiagnostics().getStatus()));
         diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
         diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
         if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
@@ -147,6 +149,42 @@ public class NameUsageMatchV1 {
           return MatchTypeV1.HIGHERRANK;
         case AMBIGUOUS:
           return MatchTypeV1.PARTIAL;
+        default:
+          return null;
+      }
+    }
+  }
+
+  /**
+   * TODO map HOMOTYPIC_SYNONYM, PROPARTE_SYNONYM, HETEROTYPIC_SYNONYM ?
+   */
+  public enum TaxonomicStatusV1 {
+    DOUBTFUL,
+    MISAPPLIED,
+    ACCEPTED,
+    HOMOTYPIC_SYNONYM,
+    SYNONYM,
+    PROPARTE_SYNONYM,
+    HETEROTYPIC_SYNONYM;
+
+    public static TaxonomicStatusV1 convert(TaxonomicStatus taxonomicStatus){
+      if (taxonomicStatus == null) {
+        return null;
+      }
+
+      switch (taxonomicStatus){
+        case PROVISIONALLY_ACCEPTED:
+          return TaxonomicStatusV1.DOUBTFUL;
+        case SYNONYM:
+          return TaxonomicStatusV1.SYNONYM;
+        case ACCEPTED:
+          return TaxonomicStatusV1.ACCEPTED;
+        case BARE_NAME:
+          return null;
+        case MISAPPLIED:
+          return TaxonomicStatusV1.MISAPPLIED;
+        case AMBIGUOUS_SYNONYM:
+          return TaxonomicStatusV1.HETEROTYPIC_SYNONYM;
         default:
           return null;
       }

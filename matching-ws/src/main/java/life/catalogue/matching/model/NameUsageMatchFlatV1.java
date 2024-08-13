@@ -2,12 +2,11 @@ package life.catalogue.matching.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import life.catalogue.api.vocab.MatchType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.gbif.nameparser.api.Rank;
 
@@ -18,6 +17,7 @@ import org.gbif.nameparser.api.Rank;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Data
+@Schema(description = "A version 1 name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatchV1Flat", type = "object")
 public class NameUsageMatchFlatV1 implements Serializable {
 
   private static final long serialVersionUID = -8927655067465421358L;
@@ -26,7 +26,7 @@ public class NameUsageMatchFlatV1 implements Serializable {
   private String scientificName;
   private String canonicalName;
   private String rank;
-  private String status;
+  private NameUsageMatchV1.TaxonomicStatusV1 status;
   private Integer confidence;
   private String note;
   private NameUsageMatchV1.MatchTypeV1 matchType;
@@ -51,7 +51,7 @@ public class NameUsageMatchFlatV1 implements Serializable {
   private Integer speciesKey;
 
   public static Optional<NameUsageMatchFlatV1> createFrom(NameUsageMatch nameUsageMatch) {
-    if (nameUsageMatch == null) return Optional.empty();
+    if (nameUsageMatch == null || nameUsageMatch.getUsage() == null) return Optional.empty();
 
     try {
       //check if usageKey is a number
@@ -71,7 +71,7 @@ public class NameUsageMatchFlatV1 implements Serializable {
       match.setAcceptedUsageKey(Integer.parseInt(nameUsageMatch.getAcceptedUsage().getKey()));
 
     if (nameUsageMatch.getDiagnostics().getStatus() != null)
-      match.setStatus(nameUsageMatch.getDiagnostics().getStatus().name());
+      match.setStatus(NameUsageMatchV1.TaxonomicStatusV1.convert(nameUsageMatch.getDiagnostics().getStatus()));
     match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
     match.setNote(nameUsageMatch.getDiagnostics().getNote());
     match.setMatchType(NameUsageMatchV1.MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));

@@ -22,4 +22,5 @@ public class Dataset {
   List<String> prefixMapping = List.of();
   Long taxonCount = 0L;
   Long matchesToMainIndex = 0L;
+  Boolean removePrefixForMatching = false;
 }

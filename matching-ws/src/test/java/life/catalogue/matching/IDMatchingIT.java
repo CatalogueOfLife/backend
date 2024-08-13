@@ -71,11 +71,11 @@ public class IDMatchingIT {
   @Test
   public void testJoinHigherTaxa(){
 
-    NameUsageMatch match = matcher.match(
+    NameUsageMatch match = matcher.match(new NameUsageQuery(
       null, "ext-4", null, null, null, null,
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match);
     assertNotNull(match.getUsage());
@@ -86,21 +86,21 @@ public class IDMatchingIT {
   @Test
   public void testJoinLeafTaxa(){
 
-    NameUsageMatch match1 = matcher.match(
+    NameUsageMatch match1 = matcher.match(new NameUsageQuery(
       null, "ext-6", null, null, null, null,
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match1);
     assertNotNull(match1.getUsage());
     assertEquals("1011638", match1.getUsage().getKey());
 
-    NameUsageMatch match2 = matcher.match(
+    NameUsageMatch match2 = matcher.match(new NameUsageQuery(
       null, null, null, null, "Abacion tesselatum", null,
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match2);
     assertNotNull(match2.getUsage());
@@ -110,21 +110,21 @@ public class IDMatchingIT {
   @Test
   public void testJoinLeafTaxaWithPrefix(){
 
-    NameUsageMatch match1 = matcher.match(
+    NameUsageMatch match1 = matcher.match(new NameUsageQuery(
       null, "other-ext-", null, null, "Abacion tesselatum", null,
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match1);
     assertNotNull(match1.getUsage());
     assertEquals("1011638", match1.getUsage().getKey());
 
-    NameUsageMatch match2 = matcher.match(
+    NameUsageMatch match2 = matcher.match(new NameUsageQuery(
       null, "other-ext2-", null, null, "Abacion tesselatum", null,
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match2);
     assertNotNull(match2.getUsage());
@@ -134,11 +134,11 @@ public class IDMatchingIT {
   @Test
   public void testIDandNameInconsistent(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, "ext-6", null, null, "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertNotNull(match3.getUsage());
@@ -149,11 +149,11 @@ public class IDMatchingIT {
   @Test
   public void testTaxonIDNotFound(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, "ext-123", null, null, "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_ID_NOT_FOUND));
@@ -162,11 +162,11 @@ public class IDMatchingIT {
   @Test
   public void testTaxonConceptIDNotFound(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, null, "ext-123", null, "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_CONCEPT_ID_NOT_FOUND));
@@ -175,11 +175,11 @@ public class IDMatchingIT {
   @Test
   public void testScientificNameIDNotFound(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, null, null, "ext-123", "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.SCIENTIFIC_NAME_ID_NOT_FOUND));
@@ -189,11 +189,11 @@ public class IDMatchingIT {
   @Test
   public void testTaxonIDIgnored(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, "ext-7", null, null, "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_ID_NOT_FOUND));
@@ -202,11 +202,11 @@ public class IDMatchingIT {
   @Test
   public void testTaxonConceptIDIgnored(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, null, "ext-7", null, "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_CONCEPT_ID_NOT_FOUND));
@@ -215,11 +215,11 @@ public class IDMatchingIT {
   @Test
   public void testScientificNameIDIgnored(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, null, null, "ext-7", "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.SCIENTIFIC_NAME_ID_NOT_FOUND));
@@ -228,11 +228,11 @@ public class IDMatchingIT {
   @Test
   public void testTaxonNameAndIDAmbiguous(){
 
-    NameUsageMatch match3 = matcher.match(
+    NameUsageMatch match3 = matcher.match(new NameUsageQuery(
       null, null, null, "ext-6", "Abacion nonsense", "Abacionidae",
       null,null,null, null, null, null,
       false, false
-    );
+    ));
 
     assertNotNull(match3);
     assertTrue(match3.getDiagnostics().getIssues().contains(Issue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS));
