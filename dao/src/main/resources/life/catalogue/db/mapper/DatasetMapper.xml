@@ -314,15 +314,18 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM dataset d
     WHERE d.deleted IS NULL
-      AND exists(
-          SELECT 1 FROM sector s
-          WHERE s.dataset_key=#{contributesTo} AND s.subject_dataset_key=d.key
+      <if test="contributesTo != null">
+        AND exists(
+        SELECT 1 FROM sector s
+        WHERE s.dataset_key=#{contributesTo} AND s.subject_dataset_key=d.key
         <if test="!inclMerge">
           AND s.mode != 'MERGE'
         </if>
-      )
+        )
+      </if>
       <if test="q != null">
-        AND (f_unaccent(alias) ILIKE '%SPecie%' OR f_unaccent(title) ILIKE '%SPecie%')
+        <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
+        AND (f_unaccent(alias) ILIKE $gbif$%${q}%$gbif$ OR f_unaccent(title) ILIKE $gbif$%${q}%$gbif$)
       </if>
     ORDER BY alias NULLS LAST, title
     LIMIT 25

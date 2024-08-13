@@ -496,6 +496,34 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void sourceSuggest() throws Exception {
+    final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
+    final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");
+    final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+    final Integer d4 = createSearchableDataset("FOO", "bar;Döring", "BAR", null);
+    final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
+    createSector(Datasets.COL, d1);
+    createSector(Datasets.COL, d2);
+    createSector(Datasets.COL, d3);
+    createSector(Datasets.COL, d4);
+    commit();
+
+    for (boolean b : List.of(true, false)) {
+      assertTrue(mapper().suggest("qwertz", Datasets.COL, b).isEmpty());
+      assertEquals(d1, mapper().suggest("ITI", Datasets.COL, b).get(0).getKey());
+      assertEquals(d1, mapper().suggest("itis", Datasets.COL, b).get(0).getKey());
+
+      assertEquals(2, mapper().suggest("worm", null, b).size());
+      assertEquals(d3, mapper().suggest("worm", Datasets.COL, b).get(0).getKey());
+    }
+
+    mapper().delete(d5);
+    commit();
+    assertEquals(1, mapper().suggest("worm", null, true).size());
+    assertEquals(d3, mapper().suggest("worm", Datasets.COL, true).get(0).getKey());
+  }
+
+  @Test
   public void search() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
     commit();

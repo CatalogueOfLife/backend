@@ -105,6 +105,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * Filters datasets to only list those that contribute as a source dataset with at least one sector to a given project.
+   * @param contributesTo project or release to contribute to, i.e. be a source. If null all datasets are candidates
    */
   List<DatasetSimple> suggest(@Param("q") String query,
                               @Param("contributesTo") Integer contributesTo,
