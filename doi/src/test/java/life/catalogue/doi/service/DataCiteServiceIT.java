@@ -104,7 +104,7 @@ public class DataCiteServiceIT {
     assertEquals("The Global Biodiversity Information Facility", data.getPublisher());
     assertEquals("https://www.gbif.org/occurrence/download/0006447-200221144449610", data.getUrl());
     assertEquals(1, data.getCreators().size());
-    assertEquals("Occdownload Gbif.Org", data.getCreators().get(0).getName());
+    assertEquals("GBIF.Org User", data.getCreators().get(0).getName());
     // IPT dataset
     doi = new DOI("10.15472/ciasei");
     data = prodReadService.resolve(doi);

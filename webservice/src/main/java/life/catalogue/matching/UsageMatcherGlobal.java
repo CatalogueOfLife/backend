@@ -15,6 +15,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
 
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import life.catalogue.matching.nidx.NameIndex;
@@ -118,6 +119,21 @@ public class UsageMatcherGlobal {
   public void removeLoader(int datasetKey) {
     LOG.info("Remove usage loader for dataset {}", datasetKey);
     loaders.remove(datasetKey);
+  }
+
+  /**
+   * Maps a single usage from a given source to another dataset
+   * @param src usage to map
+   * @param targetDatasetKey dataset to map to
+   */
+  public UsageMatch map(DSID<String> src, int targetDatasetKey, boolean verbose) {
+    NameUsageBase nu;
+    List<SimpleNameCached> classification;
+    try (SqlSession session = factory.openSession()) {
+      nu = session.getMapper(NameUsageMapper.class).get(src);
+      classification = uCache.getClassification(src, loaders.getOrDefault(src.getDatasetKey(), defaultLoader));
+    }
+    return match(targetDatasetKey, nu, classification, false, verbose);
   }
 
   /**

@@ -6,12 +6,16 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.*;
 
 import life.catalogue.parser.*;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -46,6 +50,7 @@ public class NameUsageMatchingResource {
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
   private final UsageMatcherGlobal matcher;
+  private final UsageCache uCache;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
   public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
@@ -53,6 +58,7 @@ public class NameUsageMatchingResource {
     this.exec = exec;
     this.factory = factory;
     this.matcher = matcher;
+    this.uCache = matcher.getUCache();
   }
 
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
@@ -74,15 +80,15 @@ public class NameUsageMatchingResource {
 
 
   private static SimpleNameClassified<SimpleName> interpret(String id,
-                                                     String q,
-                                                     String name,
-                                                     String sciname,
-                                                     String authorship,
-                                                     String code,
-                                                     String rank,
-                                                     String status,
-                                                     Classification classification,
-                                                     IssueContainer issues) {
+                                                            String q,
+                                                            String name,
+                                                            String sciname,
+                                                            String authorship,
+                                                            String code,
+                                                            String rank,
+                                                            String status,
+                                                            Classification classification,
+                                                            IssueContainer issues) {
     NomCode iCode = SafeParser.parse(NomCodeParser.PARSER, code)
       .orNull(Issue.NOMENCLATURAL_CODE_INVALID, issues);
 
@@ -90,7 +96,7 @@ public class NameUsageMatchingResource {
       .orNull(Issue.RANK_INVALID, issues);
 
     EnumNote<TaxonomicStatus> iStatus = SafeParser.parse(TaxonomicStatusParser.PARSER, status)
-      .orElse(()->new EnumNote<>(TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, issues);
+      .orElse(() -> new EnumNote<>(TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, issues);
 
     var sn = SimpleNameClassified.snc(id, iRank, iCode, iStatus.val, ObjectUtils.coalesce(sciname, name, q), authorship);
     if (StringUtils.isBlank(sn.getName())) {
@@ -101,6 +107,17 @@ public class NameUsageMatchingResource {
     }
     return sn;
   }
+
+  @GET
+  @Path("{id}")
+  public UsageMatch map(@PathParam("key") int datasetKey,
+                                    @PathParam("id") String id,
+                                    @QueryParam("datasetKey") int targetDatasetKey,
+                                    @QueryParam("verbose") boolean verbose
+  ) throws InterruptedException {
+    return matcher.map(DSID.of(datasetKey, id), targetDatasetKey, verbose);
+  }
+
 
   @GET
   public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
