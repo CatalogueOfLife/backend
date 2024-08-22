@@ -38,13 +38,11 @@ public class DwcInterpreter extends InterpreterBase {
     ALT_ID_TERMS.put(WfoTerm.ipniID, Identifier.Scope.IPNI);
   }
 
-  private final MappingInfos mappingFlags;
   private final Term idTerm;
   private final Map<String, String> dwcaID2taxonID = new HashMap<>();
 
   public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, NeoDb store) {
     super(settings, refFactory, store, false);
-    this.mappingFlags = mappingFlags;
     idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
 
@@ -311,32 +309,42 @@ public class DwcInterpreter extends InterpreterBase {
    */
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
     if (rec.hasTerm(DwcTerm.typeStatus)) {
-      TypeMaterial m = new TypeMaterial();
-      m.setId(rec.getRaw(DwcTerm.occurrenceID));
-      m.setNameId(taxonID(rec)); // needs to point to a Name.ID !!!
-      m.setCitation(rec.get(DwcTerm.verbatimLabel));
-      m.setStatus(SafeParser.parse(TypeStatusParser.PARSER, rec.get(DwcTerm.typeStatus)).orElse(TypeStatus.OTHER, Issue.TYPE_STATUS_INVALID, rec));
-      m.setLocality(rec.get(DwcTerm.locality));
-      m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
+      Optional<? extends TypeStatus> status;
       try {
-        CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
+        status = TypeStatusParser.PARSER.parse(rec.get(DwcTerm.typeStatus));
       } catch (UnparsableException e) {
-        rec.addIssue(Issue.LAT_LON_INVALID);
+        rec.addIssue(Issue.TYPE_STATUS_INVALID);
+        status = Optional.of(TypeStatus.OTHER);
       }
-      m.setAltitude(rec.getFirst(DwcTerm.minimumElevationInMeters, DwcTerm.maximumElevationInMeters));
-      m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(DwcTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
-      m.setInstitutionCode(rec.get(DwcTerm.institutionCode));
-      m.setCatalogNumber(rec.get(DwcTerm.catalogNumber));
-      m.setAssociatedSequences(rec.get(DwcTerm.associatedSequences));
-      m.setHost(null);
-      m.setDate(rec.get(DwcTerm.eventDate));
-      m.setCollector(rec.get(DwcTerm.recordedBy));
-      m.setLink(uri(rec, Issue.URL_INVALID, DcTerm.references));
-      // pool other infos in remarks
-      m.addRemarks(rec.get(DwcTerm.individualCount));
-      m.addRemarks(rec.get(DwcTerm.sex));
-      setReference(m, rec);
-      return Optional.of(m);
+      
+      if (status.isPresent()) {
+        TypeMaterial m = new TypeMaterial();
+        m.setId(rec.getRaw(DwcTerm.occurrenceID));
+        m.setNameId(taxonID(rec)); // needs to point to a Name.ID !!!
+        m.setStatus(status.get());
+        m.setCitation(rec.get(DwcTerm.verbatimLabel));
+        m.setLocality(rec.get(DwcTerm.locality));
+        m.setCountry(SafeParser.parse(CountryParser.PARSER, rec.get(DwcTerm.country)).orNull(Issue.COUNTRY_INVALID, rec));
+        try {
+          CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
+        } catch (UnparsableException e) {
+          rec.addIssue(Issue.LAT_LON_INVALID);
+        }
+        m.setAltitude(rec.getFirst(DwcTerm.minimumElevationInMeters, DwcTerm.maximumElevationInMeters));
+        m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(DwcTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
+        m.setInstitutionCode(rec.get(DwcTerm.institutionCode));
+        m.setCatalogNumber(rec.get(DwcTerm.catalogNumber));
+        m.setAssociatedSequences(rec.get(DwcTerm.associatedSequences));
+        m.setHost(null);
+        m.setDate(rec.get(DwcTerm.eventDate));
+        m.setCollector(rec.get(DwcTerm.recordedBy));
+        m.setLink(uri(rec, Issue.URL_INVALID, DcTerm.references));
+        // pool other infos in remarks
+        m.addRemarks(rec.get(DwcTerm.individualCount));
+        m.addRemarks(rec.get(DwcTerm.sex));
+        setReference(m, rec);
+        return Optional.of(m);
+      }
     }
     return Optional.empty();
   }
