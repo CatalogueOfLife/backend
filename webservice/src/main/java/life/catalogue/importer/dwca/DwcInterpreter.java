@@ -316,7 +316,7 @@ public class DwcInterpreter extends InterpreterBase {
         rec.addIssue(Issue.TYPE_STATUS_INVALID);
         status = Optional.of(TypeStatus.OTHER);
       }
-      
+
       if (status.isPresent()) {
         TypeMaterial m = new TypeMaterial();
         m.setId(rec.getRaw(DwcTerm.occurrenceID));

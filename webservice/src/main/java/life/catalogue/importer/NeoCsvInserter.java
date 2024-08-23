@@ -46,7 +46,7 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
  */
 public abstract class NeoCsvInserter implements NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCsvInserter.class);
-  private static final String INTERRUPT_MESSAGE = "NeoInserter interrupted, exit early with incomplete import";
+  protected static final String INTERRUPT_MESSAGE = "NeoInserter interrupted, exit early with incomplete import";
 
   protected final DatasetSettings settings;
   protected final NeoDb store;
