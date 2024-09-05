@@ -3,23 +3,13 @@ package life.catalogue.es;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.terms.*;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.kryo.*;
-import life.catalogue.common.kryo.jdk.JdkImmutableListSerializer;
-import life.catalogue.common.kryo.jdk.JdkImmutableMapSerializer;
-import life.catalogue.common.kryo.jdk.JdkImmutableSetSerializer;
 
-import org.gbif.dwc.terms.BibTexTerm;
-import org.gbif.dwc.terms.TermFactory;
-import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.*;
 
 import java.net.URI;

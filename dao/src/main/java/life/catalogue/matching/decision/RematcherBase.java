@@ -7,7 +7,6 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.apache.ibatis.session.SqlSession;

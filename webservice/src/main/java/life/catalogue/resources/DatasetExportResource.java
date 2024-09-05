@@ -10,25 +10,19 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.printer.*;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -41,8 +35,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Streams;
 
 import io.dropwizard.auth.Auth;
 

@@ -26,7 +26,6 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

@@ -70,7 +70,6 @@ CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
   'BLOCK',
   'REVIEWED',
   'UPDATE',
-  'UPDATE_RECURSIVE',
   'IGNORE'
 );
 
@@ -1920,6 +1919,24 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
 
+-- return simple_name of parent usage with given rank - or null
+CREATE OR REPLACE FUNCTION parent_by_rank(v_dataset_key INTEGER, v_id TEXT, v_rank RANK, v_max_depth INTEGER default 100) RETURNS simple_name AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, t.name_id, n.rank, 1 distance
+    FROM name_usage t JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL
+  SELECT t.id, t.parent_id, t.name_id, n.rank, x.distance+1
+    FROM x, name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth AND n.rank >= v_rank
+  )
+
+  SELECT (x.id,x.rank,n.scientific_name,n.authorship)::simple_name
+  FROM x JOIN name n ON n.dataset_key=v_dataset_key AND n.id=x.name_id
+  WHERE x.rank = v_rank;
+
+$$ LANGUAGE SQL;
 
 -- email domain extract function
 create or replace function get_domainname(_value text)

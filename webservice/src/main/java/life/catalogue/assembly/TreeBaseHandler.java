@@ -10,6 +10,7 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.release.ParentStack;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.*;
@@ -46,6 +47,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Dataset source;
   protected final SectorImport state;
   protected final Map<String, EditorialDecision> decisions;
+  protected final ParentStack<ParentDecision> parentDecisions = new ParentStack<>();
   protected final NameIndex nameIndex;
   protected final SqlSession session;
   protected final SqlSession batchSession;
@@ -74,6 +76,20 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int sCounter = 0;
   protected int tCounter = 0;
   protected int decisionCounter = 0;
+
+  public static class ParentDecision extends NameUsageBase {
+    public final EditorialDecision decision;
+
+    ParentDecision(NameUsageBase sn, EditorialDecision decision) {
+      super(sn);
+      this.decision = decision;
+    }
+
+    @Override
+    public NameUsageBase copy() {
+      throw new UnsupportedOperationException();
+    }
+  }
 
   public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
                          User user, Sector sector, SectorImport state,
@@ -146,10 +162,26 @@ public abstract class TreeBaseHandler implements TreeHandler {
     if (sector.isRemoveOrdinals() && nu.isTaxon()) {
       ((Taxon)nu).setOrdinal(null);
     }
+    // inherited updates
+    if (nu.isTaxon()) {
+      Taxon t = (Taxon) nu;
+      for (var d : parentDecisions.getParents(false)) {
+        if (d.decision.getMode() == EditorialDecision.Mode.UPDATE) {
+          if (d.decision.isExtinct() != null) {
+            t.setExtinct(d.decision.isExtinct());
+          }
+        }
+      }
+    }
     // decisions
     if (decisions.containsKey(nu.getId())) {
-      mod = applyDecision(nu, decisions.get(nu.getId()));
+      var dec = decisions.get(nu.getId());
+      mod = applyDecision(nu, dec);
       nu = mod.usage;
+      if (dec.getMode()== EditorialDecision.Mode.UPDATE) {
+        // keep update decisions for inherited updates, e.g. extinct
+        parentDecisions.push(new ParentDecision(nu,dec));
+      }
     } else {
       // apply general rules otherwise
       SyncNameUsageRules.applyAlways(nu);

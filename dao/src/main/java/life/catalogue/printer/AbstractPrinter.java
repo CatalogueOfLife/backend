@@ -7,7 +7,6 @@ import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;

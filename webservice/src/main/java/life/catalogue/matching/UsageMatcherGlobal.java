@@ -15,7 +15,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import life.catalogue.matching.nidx.NameIndex;

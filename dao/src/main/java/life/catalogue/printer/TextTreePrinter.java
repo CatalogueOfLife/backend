@@ -17,7 +17,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
 import javax.annotation.Nullable;

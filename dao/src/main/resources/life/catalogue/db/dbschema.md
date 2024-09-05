@@ -14,6 +14,20 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-09-05 remove UPDATE RECURSIVE
+```
+ALTER TABLE decision ALTER COLUMN mode TYPE text;
+DROP TYPE EDITORIALDECISION_MODE;
+CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
+'BLOCK',
+'REVIEWED',
+'UPDATE',
+'IGNORE'
+);
+ALTER TABLE decision ALTER COLUMN mode TYPE EDITORIALDECISION_MODE USING mode::EDITORIALDECISION_MODE;
+```
+
+
 #### 2024-08-14 update legacy issue values
 !!! This caused the prod server to crash with 360g of wal logs !!!
 we have NOT EXECUTED THIS ON PROD !

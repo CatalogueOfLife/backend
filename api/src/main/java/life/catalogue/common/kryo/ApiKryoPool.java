@@ -1,9 +1,5 @@
 package life.catalogue.common.kryo;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
-import it.unimi.dsi.fastutil.ints.IntSets;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;

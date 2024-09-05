@@ -134,7 +134,6 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   private void process(NameUsageBase u) throws InterruptedException {
     var mod = processCommon(u);
-
     if (ignoreUsage(mod.usage, decisions.get(u.getId()), false)) {
       // skip this taxon, bmod.usaget include children
       // use taxons parent also as the parentID for this so children link one level up

@@ -6,10 +6,12 @@ import life.catalogue.api.model.NameUsageCore;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -28,6 +30,9 @@ public class ParentStack<T extends NameUsageCore> {
    */
   public ParentStack(@Nullable Consumer<SNC<T>> removeFunc) {
     this.removeFunc = removeFunc;
+  }
+  public ParentStack() {
+    this(null);
   }
 
   static class SNC<T> {
@@ -86,12 +91,12 @@ public class ParentStack<T extends NameUsageCore> {
     return parents.isEmpty() ? null : parents.getLast().usage;
   }
 
-  public List<SNC<T>> getParents(boolean skipLast) {
-    var ps = ImmutableList.copyOf(parents);
-    if (skipLast && !ps.isEmpty()) {
-      return ps.subList(0, parents.size()-1);
-    }
-    return ps;
+  public List<T> getParents(boolean skipLast) {
+    if (parents.isEmpty()) return Collections.emptyList();
+    return parents.stream()
+      .skip(skipLast ? 1 : 0)
+      .map(s -> s.usage)
+      .collect(Collectors.toList());
   }
 
   public Optional<Rank> getLowestConcreteRank(boolean skipLast) {

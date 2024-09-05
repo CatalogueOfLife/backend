@@ -73,7 +73,18 @@ public enum TaxGroup {
 
     OtherEukaryotes("", Eukaryotes);
 
-  static final String SIZE = "64x64"; // 192x192, 128x128,
+  public enum SIZE {
+    PX64(64), PX128(128), PX192(192);
+    final int pixel;
+
+    SIZE(int pixel) {
+      this.pixel = pixel;
+    }
+
+    int pixel() {
+      return pixel;
+    }
+  }
 
   final private String phylopic;
   final private String description;
@@ -142,6 +153,10 @@ public enum TaxGroup {
     return false;
   }
 
+  public boolean isOther() {
+    return name().startsWith("Other");
+  }
+
   public Set<TaxGroup> roots() {
     Set<TaxGroup> roots = new HashSet<>();
     if (parents.isEmpty()) {
@@ -167,7 +182,10 @@ public enum TaxGroup {
   }
 
   public URI getIcon() {
-    return phylopic == null ? null : URI.create("https://images.phylopic.org/images/" + phylopic + "/thumbnail/"+SIZE+".png");
+    return getIcon(TaxGroup.SIZE.PX64);
+  }
+  public URI getIcon(SIZE size) {
+    return phylopic == null ? null : URI.create("https://images.phylopic.org/images/" + phylopic + "/thumbnail/"+size.pixel+"x"+size.pixel+".png");
   }
   public URI getIconSVG() {
     return phylopic == null ? null : URI.create("https://images.phylopic.org/images/" + phylopic + "/vector.svg");
