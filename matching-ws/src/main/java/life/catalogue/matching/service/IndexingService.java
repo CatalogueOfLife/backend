@@ -18,6 +18,8 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriterBuilder;
@@ -29,20 +31,15 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.matching.db.DatasetMapper;
-
 import life.catalogue.matching.index.ScientificNameAnalyzer;
 import life.catalogue.matching.model.Classification;
+import life.catalogue.matching.model.StoredParsedName;
 import life.catalogue.matching.model.Dataset;
 import life.catalogue.matching.model.NameUsage;
-
 import life.catalogue.matching.model.NameUsageMatch;
-
 import life.catalogue.matching.util.NameParsers;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -110,6 +107,8 @@ public class IndexingService {
   Integer dbFetchSize;
 
   protected final MatchingService matchingService;
+
+  protected static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
@@ -865,10 +864,61 @@ public class IndexingService {
       }
       ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
 
+      StoredParsedName storedParsedName = new StoredParsedName();
+      storedParsedName.setAbbreviated(pn.isAbbreviated());
+      storedParsedName.setAutonym(pn.isAutonym());
+      storedParsedName.setBinomial(pn.isBinomial());
+      storedParsedName.setCandidatus(pn.isCandidatus());
+      storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
+      storedParsedName.setDoubtful(pn.isDoubtful());
+      storedParsedName.setGenus(pn.getGenus());
+      storedParsedName.setUninomial(pn.getUninomial());
+      storedParsedName.setUnparsed(pn.getUnparsed());
+      storedParsedName.setTrinomial(pn.isTrinomial());
+      storedParsedName.setIncomplete(pn.isIncomplete());
+      storedParsedName.setIndetermined(pn.isIndetermined());
+      storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
+      storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
+      storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
+      storedParsedName.setExtinct(pn.isExtinct());
+      storedParsedName.setPublishedIn(pn.getPublishedIn());
+      storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
+      storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
+      storedParsedName.setPhrase(pn.getPhrase());
+      storedParsedName.setPhraseName(pn.isPhraseName());
+      storedParsedName.setVoucher(pn.getVoucher());
+      storedParsedName.setNominatingParty(pn.getNominatingParty());
+      storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
+      storedParsedName.setWarnings(pn.getWarnings());
+      if (pn.getBasionymAuthorship() != null) {
+        storedParsedName.setBasionymAuthorship(
+          StoredParsedName.StoredAuthorship.builder()
+            .authors(pn.getBasionymAuthorship().getAuthors())
+            .exAuthors(pn.getBasionymAuthorship().getExAuthors())
+            .year(pn.getBasionymAuthorship().getYear()).build()
+        );
+      }
+      if (pn.getCombinationAuthorship() != null) {
+        storedParsedName.setCombinationAuthorship(
+          StoredParsedName.StoredAuthorship.builder()
+            .authors(pn.getCombinationAuthorship().getAuthors())
+            .exAuthors(pn.getCombinationAuthorship().getExAuthors())
+            .year(pn.getCombinationAuthorship().getYear()).build()
+        );
+      }
+      storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
+      storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
+
+      // store the parsed name components in JSON
+      doc.add(new StoredField(
+        FIELD_PARSED_NAME_JSON,
+        MAPPER.writeValueAsString(storedParsedName))
+      );
+
       // canonicalMinimal will construct the name without the hybrid marker and authorship
       String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
-    } catch (UnparsableNameException | InterruptedException e) {
+    } catch (UnparsableNameException | JsonProcessingException | InterruptedException e) {
       // do nothing
       log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
     }
@@ -920,11 +970,74 @@ public class IndexingService {
     return doc;
   }
 
-  public static <T> void consume(Supplier<Cursor<T>> cursorSupplier, Consumer<T> handler) {
-    try (Cursor<T> cursor = cursorSupplier.get()) {
-      cursor.forEach(handler);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
+//  /**
+//   * Converts a {@link org.gbif.nameparser.api.ParsedName} into {@link
+//   * org.gbif.pipelines.io.avro.ParsedName}.
+//   */
+//  private static ParsedName toParsedNameAvro(org.gbif.nameparser.api.ParsedName pn) {
+//    ParsedName.Builder builder =
+//      ParsedName.newBuilder()
+//        .setAbbreviated(pn.isAbbreviated())
+//        .setAutonym(pn.isAutonym())
+//        .setBinomial(pn.isBinomial())
+//        .setCandidatus(pn.isCandidatus())
+//        .setCultivarEpithet(pn.getCultivarEpithet())
+//        .setDoubtful(pn.isDoubtful())
+//        .setGenus(pn.getGenus())
+//        .setUninomial(pn.getUninomial())
+//        .setUnparsed(pn.getUnparsed())
+//        .setTrinomial(pn.isTrinomial())
+//        .setIncomplete(pn.isIncomplete())
+//        .setIndetermined(pn.isIndetermined())
+//        .setTerminalEpithet(pn.getTerminalEpithet())
+//        .setInfragenericEpithet(pn.getInfragenericEpithet())
+//        .setInfraspecificEpithet(pn.getInfraspecificEpithet())
+//        .setExtinct(pn.isExtinct())
+//        .setPublishedIn(pn.getPublishedIn())
+//        .setSanctioningAuthor(pn.getSanctioningAuthor())
+//        .setSpecificEpithet(pn.getSpecificEpithet())
+//        .setPhrase(pn.getPhrase())
+//        .setPhraseName(pn.isPhraseName())
+//        .setVoucher(pn.getVoucher())
+//        .setNominatingParty(pn.getNominatingParty())
+//        .setNomenclaturalNote(pn.getNomenclaturalNote());
+//
+//    // Nullable fields
+//    Optional.ofNullable(pn.getWarnings())
+//      .ifPresent(w -> builder.setWarnings(new ArrayList<>(pn.getWarnings())));
+//    Optional.ofNullable(pn.getBasionymAuthorship())
+//      .ifPresent(authorship -> builder.setBasionymAuthorship(toAuthorshipAvro(authorship)));
+//    Optional.ofNullable(pn.getCombinationAuthorship())
+//      .ifPresent(authorship -> builder.setCombinationAuthorship(toAuthorshipAvro(authorship)));
+//    Optional.ofNullable(pn.getCode())
+//      .ifPresent(code -> builder.setCode(NomCode.valueOf(code.name())));
+//    Optional.ofNullable(pn.getType())
+//      .ifPresent(type -> builder.setType(NameType.valueOf(type.name())));
+//    Optional.ofNullable(pn.getNotho())
+//      .ifPresent(notho -> builder.setNotho(NamePart.valueOf(notho.name())));
+//    Optional.ofNullable(pn.getRank())
+//      .ifPresent(rank -> builder.setRank(NameRank.valueOf(rank.name())));
+//    Optional.ofNullable(pn.getState())
+//      .ifPresent(state -> builder.setState(State.valueOf(state.name())));
+//    Optional.ofNullable(pn.getEpithetQualifier())
+//      .map(
+//        eq ->
+//          eq.entrySet().stream()
+//            .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue)))
+//      .ifPresent(builder::setEpithetQualifier);
+//    return builder.build();
+//  }
+//
+//
+//   * Converts a {@link org.gbif.nameparser.api.Authorship} into {@link
+//   * org.gbif.pipelines.io.avro.Authorship}.
+//    */
+//  private static Authorship toAuthorshipAvro(org.gbif.nameparser.api.Authorship authorship) {
+//    return Authorship.newBuilder()
+//      .setEmpty(authorship.isEmpty())
+//      .setYear(authorship.getYear())
+//      .setAuthors(authorship.getAuthors())
+//      .setExAuthors(authorship.getExAuthors())
+//      .build();
+//  }
 }

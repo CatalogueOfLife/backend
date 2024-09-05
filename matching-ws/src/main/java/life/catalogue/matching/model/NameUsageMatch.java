@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import life.catalogue.api.vocab.MatchType;
@@ -15,6 +14,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import lombok.*;
 
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -31,9 +32,9 @@ public class NameUsageMatch implements LinneanClassification {
   @Schema(description = "If the matched usage is a synonym")
   boolean synonym;
   @Schema(description = "The matched name usage")
-  RankedName usage;
+  Usage usage;
   @Schema(description = "The accepted name usage for the match. This will only be populated when we've matched a synonym name usage.")
-  RankedName acceptedUsage;
+  Usage acceptedUsage;
   @Schema(description = "The classification of the accepted name usage.")
   List<RankedName> classification;
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level",  implementation = Diagnostics.class)
@@ -309,6 +310,81 @@ public class NameUsageMatch implements LinneanClassification {
     long timeTaken;
     @Schema(description = "A list of similar matches with lower confidence scores ")
     List<NameUsageMatch> alternatives;
+  }
+
+  /**
+   * A name with an identifier and a taxonomic rank.
+   */
+  @Schema(description = "A name with an identifier and a taxonomic rank", title = "Usage", type = "object")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @ToString
+  @Builder
+  public static class Usage implements Serializable {
+
+    private static final long serialVersionUID = 3423423423423L;
+
+    @Schema(description = "The identifier for the name usage")
+    private String key;
+    @Schema(description = "The name usage")
+    private String name;
+    @JsonIgnore private String canonicalName;
+    @JsonIgnore private String parentID;
+    @Schema(description = "The taxonomic rank for the name usage")
+    private Rank rank;
+    @Schema(description = "The nomenclatural code for the name usage")
+    private NomCode code;
+    private String uninomial;
+    private String genus;
+    private String infragenericEpithet;
+    private String specificEpithet;
+    private String infraspecificEpithet;
+    private String cultivarEpithet;
+    private String phrase;
+    private String voucher;
+    private String nominatingParty;
+    private boolean candidatus;
+    private String notho;
+    private Boolean originalSpelling;
+    private Map<String, String> epithetQualifier;
+    private String type;
+    protected boolean extinct;
+    private Authorship combinationAuthorship;
+    private Authorship basionymAuthorship;
+    private String sanctioningAuthor;
+    private String taxonomicNote;
+    private String nomenclaturalNote;
+    private String publishedIn;
+    private String unparsed;
+    private boolean doubtful;
+    private boolean manuscript;
+    private String state;
+    private Set<String> warnings;
+
+    //additional flags
+    private boolean isAbbreviated;
+    private boolean isAutonym;
+    private boolean isBinomial;
+    private boolean isTrinomial;
+    private boolean isIncomplete;
+    private boolean isIndetermined;
+    private boolean isPhraseName;
+    private String terminalEpithet;
+  }
+
+  @Schema(description = "An scientific name authorship for a name usage, split into components", title = "Authorship", type = "object")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  @ToString
+  @Builder
+  public static class Authorship {
+    private List<String> authors = new ArrayList();
+    private List<String> exAuthors = new ArrayList();
+    private String year;
   }
 
   /**

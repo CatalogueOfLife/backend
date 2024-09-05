@@ -2,8 +2,10 @@ package life.catalogue.matching.index;
 
 import static life.catalogue.matching.util.IndexConstants.DATASETS_JSON;
 import static life.catalogue.matching.util.IndexConstants.*;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,7 +28,6 @@ import life.catalogue.matching.Main;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
@@ -34,6 +35,7 @@ import org.apache.lucene.store.MMapDirectory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.ParsedName;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,8 @@ public class DatasetIndex {
 
   protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
 
+  protected static final ObjectMapper MAPPER = new ObjectMapper();
+
   @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
 
@@ -77,16 +81,11 @@ public class DatasetIndex {
         .build())
     .build();
 
-  public boolean exists(String indexPath) {
-    return new File(indexPath).exists()
-      && new File(indexPath + "/" + MAIN_INDEX_DIR).exists()
-      && Objects.requireNonNull(new File(indexPath + "/" + MAIN_INDEX_DIR).listFiles()).length > 0;
-  }
-
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
   void init() {
 
+    MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     final String mainIndexPath = getMainIndexPath();
     final Map<Integer, Dataset> prefixMapping = loadPrefixMapping();
 
@@ -416,22 +415,6 @@ public class DatasetIndex {
     return matchByKey(usageKey, this::getByUsageKey);
   }
 
-  private static String escapeQueryChars(String s) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      // These are the special characters that need to be escaped
-      if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' ||
-        c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' ||
-        c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&' ||
-        c == '/' || Character.isWhitespace(c)) {
-        sb.append('\\');
-      }
-      sb.append(c);
-    }
-    return sb.toString();
-  }
-
   private Optional<Document> getByUsageKey(String usageKey) {
     Query query = new TermQuery(new Term(FIELD_ID, usageKey));
     try {
@@ -719,7 +702,6 @@ public class DatasetIndex {
           higherTaxon.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
           higherTaxon.setParentID(doc.get(FIELD_PARENT_ID));
           higherTaxa.add(0, higherTaxon);
-//          higherTaxonomyCache.put(currentParentID, higherTaxon);
           // get next parent
           currentParentID = doc.get(FIELD_PARENT_ID);
         } else {
@@ -743,16 +725,7 @@ public class DatasetIndex {
     NameUsageMatch u = NameUsageMatch.builder().build();
     u.setDiagnostics(NameUsageMatch.Diagnostics.builder().build());
 
-    // set the usage
-    u.setUsage(
-      NameUsageMatch.RankedName.builder()
-        .key(doc.get(FIELD_ID))
-        .name(doc.get(FIELD_SCIENTIFIC_NAME))
-        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
-        .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-        .code(getCode(doc))
-        .build()
-    );
+    u.setUsage(constructUsage(doc));
 
     String acceptedParentID = null;
 
@@ -761,15 +734,7 @@ public class DatasetIndex {
       Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
-        u.setAcceptedUsage(
-          NameUsageMatch.RankedName.builder()
-            .key(accDoc.get(FIELD_ID))
-            .name(accDoc.get(FIELD_SCIENTIFIC_NAME))
-            .rank(Rank.valueOf(accDoc.get(FIELD_RANK)))
-            .canonicalName(accDoc.get(FIELD_CANONICAL_NAME))
-            .code(getCode(accDoc))
-            .build()
-        );
+        u.setAcceptedUsage(constructUsage(accDoc));
         acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
@@ -798,7 +763,7 @@ public class DatasetIndex {
       classification.add(
         NameUsageMatch.RankedName.builder()
           .key(doc.get(FIELD_ID))
-          .name( doc.get(FIELD_CANONICAL_NAME))
+          .name(doc.get(FIELD_CANONICAL_NAME))
           .rank(Rank.valueOf(doc.get(FIELD_RANK)))
           .canonicalName(doc.get(FIELD_CANONICAL_NAME))
           .build()
@@ -832,6 +797,78 @@ public class DatasetIndex {
     u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
 
     return u;
+  }
+
+  private static NameUsageMatch.Usage constructUsage(Document doc) {
+    StoredParsedName pn = null;
+    String parsedNameJson = doc.get(FIELD_PARSED_NAME_JSON);
+    if (parsedNameJson != null) {
+      try {
+        pn = MAPPER.readValue(parsedNameJson, StoredParsedName.class);
+      } catch (Exception e) {
+        log.error("Cannot parse parsed name json", e);
+      }
+    }
+
+    // set the usage
+    NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
+        .key(doc.get(FIELD_ID))
+        .name(doc.get(FIELD_SCIENTIFIC_NAME))
+        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
+        .canonicalName(doc.get(FIELD_CANONICAL_NAME))
+        .code(getCode(doc));
+
+    if (pn != null) {
+      b.genus(pn.getGenus())
+        .infragenericEpithet(pn.getInfragenericEpithet())
+        .specificEpithet(pn.getSpecificEpithet())
+        .infraspecificEpithet(pn.getInfraspecificEpithet())
+        .cultivarEpithet(pn.getCultivarEpithet())
+        .phrase(pn.getPhrase())
+        .voucher(pn.getVoucher())
+        .nominatingParty(pn.getNominatingParty())
+        .candidatus(pn.isCandidatus())
+        .notho(pn.getNotho())
+        .originalSpelling(pn.getOriginalSpelling())
+        .epithetQualifier(pn.getEpithetQualifier())
+        .type(pn.getType())
+        .extinct(pn.isExtinct())
+
+        .sanctioningAuthor(pn.getSanctioningAuthor())
+        .taxonomicNote(pn.getTaxonomicNote())
+        .nomenclaturalNote(pn.getNomenclaturalNote())
+        .publishedIn(pn.getPublishedIn())
+        .unparsed(pn.getUnparsed())
+        .doubtful(pn.isDoubtful())
+        .manuscript(pn.isManuscript())
+        .state(pn.getState())
+        .warnings(pn.getWarnings());
+
+        if (pn.getCombinationAuthorship() != null
+          && pn.getCombinationAuthorship().getAuthors() != null
+          && !pn.getCombinationAuthorship().getAuthors().isEmpty()
+        ) {
+          b.combinationAuthorship(
+            NameUsageMatch.Authorship.builder()
+              .authors(pn.getCombinationAuthorship().getAuthors())
+              .year(pn.getCombinationAuthorship().getYear())
+              .build());
+        }
+
+        if (pn.getBasionymAuthorship() != null
+          && pn.getBasionymAuthorship().getAuthors() != null
+          && !pn.getBasionymAuthorship().getAuthors().isEmpty()
+        ) {
+          b.basionymAuthorship(
+            NameUsageMatch.Authorship.builder()
+              .authors(pn.getBasionymAuthorship().getAuthors())
+              .year(pn.getBasionymAuthorship().getYear())
+              .build());
+        }
+    }
+
+    NameUsageMatch.Usage usage = b.build();
+    return usage;
   }
 
   private static NomCode getCode(Document doc) {
