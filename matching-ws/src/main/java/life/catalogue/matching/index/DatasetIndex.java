@@ -524,12 +524,36 @@ public class DatasetIndex {
    * @return List of ExternalID
    */
   public List<ExternalID> lookupIdentifier(@NotNull String datasetID, @NotNull String identifier)  {
+    return lookupIdentifier(datasetID, identifier, identifierSearchers);
+  }
+
+  /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param datasetID the datasetKey to match
+   * @param identifier the identifier to match
+   * @return List of ExternalID
+   */
+  public List<ExternalID> lookupAncillary(@NotNull String datasetID, @NotNull String identifier)  {
+    return lookupIdentifier(datasetID, identifier, ancillarySearchers);
+  }
+
+  /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param datasetID the datasetKey to match
+   * @param identifier the identifier to match
+   * @return List of ExternalID
+   */
+  public List<ExternalID> lookupIdentifier(@NotNull String datasetID, @NotNull String identifier,  Map<Dataset, IndexSearcher> searchers)  {
     List<ExternalID> results = new ArrayList<>();
 
     try {
       // if join indexes are present, add them to the match
-      if (identifierSearchers != null && !identifierSearchers.isEmpty()) {
-        for (Dataset dataset : identifierSearchers.keySet()) {
+      if (searchers != null && !searchers.isEmpty()) {
+        for (Dataset dataset : searchers.keySet()) {
 
           // use the prefix mapping
           if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
@@ -540,12 +564,12 @@ public class DatasetIndex {
             }
 
             // find the index and search it
-            IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
+            IndexSearcher searcher = searchers.get(dataset);
             Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
-            TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
+            TopDocs identifierDocs = searcher.search(identifierQuery, 3);
 
             if (identifierDocs.totalHits.value > 0) {
-              Document identifierDoc = identifierSearcher.storedFields().
+              Document identifierDoc = searcher.storedFields().
                 document(identifierDocs.scoreDocs[0].doc);
 
               results.add(toExternalID(identifierDoc, dataset));
@@ -559,6 +583,7 @@ public class DatasetIndex {
     // no indexes available
     return results;
   }
+
 
   private static ExternalID toExternalID(Document doc, Dataset dataset) {
     return ExternalID.builder()
@@ -774,7 +799,9 @@ public class DatasetIndex {
     // if ancillary join indexes are present, add them to the match
     for (Dataset dataset: ancillarySearchers.keySet()){
       IndexSearcher ancillarySearcher = ancillarySearchers.get(dataset);
-      Query query = new TermQuery(new Term(FIELD_JOIN_ID, doc.get(FIELD_ID) ));
+      Query query = new TermQuery(
+        new Term(FIELD_JOIN_ID, doc.get(FIELD_ID))
+      );
       try {
         TopDocs docs = ancillarySearcher.search(query, 3);
         if (docs.totalHits.value > 0) {
@@ -814,6 +841,7 @@ public class DatasetIndex {
     NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
         .key(doc.get(FIELD_ID))
         .name(doc.get(FIELD_SCIENTIFIC_NAME))
+        .authorship(doc.get(FIELD_AUTHORSHIP))
         .rank(Rank.valueOf(doc.get(FIELD_RANK)))
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
         .code(getCode(doc));
@@ -867,8 +895,7 @@ public class DatasetIndex {
         }
     }
 
-    NameUsageMatch.Usage usage = b.build();
-    return usage;
+    return  b.build();
   }
 
   private static NomCode getCode(Document doc) {

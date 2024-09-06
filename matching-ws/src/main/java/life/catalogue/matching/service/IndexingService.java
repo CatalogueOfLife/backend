@@ -679,7 +679,7 @@ public class IndexingService {
     }
 
     private boolean isAccepted(String status) {
-      return status != null && !status.equals(TaxonomicStatus.ACCEPTED.name());
+      return status != null && status.equals(TaxonomicStatus.ACCEPTED.name());
     }
   }
 
@@ -845,6 +845,11 @@ public class IndexingService {
     return Paths.get(indexPath);
   }
 
+  /**
+   * Generate the lucene document for a name usage
+   * @param nameUsage
+   * @return lucene document
+   */
   protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
@@ -852,9 +857,9 @@ public class IndexingService {
      Porting notes: The canonical name *sensu strictu* with nothing else but three name parts at
      most (genus, species, infraspecific). No rank or hybrid markers and no authorship,
      cultivar or strain information. Infrageneric names are represented without a
-     leading genus. Unicode characters are replaced by their matching ASCII characters."
+     leading genus. Unicode characters are replaced by their matching ASCII characters.
     */
-     Rank rank = Rank.valueOf(nameUsage.getRank());
+    Rank rank = Rank.valueOf(nameUsage.getRank());
 
     Optional<String> optCanonical = Optional.empty();
     try {
@@ -862,7 +867,13 @@ public class IndexingService {
       if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
         nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
       }
-      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
+
+      ParsedName pn = null;
+      if (StringUtils.isBlank(nameUsage.getAuthorship())) {
+        pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
+      } else{
+        pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode);
+      }
 
       StoredParsedName storedParsedName = new StoredParsedName();
       storedParsedName.setAbbreviated(pn.isAbbreviated());
@@ -945,7 +956,9 @@ public class IndexingService {
     String nameComplete = nameUsage.getScientificName();
     if (StringUtils.isNotBlank(nameUsage.getAuthorship())) {
       nameComplete += " " + nameUsage.getAuthorship();
+      doc.add(new TextField(FIELD_AUTHORSHIP, nameUsage.getAuthorship(), Field.Store.YES));
     }
+
     doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
@@ -969,75 +982,4 @@ public class IndexingService {
 
     return doc;
   }
-
-//  /**
-//   * Converts a {@link org.gbif.nameparser.api.ParsedName} into {@link
-//   * org.gbif.pipelines.io.avro.ParsedName}.
-//   */
-//  private static ParsedName toParsedNameAvro(org.gbif.nameparser.api.ParsedName pn) {
-//    ParsedName.Builder builder =
-//      ParsedName.newBuilder()
-//        .setAbbreviated(pn.isAbbreviated())
-//        .setAutonym(pn.isAutonym())
-//        .setBinomial(pn.isBinomial())
-//        .setCandidatus(pn.isCandidatus())
-//        .setCultivarEpithet(pn.getCultivarEpithet())
-//        .setDoubtful(pn.isDoubtful())
-//        .setGenus(pn.getGenus())
-//        .setUninomial(pn.getUninomial())
-//        .setUnparsed(pn.getUnparsed())
-//        .setTrinomial(pn.isTrinomial())
-//        .setIncomplete(pn.isIncomplete())
-//        .setIndetermined(pn.isIndetermined())
-//        .setTerminalEpithet(pn.getTerminalEpithet())
-//        .setInfragenericEpithet(pn.getInfragenericEpithet())
-//        .setInfraspecificEpithet(pn.getInfraspecificEpithet())
-//        .setExtinct(pn.isExtinct())
-//        .setPublishedIn(pn.getPublishedIn())
-//        .setSanctioningAuthor(pn.getSanctioningAuthor())
-//        .setSpecificEpithet(pn.getSpecificEpithet())
-//        .setPhrase(pn.getPhrase())
-//        .setPhraseName(pn.isPhraseName())
-//        .setVoucher(pn.getVoucher())
-//        .setNominatingParty(pn.getNominatingParty())
-//        .setNomenclaturalNote(pn.getNomenclaturalNote());
-//
-//    // Nullable fields
-//    Optional.ofNullable(pn.getWarnings())
-//      .ifPresent(w -> builder.setWarnings(new ArrayList<>(pn.getWarnings())));
-//    Optional.ofNullable(pn.getBasionymAuthorship())
-//      .ifPresent(authorship -> builder.setBasionymAuthorship(toAuthorshipAvro(authorship)));
-//    Optional.ofNullable(pn.getCombinationAuthorship())
-//      .ifPresent(authorship -> builder.setCombinationAuthorship(toAuthorshipAvro(authorship)));
-//    Optional.ofNullable(pn.getCode())
-//      .ifPresent(code -> builder.setCode(NomCode.valueOf(code.name())));
-//    Optional.ofNullable(pn.getType())
-//      .ifPresent(type -> builder.setType(NameType.valueOf(type.name())));
-//    Optional.ofNullable(pn.getNotho())
-//      .ifPresent(notho -> builder.setNotho(NamePart.valueOf(notho.name())));
-//    Optional.ofNullable(pn.getRank())
-//      .ifPresent(rank -> builder.setRank(NameRank.valueOf(rank.name())));
-//    Optional.ofNullable(pn.getState())
-//      .ifPresent(state -> builder.setState(State.valueOf(state.name())));
-//    Optional.ofNullable(pn.getEpithetQualifier())
-//      .map(
-//        eq ->
-//          eq.entrySet().stream()
-//            .collect(Collectors.toMap(e -> e.getKey().name(), Map.Entry::getValue)))
-//      .ifPresent(builder::setEpithetQualifier);
-//    return builder.build();
-//  }
-//
-//
-//   * Converts a {@link org.gbif.nameparser.api.Authorship} into {@link
-//   * org.gbif.pipelines.io.avro.Authorship}.
-//    */
-//  private static Authorship toAuthorshipAvro(org.gbif.nameparser.api.Authorship authorship) {
-//    return Authorship.newBuilder()
-//      .setEmpty(authorship.isEmpty())
-//      .setYear(authorship.getYear())
-//      .setAuthors(authorship.getAuthors())
-//      .setExAuthors(authorship.getExAuthors())
-//      .build();
-//  }
 }

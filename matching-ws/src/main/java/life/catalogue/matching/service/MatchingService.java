@@ -262,7 +262,9 @@ public class MatchingService {
    * @return the list of matches
    */
   public List<ExternalID> matchID(String datasetID, String identifier){
-    return datasetIndex.lookupIdentifier(datasetID, identifier);
+    List<ExternalID> ids = datasetIndex.lookupIdentifier(datasetID, identifier);
+    List<ExternalID> ancillary = datasetIndex.lookupAncillary(datasetID, identifier);
+    return ImmutableList.<ExternalID>builder().addAll(ids).addAll(ancillary).build();
   }
 
   public NameUsageMatch match(

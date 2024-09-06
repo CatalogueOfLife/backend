@@ -330,7 +330,8 @@ public class NameUsageMatch implements LinneanClassification {
     private String key;
     @Schema(description = "The name usage")
     private String name;
-    @JsonIgnore private String canonicalName;
+    private String canonicalName;
+    private String authorship;
     @JsonIgnore private String parentID;
     @Schema(description = "The taxonomic rank for the name usage")
     private Rank rank;
