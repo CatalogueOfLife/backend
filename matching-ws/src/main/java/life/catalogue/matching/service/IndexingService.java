@@ -863,20 +863,16 @@ public class IndexingService {
 
     Optional<String> optCanonical = Optional.empty();
     ParsedName pn = null;
-
+    NomCode nomCode = null;
     try {
-      NomCode nomCode = null;
       if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
         nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
       }
-      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
+      pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
       // canonicalMinimal will construct the name without the hybrid marker and authorship
       String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
     } catch (UnparsableNameException | InterruptedException e) {
-      // do nothing
-      log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
-    } catch ( JsonProcessingException e) {
       // do nothing
       log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
     }
