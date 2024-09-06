@@ -862,76 +862,42 @@ public class IndexingService {
     Rank rank = Rank.valueOf(nameUsage.getRank());
 
     Optional<String> optCanonical = Optional.empty();
+    ParsedName pn = null;
+
     try {
       NomCode nomCode = null;
       if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
         nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
       }
-
-      ParsedName pn = null;
-      if (StringUtils.isBlank(nameUsage.getAuthorship())) {
-        pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
-      } else{
-        pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode);
-      }
-
-      StoredParsedName storedParsedName = new StoredParsedName();
-      storedParsedName.setAbbreviated(pn.isAbbreviated());
-      storedParsedName.setAutonym(pn.isAutonym());
-      storedParsedName.setBinomial(pn.isBinomial());
-      storedParsedName.setCandidatus(pn.isCandidatus());
-      storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
-      storedParsedName.setDoubtful(pn.isDoubtful());
-      storedParsedName.setGenus(pn.getGenus());
-      storedParsedName.setUninomial(pn.getUninomial());
-      storedParsedName.setUnparsed(pn.getUnparsed());
-      storedParsedName.setTrinomial(pn.isTrinomial());
-      storedParsedName.setIncomplete(pn.isIncomplete());
-      storedParsedName.setIndetermined(pn.isIndetermined());
-      storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
-      storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
-      storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
-      storedParsedName.setExtinct(pn.isExtinct());
-      storedParsedName.setPublishedIn(pn.getPublishedIn());
-      storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
-      storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
-      storedParsedName.setPhrase(pn.getPhrase());
-      storedParsedName.setPhraseName(pn.isPhraseName());
-      storedParsedName.setVoucher(pn.getVoucher());
-      storedParsedName.setNominatingParty(pn.getNominatingParty());
-      storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
-      storedParsedName.setWarnings(pn.getWarnings());
-      if (pn.getBasionymAuthorship() != null) {
-        storedParsedName.setBasionymAuthorship(
-          StoredParsedName.StoredAuthorship.builder()
-            .authors(pn.getBasionymAuthorship().getAuthors())
-            .exAuthors(pn.getBasionymAuthorship().getExAuthors())
-            .year(pn.getBasionymAuthorship().getYear()).build()
-        );
-      }
-      if (pn.getCombinationAuthorship() != null) {
-        storedParsedName.setCombinationAuthorship(
-          StoredParsedName.StoredAuthorship.builder()
-            .authors(pn.getCombinationAuthorship().getAuthors())
-            .exAuthors(pn.getCombinationAuthorship().getExAuthors())
-            .year(pn.getCombinationAuthorship().getYear()).build()
-        );
-      }
-      storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
-      storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
-
-      // store the parsed name components in JSON
-      doc.add(new StoredField(
-        FIELD_PARSED_NAME_JSON,
-        MAPPER.writeValueAsString(storedParsedName))
-      );
-
+      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
       // canonicalMinimal will construct the name without the hybrid marker and authorship
       String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
-    } catch (UnparsableNameException | JsonProcessingException | InterruptedException e) {
+    } catch (UnparsableNameException | InterruptedException e) {
       // do nothing
       log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+    } catch ( JsonProcessingException e) {
+      // do nothing
+      log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+    }
+
+    if (pn != null){
+      try {
+        // if there an authorship, reparse with it to get the component authorship parts
+        StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
+          getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
+        // store the parsed name components in JSON
+        doc.add(new StoredField(
+          FIELD_PARSED_NAME_JSON,
+          MAPPER.writeValueAsString(storedParsedName))
+        );
+      } catch (UnparsableNameException | InterruptedException e) {
+        // do nothing
+        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+      } catch ( JsonProcessingException e) {
+        // do nothing
+        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+      }
     }
 
     final String canonical = optCanonical.orElse(nameUsage.getScientificName());
@@ -981,5 +947,62 @@ public class IndexingService {
     }
 
     return doc;
+  }
+
+  @NotNull
+  private static StoredParsedName constructParsedName(NameUsage nameUsage, Rank rank, NomCode nomCode) throws UnparsableNameException, InterruptedException {
+    ParsedName pn = !StringUtils.isBlank(nameUsage.getAuthorship()) ?
+      NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode)
+      : NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
+    return getStoredParsedName(pn);
+  }
+
+  @NotNull
+  private static StoredParsedName getStoredParsedName(ParsedName pn) {
+    StoredParsedName storedParsedName = new StoredParsedName();
+    storedParsedName.setAbbreviated(pn.isAbbreviated());
+    storedParsedName.setAutonym(pn.isAutonym());
+    storedParsedName.setBinomial(pn.isBinomial());
+    storedParsedName.setCandidatus(pn.isCandidatus());
+    storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
+    storedParsedName.setDoubtful(pn.isDoubtful());
+    storedParsedName.setGenus(pn.getGenus());
+    storedParsedName.setUninomial(pn.getUninomial());
+    storedParsedName.setUnparsed(pn.getUnparsed());
+    storedParsedName.setTrinomial(pn.isTrinomial());
+    storedParsedName.setIncomplete(pn.isIncomplete());
+    storedParsedName.setIndetermined(pn.isIndetermined());
+    storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
+    storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
+    storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
+    storedParsedName.setExtinct(pn.isExtinct());
+    storedParsedName.setPublishedIn(pn.getPublishedIn());
+    storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
+    storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
+    storedParsedName.setPhrase(pn.getPhrase());
+    storedParsedName.setPhraseName(pn.isPhraseName());
+    storedParsedName.setVoucher(pn.getVoucher());
+    storedParsedName.setNominatingParty(pn.getNominatingParty());
+    storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
+    storedParsedName.setWarnings(pn.getWarnings());
+    if (pn.getBasionymAuthorship() != null) {
+      storedParsedName.setBasionymAuthorship(
+        StoredParsedName.StoredAuthorship.builder()
+          .authors(pn.getBasionymAuthorship().getAuthors())
+          .exAuthors(pn.getBasionymAuthorship().getExAuthors())
+          .year(pn.getBasionymAuthorship().getYear()).build()
+      );
+    }
+    if (pn.getCombinationAuthorship() != null) {
+      storedParsedName.setCombinationAuthorship(
+        StoredParsedName.StoredAuthorship.builder()
+          .authors(pn.getCombinationAuthorship().getAuthors())
+          .exAuthors(pn.getCombinationAuthorship().getExAuthors())
+          .year(pn.getCombinationAuthorship().getYear()).build()
+      );
+    }
+    storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
+    storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
+    return storedParsedName;
   }
 }
