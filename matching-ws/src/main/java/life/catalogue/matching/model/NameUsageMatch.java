@@ -420,7 +420,7 @@ public class NameUsageMatch implements LinneanClassification {
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  @Schema(description = "A status value derived from a dataset or external source. E.g. IUCN Red List status.",
+  @Schema(description = "A status value derived from a dataset or external source. E.g. IUCN Red List.",
     title = "Status", type = "object")
   public static class Status {
     @Schema(description = "The dataset key for the dataset that the status is associated with")
@@ -431,6 +431,8 @@ public class NameUsageMatch implements LinneanClassification {
     private String gbifKey;
     @Schema(description = "The status value")
     private String status;
+    @Schema(description = "The status code value")
+    private String statusCode;
     @Schema(description = "The ID in the source dataset for this status. e.g. the IUCN ID for this taxon")
     private String sourceId;
   }

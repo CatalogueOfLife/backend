@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IUCNUtils;
 import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
 import lombok.extern.slf4j.Slf4j;
@@ -806,9 +807,13 @@ public class DatasetIndex {
         TopDocs docs = ancillarySearcher.search(query, 3);
         if (docs.totalHits.value > 0) {
           Document ancillaryDoc = ancillarySearcher.storedFields().document(docs.scoreDocs[0].doc);
-          String status = ancillaryDoc.get(FIELD_CATEGORY);
           NameUsageMatch.Status ancillaryStatus = new NameUsageMatch.Status();
-          ancillaryStatus.setStatus(status);
+          ancillaryStatus.setStatus(ancillaryDoc.get(FIELD_CATEGORY));
+          //FIXME - this needs to removed from here - use a vocab
+          String formattedIUCN = IUCNUtils.formatIucn(ancillaryDoc.get(FIELD_CATEGORY));
+          IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
+          ancillaryStatus.setStatus(formattedIUCN);
+          ancillaryStatus.setStatusCode(iucn.getCode());
           ancillaryStatus.setDatasetKey(dataset.getKey().toString());
           ancillaryStatus.setGbifKey(dataset.getGbifKey());
           ancillaryStatus.setDatasetAlias(dataset.getAlias());

@@ -7,9 +7,13 @@
       <pattern> %highlight(%boldGreen([%date{'yyyy-MM-dd HH:mm:ss'}]) %blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))</pattern>
     </encoder>
   </appender>
-  <root level="WARN">
+  <root level="INFO">
     <appender-ref ref="CONSOLE" />
   </root>
+  <!-- Suppress INFO logs from life.catalogue -->
+<!--  <logger name="com.ibatis" level="DEBUG"/>-->
+<!--  <logger name="java.sql" level="DEBUG"/>-->
+<!--  <logger name="life.catalogue.matching.db.IndexingMapper" level="TRACE"/>-->
   <logger name="life.catalogue" level="INFO"/>
   <logger name="life.catalogue.common.tax" level="ERROR"/>
   <logger name="org.springframework.web" level="ERROR"/>
