@@ -14,13 +14,41 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  */
 public class Schema {
-  
+
+  private static final String VERSION = "1.1";
+  private static final String IDENTIFIER = "http://rs.gbif.org/data-packages/coldp/";
+  private String description;
   @JsonIgnore
   private ColdpTerm rowType;
   private List<Field> fields = new ArrayList<>();
   private String primaryKey;
   private List<ForeignKey> foreignKeys = new ArrayList<>();
-  
+
+  public String getIdentifier() {
+    return IDENTIFIER;
+  }
+
+  public String getUrl() {
+    return IDENTIFIER + VERSION + "/table-schemas/" + rowType.simpleName().toLowerCase() + ".json";
+  }
+
+
+  public String getName() {
+    return rowType.simpleName().toLowerCase();
+  }
+
+  public String getTitle() {
+    return rowType.simpleName();
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
   public ColdpTerm getRowType() {
     return rowType;
   }
@@ -52,21 +80,17 @@ public class Schema {
   public void setForeignKeys(List<ForeignKey> foreignKeys) {
     this.foreignKeys = foreignKeys;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Schema)) return false;
     Schema schema = (Schema) o;
-    return rowType == schema.rowType &&
-        Objects.equals(fields, schema.fields) &&
-        Objects.equals(primaryKey, schema.primaryKey) &&
-        Objects.equals(foreignKeys, schema.foreignKeys);
+    return Objects.equals(description, schema.description) && rowType == schema.rowType && Objects.equals(fields, schema.fields) && Objects.equals(primaryKey, schema.primaryKey) && Objects.equals(foreignKeys, schema.foreignKeys);
   }
-  
+
   @Override
   public int hashCode() {
-    
-    return Objects.hash(rowType, fields, primaryKey, foreignKeys);
+    return Objects.hash(description, rowType, fields, primaryKey, foreignKeys);
   }
 }

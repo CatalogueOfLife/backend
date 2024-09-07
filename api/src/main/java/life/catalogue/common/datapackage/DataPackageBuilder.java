@@ -95,7 +95,12 @@ public class DataPackageBuilder {
     }
     return null;
   }
-  
+
+  public DataPackageBuilder docs(String readmeHtml) {
+    //TODO: parse html and prepare for schema & field descriptions to come
+    return this;
+  }
+
   public DataPackage build(PackageDescriptor pd) {
     DataPackage p = new DataPackage();
     p.setTitle(pd.getTitle());
