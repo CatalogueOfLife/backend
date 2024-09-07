@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class Schema {
 
-  private static final String VERSION = "1.1";
+  private static final String VERSION = ColdpTerm.VERSION;
   private static final String IDENTIFIER = "http://rs.gbif.org/data-packages/coldp/";
   private String description;
   @JsonIgnore

@@ -572,6 +572,12 @@
         <version>${elasticsearch.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.commonmark</groupId>
+        <artifactId>commonmark</artifactId>
+        <version>0.22.0</version>
+      </dependency>
+
       <!-- unicode, transliterations
           Consider much simpler https://github.com/jirutka/unidecode
       -->

@@ -38,6 +38,8 @@ public class DataPackageResource {
     String doc;
     try {
       doc = http.get(URI.create("https://github.com/CatalogueOfLife/coldp/blob/master/README.md"));
+      //doc = http.get(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/coldp/master/README.md"));
+
     } catch (Exception e) {
       doc = "";
       LOG.error("Failed to read ColDP docs", e);

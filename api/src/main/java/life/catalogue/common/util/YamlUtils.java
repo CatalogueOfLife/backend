@@ -2,6 +2,8 @@ package life.catalogue.common.util;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.common.io.UTF8IoUtils;
 
