@@ -811,14 +811,16 @@ public class DatasetIndex {
           ancillaryStatus.setStatus(ancillaryDoc.get(FIELD_CATEGORY));
           //FIXME - this needs to removed from here - use a vocab
           String formattedIUCN = IUCNUtils.formatIucn(ancillaryDoc.get(FIELD_CATEGORY));
-          IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
-          ancillaryStatus.setStatus(formattedIUCN);
-          ancillaryStatus.setStatusCode(iucn.getCode());
-          ancillaryStatus.setDatasetKey(dataset.getKey().toString());
-          ancillaryStatus.setGbifKey(dataset.getGbifKey());
-          ancillaryStatus.setDatasetAlias(dataset.getAlias());
-          ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
-          u.addAdditionalStatus(ancillaryStatus);
+          if (formattedIUCN != null) {
+            IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
+            ancillaryStatus.setStatus(formattedIUCN);
+            ancillaryStatus.setStatusCode(iucn.getCode());
+            ancillaryStatus.setDatasetKey(dataset.getKey().toString());
+            ancillaryStatus.setGbifKey(dataset.getGbifKey());
+            ancillaryStatus.setDatasetAlias(dataset.getAlias());
+            ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
+            u.addAdditionalStatus(ancillaryStatus);
+          }
         }
       } catch (IOException e) {
         log.error("Cannot load usage {} from lucene index", doc.get(FIELD_ID), e);
@@ -952,6 +954,7 @@ public class DatasetIndex {
     try {
       return search(q, name, fuzzySearch, maxMatches);
     } catch (RuntimeException e) {
+      log.error("Lucene search error", e);
       // for example TooComplexToDeterminizeException, see
       // http://dev.gbif.org/issues/browse/POR-2725
       log.warn("Lucene failed to fuzzy search for name [{}]. Try a straight match instead", name);
