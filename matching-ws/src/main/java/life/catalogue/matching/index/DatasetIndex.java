@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -28,15 +29,16 @@ import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
+
+import org.apache.lucene.util.BytesRef;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.api.ParsedName;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -251,6 +253,35 @@ public class DatasetIndex {
     return metadata;
   }
 
+  public static List<String> distinctValuesForField(String field, String indexPath) throws Exception {
+    List<String> distinctValues = new ArrayList<>();
+
+    // Open the index directory
+    FSDirectory directory = FSDirectory.open(Paths.get(indexPath));
+
+    // Open the index reader
+    try (DirectoryReader directoryReader = DirectoryReader.open(directory)) {
+
+      // Get the field terms
+      for (LeafReaderContext leafContext : directoryReader.leaves()) {
+        LeafReader leafReader = leafContext.reader();
+        Terms terms = leafReader.terms(field);
+
+        if (terms != null) {
+          TermsEnum termsEnum = terms.iterator();
+
+          BytesRef byteRef;
+          while ((byteRef = termsEnum.next()) != null) {
+            // Convert the term (BytesRef) to a string
+            String termValue = byteRef.utf8ToString();
+            distinctValues.add(termValue);
+          }
+        }
+      }
+    }
+    return distinctValues;
+  }
+
   /**
    * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
    * dataset title and key, and the build information.
@@ -290,16 +321,16 @@ public class DatasetIndex {
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
-      rankCounts.put(Rank.KINGDOM.name(), getCountForRank(searcher, Rank.KINGDOM));
-      rankCounts.put(Rank.PHYLUM.name(), getCountForRank(searcher, Rank.PHYLUM));
-      rankCounts.put(Rank.CLASS.name(), getCountForRank(searcher, Rank.CLASS));
-      rankCounts.put(Rank.ORDER.name(), getCountForRank(searcher, Rank.ORDER));
-      rankCounts.put(Rank.FAMILY.name(), getCountForRank(searcher, Rank.FAMILY));
-      rankCounts.put(Rank.GENUS.name(), getCountForRank(searcher, Rank.GENUS));
-      rankCounts.put(Rank.SPECIES.name(), getCountForRank(searcher, Rank.SPECIES));
-      rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(searcher, Rank.SUBSPECIES));
+      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a).ordinal() - Rank.valueOf(b).ordinal()
+      ).forEach(rank -> {
+        try {
+          rankCounts.put(rank, getCountForRank(searcher, rank));
+        } catch (IOException e) {
+          log.error("Cannot read index information", e);
+        }
+      });
       metadata.setNameUsageByRankCount(rankCounts);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Cannot read index information", e);
     }
     return metadata;
@@ -383,8 +414,8 @@ public class DatasetIndex {
     return Map.of();
   }
 
-  private long getCountForRank(IndexSearcher searcher, Rank rank) throws IOException {
-    Query query = new TermQuery(new Term(FIELD_RANK, rank.name()));
+  private long getCountForRank(IndexSearcher searcher, String rank) throws IOException {
+    Query query = new TermQuery(new Term(FIELD_RANK, rank));
     return searcher.search(query, new TotalHitCountCollectorManager());
   }
 

@@ -663,6 +663,10 @@ public class IndexingService {
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
                   nameUsageMatch.getUsage().getKey(), Field.Store.YES)
               );
+
+              // reduce the side of these indexes by removing the parsed name
+              doc.removeField(FIELD_PARSED_NAME_JSON);
+
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
             } else {
