@@ -17,6 +17,9 @@
   <logger name="life.catalogue" level="INFO"/>
   <logger name="life.catalogue.common.tax" level="ERROR"/>
   <logger name="org.springframework.web" level="ERROR"/>
+  <logger name="org.springframework.boot" level="ERROR"/>
+  <logger name="org.springframework.cloud" level="ERROR"/>
+  <logger name="org.gbif.nameparser.util" level="ERROR"/>
   <!-- Suppress INFO logs from org.apache.catalina.core -->
   <logger name="org.apache.catalina.core" level="ERROR"/>
 </configuration>
