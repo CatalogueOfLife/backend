@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class MatchingService {
 
-  @Value("${working.path:/tmp/}")
+  @Value("${working.dir:/tmp/}")
   protected String metadataFilePath;
 
   @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
@@ -174,7 +174,7 @@ public class MatchingService {
 
     File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
-      if (!metadata.exists()  || regenerate) {
+      if (regenerate || !metadata.exists()) {
         APIMetadata metadata1 = datasetIndex.getAPIMetadata();
         //serialise to file
         ObjectMapper mapper = new ObjectMapper();
