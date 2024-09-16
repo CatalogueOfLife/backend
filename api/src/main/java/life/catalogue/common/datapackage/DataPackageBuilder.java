@@ -218,7 +218,7 @@ public class DataPackageBuilder {
       if (foreignKeys.containsKey(t)) {
         s.getForeignKeys().add(foreignKeys.get(t));
       }
-      s.getFields().add(new Field(t.simpleName(), type, format, t.simpleName(), fieldDescriptions.get(t), constraints));
+      s.getFields().add(new Field(t.simpleName(), type, format, t.simpleName(), fieldDescriptions == null ? null : fieldDescriptions.get(t), constraints));
     }
     return s;
   }
