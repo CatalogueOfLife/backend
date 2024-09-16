@@ -195,77 +195,80 @@ public class MatchingJob extends DatasetBlockingJob {
     }
   }
 
-  private void writeMatches(AbstractWriter<?> writer, String[] srcHeader, Stream<IssueName> names) throws IOException {
-    // write header
-    List<String> cols = new ArrayList<>();
-    cols.addAll(List.of(
-      "inputID",
-      "inputRank",
-      "inputName",
-
-      "matchType",
-      "ID",
-      "rank",
-      "label",
-      "scientificName",
-      "authorship",
-      "status",
-      "acceptedName",
-      "classification",
-      "issues"
-    ));
-    final int firstCustomColIdx = cols.size();
-    if (srcHeader != null) {
-      for (var h : srcHeader) {
-        cols.add(StringUtils.stripToEmpty(h));
-      }
-    }
-    writer.writeHeaders(cols);
-    final int size = cols.size();
-
-    // match & write to file
+  private void writeMatches(AbstractWriter<?> writer, String[] srcHeader, Stream<IssueName> names) {
     AtomicLong counter = new AtomicLong(0);
     AtomicLong none = new AtomicLong(0);
-    names.forEach(n -> {
-      var m = match(n);
-      var row = new String[size];
-      row[0] = m.original.getId();
-      row[1] = str(m.original.getRank());
-      row[2] = m.original.getLabel();
-      row[3] = str(m.type);
-      if (m.usage != null) {
-        row[4] = m.usage.getId();
-        row[5] = str(m.usage.getRank());
-        row[6] = m.usage.getLabel();
-        row[7] = m.usage.getName();
-        row[8] = m.usage.getAuthorship();
-        row[9] = str(m.usage.getStatus());
-        if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
-          row[10] = m.usage.getClassification().get(0).getLabel();
-        } else {
-          row[10] = null;
+
+    try (names) {
+      // write header
+      List<String> cols = new ArrayList<>();
+      cols.addAll(List.of(
+        "inputID",
+        "inputRank",
+        "inputName",
+
+        "matchType",
+        "ID",
+        "rank",
+        "label",
+        "scientificName",
+        "authorship",
+        "status",
+        "acceptedName",
+        "classification",
+        "issues"
+      ));
+      final int firstCustomColIdx = cols.size();
+      if (srcHeader != null) {
+        for (var h : srcHeader) {
+          cols.add(StringUtils.stripToEmpty(h));
         }
-        row[11] = str(m.usage.getClassification());
-        row[12] = concat(m.issues);
-      } else {
-        none.incrementAndGet();
       }
-      // also add all original input columns if provided (only works with file uploads)
-      if (srcHeader != null && n.row != null) {
-        int idx = 0;
-        for (String val : n.row) {
-          if (idx < size-firstCustomColIdx) {
-            // make sure we dont have more columns than headers
-            row[firstCustomColIdx + idx] = val;
+      writer.writeHeaders(cols);
+      final int size = cols.size();
+
+      // match & write to file
+      names.forEach(n -> {
+          var m = match(n);
+          var row = new String[size];
+          row[0] = m.original.getId();
+          row[1] = str(m.original.getRank());
+          row[2] = m.original.getLabel();
+          row[3] = str(m.type);
+          if (m.usage != null) {
+              row[4] = m.usage.getId();
+              row[5] = str(m.usage.getRank());
+              row[6] = m.usage.getLabel();
+              row[7] = m.usage.getName();
+              row[8] = m.usage.getAuthorship();
+              row[9] = str(m.usage.getStatus());
+              if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
+                  row[10] = m.usage.getClassification().get(0).getLabel();
+              } else {
+                  row[10] = null;
+              }
+              row[11] = str(m.usage.getClassification());
+              row[12] = concat(m.issues);
+          } else {
+              none.incrementAndGet();
           }
-          idx++;
-        }
-      }
-      writer.writeRow(row);
-      if (counter.incrementAndGet() % 25000 == 0) {
-        LOG.info("Matched {} out of {} names so far", counter.get()-none.get(), counter);
-      }
-    });
+          // also add all original input columns if provided (only works with file uploads)
+          if (srcHeader != null && n.row != null) {
+              int idx = 0;
+              for (String val : n.row) {
+                  if (idx < size - firstCustomColIdx) {
+                      // make sure we dont have more columns than headers
+                      row[firstCustomColIdx + idx] = val;
+                  }
+                  idx++;
+              }
+          }
+          writer.writeRow(row);
+          if (counter.incrementAndGet() % 25000 == 0) {
+              LOG.info("Matched {} out of {} names so far", counter.get() - none.get(), counter);
+          }
+      });
+    }
     writer.flush();
     LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
   }
