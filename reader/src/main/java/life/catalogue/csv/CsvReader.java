@@ -574,7 +574,7 @@ public class CsvReader {
   /**
    * Returns the first content row of the given data file, skipping any header if existing.
    */
-  public Optional<VerbatimRecord> readFirstRow(AcefTerm rowType) {
+  public Optional<VerbatimRecord> readFirstRow(Term rowType) {
     if (schemas.containsKey(rowType)) {
       return stream(schemas.get(rowType)).findFirst();
     }

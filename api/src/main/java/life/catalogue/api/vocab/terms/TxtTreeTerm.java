@@ -16,6 +16,7 @@ public enum TxtTreeTerm implements Term, AlternativeNames {
   ID,
   PUB,
   REF,
+  REMARKS, // key to remarks lookup file
   ENV,
   VERN,
   SRC,
