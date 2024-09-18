@@ -845,4 +845,10 @@
     )
   </select>
 
+  <update id="_addIdentifier" parameterType="map">
+    UPDATE name_usage
+    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
 </mapper>

@@ -425,4 +425,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   List<String> listMissingParentIds(@Param("datasetKey") int datasetKey);
 
+  /**
+   * Adds extra identifiers to the usage
+   * @param key usage to add to
+   * @param identifiers ids to add
+   */
+  default void addIdentifier(DSID<String> key, List<Identifier> identifiers) {
+    if (identifiers != null && !identifiers.isEmpty()) {
+      _addIdentifier(key, identifiers);
+    }
+  }
+
+  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
+
 }

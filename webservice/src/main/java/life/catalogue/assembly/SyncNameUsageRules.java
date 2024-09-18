@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.NomStatus;
@@ -10,6 +11,8 @@ import org.gbif.nameparser.api.NomCode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class SyncNameUsageRules {
   private static final Logger LOG = LoggerFactory.getLogger(SyncNameUsageRules.class);
@@ -49,6 +52,13 @@ public class SyncNameUsageRules {
       LOG.debug("All capital {} {} converted to {}", n.getRank(), n.getScientificName(), n.getUninomial());
       n.rebuildScientificName();
     }
+    // remove all local alternative identifiers
+    removeLocalIdentifiers(u.getIdentifier());
+    removeLocalIdentifiers(n.getIdentifier());
+  }
+
+  private static void removeLocalIdentifiers(List<Identifier> identifier) {
+    identifier.removeIf(Identifier::isLocal);
   }
 
 }

@@ -174,6 +174,22 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertEquals(0, res.size());
   }
 
+
+  @Test
+  public void addIdentifier() throws Exception {
+    NameUsageBase t = TestEntityGenerator.TAXON1.copy();
+
+    mapper().addIdentifier(t, List.of());
+    var n2 = mapper().get(t);
+    assertEquals(t.getIdentifier(), n2.getIdentifier());
+
+    final var id = new Identifier(Identifier.Scope.IPNI, "2345678uio");
+    mapper().addIdentifier(t, List.of(id));
+    n2 = mapper().get(t);
+    t.setIdentifier(List.of(id));
+    assertEquals(t.getIdentifier(), n2.getIdentifier());
+  }
+
   @Test
   public void list() throws Exception {
     NameDao nameDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);

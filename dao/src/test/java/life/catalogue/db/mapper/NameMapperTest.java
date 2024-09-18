@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.Gender;
@@ -212,6 +213,25 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     // we have one ref from the apple.sql
     assertEquals(1, nameMapper.listByReference(REF1.getDatasetKey(), REF1.getId()).size());
     assertEquals(2, nameMapper.listByReference(REF1b.getDatasetKey(), REF1b.getId()).size());
+  }
+
+  @Test
+  public void addIdentifier() throws Exception {
+    Name n = TestEntityGenerator.newName("sk1");
+    n.addIdentifier("col:DERF");
+    n.addIdentifier("https://www.wikidata.org/wiki/Q157571");
+    nameMapper.create(n);
+    commit();
+
+    nameMapper.addIdentifier(n, List.of());
+    var n2 = nameMapper.get(n);
+    assertEquals(n.getIdentifier(), n2.getIdentifier());
+
+    final var id = new Identifier(Identifier.Scope.IPNI, "2345678uio");
+    nameMapper.addIdentifier(n, List.of(id));
+    n2 = nameMapper.get(n);
+    n.getIdentifier().add(id);
+    assertEquals(n.getIdentifier(), n2.getIdentifier());
   }
 
   private static Name newAcceptedName(String scientificName) {

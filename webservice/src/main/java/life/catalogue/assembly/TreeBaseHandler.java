@@ -10,7 +10,6 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
 
-import life.catalogue.release.ParentStack;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.*;
@@ -55,9 +54,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final ReferenceMapper rm;
   protected final TaxonMapper tm;
   protected final NameMapper nm;
-  // for reading only:
   protected final NameUsageMapper num;
-  protected final VerbatimRecordMapper vrm;
+  // for reading only:
+  protected final NameUsageMapper numRO;
+  protected final VerbatimRecordMapper vrmRO;
   protected final Usage targetUsage;
   protected final Taxon target;
   // tracker
@@ -114,8 +114,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     session = factory.openSession(true);
-    num = session.getMapper(NameUsageMapper.class);
-    vrm = session.getMapper(VerbatimRecordMapper.class);
+    numRO = session.getMapper(NameUsageMapper.class);
+    vrmRO = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
     targetUsage = usage(target, null, null);
@@ -129,6 +129,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     tm = batchSession.getMapper(TaxonMapper.class);
     nm = batchSession.getMapper(NameMapper.class);
     nmm= batchSession.getMapper(NameMatchMapper.class);
+    num= batchSession.getMapper(NameUsageMapper.class);
   }
 
   protected ModifiedUsage processCommon(NameUsageBase nu) {
@@ -395,10 +396,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected SimpleName getSimpleParent(String id) {
-    var p = num.getSimpleParent(targetKey.id(id));
+    var p = numRO.getSimpleParent(targetKey.id(id));
     if (p == null) {
       batchSession.commit();
-      p = num.getSimpleParent(targetKey.id(id));
+      p = numRO.getSimpleParent(targetKey.id(id));
       if (p == null) {
         LOG.warn("Parent not found for {}", target);
       }

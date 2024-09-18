@@ -235,8 +235,8 @@
   </select>
 
   <select id="getNameIdByUsage" resultType="String">
-    SELECT n.id
-    FROM name n JOIN name_usage u ON u.name_id=n.id AND u.dataset_key=n.dataset_key
+    SELECT u.name_id
+    FROM name_usage u
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{usageId}
   </select>
 
@@ -425,5 +425,11 @@
     FROM name
     <if test="rank != null">WHERE rank &lt; #{rank}::RANK</if>
   </select>
+
+  <update id="_addIdentifier" parameterType="map">
+    UPDATE name
+    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
 
 </mapper>

@@ -34,6 +34,9 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
    */
   List<Name> listByIds(@Param("datasetKey") int datasetKey, @Param("ids") Set<String> ids);
 
+  /**
+   * Retrieve the name id only for a given usage key
+   */
   String getNameIdByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
 
   Name getByUsage(@Param("datasetKey") int datasetKey, @Param("usageId") String usageId);
@@ -117,4 +120,17 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                     @Param("req") NameSearchRequest filter,
                     @Param("page") Page page
   );
+
+  /**
+   * Adds extra identifiers to the name
+   * @param key name to add to
+   * @param identifiers ids to add
+   */
+  default void addIdentifier(DSID<String> key, List<Identifier> identifiers) {
+    if (identifiers != null && !identifiers.isEmpty()) {
+      _addIdentifier(key, identifiers);
+    }
+  }
+
+  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
 }

@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
@@ -148,7 +149,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
       // make sure the parent has a higher rank
       batchSession.commit();
       while (parent != null && !Objects.equals(targetUsage, parent) && parent.rank.lowerOrEqualsTo(mod.usage.getRank())) {
-        var p = num.getSimpleParent(targetDSID.id(parent.id));
+        var p = numRO.getSimpleParent(targetDSID.id(parent.id));
         parent = p == null ? null : ids.getOrDefault(p.getId(), targetUsage);
       }
       LOG.info("Relinking {} to new parent {}", mod.usage.getLabel(), parent);
@@ -194,7 +195,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
-    var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
+    var matches = numRO.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
     if (!matches.isEmpty()) {
       var u = usage(matches.get(0));
       implicits.put(rnn, u);

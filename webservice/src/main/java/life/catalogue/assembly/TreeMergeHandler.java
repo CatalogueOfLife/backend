@@ -12,7 +12,6 @@ import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
 
-import life.catalogue.release.ParentStack;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -47,6 +46,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int updated = 0; // updates
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final DSID<Integer> vKey;
+  private final Identifier.Scope nameIdScope;
+  private final Identifier.Scope usageIdScope;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                    User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
@@ -110,6 +111,50 @@ public class TreeMergeHandler extends TreeBaseHandler {
           LOG.info("No type material in sector {}", sector);
         }
       }
+    }
+
+    // add known identifiers?
+    if (source.getType() == DatasetType.NOMENCLATURAL && source.getAlias() != null) {
+      switch (source.getAlias().toUpperCase()) {
+        case "ZOOBANK":
+          nameIdScope = Identifier.Scope.ZOOBANK;
+          break;
+        case "IF":
+        case "Index Fungorum":
+          nameIdScope = Identifier.Scope.IF;
+          break;
+        case "INA":
+          nameIdScope = Identifier.Scope.INA;
+          break;
+        case "IPNI":
+          nameIdScope = Identifier.Scope.IPNI;
+          break;
+        default:
+          nameIdScope = null;
+      }
+    } else {
+      nameIdScope = null;
+    }
+    // known usage id scope?
+    if (source.getType() == DatasetType.TAXONOMIC && source.getAlias() != null) {
+      switch (source.getAlias().toUpperCase()) {
+        case "WFO":
+          usageIdScope = Identifier.Scope.WFO;
+          break;
+        case "ITIS":
+          usageIdScope = Identifier.Scope.TSN;
+          break;
+        case "INAT":
+          usageIdScope = Identifier.Scope.INAT;
+          break;
+        case "GBIF":
+          usageIdScope = Identifier.Scope.GBIF;
+          break;
+        default:
+          usageIdScope = null;
+      }
+    } else {
+      usageIdScope = null;
     }
   }
 
@@ -265,11 +310,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
       if (parent != null && parent.status.isSynonym()) {
         // use accepted instead
-        var p = num.getSimpleParent(targetKey.id(parent.id));
+        var p = numRO.getSimpleParent(targetKey.id(parent.id));
         // make sure rank hierarchy makes sense - can be distorted by synonyms
         if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
           while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
-            p = num.getSimpleParent(targetKey.id(p.getId()));
+            p = numRO.getSimpleParent(targetKey.id(p.getId()));
           }
           if (p == null) {
             // nothing to attach to. Better skip this taxon, but include children
@@ -279,6 +324,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
           }
         }
         parent = usage(p);
+      }
+
+      // add well known identifiers
+      if (usageIdScope != null) {
+        nu.addIdentifier(new Identifier(usageIdScope, nu.getId()));
+      }
+      if (nameIdScope != null) {
+        nu.getName().addIdentifier(new Identifier(nameIdScope, nu.getName().getId()));
       }
 
       // only add a new name if we do not have already multiple names that we cannot clearly match
@@ -323,7 +376,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         || (cfg != null && cfg.isBlocked(u.getName()));
       // if issues are to be excluded we need to load the verbatim records
       if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues = vrm.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        var issues = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
         if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
           LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
           return true;
@@ -377,7 +430,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
-  private boolean update(NameUsageBase nu, UsageMatch existing) {
+  private void update(NameUsageBase nu, UsageMatch existing) {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 
@@ -398,7 +451,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
               batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
               if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                 LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-                num.updateParentId(existingUsageKey, parent.getId(), user.getKey());
+                numRO.updateParentId(existingUsageKey, parent.getId(), user.getKey());
                 upd.add(InfoGroup.PARENT);
               }
             }
@@ -501,12 +554,20 @@ public class TreeMergeHandler extends TreeBaseHandler {
         vsm.insertSources(existingUsageKey, nu, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
-        return true;
       }
+
     } else {
       LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
     }
-    return false;
+
+    // add well know name and usage ids
+    if (usageIdScope != null) {
+      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+    }
+    if (nameIdScope != null) {
+      var nid = DSID.of(existing.getDatasetKey(), nm.getNameIdByUsage(existing.getDatasetKey(), existing.getId()));
+      nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, nu.getName().getId())));
+    }
   }
 
   /**
