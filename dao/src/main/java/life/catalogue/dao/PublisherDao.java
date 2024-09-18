@@ -1,9 +1,14 @@
 package life.catalogue.dao;
 
+import com.google.common.eventbus.EventBus;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -16,6 +21,7 @@ import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import org.gbif.api.model.common.search.SearchRequest;
 import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
@@ -34,9 +40,21 @@ import java.util.stream.Collectors;
 public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(PublisherDao.class);
+  private final EventBus bus;
 
-  public PublisherDao(SqlSessionFactory factory, Validator validator) {
+  public PublisherDao(SqlSessionFactory factory, Validator validator, EventBus bus) {
     super(false, factory, Publisher.class, PublisherMapper.class, validator);
+    this.bus = bus;
+  }
+
+  @Override
+  protected boolean deleteAfter(DSID<UUID> key, Publisher old, int user, PublisherMapper mapper, SqlSession session) {
+    // also remove all merge sectors from datasets from this publisher
+    final int projectKey = key.getDatasetKey();
+    for (Sector s : session.getMapper(SectorMapper.class).listByDatasetPublisher(projectKey, key.getId())){
+      bus.post(new DeleteSector(DSID.of(projectKey, s.getId())));
+    }
+    return true;
   }
 
   @Override
