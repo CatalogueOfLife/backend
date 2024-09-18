@@ -159,13 +159,29 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
     String origNameID= mod.usage.getName().getId();
     final var orig = DSID.copy(mod.usage);
+    final var origParentId = mod.usage.getParentId();
     var sn = create(mod.usage, parent);
 
     // remember old to new id mappings
-    ids.put(orig.getId(), usage(mod.usage));
+    ids.put(orig.getId(), usage(mod.usage, origParentId, decisions.get(orig.getId())));
     nameIds.put(origNameID, mod.usage.getName().getId());
 
     processEnd(sn, mod);
+  }
+
+  @Override
+  protected List<EditorialDecision> findParentDecisions(String taxonID) {
+    var decisions = new LinkedList<EditorialDecision>();
+    if (taxonID != null) {
+      var u = ids.get(taxonID);
+      while (u != null) {
+        if (u.decision != null) {
+          decisions.addFirst(u.decision);
+        }
+        u = ids.get(u.parentId);
+      }
+    }
+    return decisions;
   }
 
   @Override
@@ -180,7 +196,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     batchSession.commit();
     var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
     if (!matches.isEmpty()) {
-      var u = new Usage(matches.get(0));
+      var u = usage(matches.get(0));
       implicits.put(rnn, u);
       return u;
     }

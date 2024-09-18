@@ -155,7 +155,7 @@ public class UsageMatcherGlobal {
                    .build();
       Taxon t = new Taxon(n);
       canonNidxAndMatchIfNeeded(datasetKey, t, allowInserts);
-      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t));
+      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t), null);
       parents.add(mu);
       var m = matchWithParents(datasetKey, t, parents, allowInserts, false);
       if (m.isMatch()) {

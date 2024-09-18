@@ -129,7 +129,7 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status) {
+  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status, @Nullable Boolean extinct) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -138,6 +138,7 @@ public abstract class SectorSyncTestBase {
       ed.setSubject(src);
       ed.setName(name);
       ed.setStatus(status);
+      ed.setExtinct(extinct);
       ed.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(ed);
       return ed;

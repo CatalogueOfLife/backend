@@ -9,6 +9,7 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.CSVUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.InitDbUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
@@ -328,6 +329,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
+    PgUtils.killNoneIdleConnections(session);
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
       session.getConnection().commit();

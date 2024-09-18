@@ -12,6 +12,8 @@ import java.util.function.Supplier;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.postgresql.PGConnection;
 import org.postgresql.util.PSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,4 +90,23 @@ public class PgUtils {
   public static String repl0x(String x) {
     return x == null ? null : x.replace(ZERO_BYTE_CHAR, ' ');
   }
+
+  public static void killNoneIdleConnections(SqlSessionFactory factory) throws SQLException {
+    try (var session = factory.openSession(true)) {
+      killNoneIdleConnections(session);
+    }
+  }
+
+  public static void killNoneIdleConnections(SqlSession session) throws SQLException {
+    killNoneIdleConnections(session.getConnection());
+  }
+
+  public static void killNoneIdleConnections(Connection c) throws SQLException {
+    try (var st = c.createStatement()) {
+      PGConnection pgc = InitDbUtils.toPgConnection(c);
+      LOG.warn("Kill all open connections but {}", pgc.getBackendPID());
+      st.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid != pg_backend_pid() AND datname IS NOT NULL AND leader_pid IS NULL AND state <> 'idle'");
+    }
+  }
+
 }

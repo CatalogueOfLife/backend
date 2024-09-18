@@ -12,6 +12,7 @@ import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
 
+import life.catalogue.release.ParentStack;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -76,7 +77,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // loop over classification incl the subject itself as the last usage
         for (var p : num.getClassification(sector.getSubjectAsDSID())) {
           var nusn = matcher.toSimpleName(p);
-          parents.push(nusn);
+          parents.push(nusn, null);
           UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classification(), false, false);
           if (match.isMatch()) {
             parents.setMatch(match.usage);
@@ -112,6 +113,22 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
+  @Override
+  protected List<EditorialDecision> findParentDecisions(String taxonID) {
+    var ll = new LinkedList<>(parents.classification());
+    var iter = ll.descendingIterator();
+    while (iter.hasNext()) {
+      var u = iter.next();
+      if (u.usage.getId().equals(taxonID)) {
+        break;
+      }
+      iter.remove();
+    }
+    return ll.stream()
+      .filter(mu -> mu.decision != null)
+      .map(mu -> mu.decision)
+      .collect(Collectors.toList());
+  }
 
   @Override
   public void reset() {
@@ -161,7 +178,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
-    parents.push(nusn);
+    parents.push(nusn, decisions.get(nu.getId()));
 
     final boolean qualifiedName = nu.getName().hasAuthorship();
 

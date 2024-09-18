@@ -47,7 +47,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Dataset source;
   protected final SectorImport state;
   protected final Map<String, EditorialDecision> decisions;
-  protected final ParentStack<ParentDecision> parentDecisions = new ParentStack<>();
   protected final NameIndex nameIndex;
   protected final SqlSession session;
   protected final SqlSession batchSession;
@@ -76,20 +75,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int sCounter = 0;
   protected int tCounter = 0;
   protected int decisionCounter = 0;
-
-  public static class ParentDecision extends NameUsageBase {
-    public final EditorialDecision decision;
-
-    ParentDecision(NameUsageBase sn, EditorialDecision decision) {
-      super(sn);
-      this.decision = decision;
-    }
-
-    @Override
-    public NameUsageBase copy() {
-      throw new UnsupportedOperationException();
-    }
-  }
 
   public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
                          User user, Sector sector, SectorImport state,
@@ -133,7 +118,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     vrm = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
     target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
-    targetUsage = usage(target);
+    targetUsage = usage(target, null, null);
     // load source dataset
     source = session.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
 
@@ -164,24 +149,13 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
     // inherited updates
     if (nu.isTaxon()) {
-      Taxon t = (Taxon) nu;
-      for (var d : parentDecisions.getParents(false)) {
-        if (d.decision.getMode() == EditorialDecision.Mode.UPDATE) {
-          if (d.decision.isExtinct() != null) {
-            t.setExtinct(d.decision.isExtinct());
-          }
-        }
-      }
+      applyInheritedDecisions((Taxon) nu, nu.getParentId());
     }
     // decisions
-    if (decisions.containsKey(nu.getId())) {
-      var dec = decisions.get(nu.getId());
+    var dec = decisions.get(nu.getId());
+    if (dec != null) {
       mod = applyDecision(nu, dec);
       nu = mod.usage;
-      if (dec.getMode()== EditorialDecision.Mode.UPDATE) {
-        // keep update decisions for inherited updates, e.g. extinct
-        parentDecisions.push(new ParentDecision(nu,dec));
-      }
     } else {
       // apply general rules otherwise
       SyncNameUsageRules.applyAlways(nu);
@@ -194,6 +168,28 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
     return mod;
   }
+
+  /**
+   * Applies inherited decisions from the parent lineage, e.g. extinct flag
+   * @param parentId the taxon id to start searching for parent decisions.
+   *                 Uses the source identifiers, NOT the new temp ids from the project !!!
+   */
+  private void applyInheritedDecisions(Taxon t, String parentId) {
+    for (var d : findParentDecisions(parentId)) {
+      if (d.getMode() == EditorialDecision.Mode.UPDATE) {
+        if (d.isExtinct() != null) {
+          t.setExtinct(d.isExtinct());
+        }
+      }
+    }
+  }
+
+  /**
+   * List all parent decisions for the given id and above.
+   * Must be sorted from top down, the lowest child taxa last
+   * @param taxonID taxonID of the taxon to start looking for decisions
+   */
+  protected abstract List<EditorialDecision> findParentDecisions(String taxonID);
 
   protected void processEnd(@Nullable SimpleName sn, ModifiedUsage mod) throws InterruptedException {
     // create orth var name relation for synonyms
@@ -212,7 +208,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       var origAsSyn = new Synonym(mod.originalName);
       origAsSyn.setId(mod.usage.getId());
       origAsSyn.setRemarks("Original spelling before change by an editorial decision");
-      create(origAsSyn, new Usage(sn));
+      create(origAsSyn, usage(sn));
     }
     // commit in batches
     if (sCounter + tCounter > 0 && (sCounter + tCounter) % 1000 == 0) {
@@ -222,12 +218,12 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
   }
 
-  protected Usage usage(NameUsageBase u) {
-    return u == null ? null : new Usage(u.getId(), u.getName().getRank(), u.getStatus());
+  protected Usage usage(NameUsageBase u, String origParentId, EditorialDecision decision) {
+    return u == null ? null : new Usage(u.getId(), origParentId, u.getName().getRank(), u.getStatus(), decision);
   }
 
   protected Usage usage(SimpleName sn) {
-    return sn == null ? null : new Usage(sn.getId(), sn.getRank(), sn.getStatus());
+    return sn == null ? null : new Usage(sn.getId(), sn.getParentId(), sn.getRank(), sn.getStatus(), decisions.get(sn.getId()));
   }
 
   /**
@@ -386,9 +382,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
         t.setOrigin(Origin.IMPLICIT_NAME);
         t.setStatus(TaxonomicStatus.ACCEPTED);
         t.applyUser(user);
+        // apply inherited decisions
+        applyInheritedDecisions(t, taxon.getParentId());
         tm.create(t);
 
-        parent = usage(t);
+        parent = usage(t, taxon.getParentId(), null);
         // allow reuse of implicit names
         cacheImplicit(t, parent);
       }
