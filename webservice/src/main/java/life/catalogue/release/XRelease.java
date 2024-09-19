@@ -458,7 +458,7 @@ public class XRelease extends ProjectRelease {
       checkIfCancelled();
       SectorSync ss;
       try {
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser);
+        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;

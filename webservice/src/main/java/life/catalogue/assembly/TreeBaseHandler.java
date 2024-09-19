@@ -41,7 +41,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected final int targetDatasetKey;
   protected final DSID<String> targetKey; // key to some target usage that can be reused
-  protected final User user;
+  protected final int user;
   protected final Sector sector;
   protected final Dataset source;
   protected final SectorImport state;
@@ -77,7 +77,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected int decisionCounter = 0;
 
   public TreeBaseHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
-                         User user, Sector sector, SectorImport state,
+                         int user, Sector sector, SectorImport state,
                          Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     this.targetDatasetKey = targetDatasetKey;
     this.targetKey = DSID.root(targetDatasetKey);
@@ -264,7 +264,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     // copy usage with all associated information. This assigns a new id !!!
-    CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user.getKey(), entities,
+    CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
       nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
       this::lookupReference, this::lookupReference
     );
@@ -699,7 +699,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
         ref.applyUser(user);
-        DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user.getKey());
+        DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user);
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();
 

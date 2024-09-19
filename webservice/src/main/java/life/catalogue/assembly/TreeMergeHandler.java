@@ -50,7 +50,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final Identifier.Scope usageIdScope;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                   User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
+                   int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
@@ -451,7 +451,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
               batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
               if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
                 LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-                numRO.updateParentId(existingUsageKey, parent.getId(), user.getKey());
+                numRO.updateParentId(existingUsageKey, parent.getId(), user);
                 upd.add(InfoGroup.PARENT);
               }
             }

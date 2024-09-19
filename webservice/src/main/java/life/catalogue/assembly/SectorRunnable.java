@@ -65,7 +65,7 @@ abstract class SectorRunnable implements Runnable {
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
   private final EventBus bus;
-  final User user;
+  final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
 
@@ -74,9 +74,9 @@ abstract class SectorRunnable implements Runnable {
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
                  UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
-                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, User user) throws IllegalArgumentException {
+                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
-    this.user = Preconditions.checkNotNull(user);
+    this.user = user;
     this.bus = bus;
     this.matcher = matcher;
     this.clearMatcherCache = clearMatcherCache;
@@ -95,7 +95,7 @@ abstract class SectorRunnable implements Runnable {
     state.setDatasetKey(sectorKey.getDatasetKey());
     state.setJob(getClass().getSimpleName());
     state.setState(ImportState.WAITING);
-    state.setCreatedBy(user.getKey());
+    state.setCreatedBy(user);
 
     // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSectorAndUpdateDatasetImport(false);
@@ -320,7 +320,7 @@ abstract class SectorRunnable implements Runnable {
         ", subjectDatasetKey=" + subjectDatasetKey +
         ", sector=" + sector +
         ", created=" + created +
-        " by " + (user == null ? "?" : user.getUsername()) +
+        " by " + user +
         '}';
   }
 }

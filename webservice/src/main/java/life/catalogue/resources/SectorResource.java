@@ -82,7 +82,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
-      assembly.deleteSector(s, !partial, user);
+      assembly.deleteSector(s, !partial, user.getKey());
       counter++;
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
@@ -112,7 +112,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
     DaoUtils.requireProject(datasetKey);
-    assembly.sync(datasetKey, request, user);
+    assembly.sync(datasetKey, request, user.getKey());
   }
 
   @DELETE
@@ -141,7 +141,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
     boolean partial = Boolean.parseBoolean(uri.getQueryParameters().getFirst(PARTIAL_PARAMETER));
-    assembly.deleteSector(DSID.of(datasetKey, id), !partial, user);
+    assembly.deleteSector(DSID.of(datasetKey, id), !partial, user.getKey());
   }
 
   @POST

@@ -64,7 +64,7 @@ public class SectorSync extends SectorRunnable {
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
-             User user) throws IllegalArgumentException {
+             int user) throws IllegalArgumentException {
     super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.project = project;
     this.sid = sid;
@@ -176,7 +176,7 @@ public class SectorSync extends SectorRunnable {
    */
   private void rematchEstimates() {
     RematchRequest req = new RematchRequest(sectorKey.getDatasetKey(), true);
-    EstimateRematcher.match(estimateDao, req, user.getKey());
+    EstimateRematcher.match(estimateDao, req, user);
   }
 
   /**
@@ -190,7 +190,7 @@ public class SectorSync extends SectorRunnable {
         NameUsage parent = num.get(DSID.of(sectorKey.getDatasetKey(), sn.getParent()));
         foreignChildrenParents.put(sn.getId(), parent.getName());
         // update to new parent
-        num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), newParentID, user.getKey());
+        num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), newParentID, user);
     });
   }
   
@@ -211,7 +211,7 @@ public class SectorSync extends SectorRunnable {
           if (matches.size() > 1) {
             LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", sn.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
-          num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), matches.get(0).getId(), user.getKey());
+          num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), matches.get(0).getId(), user);
         }
       });
     }

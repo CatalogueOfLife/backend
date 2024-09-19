@@ -32,7 +32,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<String, String> nameIds = new HashMap<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
-  TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+  TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, int user, Sector sector, SectorImport state) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, UsageIdGen.RANDOM_SHORT_UUID);
     targetDSID = DSID.root(targetDatasetKey);
   }
