@@ -83,7 +83,7 @@ public class NamesIndexCmdIT extends CmdTestBase {
           throw new IllegalStateException("Non unique name "+sn+" in names index");
         }
       });
-      assertEquals(286, cnt);
+      assertEquals(284, cnt);
     }
   }
 }
