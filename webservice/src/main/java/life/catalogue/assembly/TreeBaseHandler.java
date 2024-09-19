@@ -363,7 +363,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
           continue;
         }
         // finally, create missing implicit name
-        DatasetEntityDao.newKey(n);
+        n.setId(nameIdGen.get());
         n.setDatasetKey(targetDatasetKey);
         n.setOrigin(Origin.IMPLICIT_NAME);
         n.applyUser(user);
@@ -373,7 +373,6 @@ public abstract class TreeBaseHandler implements TreeHandler {
         persistMatch(n);
 
         Taxon t = new Taxon();
-        DatasetEntityDao.newKey(t);
         t.setDatasetKey(targetDatasetKey);
         t.setName(n);
         if (parent != null) {
@@ -385,6 +384,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
         t.applyUser(user);
         // apply inherited decisions
         applyInheritedDecisions(t, taxon.getParentId());
+        // finally assign a (stable) id
+        t.setId(usageIdGen.issue(t.toSimpleNameWithNidx(usageIdGen::nidx2canonical)));
         tm.create(t);
 
         parent = usage(t, taxon.getParentId(), null);
