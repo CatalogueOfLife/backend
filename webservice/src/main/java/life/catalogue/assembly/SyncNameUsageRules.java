@@ -58,7 +58,9 @@ public class SyncNameUsageRules {
   }
 
   private static void removeLocalIdentifiers(List<Identifier> identifier) {
-    identifier.removeIf(Identifier::isLocal);
+    if (identifier != null) {
+      identifier.removeIf(Identifier::isLocal);
+    }
   }
 
 }

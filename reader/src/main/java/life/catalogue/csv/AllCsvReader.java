@@ -22,7 +22,8 @@ public class AllCsvReader extends CsvReader {
   }
   
   protected void validate() throws SourceInvalidException {
-    super.validate();
+    // nothing to check!
+    // This is supposed to allow for any and also no csv files to be read
   }
   
 }
