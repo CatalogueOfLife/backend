@@ -18,6 +18,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 public class User implements Entity<Integer>, Principal {
 
   public static final int ADMIN_MAGIC_KEY = -42;
+  public static final int EDITOR_DEFAULT_DATASET = -1;
 
   public enum Role {
     REVIEWER,
@@ -101,6 +102,9 @@ public class User implements Entity<Integer>, Principal {
     return roles.contains(Role.ADMIN);
   }
 
+  public boolean isEditor() {
+    return roles.contains(Role.EDITOR) || !editor.isEmpty();
+  }
   public boolean isEditor(int datasetKey) {
     return roles.contains(Role.EDITOR) || editor.contains(datasetKey);
   }

@@ -68,7 +68,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     // setup
     doiService = new DataCiteService(cfg.doi, jerseyClient);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    UserDao udao = new UserDao(factory, new EventBus(), validator);
+    UserDao udao = new UserDao(factory, cfg.mail, null, new EventBus(), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
     try (SqlSession session = factory.openSession(true)) {

@@ -1,24 +1,34 @@
 package life.catalogue.dao;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import freemarker.template.TemplateException;
+
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.lang.Exceptions;
+import life.catalogue.config.MailConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.metadata.FmUtil;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +43,18 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
+  private static final String emailTemplate = "email/editor-request.ftl";
 
   private final EventBus bus;
+  @Nullable
+  private Mailer mailer;
+  private final MailConfig mailCfg;
 
-  public UserDao(SqlSessionFactory factory, EventBus bus, Validator validator) {
+  public UserDao(SqlSessionFactory factory, MailConfig cfg, @Nullable Mailer emailer, EventBus bus, Validator validator) {
     super(true, factory, User.class, UserMapper.class, validator);
     this.bus = bus;
+    this.mailer = emailer;
+    this.mailCfg = cfg;
   }
 
   public ResultPage<User> search(@Nullable final String q, @Nullable final User.Role role, @Nullable Page page) {
@@ -167,5 +183,63 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
       }
     }
     return keys;
+  }
+
+  /**
+   * Files a request to become an editor and sends an email to admins to handle it.
+   * @param user
+   */
+  public void requestEditorPermission(User user, String request) {
+    Preconditions.checkArgument(user.getFirstname() != null, "Your firstname is required in your GBIF profile to become an editor");
+    Preconditions.checkArgument(user.getLastname() != null, "Your lastname is required in your GBIF profile to become an editor");
+    Preconditions.checkArgument(user.getOrcid() != null, "You must have an ORCID configured in your GBIF profile to become an editor");
+    Preconditions.checkArgument(!user.isAdmin(), "You must have an ORCID configured in your GBIF profile to become an editor");
+    if (user.getRoles().contains(User.Role.EDITOR) || user.isEditor() || user.isAdmin()) {
+      throw new IllegalArgumentException("You already have editor permissions");
+    }
+    sendRequestEmail(user, request);
+  }
+
+  private void sendRequestEmail(User user, String request) {
+    try {
+      if (mailer != null) {
+        Email mail = EmailBuilder.startingBlank()
+          .to(mailCfg.replyTo)
+          .ccAddresses(List.of(user.getEmail()))
+          .from(mailCfg.fromName, mailCfg.from)
+          .withReplyTo(user.getEmail())
+          .withSubject(String.format("%s editor request from %s", mailCfg.subjectPrefix, user.getUsername()))
+          .withPlainText(buildEmailText(user, request))
+          .buildEmail();
+
+        var asyncResp = mailer.sendMail(mail, true).thenAccept((resp) -> {
+          LOG.info("Successfully sent editor request mail for {}", user.getUsername());
+        }).exceptionally((e) -> {
+          LOG.error("Error sending editor request mail for {}", user.getUsername(), e);
+          return null;
+        });
+        if (mailCfg.block && asyncResp != null) {
+          asyncResp.get(); // blocks
+        }
+        LOG.info("Sent editor request mail for user {} [{}] to {}", user.getName(), user.getKey(), user.getEmail());
+
+      } else {
+        LOG.warn("No mailer configured to sent editor request mails for user {} [{}] to {}", user.getName(), user.getKey(), user.getEmail());
+      }
+
+    } catch (IOException | TemplateException | ExecutionException | InterruptedException | RuntimeException e) {
+      LOG.error("Error sending editor request mail for {}", user.getUsername(), e);
+      if (mailCfg != null && mailCfg.block) {
+        throw Exceptions.asRuntimeException(e);
+      }
+    }
+  }
+
+  @VisibleForTesting
+  static String buildEmailText(User user, String request) throws TemplateException, IOException {
+    var data = new HashMap<>();
+    data.put("user", user);
+    data.put("request", request);
+    return FmUtil.render(data, emailTemplate);
   }
 }

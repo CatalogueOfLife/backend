@@ -113,7 +113,7 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     EventBus bus = new EventBus();
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    UserDao udao = new UserDao(factory, bus, validator);
+    UserDao udao = new UserDao(factory, cfg.mail, null, bus, validator);
     mail.run(cfg, null);
     exec = new JobExecutor(cfg.job, metrics, mail.getEmailNotification(), udao);
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);

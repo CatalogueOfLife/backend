@@ -242,8 +242,9 @@ public class WsServer extends Application<WsServerConfig> {
     // validation
     var validator = env.getValidator();
 
+    UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), bus, validator);
+
     // job executor
-    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
 
