@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-09-19 add more entities to vocab
+```
+ALTER TYPE ENTITYTYPE ADD 'SYNONYM' AFTER 'NAME_USAGE';
+ALTER TYPE ENTITYTYPE ADD 'TAXON' AFTER 'NAME_USAGE';
+```
+
 #### 2024-09-05 remove UPDATE RECURSIVE
 ```
 ALTER TABLE decision ALTER COLUMN mode TYPE text;

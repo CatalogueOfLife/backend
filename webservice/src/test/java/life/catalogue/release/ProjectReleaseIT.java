@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
+import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -121,6 +122,9 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       var rel = session.getMapper(DatasetMapper.class).get(release.newDatasetKey);
       assertTrue(rel.isPrivat());
     }
+
+    // test email templates
+    EmailNotificationTemplateTest.testTemplates(release);
   }
 
   private ProjectRelease buildRelease() {

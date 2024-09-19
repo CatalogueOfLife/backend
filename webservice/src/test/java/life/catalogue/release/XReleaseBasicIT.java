@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
+import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.dao.*;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -135,6 +136,9 @@ public class XReleaseBasicIT {
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
     }
+
+    // test email templates
+    EmailNotificationTemplateTest.testTemplates(xrel);
   }
 
 }

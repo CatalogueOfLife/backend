@@ -113,7 +113,6 @@ public class XRelease extends ProjectRelease {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
     // ... or licenses of existing sectors are not compatible
-    dataset = loadDataset(factory, datasetKey);
     final License projectLicense = dataset.getLicense();
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -421,7 +420,9 @@ public class XRelease extends ProjectRelease {
   protected void onFinishLocked() throws Exception {
     // release id generator resources
     try {
-      usageIdGen.close();
+      if (usageIdGen != null) {
+        usageIdGen.close();
+      }
     } catch (Exception e) {
       LOG.error("Failed to close id generator", e);
     }

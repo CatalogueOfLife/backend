@@ -10,7 +10,9 @@ public enum EntityType {
   AUTHOR(ColdpTerm.Author),
   NAME(ColdpTerm.Name),
   NAME_RELATION(ColdpTerm.NameRelation),
-  NAME_USAGE(ColdpTerm.NameUsage),
+  NAME_USAGE(ColdpTerm.NameUsage), // combines Taxon, Synonym & Name
+  TAXON(ColdpTerm.NameUsage),
+  SYNONYM(ColdpTerm.NameUsage),
   TAXON_CONCEPT_RELATION(ColdpTerm.TaxonConceptRelation),
   TAXON_PROPERTY(ColdpTerm.TaxonProperty),
   TYPE_MATERIAL(ColdpTerm.TypeMaterial),

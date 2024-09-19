@@ -93,6 +93,17 @@ public class ProjectRelease extends AbstractProjectCopy {
                        .path(newDataset.getKey().toString())
                        .build());
     dDao.update(newDataset, userKey);
+    // load project dataset for email templates & license checks
+    dataset = loadDataset(factory, datasetKey);
+  }
+
+  @Override
+  public String getEmailTemplatePrefix() {
+    return "release";
+  }
+
+  public URI getReportURI() {
+    return cfg.release.reportURI(datasetKey, attempt);
   }
 
   @Override
@@ -316,7 +327,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // remove reports
     File dir = cfg.release.reportDir(datasetKey, attempt);
     if (dir.exists()) {
-      LOG.debug("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
+      LOG.info("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);
     }
   }
