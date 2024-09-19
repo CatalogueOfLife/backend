@@ -42,7 +42,7 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
   private static final Logger LOG = LoggerFactory.getLogger(PublisherDao.class);
   private final EventBus bus;
 
-  public PublisherDao(SqlSessionFactory factory, Validator validator, EventBus bus) {
+  public PublisherDao(SqlSessionFactory factory, EventBus bus, Validator validator) {
     super(false, factory, Publisher.class, PublisherMapper.class, validator);
     this.bus = bus;
   }
