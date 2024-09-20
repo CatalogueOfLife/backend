@@ -640,11 +640,6 @@ public class DatasetIndex {
    */
   public NameUsageMatch matchByExternalKey(String key, Issue notFoundIssue, Issue ignoredIssue) {
 
-    NameUsageMatch usageMatch = matchByUsageKey(key);
-    if (usageMatch.getDiagnostics().getMatchType() != MatchType.NONE) {
-      return usageMatch;
-    }
-
     // if join indexes are present, add them to the match
     if (identifierSearchers != null && !identifierSearchers.isEmpty()){
       try {
