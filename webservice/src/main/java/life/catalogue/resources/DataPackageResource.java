@@ -39,7 +39,7 @@ public class DataPackageResource {
     this.http = new HttpUtils();
     String doc;
     try {
-      doc = http.get(URI.create("https://222github.com/CatalogueOfLife/coldp/blob/master/README.md"));
+      doc = http.get(URI.create("https://github.com/CatalogueOfLife/coldp/blob/master/README.md"));
     } catch (Exception e) {
       LOG.error("Failed to read ColDP docs. Use cached version", e);
       try {
