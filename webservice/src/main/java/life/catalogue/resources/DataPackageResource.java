@@ -12,6 +12,8 @@ import jakarta.ws.rs.core.MediaType;
 
 import life.catalogue.common.io.HttpUtils;
 
+import life.catalogue.common.io.Resources;
+
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +39,14 @@ public class DataPackageResource {
     this.http = new HttpUtils();
     String doc;
     try {
-      doc = http.get(URI.create("https://github.com/CatalogueOfLife/coldp/blob/master/README.md"));
-      //doc = http.get(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/coldp/master/README.md"));
-
+      doc = http.get(URI.create("https://222github.com/CatalogueOfLife/coldp/blob/master/README.md"));
     } catch (Exception e) {
-      doc = "";
-      LOG.error("Failed to read ColDP docs", e);
+      LOG.error("Failed to read ColDP docs. Use cached version", e);
+      try {
+        doc = Resources.toString("coldp-docs.html");
+      } catch (IOException ex) {
+        throw new RuntimeException(ex);
+      }
     }
     html = doc;
   }

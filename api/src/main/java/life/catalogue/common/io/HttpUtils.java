@@ -19,10 +19,23 @@ public class HttpUtils {
       .build();
   }
 
+  /**
+   * Retrieves the content of the URL doing a GET request.
+   * Returns the content in case of any 2xx response, but throws an IOException otherwise.
+   * @param url
+   * @return
+   * @throws IOException
+   * @throws InterruptedException
+   */
   public String get(URI url) throws IOException, InterruptedException {
     var req = HttpRequest.newBuilder(url);
     req.header("User-Agent", "ChecklistBank/1.0");
-    return client.send(req.build(), HttpResponse.BodyHandlers.ofString()).body();
+    var resp = client.send(req.build(), HttpResponse.BodyHandlers.ofString());
+    LOG.info("Response {} for GET {}", resp.statusCode(), url);
+    if (resp.statusCode() / 100 == 2) {
+      return resp.body();
+    }
+    throw new IOException("GET request "+ url + " failed with http "+ resp.statusCode());
   }
 
 }
