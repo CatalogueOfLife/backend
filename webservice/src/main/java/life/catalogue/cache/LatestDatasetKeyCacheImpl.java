@@ -185,6 +185,19 @@ public class LatestDatasetKeyCacheImpl implements LatestDatasetKeyCache {
   public void refresh(int projectKey) {
     latestRelease.refresh(projectKey);
     latestCandidate.refresh(projectKey);
+    latestXRelease.refresh(projectKey);
+    latestXCandidate.refresh(projectKey);
   }
 
+  @Override
+  public void clear() {
+    latestRelease.invalidateAll();
+    latestCandidate.invalidateAll();
+    latestXRelease.invalidateAll();
+    latestXCandidate.invalidateAll();
+    colReleases.invalidateAll();
+    colXReleases.invalidateAll();
+    gbif2clb.invalidateAll();
+    releaseAttempt.invalidateAll();
+  }
 }

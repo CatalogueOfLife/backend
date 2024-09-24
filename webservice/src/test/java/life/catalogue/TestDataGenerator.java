@@ -63,9 +63,9 @@ public class TestDataGenerator {
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
-  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, Set.of(101, 102));
+  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, Set.of(101, 102), false);
 
-   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, null, Map.ofEntries(
+   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, null, false, Map.ofEntries(
      Map.entry(Pair.of(DataFormat.COLDP, 38), 118),
      Map.entry(Pair.of(DataFormat.DWCA, 1), 106),
      Map.entry(Pair.of(DataFormat.COLDP, 35), 117),
@@ -87,8 +87,8 @@ public class TestDataGenerator {
      Map.entry(Pair.of(DataFormat.ACEF, 6), 109),
      Map.entry(Pair.of(DataFormat.ACEF, 5), 108)
   ));
-  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, null);
-  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, null);
+  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, null, false);
+  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, null, false);
 
   public static TestDataRule homotypigGrouping() {
     return new TestDataRule(GROUPING);

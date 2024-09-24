@@ -7,6 +7,7 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -82,8 +83,9 @@ public class AdminResource {
   private final JobExecutor exec;
   private final ManagedService componedService;
   private final EventBus bus;
+  private final LatestDatasetKeyCache lrCache;
 
-  public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        JobExecutor executor, IdMap idMap, Validator validator, EventBus bus) {
@@ -103,6 +105,7 @@ public class AdminResource {
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
+    this.lrCache = lrCache;
   }
 
   @GET
@@ -319,6 +322,7 @@ public class AdminResource {
   public boolean clearCaches(@Auth User user) {
     LOG.info("Clear dataset info cache with {} entries by {}", DatasetInfoCache.CACHE.size(), user);
     DatasetInfoCache.CACHE.clear();
+    lrCache.clear();
     return true;
   }
 
