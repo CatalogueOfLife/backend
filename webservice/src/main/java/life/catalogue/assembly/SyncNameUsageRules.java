@@ -9,6 +9,9 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +31,13 @@ public class SyncNameUsageRules {
         n.setBasionymAuthorship(null);
         n.setSanctioningAuthor(null);
         LOG.debug("remove authorship from botanical autonym {}", u.getLabel());
+      }
+    // zoological rules only
+    } else if (NomCode.ZOOLOGICAL == n.getCode()) {
+      // accepted trinomials become subspecies
+      if (u.getStatus().isTaxon() && n.isTrinomial() && n.getRank() == Rank.INFRASPECIFIC_NAME) {
+        n.setRank(Rank.SUBSPECIES);
+        LOG.debug("Change accepted, zoological, infraspecific name to subspecies rank: {}", u.getLabel());
       }
     }
     // change tax status of manuscript names
