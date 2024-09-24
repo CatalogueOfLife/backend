@@ -62,6 +62,10 @@ public class PortalPageRendererIT {
     @Override
     public void refresh(int projectKey) {
     }
+
+    @Override
+    public void clear() {
+    }
   };
 
   @ClassRule
@@ -90,38 +94,38 @@ public class PortalPageRendererIT {
 
   @Test
   public void renderTaxon() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", PROD).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", DEV).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", PROD).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", DEV).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", PROD, false).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", DEV, false).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", PROD, false).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", DEV, false).getStatus());
   }
 
   @Test
   public void renderDataset() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, PROD).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, DEV).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, PROD).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, DEV).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, PROD, false).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, DEV, false).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, PROD, false).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, DEV, false).getStatus());
   }
 
   @Test
   public void renderMetadata() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD, false).getStatus());
   }
 
   @Test
   public void store() throws Exception {
     renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol.");
-    assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
+    assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD, false).getEntity());
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
+    assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, PROD, false).getEntity());
 
     renderer.store(PREVIEW, PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
-    assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW).getEntity());
+    assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW, false).getEntity());
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD).getEntity());
+    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD, false).getEntity());
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some SEO please?");
     assertEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());

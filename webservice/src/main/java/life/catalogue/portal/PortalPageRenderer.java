@@ -96,8 +96,8 @@ public class PortalPageRenderer {
    * @param id a COL checklist taxon or synonym ID. In case of synonyms redirect to the taxon page.
    * @param env
    */
-  public Response renderTaxon(String id, Environment env) throws TemplateException, IOException {
-    final int datasetKey = releaseKey(env);
+  public Response renderTaxon(String id, Environment env, boolean extended) throws TemplateException, IOException {
+    final int datasetKey = releaseKey(env, extended);
     final Map<String, Object> data = buildData(datasetKey);
 
     try {
@@ -159,9 +159,9 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderDatasource(int id, Environment env) throws TemplateException, IOException {
+  public Response renderDatasource(int id, Environment env, boolean extended) throws TemplateException, IOException {
     try {
-      final int datasetKey = releaseKey(env);
+      final int datasetKey = releaseKey(env, extended);
       final Map<String, Object> data = buildData(datasetKey);
 
       var d = checkFound(
@@ -176,9 +176,9 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderMetadata(Environment env) throws TemplateException, IOException {
+  public Response renderMetadata(Environment env, boolean extended) throws TemplateException, IOException {
     try {
-      final int datasetKey = releaseKey(env);
+      final int datasetKey = releaseKey(env, extended);
       final Map<String, Object> data = buildData(datasetKey);
 
       Dataset d;
@@ -283,10 +283,10 @@ public class PortalPageRenderer {
     return portalTemplateDir.resolve(Path.of(env.name(), pp.name()+".ftl"));
   }
 
-  private int releaseKey(Environment env) {
+  private int releaseKey(Environment env, boolean extended) {
     boolean preview = env == Environment.PREVIEW;
-    Integer key = preview ? cache.getLatestReleaseCandidate(Datasets.COL, false) : cache.getLatestRelease(Datasets.COL, false);
-    if (key == null) throw new NotFoundException("No COL" + (preview ? " preview" : "") + " release existing");
+    Integer key = preview ? cache.getLatestReleaseCandidate(Datasets.COL, extended) : cache.getLatestRelease(Datasets.COL, extended);
+    if (key == null) throw new NotFoundException("No COL" + (preview ? " preview" : "") + " release "+(extended ? "candidate ":"")+"existing");
     return key;
   }
 }
