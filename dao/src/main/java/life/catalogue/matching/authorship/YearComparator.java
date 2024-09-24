@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * String based year comparison, that allows for an acceptable year difference to be still considered the same.
+ * String based year comparison, that allows for an acceptable year difference to compare as UNKNOWN.
  */
 public class YearComparator {
   private static final Pattern YEAR = Pattern.compile("(^|[^0-9])([0-9?]{4})([^0-9]|$)");
@@ -91,8 +91,11 @@ public class YearComparator {
         int yi1 = Integer.parseInt(y1);
         int yi2 = Integer.parseInt(y2);
         // allow for one year difference
-        if (yi1 == yi2 || diffAllowed > 0 && Math.abs(yi1-yi2) <= diffAllowed) {
+        if (yi1 == yi2) {
           return Equality.EQUAL;
+        }
+        if (diffAllowed > 0 && Math.abs(yi1-yi2) <= diffAllowed) {
+          return Equality.UNKNOWN;
         }
       } catch (NumberFormatException e) {
         // allow ? in year comparisons
@@ -103,5 +106,9 @@ public class YearComparator {
       return Equality.DIFFERENT;
     }
     return Equality.UNKNOWN;
+  }
+
+  public boolean hasYears() {
+    return y1 != null && y2 != null;
   }
 }

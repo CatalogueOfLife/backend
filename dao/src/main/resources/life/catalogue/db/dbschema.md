@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-09-24 holotype infogroup
+```
+ALTER TYPE INFOGROUP ADD VALUE 'HOLOTYPE';
+```
+
 #### 2024-09-19 add more entities to vocab
 ```
 ALTER TYPE ENTITYTYPE ADD VALUE 'SYNONYM' AFTER 'NAME_USAGE';

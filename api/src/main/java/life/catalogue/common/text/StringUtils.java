@@ -404,7 +404,7 @@ public class StringUtils {
     ).replaceAll("");
   }
 
-  public static String removeWhitespace(String value) {
+  public static String rmWS(String value) {
     if (value == null)
       return value;
     return WHITESPACE.matcher(value).replaceAll("");

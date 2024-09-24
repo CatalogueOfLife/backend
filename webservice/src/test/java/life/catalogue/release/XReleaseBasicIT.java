@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 
 public class XReleaseBasicIT {
 
-  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
+  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13,
     Map.of(
       "sector", Map.of("created_by", 100, "modified_by", 100)
     ), null);

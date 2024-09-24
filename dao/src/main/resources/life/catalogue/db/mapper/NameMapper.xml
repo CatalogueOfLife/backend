@@ -254,6 +254,12 @@
     <foreach item="k" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 
+  <select id="listByNidx" resultMap="nameResultMap">
+    SELECT <include refid="SELECT_NIDX"/>
+    FROM <include refid="FROM_NIDX"/>
+    WHERE n.dataset_key=#{datasetKey} AND nm.index_id = #{nidx}
+  </select>
+
   <select id="unrankedRankNameIds" resultType="string">
     SELECT n.id
     FROM <include refid="FROM"/>

@@ -1,0 +1,17 @@
+id,parent_id,status,name_id
+ka,,ACCEPTED,ka
+kf,,ACCEPTED,kf
+kp,,ACCEPTED,kp
+p1,ka,ACCEPTED,p1
+p2,ka,ACCEPTED,p2
+p3,ka,ACCEPTED,p3
+p4,kp,ACCEPTED,p4
+p5,kp,ACCEPTED,p5
+p6,kf,ACCEPTED,p6
+p7,kf,ACCEPTED,p7
+c1,p2,ACCEPTED,c1
+c2,p2,ACCEPTED,c2
+c3,p3,ACCEPTED,c3
+g1,ka,ACCEPTED,g1
+1,g1,ACCEPTED,1
+2,1,SYNONYM,2

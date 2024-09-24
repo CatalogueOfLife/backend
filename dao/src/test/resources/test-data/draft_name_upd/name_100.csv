@@ -1,0 +1,5 @@
+id,scientific_name,authorship,rank,gender,gender_agreement,published_in_id,published_in_page,published_in_page_link,identifier,etymology
+g1,Aaata,"de Laubenfels, 1932",GENUS,,,,,,,Aaata originates from a Finnish town
+1,Aaata brepha,"de Laubenfels, 1932",SPECIES,,,Q56209236,,,,
+2,Aaata brepha longhi,"de Laubenfels, 1932",SUBSPECIES,,,,,,,
+3,Aaata brepha oldshortii,"de Laubenfels, 1932",SUBSPECIES,,,,,,,Old Shatterhand

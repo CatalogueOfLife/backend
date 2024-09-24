@@ -35,6 +35,10 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 public abstract class TreeBaseHandler implements TreeHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeBaseHandler.class);
   protected final Set<EntityType> entities;
+  protected final boolean syncNames;
+  protected final boolean syncTaxa;
+  protected final boolean syncSynonyms;
+  protected final boolean syncReferences;
   protected final Set<Rank> ranks;
   protected static List<Rank> IMPLICITS = ImmutableList.of(Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES);
   protected final List<Rank> implicitRanks = new ArrayList<>();
@@ -90,7 +94,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     this.usageIdGen = usageIdGen;
     this.typeMaterialIdGen = typeMaterialIdGen;
     this.entities = new HashSet<>(Preconditions.checkNotNull(sector.getEntities(), "Sector entities required"));
-    LOG.info("Include taxon extensions: {}", Joiner.on(", ").join(entities));
+    LOG.info("Include entities: {}", Joiner.on(", ").join(entities));
+    syncNames = entities.contains(EntityType.NAME) || entities.contains(EntityType.NAME_USAGE);
+    syncTaxa = entities.contains(EntityType.TAXON) || entities.contains(EntityType.NAME_USAGE);
+    syncSynonyms = entities.contains(EntityType.SYNONYM) || entities.contains(EntityType.NAME_USAGE);
+    syncReferences = entities.contains(EntityType.REFERENCE);
 
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty())  {
       LOG.info("Include only name types: {}", Joiner.on(", ").join(sector.getNameTypes()));

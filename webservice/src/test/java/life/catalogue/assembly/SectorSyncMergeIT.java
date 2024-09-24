@@ -142,7 +142,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
-      s.setEntities(Set.of(EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
+      s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
       s.setPriority(dkey-99);
       s.setNote(tree);
       sectors.add(s);

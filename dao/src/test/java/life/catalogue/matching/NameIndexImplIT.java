@@ -250,12 +250,8 @@ public class NameIndexImplIT {
     assertEquals(0, ni.size());
 
     for (var sn : names) {
-      var n = new Name();
-      n.setScientificName(sn.getName());
-      n.setAuthorship(sn.getAuthorship());
-      n.setRank(sn.getRank());
-      n.setType(NameType.SCIENTIFIC);
-
+      var n = NameParser.PARSER.parse(sn).get().getName();
+      n.setRank(sn.getRank()); // dont use interpreted ranks!
       var m = ni.match(n, true, true);
       assertTrue(m.getType() == MatchType.EXACT || m.getType() == MatchType.VARIANT);
     }
@@ -280,6 +276,24 @@ public class NameIndexImplIT {
     dumpIndex();
     assertEquals(11, ni.size());
     assertCanonicalSize(5);
+  }
+
+  @Test
+  public void authorYears() throws Exception {
+    setupNames(List.of(
+      SimpleName.sn(Rank.SUBSPECIES, "Poa montanus affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poa montana affinis", "Prjevalsky, 1873"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Conrad von Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Conrad von Baldenstein, 1837)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Baldenbrooks, 1829)"),
+      SimpleName.sn(Rank.VARIETY, "Biota orientalis var. elegantissima", "Rollison ex Gordon"),
+      SimpleName.sn(Rank.VARIETY, "Biota orientalis var. elegantissima", "Rollisson ex Godr.")
+    ));
+
+    dumpIndex();
+    assertEquals(7, ni.size());
+    assertCanonicalSize(3);
   }
 
   private void assertAllUnique() {

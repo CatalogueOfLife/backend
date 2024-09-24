@@ -1,6 +1,7 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
@@ -12,6 +13,8 @@ import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.gbif.nameparser.api.Rank;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -178,6 +181,27 @@ public class AuthorComparatorTest {
     assertAuth("Pallas, 1771", Equality.EQUAL, "Pallas");
     assertAuth("Pallas, 1771", Equality.DIFFERENT, "1778");
     assertAuth("Pallas", Equality.UNKNOWN, "1771");
+  }
+
+  @Test
+  public void vonBaldenstein() throws Exception {
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1828");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1837");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. v. Baldenstein, 1824");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. Baldenstein, 1828");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. Baldenstein, 1838");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Baldenstein, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Baldenstone, 1827");
+
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Baldenstone, 1838");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Conrad von Buddenbrocks, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Buddenbrocks, 1827");
+  }
+
+  @Test
+  public void ex() throws Exception {
+    assertAuth("Rollison ex Gordon", Equality.EQUAL, "Rollisson ex Godr.");
   }
 
   @Test
@@ -603,7 +627,7 @@ public class AuthorComparatorTest {
   }
 
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
-    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP));
+    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
   }
   private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) throws InterruptedException {
     assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));

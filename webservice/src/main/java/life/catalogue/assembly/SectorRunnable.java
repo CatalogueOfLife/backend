@@ -5,10 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.License;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -222,6 +219,10 @@ abstract class SectorRunnable implements Runnable {
           s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
         }
         addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
+        if (s.getEntities() == null || s.getEntities().isEmpty()) {
+          // as a default sync everything
+          s.setEntities(new HashSet<>(Arrays.asList(EntityType.values())));
+        }
         addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
         addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
 

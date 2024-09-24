@@ -8,6 +8,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -17,6 +18,7 @@ import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.decision.RematchRequest;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,6 +102,9 @@ public class SectorSync extends SectorRunnable {
 
       state.setState(ImportState.INSERTING);
       processTree();
+      checkIfCancelled();
+
+      processBareNames();
       checkIfCancelled();
 
     } finally {
@@ -332,6 +337,35 @@ public class SectorSync extends SectorRunnable {
     } catch (InterruptedRuntimeException e) {
       // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
       throw e.asChecked();
+    }
+  }
+
+  private void processBareNames() throws InterruptedException {
+    // we only merge bare names
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      try (SqlSession session = factory.openSession(false);
+           TreeMergeHandler treeHandler = (TreeMergeHandler) sectorHandler()
+      ){
+        LOG.info("Merge bare names");
+        var num = session.getMapper(NameUsageMapper.class);
+        try (var cursor = num.processDatasetBareNames(subjectDatasetKey, null, null)){
+          for (var bn : cursor) {
+            treeHandler.acceptName(bn.getName());
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+        if (treeHandler.hasThrown()) {
+          LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey);
+          throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
+        }
+        LOG.info("Updated {} names from sector {}", treeHandler.getUpdated(), sectorKey);
+
+      } catch (InterruptedRuntimeException e) {
+        // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
+        throw e.asChecked();
+      }
     }
   }
 
