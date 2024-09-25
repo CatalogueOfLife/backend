@@ -20,8 +20,8 @@ import java.util.Map;
 
 public class ClbEcsEncoder extends EcsEncoder {
   private static final Map<String, String> ECS_MAP = Map.of(
-    LoggingUtils.MDC_KEY_JOB, "process.pid",
-    LoggingUtils.MDC_KEY_TASK, "process.name"
+    LoggingUtils.MDC_KEY_JOB, "event.id",
+    LoggingUtils.MDC_KEY_TASK, "event.action"
   );
 
   @Override
@@ -60,6 +60,10 @@ public class ClbEcsEncoder extends EcsEncoder {
             ecs.put(ECS_MAP.get(kvp.getKey()), kvp.getValue());
           }
         }
+        if (props.containsKey(LoggingUtils.MDC_KEY_JOB)) {
+          ecs.put("tags", "[\"job\"]");
+        }
+
       }
     }
 
