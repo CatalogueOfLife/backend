@@ -216,7 +216,7 @@ public class XReleaseIT extends SectorSyncTestBase {
       var dm = session.getMapper(DatasetMapper.class);
       var settings = dm.getSettings(Datasets.COL);
       settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
-      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.VERNACULAR, EntityType.REFERENCE));
+      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
       dm.updateSettings(Datasets.COL, settings, Users.TESTER);
     }
 
