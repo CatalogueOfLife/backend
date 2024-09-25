@@ -31,6 +31,9 @@ import jakarta.validation.Validation;
 
 import life.catalogue.junit.TreeRepoRule;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -45,8 +48,9 @@ public class XReleaseBasicIT {
 
   public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13,
     Map.of(
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), null);
+      "sector", Map.of("created_by", 100, "modified_by", 100),
+      "name", Map.of("type", NameType.SCIENTIFIC)
+    ), null, false);
   final int projectKey = Datasets.COL;
 
 

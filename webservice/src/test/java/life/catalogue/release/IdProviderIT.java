@@ -20,6 +20,9 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -32,8 +35,9 @@ public class IdProviderIT {
   public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3,
     Map.of(
     "distribution", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), Set.of(3,11,12,13));
+      "sector", Map.of("created_by", 100, "modified_by", 100),
+      "name", Map.of("type", NameType.SCIENTIFIC)
+    ), Set.of(3,11,12,13), false);
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule

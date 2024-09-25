@@ -27,6 +27,7 @@ import life.catalogue.postgres.PgAuthorshipNormalizer;
 import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -51,6 +52,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.Pair;
+
+import javax.annotation.Nullable;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -134,13 +137,16 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     public TestData(String name, Integer key, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
       this(name, key, false, defaultValues, datasetKeys, true, null);
     }
+    public TestData(String name, Integer key, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys, boolean parseNames) {
+      this(name, key, false, defaultValues, datasetKeys, parseNames, null);
+    }
 
     private TestData(String name, Integer key, boolean none, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys,
                      boolean parseNames, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
       this.name = name;
       this.key = key;
       // detect important columns
-      var probeKey = ObjectUtils.coalesce(key, datasetKeys != null ? datasetKeys.iterator().next() : 3);
+      var probeKey = findProbeKey(key, datasetKeys, keyMap);
       var ncols = readNameColumns(name, probeKey);
       this.sciNameColumn    = ncols[0];
       this.authorNameColumn = ncols[1];
@@ -159,6 +165,30 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       this.parseNames = parseNames;
     }
 
+    private Integer findProbeKey(Integer key, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
+      Set<Integer> keys = new HashSet<>();
+      keys.add(Datasets.COL);
+      if (key != null) {
+        keys.add(key);
+      }
+      if (datasetKeys != null) {
+        keys.addAll(datasetKeys);
+      }
+      if (keyMap != null) {
+        keys.addAll(keyMap.values());
+      }
+      for (var k : keys) {
+        try (var res = nameFileResource(name, k)) {
+          if (res != null) {
+            LOG.info("Use dataset key {} to probe for test data csv columns", k);
+            return k;
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return null;
+    }
     private static Set<Integer> readDatasetKeys(String testDataName) {
       String resource = "test-data/" + testDataName.toLowerCase() + "/dataset.csv";
       var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
@@ -171,29 +201,35 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       return keys;
     }
 
+    private static InputStream nameFileResource(String testDataName, Integer key) {
+      String resource = "test-data/" + testDataName.toLowerCase() + "/name_"+key+".csv";
+      return TestDataRule.class.getClassLoader().getResourceAsStream(resource);
+    }
+
     /**
      * [0] = name column
      * [1] = author column
      * [2] = rank column
      * [3] = code column
      */
-    private static Integer[] readNameColumns(String testDataName, Integer key) {
+    private static Integer[] readNameColumns(String testDataName, @Nullable Integer key) {
       var cols = new Integer[4];
-      String resource = "test-data/" + testDataName.toLowerCase() + "/name_"+key+".csv";
-      var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
-      if (in != null) {
-        int idx = 0;
-        for (var colName : PgCopyUtils.readCsvHeader(in)) {
-          if (colName.equals("scientific_name")) {
-            cols[0] = idx;
-          } else if (colName.equals("authorship")) {
-            cols[1] = idx;
-          } else if (colName.equals("rank")) {
-            cols[2] = idx;
-          } else if (colName.equals("code")) {
-            cols[3] = idx;
+      if (key != null) {
+        var in = nameFileResource(testDataName, key);
+        if (in != null) {
+          int idx = 0;
+          for (var colName : PgCopyUtils.readCsvHeader(in)) {
+            if (colName.equals("scientific_name")) {
+              cols[0] = idx;
+            } else if (colName.equals("authorship")) {
+              cols[1] = idx;
+            } else if (colName.equals("rank")) {
+              cols[2] = idx;
+            } else if (colName.equals("code")) {
+              cols[3] = idx;
+            }
+            idx++;
           }
-          idx++;
         }
       }
       return cols;
@@ -201,17 +237,20 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
     /**
      * [0] = status column
-     */    private static Integer[] readNameUsageColumns(String testDataName, Integer key) {
+     */
+    private static Integer[] readNameUsageColumns(String testDataName, Integer key) {
       var cols = new Integer[1];
-      String resource = "test-data/" + testDataName.toLowerCase() + "/name_usage_" + key + ".csv";
-      var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
-      if (in != null) {
-        int idx = 0;
-        for (var colName : PgCopyUtils.readCsvHeader(in)) {
-          if (colName.equals("status")) {
-            cols[0] = idx;
+      if (key != null) {
+        String resource = "test-data/" + testDataName.toLowerCase() + "/name_usage_" + key + ".csv";
+        var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
+        if (in != null) {
+          int idx = 0;
+          for (var colName : PgCopyUtils.readCsvHeader(in)) {
+            if (colName.equals("status")) {
+              cols[0] = idx;
+            }
+            idx++;
           }
-          idx++;
         }
       }
       return cols;
