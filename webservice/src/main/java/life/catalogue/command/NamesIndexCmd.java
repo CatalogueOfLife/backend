@@ -145,7 +145,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     updateNidxConfig(cfg);
     buildDir = cfg.normalizer.scratchDir("nidx-build");
 
-    if (ns.getInt(ARG_INSERT_MATCHES) > 0 || ns.getInt(ARG_INSERT_ARCHIVED_MATCHES) > 0) {
+    if (ns.getInt(ARG_INSERT_MATCHES) != null || ns.getInt(ARG_INSERT_ARCHIVED_MATCHES) != null) {
       insertMatchesIntoPg(ns.getInt(ARG_INSERT_MATCHES));
       insertArchivedMatchesIntoPg(ns.getInt(ARG_INSERT_ARCHIVED_MATCHES));
     } else {

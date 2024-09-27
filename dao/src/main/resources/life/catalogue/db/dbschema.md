@@ -14,6 +14,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-09-26 conversion_description
+```
+ALTER TABLE dataset ADD COLUMN conversion_description TEXT,
+                    ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_archive ADD COLUMN conversion_description TEXT,
+                            ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_source ADD COLUMN conversion_description TEXT,
+                           ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_patch ADD COLUMN conversion_description TEXT,
+                          ADD COLUMN conversion_url TEXT;  
+```
+
 #### 2024-09-24 holotype infogroup
 ```
 ALTER TYPE INFOGROUP ADD VALUE 'HOLOTYPE';

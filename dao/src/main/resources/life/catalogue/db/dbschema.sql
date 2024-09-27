@@ -744,6 +744,8 @@ CREATE TABLE dataset (
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   license LICENSE,
   url_formatter HSTORE,
+  conversion_description TEXT,
+  conversion_url TEXT,
   url TEXT,
   logo TEXT,
   notes TEXT,
