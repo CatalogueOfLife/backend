@@ -50,6 +50,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexCmd.class);
   private static final String ARG_THREADS = "t";
   private static final String ARG_FILE_ONLY = "file-only";
+  private static final String ARG_INSERT_MATCHES = "pg-insert-matches";
+  private static final String ARG_INSERT_ARCHIVED_MATCHES = "pg-insert-archived-matches";
   private static final String ARG_LIMIT = "limit";
   @VisibleForTesting
   static final String BUILD_SCHEMA = "nidx";
@@ -103,6 +105,16 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
        .required(false)
        .setDefault(false)
        .help("If true only rebuild the namesindex file, but do not rematch the database.");
+    subparser.addArgument("--"+ ARG_INSERT_MATCHES)
+      .dest(ARG_INSERT_MATCHES)
+      .type(Integer.class)
+      .required(false)
+      .help("Number of already existing matches.pg files to insert into postgres. Only used for picking up half done work manually");
+    subparser.addArgument("--"+ ARG_INSERT_ARCHIVED_MATCHES)
+      .dest(ARG_INSERT_ARCHIVED_MATCHES)
+      .type(Integer.class)
+      .required(false)
+      .help("Number of already existing archived-matches.pg files to insert into postgres. Only used for picking up half done work manually");
     subparser.addArgument("--"+ ARG_LIMIT)
        .dest(ARG_LIMIT)
        .type(Integer.class)
@@ -132,15 +144,24 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
   public void execute() throws Exception {
     updateNidxConfig(cfg);
     buildDir = cfg.normalizer.scratchDir("nidx-build");
+
+    if (ns.getInt(ARG_INSERT_MATCHES) > 0 || ns.getInt(ARG_INSERT_ARCHIVED_MATCHES) > 0) {
+      insertMatchesIntoPg(ns.getInt(ARG_INSERT_MATCHES));
+      insertArchivedMatchesIntoPg(ns.getInt(ARG_INSERT_ARCHIVED_MATCHES));
+    } else {
+      clearBuildDir();
+      if (ns.getBoolean(ARG_FILE_ONLY)) {
+        rebuildFileOnly();
+      } else {
+        rematchAll();
+      }
+    }
+  }
+
+  private void clearBuildDir() {
     if (buildDir.exists()) {
       LOG.info("Clear build directory at {}", buildDir);
       FileUtils.deleteQuietly(buildDir);
-    }
-
-    if (ns.getBoolean(ARG_FILE_ONLY)) {
-      rebuildFileOnly();
-    } else {
-      rematchAll();
     }
   }
 
@@ -191,22 +212,8 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
     LOG.info("Shutting down names index");
     ni.close();
 
-    LOG.info("Inserting matches into postgres");
-    try (Connection c = dataSource.getConnection()) {
-      var pgc = c.unwrap(PgConnection.class);
-      for (int p = 1; p <= parts; p++) {
-        File mf = part(FILENAME_MATCHES, p);
-        LOG.info("  copy matches {}: {}", p, mf);
-        PgCopyUtils.loadBinary(pgc, MATCH_TABLE, MATCH_TABLE_COLUMNS, mf);
-        c.commit();
-      }
-      for (int p = 1; p <= archivedParts; p++) {
-        File mf = part(FILENAME_ARCHIVED_MATCHES, p);
-        LOG.info("  copy archived matches {}: {}", p, mf);
-        PgCopyUtils.loadBinary(pgc, ARCHIVED_MATCH_TABLE, ARCHIVED_MATCH_TABLE_COLUMNS, mf);
-        c.commit();
-      }
-    }
+    insertMatchesIntoPg(parts);
+    insertArchivedMatchesIntoPg(archivedParts);
 
     LOG.info("Building postgres indices for new names index");
     try (Connection c = dataSource.getConnection()) {
@@ -218,6 +225,36 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
       runner.runScript(Resources.getResourceAsReader(SCHEMA_POST_CONSTRAINTS));
     }
     LOG.info("Names index rebuild completed. Please put the new index (postgres & file) live manually");
+  }
+
+  private void insertMatchesIntoPg(Integer parts) throws SQLException, IOException {
+    if (parts != null) {
+      LOG.info("Inserting matches into postgres from {} files", parts);
+      try (Connection c = dataSource.getConnection()) {
+        var pgc = c.unwrap(PgConnection.class);
+        for (int p = 1; p <= parts; p++) {
+          File mf = part(FILENAME_MATCHES, p);
+          LOG.info("  copy matches {}: {}", p, mf);
+          PgCopyUtils.loadBinary(pgc, MATCH_TABLE, MATCH_TABLE_COLUMNS, mf);
+          c.commit();
+        }
+      }
+    }
+  }
+
+  private void insertArchivedMatchesIntoPg(Integer parts) throws SQLException, IOException {
+    if (parts != null) {
+      LOG.info("Inserting archived matches into postgres from {} files", parts);
+      try (Connection c = dataSource.getConnection()) {
+        var pgc = c.unwrap(PgConnection.class);
+        for (int p = 1; p <= parts; p++) {
+          File mf = part(FILENAME_ARCHIVED_MATCHES, p);
+          LOG.info("  copy archived matches {}: {}", p, mf);
+          PgCopyUtils.loadBinary(pgc, ARCHIVED_MATCH_TABLE, ARCHIVED_MATCH_TABLE_COLUMNS, mf);
+          c.commit();
+        }
+      }
+    }
   }
 
   /**

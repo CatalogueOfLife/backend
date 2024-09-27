@@ -11,8 +11,12 @@ public enum DataFormat {
   DWCA("DwCA", "dwca", "Darwin Core Archive"),
   
   /**
-   * CoL Data Submission Format ("Annual Checklist Exchange Format")
-   * http://www.catalogueoflife.org/content/contributing-your-data#ACEF
+   * COL Data Submission Format ("Annual Checklist Exchange Format")
+   * https://www.checklistbank.org/about/formats#annual-checklist-exchange-format-acef
+   *
+   * https://www.catalogueoflife.org/images/acef/2014_CoL_Standard_Dataset_v7_23Sep2014.pdf
+   * List_of_tables_and_fields_2014.pdf
+   * ERD_DataSubmissionFormat_29Sep2014.pdf
    */
   ACEF("ACEF", "acef", "Annual Checklist Exchange Format"),
   
@@ -26,7 +30,7 @@ public enum DataFormat {
   
   /**
    * COL Data Package
-   * See https://github.com/CoL-Data/package-specs
+   * See https://github.com/CatalogueOfLife/coldp
    */
   COLDP("ColDP", "coldp", "Catalogue of Life Data Package"),
   
