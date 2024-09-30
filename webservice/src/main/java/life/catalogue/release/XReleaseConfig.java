@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.Issue;
@@ -10,6 +11,8 @@ import javax.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
+import org.gbif.nameparser.api.Rank;
 
 public class XReleaseConfig {
 
@@ -86,22 +89,19 @@ public class XReleaseConfig {
   public Set<String> blockedNamePatterns = new HashSet<>();
 
   /**
-   * List of higher wrong homonyms that should be removed, regardless of which source they came from.
-   * Map of a canonical name to its direct parent.
-   * All other names with the same canonical name, but different parent, are kept.
-   *
-   * See https://github.com/gbif/checklistbank/issues/93 for more background.
+   * List of uninomial taxa known to be unique and for which there should never be more than 1 accepted version.
+   * Canonical names without authorship are listed by their rank.
    */
   @NotNull
   @Valid
-  public Map<String, List<String>> homonymExclusions = new HashMap<>();
+  public Map<Rank, Set<String>> enforceUnique = new HashMap<>();
 
   /**
    * Checks the homonymExclusion list to see if this combination should be excluded.
    * @return true if the name with the given parent should be excluded
    */
-  public boolean isExcludedHomonym(String name, String parent) {
-    return parent != null && homonymExclusions.getOrDefault(name, Collections.EMPTY_LIST).contains(parent.trim().toUpperCase());
+  public boolean enforceUnique(Name sn) {
+    return enforceUnique.containsKey(sn.getRank()) && enforceUnique.get(sn.getRank()).contains(sn.getScientificName());
   }
 
   /**

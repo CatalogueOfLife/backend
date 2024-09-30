@@ -14,8 +14,8 @@ public class XReleaseConfigTest {
     var cfg = XRelease.loadConfig(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/master/xcol/xcol-config.yaml"));
     assertNotNull(cfg);
     assertNotNull(cfg.basionymExclusions);
-    assertNotNull(cfg.homonymExclusions);
-    assertTrue(cfg.homonymExclusions.isEmpty());
+    assertNotNull(cfg.enforceUnique);
+    assertTrue(cfg.enforceUnique.isEmpty());
     assertTrue(cfg.homotypicConsolidation);
   }
 }

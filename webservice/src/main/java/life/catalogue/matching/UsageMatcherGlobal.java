@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -20,6 +21,8 @@ import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
+
+import org.apache.commons.collections4.IterableUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -392,7 +395,13 @@ public class UsageMatcherGlobal {
       updateAlt(alt, existingWithCl);
       // check classification for all others
       if (parents != null && !existingWithCl.isEmpty()) {
-        List<SimpleName> parentsSN = parents.stream()
+        // trim parents when a marker exists
+        var parentsCopy = parents;
+        var markerIdx = CollectionUtils.lastIndexOf(parents, p -> p.marker);
+        if (markerIdx >= 0) {
+          parentsCopy = parents.subList(markerIdx, parents.size());
+        }
+        List<SimpleName> parentsSN = parentsCopy.stream()
                                         .map(p -> p.usage)
                                         .collect(Collectors.toList());
         var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);

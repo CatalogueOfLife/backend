@@ -236,12 +236,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
+    boolean markMatch = false;
+
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, false);
+    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, unique);
     LOG.debug("{} matches {}", nu.getLabel(), match);
-    if (qualifiedName && !match.isMatch() && nu.isTaxon() && nu.getRank().isSpeciesOrBelow()) {
+    if (!match.isMatch() && unique) {
+      for (var alt : match.alternatives) {
+        if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
+          markMatch = true;
+          match = UsageMatch.snap(alt, targetDatasetKey, null);
+          LOG.debug("Enforce unique name and match {} to {}", nu.getLabel(), match);
+          //TODO: enforce the use of this genus for all child species
+        }
+      }
+    }
+    if (!match.isMatch() && qualifiedName && nu.isTaxon() && nu.getRank().isSpeciesOrBelow()) {
       var nCanon = Name.copyCanonical(nu.getName());
       var tCanon = new Taxon(nu);
       tCanon.setName(nCanon);
@@ -283,6 +296,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // remember the match
     parents.setMatch(match.usage);
+    if (markMatch) {
+      parents.mark();
+    }
 
     // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
     if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), true)) {

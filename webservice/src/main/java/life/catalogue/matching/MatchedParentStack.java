@@ -54,6 +54,7 @@ public class MatchedParentStack {
     public SimpleNameWithNidx match;
     @Nullable
     public EditorialDecision decision;
+    public boolean marker = false;
 
     public MatchedUsage(SimpleNameWithNidx usage, @Nullable EditorialDecision decision) {
       this.usage = usage;
@@ -210,10 +211,19 @@ public class MatchedParentStack {
     doubtfulUsageID = null;
   }
 
+  /**
+   * Sets the matched usage for the last parent, i.e. current taxon
+   */
   public void setMatch(SimpleNameWithNidx match) {
     parents.getLast().match = match; // let it throw if we have a match but no parents - cant really happen
   }
 
+  /**
+   * Sets the marker flag for the last parent, i.e. current taxon
+   */
+  public void mark() {
+    parents.getLast().marker = true;
+  }
   public int size() {
     return parents.size();
   }
