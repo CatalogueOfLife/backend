@@ -349,6 +349,18 @@ public class UsageMatcherGlobal {
       );
     }
 
+    // remove non matching codes if more than 1 exist
+    // there are issues with ambiregnal taxa and mixed codes and we would create many duplicates otherwise
+    if (nu.getRank().isSupraspecific() && existing.size() > 1 && nu.getName().getCode() != null) {
+      existing.removeIf(u -> {
+        var rem = u.getCode() != null && u.getCode() != nu.getName().getCode();
+        if (rem) {
+          LOG.debug("Removed matches for usage {} [code={}] having a different code {}", nu.getName().getLabelWithRank(), nu.getName().getCode(), u.getCode());
+        }
+        return rem;
+      });
+    }
+
     // from here on we need the classification of all candidates
     var loader = loaders.getOrDefault(datasetKey, defaultLoader);
     final var existingWithCl = existing.stream()

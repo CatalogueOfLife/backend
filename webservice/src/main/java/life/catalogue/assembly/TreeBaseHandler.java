@@ -314,8 +314,14 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // see https://github.com/CatalogueOfLife/coldp/issues/45
     if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
       List<Rank> neededRanks = new ArrayList<>();
+      Usage parentConcreteRank = parent;
+      while (parentConcreteRank != null && parentConcreteRank.rank.otherOrUnranked()) {
+        // use next higher concrete rank to determine which implicit rank is needed
+        var sp = parentConcreteRank.parentId == null ? null : num.getSimple(DSID.of(targetDatasetKey, parentConcreteRank.parentId));
+        parentConcreteRank = usage(sp);
+      }
       for (Rank r : implicitRanks) {
-        if (parent == null || parent.rank.higherThan(r) && r.higherThan(origName.getRank())) {
+        if (r.higherThan(origName.getRank()) && (parentConcreteRank == null || parentConcreteRank.rank.higherThan(r))) {
           neededRanks.add(r);
         }
       }

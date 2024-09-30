@@ -8,6 +8,7 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.parser.NomCodeParser;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
 
@@ -202,6 +203,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     n.setId(String.valueOf(tn.id));
     n.setOrigin(Origin.SOURCE);
     n.applyUser(Users.DB_INIT);
+    if (tn.infos.containsKey(TxtTreeTerm.CODE.name())) {
+      n.setCode(NomCodeParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.CODE.name())[0]));
+    }
     nm.create(n);
 
     Integer sk = null;
