@@ -902,6 +902,9 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven-surefire-plugin.version}</version>
           <configuration>
+            <!-- skips surefire tests without skipping failsafe tests.
+              Property value seems to magically default to false -->
+            <skipTests>${skip.surefire.tests}</skipTests>
             <!--
             Run tests in parallel with the same JVM by default for all modules.
             Some modules run tests that share static information and will override this configuration.

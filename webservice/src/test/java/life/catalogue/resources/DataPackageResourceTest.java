@@ -11,7 +11,7 @@ public class DataPackageResourceTest {
   @Test
   public void buildPackage() {
     var dr = new DataPackageResource();
-    var dp = dr.buildPackage(new PackageDescriptor());
+    var dp = dr.buildPackage(new PackageDescriptor(), false);
     assertEquals(16, dp.getResources().size());
     for (var r : dp.getResources()) {
       assertNotNull(r.getName());

@@ -42,18 +42,24 @@ public class DataPackageResource {
       doc = http.get(URI.create("https://github.com/CatalogueOfLife/coldp/blob/master/README.md"));
     } catch (Exception e) {
       LOG.error("Failed to read ColDP docs. Use cached version", e);
-      try {
-        doc = Resources.toString("coldp-docs.html");
-      } catch (IOException ex) {
-        throw new RuntimeException(ex);
-      }
+      doc = bundledDocs();
     }
     html = doc;
   }
 
+  String bundledDocs() {
+    try {
+      return Resources.toString("coldp-docs.html");
+    } catch (IOException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
   @GET
   public DataPackage buildPackage(@BeanParam PackageDescriptor pd) {
-    return builder.docs(html).build(pd);
+    return buildPackage(pd, true);
   }
-  
+
+  public DataPackage buildPackage(PackageDescriptor pd, boolean downloadDocs) {
+    return builder.docs(downloadDocs ? html : bundledDocs()).build(pd);
+  }
 }
