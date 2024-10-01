@@ -14,8 +14,6 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import lombok.*;
 
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
