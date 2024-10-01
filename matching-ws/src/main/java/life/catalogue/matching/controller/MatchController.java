@@ -279,6 +279,7 @@ public class MatchController implements ErrorController {
         taxonID,
         taxonConceptID,
         scientificNameID,
+
         scientificName,
         scientificName2,
         authorship,
@@ -288,6 +289,7 @@ public class MatchController implements ErrorController {
         infraspecificEpithet,
         rank,
         rank2,
+
         classification,
         exclude,
         strict,
@@ -428,6 +430,7 @@ public class MatchController implements ErrorController {
         taxonID,
         taxonConceptID,
         scientificNameID,
+
         scientificName,
         scientificName2,
         authorship,
@@ -437,6 +440,7 @@ public class MatchController implements ErrorController {
         infraspecificEpithet,
         rank,
         rank2,
+
         classification,
         exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
         strict,
@@ -598,6 +602,7 @@ public class MatchController implements ErrorController {
       taxonID,
       taxonConceptID,
       scientificNameID,
+
       scientificName,
       scientificName2,
       authorship,
@@ -607,6 +612,7 @@ public class MatchController implements ErrorController {
       infraspecificEpithet,
       rank,
       rank2,
+
       classification,
       exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
       strict,
