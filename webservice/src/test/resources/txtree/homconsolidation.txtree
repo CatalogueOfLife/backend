@@ -78,3 +78,17 @@ Moneraceae [family]
   Itea [genus]
     Itea mengii Zaddach, 1844 [species] {PRIO=3}
       Itea mengii mengii Zaddach, 1844 [subspecies] {PRIO=3}
+Phalacrocoracidae [family]
+  Phalacrocorax Brisson, 1760 [genus]
+    Phalacrocorax brasilianus (Gmelin, 1789) [species] {PRIO=1}
+      =Carbo brasilianus (Gmelin, JF, 1789) [species] {PRIO=2}
+      =Carbo brasiliensis [species] {PRIO=2}
+      =Carbo vigua (Vieillot, 1817) [species] {PRIO=2}
+      ≡Phalacrocorax vigua (Vieillot, 1817) [species] {PRIO=2}
+      =Procellaria brasiliana Gmelin, 1789 [species] {PRIO=3}
+      Phalacrocorax brasilianus brasilianus (Gmelin, 1789) [subspecies] {PRIO=1}
+      Phalacrocorax brasilianus mexicanus (Brandt, 1837) [subspecies] {PRIO=1}
+  Nannopterum [genus]
+    Nannopterum brasilianus Gmelin, 1789 [species] {PRIO=5}
+    Nannopterum auritus Lesson, 1831 [species] {PRIO=5}
+    Nannopterum harrisi Rothschild, 1898 [species] {PRIO=5}
