@@ -616,7 +616,6 @@ public class DatasetIndex {
     return results;
   }
 
-
   private static ExternalID toExternalID(Document doc, Dataset dataset) {
     return ExternalID.builder()
       .id(doc.get(FIELD_ID))
@@ -655,8 +654,8 @@ public class DatasetIndex {
           }
 
           if (
-            (dataset.getPrefix() == null || !key.startsWith(dataset.getPrefix()))
-              && !dataset.getPrefix().equals("*")) {
+            dataset.getPrefix() == null || !key.startsWith(dataset.getPrefix())
+          ) {
             // only search indexes with matching prefixes
             continue;
           }

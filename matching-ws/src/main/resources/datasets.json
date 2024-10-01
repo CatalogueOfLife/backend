@@ -35,7 +35,7 @@
     "key": "7888",
     "gbifKey": "dbaa27eb-29e7-4cbb-8eab-3f689cfce116",
     "title": "UK Species Inventory",
-    "prefix": "*"
+    "prefix": "NBN"
   },
   {
     "key": "2041",
@@ -47,13 +47,14 @@
     "key": "2144",
     "gbifKey": "9ca92552-f23a-41a8-a140-01abaa31c931",
     "title": "ITIS",
+    "prefix": "urn:lsid:itis.gov:itis_tsn:",
     "prefixMapping": [
       "itis:",
       "tsn:",
-      "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=",
-      "https://marinespecies.org/data.php?id=",
-      "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
-    ]
+      "urn:lsid:itis.gov:tsn:",
+      "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value="
+    ],
+    "removePrefixForMatching": true
   },
   {
     "key": "139831",
