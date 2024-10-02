@@ -143,7 +143,7 @@ public class HomotypicConsolidator {
       LOG.info("Detect homotypic relations within {}", tax);
       final Map<String, List<LinneanNameUsage>> epithets = Maps.newHashMap();
       final Set<String> ignore = basionymExclusions.get(tax.getName());
-      // key all names by their terminal epithet
+      // key all names by their normalised, terminal epithet
       try (SqlSession session = factory.openSession(true)) {
         NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
@@ -179,12 +179,12 @@ public class HomotypicConsolidator {
 
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
-        var groups = basSorter.groupBasionyms(epithetGroup.getValue(), a -> a, this::flagMultipleBasionyms);
+        var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getValue(), a -> a, this::flagMultipleBasionyms);
         // go through groups and persistent basionym relations where needed
         for (var group : groups) {
           try (SqlSession session = factory.openSession(false)) {
             NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-            // we only need to process groups that contain recombinations or duplicates
+            // we only need to process groups that contain recombinations or duplicates considered as variations
             if (group.hasRecombinations() || group.hasBasionymDuplicates()) {
               // if we have a basionym creating relations is straight forward
               LinneanNameUsage basionym = null;

@@ -9,6 +9,7 @@ import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
@@ -370,13 +371,19 @@ public class AuthorComparatorTest {
 
     assertAuth("A.M.C. Duméril", null, Equality.EQUAL, "A.Duméril", null);
     assertAuth("A.M.C. Duméril", null, Equality.DIFFERENT, "A.H.A. Duméril", null);
+
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuth("Reichenbach", null, Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", "1837");
+    // ex author swapping in regular mode
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Rchb. ex Andrz.", "1837");
   }
   
   @Test
   public void testCompareStrict() throws Exception {
-    assertFalse(comp.compareStrict(null, null));
-    assertFalse(comp.compareStrict(new Authorship(), new Authorship()));
-    assertFalse(comp.compareStrict(null, new Authorship()));
+    assertFalse(comp.compareStrict(null, null, null));
+    assertFalse(comp.compareStrict(new Authorship(), new Authorship(), null));
+    assertFalse(comp.compareStrict(null, new Authorship(), null));
     
     assertAuthStrict("", "  ", false, " ", "   ");
     assertAuthStrict("L.", null, false, null, null);
@@ -391,7 +398,11 @@ public class AuthorComparatorTest {
     assertAuthStrict("Reichenbach", "1837", false, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", null, true, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", "1837", true, "Abasicarpon Andrz. ex Rchb.", "1837");
-    
+    // no ex author swapping in scrict mode !!!
+    assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837");
+    assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837", NomCode.BOTANICAL);
+    assertAuthStrict("Reichenbach", "1837", true, "Rchb. ex Andrz.", "1837", NomCode.ZOOLOGICAL);
+
     assertAuthStrict("Torr et Gray", null, true, "Torr. & A.Gray", null);
     
     assertAuthStrict("Boed.", null, true, "Boed.", null);
@@ -638,9 +649,12 @@ public class AuthorComparatorTest {
   }
   
   private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2) throws InterruptedException {
-    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2)));
+    assertAuthStrict(a1, y1, eq, a2, y2, NomCode.BOTANICAL);
   }
-  
+  private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2, NomCode code) throws InterruptedException {
+    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2), code));
+  }
+
   private void assertAuth(String a1, String y1, String a1b, String y1b, Equality eq, String a2, String y2, String a2b, String y2b) throws InterruptedException {
     Name p1 = new Name();
     p1.setCombinationAuthorship(parse(a1, y1));

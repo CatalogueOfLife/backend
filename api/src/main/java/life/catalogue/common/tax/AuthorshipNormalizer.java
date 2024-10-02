@@ -8,6 +8,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.*;
@@ -84,21 +85,28 @@ public class AuthorshipNormalizer {
   }
   
   /**
-   * We combine both regular and ex authors to a list of normalised strings.
+   * We combine both regular and ex authors to a list of normalised strings if no code is given.
+   * Otherwise the code specific relevant part is only extracted, i.e. the authors/last in botany
+   * and the first exAuthors for zoology.
    *
    * @return queue of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
    * Umlaut transliterations reduced to single letter
    */
-  public static List<String> normalize(Authorship authorship) {
+  public static List<String> normalize(Authorship authorship, NomCode code) {
     if (authorship == null) return Collections.EMPTY_LIST;
 
     final List<String> authors = new ArrayList<>();
-    if (authorship.getAuthors() != null) {
+    if (authorship.hasExAuthors()) {
+      if (authorship.getAuthors() != null && (code == null || code != NomCode.ZOOLOGICAL)) {
+        authors.addAll(authorship.getAuthors());
+      }
+      if (authorship.getExAuthors() != null  && (code == null || code == NomCode.ZOOLOGICAL)) {
+        authors.addAll(authorship.getExAuthors());
+      }
+
+    } else {
       authors.addAll(authorship.getAuthors());
-    }
-    if (authorship.getExAuthors() != null) {
-      authors.addAll(authorship.getExAuthors());
     }
     if (authors.isEmpty()) {
       return Collections.EMPTY_LIST;
@@ -134,7 +142,7 @@ public class AuthorshipNormalizer {
       } else {
         authors = n.getCombinationAuthorship();
       }
-      return lookup(normalize(authors)).stream()
+      return lookup(normalize(authors, null)).stream()
           .map(Author::new)
           .map(a -> a.surname)
           .distinct()

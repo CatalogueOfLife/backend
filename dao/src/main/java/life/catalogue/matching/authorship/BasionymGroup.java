@@ -2,12 +2,14 @@ package life.catalogue.matching.authorship;
 
 import org.gbif.nameparser.api.Authorship;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
+
+import org.gbif.nameparser.api.NomCode;
+
+import javax.annotation.Nullable;
 
 
 /**
@@ -16,15 +18,18 @@ import com.google.common.base.Joiner;
  */
 public class BasionymGroup<T> {
   private static final Joiner joiner = Joiner.on("; ").skipNulls();
+  private final NomCode code;
   private final String epithet;
   private final Authorship authorship;
   private final List<T> recombinations = new ArrayList<>();
   private final List<T> basionymDuplicates = new ArrayList<>();
+  private final Map<T, List<T>> basedOn = new HashMap<>();
   private T basionym;
 
-  public BasionymGroup(String epithet, Authorship authorship) {
+  public BasionymGroup(String epithet, Authorship authorship, @Nullable NomCode code) {
     this.epithet = epithet;
     this.authorship = authorship;
+    this.code = code;
   }
   
   public T getBasionym() {
@@ -69,6 +74,10 @@ public class BasionymGroup<T> {
   
   public String getEpithet() {
     return epithet;
+  }
+
+  public NomCode getCode() {
+    return code;
   }
 
   @JsonIgnore

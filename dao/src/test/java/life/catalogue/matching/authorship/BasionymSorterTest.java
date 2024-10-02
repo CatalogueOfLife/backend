@@ -6,6 +6,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.parser.NameParser;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class BasionymSorterTest {
         "Vernonia abbreviata DC."
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(4, groups.size());
     for (BasionymGroup<FormattableName> g : groups) {
       assertFalse(g.getRecombinations().isEmpty());
@@ -125,7 +126,7 @@ public class BasionymSorterTest {
         "Taraxacum aberrans Hagend. & al."
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(4, groups.size());
     for (BasionymGroup<FormattableName> g : groups) {
       assertFalse(g.getRecombinations().isEmpty());
@@ -166,7 +167,7 @@ public class BasionymSorterTest {
         "Acer negundo var. violaceum (G. Kirchn.) H. Jaeger"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> g = groups.iterator().next();
     assertFalse(g.getRecombinations().isEmpty());
@@ -186,7 +187,7 @@ public class BasionymSorterTest {
         "Acer negundo var. violaceum (G. Kirchn.) H. Jaeger"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(2, groups.size());
     for (BasionymGroup<FormattableName> g : groups) {
       assertFalse(g.getRecombinations().isEmpty());
@@ -215,7 +216,7 @@ public class BasionymSorterTest {
         "Acer californicum Torr et Gray"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> g = groups.iterator().next();
     assertEquals(2, g.getRecombinations().size());
@@ -230,7 +231,7 @@ public class BasionymSorterTest {
     names.add(parse("Anthophora atrocincta Lepeletier, 1841", Rank.SPECIES));
     names.add(parse("Amegilla atrocincta (Lepeletier)", Rank.SPECIES));
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> g = groups.iterator().next();
     assertEquals(1, g.getRecombinations().size());
@@ -246,7 +247,7 @@ public class BasionymSorterTest {
     names.add(parse("Apis plumipes Fabricius, 1781", Rank.SPECIES));
     names.add(parse("Centris plumipes (Fabricius)", Rank.SPECIES));
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> g = groups.iterator().next();
     assertEquals(2, g.getRecombinations().size());
@@ -266,7 +267,7 @@ public class BasionymSorterTest {
         "Acer negundo var. violaceum (G. Kirchn.) H. Jaeger"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertTrue(groups.isEmpty());
   }
 
@@ -278,7 +279,7 @@ public class BasionymSorterTest {
         "Pitymys parvulus A. H. Howell, 1916"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> g = groups.iterator().next();
     assertEquals(2, g.getRecombinations().size());
@@ -299,7 +300,7 @@ public class BasionymSorterTest {
         "Campylopterus largipennis aequatorialis Gould, 1860"
     );
 
-    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(names);
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(null, names);
     // multiple basionyms, no clear group!
     assertEquals(1, groups.size());
     BasionymGroup<FormattableName> bg = groups.iterator().next();
@@ -307,6 +308,40 @@ public class BasionymSorterTest {
     assertEquals("1860", bg.getBasionym().getCombinationAuthorship().getYear());
     assertEquals("aequatorialis", bg.getBasionym().getInfraspecificEpithet());
     assertEquals("Gould, 1860", bg.getAuthorship().toString());
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1355
+   */
+  @Test
+  public void testExAuthors() throws Exception {
+    List<FormattableName> names = names(
+      "Mimosa guaiaguilensis Desf. ex F.Dietr.",
+      "Acacia guaiaguilensis (Desf. ex F.Dietr.) Desf. ex DC.",
+      "Mimosa guayaquilensis Desf.",
+      "Acacia guayaquilensis Desf. ex DC.",
+      "Mimosa guayaquilensis Steud."
+    );
+
+    Collection<BasionymGroup<FormattableName>> groups = sorter.groupBasionyms(NomCode.BOTANICAL, names);
+    assertEquals(2, groups.size());
+    for (BasionymGroup<FormattableName> g : groups) {
+      assertFalse(g.getRecombinations().isEmpty());
+      switch (g.getRecombinations().get(0).getBasionymAuthorship().toString()) {
+        case "Booth ex G.Kirchn.":
+          // Kirchn. is the abbreviation for Emil Otto Oskar Kirchner
+          assertEquals(3, g.getRecombinations().size());
+          assertNotNull(g.getBasionym());
+          break;
+        case "T.Kirchn.":
+          // author comparison has to be very strict and must treat different initials as relevant
+          assertEquals(1, g.getRecombinations().size());
+          assertNull(g.getBasionym());
+          break;
+        default:
+          fail("Unknown basionym group " + g.getRecombinations().get(0));
+      }
+    }
   }
 
 }

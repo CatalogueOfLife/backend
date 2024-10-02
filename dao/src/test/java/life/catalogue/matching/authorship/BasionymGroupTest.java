@@ -12,7 +12,7 @@ public class BasionymGroupTest {
 
   @Test
   public void getAll() {
-    BasionymGroup<String> group = new BasionymGroup<>("alba", Authorship.authors("Miller"));
+    BasionymGroup<String> group = new BasionymGroup<>("alba", Authorship.authors("Miller"), null);
     assertTrue(group.isEmpty());
     assertEquals(0, group.size());
     assertEquals(List.of(), group.getAll());

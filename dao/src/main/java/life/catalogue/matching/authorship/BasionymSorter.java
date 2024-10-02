@@ -9,6 +9,8 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.gbif.nameparser.api.NomCode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +19,7 @@ import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.Pair;
 
 /**
- * A utility to sort a queue of parsed names into sets sharing the same basionym judging only the authorship not epithets.
+ * A utility to sort a collection of parsed names into sets sharing the same basionym judging only the authorship not epithets.
  * A name without any authorship at all will be ignored and not returned in any group.
  */
 public class BasionymSorter {
@@ -32,15 +34,15 @@ public class BasionymSorter {
   
   }
   
-  public Collection<BasionymGroup<FormattableName>> groupBasionyms(Iterable<FormattableName> names) {
-    return groupBasionyms(names, Functions.identity(), b->{});
+  public Collection<BasionymGroup<FormattableName>> groupBasionyms(NomCode code, Iterable<FormattableName> names) {
+    return groupBasionyms(code, names, Functions.identity(), b->{});
   }
   
-  private <T> BasionymGroup<T> findExistingGroup(T p, List<BasionymGroup<T>> groups, Function<T, FormattableName> func) {
+  private <T> BasionymGroup<T> findExistingGroup(T p, List<BasionymGroup<T>> groups, Function<T, FormattableName> func, NomCode code) {
     FormattableName pn = func.apply(p);
     for (BasionymGroup<T> g : groups) {
       FormattableName representative = func.apply(g.getRecombinations().get(0));
-      if (authorComp.compareStrict(pn.getBasionymAuthorship(), representative.getBasionymAuthorship())) {
+      if (authorComp.compareStrict(pn.getBasionymAuthorship(), representative.getBasionymAuthorship(), code)) {
         return g;
       }
     }
@@ -66,13 +68,13 @@ public class BasionymSorter {
    * Tries to set the basionym and basionym duplicates, i.e. same names with the same rank, canonical name & authorship (small variation allowed).
    * @throws MultipleBasionymException when multiple combinations are found that all seem to be the basionym
    */
-  private <T> void determineBasionym(BasionymGroup<T> group, List<T> originals, Function<T, FormattableName> func) throws MultipleBasionymException {
+  private <T> void determineBasionym(BasionymGroup<T> group, List<T> originals, Function<T, FormattableName> func, NomCode code) throws MultipleBasionymException {
     var authorship = group.getAuthorship();
     List<FNameWrapper<T>> basionyms = new ArrayList<>();
     // select candidates based on authorship
     for (T obj : originals) {
       FormattableName b = func.apply(obj);
-      if (authorComp.compareStrict(authorship, b.getCombinationAuthorship())) {
+      if (authorComp.compareStrict(authorship, b.getCombinationAuthorship(), code)) {
         basionyms.add(new FNameWrapper<>(obj,b));
       }
     }
@@ -82,7 +84,7 @@ public class BasionymSorter {
         Authorship aNoYear = copyWithoutYear(authorship);
         for (T obj : originals) {
           FormattableName b = func.apply(obj);
-          if (authorComp.compareStrict(aNoYear, copyWithoutYear(b.getCombinationAuthorship()))) {
+          if (authorComp.compareStrict(aNoYear, copyWithoutYear(b.getCombinationAuthorship()), code)) {
             basionyms.add(new FNameWrapper<>(obj,b));
           }
         }
@@ -141,11 +143,11 @@ public class BasionymSorter {
   }
   
   /**
-   * Grouping that allows to use any custom class as long as there is a function that returns a Name instance.
+   * Grouping that allows to use any custom class as long as there is a function that returns a FormattableName instance.
    * The queue of groups returned only contains groups with no or one known basionym. Any uncertain cases like groups with multiple basionyms are excluded!
    * @param multiBasionyConsumer consumer that handles the otherwise ignored names (first=originals, second=recombinations) that have multiple basionyms
    */
-  public <T> Collection<BasionymGroup<T>> groupBasionyms(Iterable<T> names, Function<T, FormattableName> func, Consumer<Pair<List<T>, List<T>>> multiBasionyConsumer) {
+  public <T> Collection<BasionymGroup<T>> groupBasionyms(NomCode code, Iterable<T> names, Function<T, FormattableName> func, Consumer<Pair<List<T>, List<T>>> multiBasionyConsumer) {
     List<BasionymGroup<T>> groups = new ArrayList<>();
     // first split names into recombinations and original names not having a basionym authorship
     // note that we drop any name without authorship here!
@@ -166,12 +168,12 @@ public class BasionymSorter {
     
     // now group the recombinations
     for (T recomb : recombinations) {
-      BasionymGroup<T> group = findExistingGroup(recomb, groups, func);
+      BasionymGroup<T> group = findExistingGroup(recomb, groups, func, code);
       // create new group if needed
       if (group == null) {
         FormattableName pn = func.apply(recomb);
         if (pn != null) {
-          group = new BasionymGroup<T>(pn.getTerminalEpithet(), pn.getBasionymAuthorship());
+          group = new BasionymGroup<T>(pn.getTerminalEpithet(), pn.getBasionymAuthorship(), code);
           groups.add(group);
           group.getRecombinations().add(recomb);
         } else {
@@ -186,7 +188,7 @@ public class BasionymSorter {
     while (iter.hasNext()) {
       BasionymGroup<T> group = iter.next();
       try {
-        determineBasionym(group, originals, func);
+        determineBasionym(group, originals, func, code);
       } catch (MultipleBasionymException e) {
         LOG.info("Ignore group with multiple basionyms found for {} {} in {} original names", group.getEpithet(), group.getAuthorship(), originals.size());
         iter.remove();

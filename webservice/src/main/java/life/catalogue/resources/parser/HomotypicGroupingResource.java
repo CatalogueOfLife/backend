@@ -22,6 +22,9 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.api.NomCode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +62,7 @@ public class HomotypicGroupingResource {
    */
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public GroupingResult group(List<String> names) {
+  public GroupingResult group(List<String> names, @QueryParam("code") NomCode code) {
     Map<String, List<VerbatimName>> epithets = new HashMap<>();
     GroupingResult gr = new GroupingResult();
     for (String n : names) {
@@ -80,7 +83,7 @@ public class HomotypicGroupingResource {
     }
     // finally compare authorships for each epithet group
     for (Map.Entry<String, List<VerbatimName>> epithetGroup : epithets.entrySet()) {
-      gr.groups.addAll(basSorter.groupBasionyms(epithetGroup.getValue(), a -> a.parsed, b -> {
+      gr.groups.addAll(basSorter.groupBasionyms(code, epithetGroup.getValue(), a -> a.parsed, b -> {
         for (var vn : b.first()) {
           gr.ignored.add(vn.verbatim);
         }
@@ -101,15 +104,15 @@ public class HomotypicGroupingResource {
    */
   @POST
   @Consumes(MediaType.TEXT_PLAIN)
-  public GroupingResult groupPlainText(InputStream names) throws IOException {
+  public GroupingResult groupPlainText(InputStream names, @QueryParam("code") NomCode code) throws IOException {
     try (BufferedReader br = UTF8IoUtils.readerFromStream(names)) {
-      return group(br.lines().collect(Collectors.toList()));
+      return group(br.lines().collect(Collectors.toList()), code);
     }
   }
 
   @GET
-  public GroupingResult groupQueryParams(@QueryParam("name") List<String> names) {
-    return group(names);
+  public GroupingResult groupQueryParams(@QueryParam("name") List<String> names, @QueryParam("code") NomCode code) {
+    return group(names, code);
   }
 
 }

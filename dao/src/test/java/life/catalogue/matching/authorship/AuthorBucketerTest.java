@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.LineIterator;
+
+import org.gbif.nameparser.api.NomCode;
+
 import org.junit.Test;
 
 import com.google.common.base.Joiner;
@@ -33,7 +36,7 @@ public class AuthorBucketerTest {
       Authorship authorship = buildAuthorship(author);
       String match = null;
       for (String x : buckets.keySet()) {
-        if (comp.compareStrict(authorship, buildAuthorship(x))) {
+        if (comp.compareStrict(authorship, buildAuthorship(x), NomCode.BOTANICAL)) {
           match = x;
           break;
         }

@@ -92,3 +92,9 @@ Phalacrocoracidae [family]
     Nannopterum brasilianus Gmelin, 1789 [species] {PRIO=5}
     Nannopterum auritus Lesson, 1831 [species] {PRIO=5}
     Nannopterum harrisi Rothschild, 1898 [species] {PRIO=5}
+Mimosaceae [family]
+  Mimosa guaiaguilensis Desf. ex F.Dietr. [species] {PRIO=1}
+    ≡ Acacia guaiaguilensis (Desf. ex F.Dietr.) Desf. ex DC. [species] {PRIO=1}
+    = Mimosa guayaquilensis Desf. [species] {PRIO=1}
+  Acacia guayaquilensis Desf. ex DC. [species] {PRIO=5}
+    = Mimosa guayaquilensis Steud. [species] {PRIO=5}
