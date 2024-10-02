@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -32,9 +33,16 @@ public class ColdpExtendedExport extends ArchiveExport {
   private Writer cslWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
+  private final File treatmentDir;
 
   public ColdpExtendedExport(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(DataFormat.COLDP, userKey, req, factory, cfg, imageService);
+    if (inclTreatments) {
+      treatmentDir = new File(tmpDir, "treatments");
+      treatmentDir.mkdirs();
+    } else {
+      treatmentDir = null;
+    }
   }
 
   @Override
@@ -162,6 +170,15 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.area, vn.getArea());
     writer.set(ColdpTerm.sex, vn.getSex());
     writer.set(ColdpTerm.remarks, vn.getRemarks());
+  }
+
+  @Override
+  void writeTreatment(Treatment t) throws IOException {
+    // single files in a folder
+    File tf = new File(treatmentDir, t.getId() + "." + t.getFormat().getFileSuffix());
+    try (var tw = UTF8IoUtils.writerFromFile(tf)) {
+      tw.write(t.getDocument());
+    }
   }
 
   @Override
