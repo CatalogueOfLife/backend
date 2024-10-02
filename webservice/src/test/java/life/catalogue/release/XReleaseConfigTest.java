@@ -2,10 +2,11 @@ package life.catalogue.release;
 
 import java.net.URI;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class XReleaseConfigTest {
 
@@ -15,7 +16,7 @@ public class XReleaseConfigTest {
     assertNotNull(cfg);
     assertNotNull(cfg.basionymExclusions);
     assertNotNull(cfg.enforceUnique);
-    assertTrue(cfg.enforceUnique.isEmpty());
+    assertTrue(cfg.enforceUnique.containsKey(Rank.GENUS));
     assertTrue(cfg.homotypicConsolidation);
   }
 }
