@@ -33,42 +33,42 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v4.0.7/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v4.0.7/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v4.0.9/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v4.0.9/dropwizard-dependencies/pom.xml
 
         Which also imports the
-        Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.0.12/bom/pom.xml
-        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.16.1/pom.xml
-        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-11.0.20/jetty-bom/pom.xml
+        Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.0.15/bom/pom.xml
+        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.18.0/pom.xml
+        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-11.0.24/jetty-bom/pom.xml
 
         These BOMs manage dependency versions for many things including:
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
-    <dropwizard.version>4.0.7</dropwizard.version>
+    <dropwizard.version>4.0.9</dropwizard.version>
 
     <antlr.version>4.7.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
-    <batik.version>1.15</batik.version>
+    <batik.version>1.17</batik.version>
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.22</commons-compress.version>
     <commons-io.version>2.11.0</commons-io.version>
-    <docker-client.version>3.2.13</docker-client.version><!--keep in sync with test containers -->
-    <dwc-api.version>1.47</dwc-api.version>
-    <dwca-io.version>2.13</dwca-io.version>
+    <docker-client.version>3.4.0</docker-client.version><!--keep in sync with test containers -->
+    <dwc-api.version>1.49</dwc-api.version>
+    <dwca-io.version>2.16</dwca-io.version>
     <elasticsearch.version>8.1.3</elasticsearch.version>
-    <fastutil.version>8.5.13</fastutil.version>
+    <fastutil.version>8.5.14</fastutil.version>
     <ganglia.version>1.0.7</ganglia.version>
-    <gbif-api.version>1.16.2</gbif-api.version>
-    <hikaricp.version>5.1.0</hikaricp.version>
+    <gbif-api.version>1.16.12</gbif-api.version>
+    <hikaricp.version>6.0.0</hikaricp.version>
     <icu4j.version>75.1</icu4j.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
-    <javers.version>6.8.0</javers.version>
+    <javers.version>7.6.2</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
-    <jjwt.version>0.11.5</jjwt.version>
-    <jsoup.version>1.17.2</jsoup.version>
+    <jjwt.version>0.12.6</jjwt.version>
+    <jsoup.version>1.18.1</jsoup.version>
     <junit.version>5.10.2</junit.version>
     <kryo.version>5.6.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
@@ -81,11 +81,11 @@
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
-    <postgresql.version>42.7.3</postgresql.version>
+    <postgresql.version>42.7.4</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
-    <simple-mail.version>8.0.0</simple-mail.version>
+    <simple-mail.version>8.12.2</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
-    <testcontainers.version>1.17.6</testcontainers.version>
+    <testcontainers.version>1.20.2</testcontainers.version>
     <text-tree.version>1.5.0</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.11.0</twelvemonkeys.version>
@@ -95,21 +95,21 @@
 
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <depgraph-maven-plugin>4.0.3</depgraph-maven-plugin>
-    <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
-    <maven-clean-plugin.version>3.3.2</maven-clean-plugin.version>
+    <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+    <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>3.7.0</maven-dependency-plugin.version>
+    <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
-    <maven-graalvm-plugin.version>0.10.1</maven-graalvm-plugin.version>
+    <maven-graalvm-plugin.version>0.10.3</maven-graalvm-plugin.version>
     <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
-    <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
-    <maven-release-plugin.version>3.0.1</maven-release-plugin.version>
+    <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
+    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
     <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-    <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-    <versions-maven-plugin.version>2.16.2</versions-maven-plugin.version>
+    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
+    <versions-maven-plugin.version>2.17.1</versions-maven-plugin.version>
 
     <!-- default maven properties to define the postgres server for running tests.
     To use a different server please activate a personal profile -->
