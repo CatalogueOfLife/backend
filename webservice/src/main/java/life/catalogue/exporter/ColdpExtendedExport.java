@@ -175,7 +175,8 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void writeTreatment(Treatment t) throws IOException {
     // single files in a folder
-    File tf = new File(treatmentDir, t.getId() + "." + t.getFormat().getFileSuffix());
+    String suffix = t.getFormat() == null ? "txt" : t.getFormat().getFileSuffix();
+    File tf = new File(treatmentDir, t.getId() + "." + suffix);
     try (var tw = UTF8IoUtils.writerFromFile(tf)) {
       tw.write(t.getDocument());
     }

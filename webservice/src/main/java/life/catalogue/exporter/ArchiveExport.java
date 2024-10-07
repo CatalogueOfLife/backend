@@ -439,7 +439,9 @@ public abstract class ArchiveExport extends DatasetExportJob {
           DSID<String> key = DSID.root(datasetKey);
           for (String id : taxonIDs) {
             var x = mapper.get(key.id(id));
-            writeTreatment(x);
+            if (x != null) {
+              writeTreatment(x);
+            }
           }
         }
       }
