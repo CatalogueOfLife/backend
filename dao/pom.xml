@@ -59,7 +59,6 @@
       <dependency>
         <groupId>net.openhft</groupId>
         <artifactId>chronicle-map</artifactId>
-        <version>3.25ea6</version>
       </dependency>
 
 		<!-- CoL & GBIF -->

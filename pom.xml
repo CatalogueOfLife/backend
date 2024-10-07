@@ -53,8 +53,9 @@
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
-    <commons-compress.version>1.22</commons-compress.version>
-    <commons-io.version>2.11.0</commons-io.version>
+    <commons-compress.version>1.27.1</commons-compress.version>
+    <commons-io.version>2.17.0</commons-io.version>
+    <chronicle.version>2.26ea47</chronicle.version>
     <docker-client.version>3.4.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>1.49</dwc-api.version>
     <dwca-io.version>2.16</dwca-io.version>
@@ -69,7 +70,7 @@
     <jbibtex.version>1.0.20</jbibtex.version>
     <jjwt.version>0.12.6</jjwt.version>
     <jsoup.version>1.18.1</jsoup.version>
-    <junit.version>5.10.2</junit.version>
+    <junit.version>5.11.2</junit.version>
     <kryo.version>5.6.0</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <lombok.version>1.18.30</lombok.version>
@@ -401,6 +402,12 @@
         <groupId>org.apache.xmlgraphics</groupId>
         <artifactId>batik-transcoder</artifactId>
         <version>${batik.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <!-- JWT -->
@@ -530,6 +537,13 @@
         <artifactId>mapdb</artifactId>
         <version>${mapdb.version}</version>
       </dependency>
+      <dependency>
+        <groupId>net.openhft</groupId>
+        <artifactId>chronicle-bom</artifactId>
+        <version>${chronicle.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->
       <dependency>
         <groupId>com.esotericsoftware</groupId>
@@ -560,6 +574,12 @@
         <groupId>org.elasticsearch.client</groupId>
         <artifactId>elasticsearch-rest-client</artifactId>
         <version>${elasticsearch.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.elasticsearch</groupId>
@@ -797,6 +817,9 @@
                   <requireJavaVersion>
                     <version>[${java.version},)</version>
                   </requireJavaVersion>
+                  <!--
+                  <dependencyConvergence/>
+                  -->
                 </rules>
               </configuration>
             </execution>
