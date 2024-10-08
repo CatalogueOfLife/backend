@@ -38,7 +38,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     this.nameIndex = nameIndex;
   }
 
-  ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
+  public ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);
