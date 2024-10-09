@@ -15,6 +15,7 @@ import life.catalogue.parser.SafeParser;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
@@ -197,15 +198,17 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   private void insertNode(TreeDataset src, SimpleTreeNode parent, SimpleTreeNode tn, boolean synonym, Integer ordinal) throws InterruptedException {
     Rank rank = SafeParser.parse(RankParser.PARSER, tn.rank).orElse(Rank.UNRANKED);
-    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, null, VerbatimRecord.VOID).get();
+    NomCode code = null;
+    if (tn.infos.containsKey(TxtTreeTerm.CODE.name())) {
+      code = NomCodeParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.CODE.name())[0]);
+    }
+    ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, code, VerbatimRecord.VOID).get();
     Name n = nat.getName();
+    n.setCode(code);
     n.setDatasetKey(src.key);
     n.setId(String.valueOf(tn.id));
     n.setOrigin(Origin.SOURCE);
     n.applyUser(Users.DB_INIT);
-    if (tn.infos.containsKey(TxtTreeTerm.CODE.name())) {
-      n.setCode(NomCodeParser.PARSER.parseOrNull(tn.infos.get(TxtTreeTerm.CODE.name())[0]));
-    }
     nm.create(n);
 
     Integer sk = null;
