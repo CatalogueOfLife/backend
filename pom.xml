@@ -33,19 +33,19 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v4.0.9/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v4.0.9/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v4.0.8/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v4.0.8/dropwizard-dependencies/pom.xml
 
         Which also imports the
         Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.0.15/bom/pom.xml
-        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.18.0/pom.xml
-        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-11.0.24/jetty-bom/pom.xml
+        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.17.2/pom.xml
+        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-11.0.23/jetty-bom/pom.xml
 
         These BOMs manage dependency versions for many things including:
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
-    <dropwizard.version>4.0.9</dropwizard.version>
+    <dropwizard.version>4.0.8</dropwizard.version>
 
     <antlr.version>4.7.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
@@ -86,7 +86,7 @@
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.12.2</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
-    <testcontainers.version>1.20.2</testcontainers.version>
+    <testcontainers.version>1.20.2</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.5.0</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.11.0</twelvemonkeys.version>
