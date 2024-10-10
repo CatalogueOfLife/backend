@@ -21,6 +21,14 @@ public class EsConfig {
   public String ports = "9200";
 
   /**
+   * Username to use for authentication.
+   * If NULL no auth will be added to the client.
+   */
+  public String user;
+
+  public String password;
+
+  /**
    * Configuration settings for the name usage index
    */
   @Nullable
