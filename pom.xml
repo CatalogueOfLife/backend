@@ -55,6 +55,7 @@
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
+    <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
     <chronicle.version>2.26ea47</chronicle.version>
     <docker-client.version>3.4.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>1.49</dwc-api.version>
@@ -197,11 +198,6 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>3.17.0</version>
-      </dependency>
       <!-- COL -->
       <dependency>
         <groupId>org.catalogueoflife</groupId>
@@ -580,13 +576,11 @@
         <artifactId>elasticsearch</artifactId>
         <version>${elasticsearch.version}</version>
       </dependency>
-
       <dependency>
-        <groupId>org.commonmark</groupId>
-        <artifactId>commonmark</artifactId>
-        <version>0.22.0</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
       </dependency>
-
       <!-- unicode, transliterations
           Consider much simpler https://github.com/jirutka/unidecode
       -->
