@@ -204,7 +204,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     }
     ParsedNameUsage nat = NameParser.PARSER.parse(tn.name, rank, code, VerbatimRecord.VOID).get();
     Name n = nat.getName();
-    n.setCode(code);
+    if (code != null) {
+      n.setCode(code);
+    }
     n.setDatasetKey(src.key);
     n.setId(String.valueOf(tn.id));
     n.setOrigin(Origin.SOURCE);
