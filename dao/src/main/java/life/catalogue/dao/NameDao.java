@@ -38,7 +38,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     this.nameIndex = nameIndex;
   }
 
-  ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
+  public ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);
@@ -46,6 +46,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
       return new ResultPage<>(p, result, () -> mapper.count(datasetKey));
     }
   }
+
   public void createRelation(Name from, NomRelType type, Name to, int user) {
     Preconditions.checkArgument(from.getDatasetKey().equals(to.getDatasetKey()));
     createRelation(from.getDatasetKey(), from.getId(), type, to.getId(), user);

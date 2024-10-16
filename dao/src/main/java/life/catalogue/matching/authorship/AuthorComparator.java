@@ -138,25 +138,28 @@ public class AuthorComparator {
   /**
    * Compares two sets of author & year for equality.
    * This is more strict than the normal compare method and requires both authors and year to match.
+   * A missing year will match any year, only different years causes the comparison to fail.
    * It also ignores the ex authors in the comparison, making use of the nomenclatural code given
    * to identify the relevant authorteam for comparison - which is the later in botany and the first team in zoology.
    * If the code is not known it will default to the botanical ordering which is much more frequent.
    *
    * Author matching is still done fuzzily
    *
+   * @param yearDifferenceAllowed number of years allowed to differ to still be considered a match
+   *
    * @return true if both sets match
    */
-  public boolean compareStrict(Authorship a1, Authorship a2, NomCode code) {
+  public boolean compareStrict(Authorship a1, Authorship a2, NomCode code, int yearDifferenceAllowed) {
     // strictly compare authors first
     Equality result = compareAuthorteam(a1, a2, minCommonSubstring, Integer.MAX_VALUE, 100, code);
     if (result != Equality.EQUAL) {
       return false;
     }
     // now also compare the year
-    if (a1.getYear() == null && a2.getYear() == null) {
+    if (a1.getYear() == null || a2.getYear() == null) {
       return true;
     }
-    return Equality.EQUAL == new YearComparator(a1.getYear(), a2.getYear()).compare();
+    return Equality.DIFFERENT != new YearComparator(yearDifferenceAllowed, a1.getYear(), a2.getYear()).compare();
   }
   
   /**

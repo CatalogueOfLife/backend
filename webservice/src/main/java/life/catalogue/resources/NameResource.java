@@ -41,12 +41,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
 
   @Override
   ResultPage<Name> searchImpl(int datasetKey, NameMapper.NameSearchRequest req, Page page) {
-    Page p = page == null ? new Page() : page;
-    try (SqlSession session = dao.getFactory().openSession()) {
-      NameMapper mapper = session.getMapper(NameMapper.class);
-      List<Name> result = mapper.search(datasetKey, req, p);
-      return new ResultPage<>(p, result, () -> -1);
-    }
+    return dao.search(datasetKey, req, page);
   }
 
   @GET

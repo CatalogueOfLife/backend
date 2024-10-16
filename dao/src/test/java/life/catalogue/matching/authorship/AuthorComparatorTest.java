@@ -381,9 +381,9 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompareStrict() throws Exception {
-    assertFalse(comp.compareStrict(null, null, null));
-    assertFalse(comp.compareStrict(new Authorship(), new Authorship(), null));
-    assertFalse(comp.compareStrict(null, new Authorship(), null));
+    assertFalse(comp.compareStrict(null, null, null, 0));
+    assertFalse(comp.compareStrict(new Authorship(), new Authorship(), null, 0));
+    assertFalse(comp.compareStrict(null, new Authorship(), null, 0));
     
     assertAuthStrict("", "  ", false, " ", "   ");
     assertAuthStrict("L.", null, false, null, null);
@@ -395,7 +395,7 @@ public class AuthorComparatorTest {
     assertAuthStrict(null, "1978", false, null, "1978");
     
     assertAuthStrict("H. Christ", null, false, "C. Chr.", null);
-    assertAuthStrict("Reichenbach", "1837", false, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuthStrict("Reichenbach", "1837", true, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", null, true, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", "1837", true, "Abasicarpon Andrz. ex Rchb.", "1837");
     // no ex author swapping in scrict mode !!!
@@ -652,7 +652,7 @@ public class AuthorComparatorTest {
     assertAuthStrict(a1, y1, eq, a2, y2, NomCode.BOTANICAL);
   }
   private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2, NomCode code) throws InterruptedException {
-    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2), code));
+    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2), code, 0));
   }
 
   private void assertAuth(String a1, String y1, String a1b, String y1b, Equality eq, String a2, String y2, String a2b, String y2b) throws InterruptedException {

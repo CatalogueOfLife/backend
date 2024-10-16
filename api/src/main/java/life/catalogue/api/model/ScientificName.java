@@ -22,6 +22,13 @@ public interface ScientificName {
 
   Authorship getBasionymAuthorship();
 
+  /**
+   * @return the basionym authorship if existing, otherwise the combination authorship
+   */
+  default Authorship getBasionymOrCombinationAuthorship() {
+    return hasBasionymAuthorship() ? getBasionymAuthorship() : getCombinationAuthorship();
+  }
+
   String getLabel();
 
   @JsonIgnore

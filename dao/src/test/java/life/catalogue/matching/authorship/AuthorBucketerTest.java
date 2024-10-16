@@ -36,7 +36,7 @@ public class AuthorBucketerTest {
       Authorship authorship = buildAuthorship(author);
       String match = null;
       for (String x : buckets.keySet()) {
-        if (comp.compareStrict(authorship, buildAuthorship(x), NomCode.BOTANICAL)) {
+        if (comp.compareStrict(authorship, buildAuthorship(x), NomCode.BOTANICAL, 1)) {
           match = x;
           break;
         }

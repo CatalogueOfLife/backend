@@ -33,12 +33,14 @@ public class HomotypicConsolidatorIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(dataRule)
-    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree"))
+    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree")) // loads prio values into sector keys
     .around(matchingRule);
 
   @Test
   public void homconsolidation() throws IOException {
-    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, LinneanNameUsage::getSectorKey);
+    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,
+      lnu -> lnu.getSectorKey() == null ? Integer.MAX_VALUE : lnu.getSectorKey()
+    );
     hc.consolidate();
     assertNoLoop(datasetKey);
     SectorSyncIT.assertTree(datasetKey, null, getClass().getResourceAsStream("/txtree/homconsolidation-expected.txtree"));
