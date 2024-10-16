@@ -108,13 +108,12 @@ public class HomotypicConsolidator {
   }
   public void consolidate(int threads) {
     LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
-    //var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
+    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
     for (var tax : taxa) {
       var task = new ConsolidatorTask(tax);
-      task.run();
-      //exec.submit(task);
+      exec.submit(task);
     }
-    //ExecutorUtils.shutdown(exec);
+    ExecutorUtils.shutdown(exec);
   }
 
   /**
@@ -205,8 +204,10 @@ public class HomotypicConsolidator {
                   }
                 } else {
                   // if no basionym exists it cannot have basionym variations, hence just pick the first recombination which must exist
-                  var hom = group.getRecombinations().remove(0);
-                  for (var u : group.getRecombinations()) {
+                  var iter = group.getRecombinations().listIterator();
+                  var hom = iter.next();
+                  while (iter.hasNext()) {
+                    var u = iter.next();
                     if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
                       newHomotypicRelations++;
                     }
@@ -330,15 +331,22 @@ public class HomotypicConsolidator {
                     delete(u, session);
                   }
                 }
+              } else if (prio == primaryPrio) {
+                LOG.debug("Same priority, keep usage: {}", u);
               } else {
-                // TODO: what shall we do now?
-                LOG.info("Priorities wrong, keep usage: {}", u);
+                LOG.warn("Unexpected priorities. Keep usage: {}", u);
+                addIssue(u, Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED, session);
               }
             }
           }
           session.commit();
         }
       }
+    }
+
+    private void addIssue(LinneanNameUsage u, Issue issue, SqlSession session) {
+      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
+      vsm.addIssue(dsid.id(u.getId()), issue);
     }
 
     private void delete(LinneanNameUsage u, SqlSession session) {
