@@ -1,4 +1,4 @@
-package life.catalogue.matching.authorship;
+package life.catalogue.basgroup;
 
 import org.gbif.nameparser.api.Authorship;
 
@@ -12,7 +12,7 @@ public class BasionymGroupTest {
 
   @Test
   public void getAll() {
-    BasionymGroup<String> group = new BasionymGroup<>("alba", Authorship.authors("Miller"));
+    HomotypicGroup<String> group = new HomotypicGroup<>(null, "alba", Authorship.authors("Miller"), null);
     assertTrue(group.isEmpty());
     assertEquals(0, group.size());
     assertEquals(List.of(), group.getAll());

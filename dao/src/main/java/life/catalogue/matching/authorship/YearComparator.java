@@ -78,7 +78,8 @@ public class YearComparator {
   }
   
   /**
-   * Compares year strings allowin for placeholders in comparison in addition to strict numbers.
+   * Compares year strings allowing for placeholders in comparison in addition to strict numbers.
+   *
    */
   public Equality compare() {
     if (y1 != null && y2 != null) {

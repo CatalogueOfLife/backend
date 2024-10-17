@@ -4,9 +4,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-public interface NameUsageCore {
+public interface NameUsageCore extends HasID<String> {
 
-  String getId();
   String getParentId();
   Rank getRank();
   TaxonomicStatus getStatus();
