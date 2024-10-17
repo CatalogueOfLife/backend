@@ -18,7 +18,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 public class User implements Entity<Integer>, Principal {
 
   public static final int ADMIN_MAGIC_KEY = -42;
-  public static final int EDITOR_DEFAULT_DATASET = -1;
 
   public enum Role {
     REVIEWER,

@@ -66,7 +66,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
   @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public Integer createAlt(Dataset obj, @Auth User user) {
     return this.create(obj, user);

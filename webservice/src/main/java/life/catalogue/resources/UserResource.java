@@ -112,12 +112,6 @@ public class UserResource {
     dao.updateSettings(settings, user);
   }
 
-  @POST
-  @Path("/editor-request")
-  public void requestEditorPermission(String request, @Auth User user) {
-    dao.requestEditorPermission(user, request);
-  }
-
   @GET
   @Path("/dataset")
   public List<Dataset> datasets(@Auth User user, @QueryParam("origin") DatasetOrigin origin, @Context SqlSession session) {

@@ -43,8 +43,6 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
-  private static final String emailTemplate = "email/editor-request.ftl";
-
   private final EventBus bus;
   @Nullable
   private Mailer mailer;
@@ -185,61 +183,4 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     return keys;
   }
 
-  /**
-   * Files a request to become an editor and sends an email to admins to handle it.
-   * @param user
-   */
-  public void requestEditorPermission(User user, String request) {
-    Preconditions.checkArgument(user.getFirstname() != null, "Your firstname is required in your GBIF profile to become an editor");
-    Preconditions.checkArgument(user.getLastname() != null, "Your lastname is required in your GBIF profile to become an editor");
-    Preconditions.checkArgument(user.getOrcid() != null, "You must have an ORCID configured in your GBIF profile to become an editor");
-    Preconditions.checkArgument(!user.isAdmin(), "You must have an ORCID configured in your GBIF profile to become an editor");
-    if (user.getRoles().contains(User.Role.EDITOR) || user.isEditor() || user.isAdmin()) {
-      throw new IllegalArgumentException("You already have editor permissions");
-    }
-    sendRequestEmail(user, request);
-  }
-
-  private void sendRequestEmail(User user, String request) {
-    try {
-      if (mailer != null) {
-        Email mail = EmailBuilder.startingBlank()
-          .to(mailCfg.replyTo)
-          .ccAddresses(List.of(user.getEmail()))
-          .from(mailCfg.fromName, mailCfg.from)
-          .withReplyTo(user.getEmail())
-          .withSubject(String.format("%s editor request from %s", mailCfg.subjectPrefix, user.getUsername()))
-          .withPlainText(buildEmailText(user, request))
-          .buildEmail();
-
-        var asyncResp = mailer.sendMail(mail, true).thenAccept((resp) -> {
-          LOG.info("Successfully sent editor request mail for {}", user.getUsername());
-        }).exceptionally((e) -> {
-          LOG.error("Error sending editor request mail for {}", user.getUsername(), e);
-          return null;
-        });
-        if (mailCfg.block && asyncResp != null) {
-          asyncResp.get(); // blocks
-        }
-        LOG.info("Sent editor request mail for user {} [{}] to {}", user.getName(), user.getKey(), user.getEmail());
-
-      } else {
-        LOG.warn("No mailer configured to sent editor request mails for user {} [{}] to {}", user.getName(), user.getKey(), user.getEmail());
-      }
-
-    } catch (IOException | TemplateException | ExecutionException | InterruptedException | RuntimeException e) {
-      LOG.error("Error sending editor request mail for {}", user.getUsername(), e);
-      if (mailCfg != null && mailCfg.block) {
-        throw Exceptions.asRuntimeException(e);
-      }
-    }
-  }
-
-  @VisibleForTesting
-  static String buildEmailText(User user, String request) throws TemplateException, IOException {
-    var data = new HashMap<>();
-    data.put("user", user);
-    data.put("request", request);
-    return FmUtil.render(data, emailTemplate);
-  }
 }
