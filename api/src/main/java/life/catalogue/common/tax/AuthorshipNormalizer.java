@@ -98,14 +98,14 @@ public class AuthorshipNormalizer {
 
     final List<String> authors = new ArrayList<>();
     if (authorship.hasExAuthors()) {
-      if (authorship.getAuthors() != null && (code == null || code != NomCode.ZOOLOGICAL)) {
+      if (authorship.getAuthors() != null && (code != NomCode.ZOOLOGICAL)) {
         authors.addAll(authorship.getAuthors());
       }
       if (authorship.getExAuthors() != null  && (code == null || code == NomCode.ZOOLOGICAL)) {
         authors.addAll(authorship.getExAuthors());
       }
 
-    } else {
+    } else if (authorship.getAuthors() != null) {
       authors.addAll(authorship.getAuthors());
     }
     if (authors.isEmpty()) {
