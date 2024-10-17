@@ -16,13 +16,12 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
 
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
-
-import org.apache.commons.collections4.IterableUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -186,7 +185,7 @@ public class UsageMatcherGlobal {
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
+      var match = filterCandidates(datasetKey, nu, canonNidx, new ArrayList<>(existing), parents, verbose);
       if (match.isMatch()) {
         // decide about usage match type - the match type we have so far is from names index matching only!
         if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
@@ -311,13 +310,14 @@ public class UsageMatcherGlobal {
 
   /**
    * @param datasetKey the target dataset to match against
-   * @param nu usage to be match
-   * @param existing candidates with the same names index id to be matched against
-   * @param parents classification of the usage to be matched
+   * @param nu         usage to be match
+   * @param canonNidx
+   * @param existing   candidates with the same names index id to be matched against
+   * @param parents    classification of the usage to be matched
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
+  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, CanonNidxMatch canonNidx, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match

@@ -633,7 +633,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with rank {}", n.getScientificName(), n.getRank());
       }
       // also update the original match as we cache and reuse that
-      if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
+      if (!upd.isEmpty() && !Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
         n.setNamesIndexId(src.getNamesIndexId());
         if (existingUsage != null) {
           existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
