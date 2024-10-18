@@ -18,14 +18,15 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
+import life.catalogue.matching.similarity.ScientificNameSimilarity;
+import life.catalogue.matching.similarity.StringSimilarity;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -175,6 +176,8 @@ public class HomotypicConsolidator {
         }
       }
 
+      detectOrthVars(epithets);
+
       // now compare authorships for each epithet group
       for (var epithetGroup : epithets.entrySet()) {
         var groups = basSorter.groupBasionyms(tax.getCode(), epithetGroup.getKey(), epithetGroup.getValue(), a -> a, this::flagConsolidationIssue);
@@ -238,6 +241,156 @@ public class HomotypicConsolidator {
       usages = null;
     }
 
+    private class EpithetIndex {
+      final char initial;
+      final int length;
+
+      private EpithetIndex(String epithet) {
+        this.initial = epithet.charAt(0);
+        this.length = epithet.length();
+      }
+
+      public EpithetIndex(EpithetIndex other, int lengthDiff) {
+        this.initial = other.initial;
+        this.length = other.length + lengthDiff;
+      }
+
+      @Override
+      public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EpithetIndex)) return false;
+        EpithetIndex that = (EpithetIndex) o;
+        return initial == that.initial && length == that.length;
+      }
+
+      @Override
+      public int hashCode() {
+        return Objects.hash(initial, length);
+      }
+    }
+    private void detectOrthVars(Map<String, List<LinneanNameUsage>> epithets) {
+      // group all epithets by their first char and length so we can filter out unlikely matches to speed up clustering
+      Map<EpithetIndex, List<String>> index = new HashMap<>();
+      for (var epi : epithets.keySet()) {
+        var key = new EpithetIndex(epi);
+        var epis = index.computeIfAbsent(key, k -> new ArrayList<>());
+        epis.add(epi);
+      }
+      for (var groupEntry : index.entrySet()) {
+        var key = groupEntry.getKey();
+        Set<String> epithetWindow = new HashSet<>(groupEntry.getValue());
+
+        var keyMin = key.length > 1 ? new EpithetIndex(key, -1) : null;
+        var keyMax = new EpithetIndex(key, 1);
+        for (var k : new EpithetIndex[]{keyMin, keyMax}) {
+          if (k != null && index.containsKey(k)) {
+            epithetWindow.addAll(index.get(k));
+          }
+        }
+        // for each group epithets with the same first character and similar length, try to spot orthographic variations
+        clusterNames(epithets, epithetWindow);
+      }
+    }
+
+    private class EpiLNU {
+      final String epithet;
+      final LinneanNameUsage lnu;
+
+      private EpiLNU(String epithet, LinneanNameUsage lnu) {
+        this.epithet = epithet;
+        this.lnu = lnu;
+      }
+
+      public String toString() {
+        return lnu.getLabel();
+      }
+    }
+
+    /**
+     * Cluster epithets in the window to find orthographic variants.
+     * Require the authorship to be strictly the same, but allow epithet itself to slightly differ.
+     *
+     * @param epithets
+     * @param epithetWindow
+     */
+    private void clusterNames(Map<String, List<LinneanNameUsage>> epithets, Set<String> epithetWindow) {
+      StringSimilarity sim = new ScientificNameSimilarity();
+      // cluster all full names having the same author and move them into one of the epithet boxes
+      var usages = new ArrayList<EpiLNU>();
+      for (var epi : epithetWindow) {
+        usages.addAll(epithets.get(epi).stream()
+          .map(u -> new EpiLNU(epi, u))
+          .collect(Collectors.toList())
+        );
+      }
+
+      final double THRESHOLD = 92;
+      // build upper triangular matrix with similarity between all names
+      final int size = usages.size();
+      var matrix = new double[size][size];
+      double max = 0;
+      for (int x = 0; x<size; x++) {
+        EpiLNU ux = usages.get(x);
+        for (int y = x+1; y<size; y++) {
+          EpiLNU uy = usages.get(y);
+          // only calculate full distance if authorship matches up strictly
+          var authEq = authorComparator.compareStrict(ux.lnu, uy.lnu);
+          var dist = authEq ? sim.getSimilarity(ux.lnu.getScientificName(), uy.lnu.getScientificName()) : 0;
+          max = Math.max(max, dist);
+          matrix[x][y] = dist;
+        }
+      }
+
+      if (max >= THRESHOLD) {
+        // we can have several variants for a name, not just a pair
+        System.out.println(matrix);
+        Set<String> visited = new HashSet<>();
+        for (int x = 0; x<size; x++) {
+          for (int y = x+1; y<size; y++) {
+            if (matrix[x][y] >= THRESHOLD) {
+              EpiLNU u = usages.get(x);
+              if (!visited.contains(u.lnu.getId())) {
+                // new cluster!
+                List<EpiLNU> cluster = new ArrayList<>();
+                cluster.add(u);
+                cluster.add(usages.get(y));
+                // check for futher matches
+                for (int y2 = y+1; y2<size; y2++) {
+                  if (matrix[x][y2] >= THRESHOLD) {
+                    EpiLNU u2 = usages.get(y2);
+                    if (!visited.contains(u2.lnu.getId())) {
+                      cluster.add(u2);
+                    }
+                  }
+                }
+                consolidateOrthVars(epithets, cluster);
+                // remember, so we dont report the same names again
+                visited.addAll(cluster.stream().map(e -> e.lnu.getId()).collect(Collectors.toSet()));
+              }
+            }
+          }
+        }
+      }
+    }
+
+    private void consolidateOrthVars(Map<String, List<LinneanNameUsage>> epithets, List<EpiLNU> names) {
+      EpiLNU primary = names.remove(0);
+      var list = epithets.get(primary.epithet);
+      for (var n : names) {
+        if (!n.epithet.equals(primary.epithet)) {
+          var iter = epithets.get(n.epithet).listIterator();
+          while (iter.hasNext()) {
+            var en = iter.next();
+            if (n.lnu.getId().equals(en.getId())) {
+              LOG.info("Found orthographic variant of {}: {}", primary.lnu, en);
+              list.add(n.lnu);
+              iter.remove();
+            }
+          }
+        }
+      }
+    }
+
     private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
       try (SqlSession session = factory.openSession(false)) {
         VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
@@ -282,7 +435,7 @@ public class HomotypicConsolidator {
      */
     private void consolidate(HomotypicGroup<LinneanNameUsage> group) {
       if (group.size() > 1) {
-        LOG.info("Consolidate homotypic group {} {} with {} names in {}. Basionym={} and basedOn={}", group.getEpithet(), group.getAuthorship(), group.size(), tax, group.getBasionym(), group.getBasedOn());
+        LOG.info("Consolidate homotypic group {} {} with {} names in {}. Basionym={} and BasedOn={}", group.getEpithet(), group.getAuthorship(), group.size(), tax, group.getBasionym(), group.getBasedOn());
         final LinneanNameUsage primary = findPrimaryUsage(group);
         if (primary == null) {
           // we did not find a usage to trust. skip, but mark accepted names with issues
@@ -300,7 +453,8 @@ public class HomotypicConsolidator {
 
         // get the accepted usage in case of synonyms - caution, this can now be an autonym that is happy to live with its accepted species
         final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
-        final int primaryPrio = priorityFunc.applyAsInt(primaryAcc);
+        // use the highest priority from either primary or the accepted usage of it if its different
+        final int primaryPrio = Math.min(priorityFunc.applyAsInt(primary), priorityFunc.applyAsInt(primaryAcc));
         try (SqlSession session = factory.openSession(false)) {
           TaxonMapper tm = session.getMapper(TaxonMapper.class);
           var num = session.getMapper(NameUsageMapper.class);

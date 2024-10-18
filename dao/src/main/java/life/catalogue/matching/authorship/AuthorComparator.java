@@ -2,7 +2,9 @@ package life.catalogue.matching.authorship;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.ScientificName;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.matching.Equality;
 
@@ -133,6 +135,15 @@ public class AuthorComparator {
       return across == Equality.EQUAL ? Equality.EQUAL : Equality.UNKNOWN;
     }
     return recomb.and(original);
+  }
+
+  public boolean compareStrict(ScientificName n1, ScientificName n2) {
+    var code = ObjectUtils.coalesce(n1.getCode(), n2.getCode());
+    var a1 = n1.getBasionymAuthorship().isEmpty() && n2.getBasionymAuthorship().isEmpty()
+      || compareStrict(n1.getBasionymAuthorship(), n2.getBasionymAuthorship(), code, 0);
+    var a2 = n1.getCombinationAuthorship().isEmpty() && n2.getCombinationAuthorship().isEmpty()
+      || compareStrict(n1.getCombinationAuthorship(), n2.getCombinationAuthorship(), code, 0);
+    return a1 && a2;
   }
   
   /**
