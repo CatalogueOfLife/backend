@@ -200,6 +200,7 @@ public class MatchedParentStack {
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
         && pRank != null && nu.getRank().higherThan(pRank)
         && nu.getRank().notOtherOrUnranked() && pRank.notOtherOrUnranked()
+        && nu.getRank() != Rank.SERIES && pRank != Rank.SERIES // series is still ambiguous
     ) {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast().usage);
       markSubtreeAsDoubtful();
