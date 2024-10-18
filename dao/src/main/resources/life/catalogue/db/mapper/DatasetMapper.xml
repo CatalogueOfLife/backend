@@ -324,8 +324,8 @@
         )
       </if>
       <if test="q != null">
-        <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
-        AND (f_unaccent(alias) ILIKE $gbif$%${q}%$gbif$ OR f_unaccent(title) ILIKE $gbif$%${q}%$gbif$)
+        <!-- we use dollar quoted strings with a token ($gbif$) to avoid escaping quotes -->
+        AND (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$) OR f_unaccent(title) ILIKE f_unaccent($gbif$%${q}%$gbif$))
       </if>
     ORDER BY alias NULLS LAST, title
     LIMIT 25
