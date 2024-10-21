@@ -39,6 +39,21 @@ public class TextTreePrinter2Test {
   }
 
   @Test
+  public void printExtended() throws Exception {
+    var apple = TestDataRule.apple();
+    apple.initSession();
+    apple.loadData();
+    Writer writer = new StringWriter();
+    var printer = PrinterFactory.dataset(TextTreePrinter.class, apple.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    printer.showExtendedInfos();
+    printer.showIDs();
+    int count = printer.print();
+    assertEquals(4, count);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/apple-extended.tree"));
+    assertEquals(expected, writer.toString());
+  }
+
+  @Test
   public void printWithCounts() throws IOException {
     Writer writer = new StringWriter();
     var p = PrinterFactory.dataset(TextTreePrinter.class, TreeTraversalParameter.datasetNoSynonyms(testDataRule.testData.key),
@@ -46,6 +61,7 @@ public class TextTreePrinter2Test {
       Rank.SPECIES, null, SqlSessionFactoryRule.getSqlSessionFactory(), writer
     );
     p.showIDs();
+    p.showExtendedInfos();
     int count = p.print();
     System.out.println(writer);
     assertEquals(9, count);
