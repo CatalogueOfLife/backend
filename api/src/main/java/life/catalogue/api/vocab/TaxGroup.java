@@ -25,7 +25,7 @@ public enum TaxGroup {
 
   Eukaryotes("d878c432-0b0b-44f5-b1a1-12557b439c3f", "",NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
     Protists("5fccc7f9-60b8-4aea-96cf-ce93f85c9e90", "Any eukaryote that is not animal, plant (incl algae s.l.) nor fungus. " +
-      "Includes all Protozoa (ciliates, flagellates, and amoebas)", Eukaryotes),
+      "Includes all Protozoa (ciliates, flagellates, and amoebas), Foraminifera, Radiolaria", Eukaryotes),
 
     Plants("5c6ae9a1-1405-4f81-b4c1-c169faef475e", "Sensu lato incl red algae. More like Archaeplastida", NomCode.BOTANICAL, Eukaryotes),
 
@@ -41,7 +41,7 @@ public enum TaxGroup {
       Ascomycetes("7ebbf05d-2084-4204-ad4c-2c0d6cbcdde1", Fungi),
       Basidiomycetes("237a0fb1-7b73-43ec-b0a5-eff95e7237df", Fungi),
       Oomycetes("53b543aa-2a5e-4407-88cd-6acbb0b5c3f9",
-        "traditionally follows fungal nomenclature therefore placed here. Phylogenetically related to Algae and protists", Fungi),
+        "traditionally follows fungal nomenclature therefore placed here. Includes the wider pseudo fungi. Phylogenetically related to Algae and protists", Fungi, Protists),
       OtherFungi("", "",Fungi),
 
     Animals("a3dd3044-648c-4e45-93f0-21a156247132", "",NomCode.ZOOLOGICAL, Eukaryotes),
