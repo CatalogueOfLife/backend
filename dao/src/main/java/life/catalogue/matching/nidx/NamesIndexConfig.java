@@ -48,6 +48,6 @@ public class NamesIndexConfig {
    * Maximum numbers of names index entries supported by a chronicle store
    */
   @Min(1_000)
-  public int maxEntries = 50_000_000;
+  public int maxEntries = 1_000;
 
 }
