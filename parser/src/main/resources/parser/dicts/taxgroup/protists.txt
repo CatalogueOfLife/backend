@@ -541,8 +541,6 @@ Euglenamorphidae
 Euglenida
 Euglenidae
 Euglenoida
-Euglenophyceae
-Euglenophycidae
 Euglenophyta
 Euglenophytes
 Euglenozoa
