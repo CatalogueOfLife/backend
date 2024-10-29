@@ -94,18 +94,24 @@
     <result property="containerPublisher" column="containerPublisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
   </resultMap>
 
+  <sql id="PUBLISHER_CLAUSE">
+    <if test="!inclPublisherSources">
+      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+    </if>
+  </sql>
+
   <sql id="SECTOR_SUBJECT_DATASETS">
     WITH src AS (
       SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt
       FROM sector s JOIN dataset d ON d.key=s.subject_dataset_key
       WHERE s.dataset_key=#{datasetKey}
-        AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+        <include refid="PUBLISHER_CLAUSE"/>
         AND EXISTS (SELECT TRUE FROM name_usage u WHERE u.sector_key=s.id AND u.dataset_key = #{datasetKey})
       GROUP BY 1,2
     )
   </sql>
 
-  <select id="listSectorBasedSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
+  <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
     SELECT <include refid="SELECT"/>
@@ -151,21 +157,14 @@
     SELECT d.dataset_key, <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
-      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
+    <include refid="PUBLISHER_CLAUSE"/>
   </select>
 
   <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT d.dataset_key, <include refid="SELECT_SIMPLE"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE d.dataset_key = #{datasetKey}
-      AND NOT EXISTS (SELECT TRUE FROM sector_publisher p WHERE p.id=d.gbif_publisher_key AND p.dataset_key = #{datasetKey})
-  </select>
-
-  <select id="listReleaseSourcesAuthorsOnly" parameterType="map" resultMap="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" resultOrdered="true" fetchSize="500" resultSetType="FORWARD_ONLY">
-    SELECT d.dataset_key, d.key, d.source_key, d.doi, d.attempt, d.origin, d.type, d.title, d.alias, d.issued, d.version,
-      d.contact, d.creator, d.editor, d.publisher, d.contributor, d.license
-    FROM dataset_source d
-    WHERE d.dataset_key = #{datasetKey}
+    <include refid="PUBLISHER_CLAUSE"/>
   </select>
 
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">

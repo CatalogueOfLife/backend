@@ -44,27 +44,26 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
 
   @Test
   public void listProjectSources() throws Exception {
-    mapper().listSectorBasedSources(Datasets.COL);
+    mapper().listProjectSources(Datasets.COL, false);
+    mapper().listProjectSources(Datasets.COL, true);
   }
 
   @Test
   public void listReleaseSources() throws Exception {
-    mapper().listReleaseSources(Datasets.COL);
+    mapper().listReleaseSources(Datasets.COL, false);
+    mapper().listReleaseSources(Datasets.COL, true);
   }
 
   @Test
   public void listProjectSourcesSimple() throws Exception {
-    mapper().listProjectSourcesSimple(Datasets.COL);
+    mapper().listProjectSourcesSimple(Datasets.COL, false);
+    mapper().listProjectSourcesSimple(Datasets.COL, true);
   }
 
   @Test
   public void listReleaseSourcesSimple() throws Exception {
-    mapper().listReleaseSourcesSimple(Datasets.COL);
-  }
-
-  @Test
-  public void listReleaseSourcesAuthorsOnly() throws Exception {
-    mapper().listReleaseSourcesAuthorsOnly(Datasets.COL);
+    mapper().listReleaseSourcesSimple(Datasets.COL, true);
+    mapper().listReleaseSourcesSimple(Datasets.COL, false);
   }
 
   void persistDatasetCitations(Dataset d){
@@ -152,7 +151,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     assertEquals(rs2, rs);
 
     // now try to list sources
-    mapper().listReleaseSources(Datasets.COL);
+    mapper().listReleaseSources(Datasets.COL, true);
 
     // limit container authors to just 2 and verify
     DatasetSettings ds = dm.getSettings(Datasets.COL);

@@ -377,6 +377,7 @@ public class AuthorComparatorTest {
     assertAuth("Reichenbach", "1837", Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", "1837");
     // ex author swapping in regular mode
     assertAuth("Reichenbach", "1837", Equality.EQUAL, "Rchb. ex Andrz.", "1837");
+    assertAuth("Endlicher", "1837", Equality.EQUAL, "Endl.", null);
   }
   
   @Test
@@ -449,7 +450,8 @@ public class AuthorComparatorTest {
     assertAuthStrict("Brugg.", null, true, "Brug.", null);
     assertAuthStrict("A.Bruggen.", null, false, "Brug.", null);
     assertAuthStrict("Brug.", null, true, "Pascal Bruggeman", null);
-    
+
+    assertAuthStrict("Endlicher", "1837", true, "Endl.", null);
   }
   
   @Test

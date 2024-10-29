@@ -78,18 +78,6 @@ public class DatasetSourceDao {
   }
 
   /**
-   * List the source datasets for a release, but only map alias,title,origin,type and authors (creator, editor, contributor, publisher).
-   * @param releaseKey dataset key of the release
-   */
-  public List<Dataset> listReleaseAuthors(int releaseKey){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(releaseKey).requireOrigin(RELEASE, XRELEASE);
-    try (SqlSession session = factory.openSession()) {
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      return psm.listReleaseSourcesAuthorsOnly(releaseKey);
-    }
-  }
-
-  /**
    * Returns simple source datasets like the main list method but without
    * - description
    * - container dataset
@@ -99,7 +87,7 @@ public class DatasetSourceDao {
    * @param datasetKey
    * @return
    */
-  public List<Dataset> listSimple(int datasetKey){
+  public List<Dataset> listSimple(int datasetKey, boolean inclPublisherSources){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
@@ -108,10 +96,10 @@ public class DatasetSourceDao {
       final var settings = dm.getSettings(info.keyOrProjectKey());
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease()) {
-        sources = psm.listReleaseSourcesSimple(datasetKey);
+        sources = psm.listReleaseSourcesSimple(datasetKey, inclPublisherSources);
 
       } else {
-        sources = psm.listProjectSourcesSimple(datasetKey);
+        sources = psm.listProjectSourcesSimple(datasetKey, inclPublisherSources);
         // a project, get latest version with patch applied
         final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
         sources.forEach(d -> patch(d, datasetKey, pm));
@@ -129,11 +117,11 @@ public class DatasetSourceDao {
     }
   }
 
-  public List<Dataset> listReleaseSources(int datasetKey){
+  public List<Dataset> listReleaseSources(int datasetKey, boolean inclPublisherSources){
     DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE);
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      return psm.listReleaseSources(datasetKey);
+      return psm.listReleaseSources(datasetKey, inclPublisherSources);
     }
   }
 
@@ -141,18 +129,18 @@ public class DatasetSourceDao {
    * Lists all project or release sources based on the sectors in the dataset,
    * retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
-   * This does not return datasets of sectors created by a sector publisher.
    * It does NOT rely on dataset_source records for releases and can be used to create them.
    *
    * @param projectKey the dataset key of the project to load patches from
    * @param datasetKey project or release key to query for source sectors
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a sector publisher
    */
-  public List<Dataset> listSectorBasedSources(int projectKey, int datasetKey){
+  public List<Dataset> listSectorBasedSources(int projectKey, int datasetKey, boolean inclPublisherSources){
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
       // get latest version with patch applied
-      List<Dataset> sources = psm.listSectorBasedSources(datasetKey);
+      List<Dataset> sources = psm.listProjectSources(datasetKey, inclPublisherSources);
       sources.forEach(d -> patch(d, projectKey, pm));
       return sources;
     }

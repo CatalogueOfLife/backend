@@ -235,16 +235,15 @@ public class ProjectRelease extends AbstractProjectCopy {
     updateState(ImportState.ARCHIVING);
     LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true)) {
+      final AtomicInteger counter = new AtomicInteger(0);
       // treat source. Archive dataset metadata & logos & assign a potentially new DOI
-
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
-      final AtomicInteger counter = new AtomicInteger(0);
       final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
       // create fixed source dataset records for this release.
-      // This does not create source dataset records for aggregated publishers,
-      // nor does it create source records for merge sectors without data in the release itself!
-      for (var d : srcDao.listSectorBasedSources(datasetKey, newDatasetKey)) {
+      // This DOES create source dataset records for aggregated publishers.
+      // It does not create source records for merge sectors without data in the release itself!
+      for (var d : srcDao.listSectorBasedSources(datasetKey, newDatasetKey, true)) {
         if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);

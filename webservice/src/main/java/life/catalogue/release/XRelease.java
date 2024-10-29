@@ -236,10 +236,9 @@ public class XRelease extends ProjectRelease {
       LOG.warn("Homotypic grouping disabled in xrelease configs");
     }
 
-    // flagging of suspicous usages
+    // flagging of suspicious usages
     validateAndCleanTree();
     cleanImplicitTaxa();
-    resolveDuplicateAcceptedNames();
 
     // remove orphan names and references
     removeOrphans(newDatasetKey);
@@ -491,14 +490,13 @@ public class XRelease extends ProjectRelease {
   public int getFailedSyncs() {
     return failedSyncs;
   }
-/**
+
+  /**
    * Goes through all accepted infraspecies and checks if a matching autonym exists,
    * creating missing autonyms where needed.
    * An autonym is an infraspecific taxon that has the same species and infraspecific epithet.
    * We do this last to not persistent autonyms that we dont need after basionyms are grouped or status has changed for some other reason.
-   */
-
-  /**
+   *
    * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
    */
   private void cleanImplicitTaxa() {
@@ -527,10 +525,6 @@ public class XRelease extends ProjectRelease {
       LOG.error("Name validation & cleaning failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
-  }
-
-  private void resolveDuplicateAcceptedNames() {
-    LOG.info("Resolve duplicate accepted names");
   }
 
 }
