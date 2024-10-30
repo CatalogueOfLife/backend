@@ -601,6 +601,22 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/785
+   * @throws Exception
+   */
+  @Test
+  public void unite() throws Exception {
+    var settings = new DatasetSettings();
+
+    normalize(52, settings);
+    printTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertEquals(11, store.usages().all().count());
+    }
+  }
+
   @Test
   @Ignore
   public void testExternal() throws Exception {

@@ -213,7 +213,7 @@ public class NameNRank {
   }
 
   @VisibleForTesting
-  static String expandAbbreviatedGenus(String scientificName, String genus) {
+  public static String expandAbbreviatedGenus(String scientificName, String genus) {
     if (exists(scientificName) && exists(genus) && !scientificName.equalsIgnoreCase(genus)) {
       String[] parts = scientificName.split(" +", 2);
       String genusCorrect = StringUtils.capitalize(genus.trim().toLowerCase());
