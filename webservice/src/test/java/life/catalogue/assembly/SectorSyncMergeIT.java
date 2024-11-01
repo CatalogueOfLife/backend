@@ -83,6 +83,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"myosotis", List.of("taxref", "uksi", "pbdb", "bavaria")},
       {"tetralobus", List.of("wfo", "bouchard", "plazi")},
       {"cactus", List.of("wfo", "wcvp", "grin", "taxref", "tpl", "pbdb")},
       {"aphanizomenon", List.of("worms","ncbi","dyntaxa")}, // https://github.com/CatalogueOfLife/xcol/issues/146

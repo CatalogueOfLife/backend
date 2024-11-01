@@ -54,8 +54,6 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  // map with foreign child id to original parent name
-  Map<String, Name> foreignChildrenParents = new HashMap<>();
   private final UsageMatcherGlobal matcher;
   private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
@@ -283,7 +281,8 @@ abstract class SectorRunnable implements Runnable {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       childSectors=sm.listChildSectors(sectorKey);
     }
-    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
+    long mergeCnt = childSectors.stream().filter(s -> s.getMode() == Sector.Mode.MERGE).count();
+    LOG.info("Loaded {} sectors incl {} merge sectors targeting taxa from sector {}", childSectors.size(), mergeCnt, sectorKey);
   }
   
   abstract void doWork() throws Exception;

@@ -19,6 +19,7 @@ import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.decision.RematchRequest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +58,8 @@ public class SectorSync extends SectorRunnable {
   private final int targetDatasetKey; // dataset to sync into
   private @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
+  // map with foreign child id to original parent name
+  private final Map<String, Name> foreignChildrenParents = new HashMap<>();
   private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
@@ -145,13 +148,17 @@ public class SectorSync extends SectorRunnable {
     super.init(true);
     loadForeignChildren();
     if (!disableAutoBlocking) {
-      // also load all sector subjects to auto block them
+      // also load all sector subjects of non merge sources to auto block them
       try (SqlSession session = factory.openSession()) {
         AtomicInteger counter = new AtomicInteger();
         PgUtils.consume(
           () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
           s -> {
-            if (!s.getId().equals(sectorKey.getId()) && s.getSubject() != null && s.getSubject().getId() != null) {
+            if (!s.getId().equals(sectorKey.getId())
+                && s.getSubject() != null
+                && s.getSubject().getId() != null
+                && s.getMode() != Sector.Mode.MERGE
+            ) {
               EditorialDecision d = new EditorialDecision();
               d.setSubject(s.getSubject());
               d.setDatasetKey(sectorKey.getDatasetKey());
