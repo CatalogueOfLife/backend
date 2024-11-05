@@ -12,7 +12,6 @@ import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.util.CleanupUtils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -214,28 +213,19 @@ public class NameNRank {
 
   @VisibleForTesting
   public static String expandAbbreviatedGenus(String scientificName, String genus) {
-    if (exists(scientificName) && exists(genus)) {
+    if (exists(scientificName) && exists(genus) && !scientificName.equalsIgnoreCase(genus)) {
       String[] parts = scientificName.split(" +", 2);
-      if (parts[0].length() <= 2) {
-        String genusCorrect = StringUtils.capitalize(genus.trim().toLowerCase());
+      String genusCorrect = StringUtils.capitalize(genus.trim().toLowerCase());
+      if (parts[0].length() <= 2 && genusCorrect.length() > 2 && (
+        parts[0].equals("?") // is the genus missing alltogether?
+          || parts[0].length() == 2 && parts[0].charAt(1) == '.' && parts[0].charAt(0) == genusCorrect.charAt(0)
+          || parts[0].length() == 1 && parts[0].charAt(0) == genusCorrect.charAt(0)
+      )) {
         StringBuilder sb = new StringBuilder();
-        // is the genus missing alltogether?
-        if (parts[0].equals("?")) {
-          sb.append(genusCorrect);
-        } else if (genusCorrect.length() > 1) {
-          // test if name has an abbreviated genus
-          if (parts[0].length() == 2
-                  && parts[0].charAt(1) == '.'
-                  && parts[0].charAt(0) == genusCorrect.charAt(0)
-              || parts[0].length() == 1 && parts[0].charAt(0) == genusCorrect.charAt(0)) {
-            sb.append(genusCorrect);
-          }
-        } else {
-          sb.append(parts[0]);
-        }
+        sb.append(genus);
         if (parts.length > 1) {
-          sb.append(" ");
-          sb.append(parts[1]);
+          sb.append(" ")
+            .append(parts[1]);
         }
         return sb.toString();
       }

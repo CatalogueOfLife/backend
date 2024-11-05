@@ -15,6 +15,7 @@
     "title": "IPNI",
     "prefix": "urn:lsid:ipni.org:names:",
     "prefixMapping": [
+      "ipni:",
       "https://www.ipni.org/n/"
     ],
     "removePrefixForMatching": true
@@ -25,6 +26,7 @@
     "title": "WoRMS",
     "prefix": "urn:lsid:marinespecies.org:taxname:",
     "prefixMapping": [
+      "worms:",
       "http://marinespecies.org/data.php?id=",
       "https://marinespecies.org/data.php?id=",
       "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
@@ -40,6 +42,31 @@
     "key": "2041",
     "gbifKey": "de8934f4-a136-481c-a87a-b0b202b80a31",
     "title": "Dyntaxa. Svensk taxonomisk databas",
-    "prefix": "urn:lsid:dyntaxa.se:Taxon:"
+    "prefix": "urn:lsid:dyntaxa.se:Taxon:",
+    "prefixMapping": [
+      "dyntaxa:"
+    ]
+  },
+  {
+    "key": "2144",
+    "gbifKey": "9ca92552-f23a-41a8-a140-01abaa31c931",
+    "title": "ITIS",
+    "prefixMapping": [
+      "itis:",
+      "tsn:",
+      "https://www.itis.gov/servlet/SingleRpt/SingleRpt?search_topic=TSN&search_value=",
+      "https://marinespecies.org/data.php?id=",
+      "https://www.marinespecies.org/aphia.php?p=taxdetails&id="
+    ]
+  },
+  {
+    "key": "139831",
+    "title": "iNaturalist",
+    "prefix": "https://www.inaturalist.org/taxa/",
+    "prefixMapping": [
+      "inat:",
+      "iNaturalist:",
+      "https://www.inaturalist.org/taxa/"
+    ]
   }
 ]

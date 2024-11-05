@@ -14,10 +14,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriterBuilder;
@@ -29,23 +28,17 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.matching.db.DatasetMapper;
-
 import life.catalogue.matching.index.ScientificNameAnalyzer;
 import life.catalogue.matching.model.Classification;
+import life.catalogue.matching.model.StoredParsedName;
 import life.catalogue.matching.model.Dataset;
 import life.catalogue.matching.model.NameUsage;
-
 import life.catalogue.matching.model.NameUsageMatch;
-
 import life.catalogue.matching.util.NameParsers;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -110,6 +103,8 @@ public class IndexingService {
   Integer dbFetchSize;
 
   protected final MatchingService matchingService;
+
+  protected static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
@@ -208,7 +203,7 @@ public class IndexingService {
   }
 
   /**
-   * Writes an export of  the name usages in a checklist bank dataset to a CSV file.
+   * Writes an export of the name usages in a checklist bank dataset to a CSV file.
    *
    * @param datasetKeyInput a dataset key or a release key
    * @throws Exception if the dataset key is invalid or the export fails
@@ -664,6 +659,10 @@ public class IndexingService {
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
                   nameUsageMatch.getUsage().getKey(), Field.Store.YES)
               );
+
+              // reduce the side of these indexes by removing the parsed name
+              doc.removeField(FIELD_PARSED_NAME_JSON);
+
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
             } else {
@@ -680,7 +679,7 @@ public class IndexingService {
     }
 
     private boolean isAccepted(String status) {
-      return status != null && !status.equals(TaxonomicStatus.ACCEPTED.name());
+      return status != null && status.equals(TaxonomicStatus.ACCEPTED.name());
     }
   }
 
@@ -801,12 +800,6 @@ public class IndexingService {
     mapper.writeValue(new File(indexPath + "/" + METADATA_JSON), metadata);
   }
 
-  class YourThreadFactory implements ThreadFactory {
-    public Thread newThread(Runnable r) {
-      return new Thread(r, "NameUsage-Indexing-taskThread");
-    }
-  }
-
   static class IndexingTask implements Runnable {
     private final IndexWriter writer;
     private final List<NameUsage> nameUsages;
@@ -846,6 +839,11 @@ public class IndexingService {
     return Paths.get(indexPath);
   }
 
+  /**
+   * Generate the lucene document for a name usage
+   * @param nameUsage to convert to lucene document
+   * @return lucene document
+   */
   protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
@@ -853,24 +851,43 @@ public class IndexingService {
      Porting notes: The canonical name *sensu strictu* with nothing else but three name parts at
      most (genus, species, infraspecific). No rank or hybrid markers and no authorship,
      cultivar or strain information. Infrageneric names are represented without a
-     leading genus. Unicode characters are replaced by their matching ASCII characters."
+     leading genus. Unicode characters are replaced by their matching ASCII characters.
     */
-     Rank rank = Rank.valueOf(nameUsage.getRank());
+    Rank rank = Rank.valueOf(nameUsage.getRank());
 
     Optional<String> optCanonical = Optional.empty();
+    ParsedName pn = null;
+    NomCode nomCode = null;
     try {
-      NomCode nomCode = null;
       if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
         nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
       }
-      ParsedName pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
-
+      pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
       // canonicalMinimal will construct the name without the hybrid marker and authorship
       String canonical = NameFormatter.canonicalMinimal(pn);
       optCanonical = Optional.ofNullable(canonical);
     } catch (UnparsableNameException | InterruptedException e) {
       // do nothing
       log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+    }
+
+    if (pn != null){
+      try {
+        // if there an authorship, reparse with it to get the component authorship parts
+        StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
+          getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
+        // store the parsed name components in JSON
+        doc.add(new StoredField(
+          FIELD_PARSED_NAME_JSON,
+          MAPPER.writeValueAsString(storedParsedName))
+        );
+      } catch (UnparsableNameException | InterruptedException e) {
+        // do nothing
+        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+      } catch ( JsonProcessingException e) {
+        // do nothing
+        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
+      }
     }
 
     final String canonical = optCanonical.orElse(nameUsage.getScientificName());
@@ -895,7 +912,9 @@ public class IndexingService {
     String nameComplete = nameUsage.getScientificName();
     if (StringUtils.isNotBlank(nameUsage.getAuthorship())) {
       nameComplete += " " + nameUsage.getAuthorship();
+      doc.add(new TextField(FIELD_AUTHORSHIP, nameUsage.getAuthorship(), Field.Store.YES));
     }
+
     doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
@@ -920,11 +939,60 @@ public class IndexingService {
     return doc;
   }
 
-  public static <T> void consume(Supplier<Cursor<T>> cursorSupplier, Consumer<T> handler) {
-    try (Cursor<T> cursor = cursorSupplier.get()) {
-      cursor.forEach(handler);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+  @NotNull
+  private static StoredParsedName constructParsedName(NameUsage nameUsage, Rank rank, NomCode nomCode) throws UnparsableNameException, InterruptedException {
+    ParsedName pn = !StringUtils.isBlank(nameUsage.getAuthorship()) ?
+      NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode)
+      : NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
+    return getStoredParsedName(pn);
+  }
+
+  @NotNull
+  private static StoredParsedName getStoredParsedName(ParsedName pn) {
+    StoredParsedName storedParsedName = new StoredParsedName();
+    storedParsedName.setAbbreviated(pn.isAbbreviated());
+    storedParsedName.setAutonym(pn.isAutonym());
+    storedParsedName.setBinomial(pn.isBinomial());
+    storedParsedName.setCandidatus(pn.isCandidatus());
+    storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
+    storedParsedName.setDoubtful(pn.isDoubtful());
+    storedParsedName.setGenus(pn.getGenus());
+    storedParsedName.setUninomial(pn.getUninomial());
+    storedParsedName.setUnparsed(pn.getUnparsed());
+    storedParsedName.setTrinomial(pn.isTrinomial());
+    storedParsedName.setIncomplete(pn.isIncomplete());
+    storedParsedName.setIndetermined(pn.isIndetermined());
+    storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
+    storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
+    storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
+    storedParsedName.setExtinct(pn.isExtinct());
+    storedParsedName.setPublishedIn(pn.getPublishedIn());
+    storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
+    storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
+    storedParsedName.setPhrase(pn.getPhrase());
+    storedParsedName.setPhraseName(pn.isPhraseName());
+    storedParsedName.setVoucher(pn.getVoucher());
+    storedParsedName.setNominatingParty(pn.getNominatingParty());
+    storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
+    storedParsedName.setWarnings(pn.getWarnings());
+    if (pn.getBasionymAuthorship() != null) {
+      storedParsedName.setBasionymAuthorship(
+        StoredParsedName.StoredAuthorship.builder()
+          .authors(pn.getBasionymAuthorship().getAuthors())
+          .exAuthors(pn.getBasionymAuthorship().getExAuthors())
+          .year(pn.getBasionymAuthorship().getYear()).build()
+      );
     }
+    if (pn.getCombinationAuthorship() != null) {
+      storedParsedName.setCombinationAuthorship(
+        StoredParsedName.StoredAuthorship.builder()
+          .authors(pn.getCombinationAuthorship().getAuthors())
+          .exAuthors(pn.getCombinationAuthorship().getExAuthors())
+          .year(pn.getCombinationAuthorship().getYear()).build()
+      );
+    }
+    storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
+    storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
+    return storedParsedName;
   }
 }

@@ -15,6 +15,7 @@
     <java.version>11</java.version>
     <lucene.version>9.10.0</lucene.version>
     <spring-boot.version>2.7.18</spring-boot.version>
+    <spring-cloud.version>2021.0.9</spring-cloud.version>
     <lombok.version>1.18.22</lombok.version>
     <spotless-maven-plugin.version>2.43.0</spotless-maven-plugin.version>
     <logback.version>1.2.13</logback.version>
@@ -285,11 +286,6 @@
       <version>${spring-boot.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.openhft</groupId>
-      <artifactId>chronicle-map</artifactId>
-      <version>3.25ea6</version>
-    </dependency>
-    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
       <version>${spring-boot.version}</version>
@@ -356,14 +352,6 @@
       <artifactId>logstash-logback-encoder</artifactId>
       <version>${logstash-logback.version}</version>
     </dependency>
-    <!-- enable for dev -->
-<!--    <dependency>-->
-<!--      <groupId>org.springframework.boot</groupId>-->
-<!--      <artifactId>spring-boot-devtools</artifactId>-->
-<!--      <version>${spring-boot.version}</version>-->
-<!--      <scope>runtime</scope>-->
-<!--      <optional>true</optional>-->
-<!--    </dependency>-->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-configuration-processor</artifactId>

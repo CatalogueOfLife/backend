@@ -56,7 +56,7 @@ public class IDMatchingIT {
       1
     );
 
-    Dataset dataset = new Dataset();
+    Dataset dataset = Dataset.builder().build();
     dataset.setKey(1);
     dataset.setAlias("DUMMY_IDS");
     dataset.setTitle("Dummy dataset for testing");

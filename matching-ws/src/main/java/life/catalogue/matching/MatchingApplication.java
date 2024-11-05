@@ -87,7 +87,7 @@ public class MatchingApplication implements ApplicationRunner {
   }
 
   private void initialiseWebapp() {
-    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(false);
+    Optional<APIMetadata> metadata = matchingService.getAPIMetadata(true);
     if (metadata.isEmpty()) {
       log.error("No main index found. Cannot start web services");
       return;
@@ -136,7 +136,8 @@ public class MatchingApplication implements ApplicationRunner {
         indexingService.indexIdentifiers(id);
     }
 
-    log.info("Indexing completed");
+    matchingService.getAPIMetadata(true);
+    log.info("Indexing ready");
   }
 
   private ExecutionMode getMode(ApplicationArguments args) {
