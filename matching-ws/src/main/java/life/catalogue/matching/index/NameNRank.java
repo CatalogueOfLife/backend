@@ -12,7 +12,6 @@ import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.util.CleanupUtils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -224,7 +223,7 @@ public class NameNRank {
       )) {
         StringBuilder sb = new StringBuilder();
         sb.append(genus);
-        if (parts.length>1) {
+        if (parts.length > 1) {
           sb.append(" ")
             .append(parts[1]);
         }

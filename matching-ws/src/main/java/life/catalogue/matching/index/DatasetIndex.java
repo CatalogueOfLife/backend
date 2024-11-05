@@ -2,8 +2,10 @@ package life.catalogue.matching.index;
 
 import static life.catalogue.matching.util.IndexConstants.DATASETS_JSON;
 import static life.catalogue.matching.util.IndexConstants.*;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +13,7 @@ import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -21,20 +24,23 @@ import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IUCNUtils;
 import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
+
+import org.apache.lucene.util.BytesRef;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -57,10 +63,12 @@ public class DatasetIndex {
 
   protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
 
+  protected static final ObjectMapper MAPPER = new ObjectMapper();
+
   @Value("${index.path:/data/matching-ws/index}")
   String indexPath;
 
-  @Value("${working.path:/tmp/}")
+  @Value("${working.dir:/tmp/}")
   String workingDir;
 
   private boolean isInitialised = false;
@@ -77,16 +85,11 @@ public class DatasetIndex {
         .build())
     .build();
 
-  public boolean exists(String indexPath) {
-    return new File(indexPath).exists()
-      && new File(indexPath + "/" + MAIN_INDEX_DIR).exists()
-      && Objects.requireNonNull(new File(indexPath + "/" + MAIN_INDEX_DIR).listFiles()).length > 0;
-  }
-
   /** Attempts to read the index from disk if it exists. */
   @PostConstruct
   void init() {
 
+    MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     final String mainIndexPath = getMainIndexPath();
     final Map<Integer, Dataset> prefixMapping = loadPrefixMapping();
 
@@ -251,6 +254,31 @@ public class DatasetIndex {
     return metadata;
   }
 
+  public static List<String> distinctValuesForField(String field, String indexPath) throws Exception {
+
+    List<String> distinctValues = new ArrayList<>();
+    FSDirectory directory = FSDirectory.open(Paths.get(indexPath));
+
+    try (DirectoryReader directoryReader = DirectoryReader.open(directory)) {
+
+      // Get the field terms
+      for (LeafReaderContext leafContext : directoryReader.leaves()) {
+        LeafReader leafReader = leafContext.reader();
+        Terms terms = leafReader.terms(field);
+
+        if (terms != null) {
+          TermsEnum termsEnum = terms.iterator();
+          BytesRef byteRef;
+          while ((byteRef = termsEnum.next()) != null) {
+            String termValue = byteRef.utf8ToString();
+            distinctValues.add(termValue);
+          }
+        }
+      }
+    }
+    return distinctValues;
+  }
+
   /**
    * Returns the metadata of the index. This includes the number of taxa, the size on disk, the
    * dataset title and key, and the build information.
@@ -290,16 +318,16 @@ public class DatasetIndex {
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
-      rankCounts.put(Rank.KINGDOM.name(), getCountForRank(searcher, Rank.KINGDOM));
-      rankCounts.put(Rank.PHYLUM.name(), getCountForRank(searcher, Rank.PHYLUM));
-      rankCounts.put(Rank.CLASS.name(), getCountForRank(searcher, Rank.CLASS));
-      rankCounts.put(Rank.ORDER.name(), getCountForRank(searcher, Rank.ORDER));
-      rankCounts.put(Rank.FAMILY.name(), getCountForRank(searcher, Rank.FAMILY));
-      rankCounts.put(Rank.GENUS.name(), getCountForRank(searcher, Rank.GENUS));
-      rankCounts.put(Rank.SPECIES.name(), getCountForRank(searcher, Rank.SPECIES));
-      rankCounts.put(Rank.SUBSPECIES.name(), getCountForRank(searcher, Rank.SUBSPECIES));
+      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a).ordinal() - Rank.valueOf(b).ordinal()
+      ).forEach(rank -> {
+        try {
+          rankCounts.put(rank, getCountForRank(searcher, rank));
+        } catch (IOException e) {
+          log.error("Cannot read index information", e);
+        }
+      });
       metadata.setNameUsageByRankCount(rankCounts);
-    } catch (IOException e) {
+    } catch (Exception e) {
       log.error("Cannot read index information", e);
     }
     return metadata;
@@ -311,7 +339,7 @@ public class DatasetIndex {
    */
   private Optional<BuildInfo> getGitInfo() {
     ObjectMapper mapper = new ObjectMapper();
-    final String filePath = workingDir + "/" + GIT_JSON;
+    final String filePath = workingDir + GIT_JSON;
     try {
       if (new File(filePath).exists()) {
         // Read JSON file and parse to JsonNode
@@ -358,7 +386,7 @@ public class DatasetIndex {
 
     try {
       if (new File(filePath).exists()){
-        log.info("Loading dataset info from {}", filePath);
+        log.debug("Loading dataset info from {}", filePath);
         // Read JSON file and parse to JsonNode
         JsonNode rootNode = mapper.readTree(new File(filePath));
         // Navigate to the author node
@@ -383,8 +411,8 @@ public class DatasetIndex {
     return Map.of();
   }
 
-  private long getCountForRank(IndexSearcher searcher, Rank rank) throws IOException {
-    Query query = new TermQuery(new Term(FIELD_RANK, rank.name()));
+  private long getCountForRank(IndexSearcher searcher, String rank) throws IOException {
+    Query query = new TermQuery(new Term(FIELD_RANK, rank));
     return searcher.search(query, new TotalHitCountCollectorManager());
   }
 
@@ -414,22 +442,6 @@ public class DatasetIndex {
    */
   public NameUsageMatch matchByUsageKey(String usageKey) {
     return matchByKey(usageKey, this::getByUsageKey);
-  }
-
-  private static String escapeQueryChars(String s) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      // These are the special characters that need to be escaped
-      if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' ||
-        c == ':' || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' ||
-        c == '}' || c == '~' || c == '*' || c == '?' || c == '|' || c == '&' ||
-        c == '/' || Character.isWhitespace(c)) {
-        sb.append('\\');
-      }
-      sb.append(c);
-    }
-    return sb.toString();
   }
 
   private Optional<Document> getByUsageKey(String usageKey) {
@@ -541,12 +553,36 @@ public class DatasetIndex {
    * @return List of ExternalID
    */
   public List<ExternalID> lookupIdentifier(@NotNull String datasetID, @NotNull String identifier)  {
+    return lookupIdentifier(datasetID, identifier, identifierSearchers);
+  }
+
+  /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param datasetID the datasetKey to match
+   * @param identifier the identifier to match
+   * @return List of ExternalID
+   */
+  public List<ExternalID> lookupAncillary(@NotNull String datasetID, @NotNull String identifier)  {
+    return lookupIdentifier(datasetID, identifier, ancillarySearchers);
+  }
+
+  /**
+   * Matches an external ID. Intended for debug purposes only, to quickly
+   * check if ids are present and joined to main index or not.
+   *
+   * @param datasetID the datasetKey to match
+   * @param identifier the identifier to match
+   * @return List of ExternalID
+   */
+  public List<ExternalID> lookupIdentifier(@NotNull String datasetID, @NotNull String identifier,  Map<Dataset, IndexSearcher> searchers)  {
     List<ExternalID> results = new ArrayList<>();
 
     try {
       // if join indexes are present, add them to the match
-      if (identifierSearchers != null && !identifierSearchers.isEmpty()) {
-        for (Dataset dataset : identifierSearchers.keySet()) {
+      if (searchers != null && !searchers.isEmpty()) {
+        for (Dataset dataset : searchers.keySet()) {
 
           // use the prefix mapping
           if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
@@ -557,12 +593,12 @@ public class DatasetIndex {
             }
 
             // find the index and search it
-            IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
+            IndexSearcher searcher = searchers.get(dataset);
             Query identifierQuery = new TermQuery(new Term(FIELD_ID, identifier));
-            TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
+            TopDocs identifierDocs = searcher.search(identifierQuery, 3);
 
             if (identifierDocs.totalHits.value > 0) {
-              Document identifierDoc = identifierSearcher.storedFields().
+              Document identifierDoc = searcher.storedFields().
                 document(identifierDocs.scoreDocs[0].doc);
 
               results.add(toExternalID(identifierDoc, dataset));
@@ -598,43 +634,19 @@ public class DatasetIndex {
    * @param ignoredIssue the issue to add if the identifier is ignored
    * @return NameUsageMatch
    */
-  public NameUsageMatch matchByExternalKey(String key, Issue notFoundIssue, Issue ignoredIssue) {
-
-    NameUsageMatch usageMatch = matchByUsageKey(key);
-    if (usageMatch.getDiagnostics().getMatchType() != MatchType.NONE) {
-      return usageMatch;
-    }
+  public NameUsageMatch matchByExternalKey(String suppliedKey, Issue notFoundIssue, Issue ignoredIssue) {
 
     // if join indexes are present, add them to the match
     if (identifierSearchers != null && !identifierSearchers.isEmpty()){
       try {
         for (Dataset dataset: identifierSearchers.keySet()){
 
-          // use the prefix mapping
-          if (dataset.getPrefixMapping() != null && !dataset.getPrefixMapping().isEmpty()) {
-            for (String prefix : dataset.getPrefixMapping()) {
-              if (key.startsWith(prefix)) {
-                key = key.replace(prefix, "");
-              }
-            }
-          }
-
-          if (
-            (dataset.getPrefix() == null || !key.startsWith(dataset.getPrefix()))
-              && !dataset.getPrefix().equals("*")) {
-            // only search indexes with matching prefixes
-            continue;
-          }
-
-          log.debug("Searching for identifier {} in dataset {}", key, dataset.getKey());
-
-          if (dataset.getRemovePrefixForMatching()){
-            key = key.replace(dataset.getPrefix(), "");
-          }
+          Optional<String> key = extractKeyForSearch(suppliedKey, dataset);
+          if (key.isEmpty()) continue;
 
           // find the index and search it
           IndexSearcher identifierSearcher = identifierSearchers.get(dataset);
-          Query identifierQuery = new TermQuery(new Term(FIELD_ID, key));
+          Query identifierQuery = new TermQuery(new Term(FIELD_ID, key.get()));
           TopDocs identifierDocs = identifierSearcher.search(identifierQuery, 3);
 
           if (identifierDocs.totalHits.value > 0) {
@@ -667,12 +679,44 @@ public class DatasetIndex {
           }
         }
       } catch (IOException e) {
-        log.error("Problem querying external ID indexes with {}", key, e);
+        log.error("Problem querying external ID indexes with {}", suppliedKey, e);
       }
     }
 
     // no indexes available
     return NO_MATCH;
+  }
+
+  public static Optional<String> extractKeyForSearch(String key, Dataset dataset) {
+    if (!hasRecognisedPrefix(key, dataset)) {
+      // only search indexes with matching prefixes
+      return Optional.empty();
+    }
+
+    // use the prefix mapping
+    if (dataset.getPrefixMapping() != null && !dataset.getPrefixMapping().isEmpty()) {
+      for (String prefix : dataset.getPrefixMapping()) {
+        if (key.startsWith(prefix)) {
+          key = key.replace(prefix, dataset.getPrefix());
+        }
+      }
+    }
+
+    // if configured, remove the prefix
+    if (dataset.getRemovePrefixForMatching() != null && dataset.getRemovePrefixForMatching()){
+      key = key.replace(dataset.getPrefix(), "");
+    }
+    log.debug("Searching for identifier {} in dataset {}", key, dataset.getKey());
+    return Optional.of(key);
+  }
+
+  private static boolean hasRecognisedPrefix(String key, Dataset dataset) {
+    if (dataset.getPrefix() == null){
+      return false;
+    }
+    if (key.startsWith(dataset.getPrefix()))
+      return true;
+    return dataset.getPrefixMapping().stream().anyMatch(key::startsWith);
   }
 
   private static NameUsageMatch noMatch(Issue issue, String note) {
@@ -719,7 +763,6 @@ public class DatasetIndex {
           higherTaxon.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
           higherTaxon.setParentID(doc.get(FIELD_PARENT_ID));
           higherTaxa.add(0, higherTaxon);
-//          higherTaxonomyCache.put(currentParentID, higherTaxon);
           // get next parent
           currentParentID = doc.get(FIELD_PARENT_ID);
         } else {
@@ -743,16 +786,7 @@ public class DatasetIndex {
     NameUsageMatch u = NameUsageMatch.builder().build();
     u.setDiagnostics(NameUsageMatch.Diagnostics.builder().build());
 
-    // set the usage
-    u.setUsage(
-      NameUsageMatch.RankedName.builder()
-        .key(doc.get(FIELD_ID))
-        .name(doc.get(FIELD_SCIENTIFIC_NAME))
-        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
-        .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-        .code(getCode(doc))
-        .build()
-    );
+    u.setUsage(constructUsage(doc));
 
     String acceptedParentID = null;
 
@@ -761,15 +795,7 @@ public class DatasetIndex {
       Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
-        u.setAcceptedUsage(
-          NameUsageMatch.RankedName.builder()
-            .key(accDoc.get(FIELD_ID))
-            .name(accDoc.get(FIELD_SCIENTIFIC_NAME))
-            .rank(Rank.valueOf(accDoc.get(FIELD_RANK)))
-            .canonicalName(accDoc.get(FIELD_CANONICAL_NAME))
-            .code(getCode(accDoc))
-            .build()
-        );
+        u.setAcceptedUsage(constructUsage(accDoc));
         acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
@@ -798,7 +824,7 @@ public class DatasetIndex {
       classification.add(
         NameUsageMatch.RankedName.builder()
           .key(doc.get(FIELD_ID))
-          .name( doc.get(FIELD_CANONICAL_NAME))
+          .name(doc.get(FIELD_CANONICAL_NAME))
           .rank(Rank.valueOf(doc.get(FIELD_RANK)))
           .canonicalName(doc.get(FIELD_CANONICAL_NAME))
           .build()
@@ -809,19 +835,26 @@ public class DatasetIndex {
     // if ancillary join indexes are present, add them to the match
     for (Dataset dataset: ancillarySearchers.keySet()){
       IndexSearcher ancillarySearcher = ancillarySearchers.get(dataset);
-      Query query = new TermQuery(new Term(FIELD_JOIN_ID, doc.get(FIELD_ID) ));
+      Query query = new TermQuery(
+        new Term(FIELD_JOIN_ID, doc.get(FIELD_ID))
+      );
       try {
         TopDocs docs = ancillarySearcher.search(query, 3);
         if (docs.totalHits.value > 0) {
           Document ancillaryDoc = ancillarySearcher.storedFields().document(docs.scoreDocs[0].doc);
-          String status = ancillaryDoc.get(FIELD_CATEGORY);
           NameUsageMatch.Status ancillaryStatus = new NameUsageMatch.Status();
-          ancillaryStatus.setStatus(status);
-          ancillaryStatus.setDatasetKey(dataset.getKey().toString());
-          ancillaryStatus.setGbifKey(dataset.getGbifKey());
-          ancillaryStatus.setDatasetAlias(dataset.getAlias());
-          ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
-          u.addAdditionalStatus(ancillaryStatus);
+          ancillaryStatus.setStatus(ancillaryDoc.get(FIELD_CATEGORY));
+          String formattedIUCN = IUCNUtils.formatIucn(ancillaryDoc.get(FIELD_CATEGORY));
+          if (formattedIUCN != null) {
+            IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
+            ancillaryStatus.setStatus(formattedIUCN);
+            ancillaryStatus.setStatusCode(iucn.getCode());
+            ancillaryStatus.setDatasetKey(dataset.getKey().toString());
+            ancillaryStatus.setGbifKey(dataset.getGbifKey());
+            ancillaryStatus.setDatasetAlias(dataset.getAlias());
+            ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
+            u.addAdditionalStatus(ancillaryStatus);
+          }
         }
       } catch (IOException e) {
         log.error("Cannot load usage {} from lucene index", doc.get(FIELD_ID), e);
@@ -832,6 +865,78 @@ public class DatasetIndex {
     u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
 
     return u;
+  }
+
+  private static NameUsageMatch.Usage constructUsage(Document doc) {
+    StoredParsedName pn = null;
+    String parsedNameJson = doc.get(FIELD_PARSED_NAME_JSON);
+    if (parsedNameJson != null) {
+      try {
+        pn = MAPPER.readValue(parsedNameJson, StoredParsedName.class);
+      } catch (Exception e) {
+        log.error("Cannot parse parsed name json", e);
+      }
+    }
+
+    // set the usage
+    NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
+        .key(doc.get(FIELD_ID))
+        .name(doc.get(FIELD_SCIENTIFIC_NAME))
+        .authorship(doc.get(FIELD_AUTHORSHIP))
+        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
+        .canonicalName(doc.get(FIELD_CANONICAL_NAME))
+        .code(getCode(doc));
+
+    if (pn != null) {
+      b.genus(pn.getGenus())
+        .infragenericEpithet(pn.getInfragenericEpithet())
+        .specificEpithet(pn.getSpecificEpithet())
+        .infraspecificEpithet(pn.getInfraspecificEpithet())
+        .cultivarEpithet(pn.getCultivarEpithet())
+        .phrase(pn.getPhrase())
+        .voucher(pn.getVoucher())
+        .nominatingParty(pn.getNominatingParty())
+        .candidatus(pn.isCandidatus())
+        .notho(pn.getNotho())
+        .originalSpelling(pn.getOriginalSpelling())
+        .epithetQualifier(pn.getEpithetQualifier())
+        .type(pn.getType())
+        .extinct(pn.isExtinct())
+
+        .sanctioningAuthor(pn.getSanctioningAuthor())
+        .taxonomicNote(pn.getTaxonomicNote())
+        .nomenclaturalNote(pn.getNomenclaturalNote())
+        .publishedIn(pn.getPublishedIn())
+        .unparsed(pn.getUnparsed())
+        .doubtful(pn.isDoubtful())
+        .manuscript(pn.isManuscript())
+        .state(pn.getState())
+        .warnings(pn.getWarnings());
+
+        if (pn.getCombinationAuthorship() != null
+          && pn.getCombinationAuthorship().getAuthors() != null
+          && !pn.getCombinationAuthorship().getAuthors().isEmpty()
+        ) {
+          b.combinationAuthorship(
+            NameUsageMatch.Authorship.builder()
+              .authors(pn.getCombinationAuthorship().getAuthors())
+              .year(pn.getCombinationAuthorship().getYear())
+              .build());
+        }
+
+        if (pn.getBasionymAuthorship() != null
+          && pn.getBasionymAuthorship().getAuthors() != null
+          && !pn.getBasionymAuthorship().getAuthors().isEmpty()
+        ) {
+          b.basionymAuthorship(
+            NameUsageMatch.Authorship.builder()
+              .authors(pn.getBasionymAuthorship().getAuthors())
+              .year(pn.getBasionymAuthorship().getYear())
+              .build());
+        }
+    }
+
+    return  b.build();
   }
 
   private static NomCode getCode(Document doc) {
@@ -883,6 +988,7 @@ public class DatasetIndex {
     try {
       return search(q, name, fuzzySearch, maxMatches);
     } catch (RuntimeException e) {
+      log.error("Lucene search error", e);
       // for example TooComplexToDeterminizeException, see
       // http://dev.gbif.org/issues/browse/POR-2725
       log.warn("Lucene failed to fuzzy search for name [{}]. Try a straight match instead", name);

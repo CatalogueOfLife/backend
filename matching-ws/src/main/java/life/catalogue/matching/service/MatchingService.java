@@ -55,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class MatchingService {
 
-  @Value("${working.path:/tmp/}")
+  @Value("${working.dir:/tmp/}")
   protected String metadataFilePath;
 
   @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
@@ -174,7 +174,7 @@ public class MatchingService {
 
     File metadata = new File(metadataFilePath + "/index-metadata.json");
     try {
-      if (!metadata.exists()  || regenerate) {
+      if (regenerate || !metadata.exists()) {
         APIMetadata metadata1 = datasetIndex.getAPIMetadata();
         //serialise to file
         ObjectMapper mapper = new ObjectMapper();
@@ -199,7 +199,6 @@ public class MatchingService {
 
   private static NameUsageMatch higherMatch(NameUsageMatch match, NameUsageMatch firstMatch) {
     match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
-    // FIXME
     addAlternatives(match, firstMatch.getDiagnostics().getAlternatives());
     return match;
   }
@@ -262,7 +261,9 @@ public class MatchingService {
    * @return the list of matches
    */
   public List<ExternalID> matchID(String datasetID, String identifier){
-    return datasetIndex.lookupIdentifier(datasetID, identifier);
+    List<ExternalID> ids = datasetIndex.lookupIdentifier(datasetID, identifier);
+    List<ExternalID> ancillary = datasetIndex.lookupAncillary(datasetID, identifier);
+    return ImmutableList.<ExternalID>builder().addAll(ids).addAll(ancillary).build();
   }
 
   public NameUsageMatch match(
@@ -507,7 +508,12 @@ public class MatchingService {
         if (rank == null) {
           if (parsedName.isBinomial()
               || parsedName.isTrinomial()
-              || (parsedName.getRank() != null && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal())) {
+              || (
+                parsedName.getRank() != null
+                  && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+                  && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
+              )
+          ) {
             rank = Rank.valueOf(parsedName.getRank().name());
           }
         }
@@ -577,6 +583,18 @@ public class MatchingService {
 
     // for strict matching do not try higher ranks
     if (isMatch(match1) || strict) {
+      // https://github.com/CatalogueOfLife/data/issues/719
+      // this caters for the scenario where the Taxacrum sp.
+      // and the only sensible match is to a higher rank (genus)
+      if (
+        isMatch(match1)
+        && parsedName != null
+        && parsedName.getRank() != null
+        && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+        && parsedName.getEpithet(NamePart.SPECIFIC) == null
+      ){
+          match1.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
+      }
       return match1;
     }
 
@@ -712,7 +730,9 @@ public class MatchingService {
         m -> {
           if (m.getDiagnostics().getMatchType() == MatchType.EXACT
               && rank == Rank.SPECIES_AGGREGATE
-              && m.getUsage().getRank() != Rank.SPECIES_AGGREGATE) {
+              && (m.getUsage().getRank() != Rank.SPECIES_AGGREGATE
+                  ||  m.getAcceptedUsage().getRank() != Rank.SPECIES_AGGREGATE)
+          ) {
             log.info(
                 "Species aggregate match found for {} {}. Ignore and prefer higher matches",
                 m.getUsage().getRank(),

@@ -31,7 +31,6 @@ public class NameUsageQuery {
     String taxonID,
     String taxonConceptID,
     String scientificNameID,
-
     String scientificName,
     String scientificName2,
     String authorship,
@@ -41,7 +40,6 @@ public class NameUsageQuery {
     String infraspecificEpithet,
     String rank,
     String rank2,
-
     Classification classification,
     Set<String> exclude,
     Boolean strict,

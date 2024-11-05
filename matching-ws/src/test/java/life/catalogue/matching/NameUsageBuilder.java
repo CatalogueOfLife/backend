@@ -40,12 +40,12 @@ class NameUsageBuilder {
       String speciesKey) {
 
     NameUsageMatch m = NameUsageMatch.builder().diagnostics(NameUsageMatch.Diagnostics.builder().build()).build();
-    m.setUsage(NameUsageMatch.RankedName.builder()
+    m.setUsage(NameUsageMatch.Usage.builder()
         .key(usageKey)
         .name(scientificName)
         .canonicalName(canonicalName)
         .rank(rank).build());
-    m.setAcceptedUsage(NameUsageMatch.RankedName.builder().key(acceptedUsageKey).build());
+    m.setAcceptedUsage(NameUsageMatch.Usage.builder().key(acceptedUsageKey).build());
     m.getDiagnostics().setStatus(status);
     m.getDiagnostics().setConfidence(confidence);
     m.getDiagnostics().setNote(note);

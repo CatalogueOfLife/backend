@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
+import life.catalogue.matching.util.IUCNUtils;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -112,9 +113,13 @@ public class MatchController implements ErrorController {
     HttpServletRequest response) {
     return matchV2(
       usageKey,
-      taxonID,taxonConceptID,scientificNameID,
-      scientificName2, scientificName,
-      authorship, authorship2,
+      taxonID,
+      taxonConceptID,
+      scientificNameID,
+      scientificName2,
+      scientificName,
+      authorship,
+      authorship2,
       genericName,
       specificEpithet,
       infraspecificEpithet,
@@ -677,7 +682,7 @@ public class MatchController implements ErrorController {
       return Map.of();
     }
     NameUsageMatch.Status status = statusList.get(0);
-    String formatted = formatIucn(status.getStatus());
+    String formatted = IUCNUtils.formatIucn(status.getStatus());
     if (formatted == null || formatted.isEmpty()) {
       return Map.of();
     }
@@ -685,7 +690,7 @@ public class MatchController implements ErrorController {
     String scientificName = match.getAcceptedUsage() != null ? match.getAcceptedUsage().getCanonicalName() : match.getUsage().getCanonicalName();
 
     try {
-      IUCN iucn = IUCN.valueOf(formatted); // throws IllegalArgumentException if not found
+      IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formatted); // throws IllegalArgumentException if not found
       watch.stop();
       log("v1/species/iucnRedListCategory", usageKey, watch);
       return Map.of(
@@ -695,7 +700,7 @@ public class MatchController implements ErrorController {
         "taxonomicStatus", NameUsageMatchV1.TaxonomicStatusV1.convert(
           match.getDiagnostics().getStatus()),
         "iucnTaxonID", status.getSourceId(),
-        "code", iucn.code
+        "code", iucn.getCode()
       );
     } catch (IllegalArgumentException e) {
       log.error("IUCN category not found: {}", formatted, e);
@@ -754,37 +759,6 @@ public class MatchController implements ErrorController {
   private static void addIfNotNull(StringJoiner joiner, Object value) {
     if (Objects.nonNull(value)) {
       joiner.add(value.toString());
-    }
-  }
-
-  String formatIucn(String original){
-    if (original == null) {
-      return null;
-    }
-    // Trim the string
-    String trimmed = original.trim();
-    // Convert to uppercase
-    String uppercased = trimmed.toUpperCase();
-    // Replace any whitespace with a single underscore
-    return uppercased.replaceAll("\\s+", "_");
-  }
-
-   enum IUCN {
-    EXTINCT("EX"),
-    EXTINCT_IN_THE_WILD("EW"),
-    CRITICALLY_ENDANGERED ("CR"),
-    ENDANGERED ("EN"),
-    VULNERABLE ("VU"),
-    NEAR_THREATENED ("NT"),
-    CONSERVATION_DEPENDENT ("CD"),
-    LEAST_CONCERN ("LC"),
-    DATA_DEFICIENT ("DD"),
-    NOT_EVALUATED ("NE");
-
-    private final String code;
-
-    IUCN(String code) {
-      this.code = code;
     }
   }
 
