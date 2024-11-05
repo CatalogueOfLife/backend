@@ -46,7 +46,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   }
 
   /**
-   * Default search is simply a paging through all by datasetKey.
+   * Default "search" is simply a paging through all by datasetKey.
    * Override to provide real searches
    */
   ResultPage<T> searchImpl(int datasetKey, R request, Page page) {

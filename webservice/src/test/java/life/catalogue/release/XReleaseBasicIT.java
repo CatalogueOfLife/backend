@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
+import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.dao.*;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -30,6 +31,9 @@ import jakarta.validation.Validation;
 
 import life.catalogue.junit.TreeRepoRule;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -42,10 +46,11 @@ import static org.mockito.Mockito.mock;
 
 public class XReleaseBasicIT {
 
-  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
+  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13,
     Map.of(
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), null);
+      "sector", Map.of("created_by", 100, "modified_by", 100),
+      "name", Map.of("type", NameType.SCIENTIFIC)
+    ), null, false);
   final int projectKey = Datasets.COL;
 
 
@@ -135,6 +140,9 @@ public class XReleaseBasicIT {
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
     }
+
+    // test email templates
+    EmailNotificationTemplateTest.testTemplates(xrel);
   }
 
 }

@@ -230,6 +230,19 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     checkNotNull(term, "term can't be null");
     return terms.get(term) != null;
   }
+
+  /**
+   * Asserts that all terms are existing
+   */
+  public boolean hasTerms(Term... term) {
+    checkNotNull(term, "term can't be null");
+    for (var t : term) {
+      if (!hasTerm(t)) {
+        return false;
+      }
+    }
+    return true;
+  }
   
   /**
    * @return true if at least one term exists and is not null or an empty string

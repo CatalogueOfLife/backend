@@ -393,7 +393,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw4.setId("4");
     sd = new SimpleDecision();
     sd.setDatasetKey(101);
-    sd.setMode(Mode.UPDATE_RECURSIVE);
+    sd.setMode(Mode.UPDATE);
     nuw4.setDecisions(new ArrayList<>(List.of(sd)));
 
     NameUsageWrapper nuw5 = minimalTaxon();

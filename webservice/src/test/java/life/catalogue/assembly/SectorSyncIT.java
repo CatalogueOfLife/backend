@@ -4,6 +4,7 @@ import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -67,9 +68,9 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
   @After
   public void after () throws IOException, SQLException {
+    //PgUtils.killAllConnections(draftRule.getSqlSession());
     draftRule.getSqlSession().close();
   }
-
 
   @Test
   public void accordingto() throws Exception {
@@ -269,15 +270,17 @@ public class SectorSyncIT extends SectorSyncTestBase {
     NameUsageBase coleoptera = getByName(d4key, Rank.ORDER, "Coleoptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
-    
+    createDecision(d4key, simple(coleoptera), EditorialDecision.Mode.UPDATE, null, null, true);
+
     NameUsageBase src = getByID(d4key, "12");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null, null);
-  
+    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null, null, null);
+
+
     src = getByID(d4key, "11");
     Name newName = new Name();
     newName.setScientificName("Euplectus cavicollis");
     newName.setAuthorship("LeConte, J. L., 1878");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName, null);
+    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName, null, false);
     
     syncAll();
     assertTree("cat4.txt");
@@ -301,13 +304,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     createSector(Sector.Mode.ATTACH, subject, target);
 
     NameUsageBase src = getByName(dkey, Rank.SPECIES, "Acacia riparioides");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     src = getByName(dkey, Rank.SUBSPECIES, "Astragalus caprinus subsp. lanigerus");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     src = getByName(dkey, Rank.VARIETY, "Astragalus caprinus var. hirsutus");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     syncAll();
     assertTree("cat1.txt");

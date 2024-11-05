@@ -51,4 +51,17 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
     // we dont want whitespace to be removed - this joins binomials to one word
     return life.catalogue.common.text.StringUtils.digitOrAsciiLetters(x);
   }
+
+  @Override
+  TaxGroup parseKnownValues(String upperCaseValue) {
+    TaxGroup val = super.parseKnownValues(upperCaseValue);
+    if (val == null && !upperCaseValue.contains(" ")) {
+      if (upperCaseValue.endsWith("PHYCEAE") || upperCaseValue.endsWith("PHYCIDAE")) {
+        return TaxGroup.Algae;
+      } else if (upperCaseValue.endsWith("MYCETES") || upperCaseValue.endsWith("MYCETIDAE")) {
+        return TaxGroup.Fungi;
+      }
+    }
+    return val;
+  }
 }

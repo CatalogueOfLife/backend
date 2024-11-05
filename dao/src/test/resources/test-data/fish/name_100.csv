@@ -1,13 +1,13 @@
-id,sector_key,scientific_name,authorship,uninomial,genus,infrageneric_epithet,specific_epithet,infraspecific_epithet,rank,code,published_in_id
-n10,1,Chromis,Cuvier,Chromis,,,,,GENUS,ZOOLOGICAL,
-n11,1,Ayresia,"Cooper, 1863",Ayresia,,,,,GENUS,ZOOLOGICAL,
-n100,1,Chromis (Chromis) agilis,"Smith, 1960",,Chromis,Chromis,agilis,,SPECIES,ZOOLOGICAL,
-n101,1,Chromis leucurus,,,Chromis,,leucurus,,SPECIES,ZOOLOGICAL,
-n102,1,Chromis (Chromis) agilis pacifica,"Smith, 1973",,Chromis,Chromis,agilis,pacifica,SUBSPECIES,ZOOLOGICAL,
-c1,1,Actinopterygii,,Actinopterygii,,,,,CLASS,ZOOLOGICAL,
-c2,1,Perciformes,,Perciformes,,,,,ORDER,ZOOLOGICAL,
-c3,1,Pomacentridae,,Pomacentridae,,,,,FAMILY,ZOOLOGICAL,
-c4,1,Pomacentrinae,,Pomacentrinae,,,,,SUBFAMILY,ZOOLOGICAL,
-ns0,1,Pharyngochromis,,Pharyngochromis,,,,,GENUS,ZOOLOGICAL,
-ns1,1,Chromis acuticeps,"Steindachner, 1866",,Chromis,,acuticeps,,SPECIES,ZOOLOGICAL,
-ns2,1,Pharyngochromis acuticeps,"(Steindachner, 1866)",,Pharyngochromis,,acuticeps,,SPECIES,ZOOLOGICAL,
+id,sector_key,scientific_name,authorship,rank,code
+n10,1,Chromis,Cuvier,GENUS,ZOOLOGICAL
+n11,1,Ayresia,"Cooper, 1863",GENUS,ZOOLOGICAL
+n100,1,Chromis (Chromis) agilis,"Smith, 1960",SPECIES,ZOOLOGICAL
+n101,1,Chromis leucurus,,SPECIES,ZOOLOGICAL
+n102,1,Chromis (Chromis) agilis pacifica,"Smith, 1973",SUBSPECIES,ZOOLOGICAL
+c1,1,Actinopterygii,,CLASS,ZOOLOGICAL
+c2,1,Perciformes,,ORDER,ZOOLOGICAL
+c3,1,Pomacentridae,,FAMILY,ZOOLOGICAL
+c4,1,Pomacentrinae,,SUBFAMILY,ZOOLOGICAL
+ns0,1,Pharyngochromis,,GENUS,ZOOLOGICAL
+ns1,1,Chromis acuticeps,"Steindachner, 1866",SPECIES,ZOOLOGICAL
+ns2,1,Pharyngochromis acuticeps,"(Steindachner, 1866)",SPECIES,ZOOLOGICAL

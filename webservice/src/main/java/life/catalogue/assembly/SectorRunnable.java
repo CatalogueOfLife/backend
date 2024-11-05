@@ -5,10 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.License;
-import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -57,15 +54,13 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  // map with foreign child id to original parent name
-  Map<String, Name> foreignChildrenParents = new HashMap<>();
   private final UsageMatcherGlobal matcher;
   private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
   private final EventBus bus;
-  final User user;
+  final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
 
@@ -74,9 +69,9 @@ abstract class SectorRunnable implements Runnable {
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
                  UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
-                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, User user) throws IllegalArgumentException {
+                 Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
-    this.user = Preconditions.checkNotNull(user);
+    this.user = user;
     this.bus = bus;
     this.matcher = matcher;
     this.clearMatcherCache = clearMatcherCache;
@@ -95,7 +90,7 @@ abstract class SectorRunnable implements Runnable {
     state.setDatasetKey(sectorKey.getDatasetKey());
     state.setJob(getClass().getSimpleName());
     state.setState(ImportState.WAITING);
-    state.setCreatedBy(user.getKey());
+    state.setCreatedBy(user);
 
     // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSectorAndUpdateDatasetImport(false);
@@ -222,6 +217,10 @@ abstract class SectorRunnable implements Runnable {
           s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
         }
         addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
+        if (s.getEntities() == null || s.getEntities().isEmpty()) {
+          // as a default sync everything
+          s.setEntities(new HashSet<>(Arrays.asList(EntityType.values())));
+        }
         addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
         addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
 
@@ -282,7 +281,8 @@ abstract class SectorRunnable implements Runnable {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       childSectors=sm.listChildSectors(sectorKey);
     }
-    LOG.info("Loaded {} sectors targeting taxa from sector {}", childSectors.size(), sectorKey);
+    long mergeCnt = childSectors.stream().filter(s -> s.getMode() == Sector.Mode.MERGE).count();
+    LOG.info("Loaded {} sectors incl {} merge sectors targeting taxa from sector {}", childSectors.size(), mergeCnt, sectorKey);
   }
   
   abstract void doWork() throws Exception;
@@ -320,7 +320,7 @@ abstract class SectorRunnable implements Runnable {
         ", subjectDatasetKey=" + subjectDatasetKey +
         ", sector=" + sector +
         ", created=" + created +
-        " by " + (user == null ? "?" : user.getUsername()) +
+        " by " + user +
         '}';
   }
 }

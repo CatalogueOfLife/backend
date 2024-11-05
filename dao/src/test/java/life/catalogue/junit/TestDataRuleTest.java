@@ -27,6 +27,7 @@ public class TestDataRuleTest {
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
       TestDataRule.DRAFT,
+      TestDataRule.DRAFT_NAME_UPD,
       TestDataRule.EMPTY,
       TestDataRule.KEEP,
       TestDataRule.DATASET_MIX,
@@ -34,7 +35,6 @@ public class TestDataRuleTest {
       TestDataRule.FISH,
       TestDataRule.TREE,
       TestDataRule.TREE2,
-      TestDataRule.DRAFT,
       TestDataRule.DRAFT_WITH_SECTORS,
       TestDataRule.DUPLICATES,
       TestDataRule.NIDX,
@@ -61,17 +61,27 @@ public class TestDataRuleTest {
 
     for (int key : data.datasetKeys) {
       assertNotNull(dm.get(key));
-      nm.list(key, new Page());
+      var names = nm.list(key, new Page());
+      assertParsedAuthorships(names);
     }
     if (data.key != null) {
       List<Name> list = nm.list(data.key, new Page());
       assertTrue(list.size() > 0);
+      // make sure we got parsed authors if we have authors
+      assertParsedAuthorships(list);
     }
     assertUsageCount();
 
     System.out.println("rule has run fine");
   }
 
+  private void assertParsedAuthorships(List<Name> names) {
+    for (var n : names ) {
+      if (n.getAuthorship() != null) {
+        assertTrue(n.toStringComplete(), n.hasParsedAuthorship());
+      }
+    }
+  }
   @Test
   public void insertDataAgain() {
     System.out.println("rule has run fine before the 2nd test");

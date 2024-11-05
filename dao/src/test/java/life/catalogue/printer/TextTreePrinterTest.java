@@ -56,6 +56,7 @@ public class TextTreePrinterTest {
       Set.of(Rank.FAMILY, Rank.GENUS), null, Rank.SPECIES, counter, SqlSessionFactoryRule.getSqlSessionFactory(), writer
     );
     p.showIDs();
+    p.showExtendedInfos();
     int count = p.print();
     System.out.println(writer);
     assertEquals(5, count);

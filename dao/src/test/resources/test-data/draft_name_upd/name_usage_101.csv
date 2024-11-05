@@ -1,0 +1,5 @@
+id,parent_id,status,name_id,extinct
+ka,,ACCEPTED,ka,false
+1,ka,ACCEPTED,1,true
+2,ka,ACCEPTED,2,
+3,1,SYNONYM,3,

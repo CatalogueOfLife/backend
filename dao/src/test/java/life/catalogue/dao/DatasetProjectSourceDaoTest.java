@@ -14,7 +14,7 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
   @Test
   public void list() {
     DatasetSourceDao dao = new DatasetSourceDao(factory());
-    dao.listSectorBasedSources(TestDataRule.FISH.key, Datasets.COL).forEach(d -> {
+    dao.listSectorBasedSources(TestDataRule.FISH.key, Datasets.COL, true).forEach(d -> {
       System.out.println(d.getTitle());
     });
   }

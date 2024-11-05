@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
@@ -31,7 +32,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
   private final Map<String, String> nameIds = new HashMap<>();
   private final Map<RanKnName, Usage> implicits = new HashMap<>();
 
-  TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state) {
+  TreeCopyHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, int user, Sector sector, SectorImport state) {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, CopyUtil.ID_GENERATOR, CopyUtil.ID_GENERATOR, UsageIdGen.RANDOM_SHORT_UUID);
     targetDSID = DSID.root(targetDatasetKey);
   }
@@ -134,7 +135,6 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   private void process(NameUsageBase u) throws InterruptedException {
     var mod = processCommon(u);
-
     if (ignoreUsage(mod.usage, decisions.get(u.getId()), false)) {
       // skip this taxon, bmod.usaget include children
       // use taxons parent also as the parentID for this so children link one level up
@@ -149,7 +149,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
       // make sure the parent has a higher rank
       batchSession.commit();
       while (parent != null && !Objects.equals(targetUsage, parent) && parent.rank.lowerOrEqualsTo(mod.usage.getRank())) {
-        var p = num.getSimpleParent(targetDSID.id(parent.id));
+        var p = numRO.getSimpleParent(targetDSID.id(parent.id));
         parent = p == null ? null : ids.getOrDefault(p.getId(), targetUsage);
       }
       LOG.info("Relinking {} to new parent {}", mod.usage.getLabel(), parent);
@@ -160,13 +160,29 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
     String origNameID= mod.usage.getName().getId();
     final var orig = DSID.copy(mod.usage);
+    final var origParentId = mod.usage.getParentId();
     var sn = create(mod.usage, parent);
 
     // remember old to new id mappings
-    ids.put(orig.getId(), usage(mod.usage));
+    ids.put(orig.getId(), usage(mod.usage, origParentId, decisions.get(orig.getId())));
     nameIds.put(origNameID, mod.usage.getName().getId());
 
     processEnd(sn, mod);
+  }
+
+  @Override
+  protected List<EditorialDecision> findParentDecisions(String taxonID) {
+    var decisions = new LinkedList<EditorialDecision>();
+    if (taxonID != null) {
+      var u = ids.get(taxonID);
+      while (u != null) {
+        if (u.decision != null) {
+          decisions.addFirst(u.decision);
+        }
+        u = ids.get(u.parentId);
+      }
+    }
+    return decisions;
   }
 
   @Override
@@ -179,9 +195,9 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
     // we need to commit the batch session to see the recent inserts
     batchSession.commit();
-    var matches = num.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
+    var matches = numRO.findSimple(targetDatasetKey, sector.getKey().getId(), TaxonomicStatus.ACCEPTED, rnn.rank, rnn.name);
     if (!matches.isEmpty()) {
-      var u = new Usage(matches.get(0));
+      var u = usage(matches.get(0));
       implicits.put(rnn, u);
       return u;
     }

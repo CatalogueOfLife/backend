@@ -63,9 +63,9 @@ public class TestDataGenerator {
   final static NameMatchingRule matchingRule = new NameMatchingRule();
   final static SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
 
-  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, 2, 4, Set.of(101, 102));
+  final static TestDataRule.TestData MATCHING = new TestDataRule.TestData("matching", 101, Set.of(101, 102), false);
 
-   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, 2, 4, null, Map.ofEntries(
+   final static TestDataRule.TestData SYNCS = new TestDataRule.TestData("syncs", 3, null, false, Map.ofEntries(
      Map.entry(Pair.of(DataFormat.COLDP, 38), 118),
      Map.entry(Pair.of(DataFormat.DWCA, 1), 106),
      Map.entry(Pair.of(DataFormat.COLDP, 35), 117),
@@ -87,8 +87,8 @@ public class TestDataGenerator {
      Map.entry(Pair.of(DataFormat.ACEF, 6), 109),
      Map.entry(Pair.of(DataFormat.ACEF, 5), 108)
   ));
-  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, 2, 4, null);
-  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, 2, 4, null);
+  final static TestDataRule.TestData XCOL = new TestDataRule.TestData("xcol", 3, null, false);
+  final static TestDataRule.TestData GROUPING = new TestDataRule.TestData("homgroup", 4, null, false);
 
   public static TestDataRule homotypigGrouping() {
     return new TestDataRule(GROUPING);
@@ -322,7 +322,7 @@ public class TestDataGenerator {
         dump(d, "name", "id, sector_key, scientific_name, authorship, rank, code, nom_status, type, candidatus, notho, "
                         + "uninomial, genus, infrageneric_epithet, specific_epithet, infraspecific_epithet, cultivar_epithet,"
                         + "basionym_authors, basionym_ex_authors, basionym_year, combination_authors, combination_ex_authors, combination_year, sanctioning_author, "
-                        + "published_in_id, published_in_page, published_in_page_link, nomenclatural_note, unparsed, remarks, link"
+                        + "published_in_id, published_in_page, published_in_page_link, nomenclatural_note, unparsed, etymology, gender, remarks, link"
                         , con);
         dump(d, "name_usage", "id,sector_key,name_id,parent_id,status,name_phrase,according_to_id,reference_ids,extinct,environments,link", con);
         dump(d, "vernacular_name", "id,taxon_id,language,country,name,latin,area,sex,reference_id", con);

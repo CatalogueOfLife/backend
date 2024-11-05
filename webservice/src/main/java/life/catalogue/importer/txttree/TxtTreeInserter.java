@@ -5,9 +5,8 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.csv.CsvReader;
-import life.catalogue.csv.MappingInfos;
-import life.catalogue.csv.SourceInvalidException;
+import life.catalogue.common.io.TabReader;
+import life.catalogue.csv.*;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
@@ -19,6 +18,9 @@ import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.metadata.MetadataFactory;
 import life.catalogue.parser.*;
 
+import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
@@ -27,8 +29,11 @@ import org.gbif.txtree.TreeLine;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -65,6 +70,7 @@ public class TxtTreeInserter implements NeoInserter {
   private String treeFileName;
   private org.gbif.txtree.Tree<SimpleTreeNode> tree;
   private Long2IntMap line2verbatimKey = new Long2IntOpenHashMap();
+  private final Map<String,String> remarks;
   private final BibTexInserter bibIns;
   private final ReferenceFactory refFactory;
   private final DatasetSettings settings;
@@ -91,6 +97,20 @@ public class TxtTreeInserter implements NeoInserter {
       bibIns = new BibTexInserter(store, bib.toFile(), refFactory);
     } else {
       bibIns = null;
+    }
+
+    AllCsvReader r = AllCsvReader.from(folder);
+    Term remarksTerm = TermFactory.instance().findTerm("remarks", true);
+    if (r.hasData(remarksTerm)) {
+      remarks = new HashMap<>();
+      LOG.info("Remarks file found: {}", r.schema(remarksTerm).get().getFirstFile());
+      r.stream(remarksTerm).forEach(rec ->  {
+        if (rec.hasTerms(DcTerm.identifier, DcTerm.description)) {
+          remarks.put(rec.get(DcTerm.identifier), rec.get(DcTerm.description));
+        }
+      });
+    } else {
+      remarks = null;
     }
   }
 
@@ -305,6 +325,13 @@ public class TxtTreeInserter implements NeoInserter {
     u.usage.setAccordingToId(pnu.getTaxonomicNote());
     // COMMENT
     u.usage.setRemarks(tn.comment);
+    // REMARKS FOREIGN KEY
+    if (remarks != null && hasDataItem(REMARKS, tn)) {
+      String[] remarkKeys = rmDataItem(REMARKS, tn);
+      for (var key : remarkKeys) {
+        u.usage.addRemarks(remarks.get(key));
+      }
+    }
     // store issues?
     if (existingIssues < v.getIssues().size()) {
       store.put(v);

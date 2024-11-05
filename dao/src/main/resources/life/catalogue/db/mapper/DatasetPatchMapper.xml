@@ -29,6 +29,8 @@
     d.url,
     d.logo,
     d.url_formatter,
+    d.conversion_description,
+    d.conversion_url,
     d.notes,
     d.created,
     d.created_by,
@@ -60,6 +62,8 @@
     url,
     logo,
     url_formatter,
+    conversion_description,
+    conversion_url,
     notes,
     created_by,
     modified_by
@@ -92,6 +96,8 @@
     #{obj.url},
     #{obj.logo},
     #{obj.urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
+    #{obj.conversionDescription},
+    #{obj.conversionUrl},
     #{obj.notes},
     #{obj.createdBy},
     #{obj.modifiedBy}

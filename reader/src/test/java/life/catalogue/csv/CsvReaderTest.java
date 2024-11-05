@@ -180,15 +180,15 @@ public class CsvReaderTest {
       ids.add(r.get(DcTerm.identifier));
       System.out.println(r);
     });
-    assertEquals(30, cnt.get());
-    assertEquals(1, skipped.get()); // 23341
-    assertEquals(30, ids.size());
+    assertEquals(31, cnt.get());
+    assertEquals(0, skipped.get()); // 23341 is padded, not skipped
+    assertEquals(31, ids.size());
     assertTrue(ids.contains("6"));
     assertTrue(ids.contains("303989"));
     assertTrue(ids.contains("23340"));
     assertTrue(ids.contains("303988"));
     assertTrue(ids.contains("303984"));
-    assertFalse(ids.contains("23341")); // skipped
+    assertTrue(ids.contains("23341")); // padded with empty columns
   }
 
   @Test

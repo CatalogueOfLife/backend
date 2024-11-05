@@ -27,7 +27,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static life.catalogue.common.text.StringUtils.removeWhitespace;
+
+import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+import static life.catalogue.common.text.StringUtils.rmWS;
 /**
  * Expects depth first traversal!
  */
@@ -46,9 +48,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int updated = 0; // updates
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final DSID<Integer> vKey;
+  private final Identifier.Scope nameIdScope;
+  private final Identifier.Scope usageIdScope;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
-                   User user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
+                   int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
@@ -76,7 +80,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // loop over classification incl the subject itself as the last usage
         for (var p : num.getClassification(sector.getSubjectAsDSID())) {
           var nusn = matcher.toSimpleName(p);
-          parents.push(nusn);
+          parents.push(nusn, null);
           UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classification(), false, false);
           if (match.isMatch()) {
             parents.setMatch(match.usage);
@@ -110,8 +114,68 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
       }
     }
+
+    // add known identifiers?
+    if (source.getType() == DatasetType.NOMENCLATURAL && source.getAlias() != null) {
+      switch (source.getAlias().toUpperCase()) {
+        case "ZOOBANK":
+          nameIdScope = Identifier.Scope.ZOOBANK;
+          break;
+        case "IF":
+        case "Index Fungorum":
+          nameIdScope = Identifier.Scope.IF;
+          break;
+        case "INA":
+          nameIdScope = Identifier.Scope.INA;
+          break;
+        case "IPNI":
+          nameIdScope = Identifier.Scope.IPNI;
+          break;
+        default:
+          nameIdScope = null;
+      }
+    } else {
+      nameIdScope = null;
+    }
+    // known usage id scope?
+    if (source.getType() == DatasetType.TAXONOMIC && source.getAlias() != null) {
+      switch (source.getAlias().toUpperCase()) {
+        case "WFO":
+          usageIdScope = Identifier.Scope.WFO;
+          break;
+        case "ITIS":
+          usageIdScope = Identifier.Scope.TSN;
+          break;
+        case "INAT":
+          usageIdScope = Identifier.Scope.INAT;
+          break;
+        case "GBIF":
+          usageIdScope = Identifier.Scope.GBIF;
+          break;
+        default:
+          usageIdScope = null;
+      }
+    } else {
+      usageIdScope = null;
+    }
   }
 
+  @Override
+  protected List<EditorialDecision> findParentDecisions(String taxonID) {
+    var ll = new LinkedList<>(parents.classification());
+    var iter = ll.descendingIterator();
+    while (iter.hasNext()) {
+      var u = iter.next();
+      if (u.usage.getId().equals(taxonID)) {
+        break;
+      }
+      iter.remove();
+    }
+    return ll.stream()
+      .filter(mu -> mu.decision != null)
+      .map(mu -> mu.decision)
+      .collect(Collectors.toList());
+  }
 
   @Override
   public void reset() {
@@ -161,7 +225,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toSimpleName(nu);
-    parents.push(nusn);
+    parents.push(nusn, decisions.get(nu.getId()));
 
     final boolean qualifiedName = nu.getName().hasAuthorship();
 
@@ -172,12 +236,25 @@ public class TreeMergeHandler extends TreeBaseHandler {
       return;
     }
 
+    boolean unique = nu.getName().getRank().isSupraspecific() && cfg != null && cfg.xCfg.enforceUnique(nu.getName());
+    boolean markMatch = false;
+
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, false);
+    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, unique);
     LOG.debug("{} matches {}", nu.getLabel(), match);
-    if (qualifiedName && !match.isMatch() && nu.isTaxon() && nu.getRank().isSpeciesOrBelow()) {
+    if (!match.isMatch() && unique) {
+      for (var alt : match.alternatives) {
+        if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
+          markMatch = true;
+          match = UsageMatch.snap(alt, targetDatasetKey, null);
+          LOG.debug("Enforce unique name and match {} to {}", nu.getLabel(), match);
+          //TODO: enforce the use of this genus for all child species
+        }
+      }
+    }
+    if (!match.isMatch() && qualifiedName && nu.isTaxon() && nu.getRank().isSpeciesOrBelow()) {
       var nCanon = Name.copyCanonical(nu.getName());
       var tCanon = new Taxon(nu);
       tCanon.setName(nCanon);
@@ -219,6 +296,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // remember the match
     parents.setMatch(match.usage);
+    if (markMatch) {
+      parents.mark();
+    }
 
     // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
     if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), true)) {
@@ -239,48 +319,111 @@ public class TreeMergeHandler extends TreeBaseHandler {
       LOG.debug("Do not create new name as we had {} ambiguous matches for {}", match.alternatives.size(), nu.getLabel());
 
     } else {
-      // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
-      // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
-      if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
-        parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
-      ) {
-        nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
-      }
-      if (parent != null && parent.status.isSynonym()) {
-        // use accepted instead
-        var p = num.getSimpleParent(targetKey.id(parent.id));
-        // make sure rank hierarchy makes sense - can be distorted by synonyms
-        if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
-          while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
-            p = num.getSimpleParent(targetKey.id(p.getId()));
-          }
-          if (p == null) {
-            // nothing to attach to. Better skip this taxon, but include children
-            LOG.debug("Ignore name which links to a synonym and for which we cannot find a suitable parent: {}", nu.getLabel());
-            ignored++;
-            return;
-          }
-        }
-        parent = usage(p);
-      }
-
-      // only add a new name if we do not have already multiple names that we cannot clearly match
-      // track if we are outside of the sector target
-      Issue[] issues;
-      if (sector.getTarget() != null && parent != null
-        && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), sector.getTarget().getId())) {
-        issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
-      } else {
-        issues = new Issue[0];
-      }
       // *** CREATE ***
-      sn = create(nu, parent, issues);
-      parents.setMatch(sn);
-      matcher.add(nu);
-      created++;
+      if ( nu.isTaxon() && syncTaxa  ||  nu.isSynonym() && syncSynonyms) {
+        sn = create(nu, parent);
+      }
     }
 
     processEnd(sn, mod);
+  }
+
+  public void acceptName(Name n) throws InterruptedException {
+    try {
+      acceptNameThrowsNoCatch(n);
+    } catch (InterruptedException e) {
+      throw e; // rethrow real interruptions
+
+    } catch (RuntimeException e) {
+      LOG.error("Unable to process name {}. {}:{}", n, e.getClass().getSimpleName(), e.getMessage(), e);
+      thrown++;
+
+    } catch (Exception e) {
+      LOG.error("Unable to process name {}. {}:{}", n, e.getClass().getSimpleName(), e.getMessage(), e);
+      thrown++;
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void acceptNameThrowsNoCatch(Name n) throws InterruptedException {
+    Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
+
+    if (n.getNamesIndexType() == null) {
+      matchName(n);
+    }
+    if (n.getNamesIndexType() == MatchType.EXACT) {
+      var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
+      if (candidates.size() == 1) {
+        Name existing = candidates.get(0);
+        var pn = updateName(existing, n, upd, null);
+
+        if (!upd.isEmpty()) {
+          updated++;
+          // update name
+          nm.update(pn);
+          // TODO: track source - we require a usage currently, not just a bare name
+          //vsm.insertSources(existingUsageKey, n, upd);
+
+          // commit in batches
+          if (updated % 1000 == 0) {
+            interruptIfCancelled();
+            session.commit();
+            batchSession.commit();
+          }
+        }
+      }
+    }
+  }
+
+  private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
+    // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
+    // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
+    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
+      parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
+    ) {
+      nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    }
+    if (parent != null && parent.status.isSynonym()) {
+      // use accepted instead
+      var p = numRO.getSimpleParent(targetKey.id(parent.id));
+      // make sure rank hierarchy makes sense - can be distorted by synonyms
+      if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
+        while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
+          p = numRO.getSimpleParent(targetKey.id(p.getId()));
+        }
+        if (p == null) {
+          // nothing to attach to. Better skip this taxon, but include children
+          LOG.debug("Ignore name which links to a synonym and for which we cannot find a suitable parent: {}", nu.getLabel());
+          ignored++;
+          return null;
+        }
+      }
+      parent = usage(p);
+    }
+
+    // add well known identifiers
+    if (usageIdScope != null) {
+      nu.addIdentifier(new Identifier(usageIdScope, nu.getId()));
+    }
+    if (nameIdScope != null) {
+      nu.getName().addIdentifier(new Identifier(nameIdScope, nu.getName().getId()));
+    }
+
+    // only add a new name if we do not have already multiple names that we cannot clearly match
+    // track if we are outside of the sector target
+    Issue[] issues;
+    if (sector.getTarget() != null && parent != null
+      && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), sector.getTarget().getId())) {
+      issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
+    } else {
+      issues = new Issue[0];
+    }
+    // *** CREATE ***
+    var sn = super.create(nu, parent, issues);
+    parents.setMatch(sn);
+    matcher.add(nu);
+    created++;
+    return sn;
   }
 
   private static boolean sameLowClassification(List<SimpleNameCached> cl1, List<MatchedParentStack.MatchedUsage> cl2) {
@@ -306,7 +449,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         || (cfg != null && cfg.isBlocked(u.getName()));
       // if issues are to be excluded we need to load the verbatim records
       if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues = vrm.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        var issues = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
         if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
           LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
           return true;
@@ -360,29 +503,31 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
-  private boolean update(NameUsageBase nu, UsageMatch existing) {
+  private void update(NameUsageBase nu, UsageMatch existing) {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
-      // patch classification of accepted names if direct parent adds to it
       if (existing.usage.getStatus().isTaxon()) {
-        var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
-        if (!matchedParents.isEmpty()) {
-          var parent = matchedParents.getLast().match;
-          if (parent != null) {
-            if (parent.getStatus().isSynonym()) {
-              LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), nu);
+        // patch classification of accepted names if direct parent adds to it
+        if (syncTaxa) {
+          var matchedParents = parents.matchedParentsOnly(existing.usage.getId());
+          if (!matchedParents.isEmpty()) {
+            var parent = matchedParents.getLast().match;
+            if (parent != null) {
+              if (parent.getStatus().isSynonym()) {
+                LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), nu);
 
-            } else {
-              var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
-              batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
-              if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
-                LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-                num.updateParentId(existingUsageKey, parent.getId(), user.getKey());
-                upd.add(InfoGroup.PARENT);
+              } else {
+                var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+                batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
+                if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
+                  LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+                  numRO.updateParentId(existingUsageKey, parent.getId(), user);
+                  upd.add(InfoGroup.PARENT);
+                }
               }
             }
           }
@@ -402,7 +547,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
               existingVNames = mapper.listByTaxon(existing);
             }
             for (var evn : existingVNames) {
-              if (sameName(vn, evn)) {
+              if (sameVName(vn, evn)) {
                 continue vnloop;
               }
             }
@@ -422,59 +567,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
       }
 
-      // should we try to update the name? Need to load from db, so check upfront as much as possible to avoid db calls
-      Name pn = null;
-      if ((nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship())
-        || (!nu.getName().getRank().isUncomparable() && existing.usage.getRank().isUncomparable())
-      ) {
-        pn = loadFromDB(existing.usage.getId());
-
-        if (nu.getName().hasParsedAuthorship() && !existing.usage.hasAuthorship()) {
-          upd.add(InfoGroup.AUTHORSHIP);
-          pn.setCombinationAuthorship(nu.getName().getCombinationAuthorship());
-          pn.setSanctioningAuthor(nu.getName().getSanctioningAuthor());
-          pn.setBasionymAuthorship(nu.getName().getBasionymAuthorship());
-          pn.rebuildAuthorship();
-          existing.usage.setAuthorship(pn.getAuthorship());
-          LOG.debug("Updated {} with authorship {}", pn.getScientificName(), pn.getAuthorship());
-        }
-        if (!nu.getName().getRank().isUncomparable() && existing.usage.getRank().isUncomparable()
-          && RankComparator.compareVagueRanks(existing.usage.getRank(), nu.getName().getRank()) != Equality.DIFFERENT
-        ) {
-          upd.add(InfoGroup.RANK);
-          pn.setRank(nu.getName().getRank());
-          existing.usage.setRank(pn.getRank());
-          LOG.debug("Updated {} with rank {}", pn.getScientificName(), pn.getRank());
-        }
-        // also update the original match as we cache and reuse that
-        if (nu.getName().getNamesIndexId() != existing.usage.getNamesIndexId()) {
-          existing.usage.setNamesIndexId(nu.getName().getNamesIndexId());
-          // update name match in db
-          nmm.update(pn, nu.getName().getNamesIndexId(), nu.getName().getNamesIndexType());
-          batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
-        }
-      }
-      if (existing.usage.getPublishedInID() == null && nu.getName().getPublishedInId() != null) {
-        pn = pn != null ? pn : loadFromDB(existing.usage.getId());
-        upd.add(InfoGroup.PUBLISHED_IN);
-        Reference ref = rm.get(DSID.of(nu.getDatasetKey(), nu.getName().getPublishedInId()));
-        pn.setPublishedInId(lookupReference(ref));
-        pn.setPublishedInPage(nu.getName().getPublishedInPage());
-        pn.setPublishedInPageLink(nu.getName().getPublishedInPageLink());
-        // also update the original match as we cache and reuse that
-        existing.usage.setPublishedInID(pn.getPublishedInId());
-        LOG.debug("Updated {} with publishedIn", pn);
-      }
-
-      // type material
-      if (entities.contains(EntityType.TYPE_MATERIAL)) {
-        // TODO: implement type material updates
-      }
-
-      // basionym / name relations
-      if (entities.contains(EntityType.NAME_RELATION)) {
-        // TODO: implement basionym/name rel updates
-      }
+      // try to also update the name - conditional checks within the subroutine
+      Name pn = updateName(null, nu.getName(), upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
@@ -484,20 +578,165 @@ public class TreeMergeHandler extends TreeBaseHandler {
         vsm.insertSources(existingUsageKey, nu, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
-        return true;
       }
+
     } else {
       LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
     }
-    return false;
+
+    // add well know name and usage ids
+    if (usageIdScope != null) {
+      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+    }
+  }
+
+  /**
+   * Either the Name n or the existing usage must be given!
+   */
+  private Name lazilyLoad(@Nullable Name n, @Nullable UsageMatch existingUsage) {
+    return n != null ? n : loadFromDB(existingUsage.usage.getId());
+  }
+  /**
+   * Either the Name n or the existing usage must be given!
+   *
+   * @param n name to be updated
+   * @param src source for updates
+   * @param upd
+   * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
+   *                 Not needed for bare name merging
+   * @return
+   */
+  private Name updateName(@Nullable Name n, Name src, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
+    if (n == null && existingUsage == null) return null;
+
+    if (syncNames) {
+      n = lazilyLoad(n, existingUsage);
+      if (src.hasParsedAuthorship() && !n.hasAuthorship()) {
+        upd.add(InfoGroup.AUTHORSHIP);
+        n.setCombinationAuthorship(src.getCombinationAuthorship());
+        n.setSanctioningAuthor(src.getSanctioningAuthor());
+        n.setBasionymAuthorship(src.getBasionymAuthorship());
+        n.rebuildAuthorship();
+        if (existingUsage != null) {
+          existingUsage.usage.setAuthorship(n.getAuthorship());
+        }
+        LOG.debug("Updated {} with authorship {}", n.getScientificName(), n.getAuthorship());
+      }
+      if (!src.getRank().isUncomparable() && n.getRank().isUncomparable()
+        && RankComparator.compareVagueRanks(n.getRank(), src.getRank()) != Equality.DIFFERENT
+      ) {
+        upd.add(InfoGroup.RANK);
+        n.setRank(src.getRank());
+        if (existingUsage != null) {
+          existingUsage.usage.setRank(n.getRank());
+        }
+        LOG.debug("Updated {} with rank {}", n.getScientificName(), n.getRank());
+      }
+      // also update the original match as we cache and reuse that
+      if (!upd.isEmpty() && !Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
+        n.setNamesIndexId(src.getNamesIndexId());
+        if (existingUsage != null) {
+          existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
+        }
+        // update name match in db
+        nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
+        batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
+      }
+      if (n.getPublishedInId() == null && src.getPublishedInId() != null) {
+        upd.add(InfoGroup.PUBLISHED_IN);
+        Reference ref = rm.get(DSID.of(src.getDatasetKey(), src.getPublishedInId()));
+        n.setPublishedInId(lookupReference(ref));
+        n.setPublishedInPage(src.getPublishedInPage());
+        n.setPublishedInPageLink(src.getPublishedInPageLink());
+        // also update the original match as we cache and reuse that
+        if (existingUsage != null) {
+          existingUsage.usage.setPublishedInID(n.getPublishedInId());
+        }
+        LOG.debug("Updated {} with publishedIn", n);
+      }
+    }
+
+    // now try to update the reference itself if it existed already
+    if (syncReferences && !upd.contains(InfoGroup.PUBLISHED_IN) && n.getPublishedInId() != null && src.getPublishedInId() != null) {
+      // TODO: Update reference links & DOI
+    }
+    // type material
+    if (entities.contains(EntityType.TYPE_MATERIAL)) {
+      n = lazilyLoad(n, existingUsage);
+      final var mapper = batchSession.getMapper(TypeMaterialMapper.class);
+      List<TypeMaterial> existingTMs = null;
+      tmloop:
+      for (var tm : mapper.listByName(src)) {
+        // we only want to add type material with important states
+        if (tm.getStatus() == null || !tm.getStatus().isPrimary()) {
+          continue;
+        }
+        // does it exist already?
+        // lazily query existing material
+        if (existingTMs == null) {
+          existingTMs = mapper.listByName(n);
+        }
+        for (var etm : existingTMs) {
+          if (sameType(tm, etm)) {
+            continue tmloop;
+          }
+        }
+        // a new type
+        tm.setNameId(n.getId());
+        tm.setVerbatimKey(null);
+        tm.setSectorKey(sector.getId());
+        tm.setDatasetKey(targetDatasetKey);
+        tm.applyUser(user);
+        // check if the entity refers to a reference which we need to lookup / copy
+        String ridCopy = lookupReference(tm.getReferenceId());
+        tm.setReferenceId(ridCopy);
+        try {
+          mapper.create(tm);
+        } catch (Exception e) {
+          // ID might be used already - skip or try with no id instead?
+          tm.setId(null);
+          mapper.create(tm);
+        }
+        existingTMs.add(tm);
+        if (tm.getStatus().getRoot() == TypeStatus.HOLOTYPE) {
+          upd.add(InfoGroup.HOLOTYPE);
+        }
+      }
+    }
+
+    // basionym / name relations
+    if (entities.contains(EntityType.NAME_RELATION)) {
+      // TODO: implement basionym/name rel updates
+    }
+    // well known name identifier
+    if (nameIdScope != null) {
+      var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
+      nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, src.getId())));
+    }
+    return n;
   }
 
   /**
    * @param vn1 required to have a name & language!
    */
-  private static boolean sameName(VernacularName vn1, VernacularName vn2) {
-    return removeWhitespace(vn1.getName()).equalsIgnoreCase(removeWhitespace(vn2.getName())) ||
-      ( vn1.getLatin() != null && removeWhitespace(vn1.getLatin()).equalsIgnoreCase(removeWhitespace(vn2.getLatin())) );
+  private static boolean sameVName(VernacularName vn1, VernacularName vn2) {
+    return rmWS(vn1.getName()).equalsIgnoreCase(rmWS(vn2.getName())) ||
+      ( vn1.getLatin() != null && rmWS(vn1.getLatin()).equalsIgnoreCase(rmWS(vn2.getLatin())) );
+  }
+
+  private static boolean sameType(TypeMaterial mt1, TypeMaterial tm2) {
+    return (
+        rmWS(mt1.getId()).equalsIgnoreCase(rmWS(tm2.getId()))
+      ) || (
+        // only keep one holo
+        mt1.getStatus() == TypeStatus.HOLOTYPE && tm2.getStatus() == TypeStatus.HOLOTYPE
+      ) || (
+        // only keep one lectotype
+        mt1.getStatus() == TypeStatus.LECTOTYPE && tm2.getStatus() == TypeStatus.LECTOTYPE
+      ) || (
+        rmWS(mt1.getInstitutionCode()).equalsIgnoreCase(rmWS(tm2.getInstitutionCode())) &&
+        rmWS(mt1.getCatalogNumber()).equalsIgnoreCase(rmWS(tm2.getCatalogNumber()))
+      );
   }
 
   /**
@@ -520,4 +759,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     LOG.info("Sector {}: Total processed={}, thrown={}, ignored={}, created={}, updated={}", sector, counter, thrown, ignored, created, updated);
   }
 
+  public int getUpdated() {
+    return updated;
+  }
 }

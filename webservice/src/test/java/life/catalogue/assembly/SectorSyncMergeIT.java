@@ -13,6 +13,7 @@ import life.catalogue.dao.NameDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -82,7 +83,12 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
-      {"cactus", List.of("wfo", "wcvp", "grin", "taxref", "tpl")},
+      {"myosotis", List.of("taxref", "uksi", "pbdb", "bavaria")},
+      {"tetralobus", List.of("wfo", "bouchard", "plazi")},
+      {"cactus", List.of("wfo", "wcvp", "grin", "taxref", "tpl", "pbdb")},
+      {"aphanizomenon", List.of("worms","ncbi","dyntaxa")}, // https://github.com/CatalogueOfLife/xcol/issues/146
+      {"falcata", List.of("griis")}, // https://github.com/CatalogueOfLife/xcol/issues/183
+      {"anas", List.of("worms", "azores")},
       {"author-dupes", List.of("iucn", "beetles", "swiss", "taxref", "taiwan", "plazi1", "fake")},
       {"rankorder", List.of("itis", "wcvp", "wfo", "tpl")},
       {"vernacular", List.of("v1", "v2")}, // extended trees
@@ -142,7 +148,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
-      s.setEntities(Set.of(EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
+      s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
       s.setPriority(dkey-99);
       s.setNote(tree);
       sectors.add(s);
@@ -170,6 +176,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
     // rematch all names
     matchingRule.rematchAll();
+    //dumpNidx();
     if (rematchSectors) {
       // rematch sector subject/target
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -181,6 +188,13 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       req.setSubject(true);
       req.setDatasetKey(Datasets.COL);
       SectorRematcher.match(dao, req, Users.TESTER);
+    }
+  }
+
+  void dumpNidx() {
+    System.out.println("\nNames Index from postgres:");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
     }
   }
 

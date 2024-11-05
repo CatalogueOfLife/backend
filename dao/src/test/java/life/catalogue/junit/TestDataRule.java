@@ -1,7 +1,11 @@
 package life.catalogue.junit;
 
+import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.model.User;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
@@ -9,27 +13,35 @@ import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.CSVUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.InitDbUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.parser.NameParser;
+import life.catalogue.pgcopy.CsvFunction;
 import life.catalogue.pgcopy.PgCopyUtils;
-import life.catalogue.postgres.AuthorshipNormFunc;
+
+import life.catalogue.postgres.PgAuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -40,6 +52,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.Pair;
+
+import javax.annotation.Nullable;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -71,76 +85,110 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   /**
    * NONE does wipe all data so every test starts with an empty db.
    */
-  public final static TestData EMPTY = new TestData("empty", null, null, null, true, null, Collections.emptyMap(),Set.of(3), null);
+  public final static TestData EMPTY = new TestData("empty", null, true, Collections.emptyMap(), Set.of(3), false, null);
   /**
    * KEEP keeps existing data and does not wipe or create anything new. Can be used with class based data loading rules, e.g. TxtTreeDataRule
    */
-  public final static TestData KEEP = new TestData("keep", null, null, null, true, null, Collections.emptyMap(),Set.of(3), null);
+  public final static TestData KEEP = new TestData("keep", null, true, Collections.emptyMap(), Set.of(3), false, null);
   /**
    * Inits the datasets table with real col data from colplus-repo
    * The dataset.csv file was generated as a dump from production with psql:
    *
    * \copy (SELECT key,type,gbif_key,gbif_publisher_key,license,issued,confidence,completeness,origin,title,alias,description,version,geographic_scope,taxonomic_scope,url,logo,notes,settings,source_key,contact,creator,editor,publisher,contributor FROM dataset WHERE not private and deleted is null and origin = 'EXTERNAL' ORDER BY key) to 'dataset.csv' WITH CSV HEADER NULL '' ENCODING 'UTF8'
    */
-  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, null, null, false, null, Collections.emptyMap(), Set.of(), null);
-  public final static TestData APPLE = new TestData("apple", 11, 2, 2, Set.of(3, 11, 12));
-  public final static TestData FISH = new TestData("fish", 100, 2, 4, Set.of(3, 100, 101, 102));
-  public final static TestData TREE = new TestData("tree", 11, 1, 2, Set.of(3, 11, 12));
-  public final static TestData TREE2 = new TestData("tree2", 11, 1, 2, Set.of(3, 11));
-  public final static TestData TREE3 = new TestData("tree3", 3, 2, 3, Set.of(3));
-  public final static TestData DRAFT = new TestData("draft", 3, 1, 2, Set.of(3));
-  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, 2, 3, Set.of(3));
-  public final static TestData DUPLICATES = new TestData("duplicates", 1000, 3, 5, row -> AuthorshipNormFunc.normAuthorship(15, row), Set.of(3, 1000));
-  public final static TestData NIDX = new TestData("nidx", null, 1, 3, Set.of(100, 101, 102));
-  public final static TestData COL_SYNCED = new TestData("colsynced", 3, 2, 4, null);
+  public final static TestData DATASET_MIX = new TestData("dataset_mix", null, false, Collections.emptyMap(), null, false, null);
+  public final static TestData APPLE = new TestData("apple", 11, Set.of(3, 11, 12));
+  public final static TestData FISH = new TestData("fish", 100, Set.of(3, 100, 101, 102));
+  public final static TestData TREE = new TestData("tree", 11, Set.of(3, 11, 12));
+  public final static TestData TREE2 = new TestData("tree2", 11, Set.of(3, 11));
+  public final static TestData TREE3 = new TestData("tree3", 3, Set.of(3));
+  public final static TestData DRAFT = new TestData("draft", 3, Set.of(3));
+  public final static TestData DRAFT_WITH_SECTORS = new TestData("draft_with_sectors", 3, Set.of(3));
+  public final static TestData DRAFT_NAME_UPD = new TestData("draft_name_upd", 3, Set.of(3, 100, 101));
+  public final static TestData DUPLICATES = new TestData("duplicates", 1000, Set.of(3, 1000));
+  public final static TestData NIDX = new TestData("nidx", null, Set.of(100, 101, 102));
+  public final static TestData COL_SYNCED = new TestData("colsynced", 3, null);
 
   public static class TestData {
     public final String name;
     public final Integer key;
     public final Set<Integer> datasetKeys;
     final Integer sciNameColumn;
+    final Integer authorNameColumn;
+    final Integer rankColumn;
+    final Integer codeColumn;
     final Integer taxStatusColumn;
-    final Function<String[], String> authorshipNormalizer;
     final Map<String, Map<String, Object>> defaultValues;
+    private final boolean parseNames;
     private final boolean none;
     public final Map<Pair<DataFormat, Integer>, Integer> keyMap;
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Set<Integer> datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, Collections.emptyMap(), datasetKeys);
+    public TestData(String name, Integer key, Set<Integer> datasetKeys) {
+      this(name, key, Collections.emptyMap(), datasetKeys);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, null, Collections.emptyMap(), datasetKeys, keyMap);
+    public TestData(String name, Integer key, Set<Integer> datasetKeys, boolean parseNames) {
+      this(name, key, false, Collections.emptyMap(), datasetKeys, parseNames, null);
+    }
+    public TestData(String name, Integer key, Set<Integer> datasetKeys, boolean parseNames, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
+      this(name, key, false, Collections.emptyMap(), datasetKeys, parseNames, keyMap);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Function<String[], String> authorshipNormalizer, Set<Integer> datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, authorshipNormalizer, Collections.emptyMap(), datasetKeys, null);
+    public TestData(String name, Integer key, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
+      this(name, key, false, defaultValues, datasetKeys, true, null);
+    }
+    public TestData(String name, Integer key, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys, boolean parseNames) {
+      this(name, key, false, defaultValues, datasetKeys, parseNames, null);
     }
 
-    public TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys) {
-      this(name, key, sciNameColumn, taxStatusColumn, false, null, defaultValues, datasetKeys, null);
-    }
-
-    private TestData(String name, Integer key, Integer sciNameColumn, Integer taxStatusColumn, boolean none, Function<String[], String> authorshipNormalizer, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
+    private TestData(String name, Integer key, boolean none, Map<String, Map<String, Object>> defaultValues, Set<Integer> datasetKeys,
+                     boolean parseNames, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
       this.name = name;
       this.key = key;
-      this.sciNameColumn = sciNameColumn;
-      this.taxStatusColumn = taxStatusColumn;
+      // detect important columns
+      var probeKey = findProbeKey(key, datasetKeys, keyMap);
+      var ncols = readNameColumns(name, probeKey);
+      this.sciNameColumn    = ncols[0];
+      this.authorNameColumn = ncols[1];
+      this.rankColumn       = ncols[2];
+      this.codeColumn       = ncols[3];
+      var tcols = readNameUsageColumns(name, probeKey);
+      this.taxStatusColumn  = tcols[0];
       this.none = none;
       this.defaultValues = defaultValues;
-      if (authorshipNormalizer != null) {
-        this.authorshipNormalizer = authorshipNormalizer;
-      } else {
-        this.authorshipNormalizer = row -> null;
-      }
       if (datasetKeys == null) {
         this.datasetKeys = readDatasetKeys(name);
       } else {
         this.datasetKeys = ImmutableSet.copyOf(datasetKeys);
       }
       this.keyMap=keyMap == null ? null : Map.copyOf(keyMap);
+      this.parseNames = parseNames;
     }
 
+    private Integer findProbeKey(Integer key, Set<Integer> datasetKeys, Map<Pair<DataFormat, Integer>, Integer> keyMap) {
+      Set<Integer> keys = new HashSet<>();
+      keys.add(Datasets.COL);
+      if (key != null) {
+        keys.add(key);
+      }
+      if (datasetKeys != null) {
+        keys.addAll(datasetKeys);
+      }
+      if (keyMap != null) {
+        keys.addAll(keyMap.values());
+      }
+      for (var k : keys) {
+        try (var res = nameFileResource(name, k)) {
+          if (res != null) {
+            LOG.info("Use dataset key {} to probe for test data csv columns", k);
+            return k;
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+      return null;
+    }
     private static Set<Integer> readDatasetKeys(String testDataName) {
       String resource = "test-data/" + testDataName.toLowerCase() + "/dataset.csv";
       var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
@@ -151,6 +199,61 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
         CSVUtils.parse(in,1).forEach(d -> keys.add(Integer.valueOf(d.get(0))));
       }
       return keys;
+    }
+
+    private static InputStream nameFileResource(String testDataName, Integer key) {
+      String resource = "test-data/" + testDataName.toLowerCase() + "/name_"+key+".csv";
+      return TestDataRule.class.getClassLoader().getResourceAsStream(resource);
+    }
+
+    /**
+     * [0] = name column
+     * [1] = author column
+     * [2] = rank column
+     * [3] = code column
+     */
+    private static Integer[] readNameColumns(String testDataName, @Nullable Integer key) {
+      var cols = new Integer[4];
+      if (key != null) {
+        var in = nameFileResource(testDataName, key);
+        if (in != null) {
+          int idx = 0;
+          for (var colName : PgCopyUtils.readCsvHeader(in)) {
+            if (colName.equals("scientific_name")) {
+              cols[0] = idx;
+            } else if (colName.equals("authorship")) {
+              cols[1] = idx;
+            } else if (colName.equals("rank")) {
+              cols[2] = idx;
+            } else if (colName.equals("code")) {
+              cols[3] = idx;
+            }
+            idx++;
+          }
+        }
+      }
+      return cols;
+    }
+
+    /**
+     * [0] = status column
+     */
+    private static Integer[] readNameUsageColumns(String testDataName, Integer key) {
+      var cols = new Integer[1];
+      if (key != null) {
+        String resource = "test-data/" + testDataName.toLowerCase() + "/name_usage_" + key + ".csv";
+        var in = TestDataRule.class.getClassLoader().getResourceAsStream(resource);
+        if (in != null) {
+          int idx = 0;
+          for (var colName : PgCopyUtils.readCsvHeader(in)) {
+            if (colName.equals("status")) {
+              cols[0] = idx;
+            }
+            idx++;
+          }
+        }
+      }
+      return cols;
     }
 
     @Override
@@ -200,6 +303,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public static TestDataRule draftWithSectors() {
     return new TestDataRule(DRAFT_WITH_SECTORS);
+  }
+
+  public static TestDataRule draftNameUpd() {
+    return new TestDataRule(DRAFT_NAME_UPD);
   }
 
   public static TestDataRule datasetMix() {
@@ -328,6 +435,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   public void truncateDraft() throws SQLException {
     LOG.info("Truncate draft partition tables");
+    PgUtils.killNoneIdleConnections(session);
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       st.execute("DELETE FROM name_match WHERE dataset_key=" + Datasets.COL);
       session.getConnection().commit();
@@ -413,26 +521,107 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
     LOG.debug("Copy dataset {}", key);
-    copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key));
-    copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
+    copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key), Collections.emptyList());
+
+    List<CsvFunction> nameFuncs = testData.parseNames ?
+      List.of(new NameParserFunc(), new NameNormalizerFunc(), new PgAuthorshipNormalizer()) : List.of(new NameNormalizerFunc());
     copyPartitionedTable(pgc, "name", key,
       datasetEntityDefaults(key, ImmutableMap.<String, Object>of(
-        "origin", Origin.SOURCE,
-        "type", NameType.SCIENTIFIC
-      )),
-      ImmutableMap.<String, Function<String[], String>>of(
-        "scientific_name_normalized", row -> SciNameNormalizer.normalize(row[testData.sciNameColumn]),
-        "authorship_normalized", testData.authorshipNormalizer
-      )
+        "origin", Origin.SOURCE
+      )), nameFuncs
     );
-    copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key));
-    copyPartitionedTable(pgc, "type_material", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "name_rel", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "type_material", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "name_usage", key,
-      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE))
+      datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)), Collections.emptyList()
     );
-    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key));
-    copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key));
-    copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key));
+    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
+    copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
+  }
+
+  class NameParserFunc implements CsvFunction {
+    private final List<String> columns;
+
+    NameParserFunc() {
+      this.columns = List.copyOf(name2columns("Abies", TestEntityGenerator.NAME2).keySet());
+    }
+
+    @Override
+    public List<String> columns() {
+      return columns;
+    }
+
+    @Override
+    public LinkedHashMap<String, String> apply(String[] row) {
+      try {
+        String name = row[testData.sciNameColumn];
+        var auth = testData.authorNameColumn == null ? null : row[testData.authorNameColumn];
+        var rank = testData.rankColumn == null ? null : row[testData.rankColumn];
+        var code = testData.codeColumn == null ? null : row[testData.codeColumn];
+        Name pn = NameParser.PARSER.parse(name, auth,
+          rank == null ? null : Rank.valueOf(rank),
+          code == null ? null : NomCode.valueOf(code),
+          IssueContainer.VOID
+        ).get().getName();
+
+        return name2columns(name, pn);
+
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    LinkedHashMap<String, String> name2columns(String name, Name pn) {
+      var data = new LinkedHashMap<String, String>();
+      data.put("type", pn.getType().name());
+      data.put("uninomial", pn.getUninomial());
+      data.put("genus", pn.getGenus());
+      data.put("infrageneric_epithet", pn.getInfragenericEpithet());
+      data.put("specific_epithet", pn.getSpecificEpithet());
+      data.put("infraspecific_epithet", pn.getInfraspecificEpithet());
+      data.put("cultivar_epithet", pn.getCultivarEpithet());
+      data.put("basionym_authors", str(pn.getBasionymAuthorship().getAuthors()));
+      data.put("basionym_ex_authors", str(pn.getBasionymAuthorship().getAuthors()));
+      data.put("basionym_year", pn.getBasionymAuthorship().getYear());
+      data.put("combination_authors", str(pn.getCombinationAuthorship().getAuthors()));
+      data.put("combination_ex_authors", str(pn.getCombinationAuthorship().getAuthors()));
+      data.put("combination_year", pn.getCombinationAuthorship().getYear());
+      data.put("notho", str(pn.getNotho()));
+      data.put("candidatus", str(pn.isCandidatus()));
+      data.put("unparsed", pn.getUnparsed());
+      return data;
+    }
+  }
+  class NameNormalizerFunc implements CsvFunction {
+    private final String column = "scientific_name_normalized";
+
+    @Override
+    public List<String> columns() {
+      return List.of(column);
+    }
+
+    @Override
+    public LinkedHashMap<String, String> apply(String[] row) {
+      var data = new LinkedHashMap<String, String>();
+      String val = null;
+      if (testData.sciNameColumn != null) {
+        val = SciNameNormalizer.normalize(row[testData.sciNameColumn]);
+      }
+      data.put("scientific_name_normalized", val);
+      return data;
+    }
+  }
+
+  private static String str(Boolean val) {
+    return val == null ? null : (val ? "t" : "f");
+  }
+  private static String str(Enum<?> val) {
+    return val == null ? null : val.name();
+  }
+  private static String str(List<String> arr) {
+    return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
   }
 
   private Map<String, Object> datasetEntityDefaults(int datasetKey) {
@@ -449,22 +638,18 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private boolean copyGlobalTable(PgConnection pgc, String table) throws IOException, SQLException {
-    return copyTable(pgc, table + ".csv", table, new HashMap<>(), Collections.EMPTY_MAP);
+    return copyTable(pgc, table + ".csv", table, Collections.emptyMap(), Collections.emptyList());
   }
 
   private boolean copyGlobalTable(PgConnection pgc, String table, Map<String, Object> defaults) throws IOException, SQLException {
-    return copyTable(pgc, table + ".csv", table, defaults, Collections.EMPTY_MAP);
+    return copyTable(pgc, table + ".csv", table, defaults, Collections.emptyList());
   }
 
-  private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults) throws IOException, SQLException {
-    return copyPartitionedTable(pgc, table, datasetKey, defaults, new HashMap<>());
-  }
-
-  private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+  private boolean copyPartitionedTable(PgConnection pgc, String table, int datasetKey, Map<String, Object> defaults, List<CsvFunction> funcs) throws IOException, SQLException {
     return copyTable(pgc, table + "_" + datasetKey + ".csv", table, defaults, funcs);
   }
 
-  private boolean copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs)
+  private boolean copyTable(PgConnection pgc, String filename, String table, Map<String, Object> defaults, List<CsvFunction> funcs)
       throws IOException, SQLException {
     String resource = "/test-data/" + testData.name.toLowerCase() + "/" + filename;
     URL url = PgCopyUtils.class.getResource(resource);

@@ -1,5 +1,7 @@
 package life.catalogue.concurrent;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
@@ -216,6 +218,11 @@ public abstract class BackgroundJob implements Runnable {
 
   public Exception getError() {
     return error;
+  }
+
+  @VisibleForTesting
+  public void setError(Exception error) {
+    this.error = error;
   }
 
   public LocalDateTime getCreated() {

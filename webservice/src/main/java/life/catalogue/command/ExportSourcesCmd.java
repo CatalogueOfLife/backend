@@ -31,10 +31,12 @@ import net.sourceforge.argparse4j.inf.Subparser;
  */
 public class ExportSourcesCmd extends AbstractPromptCmd {
   private static final String ARG_KEY = "key";
+  private static final String ARG_INCL_PUBLISHER = "inclPublisher";
 
   private SqlSessionFactory factory;
   private HikariDataSource dataSource;
   private Dataset project;
+  private boolean incPublisher;
   private Map<Integer, String> keys;
   private File expFolder;
 
@@ -45,17 +47,22 @@ public class ExportSourcesCmd extends AbstractPromptCmd {
   @Override
   public void configure(Subparser subparser) {
     super.configure(subparser);
-    // Adds import options
     subparser.addArgument("--"+ARG_KEY, "-k")
         .dest(ARG_KEY)
         .type(Integer.class)
         .required(true)
         .help("dataset key of the project to export");
+    subparser.addArgument("--"+ARG_INCL_PUBLISHER)
+      .dest(ARG_INCL_PUBLISHER)
+      .type(Boolean.class)
+      .setDefault(false)
+      .help("set to true if sources from sector publishers should be included");
   }
 
   @Override
   public void execute(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg) throws Exception {
     int projectKey = namespace.getInt(ARG_KEY);
+    incPublisher = ObjectUtils.coalesce(namespace.getBoolean(ARG_INCL_PUBLISHER), false);
 
     dataSource = cfg.db.pool();
     factory = MybatisFactory.configure(dataSource, "tools");
@@ -89,7 +96,7 @@ public class ExportSourcesCmd extends AbstractPromptCmd {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       System.out.print("Export sources:\n");
-      for (var src : psm.listSectorBasedSources(project.getKey())) {
+      for (var src : psm.listProjectSources(project.getKey(), incPublisher)) {
         File srcFolder = new File(expFolder, ObjectUtils.coalesce(src.getAlias(), src.getKey().toString()));
         System.out.printf("  %s (%s): %s\n", src.getKey(), src.getAlias(), srcFolder.getAbsoluteFile());
         final String prefix = src.getKey() + "-";

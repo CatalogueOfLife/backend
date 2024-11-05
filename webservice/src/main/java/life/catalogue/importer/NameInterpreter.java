@@ -6,14 +6,10 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.lang.InterruptedRuntimeException;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.parser.*;
 
 import life.catalogue.parser.NameParser;
-
-import org.apache.commons.collections4.ListUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.*;

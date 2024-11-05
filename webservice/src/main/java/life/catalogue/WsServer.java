@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import io.dropwizard.core.setup.Bootstrap;
-
 import life.catalogue.admin.jobs.cron.CronExecutor;
 import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
@@ -49,9 +47,9 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
@@ -65,12 +63,6 @@ import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.*;
 import life.catalogue.swagger.OpenApiFactory;
 
-import org.apache.hc.client5.http.config.RequestConfig;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-
-import org.apache.hc.core5.util.Timeout;
-import org.apache.http.client.config.CookieSpecs;
-
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -79,6 +71,10 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.util.Timeout;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;
@@ -99,6 +95,7 @@ import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
 import io.dropwizard.core.Application;
+import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
@@ -245,8 +242,9 @@ public class WsServer extends Application<WsServerConfig> {
     // validation
     var validator = env.getValidator();
 
+    UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), bus, validator);
+
     // job executor
-    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
 
@@ -259,10 +257,15 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name parser
     NameParser.PARSER.register(env.metrics());
-    //NameParser.PARSER.configs().loadFromCLB();
-
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
+    env.lifecycle().addServerLifecycleListener(server -> {
+      try {
+        NameParser.PARSER.configs().loadFromCLB();
+      } catch (Exception e) {
+        LOG.error("Failed to load name parser configs", e);
+      }
+    });
 
     // CSL Util
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
@@ -330,7 +333,7 @@ public class WsServer extends Application<WsServerConfig> {
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), bus, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
@@ -404,7 +407,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
+      getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus)
     );
     j.register(new DataPackageResource());

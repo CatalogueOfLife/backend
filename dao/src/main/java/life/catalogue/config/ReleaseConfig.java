@@ -1,10 +1,13 @@
 package life.catalogue.config;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
 import jakarta.validation.constraints.NotNull;
+
+import life.catalogue.api.model.JobResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,13 @@ public class ReleaseConfig {
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 
+  /**
+   * The URI for the directory containing release reports.
+   * Warning! The URI MUST end with a slash or otherwise resolved URIs will be wrong!
+   */
+  @NotNull
+  public URI reportURI = URI.create("https://download.checklistbank.org/releases/");
+
   // the COL download directory with monthly and annual subfolder
   public File colDownloadDir = new File("/tmp/col");
 
@@ -44,6 +54,9 @@ public class ReleaseConfig {
     return new File(reportDir(datasetKey), String.valueOf(attempt));
   }
 
+  public URI reportURI(int datasetKey, int attempt) {
+    return reportURI.resolve(datasetKey + "/" + attempt);
+  }
   public File reportDir(int datasetKey) {
     return reportDir(reportDir, datasetKey);
   }

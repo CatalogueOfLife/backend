@@ -3,6 +3,7 @@ package life.catalogue.parser;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
@@ -115,7 +116,17 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     }
     return Optional.empty();
   }
-  
+
+  public Optional<ParsedNameUsage> parse(SimpleName sn) {
+    try {
+      return parse(sn.getName(), sn.getAuthorship(), sn.getRank(), sn.getCode(), IssueContainer.VOID);
+    } catch (InterruptedException e) {
+      LOG.warn("NameParser got interrupted");
+      Thread.currentThread().interrupt();
+    }
+    return Optional.empty();
+  }
+
   /**
    * @return a parsed authorship instance only, i.e. combination & original year & author list
    */

@@ -1,0 +1,10 @@
+code: zoological
+nameTypes:
+  - scientific
+ranks: 
+  - genus
+  - species
+  - subspecies
+target:
+  name: Animalia
+  rank: kingdom

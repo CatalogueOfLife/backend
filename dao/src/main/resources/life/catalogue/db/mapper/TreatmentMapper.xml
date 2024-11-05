@@ -100,4 +100,10 @@
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
+  <select id="processDataset" parameterType="map" resultMap="treatmentResultMap" resultOrdered="true" fetchSize="5000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE t.dataset_key=#{datasetKey}
+  </select>
+
 </mapper>

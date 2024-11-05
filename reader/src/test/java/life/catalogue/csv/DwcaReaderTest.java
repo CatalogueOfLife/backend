@@ -143,6 +143,21 @@ public class DwcaReaderTest {
   }
 
   @Test
+  public void dwca52() throws Exception {
+    DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/52"));
+
+    assertTrue(reader.coreSchema().isTsv());
+
+    final AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(DwcTerm.Taxon).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcTerm.scientificName));
+      assertNotNull(tr.get(DwcaTerm.ID));
+    });
+    assertEquals(11, counter.get());
+  }
+
+  @Test
   public void dwca14() throws Exception {
     DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/14"));
     

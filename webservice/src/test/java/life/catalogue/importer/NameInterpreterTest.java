@@ -12,7 +12,6 @@ import org.gbif.nameparser.api.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.gbif.nameparser.api.NomCode.BACTERIAL;
-import static org.gbif.nameparser.api.NomCode.ZOOLOGICAL;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)

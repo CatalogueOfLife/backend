@@ -4,7 +4,6 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.input.ProxyInputStream;
@@ -37,7 +36,7 @@ public class PgCopyUtils {
   
   public static long loadCSV(PgConnection con, String table, String resourceName,
                              Map<String, Object> defaults,
-                             Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+                             List<CsvFunction> funcs) throws IOException, SQLException {
     return loadCSV(con, table, PgCopyUtils.class.getResourceAsStream(resourceName), defaults, funcs);
   }
 
@@ -51,7 +50,7 @@ public class PgCopyUtils {
    */
   public static long loadCSV(PgConnection con, String table, InputStream csv,
                              Map<String, Object> defaults,
-                             Map<String, Function<String[], String>> funcs) throws IOException, SQLException {
+                             List<CsvFunction> funcs) throws IOException, SQLException {
     HeadlessStreamCSV in = new HeadlessStreamCSV(csv, defaults, funcs);
 
     return load(con, table, in.getHeader(), in, String.format(CSV, ""));
@@ -97,46 +96,57 @@ public class PgCopyUtils {
     List<String> getHeader();
   }
 
+  public static List<String> readCsvHeader(InputStream in) {
+    var p = newCsvParser(in);
+    return new ArrayList<>(List.of(p.parseNext()));
+  }
+
+  static CsvParser newCsvParser(InputStream in) {
+    CsvParserSettings cfg = new CsvParserSettings();
+    cfg.setDelimiterDetectionEnabled(false);
+    cfg.setQuoteDetectionEnabled(true);
+    cfg.setReadInputOnSeparateThread(false);
+    cfg.setSkipEmptyLines(true);
+    cfg.setNullValue(null);
+    cfg.setMaxColumns(128);
+    cfg.setMaxCharsPerColumn(1024 * 128);
+    var parser = new CsvParser(cfg);
+    parser.beginParsing(in, StandardCharsets.UTF_8);
+    return parser;
+  }
+
   static class HeadlessStreamCSV extends InputStream implements HeaderStream {
     private final static char lineend = '\n';
     private final CsvParser parser;
     private final CsvWriter writer;
     private final List<String> header;
     private final String[] defaultValues;
-    private final List<Function<String[], String>> funcs;
+    private final List<CsvFunction> funcs;
     private byte[] bytes;
     private int idx;
 
-    HeadlessStreamCSV(InputStream in, Map<String, Object> defaults, Map<String, Function<String[], String>> funcs) throws IOException {
-      CsvParserSettings cfg = new CsvParserSettings();
-      cfg.setDelimiterDetectionEnabled(false);
-      cfg.setQuoteDetectionEnabled(false);
-      cfg.setReadInputOnSeparateThread(false);
-      cfg.setSkipEmptyLines(true);
-      cfg.setNullValue(null);
-      cfg.setMaxColumns(128);
-      cfg.setMaxCharsPerColumn(1024 * 128);
-      parser = new CsvParser(cfg);
-      parser.beginParsing(in, StandardCharsets.UTF_8);
-      
+    public HeadlessStreamCSV(InputStream in, Map<String, Object> defaults, List<CsvFunction> funcs
+    ) throws IOException {
+      parser = newCsvParser(in);
+
       CsvWriterSettings cfg2 = new CsvWriterSettings();
       cfg2.setQuoteEscapingEnabled(true);
       writer = new CsvWriter(cfg2);
 
       header        = new ArrayList<>(List.of(parser.parseNext()));
       defaultValues = parseDefaults(defaults);
-      this.funcs = parseFuncs(funcs);
+      this.funcs = initFuncs(funcs);
       next();
     }
 
-    private List<Function<String[], String>> parseFuncs(Map<String, Function<String[], String>> calculators) {
-      if (calculators == null) {
-        return null;
-      }
-      List<Function<String[], String>> funcs = new ArrayList<>();
-      for (Map.Entry<String, Function<String[], String>> f : calculators.entrySet()) {
-        header.add(f.getKey());
-        funcs.add(f.getValue());
+    private List<CsvFunction> initFuncs(List<CsvFunction> calculators) {
+      List<CsvFunction> funcs = new ArrayList<>();
+      if (calculators != null) {
+        for (var f : calculators) {
+          f.init(header);
+          header.addAll(f.columns());
+          funcs.add(f);
+        }
       }
       return funcs;
     }
@@ -193,12 +203,11 @@ public class PgCopyUtils {
       line = ArrayUtils.addAll(line, defaultValues);
       
       // add calculated values
-      if (funcs != null) {
-        String[] calcVals = new String[funcs.size()];
-        for (int x = 0; x<funcs.size(); x++) {
-          calcVals[x] = funcs.get(x).apply(line);
+      if (funcs != null && !funcs.isEmpty()) {
+        for (var mf : funcs) {
+          String[] calcVals = mf.apply(line).values().toArray(new String[0]);
+          line = ArrayUtils.addAll(line, calcVals);
         }
-        line = ArrayUtils.addAll(line, calcVals);
       }
 
       // serialize row as char array

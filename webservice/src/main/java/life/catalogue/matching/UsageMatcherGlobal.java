@@ -11,10 +11,12 @@ import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
 
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import life.catalogue.matching.nidx.NameIndex;
@@ -121,6 +123,21 @@ public class UsageMatcherGlobal {
   }
 
   /**
+   * Maps a single usage from a given source to another dataset
+   * @param src usage to map
+   * @param targetDatasetKey dataset to map to
+   */
+  public UsageMatch map(DSID<String> src, int targetDatasetKey, boolean verbose) {
+    NameUsageBase nu;
+    List<SimpleNameCached> classification;
+    try (SqlSession session = factory.openSession()) {
+      nu = session.getMapper(NameUsageMapper.class).get(src);
+      classification = uCache.getClassification(src, loaders.getOrDefault(src.getDatasetKey(), defaultLoader));
+    }
+    return match(targetDatasetKey, nu, classification, false, verbose);
+  }
+
+  /**
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
@@ -140,7 +157,7 @@ public class UsageMatcherGlobal {
                    .build();
       Taxon t = new Taxon(n);
       canonNidxAndMatchIfNeeded(datasetKey, t, allowInserts);
-      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t));
+      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t), null);
       parents.add(mu);
       var m = matchWithParents(datasetKey, t, parents, allowInserts, false);
       if (m.isMatch()) {
@@ -168,7 +185,7 @@ public class UsageMatcherGlobal {
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
+      var match = filterCandidates(datasetKey, nu, canonNidx, new ArrayList<>(existing), parents, verbose);
       if (match.isMatch()) {
         // decide about usage match type - the match type we have so far is from names index matching only!
         if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
@@ -293,13 +310,14 @@ public class UsageMatcherGlobal {
 
   /**
    * @param datasetKey the target dataset to match against
-   * @param nu usage to be match
-   * @param existing candidates with the same names index id to be matched against
-   * @param parents classification of the usage to be matched
+   * @param nu         usage to be match
+   * @param canonNidx
+   * @param existing   candidates with the same names index id to be matched against
+   * @param parents    classification of the usage to be matched
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
+  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, CanonNidxMatch canonNidx, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match
@@ -334,6 +352,18 @@ public class UsageMatcherGlobal {
       );
     }
 
+    // remove non matching codes if more than 1 exist
+    // there are issues with ambiregnal taxa and mixed codes and we would create many duplicates otherwise
+    if (nu.getRank().isSupraspecific() && existing.size() > 1 && nu.getName().getCode() != null) {
+      existing.removeIf(u -> {
+        var rem = u.getCode() != null && u.getCode() != nu.getName().getCode();
+        if (rem) {
+          LOG.debug("Removed matches for usage {} [code={}] having a different code {}", nu.getName().getLabelWithRank(), nu.getName().getCode(), u.getCode());
+        }
+        return rem;
+      });
+    }
+
     // from here on we need the classification of all candidates
     var loader = loaders.getOrDefault(datasetKey, defaultLoader);
     final var existingWithCl = existing.stream()
@@ -365,7 +395,13 @@ public class UsageMatcherGlobal {
       updateAlt(alt, existingWithCl);
       // check classification for all others
       if (parents != null && !existingWithCl.isEmpty()) {
-        List<SimpleName> parentsSN = parents.stream()
+        // trim parents when a marker exists
+        var parentsCopy = parents;
+        var markerIdx = CollectionUtils.lastIndexOf(parents, p -> p.marker);
+        if (markerIdx >= 0) {
+          parentsCopy = parents.subList(markerIdx, parents.size());
+        }
+        List<SimpleName> parentsSN = parentsCopy.stream()
                                         .map(p -> p.usage)
                                         .collect(Collectors.toList());
         var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);

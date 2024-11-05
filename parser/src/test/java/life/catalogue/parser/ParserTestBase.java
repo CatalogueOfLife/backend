@@ -8,8 +8,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -34,13 +33,17 @@ abstract class ParserTestBase<T> {
       // expected
     }
   }
+
+  void assertEmpty(String x) throws UnparsableException {
+    assertTrue(parser.parse(x).isEmpty());
+  }
   
   @Test
   public void testEmpty() throws Exception {
-    assertEquals(Optional.empty(), parser.parse(""));
-    assertEquals(Optional.empty(), parser.parse(null));
-    assertEquals(Optional.empty(), parser.parse(" "));
-    assertEquals(Optional.empty(), parser.parse("   "));
+    assertEmpty("");
+    assertEmpty(null);
+    assertEmpty(" ");
+    assertEmpty("   ");
   }
   
   @Test

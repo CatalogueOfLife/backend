@@ -3,7 +3,6 @@ package life.catalogue.printer;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.TabularFormat;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.TaxonCounter;
 
 import org.apache.ibatis.session.SqlSessionFactory;

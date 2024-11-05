@@ -181,7 +181,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
     // cleanup failed remains?
     if (deleteOnError) {
-      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt());
       dDao.delete(newDatasetKey, user);
     }
   }
@@ -276,4 +276,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), datasetKey, newDatasetKey);
   }
 
+  public int getAttempt() {
+    return attempt;
+  }
+
+  public Dataset getNewDataset() {
+    return newDataset;
+  }
 }

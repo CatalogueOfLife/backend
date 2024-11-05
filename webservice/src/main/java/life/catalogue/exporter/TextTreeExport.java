@@ -30,6 +30,7 @@ public class TextTreeExport extends PrinterExport<TextTreePrinter> {
   void modifyPrinter(TextTreePrinter printer) {
     if (req.isExtended()) {
       printer.showIDs();
+      printer.showExtendedInfos();
     }
   }
 }

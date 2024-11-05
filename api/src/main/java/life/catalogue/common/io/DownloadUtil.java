@@ -7,8 +7,13 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
+
+import life.catalogue.common.date.DateUtils;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
@@ -31,7 +36,7 @@ public class DownloadUtil {
   private static final Pattern GITHUB_DOMAINS = Pattern.compile("github(usercontent)?\\.com", Pattern.CASE_INSENSITIVE);
   private static final Pattern GEOFF = Pattern.compile("^/gdower", Pattern.CASE_INSENSITIVE);
   //https://codeload.github.com/gdower/data-cycads/zip/master
-  
+
   private final CloseableHttpClient hc;
   private final String githubToken;
   private final String githubTokenGeoff;
@@ -188,15 +193,14 @@ public class DownloadUtil {
       Header modHeader = response.getFirstHeader(LAST_MODIFIED);
       if (modHeader != null) {
         try {
-          TemporalAccessor serverModified = DateTimeFormatter.RFC_1123_DATE_TIME.parse(modHeader.getValue());
-          downloadTo.setLastModified(Instant.from(serverModified).toEpochMilli());
+          DateUtils.parseRFC1123(modHeader.getValue()).ifPresent(mod -> downloadTo.setLastModified(Instant.from(mod).toEpochMilli()));
         } catch (Exception e) {
           LOG.warn("Failed to set local file date to {} header {}", modHeader.getName(), modHeader.getValue(), e);
         }
       }
     }
   }
-  
+
   public CloseableHttpClient getClient() {
     return hc;
   }

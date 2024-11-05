@@ -3,6 +3,7 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
@@ -17,6 +18,7 @@ import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
 import org.gbif.dwc.terms.AcTerm;
+import org.gbif.dwc.terms.DcTerm;
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.GbifTerm;
 
@@ -24,16 +26,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 
 /**
  *
  */
 public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
+
   private DwcInterpreter inter;
 
   public DwcaInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
@@ -105,6 +111,24 @@ public class DwcaInserter extends NeoCsvInserter {
       inter::taxonID,
       (t, p) -> t.properties.add(p)
     );
+    // extract etymology from descriptions
+    AtomicInteger cnt = new AtomicInteger();
+    reader.stream(GbifTerm.Description).forEach(rec -> {
+      runtimeInterruptIfCancelled(NeoCsvInserter.INTERRUPT_MESSAGE);
+      if (rec.getOrDefault(DcTerm.type, "").equalsIgnoreCase("etymology")) {
+        String id = inter.taxonID(rec);
+        if (id != null) {
+          String description = rec.get(DcTerm.description);
+          var nn = store.names().objByID(id);
+          if (nn != null && nn.getName().getEtymology() == null && description != null) {
+            nn.getName().setEtymology(description);
+            store.names().update(nn);
+            cnt.incrementAndGet();
+          }
+        }
+      }
+    });
+    LOG.info("Update {} names with etymology from descriptions", cnt.get());
 
     insertTaxonEntities(reader, GbifTerm.Reference,
       inter::interpretReference,

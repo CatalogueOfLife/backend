@@ -10,6 +10,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import life.catalogue.junit.TxtTreeDataRule;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -83,24 +85,40 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
 
   @Test
   public void processTreeOrder() throws Exception {
+    TxtTreeDataRule.printTree(DATASET11.getKey());
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();
     mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()),false, false)
             .forEach(h);
+    // the exact order can be slightly different but still a correct breadth first ordering
+    // pg17 improved recursive queries and changed the exact order
     List<String> bfs = ImmutableList.of("t1","t2","t3","t4",
-      "t5","t6","t30",
-      "t31","t32","t33","t34", "t20","t10",
-      "t12","t13", "s11", "t23","t24","t25", "s21","s22",
-      "t15", "t16", "s14"
+      "t5","t6","t30", // Canidae, Felidae, Urocyon
+      "t10",
+      "t20",
+      "t31","t32","t33","t34",
+      "t12","t13",
+      "t23","t24","t25",
+      "s11",
+      "s21","s22",
+      "t15", "t16",
+      "s14"
       );
     assertEquals(bfs, h.list);
   
     h = new CollectIdHandler<>();
     mapper().processTree(TreeTraversalParameter.dataset(DATASET11.getKey()), true, true)
             .forEach(h);
-    List<String> dfs = ImmutableList.of("t1","t2","t3","t4","t5",
-        "t20","s21","s22","t23","t24","t25",
-        "t6","t10","s11","t12","t13","s14","t15","t16",
-        "t30","t31","t32","t33","t34"
+    List<String> dfs = ImmutableList.of("t1","t2","t3","t4",
+        "t5",
+          "t20",
+            "s21","s22",
+            "t23","t24","t25",
+        "t6",
+          "t10",
+            "s11","t12","t13",
+              "s14","t15","t16",
+        "t30",
+          "t31","t32","t33","t34"
     );
     assertEquals(dfs, h.list);
   }

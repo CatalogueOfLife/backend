@@ -17,7 +17,7 @@ import jakarta.validation.constraints.NotNull;
 public class DockerConfig {
 
   @NotNull
-  public String host = "unix:///var/run/docker.sock"; // tcp://docker.baeldung.com:2376
+  public String host = "unix:///var/run/docker.sock"; // tcp://localhost:2376
 
   @NotNull
   public String registry = "docker.gbif.org";
@@ -31,6 +31,7 @@ public class DockerConfig {
       .withRegistryUrl(registry)
       .withRegistryUsername(registryUsername)
       .withRegistryPassword(registryPassword)
+      .withDockerTlsVerify(false)
       .build();
 
     DockerHttpClient hcl = new ApacheDockerHttpClient.Builder()

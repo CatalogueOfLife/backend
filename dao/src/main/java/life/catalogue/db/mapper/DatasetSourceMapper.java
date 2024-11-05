@@ -41,12 +41,19 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
 
   /**
    * @param datasetKey the release dataset key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
    */
-  List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey);
+  List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey,
+                                   @Param("inclPublisherSources") boolean inclPublisherSources);
 
-  List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey);
-
-  List<Dataset> listReleaseSourcesAuthorsOnly(@Param("datasetKey") int datasetKey);
+  /**
+   * Same as listReleaseSources, but returns a stripped down Dataset instances.
+   * See listProjectSourcesSimple for details
+   * @param datasetKey the release dataset key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
+   */
+  List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey,
+                                         @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
    * Lists all project or release sources based on the sectors in the dataset,
@@ -54,8 +61,11 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
    * This does not return datasets of sectors created by a sector publisher.
    * It does NOT rely on dataset_source records for releases and can be used to create them.
+   * @param datasetKey the project/release key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
    */
-  List<Dataset> listSectorBasedSources(@Param("datasetKey") int datasetKey);
+  List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey,
+                                   @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
    * Same as listProjectSources above, but with stripped down Dataset instances:
@@ -63,10 +73,11 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    *  - no container dataset
    *  - no bibliography
    *  - no contributors
-   * @param datasetKey
-   * @return
+   * @param datasetKey the project/release key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
    */
-  List<Dataset> listProjectSourcesSimple(@Param("datasetKey") int datasetKey);
+  List<Dataset> listProjectSourcesSimple(@Param("datasetKey") int datasetKey,
+                                         @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
    * Deletes a single source dataset for the given release

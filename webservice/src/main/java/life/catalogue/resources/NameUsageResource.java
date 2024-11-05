@@ -8,18 +8,14 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.es.*;
 
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.NameUsageIndexer;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;

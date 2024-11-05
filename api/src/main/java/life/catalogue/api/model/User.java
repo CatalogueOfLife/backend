@@ -101,6 +101,9 @@ public class User implements Entity<Integer>, Principal {
     return roles.contains(Role.ADMIN);
   }
 
+  public boolean isEditor() {
+    return roles.contains(Role.EDITOR) || !editor.isEmpty();
+  }
   public boolean isEditor(int datasetKey) {
     return roles.contains(Role.EDITOR) || editor.contains(datasetKey);
   }

@@ -129,7 +129,7 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status) {
+  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status, @Nullable Boolean extinct) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -138,6 +138,7 @@ public abstract class SectorSyncTestBase {
       ed.setSubject(src);
       ed.setName(name);
       ed.setStatus(status);
+      ed.setExtinct(extinct);
       ed.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(ed);
       return ed;
@@ -180,7 +181,7 @@ public abstract class SectorSyncTestBase {
    * which normally is restricted to release based merges, but allows us to test incertae sedis placements.
    */
   public static SectorImport sync(Sector s, @Nullable TreeMergeHandlerConfig mergeCfg) {
-    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     if (s.getNote() != null && s.getNote().contains("disableAutoBlocking")) {
       ss.setDisableAutoBlocking(true);
     }
@@ -203,13 +204,13 @@ public abstract class SectorSyncTestBase {
     return ss.getState();
   }
   void deleteFull(Sector s) {
-    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   void delete(Sector s) {
-    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }

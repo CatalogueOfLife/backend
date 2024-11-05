@@ -574,7 +574,7 @@ public class CsvReader {
   /**
    * Returns the first content row of the given data file, skipping any header if existing.
    */
-  public Optional<VerbatimRecord> readFirstRow(AcefTerm rowType) {
+  public Optional<VerbatimRecord> readFirstRow(Term rowType) {
     if (schemas.containsKey(rowType)) {
       return stream(schemas.get(rowType)).findFirst();
     }
@@ -639,7 +639,10 @@ public class CsvReader {
       return row != null;
     }
 
-    private String[] readCompleteRow() {
+    /**
+     * Updates this.row with a new row record which might spawn several lines
+     */
+    private boolean readCompleteRow() {
       String[] newRow;
       // we might have a leftover from the last multiline join
       if (queuedRow != null){
@@ -651,7 +654,7 @@ public class CsvReader {
         newRow = iter.next();
       }
       // try to read next line and append it for strayed multiline data if the column numbers match the header
-      while (newRow != null && newRow.length > 1 && newRow.length < maxIdx + 1 && iter.hasNext()) {
+      while (newRow != null && newRow.length > 1 && newRow.length < maxIdx + 1 && iter.hasNext() && queuedRow == null) {
         String[] nextRow = iter.next();
         // merging 2 rows reduces the columns by 1
         if (nextRow != null && nextRow.length > 0) {
@@ -667,19 +670,25 @@ public class CsvReader {
           } else {
             // save newRow for next round...
             queuedRow = nextRow;
-            return newRow;
+            row = newRow;
+            return true;
           }
         }
       }
-      return newRow;
+      row = newRow;
+      return true;
+    }
+
+    private boolean iterHasMore() {
+      return iter.hasNext() || queuedRow != null;
     }
 
     private void nextRow() {
       skippedLast = false;
-      if (iter.hasNext()) {
-        while (iter.hasNext() && isEmpty(row = readCompleteRow(), true));
+      if (iterHasMore()) {
+        while (iterHasMore() && readCompleteRow() && rowIsEmpty(true));
         // if the last rows were empty we would getUsage the last non empty row again, clear it in that case!
-        if (!iter.hasNext() && isEmpty(row, false)) {
+        if (!iter.hasNext() && rowIsEmpty(false)) {
           row = null;
         } else {
           records++;
@@ -697,15 +706,9 @@ public class CsvReader {
       }
     }
     
-    private boolean isEmpty(String[] row, boolean log) {
+    private boolean rowIsEmpty(boolean log) {
       if (row == null) {
         // ignore this row, dont log
-      } else if (row.length < maxIdx + 1) {
-        if (log) {
-          skippedLast = true;
-          skipped++;
-          LOG.info("{} skip line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine()-1, row.length, maxIdx + 1);
-        }
       } else if (isAllNull(row)) {
         if (log) {
           skippedLast = true;
@@ -713,6 +716,13 @@ public class CsvReader {
           LOG.debug("{} skip line {} with only empty columns", filename, iter.getContext().currentLine());
         }
       } else {
+        // expand row with empty columns if too small
+        if (row.length < maxIdx + 1) {
+          row = Arrays.copyOf(row, maxIdx + 1);
+          if (log) {
+            LOG.debug("{} line {} with too few columns (found {}, expected {})", filename, iter.getContext().currentLine() - 1, row.length, maxIdx + 1);
+          }
+        }
         return false;
       }
       return true;

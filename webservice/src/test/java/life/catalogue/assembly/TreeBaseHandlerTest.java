@@ -23,6 +23,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -77,11 +79,16 @@ public class TreeBaseHandlerTest {
   class UselessHandler extends TreeBaseHandler {
 
     public UselessHandler() {
-      super(1, null, factory, null, null, SECTOR, null, null, null, null);
+      super(1, null, factory, null, 0, SECTOR, null, null, null, null);
     }
 
-    public UselessHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state, Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
+    public UselessHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, int user, Sector sector, SectorImport state, Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
       super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
+    }
+
+    @Override
+    protected List<EditorialDecision> findParentDecisions(String taxonID) {
+      return Collections.emptyList();
     }
 
     @Override

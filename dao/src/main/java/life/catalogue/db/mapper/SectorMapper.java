@@ -24,6 +24,9 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey);
 
+  /**
+   * List all sectors in a project published by a given publisher
+   */
   List<Sector> listByDatasetPublisher(@Param("datasetKey") Integer datasetKey,
                                       @Param("publisherKey") UUID publisherKey);
 

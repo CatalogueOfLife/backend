@@ -34,6 +34,7 @@ import com.zaxxer.hikari.HikariDataSource;
 public class PgSetupRule extends SqlSessionFactoryRule {
   private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
 
+  public static String PG_VERSION = "17.0";
   public static String COL_DB_NAME = "col";
   public static String ADMIN_DB_NAME = "admin";
   private static PostgreSQLContainer<?> PG_CONTAINER;
@@ -66,7 +67,7 @@ public class PgSetupRule extends SqlSessionFactoryRule {
   }
 
   public static PostgreSQLContainer<?> setupPostgres() {
-    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:15.4").withDatabaseName(ADMIN_DB_NAME);
+    PostgreSQLContainer<?> container = new PostgreSQLContainer<>("postgres:"+PG_VERSION).withDatabaseName(ADMIN_DB_NAME);
     container.withAccessToHost(true);
     container.setWaitStrategy(Wait.defaultWaitStrategy().withStartupTimeout(Duration.ofSeconds(60)));
     return container;

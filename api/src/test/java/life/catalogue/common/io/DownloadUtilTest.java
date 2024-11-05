@@ -3,6 +3,8 @@ package life.catalogue.common.io;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,6 +63,13 @@ public class DownloadUtilTest {
         System.out.println("Failed job");
       }
     }
+  }
+
+  @Test
+  @Ignore("manual debugging")
+  public void plazi() throws IOException {
+    DownloadUtil d = new DownloadUtil(hc);
+    d.download(URI.create("https://tb.plazi.org/GgServer/dwca/1C5A0163FFCBF3266052EB7D4D70FFF7.zip"), f);
   }
 
   boolean download(DownloadUtil d, URI uri, File down) {

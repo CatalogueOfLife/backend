@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
@@ -155,7 +156,7 @@ public class SyncManager implements Managed, Idle {
     }
     return null;
   }
-  
+
   /**
    * Makes sure the dataset has data and is currently not importing
    */
@@ -187,7 +188,7 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
-  public void sync(int projectKey, RequestScope request, User user) throws IllegalArgumentException {
+  public void sync(int projectKey, RequestScope request, int user) throws IllegalArgumentException {
     nameIndex.assertOnline();
     var settings = projectSettings(projectKey);
     final boolean blockMergeSyncs = settings.getBoolDefault(Setting.BLOCK_MERGE_SYNCS, false);
@@ -221,7 +222,7 @@ public class SyncManager implements Managed, Idle {
    * @return true if it was actually queued
    * @throws IllegalArgumentException
    */
-  private synchronized boolean syncSector(DSID<Integer> sectorKey, User user, boolean blockMergeSyncs) throws IllegalArgumentException {
+  private synchronized boolean syncSector(DSID<Integer> sectorKey, int user, boolean blockMergeSyncs) throws IllegalArgumentException {
     SectorSync ss = syncFactory.project(sectorKey, this::successCallBack, this::errorCallBack, user);
     return queueJob(ss, blockMergeSyncs);
   }
@@ -230,7 +231,7 @@ public class SyncManager implements Managed, Idle {
    * @param full if true does a full deletion. Otherwise higher rank taxa are kept unlinked from the sector
    * @return true if the deletion was actually scheduled
    */
-  public boolean deleteSector(DSID<Integer> sectorKey, boolean full, User user) throws IllegalArgumentException {
+  public boolean deleteSector(DSID<Integer> sectorKey, boolean full, int user) throws IllegalArgumentException {
     nameIndex.assertOnline();
     SectorRunnable sd;
     if (full) {
@@ -316,7 +317,7 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
-  private int syncAll(int projectKey, User user, boolean blockMergeSyncs) {
+  private int syncAll(int projectKey, int user, boolean blockMergeSyncs) {
     LOG.warn("Sync all sectors. Triggered by user {}", user);
     final List<Sector> sectors = new ArrayList<>();
     try (SqlSession session = factory.openSession(false)) {
@@ -339,7 +340,16 @@ public class SyncManager implements Managed, Idle {
   }
 
   @Subscribe
-  public void datasetDeleted(DatasetChanged event){
+  public void deleteSectorListener(DeleteSector event){
+    LOG.info("Trigger deletion of sector {} by user={}", event.key, event.user);
+    var del = deleteSector(event.key, true, event.user);
+    if (!del) {
+      LOG.warn("Unable to queue deletion of sector {} by user={}", event.key, event.user);
+    }
+  }
+
+  @Subscribe
+  public void datasetDeletedListener(DatasetChanged event){
     if (event.isDeletion()) {
       var keys = syncs.keySet().stream()
                       .filter(k -> k.getDatasetKey().equals(event.key))

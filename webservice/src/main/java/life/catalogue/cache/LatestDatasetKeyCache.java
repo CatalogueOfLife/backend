@@ -33,6 +33,11 @@ public interface LatestDatasetKeyCache {
 
   void refresh(int projectKey);
 
+  /**
+   * Clears the entire cache
+   */
+  void clear();
+
   static LatestDatasetKeyCache passThru() {
     return new LatestDatasetKeyCache() {
       @Override
@@ -72,6 +77,11 @@ public interface LatestDatasetKeyCache {
 
       @Override
       public void refresh(int projectKey) {
+
+      }
+
+      @Override
+      public void clear() {
 
       }
     };

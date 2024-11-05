@@ -10,8 +10,6 @@ import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.nidx.NameIndexImpl;
-import life.catalogue.matching.nidx.NameIndexMapDBStore;
 import life.catalogue.matching.NidxExportJob;
 
 import life.catalogue.matching.nidx.NameIndexStore;

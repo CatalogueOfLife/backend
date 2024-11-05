@@ -1,0 +1,8 @@
+code: bacterial
+ranks:
+ - STRAIN
+
+nameTypes:
+ - SCIENTIFIC
+ - HYBRID_FORMULA
+ - OTU

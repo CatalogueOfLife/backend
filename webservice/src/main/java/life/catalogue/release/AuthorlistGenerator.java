@@ -39,7 +39,7 @@ public class AuthorlistGenerator {
     if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
       return false;
     }
-    var sources = dao.listReleaseAuthors(d.getKey());
+    var sources = dao.listSimple(d.getKey(), false);
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {

@@ -1,24 +1,34 @@
 package life.catalogue.dao;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import freemarker.template.TemplateException;
+
 import life.catalogue.api.event.UserChanged;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.lang.Exceptions;
+import life.catalogue.config.MailConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.metadata.FmUtil;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.simplejavamail.api.email.Email;
+import org.simplejavamail.api.mailer.Mailer;
+import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +43,16 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
-
   private final EventBus bus;
+  @Nullable
+  private Mailer mailer;
+  private final MailConfig mailCfg;
 
-  public UserDao(SqlSessionFactory factory, EventBus bus, Validator validator) {
+  public UserDao(SqlSessionFactory factory, MailConfig cfg, @Nullable Mailer emailer, EventBus bus, Validator validator) {
     super(true, factory, User.class, UserMapper.class, validator);
     this.bus = bus;
+    this.mailer = emailer;
+    this.mailCfg = cfg;
   }
 
   public ResultPage<User> search(@Nullable final String q, @Nullable final User.Role role, @Nullable Page page) {
@@ -168,4 +182,5 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     }
     return keys;
   }
+
 }

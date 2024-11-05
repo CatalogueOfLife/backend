@@ -15,7 +15,6 @@
     <logger name="org.gbif.dwc.terms.TermFactory" level="WARN"/>
     <logger name="life.catalogue" level="INFO"/>
     <logger name="life.catalogue.importer" level="INFO"/>
-    <logger name="life.catalogue.release" level="INFO"/>
     <logger name="life.catalogue.admin" level="INFO"/>
     <logger name="life.catalogue.csv" level="INFO"/>
     <logger name="life.catalogue.common.io" level="INFO"/>
@@ -27,9 +26,10 @@
     <logger name="org.apache.ibatis.jdbc" level="WARN" />
 
 
-  <!--
+    <logger name="life.catalogue.release" level="DEBUG"/>
     <logger name="life.catalogue.assembly" level="DEBUG"/>
     <logger name="life.catalogue.matching" level="DEBUG"/>
+  <!--
     <logger name="life.catalogue.db" level="DEBUG"/>
     <logger name="life.catalogue.db.mapper" level="DEBUG"/>
     <logger name="java.sql" level="INFO" />

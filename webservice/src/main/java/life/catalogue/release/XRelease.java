@@ -113,7 +113,6 @@ public class XRelease extends ProjectRelease {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
     // ... or licenses of existing sectors are not compatible
-    dataset = loadDataset(factory, datasetKey);
     final License projectLicense = dataset.getLicense();
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -237,10 +236,9 @@ public class XRelease extends ProjectRelease {
       LOG.warn("Homotypic grouping disabled in xrelease configs");
     }
 
-    // flagging of suspicous usages
+    // flagging of suspicious usages
     validateAndCleanTree();
     cleanImplicitTaxa();
-    resolveDuplicateAcceptedNames();
 
     // remove orphan names and references
     removeOrphans(newDatasetKey);
@@ -421,7 +419,9 @@ public class XRelease extends ProjectRelease {
   protected void onFinishLocked() throws Exception {
     // release id generator resources
     try {
-      usageIdGen.close();
+      if (usageIdGen != null) {
+        usageIdGen.close();
+      }
     } catch (Exception e) {
       LOG.error("Failed to close id generator", e);
     }
@@ -458,7 +458,7 @@ public class XRelease extends ProjectRelease {
       checkIfCancelled();
       SectorSync ss;
       try {
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser);
+        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
@@ -490,14 +490,13 @@ public class XRelease extends ProjectRelease {
   public int getFailedSyncs() {
     return failedSyncs;
   }
-/**
+
+  /**
    * Goes through all accepted infraspecies and checks if a matching autonym exists,
    * creating missing autonyms where needed.
    * An autonym is an infraspecific taxon that has the same species and infraspecific epithet.
    * We do this last to not persistent autonyms that we dont need after basionyms are grouped or status has changed for some other reason.
-   */
-
-  /**
+   *
    * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
    */
   private void cleanImplicitTaxa() {
@@ -526,10 +525,6 @@ public class XRelease extends ProjectRelease {
       LOG.error("Name validation & cleaning failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
-  }
-
-  private void resolveDuplicateAcceptedNames() {
-    LOG.info("Resolve duplicate accepted names");
   }
 
 }

@@ -103,7 +103,7 @@ public class PortalPageRendererTest {
 
   @Test
   public void renderTombstone() throws Exception {
-    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD);
+    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD, false);
     assertEquals(HttpStatus.SC_OK, res.getStatus());
     System.out.println(res.getEntity().toString());
   }

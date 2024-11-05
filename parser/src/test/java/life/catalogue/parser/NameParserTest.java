@@ -384,7 +384,7 @@ public class NameParserTest {
    */
   @Test
   public void testEmpty() throws Exception {
-    assertEquals(Optional.empty(), NameParser.PARSER.parse(null));
+    assertEquals(Optional.empty(), NameParser.PARSER.parse((String)null));
     assertEquals(Optional.empty(), NameParser.PARSER.parse(""));
     assertEquals(Optional.empty(), NameParser.PARSER.parse(" "));
     assertEquals(Optional.empty(), NameParser.PARSER.parse("\t"));

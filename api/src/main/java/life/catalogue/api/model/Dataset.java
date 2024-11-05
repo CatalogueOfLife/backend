@@ -189,6 +189,9 @@ public class Dataset extends DataEntity<Integer> {
   private URI logo;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> urlFormatter = new HashMap<>();
+  private String conversionDescription;
+  @AbsoluteURI
+  private URI conversionUrl;
   @Valid
   private List<Citation> source = new ArrayList<>();
   private String notes;
@@ -243,6 +246,8 @@ public class Dataset extends DataEntity<Integer> {
     this.url = other.url;
     this.logo = other.logo;
     this.urlFormatter = other.urlFormatter;
+    this.conversionDescription = other.conversionDescription;
+    this.conversionUrl = other.conversionUrl;
     this.source = other.source;
   }
 
@@ -859,6 +864,22 @@ public class Dataset extends DataEntity<Integer> {
     this.urlFormatter = urlFormatter;
   }
 
+  public String getConversionDescription() {
+    return conversionDescription;
+  }
+
+  public void setConversionDescription(String conversionDescription) {
+    this.conversionDescription = conversionDescription;
+  }
+
+  public URI getConversionUrl() {
+    return conversionUrl;
+  }
+
+  public void setConversionUrl(URI conversionUrl) {
+    this.conversionUrl = conversionUrl;
+  }
+
   public List<Citation> getSource() {
     return source;
   }
@@ -966,6 +987,8 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(url, dataset.url)
            && Objects.equals(logo, dataset.logo)
            && Objects.equals(urlFormatter, dataset.urlFormatter)
+           && Objects.equals(conversionDescription, dataset.conversionDescription)
+           && Objects.equals(conversionUrl, dataset.conversionUrl)
            && Objects.equals(source, dataset.source);
   }
 
@@ -976,7 +999,8 @@ public class Dataset extends DataEntity<Integer> {
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
-      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, urlFormatter, source);
+      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo,
+      urlFormatter, conversionDescription,  conversionUrl, source);
   }
 
   @Override

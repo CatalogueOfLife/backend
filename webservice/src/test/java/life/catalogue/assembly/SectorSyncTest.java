@@ -102,7 +102,7 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
-    SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+    SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
 
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
@@ -144,7 +144,7 @@ public class SectorSyncTest {
       sm.update(sector);
     }
 
-    ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR);
+    ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
   }
   

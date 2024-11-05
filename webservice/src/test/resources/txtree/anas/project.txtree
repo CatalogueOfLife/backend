@@ -1,0 +1,12 @@
+Biota  [unranked]
+  Animalia  [kingdom]
+    Chordata [phylum]
+      Vertebrata [subphylum]
+        Gnathostomata [infraphylum]
+          Osteichthyes [parvphylum]
+            Tetrapoda [megaclass]
+              Aves [class]
+                Anseriformes [order]
+                  Anatidae Leach, 1820 [family]
+                    Anas Linnaeus, 1758 [genus] {CODE=Zoological}
+                      Anas platyrhynchos Linnaeus, 1758

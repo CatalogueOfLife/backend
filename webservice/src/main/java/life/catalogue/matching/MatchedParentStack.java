@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
 import org.gbif.nameparser.api.Rank;
@@ -10,8 +11,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
+ * Also tracks decisions of parents to apply in inherited decisions, e.g. extinct updates.
  */
 public class MatchedParentStack {
   private static final Logger LOG = LoggerFactory.getLogger(MatchedParentStack.class);
@@ -48,9 +52,13 @@ public class MatchedParentStack {
   public static class MatchedUsage {
     public final SimpleNameWithNidx usage;
     public SimpleNameWithNidx match;
+    @Nullable
+    public EditorialDecision decision;
+    public boolean marker = false;
 
-    public MatchedUsage(SimpleNameWithNidx usage) {
+    public MatchedUsage(SimpleNameWithNidx usage, @Nullable EditorialDecision decision) {
       this.usage = usage;
+      this.decision = decision;
     }
 
     @Override
@@ -58,17 +66,17 @@ public class MatchedParentStack {
       if (this == o) return true;
       if (!(o instanceof MatchedUsage)) return false;
       MatchedUsage that = (MatchedUsage) o;
-      return Objects.equals(usage, that.usage) && Objects.equals(match, that.match);
+      return Objects.equals(usage, that.usage) && Objects.equals(match, that.match) && Objects.equals(decision, that.decision);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(usage, match);
+      return Objects.hash(usage, match, decision);
     }
 
     @Override
     public String toString() {
-      return usage + "; match=" + match;
+      return usage + "; match=" + match + (decision != null ? "; decision" : "");
     }
   }
 
@@ -157,7 +165,7 @@ public class MatchedParentStack {
     return parents.isEmpty() ? null : parents.getLast();
   }
 
-  public void push(SimpleNameWithNidx nu) {
+  public void push(SimpleNameWithNidx nu, EditorialDecision decision) {
     if (nu.getParent() == null) {
       // no parent, i.e. a new root!
       clear();
@@ -185,13 +193,14 @@ public class MatchedParentStack {
     if (!parents.isEmpty()) {
       pRank = parents.getLast().usage.getRank();
     }
-    parents.add(new MatchedUsage(nu));
+    parents.add(new MatchedUsage(nu, decision));
     if (first) {
       first = false;
     }
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
         && pRank != null && nu.getRank().higherThan(pRank)
         && nu.getRank().notOtherOrUnranked() && pRank.notOtherOrUnranked()
+        && nu.getRank() != Rank.SERIES && pRank != Rank.SERIES // series is still ambiguous
     ) {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast().usage);
       markSubtreeAsDoubtful();
@@ -203,10 +212,19 @@ public class MatchedParentStack {
     doubtfulUsageID = null;
   }
 
+  /**
+   * Sets the matched usage for the last parent, i.e. current taxon
+   */
   public void setMatch(SimpleNameWithNidx match) {
     parents.getLast().match = match; // let it throw if we have a match but no parents - cant really happen
   }
 
+  /**
+   * Sets the marker flag for the last parent, i.e. current taxon
+   */
+  public void mark() {
+    parents.getLast().marker = true;
+  }
   public int size() {
     return parents.size();
   }
