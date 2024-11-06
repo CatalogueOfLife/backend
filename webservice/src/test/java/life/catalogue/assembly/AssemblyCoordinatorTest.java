@@ -7,6 +7,7 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.config.SyncManagerConfig;
 import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -50,7 +51,7 @@ public class AssemblyCoordinatorTest {
   public void init() throws Exception {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new SyncManager(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    coord = new SyncManager(new SyncManagerConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
     coord.start();
   }
   

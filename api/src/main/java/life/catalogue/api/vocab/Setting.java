@@ -160,6 +160,18 @@ public enum Setting {
   SECTOR_COPY_ACCORDING_TO(Boolean.class, false, PROJECT),
 
   /**
+   * Flag to turn on/off the sync scheduling for a project.
+   * Which sectors are being scheduled can be influenced by the SYNC_SCHEDULER_SOURCES setting.
+   */
+  SYNC_SCHEDULER(Boolean.class, false, PROJECT),
+
+  /**
+   * List of sources to consider for sector scheduling.
+   * If empty, all sources are considered.
+   */
+  SYNC_SCHEDULER_SOURCES(Integer.class, true, PROJECT),
+
+  /**
    * Project defaults to be used for the sector.removeOrdinals property
    * Defaults to false.
    */

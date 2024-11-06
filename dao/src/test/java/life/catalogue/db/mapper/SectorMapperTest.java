@@ -16,6 +16,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -112,6 +113,14 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     assertEquals(0, mapper().listByDataset(targetDatasetKey,-432).size());
     // no results, but make sure sql works
     assertEquals(0, mapper().listByDatasetPublisher(targetDatasetKey,UUID.randomUUID()).size());
+  }
+
+  @Test
+  public void listOutdatedSectors() {
+    add2Sectors();
+    assertEquals(0, mapper().listOutdatedSectors(targetDatasetKey,null).size());
+    assertEquals(0, mapper().listOutdatedSectors(targetDatasetKey, List.of()).size());
+    assertEquals(0, mapper().listOutdatedSectors(targetDatasetKey, List.of(1,2,3)).size());
   }
 
   @Test

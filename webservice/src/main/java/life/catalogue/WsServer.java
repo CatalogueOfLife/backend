@@ -394,7 +394,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     // assembly
-    SyncManager syncManager = new SyncManager(getSqlSessionFactory(), ni, syncFactory, env.metrics());
+    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
 
     // link assembly and import manager so they are aware of each other

@@ -92,7 +92,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   @NotNull
   public ImporterConfig importer = new ImporterConfig();
-  
+
+  @Valid
+  @NotNull
+  public SyncManagerConfig syncs = new SyncManagerConfig();
+
   @Valid
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();

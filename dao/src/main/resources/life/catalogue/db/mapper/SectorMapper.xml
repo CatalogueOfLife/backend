@@ -5,6 +5,13 @@
 <mapper namespace="life.catalogue.db.mapper.SectorMapper">
 
   <sql id="SELECT">
+    <include refid="SELECT_NO_BROKEN"/>,
+    CASE WHEN coalesce(subject_id, subject_name) IS NULL THEN null ELSE ts.id IS NULL END AS subject_broken,
+    CASE WHEN coalesce(target_id, target_name) IS NULL THEN null ELSE tt.id IS NULL END AS target_broken,
+    <include refid="size"/> AS size
+  </sql>
+
+  <sql id="SELECT_NO_BROKEN">
     s.id,
     s.dataset_key,
     s.sync_attempt,
@@ -18,13 +25,11 @@
     s.subject_code,
     s.subject_status,
     s.subject_parent,
-    CASE WHEN coalesce(subject_id, subject_name) IS NULL THEN null ELSE ts.id IS NULL END AS subject_broken,
     s.target_id,
     s.target_name,
     s.target_authorship,
     s.target_rank,
     s.target_code,
-    CASE WHEN coalesce(target_id, target_name) IS NULL THEN null ELSE tt.id IS NULL END AS target_broken,
     s.mode,
     s.priority,
     s.code,
@@ -37,8 +42,7 @@
     s.modified,
     s.modified_by,
     s.created,
-    s.created_by,
-    <include refid="size"/> AS size
+    s.created_by
   </sql>
 
   <sql id="size">coalesce(si.taxon_count,0) + coalesce(si.synonym_count,0) + coalesce(si.bare_name_count,0)</sql>
@@ -421,4 +425,18 @@
       SELECT true FROM treatment x WHERE x.dataset_key=#{datasetKey} AND x.sector_key = s.id
     )
   </delete>
+
+  <select id="listOutdatedSectors" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT_NO_BROKEN"/>
+    FROM sector s
+      JOIN dataset d ON d.key=s.subject_dataset_key AND d.attempt > 0
+      LEFT JOIN sector_import si ON si.sector_key=s.id AND si.dataset_key=s.dataset_key AND si.attempt=s.sync_attempt
+      LEFT JOIN dataset_import di ON di.attempt=d.attempt AND di.dataset_key=d.key
+
+    WHERE s.dataset_key = #{projectKey} AND si.dataset_attempt &lt; d.attempt
+    <if test="subjectDatasetKeys != null and !subjectDatasetKeys.isEmpty()">
+      AND s.subject_dataset_key IN <foreach item="id" collection="subjectDatasetKeys" open="(" separator="," close=")">#{id}</foreach>
+    </if>
+  </select>
+
 </mapper>

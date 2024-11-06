@@ -4,11 +4,14 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
+import life.catalogue.config.SyncManagerConfig;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -43,9 +46,13 @@ public class SyncManager implements Managed, Idle {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
   private static final String THREAD_NAME = "assembly-sync";
-  
+  private static final String SCHEDULER_THREAD_NAME = "sync-scheduler";
+
   private ExecutorService exec;
   private ImportManager importManager;
+  private final SyncManagerConfig cfg;
+  private Thread schedulerThread;
+  private SyncSchedulerJob schedulerJob;
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final SyncFactory syncFactory;
@@ -68,7 +75,8 @@ public class SyncManager implements Managed, Idle {
     }
   }
   
-  public SyncManager(SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
+  public SyncManager(SyncManagerConfig cfg, SqlSessionFactory factory, NameIndex nameIndex, SyncFactory syncFactory, MetricRegistry registry) {
+    this.cfg = cfg;
     this.factory = factory;
     this.syncFactory = syncFactory;
     this.nameIndex = nameIndex;
@@ -96,10 +104,31 @@ public class SyncManager implements Managed, Idle {
         page.next();
       }
     }
+
+    // scheduler
+    if (cfg.polling > 0) {
+      LOG.info("Enable sync scheduler");
+      schedulerJob = new SyncSchedulerJob(cfg, this, factory);
+      schedulerThread = new Thread(schedulerJob, SCHEDULER_THREAD_NAME);
+      LOG.info("Start sync scheduler with polling every {} minutes", cfg.polling);
+      schedulerThread.start();
+
+    } else {
+      LOG.warn("Sync scheduler disabled");
+    }
   }
 
   @Override
   public void stop() throws Exception {
+    // scheduler
+    if (schedulerJob != null) {
+      schedulerJob.terminate();
+    }
+    if (schedulerThread != null) {
+      LOG.info("Stop sync scheduler");
+      schedulerThread.join(ExecutorUtils.MILLIS_TO_DIE);
+    }
+    // manager
     if (exec != null) {
       LOG.info("Stop assembly coordinator");
       // orderly shutdown running syncs
@@ -188,6 +217,12 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
+  void sync(Sector sector, int user) throws IllegalArgumentException {
+    DatasetInfoCache.CACHE.info(sector.getDatasetKey()).requireOrigin(DatasetOrigin.PROJECT);
+    RequestScope req = new RequestScope();
+    req.setSectorKey(sector.getId());
+    sync(sector.getDatasetKey(), req, user);
+  }
   public void sync(int projectKey, RequestScope request, int user) throws IllegalArgumentException {
     nameIndex.assertOnline();
     var settings = projectSettings(projectKey);

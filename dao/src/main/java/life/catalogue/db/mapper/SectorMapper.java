@@ -112,4 +112,13 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    * @return number of deleted sectors
    */
   int deleteOrphans(@Param("datasetKey") Integer datasetKey);
+
+  /**
+   * Lists all sectors of a project that have never been synced or have been synced from an older dataset import attempt.
+   * @param projectKey
+   * @param subjectDatasetKeys if existing limits the sectors to be considered to have the given subject dataset keys.
+   * @return
+   */
+  List<Sector> listOutdatedSectors(@Param("projectKey") int projectKey, @Param("subjectDatasetKeys") List<Integer> subjectDatasetKeys);
+
 }
