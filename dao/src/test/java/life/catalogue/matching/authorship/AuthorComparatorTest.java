@@ -45,9 +45,9 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompareName() throws Exception {
-    Name p1 = new Name();
-    Name p2 = new Name();
-    
+    var p1 = new Name();
+    var p2 = new Name();
+
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
     
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("L."));
@@ -75,8 +75,7 @@ public class AuthorComparatorTest {
     
     p1 = new Name();
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reich."));
-    ;
-    
+
     p2 = new Name();
     p2.getCombinationAuthorship().getAuthors().add("");
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
@@ -105,6 +104,12 @@ public class AuthorComparatorTest {
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
 
 
+    p1 = new Name();
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1776", "O.F. Müller"));
+
+    p2 = new Name();
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1785", "Müller O.F."));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
   }
   
   /**

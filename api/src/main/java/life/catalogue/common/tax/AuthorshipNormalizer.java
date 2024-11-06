@@ -38,6 +38,7 @@ public class AuthorshipNormalizer {
 
   private static final Pattern FIL = Pattern.compile("([A-Z][a-z]*)[\\. ]\\s*f(:?il)?\\.?\\b");
   private static final Pattern TRANSLITERATIONS = Pattern.compile("([auo])e", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TRAILING_INITIALS = Pattern.compile("^(.*[a-z]{2,})((?: [a-z])+)$", Pattern.CASE_INSENSITIVE);
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
@@ -160,8 +161,6 @@ public class AuthorshipNormalizer {
     if (StringUtils.isBlank(x)) {
       return null;
     }
-    // normalize filius
-    x = FIL.matcher(x).replaceAll("$1 filius");
     // fold to ascii
     x = UnicodeUtils.foldToAscii(x);
     // simplify umlauts transliterated properly with additional e
@@ -170,7 +169,14 @@ public class AuthorshipNormalizer {
     x = PUNCTUATION.matcher(x).replaceAll(" ");
     // norm space
     x = StringUtils.normalizeSpace(x);
-    
+    // move initials to front
+    var m = TRAILING_INITIALS.matcher(x);
+    if (m.find() && !m.group(2).trim().equals("f")) {
+      x = m.replaceFirst("$2 $1").trim();
+    }
+    // normalize filius
+    x = FIL.matcher(x).replaceAll("$1 filius");
+
     if (StringUtils.isBlank(x)) {
       return null;
     }

@@ -203,11 +203,7 @@ public class AuthorComparator {
     }
     return Equality.UNKNOWN;
   }
-  
-  private static int lengthWithoutWhitespace(String x) {
-    return StringUtils.deleteWhitespace(x).length();
-  }
-  
+
   /**
    * compares entire author team strings
    */
