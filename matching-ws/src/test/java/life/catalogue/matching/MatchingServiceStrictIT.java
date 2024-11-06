@@ -19,10 +19,7 @@ import com.google.common.base.Joiner;
 import java.io.IOException;
 import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.matching.model.Classification;
-import life.catalogue.matching.model.Kingdom;
-import life.catalogue.matching.model.LinneanClassification;
-import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.Dictionaries;
 
@@ -48,7 +45,7 @@ public class MatchingServiceStrictIT {
   private NameUsageMatch query(String name, Rank rank, Kingdom kingdom) {
     LinneanClassification cl = new Classification();
     cl.setKingdom(kingdom.name());
-    return matcher.match(name, rank, cl, true);
+    return matcher.match(new NameUsageQuery(null, null, null, null, name, null, null, null, null, rank, cl, null, true, true));
   }
 
   private void assertMatch(String name, Rank rank, Kingdom kingdom, Integer expectedKey) {
@@ -166,10 +163,9 @@ public class MatchingServiceStrictIT {
   }
 
   @Test
-  public void testFilius() throws IOException, InterruptedException {
+  public void testFilius() {
     assertMatch("Hydrocotyle ranunculoides L. f.", Rank.SPECIES, Kingdom.PLANTAE, 7978544);
     assertMatch("Hydrocotyle ranunculoides L.f.", Rank.SPECIES, Kingdom.PLANTAE, 7978544);
-    assertMatch(
-        "Hydrocotyle ranunculoides Linnaeus filius", Rank.SPECIES, Kingdom.PLANTAE, 7978544);
+    assertMatch("Hydrocotyle ranunculoides Linnaeus filius", Rank.SPECIES, Kingdom.PLANTAE, 7666318);
   }
 }

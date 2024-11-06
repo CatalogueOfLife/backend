@@ -368,11 +368,11 @@ public class MatchingServiceIT {
     assertNoMatch("Oenanthe", cl);
 
     cl.setKingdom("Animalia");
-    assertMatch("Oenanthe", cl, 2492483, new IntRange(96, 99));
+    assertMatch("Oenanthe", cl, 2492483, new IntRange(95, 99));
 
     cl.setKingdom("Plantae");
-    assertMatch("Oenanthe", cl, 3034893, new IntRange(96, 99));
-    assertMatch("Oenante", cl, 3034893, new IntRange(84, 95));
+    assertMatch("Oenanthe", cl, 3034893, new IntRange(95, 99));
+    assertMatch("Oenante", cl, 3034893, new IntRange(82, 90));
 
     // Acanthophora
     cl = new Classification();
@@ -380,7 +380,7 @@ public class MatchingServiceIT {
 
     // there are 3 genera in animalia, 2 synonyms and 1 accepted but they differ at phylum level
     cl.setKingdom("Animalia");
-    assertMatch("Acanthophora", cl, 1, new IntRange(95, 96));
+    assertMatch("Acanthophora", cl, 1, new IntRange(92, 96));
 
     // now try with molluscs to just get the doubtful one
     cl.setPhylum("Porifera");
@@ -555,8 +555,8 @@ public class MatchingServiceIT {
     // very different author, match to genus only
     assertMatch("Elytrigia repens Karimba", cl, 7826764, MatchType.HIGHERRANK);
 
-    // basionym author is right, now match the accepted species. Or shouldnt we?
-    assertMatch("Elytrigia repens (L.) Karimba", cl, 7522774, new IntRange(80, 90));
+    // basionym author is right, but otherwise the authorship differs clearly. Match to genus only
+    assertMatch("Elytrigia repens (L.) Karimba", cl, 7826764, MatchType.HIGHERRANK);
   }
 
   /**
@@ -582,12 +582,12 @@ public class MatchingServiceIT {
 
     assertMatch("Daphnia", cl, 2234785, new IntRange(90, 95));
     assertMatch("Daphnia Müller, 1785", cl, 2234785, new IntRange(96, 100));
-    assertMatch("Daphnia Müller", cl, 2234785, new IntRange(94, 98));
+    assertMatch("Daphnia Müller", cl, 2234785, new IntRange(95, 100));
 
-    assertMatch("Daphne Müller, 1785", cl, 2234879, new IntRange(95, 98));
+    assertMatch("Daphne Müller, 1785", cl, 2234879, new IntRange(95, 100));
     assertMatch("Daphne Müller, 1776", cl, 2234879, new IntRange(96, 100));
 
-    assertMatch("Daphnia Korth", cl, 7956551, new IntRange(86, 94));
+    assertMatch("Daphnia Korth", cl, 3626852, new IntRange(88, 92));
     cl.setKingdom("Plantae");
     cl.setFamily("Oxalidaceae");
     assertMatch("Daphnia Korth", cl, 3626852, new IntRange(96, 100));
@@ -616,12 +616,12 @@ public class MatchingServiceIT {
 
     assertMatch("Celastrus orbiculatus", cl, 8104460, new IntRange(95, 99));
     assertMatch("Celastrus orbiculatus Murray", cl, 8104460, new IntRange(98, 100));
-    assertMatch("Celastrus orbiculatus Thunb", cl, 8104460, new IntRange(98, 100));
+    assertMatch("Celastrus orbiculatus Thunb", cl, 3169169, new IntRange(98, 100));
     assertMatch("Celastrus orbiculatus Lam", cl, 7884995, new IntRange(98, 100));
 
     assertMatch("Python molurus subsp. bivittatus", cl, 6162891, new IntRange(98, 100));
-    assertMatch("Python molurus bivittatus", cl, 6162891, new IntRange(98, 100));
-    assertMatch("Python molurus bivittatus Kuhl", cl, 6162891, new IntRange(98, 100));
+    assertMatch("Python molurus bivittatus", cl, 6162891, new IntRange(97, 100));
+    assertMatch("Python molurus bivittatus Kuhl", cl, 6162891, new IntRange(97, 100));
     assertMatch("Python molurus subsp. bibittatus", cl, 4287608, new IntRange(97, 100));
 
     assertMatch("Ziziphus mauritiana orthacantha", cl, 8068734, new IntRange(95, 99));

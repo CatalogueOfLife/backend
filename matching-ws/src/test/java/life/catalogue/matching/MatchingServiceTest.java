@@ -32,13 +32,12 @@ public class MatchingServiceTest {
     assertEquals(-1, rankSimilarity(UNRANKED, null));
     assertEquals(0, rankSimilarity(FAMILY, UNRANKED));
     assertEquals(0, rankSimilarity(SPECIES, UNRANKED));
-    assertEquals(-9, rankSimilarity(SUBSPECIES, VARIETY));
+    assertEquals(-5, rankSimilarity(SUBSPECIES, VARIETY));
     assertEquals(2, rankSimilarity(SUBSPECIES, INFRASPECIFIC_NAME));
     assertEquals(-35, rankSimilarity(GENUS, CLASS));
     assertEquals(-35, rankSimilarity(GENUS, FAMILY));
-    // FIXME this value has changed due to rank ordinal values being changed
     // with the introduction of the new rank class
-    assertEquals(-35, rankSimilarity(FAMILY, KINGDOM));
+    assertEquals(-26, rankSimilarity(FAMILY, KINGDOM));
   }
 
   @Test

@@ -2,6 +2,7 @@ package life.catalogue.matching.service;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -21,7 +22,6 @@ import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.RankUtils;
 
 import java.io.*;
-import java.net.URL;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -106,31 +106,6 @@ public class MatchingService {
 
   private final static Pattern TAB_PAT = Pattern.compile("\t");
 
-  private AuthorComparator createAuthorComparator() {
-    Map<String, String> map = new HashMap<>();
-    URL url = dictionaries.authorityUrl( "authormap.txt");
-    try (
-      InputStream inputStream = new BufferedInputStream(url.openStream());
-      BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-      log.debug("Loading author abbreviation map from {}", url);
-      reader.lines()
-        .map(TAB_PAT::split)
-        .forEach(row -> {
-          if (row.length >= 3) {
-            map.put(row[0], row[2]);
-            map.put(row[1], row[2]);
-          } else {
-            log.warn("Invalid row format: {}", Arrays.toString(row));
-          }
-        });
-    } catch (IOException e) {
-      log.error("Failed to load author abbreviation map from {}", "authormap.txt", e);
-    } catch (Exception e) {
-      log.error("Unexpected error while loading author abbreviation map from {}", "authormap.txt", e);
-    }
-
-    return new AuthorComparator(new AuthorshipNormalizer(map));
-  }
 
   /**
    * The matching mode to use.
@@ -157,7 +132,7 @@ public class MatchingService {
     this.datasetIndex = datasetIndex;
     this.htComp = htComp;
     this.dictionaries = dictionaries;
-    this.authComp = createAuthorComparator();
+    this.authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
   }
 
   /**
@@ -307,8 +282,7 @@ public class MatchingService {
         .setNote("All provided names were ignored since the usageKey was provided");
       watch.stop();
       match.getDiagnostics().setTimeTaken(watch.getTime());
-      log.debug(
-        "{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), query.usageKey, watch);
+      log.debug("{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), query.usageKey, watch);
       return match;
     }
 
@@ -547,16 +521,16 @@ public class MatchingService {
     }
 
     // run the initial match
-    NameUsageMatch match1 =
-        match(
-            queryNameType,
-            parsedName,
-            scientificName,
-            rank,
-            classification,
-            exclude,
-            mainMatchingMode,
-            verbose);
+    NameUsageMatch match1 = match(
+        queryNameType,
+        parsedName,
+        scientificName,
+        rank,
+        classification,
+        exclude,
+        mainMatchingMode,
+        verbose
+    );
 
     // use genus higher match instead of fuzzy one?
     // https://github.com/gbif/portal-feedback/issues/2930
@@ -771,8 +745,8 @@ public class MatchingService {
     for (NameUsageMatch m : matches) {
       // 0 - +120
       final int nameSimilarity = nameSimilarity(queryNameType, canonicalName, m);
-      // -36 - +40
-      final int authorSimilarity = incNegScore(authorSimilarity(pn, m) * 2, 2);
+      // -36 - +20
+      final int authorSimilarity = incNegScore(authorSimilarity2(pn, m), 2);
       // -50 - +50
       final int classificationSimilarity = classificationSimilarity(lc, m);
       // -10 - +5
@@ -848,8 +822,8 @@ public class MatchingService {
     for (NameUsageMatch m : matches) {
       // 0 - +120
       final int nameSimilarity = nameSimilarity(queryNameType, canonicalName, m);
-      // -28 - +40
-      final int authorSimilarity = incNegScore(authorSimilarity(pn, m) * 4, 8);
+      // -72 - +40
+      final int authorSimilarity = incNegScore(authorSimilarity2(pn, m) * 2, 2);
       // -50 - +50
       final int kingdomSimilarity =
           incNegScore(
@@ -1146,6 +1120,40 @@ public class MatchingService {
     return similarity;
   }
 
+  // -18 - 20
+  private int authorSimilarity2(@Nullable ParsedName pn, NameUsageMatch m) {
+    int similarity = 0;
+    if (pn != null) {
+      try {
+        var spn = ScientificName.wrap(pn);
+        ParsedName mpn = NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
+        var smn = ScientificName.wrap(mpn);
+        // authorship comparison was requested!
+        Equality eq = authComp.compare(spn, smn);
+        similarity = equality2Similarity(eq, 6);
+        // small penalty if query has authorship, but match doesn't
+        if (spn.hasAuthorship() && !smn.hasAuthorship()) {
+          similarity -= 2;
+        }
+        if (spn.hasAuthorship() && smn.hasAuthorship() && Objects.equals(
+            AuthorshipNormalizer.normalize(spn.getAuthorship()),
+            AuthorshipNormalizer.normalize(smn.getAuthorship())
+        )) {
+          similarity += 8;
+        }
+
+      } catch (UnparsableNameException e) {
+        if (e.getType().isParsable()) {
+          log.warn("Failed to parse name: {}", m.getUsage().getName());
+        }
+      } catch (Exception e) {
+        log.error("Error comparing authorship", e);
+        similarity -= 2;
+      }
+    }
+    return similarity;
+  }
+
   private int equality2Similarity(Equality eq, int factor) {
     switch (eq) {
       case EQUAL:
@@ -1360,17 +1368,19 @@ public class MatchingService {
           similarity = 0;
 
         } else if (either(
-            query, ref, (r1, r2) -> r1 == Rank.SPECIES && r2 == Rank.SPECIES_AGGREGATE)) {
+            query, ref,
+            (r1, r2) -> r1 == Rank.SPECIES && r2 == Rank.SPECIES_AGGREGATE)
+        ) {
           similarity += 2;
 
         } else if (either(
-            query,
-            ref,
+            query, ref,
             (r1, r2) ->
                 (r1 == Rank.SPECIES || r1 == Rank.SPECIES_AGGREGATE) && r2.isInfraspecific()
                     || r1.isSupraspecific()
                         && r1 != Rank.SPECIES_AGGREGATE
-                        && r2.isSpeciesOrBelow())) {
+                        && r2.isSpeciesOrBelow())
+        ) {
           // not good, different number of epithets means very unalike
           similarity -= 30;
 
@@ -1380,7 +1390,8 @@ public class MatchingService {
           similarity -= 35;
 
         } else {
-          similarity -= Math.abs(ref.ordinal() - query.ordinal());
+          var diff = ref.ordinal() - query.ordinal();
+          similarity -= Math.abs(Math.ceil(diff / 2.0));
         }
       }
 

@@ -52,7 +52,7 @@ public class AuthorComparator {
   /**
    * Compares the authorteams and year of two names.
    * If given both the year and authorteam needs to match to yield an EQUAL,
-   * with a small difference of 2 years being accepted.
+   * with a small difference of 11 years being accepted.
    */
   public Equality compare(@Nullable Authorship a1, @Nullable Authorship a2) {
     // compare year first - simpler to calculate

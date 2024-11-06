@@ -68,7 +68,7 @@ public class AuthorshipNormalizer {
   }
   
   
-  public AuthorshipNormalizer(Map<String, String> authors) {
+  private AuthorshipNormalizer(Map<String, String> authors) {
     Map<String, String> map = Maps.newHashMap();
     for (Map.Entry<String, String> entry : authors.entrySet()) {
       String key = normalize(entry.getKey());
