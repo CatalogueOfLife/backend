@@ -58,6 +58,7 @@ FROM openjdk:11
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
 ENV JVM_OPTIONS="-Xms1g -Xmx4g"
+ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
 ENV APP_ARTIFACT=matching-ws
 
@@ -103,4 +104,4 @@ RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 USER $USER
 EXPOSE $SERVER_PORT
 
-CMD java $JVM_OPTIONS -jar app.jar --server.port=$SERVER_PORT --working.dir=/opt/gbif/$APP_ARTIFACT/ --mode=RUN --spring.cloud.bootstrap.location=/opt/gbif/$APP_ARTIFACT/bootstrap.yaml
+CMD java $JVM_OPTIONS -jar app.jar --server.servlet.context-path=$SERVLET_CONTEXT_PATH --server.port=$SERVER_PORT --working.dir=/opt/gbif/$APP_ARTIFACT/ --mode=RUN --spring.cloud.bootstrap.location=/opt/gbif/$APP_ARTIFACT/bootstrap.yaml
