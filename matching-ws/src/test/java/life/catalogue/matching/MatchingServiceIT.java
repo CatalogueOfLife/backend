@@ -1025,6 +1025,9 @@ public class MatchingServiceIT {
         "Clusiodes melanostomus", Rank.SPECIES_AGGREGATE, cl, 1550465, MatchType.HIGHERRANK);
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/743
+   */
   @Test
   public void libellulidae() throws Exception {
     LinneanClassification cl = new Classification();

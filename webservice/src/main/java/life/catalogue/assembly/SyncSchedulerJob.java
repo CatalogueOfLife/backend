@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.User;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
@@ -26,12 +27,13 @@ class SyncSchedulerJob implements Runnable {
   private final SqlSessionFactory factory;
   private final SyncManager manager;
   private final SyncManagerConfig cfg;
-  private volatile boolean running = true;
+  private volatile boolean running;
 
   public SyncSchedulerJob(SyncManagerConfig cfg, SyncManager manager, SqlSessionFactory factory) {
     this.manager = manager;
     this.factory = factory;
     this.cfg = cfg;
+    this.running = true;
   }
 
   public void terminate() {
@@ -88,7 +90,7 @@ class SyncSchedulerJob implements Runnable {
       var req = new DatasetSearchRequest();
       req.setOrigin(List.of(DatasetOrigin.PROJECT));
       var dm = session.getMapper(DatasetMapper.class);
-      var projectKeys = dm.searchKeys(req, Users.IMPORTER);
+      var projectKeys = dm.searchKeys(req, User.ADMIN_MAGIC_KEY);
       for (int projKey : projectKeys) {
         var settings = dm.getSettings(projKey);
         if (settings.isEnabled(Setting.SYNC_SCHEDULER)) {
