@@ -45,8 +45,7 @@ public class MatchingServiceIT {
 
   @BeforeAll
   public static void buildMatcher() throws IOException {
-    matcher =
-        new MatchingService(
+    matcher = new MatchingService(
             MatchingTestConfiguration.provideIndex(), MatchingTestConfiguration.provideSynonyms(), Dictionaries.createDefault());
   }
 
@@ -1024,6 +1023,15 @@ public class MatchingServiceIT {
     assertMatch("Clusiodes melanostomus", Rank.SPECIES, cl, 4295121, MatchType.EXACT);
     assertMatch(
         "Clusiodes melanostomus", Rank.SPECIES_AGGREGATE, cl, 1550465, MatchType.HIGHERRANK);
+  }
+
+  @Test
+  public void libellulidae() throws Exception {
+    LinneanClassification cl = new Classification();
+
+    assertMatch("Libellulidae", Rank.FAMILY, cl, 5936, MatchType.EXACT);
+    assertMatch("Libellulidae Leach, 1815", Rank.FAMILY, cl, 5936, MatchType.EXACT);
+    assertMatch("Libellulidae Rambur, 1842", Rank.FAMILY, cl, 5936, MatchType.EXACT);
   }
 
   /** https://github.com/gbif/checklistbank/issues/280 */

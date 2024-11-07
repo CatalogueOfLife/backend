@@ -3,6 +3,7 @@ package life.catalogue.matching.service;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import life.catalogue.api.model.ScientificName;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -746,7 +747,7 @@ public class MatchingService {
       // 0 - +120
       final int nameSimilarity = nameSimilarity(queryNameType, canonicalName, m);
       // -36 - +20
-      final int authorSimilarity = incNegScore(authorSimilarity2(pn, m), 2);
+      final int authorSimilarity = incNegScore(authorSimilarity(pn, m), 2);
       // -50 - +50
       final int classificationSimilarity = classificationSimilarity(lc, m);
       // -10 - +5
@@ -823,7 +824,7 @@ public class MatchingService {
       // 0 - +120
       final int nameSimilarity = nameSimilarity(queryNameType, canonicalName, m);
       // -72 - +40
-      final int authorSimilarity = incNegScore(authorSimilarity2(pn, m) * 2, 2);
+      final int authorSimilarity = incNegScore(authorSimilarity(pn, m) * 2, 2);
       // -50 - +50
       final int kingdomSimilarity =
           incNegScore(
@@ -1077,52 +1078,11 @@ public class MatchingService {
         null);
   }
 
-  // -12 to 8
+  // -18 - 20
   private int authorSimilarity(@Nullable ParsedName pn, NameUsageMatch m) {
     int similarity = 0;
-    if (pn != null) {
-      try {
-        ParsedName mpn =
-            NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
-        // authorship comparison was requested!
-        Equality recomb =
-            authComp.compareAuthorsFirst(
-                pn.getCombinationAuthorship(), mpn.getCombinationAuthorship());
-        Equality bracket =
-            authComp.compareAuthorsFirst(pn.getBasionymAuthorship(), mpn.getBasionymAuthorship());
-        if (bracket == Equality.UNKNOWN) {
-          // we don't have 2 bracket authors to compare. Try with combination authors as brackets
-          // are sometimes forgotten or wrong
-          if (pn.getBasionymAuthorship() != null) {
-            bracket = authComp.compare(pn.getBasionymAuthorship(), mpn.getCombinationAuthorship());
-          } else if (mpn.getBasionymAuthorship() != null) {
-            bracket = authComp.compare(pn.getCombinationAuthorship(), mpn.getBasionymAuthorship());
-          }
-          if (bracket == Equality.EQUAL) {
-            similarity -= 1;
-          } else if (bracket == Equality.DIFFERENT) {
-            similarity += 1;
-          }
-        }
-
-        similarity += equality2Similarity(recomb, 3);
-        similarity += equality2Similarity(bracket, 1);
-
-      } catch (UnparsableNameException e) {
-        if (e.getType().isParsable()) {
-          log.warn("Failed to parse name: {}", m.getUsage().getName());
-        }
-      } catch (Exception e) {
-        log.error("Error comparing authorship", e);
-      }
-    }
-
-    return similarity;
-  }
-
-  // -18 - 20
-  private int authorSimilarity2(@Nullable ParsedName pn, NameUsageMatch m) {
-    int similarity = 0;
+    Rank rank = ObjectUtils.coalesce(m.getUsage().getRank(), pn == null ? null : pn.getRank(), Rank.SPECIES);
+    int factor = rank.isSuprageneric() ? 2 : 6;
     if (pn != null) {
       try {
         var spn = ScientificName.wrap(pn);
@@ -1130,7 +1090,7 @@ public class MatchingService {
         var smn = ScientificName.wrap(mpn);
         // authorship comparison was requested!
         Equality eq = authComp.compare(spn, smn);
-        similarity = equality2Similarity(eq, 6);
+        similarity = equality2Similarity(eq, factor);
         // small penalty if query has authorship, but match doesn't
         if (spn.hasAuthorship() && !smn.hasAuthorship()) {
           similarity -= 2;
