@@ -90,7 +90,7 @@ class SyncSchedulerJob implements Runnable {
       var req = new DatasetSearchRequest();
       req.setOrigin(List.of(DatasetOrigin.PROJECT));
       var dm = session.getMapper(DatasetMapper.class);
-      var projectKeys = dm.searchKeys(req, User.ADMIN_MAGIC_KEY);
+      var projectKeys = dm.searchKeys(req, Users.SUPERUSER);
       for (int projKey : projectKeys) {
         var settings = dm.getSettings(projKey);
         if (settings.isEnabled(Setting.SYNC_SCHEDULER)) {
