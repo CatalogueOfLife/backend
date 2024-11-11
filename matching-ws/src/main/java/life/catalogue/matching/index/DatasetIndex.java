@@ -2,7 +2,7 @@ package life.catalogue.matching.index;
 
 import static life.catalogue.matching.util.IndexConstants.DATASETS_JSON;
 import static life.catalogue.matching.util.IndexConstants.*;
-import com.fasterxml.jackson.core.JsonParser;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -40,7 +40,6 @@ import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -634,7 +633,7 @@ public class DatasetIndex {
    * @param ignoredIssue the issue to add if the identifier is ignored
    * @return NameUsageMatch
    */
-  public NameUsageMatch matchByExternalKey(String suppliedKey, Issue notFoundIssue, Issue ignoredIssue) {
+  public NameUsageMatch matchByExternalKey(String suppliedKey, MatchingIssue notFoundIssue, MatchingIssue ignoredIssue) {
 
     // if join indexes are present, add them to the match
     if (identifierSearchers != null && !identifierSearchers.isEmpty()){
@@ -719,12 +718,12 @@ public class DatasetIndex {
     return dataset.getPrefixMapping().stream().anyMatch(key::startsWith);
   }
 
-  private static NameUsageMatch noMatch(Issue issue, String note) {
+  private static NameUsageMatch noMatch(MatchingIssue issue, String note) {
     return NameUsageMatch.builder()
       .diagnostics(
         NameUsageMatch.Diagnostics.builder()
           .matchType(MatchType.NONE)
-          .issues(new ArrayList<Issue>(List.of(issue)))
+          .issues(new ArrayList<MatchingIssue>(List.of(issue)))
           .note(note)
           .build())
       .synonym(false)

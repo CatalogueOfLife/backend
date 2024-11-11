@@ -1,6 +1,6 @@
 package life.catalogue.matching.model;
 
-public enum Issue {
+public enum MatchingIssue {
 
   /**
    * Indicates one of the following:

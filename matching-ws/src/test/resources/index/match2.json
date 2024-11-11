@@ -1,0 +1,208 @@
+{
+    "synonym": true,
+    "usage":
+    {
+        "key": "DBH22",
+        "name": "Polygala vulgaris var. vulgaris L., 1753",
+        "canonicalName": "Polygala vulgaris vulgaris",
+        "authorship": "L., 1753",
+        "rank": "VARIETY",
+        "genus": "Polygala",
+        "specificEpithet": "vulgaris",
+        "infraspecificEpithet": "vulgaris",
+        "candidatus": false,
+        "type": "SCIENTIFIC",
+        "extinct": false,
+        "combinationAuthorship":
+        {
+            "authors":
+            [
+                "L."
+            ],
+            "year": "1753"
+        },
+        "doubtful": false,
+        "manuscript": false,
+        "warnings":
+        [],
+        "trinomial": false,
+        "abbreviated": false,
+        "autonym": false,
+        "binomial": false,
+        "incomplete": false,
+        "indetermined": false,
+        "phraseName": false
+    },
+    "acceptedUsage":
+    {
+        "key": "7KNMP",
+        "name": "Polygala vulgaris subsp. vulgaris",
+        "canonicalName": "Polygala vulgaris vulgaris",
+        "rank": "SUBSPECIES",
+        "code": "BOTANICAL",
+        "genus": "Polygala",
+        "specificEpithet": "vulgaris",
+        "infraspecificEpithet": "vulgaris",
+        "candidatus": false,
+        "type": "SCIENTIFIC",
+        "extinct": false,
+        "doubtful": false,
+        "manuscript": false,
+        "warnings":
+        [],
+        "trinomial": false,
+        "abbreviated": false,
+        "autonym": false,
+        "binomial": false,
+        "incomplete": false,
+        "indetermined": false,
+        "phraseName": false
+    },
+    "classification":
+    [
+        {
+            "key": "5T6MX",
+            "name": "Biota",
+            "rank": "UNRANKED"
+        },
+        {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+        },
+        {
+            "key": "TP",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+        },
+        {
+            "key": "MG",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+        },
+        {
+            "key": "383",
+            "name": "Fabales",
+            "rank": "ORDER"
+        },
+        {
+            "key": "627KC",
+            "name": "Polygalaceae",
+            "rank": "FAMILY"
+        },
+        {
+            "key": "63NFF",
+            "name": "Polygala",
+            "rank": "GENUS"
+        },
+        {
+            "key": "4L8K5",
+            "name": "Polygala vulgaris",
+            "rank": "SPECIES"
+        },
+        {
+            "key": "7KNMP",
+            "name": "Polygala vulgaris vulgaris",
+            "rank": "SUBSPECIES"
+        }
+    ],
+    "diagnostics":
+    {
+        "matchType": "EXACT",
+        "issues":
+        [
+            "TAXON_ID_NOT_FOUND"
+        ],
+        "confidence": 100,
+        "status": "SYNONYM",
+        "note": "Similarity: name=110; authorship=20; classification=34; rank=-5; status=0; score=159; nextMatch=5",
+        "timeTaken": 54,
+        "alternatives":
+        [
+            {
+                "synonym": false,
+                "usage":
+                {
+                    "key": "7KNMP",
+                    "name": "Polygala vulgaris subsp. vulgaris",
+                    "canonicalName": "Polygala vulgaris vulgaris",
+                    "rank": "SUBSPECIES",
+                    "code": "BOTANICAL",
+                    "genus": "Polygala",
+                    "specificEpithet": "vulgaris",
+                    "infraspecificEpithet": "vulgaris",
+                    "candidatus": false,
+                    "type": "SCIENTIFIC",
+                    "extinct": false,
+                    "doubtful": false,
+                    "manuscript": false,
+                    "warnings":
+                    [],
+                    "trinomial": false,
+                    "abbreviated": false,
+                    "autonym": false,
+                    "binomial": false,
+                    "incomplete": false,
+                    "indetermined": false,
+                    "phraseName": false
+                },
+                "classification":
+                [
+                    {
+                        "key": "5T6MX",
+                        "name": "Biota",
+                        "rank": "UNRANKED"
+                    },
+                    {
+                        "key": "P",
+                        "name": "Plantae",
+                        "rank": "KINGDOM"
+                    },
+                    {
+                        "key": "TP",
+                        "name": "Tracheophyta",
+                        "rank": "PHYLUM"
+                    },
+                    {
+                        "key": "MG",
+                        "name": "Magnoliopsida",
+                        "rank": "CLASS"
+                    },
+                    {
+                        "key": "383",
+                        "name": "Fabales",
+                        "rank": "ORDER"
+                    },
+                    {
+                        "key": "627KC",
+                        "name": "Polygalaceae",
+                        "rank": "FAMILY"
+                    },
+                    {
+                        "key": "63NFF",
+                        "name": "Polygala",
+                        "rank": "GENUS"
+                    },
+                    {
+                        "key": "4L8K5",
+                        "name": "Polygala vulgaris",
+                        "rank": "SPECIES"
+                    },
+                    {
+                        "key": "7KNMP",
+                        "name": "Polygala vulgaris vulgaris",
+                        "rank": "SUBSPECIES"
+                    }
+                ],
+                "diagnostics":
+                {
+                    "matchType": "EXACT",
+                    "confidence": 100,
+                    "status": "ACCEPTED",
+                    "note": "Similarity: name=110; authorship=-4; classification=34; rank=6; status=1; score=147",
+                    "timeTaken": 0
+                }
+            }
+        ]
+    }
+}

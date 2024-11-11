@@ -94,15 +94,6 @@ public class MatchingService {
           TaxonomicStatus.PROVISIONALLY_ACCEPTED, -5,
           TaxonomicStatus.MISAPPLIED, -10);
 
-  private static final Pattern FIRST_WORD = Pattern.compile("^(.+?)\\b");
-  private static final List<Rank> HIGHER_RANKS;
-
-  static {
-    List<Rank> ranks = Lists.newArrayList(Rank.LINNEAN_RANKS);
-    ranks.remove(Rank.SPECIES);
-    HIGHER_RANKS = ImmutableList.copyOf(ranks);
-  }
-
   private final AuthorComparator authComp;
 
   private final static Pattern TAB_PAT = Pattern.compile("\t");
@@ -315,8 +306,8 @@ public class MatchingService {
     if (StringUtils.isNotBlank(query.taxonID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
         query.taxonID,
-        Issue.TAXON_ID_NOT_FOUND,
-        Issue.TAXON_MATCH_TAXON_ID_IGNORED
+        MatchingIssue.TAXON_ID_NOT_FOUND,
+        MatchingIssue.TAXON_MATCH_TAXON_ID_IGNORED
         );
       log.debug(
         "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
@@ -328,14 +319,14 @@ public class MatchingService {
           idMatch.getDiagnostics().setTimeTaken(watch.getTime());
           return idMatch;
       } else {
-        sciNameMatch.addMatchIssue(Issue.TAXON_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchingIssue.TAXON_ID_NOT_FOUND);
       }
     }
 
     // Match with taxonConceptID
     if (StringUtils.isNotBlank(query.taxonConceptID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
-        query.taxonConceptID, Issue.TAXON_CONCEPT_ID_NOT_FOUND, Issue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
+        query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
       log.debug(
         "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
       if (isMatch(idMatch)){
@@ -345,14 +336,14 @@ public class MatchingService {
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());
         return idMatch;
       } else {
-        sciNameMatch.addMatchIssue(Issue.TAXON_CONCEPT_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND);
       }
     }
 
     // Match with scientificNameID
     if (StringUtils.isNotBlank(query.scientificNameID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(query.scientificNameID,
-        Issue.SCIENTIFIC_NAME_ID_NOT_FOUND, Issue.TAXON_MATCH_SCIENTIFIC_NAME_ID_IGNORED);
+        MatchingIssue.SCIENTIFIC_NAME_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_SCIENTIFIC_NAME_ID_IGNORED);
       log.debug(
         "{} Match of scientificNameID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.scientificNameID, watch);
       if (isMatch(idMatch)) {
@@ -362,7 +353,7 @@ public class MatchingService {
         idMatch.getDiagnostics().setTimeTaken(watch.getTime());
         return idMatch;
       } else {
-        sciNameMatch.addMatchIssue(Issue.SCIENTIFIC_NAME_ID_NOT_FOUND);
+        sciNameMatch.addMatchIssue(MatchingIssue.SCIENTIFIC_NAME_ID_NOT_FOUND);
       }
     }
 
@@ -382,7 +373,7 @@ public class MatchingService {
       if (!Objects.equals(idMatch.getUsage().getKey(), sciNameMatch.getUsage().getKey())) {
         log.warn("Inconsistent match for taxonID[{}]: {} vs {}",
           idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), sciNameMatch.getUsage().getCanonicalName());
-        idMatch.addMatchIssue(Issue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
+        idMatch.addMatchIssue(MatchingIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
       }
     }
   }
@@ -403,7 +394,7 @@ public class MatchingService {
         if (!idMatch.getUsage().getCanonicalName().equalsIgnoreCase(canonicalName)) {
           log.warn("Inconsistent scientific name for taxonID[{}]: {} vs {}",
             idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), scientificName);
-          idMatch.addMatchIssue(Issue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT);
+          idMatch.addMatchIssue(MatchingIssue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT);
         }
       } catch (Exception e){
         log.warn("Failed to parse scientific name in consistency check {}", scientificName, e);
@@ -442,7 +433,7 @@ public class MatchingService {
     if (classification == null) {
       classification = new Classification();
     } else {
-      cleanClassification(classification);
+      CleanupUtils.clean(classification);
     }
 
     // treat names that are all upper or lower case special - they cannot be parsed properly so
@@ -674,20 +665,6 @@ public class MatchingService {
         .findFirst()
         .map(c -> c.getName())
         .orElse(null);
-  }
-
-  private void cleanClassification(LinneanClassification cl) {
-    for (Rank rank : HIGHER_RANKS) {
-      if (cl.getHigherRank(rank) != null) {
-        String val = CleanupUtils.clean(cl.getHigherRank(rank));
-        if (val != null) {
-          Matcher m = FIRST_WORD.matcher(val);
-          if (m.find()) {
-            cl.setHigherRank(m.group(1), rank);
-          }
-        }
-      }
-    }
   }
 
   public String getGenusOrAbove(ParsedName parsedName) {
@@ -1091,15 +1068,15 @@ public class MatchingService {
         // authorship comparison was requested!
         Equality eq = authComp.compare(spn, smn);
         similarity = equality2Similarity(eq, factor);
-        // small penalty if query has authorship, but match doesn't
-        if (spn.hasAuthorship() && !smn.hasAuthorship()) {
-          similarity -= 2;
+        // small penalty if query has authorship, but match doesn't - excluding autonyms which should not have any authorship
+        if (spn.hasAuthorship() && !smn.hasAuthorship() && !mpn.isAutonym()) {
+          similarity -= 1;
         }
         if (spn.hasAuthorship() && smn.hasAuthorship() && Objects.equals(
             AuthorshipNormalizer.normalize(spn.getAuthorship()),
             AuthorshipNormalizer.normalize(smn.getAuthorship())
         )) {
-          similarity += 8;
+          similarity += mpn.isAutonym() || pn.isAutonym() ? 1 : 8;
         }
 
       } catch (UnparsableNameException e) {
@@ -1196,7 +1173,7 @@ public class MatchingService {
 
   private static NameUsageMatch noMatch(
     int confidence,
-    @NotNull List<Issue> issues,
+    @NotNull List<MatchingIssue> issues,
     String note,
     List<NameUsageMatch> alternatives) {
     return NameUsageMatch.builder()
@@ -1351,7 +1328,8 @@ public class MatchingService {
 
         } else {
           var diff = ref.ordinal() - query.ordinal();
-          similarity -= Math.abs(Math.ceil(diff / 2.0));
+          double factor = ref.isSuprageneric() || query.isSuprageneric() ? 2.0 : 1.0;
+          similarity -= Math.abs(Math.ceil(diff / factor));
         }
       }
 

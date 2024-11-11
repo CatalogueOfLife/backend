@@ -20,13 +20,12 @@ import com.google.common.collect.Maps;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
+import life.catalogue.matching.model.NameUsageMatch;
 import life.catalogue.matching.model.NameUsageMatchFlatV1;
 import life.catalogue.matching.model.NameUsageMatchV1;
 import life.catalogue.matching.service.IndexingService;
@@ -54,7 +53,7 @@ public class MatchingTestConfiguration {
 
   @Bean
   public static DatasetIndex provideIndex() throws IOException {
-    Directory dir = IndexingService.newMemoryIndex(loadIndexFromV1Responses());
+    Directory dir = IndexingService.newMemoryIndex(loadIndexFromV1Responses(), loadIndexFromV2Responses());
     return DatasetIndex.newDatasetIndex(dir);
   }
 
@@ -84,7 +83,7 @@ public class MatchingTestConfiguration {
 
     int id = 1;
 
-    try (FileWriter writer = new FileWriter("/tmp/test.csv")) {
+    try (FileWriter writer = new FileWriter("/tmp/testv1.csv")) {
       while (id < 300) {
         String file = "index/nub" + id + ".json";
         InputStream json = IOUtils.classpathStream(file);
@@ -129,6 +128,132 @@ public class MatchingTestConfiguration {
       e.printStackTrace();
     }
     return Lists.newArrayList(usages.values());
+  }
+
+  /**
+   * Load all matchXX.json files from the index resources into a distinct list of NameUsage instances.
+   * The individual matchXX.json files are regular results of a NameUsageMatch (v2) and can be added
+   * to the folder to be picked up here.
+   */
+  private static List<NameUsage> loadIndexFromV2Responses() {
+    Map<String, NameUsage> usages = Maps.newHashMap();
+
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+    int id = 1;
+
+    try (FileWriter writer = new FileWriter("/tmp/testv2.csv")) {
+      while (id < 10) {
+        String file = "index/match" + id + ".json";
+        InputStream json = IOUtils.classpathStream(file);
+        if (json != null) {
+          try {
+            NameUsageMatch m = mapper.readValue(json, NameUsageMatch.class);
+            for (NameUsage u : extractUsagesFromV2Responses(m)) {
+              if (u != null) {
+                NameUsage existing = usages.get(u.getId());
+                if (existing == null) {
+                  usages.put(u.getId(), u);
+                } else {
+                  if (existing.getAuthorship() == null && u.getAuthorship() != null) {
+                    usages.put(u.getId(), u);
+                  }
+                }
+              }
+            }
+          } catch (IOException e) {
+            Assertions.fail("Failed to read " + file + ": " + e.getMessage());
+          }
+        }
+        id++;
+      }
+      for (NameUsage u : usages.values()) {
+        writer.write(
+          u.getId()
+            + ","
+            + u.getScientificName()
+            + ","
+            + u.getAuthorship()
+            + ","
+            + u.getRank()
+            + ","
+            + u.getStatus()
+            + ","
+            + u.getParentId()
+            + "\n");
+      }
+      writer.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return Lists.newArrayList(usages.values());
+  }
+
+  private static NameUsage toNU(NameUsageMatch m, String parentID) {
+    var nb = toNU(m.getUsage(), parentID);
+    if (m.isSynonym()) {
+      nb.status(TaxonomicStatus.SYNONYM.name());
+    } else if (m.getUsage().isDoubtful()) {
+      nb.status(TaxonomicStatus.PROVISIONALLY_ACCEPTED.name());
+    }
+    return nb.build();
+  }
+  private static NameUsage.NameUsageBuilder toNU(NameUsageMatch.Usage u, String parentID) {
+    return NameUsage.builder()
+      .id(u.getKey())
+      .parentId(parentID)
+      .scientificName(u.getName())
+      .authorship(u.getAuthorship())
+      .rank(u.getRank().name())
+      .status(TaxonomicStatus.ACCEPTED.name());
+  }
+  private static NameUsage toNU(NameUsageMatch.RankedName u, String parentID) {
+    return NameUsage.builder()
+      .id(u.getKey())
+      .parentId(parentID)
+      .scientificName(u.getName())
+      .rank(u.getRank().name())
+      .status(TaxonomicStatus.ACCEPTED.name())
+      .build();
+  }
+
+  private static Map<String, NameUsage> extractUsagesNoDiagnostics(NameUsageMatch m) {
+    Map<String, NameUsage> usages = new HashMap<>();
+    LinkedList<NameUsageMatch.RankedName> classification = m.getClassification() == null ? new LinkedList<>() : new LinkedList<>(m.getClassification());
+    String pid = null;
+
+    // first entire classification as it has the least details and can be overwritten below
+    for (var cl : classification) {
+      usages.put(cl.getKey(), toNU(cl, pid));
+      pid = cl.getKey();
+    }
+
+    if (m.getAcceptedUsage() != null) {
+      pid = usages.get(m.getAcceptedUsage().getKey()).getParentId();
+      usages.put(m.getAcceptedUsage().getKey(), toNU(m.getAcceptedUsage(), pid).build());
+      pid = m.getAcceptedUsage().getKey();
+    }
+
+    if (m.getUsage() != null) {
+      pid = m.getAcceptedUsage() != null ?
+        m.getAcceptedUsage().getKey() :
+        usages.get(m.getUsage().getKey()).getParentId();
+      usages.put(m.getUsage().getKey(), toNU(m, pid));
+    }
+
+    return usages;
+  }
+
+  private static List<NameUsage> extractUsagesFromV2Responses(NameUsageMatch m) {
+    Map<String, NameUsage> usages = extractUsagesNoDiagnostics(m);
+
+    if (m.getDiagnostics() != null && m.getDiagnostics().getAlternatives() != null) {
+      m.getDiagnostics().getAlternatives().forEach(a -> {
+            usages.putAll(extractUsagesNoDiagnostics(a));
+      });
+    }
+    return usages.values().stream().collect(Collectors.toUnmodifiableList());
   }
 
   /**

@@ -463,7 +463,7 @@ public class IndexingService {
     }
   }
 
-  public static Directory newMemoryIndex(Iterable<NameUsage> usages) throws IOException {
+  public static Directory newMemoryIndex(Iterable<NameUsage>... usages) throws IOException {
     log.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
     IndexWriter writer = getIndexWriter(dir);
@@ -471,10 +471,12 @@ public class IndexingService {
     // creates initial index segments
     writer.commit();
     int counter = 0;
-    for (NameUsage u : usages) {
-      if (u != null && u.getId() != null) {
-        writer.addDocument(toDoc(u));
-        counter ++;
+    for (var iter : usages) {
+      for (NameUsage u : iter) {
+        if (u != null && u.getId() != null) {
+          writer.addDocument(toDoc(u));
+          counter ++;
+        }
       }
     }
     writer.close();

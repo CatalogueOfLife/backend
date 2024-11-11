@@ -37,7 +37,7 @@ public class NameUsageMatchV1 {
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level")
   DiagnosticsV1 diagnostics;
   @Schema(description = "Issues with the name usage match that has been returned")
-  List<Issue> issues;
+  List<MatchingIssue> issues;
 
   @Data
   @Builder

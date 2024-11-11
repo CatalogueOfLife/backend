@@ -2,6 +2,9 @@ package life.catalogue.matching.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
 import life.catalogue.matching.model.LinneanClassification;
 
 import life.catalogue.parser.RankParser;
@@ -12,8 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.Rank;
 
 import java.text.Normalizer;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -23,8 +28,17 @@ import java.util.regex.Pattern;
 public class CleanupUtils {
 
   private static final Pattern NULL_PATTERN = Pattern.compile("^\\s*(\\\\N|\\\\?NULL|null)\\s*$");
+  private static final Pattern BRACKET_PATTERN = Pattern.compile("(\\[.+]|\\{.+\\})");
   private static final CharMatcher SPACE_MATCHER =
       CharMatcher.whitespace().or(CharMatcher.javaIsoControl());
+  private static final Pattern FIRST_WORD = Pattern.compile("^(.+?)\\b");
+  private static final List<Rank> HIGHER_RANKS;
+
+  static {
+    List<Rank> ranks = Lists.newArrayList(Rank.LINNEAN_RANKS);
+    ranks.remove(Rank.SPECIES);
+    HIGHER_RANKS = ImmutableList.copyOf(ranks);
+  }
 
   /**
    * Does a conservative, generic cleaning of strings including: - trims and replaces various
@@ -35,27 +49,31 @@ public class CleanupUtils {
     if (Strings.isNullOrEmpty(x) || NULL_PATTERN.matcher(x).find()) {
       return null;
     }
+    // remove all content within square or curly brackets
+    x = BRACKET_PATTERN.matcher(x).replaceAll("");
     x = SPACE_MATCHER.trimAndCollapseFrom(x, ' ');
     // normalise unicode into NFC
     x = Normalizer.normalize(x, Normalizer.Form.NFC);
+
     return Strings.emptyToNull(x.trim());
   }
 
-  /**
-   * @param classification the classification object to clean
-   * @return a new cleaned classification object
-   */
-  public static LinneanClassification clean(LinneanClassification classification) {
-    classification.setKingdom(clean(classification.getKingdom()));
-    classification.setPhylum(clean(classification.getPhylum()));
-    classification.setClazz(clean(classification.getClazz()));
-    classification.setOrder(clean(classification.getOrder()));
-    classification.setFamily(clean(classification.getFamily()));
-    classification.setGenus(clean(classification.getGenus()));
-    classification.setSubgenus(clean(classification.getSubgenus()));
-    classification.setSpecies(clean(classification.getSpecies()));
-    return classification;
+  public static LinneanClassification clean(LinneanClassification cl) {
+    for (Rank rank : HIGHER_RANKS) {
+      if (cl.getHigherRank(rank) != null) {
+        String val = CleanupUtils.clean(cl.getHigherRank(rank));
+        if (val != null) {
+          Matcher m = FIRST_WORD.matcher(val);
+          if (m.find()) {
+            cl.setHigherRank(m.group(1), rank);
+          }
+        }
+      }
+    }
+    cl.setSpecies(clean(cl.getSpecies()));
+    return cl;
   }
+
 
   public static String removeNulls(String value) {
     if (value == null) {

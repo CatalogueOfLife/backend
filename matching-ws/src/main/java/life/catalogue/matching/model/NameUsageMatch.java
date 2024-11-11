@@ -40,6 +40,66 @@ public class NameUsageMatch implements LinneanClassification {
   @Schema(description = "Status information from external sources such as IUCN Red List")
   List<Status> additionalStatus;
 
+  public NameUsageMatch() {
+  }
+
+  public NameUsageMatch(boolean synonym, Usage usage, Usage acceptedUsage, List<RankedName> classification, Diagnostics diagnostics, List<Status> additionalStatus) {
+    this.synonym = synonym;
+    this.usage = usage;
+    this.acceptedUsage = acceptedUsage;
+    this.classification = classification;
+    this.diagnostics = diagnostics;
+    this.additionalStatus = additionalStatus;
+  }
+
+  public boolean isSynonym() {
+    return synonym;
+  }
+
+  public void setSynonym(boolean synonym) {
+    this.synonym = synonym;
+  }
+
+  public Usage getUsage() {
+    return usage;
+  }
+
+  public void setUsage(Usage usage) {
+    this.usage = usage;
+  }
+
+  public Usage getAcceptedUsage() {
+    return acceptedUsage;
+  }
+
+  public void setAcceptedUsage(Usage acceptedUsage) {
+    this.acceptedUsage = acceptedUsage;
+  }
+
+  public List<RankedName> getClassification() {
+    return classification;
+  }
+
+  public void setClassification(List<RankedName> classification) {
+    this.classification = classification;
+  }
+
+  public Diagnostics getDiagnostics() {
+    return diagnostics;
+  }
+
+  public void setDiagnostics(Diagnostics diagnostics) {
+    this.diagnostics = diagnostics;
+  }
+
+  public List<Status> getAdditionalStatus() {
+    return additionalStatus;
+  }
+
+  public void setAdditionalStatus(List<Status> additionalStatus) {
+    this.additionalStatus = additionalStatus;
+  }
+
   private String nameFor(Rank rank) {
     if (classification == null)
       return null;
@@ -100,7 +160,7 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   @JsonIgnore
-  public void addMatchIssue(Issue issue) {
+  public void addMatchIssue(MatchingIssue issue) {
     if (diagnostics == null) {
       diagnostics = Diagnostics.builder().build();
     }
@@ -295,7 +355,7 @@ public class NameUsageMatch implements LinneanClassification {
     @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
     MatchType matchType;
     @Schema(description = "Issues with the name usage match that has been returned")
-    List<Issue> issues;
+    List<MatchingIssue> issues;
     @Schema(description = "Issues encountered during steps of the match process")
     List<ProcessFlag> processingFlags;
     @Schema(description = "Confidence level in percent")
@@ -308,6 +368,84 @@ public class NameUsageMatch implements LinneanClassification {
     long timeTaken;
     @Schema(description = "A list of similar matches with lower confidence scores ")
     List<NameUsageMatch> alternatives;
+
+    public Diagnostics() {
+    }
+
+    public Diagnostics(MatchType matchType, List<MatchingIssue> issues, List<ProcessFlag> processingFlags, Integer confidence, TaxonomicStatus status, String note, long timeTaken, List<NameUsageMatch> alternatives) {
+      this.matchType = matchType;
+      this.issues = issues;
+      this.processingFlags = processingFlags;
+      this.confidence = confidence;
+      this.status = status;
+      this.note = note;
+      this.timeTaken = timeTaken;
+      this.alternatives = alternatives;
+    }
+
+    public MatchType getMatchType() {
+      return matchType;
+    }
+
+    public void setMatchType(MatchType matchType) {
+      this.matchType = matchType;
+    }
+
+    public List<MatchingIssue> getIssues() {
+      return issues;
+    }
+
+    public void setIssues(List<MatchingIssue> issues) {
+      this.issues = issues;
+    }
+
+    public List<ProcessFlag> getProcessingFlags() {
+      return processingFlags;
+    }
+
+    public void setProcessingFlags(List<ProcessFlag> processingFlags) {
+      this.processingFlags = processingFlags;
+    }
+
+    public Integer getConfidence() {
+      return confidence;
+    }
+
+    public void setConfidence(Integer confidence) {
+      this.confidence = confidence;
+    }
+
+    public TaxonomicStatus getStatus() {
+      return status;
+    }
+
+    public void setStatus(TaxonomicStatus status) {
+      this.status = status;
+    }
+
+    public String getNote() {
+      return note;
+    }
+
+    public void setNote(String note) {
+      this.note = note;
+    }
+
+    public long getTimeTaken() {
+      return timeTaken;
+    }
+
+    public void setTimeTaken(long timeTaken) {
+      this.timeTaken = timeTaken;
+    }
+
+    public List<NameUsageMatch> getAlternatives() {
+      return alternatives;
+    }
+
+    public void setAlternatives(List<NameUsageMatch> alternatives) {
+      this.alternatives = alternatives;
+    }
   }
 
   /**

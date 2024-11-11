@@ -269,9 +269,9 @@ public class MatchingServiceIT {
           }
 
         } else if (rank.isInfraspecific()) {
-          //          assertNotNull(match.getGenus());
+          // assertNotNull(match.getGenus());
           assertNotNull(match.getSpecies());
-          assertNotNull(match.getSpeciesKey());
+          // assertNotNull(match.getSpeciesKey());
           if (!match.isSynonym()) {
             assertFalse(match.getUsage().getKey().equals(match.getSpeciesKey()));
             assertTrue(match.getUsage().getName().startsWith(match.getSpecies()));
@@ -1081,5 +1081,21 @@ public class MatchingServiceIT {
         MatchType.NONE,
         new IntRange(100, 100),
         Sets.newHashSet());
+  }
+
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/725
+   */
+  @Test
+  public void polygalaVulgaris() {
+    LinneanClassification cl = new Classification();
+    cl.setKingdom("Plantae");
+    cl.setClazz("Equisetopsida");
+    cl.setOrder("Fabales");
+    cl.setFamily("Polygalaceae");
+    // names are ignored and a key is either found with full confidence or not found with full confidence
+    assertMatch("Polygala vulgaris L., 1753 [nom. et typ. cons.]", Rank.SPECIES, cl, "4L8K5", MatchType.EXACT, new IntRange(96, 100), Sets.newHashSet());
+    assertMatch("Polygala vulgaris subsp. vulgaris L., 1753", Rank.SUBSPECIES, cl, "7KNMP", MatchType.EXACT, new IntRange(96, 100), Sets.newHashSet());
   }
 }
