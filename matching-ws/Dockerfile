@@ -62,6 +62,11 @@ ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
 ENV APP_ARTIFACT=matching-ws
 
+ENV APP_NAME=matching-ws
+ENV ZK_ENABLED="false"
+ENV ZK_CONNECT_STRING=""
+ENV ZK_DISCOVERY_ROOT=""
+
 # Set environment variables
 ARG CLB_DATASET_ID=""
 ARG CLB_IUCN_DATASET_ID=""
@@ -79,7 +84,7 @@ RUN mkdir -p /data/$APP_ARTIFACT && \
 WORKDIR /opt/gbif/$APP_ARTIFACT
 
 # Copy the executable JAR file from the builder image to the new image
-COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
+COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
 COPY --from=builder /app/backend/matching-ws/src/main/resources/bootstrap.yaml /opt/gbif/$APP_ARTIFACT/bootstrap.yaml
 COPY --from=builder /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
 COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
@@ -104,4 +109,17 @@ RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 USER $USER
 EXPOSE $SERVER_PORT
 
-CMD java $JVM_OPTIONS -jar app.jar --server.servlet.context-path=$SERVLET_CONTEXT_PATH --server.port=$SERVER_PORT --working.dir=/opt/gbif/$APP_ARTIFACT/ --mode=RUN --spring.cloud.bootstrap.location=/opt/gbif/$APP_ARTIFACT/bootstrap.yaml
+CMD java $JVM_OPTIONS \
+    -jar app.jar \
+    --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
+    --server.port=$SERVER_PORT \
+    --working.dir=/opt/gbif/$APP_ARTIFACT/ \
+    --spring.application.name=$APP_NAME \
+    --spring.cloud.zookeeper.enabled=$ZK_ENABLED \
+    --spring.cloud.zookeeper.discovery.enabled=$ZK_ENABLED \
+    --spring.cloud.zookeeper.config.enabled=$ZK_ENABLED \
+    --spring.cloud.zookeeper.connect-string=$ZK_CONNECT_STRING \
+    --spring.cloud.zookeeper.discovery.root=$ZK_DISCOVERY_ROOT \
+    --spring.cloud.zookeeper.discovery.metadata.zkHost=$ZK_CONNECT_STRING \
+    --spring.cloud.zookeeper.discovery.metadata.zkPath=$ZK_DISCOVERY_ROOT \
+    --mode=RUN
