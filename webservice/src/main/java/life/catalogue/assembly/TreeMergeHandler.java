@@ -485,7 +485,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private boolean proposedParentDoesNotConflict(SimpleName existing, SimpleName existingParent, SimpleName proposedParent) {
     boolean existingParentFound = false;
     if (existingParent.getRank().higherThan(proposedParent.getRank())
-           && !existingParent.getId().equals(proposedParent.getId())
+        && proposedParent.getRank().higherThan(existing.getRank())
+        && !existingParent.getId().equals(proposedParent.getId())
     ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
       // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
