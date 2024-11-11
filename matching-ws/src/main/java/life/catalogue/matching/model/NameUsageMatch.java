@@ -40,66 +40,6 @@ public class NameUsageMatch implements LinneanClassification {
   @Schema(description = "Status information from external sources such as IUCN Red List")
   List<Status> additionalStatus;
 
-  public NameUsageMatch() {
-  }
-
-  public NameUsageMatch(boolean synonym, Usage usage, Usage acceptedUsage, List<RankedName> classification, Diagnostics diagnostics, List<Status> additionalStatus) {
-    this.synonym = synonym;
-    this.usage = usage;
-    this.acceptedUsage = acceptedUsage;
-    this.classification = classification;
-    this.diagnostics = diagnostics;
-    this.additionalStatus = additionalStatus;
-  }
-
-  public boolean isSynonym() {
-    return synonym;
-  }
-
-  public void setSynonym(boolean synonym) {
-    this.synonym = synonym;
-  }
-
-  public Usage getUsage() {
-    return usage;
-  }
-
-  public void setUsage(Usage usage) {
-    this.usage = usage;
-  }
-
-  public Usage getAcceptedUsage() {
-    return acceptedUsage;
-  }
-
-  public void setAcceptedUsage(Usage acceptedUsage) {
-    this.acceptedUsage = acceptedUsage;
-  }
-
-  public List<RankedName> getClassification() {
-    return classification;
-  }
-
-  public void setClassification(List<RankedName> classification) {
-    this.classification = classification;
-  }
-
-  public Diagnostics getDiagnostics() {
-    return diagnostics;
-  }
-
-  public void setDiagnostics(Diagnostics diagnostics) {
-    this.diagnostics = diagnostics;
-  }
-
-  public List<Status> getAdditionalStatus() {
-    return additionalStatus;
-  }
-
-  public void setAdditionalStatus(List<Status> additionalStatus) {
-    this.additionalStatus = additionalStatus;
-  }
-
   private String nameFor(Rank rank) {
     if (classification == null)
       return null;
