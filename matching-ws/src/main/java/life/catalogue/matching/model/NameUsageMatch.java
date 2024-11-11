@@ -25,6 +25,8 @@ import org.gbif.nameparser.api.Rank;
 @Data
 @Builder
 @Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
+@AllArgsConstructor
+@NoArgsConstructor
 public class NameUsageMatch implements LinneanClassification {
 
   @Schema(description = "If the matched usage is a synonym")
