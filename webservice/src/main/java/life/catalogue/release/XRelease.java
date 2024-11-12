@@ -221,20 +221,7 @@ public class XRelease extends ProjectRelease {
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
-    // detect and group basionyms
-    if (xCfg.homotypicConsolidation) {
-      final LocalDateTime start = LocalDateTime.now();
-      final var prios = new SectorPriority(getDatasetKey(), factory);
-      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
-      if (xCfg.basionymExclusions != null) {
-        hc.setBasionymExclusions(xCfg.basionymExclusions);
-      }
-      hc.consolidate(xCfg.homotypicConsolidationThreads);
-      DateUtils.logDuration(LOG, hc.getClass(), start);
-
-    } else {
-      LOG.warn("Homotypic grouping disabled in xrelease configs");
-    }
+    processWithPrio();
 
     // flagging of suspicious usages
     validateAndCleanTree();
@@ -254,6 +241,25 @@ public class XRelease extends ProjectRelease {
     usageIdGen.report();
     // finally also call the shared part which e.g. archives metadata and creates source dataset records
     super.finalWork();
+  }
+
+  private void processWithPrio() {
+    final var prios = new SectorPriority(getDatasetKey(), factory);
+    // detect and group basionyms
+    if (xCfg.homotypicConsolidation) {
+      final LocalDateTime start = LocalDateTime.now();
+      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
+      if (xCfg.basionymExclusions != null) {
+        hc.setBasionymExclusions(xCfg.basionymExclusions);
+      }
+      hc.consolidate(xCfg.homotypicConsolidationThreads);
+      DateUtils.logDuration(LOG, hc.getClass(), start);
+
+    } else {
+      LOG.warn("Homotypic grouping disabled in xrelease configs");
+    }
+
+    flagDuplicatesAsProvisional(prios);
   }
 
   private void updateMetadata() {
@@ -525,6 +531,47 @@ public class XRelease extends ProjectRelease {
       LOG.error("Name validation & cleaning failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
+  }
+
+
+  /**
+   * Assigns a doubtful status to accepted names that only differ in authorship
+   */
+  private void flagDuplicatesAsProvisional(SectorPriority prios) {
+    LOG.info("Find homonyms and mark as provisional");
+    final LocalDateTime start = LocalDateTime.now();
+    try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var dum = session.getMapper(DuplicateMapper.class);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      // same names with the same rank and code
+      var dupes = dum.homonyms(newDatasetKey, Set.of(TaxonomicStatus.ACCEPTED));
+      LOG.info("Marking {} homonyms as provisional", dupes.size());
+
+      int counter = 0;
+      final DSID<String> key = DSID.root(newDatasetKey);
+      for (var d : dupes) {
+        int min = Integer.MAX_VALUE;
+        for (var u : d.getUsages()) {
+          min = Math.min(min, prios.priority(u.getSectorKey()));
+        }
+        for (var u : d.getUsages()) {
+          if (prios.priority(u.getSectorKey()) > min) {
+            num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
+            vsm.addIssue(key, Issue.DUPLICATE_NAME);
+            if (counter++ % 1000 == 0) {
+              session.commit();
+            }
+          }
+        }
+      }
+      session.commit();
+      LOG.info("Changed {} homonyms to provisional status", counter);
+
+    } catch (Exception e) {
+      LOG.error("Homonym flagging failed", e);
+    }
+    DateUtils.logDuration(LOG, "Homonym flagging", start);
   }
 
 }

@@ -207,8 +207,25 @@ public class DuplicateMapperTest {
       new Page(0, 5));
     assertEquals(0, dups.size());
   }
-  
+
   @Test
+  public void homonyms() {
+    var homs = mapper.homonyms(datasetKey, null);
+    assertEquals(21, homs.size());
+    for (var h : homs) {
+      assertFalse(h.getUsages().isEmpty());
+      for (var u : h.getUsages()) {
+        assertNotNull(u.id);
+        assertNull(u.sectorKey);
+      }
+    }
+
+    homs = mapper.homonyms(datasetKey, Set.of(TaxonomicStatus.ACCEPTED));
+    assertEquals(0, homs.size());
+  }
+
+
+    @Test
   public void duplicateNames() {
     List<Duplicate.Mybatis> dups = mapper.duplicateNames(MatchingMode.STRICT, null, 2, datasetKey,  NameCategory.BINOMIAL,
         Sets.newHashSet(Rank.SPECIES), false, false, false, new Page(0, 2));

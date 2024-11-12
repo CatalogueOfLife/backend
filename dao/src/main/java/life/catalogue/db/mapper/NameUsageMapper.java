@@ -248,6 +248,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
+   * Sets a taxon as provisional
+   * @param key
+   * @param status
+   * @param userKey
+   */
+  void updateStatus(@Param("key") DSID<String> key,
+                    @Param("status") TaxonomicStatus status,
+                    @Param("userKey") int userKey);
+
+  /**
    * Moves the taxon given to a new parent by updating the parent_id and also sets a new status value.
    * @param key the taxon to update
    * @param parentId the new parentId to assign

@@ -27,16 +27,16 @@ public interface DuplicateMapper {
    * See DuplicateDao for parameter descriptions...
    */
   List<Duplicate.Mybatis> duplicateNames(@Param("mode") MatchingMode mode,
-                                 @Param("query") String query,
-                                 @Param("minSize") Integer minSize,
-                                 @Param("datasetKey") int datasetKey,
-                                 @Param("category") NameCategory category,
-                                 @Param("ranks") Set<Rank> ranks,
-                                 @Param("authorshipDifferent") Boolean authorshipDifferent,
-                                 @Param("rankDifferent") Boolean rankDifferent,
-                                 @Param("codeDifferent") Boolean codeDifferent,
-                                 @Param("page") Page page);
-  
+                                         @Param("query") String query,
+                                         @Param("minSize") Integer minSize,
+                                         @Param("datasetKey") int datasetKey,
+                                         @Param("category") NameCategory category,
+                                         @Param("ranks") Set<Rank> ranks,
+                                         @Param("authorshipDifferent") Boolean authorshipDifferent,
+                                         @Param("rankDifferent") Boolean rankDifferent,
+                                         @Param("codeDifferent") Boolean codeDifferent,
+                                         @Param("page") Page page);
+
   /**
    * @param ids usage ids to return usage decisions for
    */
@@ -53,40 +53,40 @@ public interface DuplicateMapper {
    * See DuplicateDao for parameter descriptions...
    */
   List<Duplicate.Mybatis> duplicates(@Param("mode") MatchingMode mode,
-                             @Param("query") String query,
-                             @Param("minSize") Integer minSize,
-                             @Param("datasetKey") int datasetKey,
-                             @Param("sourceDatasetKey") Integer sourceDatasetKey,
-                             @Param("sectorKey") Integer sectorKey,
-                             @Param("category") NameCategory category,
-                             @Param("ranks") Set<Rank> ranks,
-                             @Param("status") Set<TaxonomicStatus> status,
-                             @Param("authorshipDifferent") Boolean authorshipDifferent,
-                             @Param("acceptedDifferent") Boolean acceptedDifferent,
-                             @Param("rankDifferent") Boolean rankDifferent,
-                             @Param("codeDifferent") Boolean codeDifferent,
-                             @Param("withDecision") Boolean withDecision,
-                             @Param("projectKey") Integer projectKey,
-                             @Param("page") Page page);
+                                     @Param("query") String query,
+                                     @Param("minSize") Integer minSize,
+                                     @Param("datasetKey") int datasetKey,
+                                     @Param("sourceDatasetKey") Integer sourceDatasetKey,
+                                     @Param("sectorKey") Integer sectorKey,
+                                     @Param("category") NameCategory category,
+                                     @Param("ranks") Set<Rank> ranks,
+                                     @Param("status") Set<TaxonomicStatus> status,
+                                     @Param("authorshipDifferent") Boolean authorshipDifferent,
+                                     @Param("acceptedDifferent") Boolean acceptedDifferent,
+                                     @Param("rankDifferent") Boolean rankDifferent,
+                                     @Param("codeDifferent") Boolean codeDifferent,
+                                     @Param("withDecision") Boolean withDecision,
+                                     @Param("projectKey") Integer projectKey,
+                                     @Param("page") Page page);
 
   /**
    * See DuplicateDao for parameter descriptions...
    */
   Integer count(@Param("mode") MatchingMode mode,
-                 @Param("query") String query,
-                 @Param("minSize") Integer minSize,
-                 @Param("datasetKey") int datasetKey,
-                 @Param("sourceDatasetKey") Integer sourceDatasetKey,
-                 @Param("sectorKey") Integer sectorKey,
-                 @Param("category") NameCategory category,
-                 @Param("ranks") Set<Rank> ranks,
-                 @Param("status") Set<TaxonomicStatus> status,
-                 @Param("authorshipDifferent") Boolean authorshipDifferent,
-                 @Param("acceptedDifferent") Boolean acceptedDifferent,
-                 @Param("rankDifferent") Boolean rankDifferent,
-                 @Param("codeDifferent") Boolean codeDifferent,
-                 @Param("withDecision") Boolean withDecision,
-                 @Param("projectKey") Integer projectKey);
+                @Param("query") String query,
+                @Param("minSize") Integer minSize,
+                @Param("datasetKey") int datasetKey,
+                @Param("sourceDatasetKey") Integer sourceDatasetKey,
+                @Param("sectorKey") Integer sectorKey,
+                @Param("category") NameCategory category,
+                @Param("ranks") Set<Rank> ranks,
+                @Param("status") Set<TaxonomicStatus> status,
+                @Param("authorshipDifferent") Boolean authorshipDifferent,
+                @Param("acceptedDifferent") Boolean acceptedDifferent,
+                @Param("rankDifferent") Boolean rankDifferent,
+                @Param("codeDifferent") Boolean codeDifferent,
+                @Param("withDecision") Boolean withDecision,
+                @Param("projectKey") Integer projectKey);
 
   Integer countNames(@Param("mode") MatchingMode mode,
                      @Param("query") String query,
@@ -97,6 +97,7 @@ public interface DuplicateMapper {
                      @Param("authorshipDifferent") Boolean authorshipDifferent,
                      @Param("rankDifferent") Boolean rankDifferent,
                      @Param("codeDifferent") Boolean codeDifferent);
+
   /**
    * @param ids usage ids to return usage decisions for
    */
@@ -116,15 +117,26 @@ public interface DuplicateMapper {
 
   @Deprecated
   List<Duplicate.UsageDecision> namesByTableIds(@Param("datasetKey") int datasetKey);
+
   @Deprecated
   List<Duplicate.UsageDecision> usagesByTableIds(@Param("datasetKey") int datasetKey,
                                                  @Param("projectKey") Integer projectKey,
                                                  @Param("addSrc") boolean addSrc
   );
+
   @Deprecated
   void createIdTable();
+
   @Deprecated
   void dropIdTable();
+
   @Deprecated
   void insertTableIdBatch(@Param("ids") Collection<String> ids);
+
+
+  /**
+   * Lists all homonyms, i.e. same accepted names with the same rank & code, but potentially different authorships.
+   */
+  List<Duplicate.Homonyms> homonyms(@Param("datasetKey") int datasetKey, @Param("status") Set<TaxonomicStatus> status);
+
 }

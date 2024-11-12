@@ -9,6 +9,11 @@
     <result property="usages" column="ids" typeHandler="life.catalogue.db.type.StringArrayTypeHandler"/>
   </resultMap>
 
+  <resultMap id="homonymResultMap" type="HomonymMybatis" autoMapping="true">
+    <id column="key" property="key"/>
+    <result property="usages" column="usages" typeHandler="life.catalogue.db.type2.HomonymArrayTypeHandler"/>
+  </resultMap>
+
   <resultMap id="usageDecisionResultMap" type="UsageDecision" autoMapping="true">
     <id column="u.id"/>
     <association property="usage" resultMap="life.catalogue.db.mapper.NameUsageMapper.usageResultMap"/>
@@ -241,6 +246,24 @@
     <include refid="keyCol"/>
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
+
+  <select id="homonyms" parameterType="map" resultMap="homonymResultMap">
+    SELECT lower(scientific_name) AS key, array_agg( (u.id,u.sector_key) ) AS usages
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=#{datasetKey} AND u.name_id=n.id
+    WHERE u.dataset_key=#{datasetKey}
+    <if test="status != null and !status.isEmpty()">
+      AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>)
+    </if>
+    GROUP BY 1
+    HAVING count(*) > 1
+      AND count(DISTINCT n.rank) &lt;= 1
+      AND count(DISTINCT n.code) &lt;= 1
+  </select>
+
+  <sql id="543432243">
+    WHERE u.dataset_key=#{datasetKey} AND u.status = 'ACCEPTED'::TAXONOMICSTATUS
+  </sql>
 
   <select id="count" parameterType="map" resultType="int">
     SELECT COUNT(*) FROM (
