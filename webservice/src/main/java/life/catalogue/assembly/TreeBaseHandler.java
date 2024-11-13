@@ -416,7 +416,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       batchSession.commit();
       p = numRO.getSimpleParent(targetKey.id(id));
       if (p == null) {
-        LOG.warn("Parent not found for {}", target);
+        LOG.warn("Parent not found for {}", id);
       }
     }
     return p;

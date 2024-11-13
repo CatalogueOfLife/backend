@@ -14,6 +14,40 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-11-13 license enum
+```
+ALTER TABLE dataset ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_archive ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_source ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_patch ALTER COLUMN license TYPE TEXT;
+
+ALTER TABLE media ALTER COLUMN license TYPE TEXT;
+
+DROP TYPE LICENSE;
+
+CREATE TYPE LICENSE AS ENUM (
+  'CC0',
+  'CC_BY',
+  'CC_BY_NC',
+  'UNSPECIFIED',
+  'OTHER'
+);
+
+
+UPDATE dataset SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_archive SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_source SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_patch SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+
+ALTER TABLE dataset ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_archive ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_source ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_patch ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+
+UPDATE media SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+ALTER TABLE media ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+```
+
 #### 2024-09-26 conversion_description
 ```
 ALTER TABLE dataset ADD COLUMN conversion_description TEXT,

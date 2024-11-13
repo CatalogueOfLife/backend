@@ -412,8 +412,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // only add a new name if we do not have already multiple names that we cannot clearly match
     // track if we are outside of the sector target
     Issue[] issues;
-    if (sector.getTarget() != null && parent != null
-      && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), sector.getTarget().getId())) {
+    if (target != null && parent != null
+      && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), target.getId())
+    ) {
       issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
     } else {
       issues = new Issue[0];
