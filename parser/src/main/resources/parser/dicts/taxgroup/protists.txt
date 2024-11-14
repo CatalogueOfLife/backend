@@ -851,6 +851,7 @@ Marynidae
 Massisteriidae
 Mastigamoebida
 Mastigamoebidae
+Mastigophora
 Matazida
 Matazidae
 Maupasellidae
@@ -1320,6 +1321,8 @@ Sandonidae
 Sandonina
 Sapocribridae
 Sarcocystidae
+Sarcodina
+Sarcomastigophora
 Sarcomastigota
 Sarcomonadea
 Scaphidiodontidae
