@@ -170,12 +170,16 @@ public class DuplicateDao {
     Preconditions.checkArgument(req.minSize > 1, "minimum group size must at least be 2");
     if (req.sourceDatasetKey != null){
       Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+      req.projectKey = info.keyOrProjectKey(); // default to the main project
     }
     if (req.sectorKey != null){
       Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
     }
     if (req.withDecision != null) {
-      Preconditions.checkArgument(req.projectKey != null, "catalogueKey is required if parameter withDecision is used");
+      if (req.projectKey == null && info.origin.isProjectOrRelease()) {
+        req.projectKey = info.keyOrProjectKey(); // default to the main project
+      }
+      Preconditions.checkArgument(req.projectKey != null, "projectKey (=catalogueKey) is required if parameter withDecision is used");
     }
   }
 
@@ -193,8 +197,9 @@ public class DuplicateDao {
     }
   }
 
-  public ResultPage<Duplicate> page(DuplicateRequest req, Page page) {
-    var result = findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+  public ResultPage<Duplicate> page(DuplicateRequest req, @Nullable Page page) {
+    page = ObjectUtils.defaultIfNull(page, new Page());
+    var result = findOrList(req, page);
     return new ResultPage<>(page, result, () -> count(req));
   }
 

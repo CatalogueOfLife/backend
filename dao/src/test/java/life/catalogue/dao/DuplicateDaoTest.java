@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -69,8 +70,12 @@ public class DuplicateDaoTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      dm.list(new Page(1000)).forEach(d -> System.out.println(d.getKey() + " -> " + d.getOrigin()));
+    }
     // no catalogue/project given but filtering decisions
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, 1001, null, null, null, null, null, null, null, null, null, true, null);
     dao.page(req, null);
   }
 

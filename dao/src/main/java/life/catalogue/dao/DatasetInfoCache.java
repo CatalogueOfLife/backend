@@ -92,6 +92,10 @@ public class DatasetInfoCache {
       throw new IllegalArgumentException("Dataset "+key+" is not of origin " + Arrays.toString(origins));
     }
 
+    /**
+     * @return the project key for a release or project
+     * @throws NotFoundException
+     */
     public int keyOrProjectKey() throws NotFoundException {
       return origin.isRelease() ? sourceKey : key;
     }
