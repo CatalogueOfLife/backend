@@ -470,7 +470,13 @@ public class NeoDb {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
     Preconditions.checkArgument(u.nameNode == null, "NeoUsage already has a neo4j name node");
     Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
-    
+
+    // is no true verbatim record existed create a new one to hold issues for validation etc.
+    if (u.usage.getVerbatimKey() == null) {
+      VerbatimRecord v = new VerbatimRecord();
+      put(v);
+      u.usage.setVerbatimKey(v.getId());
+    }
     // first create the name in a new node
     NeoName nn = new NeoName(u.usage.getName());
     if (nn.getId() == null) {
