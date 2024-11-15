@@ -65,6 +65,7 @@ ENV APP_ARTIFACT=matching-ws
 
 ENV APP_NAME=matching-ws
 ENV ZK_ENABLED="false"
+ENV ZK_ARTIFACT_ID="matching-ws"
 ENV ZK_CONNECT_STRING=""
 ENV ZK_DISCOVERY_ROOT=""
 ENV SERVICE_URL=""
@@ -72,6 +73,7 @@ ENV SPRING_BOOT_ADMIN_URL=""
 ENV SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION="true"
 ENV SPRING_BOOT_ADMIN_TAG_ENV=""
 ENV SPRING_BOOT_DISCOVERY_METADATA_HOST=""
+ENV SPRING_BOOT_DISCOVERY_METADATA_PATH=""
 
 # Set environment variables
 ARG CLB_DATASET_ID=""
@@ -123,14 +125,18 @@ CMD java $JVM_OPTIONS \
     --server.port=$SERVER_PORT \
     --working.dir=/opt/gbif/$APP_ARTIFACT/ \
     --spring.application.name=$APP_NAME \
-    --spring.cloud.zookeeper.discovery.metadata.groupId=org.catalogueoflife \
-    --spring.cloud.zookeeper.discovery.metadata.artifactId=matching-ws \
-    --spring.cloud.zookeeper.discovery.metadata.version=1.0-SNAPSHOT \
     --spring.cloud.zookeeper.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.discovery.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.config.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.connect-string=$ZK_CONNECT_STRING \
     --spring.cloud.zookeeper.discovery.root=$ZK_DISCOVERY_ROOT \
+    --spring.cloud.zookeeper.discovery.metadata.groupId=org.catalogueoflife \
+    --spring.cloud.zookeeper.discovery.metadata.artifactId=$ZK_ARTIFACT_ID \
+    --spring.cloud.zookeeper.discovery.metadata.version=1.0-SNAPSHOT \
+    --spring.cloud.zookeeper.discovery.metadata.host=$SPRING_BOOT_DISCOVERY_METADATA_HOST \
+    --spring.cloud.zookeeper.discovery.metadata.path=$SPRING_BOOT_DISCOVERY_METADATA_PATH \
+    --spring.cloud.zookeeper.discovery.metadata.httpPort=$SERVER_PORT \
+    --spring.cloud.zookeeper.discovery.metadata.httpAdminPort=$SERVER_ADMIN_PORT \
     --spring.cloud.zookeeper.discovery.metadata.zkHost=$ZK_CONNECT_STRING \
     --spring.cloud.zookeeper.discovery.metadata.zkPath=$ZK_DISCOVERY_ROOT \
     --spring.boot.admin.client.url=$SPRING_BOOT_ADMIN_URL \
@@ -138,10 +144,7 @@ CMD java $JVM_OPTIONS \
     --spring.boot.admin.client.auto-deregistration=$SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION \
     --spring.boot.admin.client.instance.metadata.tags.env=$SPRING_BOOT_ADMIN_TAG_ENV \
     --spring.boot.admin.client.instance.metadata.management.port=$SERVER_ADMIN_PORT \
-    --spring.cloud.zookeeper.discovery.metadata.httpAdminPort=$SERVER_ADMIN_PORT \
-    --spring.cloud.zookeeper.discovery.metadata.httpPort=$SERVER_PORT \
     --spring.cloud.zookeeper.discovery.metadata.stopSecret=stop  \
     --spring.config.additional-location=/tmp/timestamp.properties \
-    --spring.cloud.zookeeper.discovery.metadata.host=$SPRING_BOOT_DISCOVERY_METADATA_HOST  \
     --mode=RUN
 
