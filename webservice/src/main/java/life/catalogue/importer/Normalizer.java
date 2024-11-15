@@ -174,14 +174,11 @@ public class Normalizer implements Callable<Boolean> {
       require(n, n.getRank(), "rank");
       require(n, n.getType(), "name type");
 
-
-      if (n.getVerbatimKey() != null){
-        VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
-        if (v != null) {
-          store.put(v);
-        }
+      // all names should have a verbatim record by now - even implicit ones!
+      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+      if (v != null) {
+        store.put(v);
       }
-
     });
 
     LOG.info("Apply dataset defaults");

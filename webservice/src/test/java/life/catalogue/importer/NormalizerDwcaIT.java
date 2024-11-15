@@ -352,15 +352,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
   
   @Test
-  @Ignore("No testing yet")
-  public void testWormsParents() throws Exception {
-    normalize(32);
-
-    try (Transaction tx = store.getNeo().beginTx()) {
-    }
-  }
-  
-  @Test
   public void dwc8Nons() throws Exception {
     normalize(34);
     try (Transaction tx = store.getNeo().beginTx()) {
