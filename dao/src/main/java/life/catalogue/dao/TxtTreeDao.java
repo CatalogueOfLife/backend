@@ -52,11 +52,12 @@ public class TxtTreeDao {
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
 
-
-    Writer writer = UTF8IoUtils.writerFromStream(os);
-    TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, null, factory, writer);
-    printer.print();
-    writer.flush();
+    try (Writer writer = UTF8IoUtils.writerFromStream(os);
+         TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, null, factory, writer)
+    ) {
+      printer.print();
+      writer.flush();
+    }
   }
 
   private static NomCode code(NameUsage u) {

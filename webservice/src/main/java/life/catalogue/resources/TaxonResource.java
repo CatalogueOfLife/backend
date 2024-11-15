@@ -90,6 +90,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Path("{id}")
   @Produces(MediaType.TEXT_PLAIN)
@@ -99,10 +100,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     ttp.setSynonyms(true);
 
     StreamingOutput stream = os -> {
-      Writer writer = UTF8IoUtils.writerFromStream(os);
-      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, dao.getFactory(), writer);
-      printer.print();
-      writer.flush();
+      try (Writer writer = UTF8IoUtils.writerFromStream(os);
+        var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, dao.getFactory(), writer)
+      ) {
+        printer.print();
+        writer.flush();
+      }
     };
     return Response.ok(stream).build();
   }

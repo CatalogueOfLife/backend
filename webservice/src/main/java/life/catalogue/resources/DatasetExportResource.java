@@ -135,11 +135,13 @@ public class DatasetExportResource {
   <T extends AbstractPrinter> Response printerExport(Class<T> printerClass, int key, ExportQueryParams params, Consumer<T> modifier) {
     params.init();
     StreamingOutput stream = os -> {
-      Writer writer = UTF8IoUtils.writerFromStream(os);
-      T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, searchService, factory, writer);
-      modifier.accept(printer);
-      printer.print();
-      writer.flush();
+      try (Writer writer = UTF8IoUtils.writerFromStream(os);
+           T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, searchService, factory, writer)
+      ) {
+        modifier.accept(printer);
+        printer.print();
+        writer.flush();
+      }
     };
     return Response.ok(stream).build();
   }

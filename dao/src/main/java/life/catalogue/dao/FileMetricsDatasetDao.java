@@ -43,8 +43,9 @@ public class FileMetricsDatasetDao extends FileMetricsDao<Integer> {
   }
 
   public int updateTree(Integer datasetKey, Integer storeKey, int attempt) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(storeKey, attempt))) {
-      TextTreePrinter ttp = PrinterFactory.dataset(TextTreePrinter.class, datasetKey, factory, writer);
+    try (Writer writer = UTF8IoUtils.writerFromGzipFile(treeFile(storeKey, attempt));
+         TextTreePrinter ttp = PrinterFactory.dataset(TextTreePrinter.class, datasetKey, factory, writer)
+    ) {
       int count = ttp.print();
       LOG.info("Written text tree with {} lines for {} {}-{}", count, type, datasetKey, attempt);
       return count;

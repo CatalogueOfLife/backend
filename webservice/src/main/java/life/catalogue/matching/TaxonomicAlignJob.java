@@ -101,9 +101,10 @@ public class TaxonomicAlignJob extends BackgroundJob {
   }
 
   private void copyData(File f, int datasetKey, String taxonID) throws IOException {
-    try (Writer writer = UTF8IoUtils.writerFromFile(f)) {
-      var ttp = TreeTraversalParameter.dataset(datasetKey, taxonID);
-      var printer = PrinterFactory.dataset(DwcaPrinter.TSV.class, ttp, null, null, null, null, factory, writer);
+    var ttp = TreeTraversalParameter.dataset(datasetKey, taxonID);
+    try (Writer writer = UTF8IoUtils.writerFromFile(f);
+         var printer = PrinterFactory.dataset(DwcaPrinter.TSV.class, ttp, null, null, null, null, factory, writer)
+    ) {
       int cnt = printer.print();
       LOG.info("Written {} taxa to {} for dataset {}", cnt, f.getAbsolutePath(), datasetKey);
     }
