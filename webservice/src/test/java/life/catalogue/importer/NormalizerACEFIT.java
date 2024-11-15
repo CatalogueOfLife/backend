@@ -316,8 +316,12 @@ public class NormalizerACEFIT extends NormalizerITBase {
   
   
       int counter = 0;
+      int counterSrc = 0;
       for (VerbatimRecord vr : store.verbatimList()) {
         counter++;
+        if (vr.getType() != null && vr.getFile() != null && vr.getLine() > 0) {
+          counterSrc++;
+        }
         if (vr.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
           if (vr.get(AcefTerm.AcceptedTaxonID).equals("Scr-04-.01-.01-.00-.002-.000-.009-.b")) {
             // this is the duplicate
@@ -330,7 +334,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
           }
         }
       }
-      assertEquals(5, counter);
+      assertEquals(15, counter);
+      assertEquals(5, counterSrc);
     }
   }
   
