@@ -168,7 +168,7 @@ public abstract class BaseDiffService<K> {
       // Especially when http connections are aborted.
       tmp = File.createTempFile("coldiff-", ".diff");
       tmp.deleteOnExit();
-      LOG.debug("Execute: {}", cmd);
+      LOG.info("Execute: {}", cmd);
       ProcessBuilder pb = new ProcessBuilder("bash", "-c", cmd + "; exit 0");
       pb.redirectOutput(tmp);
 

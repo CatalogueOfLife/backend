@@ -12,6 +12,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -24,6 +27,7 @@ import java.util.stream.Collectors;
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
 public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractPrinter.class);
   protected final UsageCounter counter = new UsageCounter();
   protected final Writer writer;
   // sql tree traversal
@@ -69,6 +73,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
    */
   public int print() throws IOException {
     counter.clear();
+    LOG.info("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
     try {
       session = factory.openSession(true);
       if (ordered || params.hasFilter()) {
@@ -78,8 +83,11 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
       }
       postIter();
     } finally {
-      close();
-      session.close();
+      try {
+        close();
+      } finally {
+        session.close();
+      }
     }
     return counter.size();
   }

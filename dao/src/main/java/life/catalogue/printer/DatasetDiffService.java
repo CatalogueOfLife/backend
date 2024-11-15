@@ -80,6 +80,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
     ddao.getOr404(key1);
     ddao.getOr404(key2);
 
+    LOG.info("Start dataset diff between {} <-> {} by {}", key1, key2, userKey);
     // allow one concurrent diff per user
     try {
       userDiffs.add(userKey); // lock, we only allow a single diff per user
@@ -94,17 +95,17 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
 
   private File printAndSort(int key, @Nullable List<String> roots, @Nullable Rank lowestRank, boolean inclAuthorship, boolean inclSynonyms, boolean showParent, @Nullable Rank parentRank) throws IOException {
     File f = createTempFile(key);
-    Writer w = UTF8IoUtils.writerFromFile(f);
-    // we need to support multiple roots which a TreePrinter does not deal with
-    // we will reuse the writer and append multiple trees if needed
-    if (roots == null || roots.isEmpty()) {
-      appendRoot(w, key, null, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
-    } else {
-      for (String r : roots) {
-        appendRoot(w, key, r, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
+    try (Writer w = UTF8IoUtils.writerFromFile(f)) {
+      // we need to support multiple roots which a TreePrinter does not deal with
+      // we will reuse the writer and append multiple trees if needed
+      if (roots == null || roots.isEmpty()) {
+        appendRoot(w, key, null, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
+      } else {
+        for (String r : roots) {
+          appendRoot(w, key, r, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
+        }
       }
     }
-    w.close();
     // sort file
     UnixCmdUtils.sortUTF8(f, 30);
     return f;
@@ -115,16 +116,12 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
     params.setTaxonID(root);
     params.setLowestRank(lowestRank);
     params.setSynonyms(inclSynonyms);
-    NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, params, factory, w);
-    try {
+    try (NameParentPrinter printer = PrinterFactory.dataset(NameParentPrinter.class, params, factory, w)){
       printer.setPrintAuthorship(inclAuthorship);
       if (showParent) {
         printer.setParentName(parentRank);
       }
       printer.print();
-      printer.close();
-    } finally {
-      printer.close();
     }
   }
 
