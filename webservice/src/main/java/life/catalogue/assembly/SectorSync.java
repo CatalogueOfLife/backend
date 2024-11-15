@@ -12,11 +12,9 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.matching.decision.*;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.UsageMatcherGlobal;
-import life.catalogue.matching.decision.EstimateRematcher;
-import life.catalogue.matching.decision.MatchingDao;
-import life.catalogue.matching.decision.RematchRequest;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -172,6 +170,32 @@ public class SectorSync extends SectorRunnable {
         );
         LOG.info("Loaded {} sector subjects for auto blocking", counter);
       }
+    }
+    // load override decisions
+    if (mergeCfg != null && mergeCfg.xCfg.decisions.containsKey(subjectDatasetKey)) {
+      int counter = 0;
+      try (var session = factory.openSession()) {
+        MatchingDao mdao = new MatchingDao(session);
+        for (var d : mergeCfg.xCfg.decisions.get(subjectDatasetKey)) {
+          if (d.getSubject() == null || d.getSubject().getName() == null) {
+            LOG.warn("Override decision for source {} in config without subject name", subjectDatasetKey);
+            continue;
+          }
+          var m = mdao.matchDataset(d.getSubject(), subjectDatasetKey);
+          if (m.isEmpty()) {
+            LOG.warn("Override decision for {} in source {} does not match any source name", d.getSubject(), subjectDatasetKey);
+          } else if (m.getMatches().size() > 1){
+            LOG.warn("Override decision for {} in source {} does match multiple source names", d.getSubject(), subjectDatasetKey);
+          } else {
+            var mu = m.getMatches().get(0);
+            d.getSubject().setId(mu.getId());
+            d.getSubject().setBroken(false);
+            decisions.put(d.getSubject().getId(), d);
+            counter++;
+          }
+        }
+      }
+      LOG.info("Loaded {} XR override decisions for source {}", counter, subjectDatasetKey);
     }
   }
 

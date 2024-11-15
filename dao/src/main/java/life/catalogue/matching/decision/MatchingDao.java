@@ -37,7 +37,7 @@ public class MatchingDao {
    * @param name
    * @param datasetKey
    */
-  MatchingResult matchDataset(SimpleName name, int datasetKey) {
+  public MatchingResult matchDataset(SimpleName name, int datasetKey) {
     var result = new MatchingResult(name);
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
