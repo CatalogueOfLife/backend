@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
@@ -111,4 +112,10 @@ public class XReleaseConfig {
   @Valid
   public Map<String, Set<String>> basionymExclusions = new HashMap<>();
 
+  /**
+   * List of additional editorial decisions which can override existing decisions from the base.
+   */
+  @NotNull
+  @Valid
+  public Map<Integer, List<EditorialDecision>> decisions = new HashMap<>();
 }
