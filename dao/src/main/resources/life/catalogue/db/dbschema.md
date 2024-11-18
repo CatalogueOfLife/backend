@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-11-18 new name validation issue
+```
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_UNLIKELY';
+```
+
 #### 2024-11-13 license enum
 ```
 ALTER TABLE dataset ALTER COLUMN license TYPE TEXT;

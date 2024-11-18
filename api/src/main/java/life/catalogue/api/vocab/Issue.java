@@ -454,6 +454,9 @@ public enum Issue {
 
   RANK_NAME_SUFFIX_CONFLICT(NAME, Level.WARNING,
     "The name ending does suggest a different rank than given for the name."),
+
+  AUTHORSHIP_UNLIKELY(NAME, Level.WARNING,
+    "The authorship of the name is unlikely a true author, e.g. resembles part of the scientific name."),
   ;
 
   /**
