@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
  * Parses/interprets TaxGroup from various known taxon names that are unique and indicative for the resulting group.
  * Some names have been used in multiple groups and they will result in the lowest common denominator or nothing in case of cross kingdom names.
  * See PROBLEMS.MD for some cases.
+ *
  * This parser does not throw unparsable exceptions but instead returns an empty optional.
  */
 public class TaxGroupParser extends EnumParser<TaxGroup> {
@@ -58,8 +59,14 @@ public class TaxGroupParser extends EnumParser<TaxGroup> {
     if (val == null && !upperCaseValue.contains(" ")) {
       if (upperCaseValue.endsWith("PHYCEAE") || upperCaseValue.endsWith("PHYCIDAE")) {
         return TaxGroup.Algae;
-      } else if (upperCaseValue.endsWith("MYCETES") || upperCaseValue.endsWith("MYCETIDAE")) {
+      } else if (upperCaseValue.endsWith("MYCETES") || upperCaseValue.endsWith("MYCETIDAE") || upperCaseValue.endsWith("mycota") || upperCaseValue.endsWith("mycotina")) {
         return TaxGroup.Fungi;
+      } else if (upperCaseValue.endsWith("PHYTINA")) {
+        // -opsida and -ophyta match zoological genera
+        // https://api.checklistbank.org/dataset/3/nameusage/pattern?limit=50&rank=genus&regex=.%2Bopsida%24
+        return TaxGroup.Plants;
+      } else if (upperCaseValue.endsWith("VIRICOTA") || upperCaseValue.endsWith("VIRICOTINA") || upperCaseValue.endsWith("VIRICETES") || upperCaseValue.endsWith("VIRIDAE")) {
+        return TaxGroup.Viruses;
       }
     }
     return val;
