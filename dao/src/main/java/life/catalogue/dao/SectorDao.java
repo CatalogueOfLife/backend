@@ -289,19 +289,29 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   public int createMissingMergeSectorsFromPublisher(int projectKey, int userKey, @Nullable Set<Rank> ranks, UUID publisherKey,
                                                     @Nullable Set<Integer> datasetExclusion) {
     LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisherKey);
+    int counter = 0;
     List<Integer> datasetKeys;
     try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
       datasetKeys = session.getMapper(DatasetMapper.class).keysByPublisher(publisherKey);
-    }
-    // exclude some of these datasets?
-    if (datasetExclusion != null) {
-      datasetExclusion.forEach(datasetKeys::remove);
-    }
-    int counter = 0;
-    if (datasetKeys != null) {
-      try (SqlSession session = factory.openSession(true)) {
-        var dm = session.getMapper(DatasetMapper.class);
-        var sm = session.getMapper(SectorMapper.class);
+      // exclude some of these datasets?
+      if (datasetExclusion != null) {
+        for (int dk : datasetExclusion) {
+          datasetKeys.remove(dk);
+          // remove any potentially existing merge sectors
+          var existing = sm.listByDataset(projectKey, dk);
+          if (existing != null && !existing.isEmpty()) {
+            for (var s : existing) {
+              if (s.getMode() == Sector.Mode.MERGE) {
+                LOG.info("Delete existing merge sector {} for excluded source {} from publisher {}", s, dk, publisherKey);
+                sm.delete(s);
+              }
+            }
+          }
+        }
+      }
+      if (datasetKeys != null) {
         final License projectLicense = dm.get(projectKey).getLicense();
         for (int sourceDatasetKey : datasetKeys) {
           var existing = sm.listByDataset(projectKey, sourceDatasetKey);
