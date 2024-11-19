@@ -40,8 +40,8 @@ public enum TaxGroup {
     Fungi("e5d32221-7ea9-46ed-8e0a-d9dbddab0b4a", "Includes lichen", NomCode.BOTANICAL, Eukaryotes),
       Ascomycetes("7ebbf05d-2084-4204-ad4c-2c0d6cbcdde1", Fungi),
       Basidiomycetes("237a0fb1-7b73-43ec-b0a5-eff95e7237df", Fungi),
-      Oomycetes("53b543aa-2a5e-4407-88cd-6acbb0b5c3f9",
-        "traditionally follows fungal nomenclature therefore placed here. Includes the wider pseudo fungi. Phylogenetically related to Algae and protists", Fungi, Protists),
+      Pseudofungi("53b543aa-2a5e-4407-88cd-6acbb0b5c3f9",
+        "traditionally follows fungal nomenclature therefore placed here. Includes Oomycetes and Hyphochytriomycetes. Phylogenetically related to Algae and protists", Fungi, Algae),
       OtherFungi("", "",Fungi),
 
     Animals("a3dd3044-648c-4e45-93f0-21a156247132", "",NomCode.ZOOLOGICAL, Eukaryotes),
