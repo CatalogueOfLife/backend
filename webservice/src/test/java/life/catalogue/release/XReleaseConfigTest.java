@@ -18,5 +18,7 @@ public class XReleaseConfigTest {
     assertNotNull(cfg.enforceUnique);
     assertTrue(cfg.enforceUnique.containsKey(Rank.GENUS));
     assertTrue(cfg.homotypicConsolidation);
+    assertTrue(cfg.sourceDatasetExclusion.contains(6675));
+
   }
 }
