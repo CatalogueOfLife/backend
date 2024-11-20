@@ -490,6 +490,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
       if (!ranks.isEmpty() && !ranks.contains(n.getRank())) {
         return incIgnored(IgnoreReason.RANK, u);
       }
+      // apply extinct filter if exists
+      if (sector.getExtinctFilter() != null && u.asTaxon().isExtinct() != null && !Objects.equals(sector.getExtinctFilter(), u.asTaxon().isExtinct())) {
+        return incIgnored(IgnoreReason.EXTINCT, u);
+      }
     }
     // apply name type filter if exists
     if (sector.getNameTypes() != null && !sector.getNameTypes().isEmpty() && !sector.getNameTypes().contains(n.getType())) {

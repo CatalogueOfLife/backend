@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+
+#### 2024-11-20 new extinct_filter on sector
+```
+ALTER TABLE sector ADD COLUMN extinct_filter BOOLEAN;
+```
+
 #### 2024-11-18 new name validation issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_UNLIKELY';
