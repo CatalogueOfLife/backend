@@ -18,33 +18,34 @@ import java.util.stream.Collectors;
  */
 public enum TaxGroup {
 
-  Viruses("6dba8988-8a64-4c10-8934-77d5880dc21c", null, NomCode.VIRUS),
-  Prokaryotes("680e6e45-3e3a-4e4b-b679-9bf2ae9091ab", null, NomCode.BACTERIAL),
-    Bacteria("7bd82403-a662-41bd-9710-cf095bea5809", Prokaryotes),
-    Archaea("d979c5bd-f760-427d-bd23-7b8779bd1c8f", Prokaryotes),
+  Viruses("6dba8988-8a64-4c10-8934-77d5880dc21c", "Viruses", NomCode.VIRUS),
+  Prokaryotes("680e6e45-3e3a-4e4b-b679-9bf2ae9091ab", "Prokaryota", NomCode.BACTERIAL),
+    Bacteria("7bd82403-a662-41bd-9710-cf095bea5809", "Bacteria", Prokaryotes),
+    Archaea("d979c5bd-f760-427d-bd23-7b8779bd1c8f", "Archaea excluding the eukaryotes", Prokaryotes),
 
-  Eukaryotes("d878c432-0b0b-44f5-b1a1-12557b439c3f", "",NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
+  Eukaryotes("d878c432-0b0b-44f5-b1a1-12557b439c3f", "Eukaryotes are divided into 4 groups only similar to Haeckels 4 kingdoms",
+    NomCode.ZOOLOGICAL, NomCode.BOTANICAL),
     Protists("5fccc7f9-60b8-4aea-96cf-ce93f85c9e90", "Any eukaryote that is not animal, plant (incl algae s.l.) nor fungus. " +
       "Includes all Protozoa (ciliates, flagellates, and amoebas), Foraminifera, Radiolaria", Eukaryotes),
 
-    Plants("5c6ae9a1-1405-4f81-b4c1-c169faef475e", "Sensu lato incl red algae. More like Archaeplastida", NomCode.BOTANICAL, Eukaryotes),
+    Plants("5c6ae9a1-1405-4f81-b4c1-c169faef475e", "Sensu lato incl red algae and Glaucophytes. Similar to Archaeplastida", NomCode.BOTANICAL, Eukaryotes),
 
       Algae("65414989-e801-4d0e-acc1-4309cd35ab7e", "Sensu lato including names traditionally treated as eukaryotic algae. " +
         "Includes diatoms, red algae and any protist algae, but excluding prokaryotic cyanobacteria",
         Plants, Protists),
       Bryophytes("f4889f66-1904-479d-8a1f-f9449733c654", "sensu lato incl liverworts, hornworts and mosses", Plants),
       Pteridophytes("ee243ea1-c311-4fa2-b730-928b80117515", "sensu lato with fern allies incl clubmosses, horsetails and whisk ferns", Plants),
-      Angiosperms("3e84c211-b5d1-4c4d-9749-9dbda2e73f89", "",Plants),
-      Gymnosperms("9b9d6b61-d571-4503-9107-50c54a2beedb", "",Plants),
+      Angiosperms("3e84c211-b5d1-4c4d-9749-9dbda2e73f89", "Flowering plants, Magnoliophyta", Plants),
+      Gymnosperms("9b9d6b61-d571-4503-9107-50c54a2beedb", "Seed plants including Cycads, Ginkgo, Gnetophytes and Conifers", Plants),
 
     Fungi("e5d32221-7ea9-46ed-8e0a-d9dbddab0b4a", "Includes lichen", NomCode.BOTANICAL, Eukaryotes),
-      Ascomycetes("7ebbf05d-2084-4204-ad4c-2c0d6cbcdde1", Fungi),
-      Basidiomycetes("237a0fb1-7b73-43ec-b0a5-eff95e7237df", Fungi),
+      Ascomycetes("7ebbf05d-2084-4204-ad4c-2c0d6cbcdde1", "Ascomycota", Fungi),
+      Basidiomycetes("237a0fb1-7b73-43ec-b0a5-eff95e7237df", "Basidiomycota", Fungi),
       Pseudofungi("53b543aa-2a5e-4407-88cd-6acbb0b5c3f9",
         "traditionally follows fungal nomenclature therefore placed here. Includes Oomycetes and Hyphochytriomycetes. Phylogenetically related to Algae and protists", Fungi, Algae),
-      OtherFungi("", "",Fungi),
+      OtherFungi("", "All other basal fungi not being asco- or basidiomycetes",Fungi),
 
-    Animals("a3dd3044-648c-4e45-93f0-21a156247132", "",NomCode.ZOOLOGICAL, Eukaryotes),
+    Animals("a3dd3044-648c-4e45-93f0-21a156247132", "Animalia",NomCode.ZOOLOGICAL, Eukaryotes),
       Arthropods("83c995d5-0936-441b-8a27-089005086c61", "",Animals),
         Insects("b2e26249-80be-441b-8648-4c0361892ee0", "",Arthropods),
           Coleoptera("35bb269c-5ff2-48c1-a002-a6bf8d9e8eef", "",Insects),
@@ -69,9 +70,7 @@ public enum TaxGroup {
         Reptiles("aefc9af2-1f5d-4e16-94c4-da3436b8e92d", Chordates),
         Fish("23a7d09d-4a4d-4ad5-ad07-49a6b59a7fba", Chordates),
         OtherChordates("", Chordates),
-      OtherAnimals("", Animals),
-
-    OtherEukaryotes("", Eukaryotes);
+      OtherAnimals("", Animals);
 
   public enum SIZE {
     PX64(64), PX128(128), PX192(192);

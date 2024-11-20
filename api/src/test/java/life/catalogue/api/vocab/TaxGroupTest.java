@@ -127,10 +127,8 @@ public class TaxGroupTest {
     for (var g : TaxGroup.values()) {
       if (!g.parents.isEmpty()) {
         assertFalse(g.codes.isEmpty());
-      } else if (g != OtherEukaryotes) {
-        assertFalse(g.codes.isEmpty());
       } else {
-        assertTrue(g.codes.isEmpty());
+        assertFalse(g.codes.isEmpty());
       }
     }
   }
@@ -152,7 +150,7 @@ public class TaxGroupTest {
 
   @Test
   public void disparate() {
-    assertTrue(Angiosperms.isDisparateTo(OtherEukaryotes));
+    assertTrue(Angiosperms.isDisparateTo(OtherMolluscs));
     assertTrue(Angiosperms.isDisparateTo(Prokaryotes));
     assertTrue(Angiosperms.isDisparateTo(Animals));
     assertTrue(Angiosperms.isDisparateTo(Arachnids));
