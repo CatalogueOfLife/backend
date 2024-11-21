@@ -84,9 +84,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     LoggingUtils.setDatasetMDC(datasetKey, getClass());
     LoggingUtils.setJobMDC(UUID.randomUUID(), getClass());
     var key = new DSIDValue<>(datasetKey, id);
-    var t = dao.getOr404(key);
-    LOG.info("Found {}", t);
-    return t;
+    return dao.getOr404(key);
   }
 
   @GET
