@@ -1,5 +1,7 @@
 package life.catalogue.metadata;
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
@@ -63,6 +65,7 @@ public class DoiResolver {
       }
 
     } catch (IOException | ParseException e) {
+      // JacksonException are all covered with IOException
       LOG.error("Error resolving DOI {}", doi, e);
     }
 
@@ -71,6 +74,33 @@ public class DoiResolver {
 
   public static class CrossRefCitation extends Citation {
 
+    public void setContainerTitle(List<String> title) {
+      if (title == null || title.isEmpty()) {
+        setContainerTitle((String)null);
+      } else {
+        setContainerTitle(title.get(0));
+      }
+    }
+    public void setTitle(List<String> title) {
+      if (title == null || title.isEmpty()) {
+        setTitle((String)null);
+      } else {
+        setTitle(title.get(0));
+      }
+    }
+
+    @Override
+    public void setTitle(String title) {
+        super.setTitle(title);
+    }
+
+    public void setISBN(List<String> isbn) {
+      if (isbn == null || isbn.isEmpty()) {
+        setIsbn(null);
+      } else {
+        setIsbn(isbn.get(0));
+      }
+    }
     public void setISSN(List<String> issn) {
       if (issn == null || issn.isEmpty()) {
         setIssn(null);
