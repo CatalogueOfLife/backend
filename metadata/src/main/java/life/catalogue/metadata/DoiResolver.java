@@ -1,6 +1,12 @@
 package life.catalogue.metadata;
 
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
@@ -73,42 +79,48 @@ public class DoiResolver {
   }
 
   public static class CrossRefCitation extends Citation {
+    private static ObjectReader ARRAY_READER = ApiModule.MAPPER.readerFor(
+      new TypeReference<List<String>>() {}
+    );
 
-    public void setContainerTitle(List<String> title) {
-      if (title == null || title.isEmpty()) {
-        setContainerTitle((String)null);
-      } else {
-        setContainerTitle(title.get(0));
+    private String getSingleValue(JsonNode node){
+      if(node.getNodeType().equals(JsonNodeType.STRING)){
+        return node.textValue();
+      } else if(node.getNodeType().equals(JsonNodeType.ARRAY)){
+        try{
+          List<String> list = ARRAY_READER.readValue(node);
+          if (list != null && !list.isEmpty()) {
+            return list.get(0);
+          }
+        }catch (Exception ex){
+        }
       }
+      return null;
     }
-    public void setTitle(List<String> title) {
-      if (title == null || title.isEmpty()) {
-        setTitle((String)null);
-      } else {
-        setTitle(title.get(0));
-      }
+    @JsonSetter("container-title")
+    public void setContainerTitle(JsonNode node){
+      //handle here as per your requirement
+      setContainerTitle(getSingleValue(node));
     }
-
-    @Override
-    public void setTitle(String title) {
-        super.setTitle(title);
-    }
-
-    public void setISBN(List<String> isbn) {
-      if (isbn == null || isbn.isEmpty()) {
-        setIsbn(null);
-      } else {
-        setIsbn(isbn.get(0));
-      }
-    }
-    public void setISSN(List<String> issn) {
-      if (issn == null || issn.isEmpty()) {
-        setIssn(null);
-      } else {
-        setIssn(issn.get(0));
-      }
+    @JsonSetter("collection-title")
+    public void setCollectionTitle(JsonNode node){
+      //handle here as per your requirement
+      setCollectionTitle(getSingleValue(node));
     }
 
+    @JsonSetter("title")
+    public void setTitle(JsonNode node){
+      setTitle(getSingleValue(node));
+    }
+    @JsonSetter("ISBN")
+    public void setISBN(JsonNode node){
+      setIsbn(getSingleValue(node));
+    }
+
+    @JsonSetter("ISSN")
+    public void setISSN(JsonNode node){
+      setIssn(getSingleValue(node));
+    }
     public void setType(String type) {
       var ct = CSLTypeParser.PARSER.parseOrNull(type);
       super.setType(ct);

@@ -33,3 +33,7 @@ videoRecording,MOTION_PICTURE
 article_reference,ARTICLE_JOURNAL
 nested_reference,CHAPTER
 book_reference,BOOK
+monograph,BOOK
+journal,BOOK
+edited_book,BOOK
+book-chapter,CHAPTER
