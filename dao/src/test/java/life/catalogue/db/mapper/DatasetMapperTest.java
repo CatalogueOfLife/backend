@@ -131,6 +131,11 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void keysByPublisher() throws Exception {
+    assertEquals(0, mapper().keysByPublisher(UUID.randomUUID()).size());
+  }
+
+  @Test
   public void privateProjectReleases() throws Exception {
     // use a real user (not a bot) as a creator
     User user = new User();

@@ -11,6 +11,7 @@ import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -198,7 +199,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * @return list of all dataset keys which have not been deleted and are published by the given gbif publisher key.
    */
-  List<Integer> keysByPublisher(@Param("publisher") UUID publisher);
+  Set<Integer> keysByPublisher(@Param("publisher") UUID publisher);
 
   /**
    * list datasets which have not been imported before, ordered by date created.
