@@ -290,7 +290,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
                                                     @Nullable Set<Integer> datasetExclusion) {
     LOG.info("Retrieve newly published sectors from GBIF publisher {}", publisherKey);
     int counter = 0;
-    List<Integer> datasetKeys;
+    Set<Integer> datasetKeys;
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var sm = session.getMapper(SectorMapper.class);
