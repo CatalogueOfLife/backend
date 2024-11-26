@@ -208,6 +208,14 @@
       <if test="status != null and !status.isEmpty()">
         AND u.status IN (<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>)
       </if>
+      <if test="sectorKey != null and sourceOnly != null and sourceOnly">
+        <!-- all names must come from the requested sector -->
+        AND u.sector_key = #{sectorKey}
+      </if>
+      <if test="sourceDatasetKey != null and sourceOnly != null and sourceOnly">
+        <!-- all names must come from the requested source dataset -->
+        AND s.subject_dataset_key = #{sourceDatasetKey}
+      </if>
     </where>
     GROUP BY
     <include refid="keyCol"/>
@@ -217,11 +225,11 @@
       <!-- make sure all requested status are covered at least once -->
       AND array_agg(u.status) @> array[<foreach collection="status" item="st" separator=",">#{st}::TAXONOMICSTATUS</foreach>]
     </if>
-    <if test="sectorKey != null">
+    <if test="sectorKey != null and (sourceOnly == null or !sourceOnly)">
       <!-- make sure at least one name comes from the requested sector -->
       AND array_agg(u.sector_key) @> array[${sectorKey}]
     </if>
-    <if test="sourceDatasetKey != null">
+    <if test="sourceDatasetKey != null and (sourceOnly == null or !sourceOnly)">
       <!-- make sure at least one name comes from the requested source dataset -->
       AND array_agg(s.subject_dataset_key) @> array[${sourceDatasetKey}]
     </if>
