@@ -53,8 +53,8 @@
     #{url},
     #{logo},
     #{urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
-    #{conversionDescription},
-    #{conversionUrl},
+    #{conversion.description},
+    #{conversion.url},
     #{notes},
     #{createdBy},
     #{modifiedBy}

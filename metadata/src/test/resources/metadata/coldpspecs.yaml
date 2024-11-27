@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=metadata.json
+
 # single, primary DOI for the dataset
 doi: 10.15468/2zjeva
 
@@ -17,8 +19,15 @@ alias: ColDP Example
 # Multi parapgraph description / abstract of the dataset
 description: |
   An abstract about the content of this dataset.
-  This can be as many paragraphs as you like in literal style YAML.
+  This can be as many paragraphs as you like in literal style YAML.    
 
+# Keywords list. Added in v1.1
+keyword:
+  - example
+  - coldp
+  - invasives
+  - legal
+  - fish
 # Official release date of this version in ISO YYYY-MM-DD. Will be part of the default citation!
 issued: 2018-06-01
 
@@ -90,12 +99,12 @@ editor:
 
 # Single publishing organisation. Will be part of the default citation!
 publisher:
-  rorid: https://ror.org/03rmrcq20
+  rorid: 03rmrcq20
   organisation: University of British Columbia
   department: Global Fisheries Cluster
   city: Vancouver
   state: B.C.
-  country: Canada
+  country: CA
 
 # Agent contributing to the dataset in any other way, but who is not considered an author of the dataset
 # Use the optional note field to specify the kind of contribution
@@ -123,35 +132,38 @@ contributor:
 
   - organisation: The WorldFish Center
     city: Penang
-    country: Malaysia
+    country: MY
 
-  - rorid: https://ror.org/02h2x0161
+  - rorid: 02h2x0161
     organisation: Helmholtz Centre for Ocean Research Kiel
     department: GEOMAR
     city: Kiel
-    country: Germany
+    country: DE
     note: Hosting services
 
   - organisation: Food and Agriculture Organization of the United Nations
-    rorid: https://ror.org/00pe0tf51
+    rorid: 00pe0tf51
     city: Rome
-    country: Italy
+    country: IT
 
   - organisation: Muséum National d'Histoire Naturelle
-    rorid: https://ror.org/03wkt5x30
+    rorid: 03wkt5x30
     city: Paris
-    country: France
+    country: FR
 
   - organisation: Aristotle University of Thessaloniki
-    rorid: https://ror.org/02j61yw88
+    rorid: 02j61yw88
     city: Thessaloniki
-    country: Greece
+    country: GR
 
 # Description of the geographical scope of the dataset
 geographicScope: global
 
 # Taxonomic scope of the dataset
-taxonomicScope: Fishes
+taxonomicScope: Cephalaspidomorphi, Sarcopterygii, Elasmobranchii, Holocephali, Actinopterygii, Myxini
+
+# Taxonomic scope of the dataset given as English vernacular name(s)
+taxonomicScopeInEnglish: Fishes
 
 # Temporal scope of the dataset
 temporalScope: Extant taxa described until 1987
@@ -162,9 +174,10 @@ confidence: 5
 # 0-100 to express the completeness of the dataset in regards to the defined scope
 completeness: 95
 
-# Any commons license (CC0, CC-BY, CC-BY-NC, CC-BY-SA, CC-BY-ND, CC-BY-NC-SA, CC-BY-NC-ND)
-# Must be CC0 or CC-BY to be used by COL !!!
-license: CC0
+# Any Open Definition license ID: https://licenses.opendefinition.org/licenses/groups/all.json
+# For ChecklistBank please use only CC0-1.0, CC-BY-4.0 or CC-BY-NC-4.0
+# Must be CC0-1.0 or CC-BY-4.0 to be used by COL !!!
+license: CC0-1.0
 
 # Link to a website for the dataset
 url: https://www.fishbase.org
@@ -172,6 +185,24 @@ url: https://www.fishbase.org
 # URL to large logo image
 logo: https://www.fishbase.de/images/gifs/fblogo_new.gif
 
+# templates to build links to webpages for individual records of some kind using these variables:
+#  {ID} individual record identifier
+#  {TAXONID} individual record identifier for the taxon, i.e accepted name
+urlFormatter:
+  name: https://fishbase.mnhn.fr/summary/{ID}
+  taxon: https://fishbase.mnhn.fr/summary/{ID}
+  synonym: https://fishbase.mnhn.fr/Nomenclature/SynonymSummary.php?GSID={TAXONID}&ID={ID}
+  reference: https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}
+  author: https://fishbase.mnhn.fr/collaborators/CollaboratorSummary.php?ID={ID}
+  typeMaterial:
+
+# Documentation of the conversion process from the original source data
+# to the ColDP representation in this dataset
+conversion:
+  # human description of what's being done
+  description: The MySQL database is being exported on a monthly basis to ColDP CSV files with the help of a python script.
+  # location of the conversion script code or more documentation of the process
+  url: https://github.com/CatalogueOfLife/coldp-generator
 
 # List of Citations this dataset is derived from.
 # We use CSL-JSON fields to represent a structured citation, see below for the main fields used for bibliographies.

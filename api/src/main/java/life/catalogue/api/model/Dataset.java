@@ -189,9 +189,7 @@ public class Dataset extends DataEntity<Integer> {
   private URI logo;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> urlFormatter = new HashMap<>();
-  private String conversionDescription;
-  @AbsoluteURI
-  private URI conversionUrl;
+  private UrlDescription conversion;
   @Valid
   private List<Citation> source = new ArrayList<>();
   private String notes;
@@ -246,9 +244,51 @@ public class Dataset extends DataEntity<Integer> {
     this.url = other.url;
     this.logo = other.logo;
     this.urlFormatter = other.urlFormatter;
-    this.conversionDescription = other.conversionDescription;
-    this.conversionUrl = other.conversionUrl;
+    this.conversion = other.conversion;
     this.source = other.source;
+  }
+
+  public static class UrlDescription {
+    @AbsoluteURI
+    private URI url;
+    private String description;
+
+    public UrlDescription() {
+    }
+
+    public UrlDescription(String url, String description) {
+      this.url = url == null ? null : URI.create(url);
+      this.description = description;
+    }
+
+    public URI getUrl() {
+      return url;
+    }
+
+    public void setUrl(URI url) {
+      this.url = url;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof UrlDescription)) return false;
+      UrlDescription that = (UrlDescription) o;
+      return Objects.equals(url, that.url) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(url, description);
+    }
   }
 
   public static Dataset read(InputStream in){
@@ -864,20 +904,12 @@ public class Dataset extends DataEntity<Integer> {
     this.urlFormatter = urlFormatter;
   }
 
-  public String getConversionDescription() {
-    return conversionDescription;
+  public UrlDescription getConversion() {
+    return conversion;
   }
 
-  public void setConversionDescription(String conversionDescription) {
-    this.conversionDescription = conversionDescription;
-  }
-
-  public URI getConversionUrl() {
-    return conversionUrl;
-  }
-
-  public void setConversionUrl(URI conversionUrl) {
-    this.conversionUrl = conversionUrl;
+  public void setConversion(UrlDescription conversion) {
+    this.conversion = conversion;
   }
 
   public List<Citation> getSource() {
@@ -987,8 +1019,7 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(url, dataset.url)
            && Objects.equals(logo, dataset.logo)
            && Objects.equals(urlFormatter, dataset.urlFormatter)
-           && Objects.equals(conversionDescription, dataset.conversionDescription)
-           && Objects.equals(conversionUrl, dataset.conversionUrl)
+           && Objects.equals(conversion, dataset.conversion)
            && Objects.equals(source, dataset.source);
   }
 
@@ -1000,7 +1031,7 @@ public class Dataset extends DataEntity<Integer> {
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
       geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo,
-      urlFormatter, conversionDescription,  conversionUrl, source);
+      urlFormatter, conversion,  source);
   }
 
   @Override
