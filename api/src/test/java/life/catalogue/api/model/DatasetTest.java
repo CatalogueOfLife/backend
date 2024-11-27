@@ -42,6 +42,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
       "name", "https://fishbase.mnhn.fr/summary/{ID}",
       "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
     ));
+    d.setConversion(new Dataset.UrlDescription("http://convert.me", "bli bla BLUB"));
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);

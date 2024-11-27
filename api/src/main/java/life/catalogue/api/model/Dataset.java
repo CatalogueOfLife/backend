@@ -46,6 +46,7 @@ public class Dataset extends DataEntity<Integer> {
   private static final FuzzyDate NULL_DATE = FuzzyDate.of(0);
   private static final Agent NULL_AGENT = Agent.person("Null","Null","null@null.nl","0000-0000-0000-0000");
   private static final List<String> NULL_LIST_STR = List.of("NULL","Null","null");
+  private static final UrlDescription NULL_DESC = new UrlDescription("", "null");
   private static final Map<String,String> NULL_MAP = Map.of("NULL","NULL",  "Null","Null",  "null","null");
   // properties which are human mediated and can be patched
   // title & license are the only required property, make sure they are not null !!!
@@ -102,6 +103,8 @@ public class Dataset extends DataEntity<Integer> {
           nullType = NULL_AGENT;
         } else if (p.getPropertyType().equals(FuzzyDate.class)) {
           nullType = NULL_DATE;
+        } else if (p.getPropertyType().equals(UrlDescription.class)) {
+          nullType = NULL_DESC;
         } else if (p.getPropertyType().equals(List.class)) {
           if (p.getName().equals("keyword")) {
             nullType = NULL_LIST_STR;
