@@ -96,8 +96,8 @@
     #{obj.url},
     #{obj.logo},
     #{obj.urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
-    #{obj.conversionDescription},
-    #{obj.conversionUrl},
+    #{obj.conversion.description},
+    #{obj.conversion.url},
     #{obj.notes},
     #{obj.createdBy},
     #{obj.modifiedBy}

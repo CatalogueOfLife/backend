@@ -65,6 +65,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
       "name", "http://" + RandomUtils.randomLatinString(8) + ".org/name/{ID}",
       "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
     ));
+    d.setConversion(new Dataset.UrlDescription("http://www.gbif.org/readme", "My first instructions how to read"));
     d.setNotes("my notes");
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);

@@ -469,6 +469,22 @@ public class DatasetWithSettings {
     dataset.setLogo(logo);
   }
 
+  public Dataset.UrlDescription getConversion() {
+    return dataset.getConversion();
+  }
+
+  public void setConversion(Dataset.UrlDescription conversion) {
+    dataset.setConversion(conversion);
+  }
+
+  public String getIssn() {
+    return dataset.getIssn();
+  }
+
+  public void setIssn(String issn) {
+    dataset.setIssn(issn);
+  }
+
   public List<Citation> getSource() {
     return dataset.getSource();
   }
