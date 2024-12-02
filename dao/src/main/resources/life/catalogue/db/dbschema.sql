@@ -1492,6 +1492,21 @@ CREATE INDEX ON name_usage (dataset_key, sector_key);
 CREATE INDEX ON name_usage (dataset_key, according_to_id);
 CREATE INDEX ON name_usage (dataset_key, is_synonym(status));
 
+CREATE TABLE taxon_metrics (
+  taxon_id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  depth INTEGER,
+  max_depth INTEGER,
+  taxon_count INTEGER,
+  species_count INTEGER,
+  child_count INTEGER,
+  child_extant_count INTEGER,
+  taxa_by_rank_count HSTORE,
+  species_by_source_count HSTORE,
+  classification SIMPLE_NAME[]
+) PARTITION BY HASH (dataset_key);
+CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
+
 CREATE TABLE verbatim_source (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,

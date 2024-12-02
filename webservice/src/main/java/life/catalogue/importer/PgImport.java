@@ -6,6 +6,7 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
@@ -34,6 +35,9 @@ import javax.annotation.Nullable;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -387,6 +391,7 @@ public class PgImport implements Callable<Boolean> {
         EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
         MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
         TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
+        TaxonMetricsMapper taxonMetricsMapper = session.getMapper(TaxonMetricsMapper.class);
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
         TaxonPropertyMapper propertyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
@@ -394,14 +399,16 @@ public class PgImport implements Callable<Boolean> {
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
         // pro parte synonyms will be visited multiple times, remember their name ids!
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
-          Stack<SimpleName> parents = new Stack<>();
-          Stack<Node> parentsN = new Stack<>();
+          final Stack<SimpleName> parents = new Stack<>();
+          final Stack<Node> parentsN = new Stack<>();
+          final Stack<TaxonMetrics> parentsM = new Stack<>();
 
           @Override
           public void start(Node n) {
             Set<Integer> vKeys = new HashSet<>();
 
             NeoUsage u = fillNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
+            // update depth
             if (maxDepth.get() < parents.size()) {
               maxDepth.set(parents.size());
             }
@@ -428,6 +435,7 @@ public class PgImport implements Callable<Boolean> {
               // ES indexes only id,rank & name
               parents.push(new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank()));
               parentsN.push(u.node);
+              parentsM.add(TaxonMetrics.create(u.usage.getKey()));
 
               // insert vernacular
               for (VernacularName vn : u.vernacularNames) {
@@ -509,8 +517,33 @@ public class PgImport implements Callable<Boolean> {
             runtimeInterruptIfCancelled();
             // remove this key from parent queue if its an accepted taxon
             if (n.hasLabel(Labels.TAXON)) {
-              parents.pop();
+              var sn = parents.pop();
               parentsN.pop();
+              // update & store metrics
+              var m = parentsM.pop();
+              m.setId(sn.getId());
+              m.setDepth(parents.size());
+              m.setMaxDepthIfHigher(parents.size());
+              m.setClassification(parents);
+              taxonMetricsMapper.create(m);
+              // now add all metrics from this child taxon to it's parent - that's how we aggregate
+              if (!parentsM.isEmpty()) {
+                // first add this taxon to the metrics to be added to the parent - otherwise we never add anything
+                m.incTaxonCount();
+                if (sn.getRank() == Rank.SPECIES) {
+                  m.incSpeciesCount();
+                  // we don't have sources in external dataset imports:
+                  //m.getSpeciesBySourceCount();
+                }
+                ((CountMap<Rank>)m.getTaxaByRankCount()).inc(sn.getRank());
+                // now aggregate child metrics with parent
+                var p = parentsM.peek();
+                p.add(m);
+                p.incChildCount();
+                if (!sn.isExtinct()) {
+                  p.incChildExtantCount();
+                }
+              }
             }
           }
         });

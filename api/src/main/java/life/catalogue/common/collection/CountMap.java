@@ -11,8 +11,22 @@ public class CountMap<K> extends HashMap<K, Integer> {
     merge(key,1, Integer::sum);
   }
 
+  /**
+   * Changes counter by the amount given as diff
+   */
   public void inc(K key, int diff) {
     merge(key,diff, Integer::sum);
+  }
+
+  /**
+   * Adds an entire map of counts, summing up both entries for each key in both maps.
+   */
+  public void inc(CountMap<K> map) {
+    if (map != null && !map.isEmpty()) {
+      for (var entry : map.entrySet()) {
+        inc(entry.getKey(), entry.getValue());
+      }
+    }
   }
 
   /**

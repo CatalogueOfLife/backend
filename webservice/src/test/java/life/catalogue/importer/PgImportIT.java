@@ -82,17 +82,45 @@ public class PgImportIT extends PgImportITBase {
     verifyNamesIndexIds(dataset.getKey());
 
     // check basionym
-    Name n1006 = ndao.get(key(dataset.getKey(), "1006"));
+    var key1006 = key(dataset.getKey(), "1006");
+    Name n1006 = ndao.get(key1006);
     assertEquals("Leontodon taraxacoides", n1006.getScientificName());
     
     List<NameRelation> rels = ndao.relations(n1006);
     assertEquals(1, rels.size());
     
-    Name bas = ndao.getBasionym(key(dataset.getKey(), n1006.getId()));
+    Name bas = ndao.getBasionym(key1006);
     assertEquals("Leonida taraxacoida", bas.getScientificName());
 
     // check taxon parents
     assertParents(tdao, "1006", "102", "30", "20", "10", "1");
+
+    // check metrics
+    var m = tdao.getMetrics(key1006); // Leontodon taraxacoides
+    assertEquals(5, m.getDepth());
+    assertEquals(5, m.getMaxDepth());
+    assertEquals(0, m.getChildCount());
+    assertEquals(0, m.getChildExtantCount());
+    assertEquals(0, m.getSpeciesCount());
+    assertEquals(0, m.getTaxonCount());
+    assertEquals(Map.of(), m.getSpeciesBySourceCount());
+    assertEquals(Map.of(), m.getTaxaByRankCount());
+
+    m = tdao.getMetrics(key(dataset.getKey(), "1")); // plants
+    assertEquals(0, m.getDepth());
+    assertEquals(5, m.getMaxDepth());
+    assertEquals(1, m.getChildCount());
+    assertEquals(1, m.getChildExtantCount());
+    assertEquals(7, m.getSpeciesCount());
+    assertEquals(15, m.getTaxonCount());
+    assertEquals(Map.of(), m.getSpeciesBySourceCount());
+    assertEquals(Map.of(
+      Rank.SPECIES,7,
+      Rank.GENUS,4,
+      Rank.TRIBE,2,
+      Rank.SUBFAMILY,1,
+      Rank.FAMILY,1
+    ), m.getTaxaByRankCount());
   }
   
   @Test

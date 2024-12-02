@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import life.catalogue.common.collection.CountMap;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
@@ -30,7 +32,7 @@ import com.google.common.collect.Ordering;
  */
 abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTypeHandler<Map<KEY, Integer>> {
   private static final Logger LOG = LoggerFactory.getLogger(HstoreCountTypeHandlerBase.class);
-  
+
   @Override
   public void setNonNullParameter(PreparedStatement ps, int i, Map<KEY, Integer> parameter, JdbcType jdbcType)
       throws SQLException {
@@ -53,7 +55,7 @@ abstract class HstoreCountTypeHandlerBase<KEY extends Comparable> extends BaseTy
   }
   
   private Map<KEY, Integer> fromString(String hstring) {
-    HashMap<KEY, Integer> typedMap = new HashMap<>();
+    CountMap<KEY> typedMap = new CountMap<>();
     if (!Strings.isNullOrEmpty(hstring)) {
       Map<String, String> rawMap = HStoreConverter.fromString(hstring);
       for (Map.Entry<String, String> entry : rawMap.entrySet()) {
