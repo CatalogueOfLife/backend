@@ -113,7 +113,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   public Synonymy synonyms(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return dao.getSynonymy(datasetKey, id, null);
   }
-  
+
+  @GET
+  @Path("{id}/metrics")
+  public TaxonMetrics metrics(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.getMetrics(datasetKey, id);
+  }
   @GET
   @Path("{id}/classification")
   public List<SimpleName> classification(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {

@@ -165,7 +165,16 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
   }
 
-  static class HomGroup {
+  public TaxonMetrics getMetrics(int datasetKey, String id) {
+    return getMetrics(DSID.of(datasetKey, id));
+  }
+  public TaxonMetrics getMetrics(DSID<String> key) {
+      try (SqlSession session = factory.openSession()) {
+        return session.getMapper(TaxonMetricsMapper.class).get(key);
+      }
+    }
+
+    static class HomGroup {
     final List<Synonym> homotypic = new ArrayList<>();
     final Set<String> nameIds;
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.TaxonMetricsMapper">
+
+  <resultMap id="taxonMetricsResultMap" type="TaxonMetrics" autoMapping="true">
+    <id property="id" column="taxon_id"/>
+    <id property="datasetKey" column="dataset_key"/>
+    <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
+    <result property="speciesBySourceCount" column="species_by_source_count" typeHandler="life.catalogue.db.type2.HstoreIntegerCountTypeHandler"/>
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+  </resultMap>
+
+  <select id="get" resultMap="taxonMetricsResultMap">
+    SELECT * FROM taxon_metrics
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
+  </select>
+
+  <insert id="create" parameterType="TaxonMetrics" useGeneratedKeys="false" keyProperty="obj.id">
+    INSERT INTO taxon_metrics (taxon_id,dataset_key, depth,max_depth,
+      taxon_count,species_count, child_count,child_extant_count, taxa_by_rank_count,species_by_source_count,classification)
+    VALUES (#{obj.id}, #{obj.datasetKey}, #{obj.depth}, #{obj.maxDepth},
+      #{obj.taxonCount}, #{obj.speciesCount}, #{obj.childCount}, #{obj.childExtantCount},
+      #{obj.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
+      #{obj.speciesBySourceCount, typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,
+      #{obj.classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[]
+    )
+  </insert>
+
+</mapper>
