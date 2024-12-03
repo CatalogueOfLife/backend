@@ -513,11 +513,16 @@ public class XRelease extends ProjectRelease {
    * Iterates over the entire tree of accepted names, validates taxa and resolves data.
    */
   private void validateAndCleanTree() {
-    LOG.info("Clean and validate entire xrelease {}", newDatasetKey);
+    LOG.info("Clean, validate & produce taxon metrics for entire xrelease {}", newDatasetKey);
     final LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true);
          var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera)
     ) {
+      // add metrics generator to tree traversal
+      var stack = consumer.stack();
+      MetricsBuilder mb = new MetricsBuilder(stack, newDatasetKey, session);
+      stack.addHandler(mb);
+      // traverse accepted tree
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(newDatasetKey);
@@ -528,7 +533,7 @@ public class XRelease extends ProjectRelease {
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
 
     } catch (Exception e) {
-      LOG.error("Name validation & cleaning failed", e);
+      LOG.error("Name validation, cleaning & metrics failed", e);
     }
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }

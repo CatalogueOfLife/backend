@@ -4,38 +4,66 @@ import com.google.common.collect.ImmutableList;
 
 import life.catalogue.api.model.NameUsageCore;
 
+import life.catalogue.importer.neo.traverse.StartEndHandler;
+
 import org.gbif.nameparser.api.Rank;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * A stack of usages that will automatically remove usages from the stack according to the classification.
+ * Simply push new usages in depth first order to the stack which will then update itself and notify optional start/end handlers
+ * about the depth first traversal of the tree.
+ * @param <T>
+ */
 public class ParentStack<T extends NameUsageCore> {
   private static final Logger LOG = LoggerFactory.getLogger(ParentStack.class);
 
-  private final Consumer<SNC<T>> removeFunc;
+  private final List<StackHandler<T>> handler = new ArrayList<>();
   private final LinkedList<SNC<T>> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
 
   /**
-   * @param removeFunc function to be called when the usage is removed from the stack and has correct children and synonym counts.
+   * An event handler interface that accepts a start and end event for taxa / accepted names in depth first iteration of a usage tree.
+   * The parent stack can listen to these handlers and fire the events for a sorted postgres stream.
    */
-  public ParentStack(@Nullable Consumer<SNC<T>> removeFunc) {
-    this.removeFunc = removeFunc;
-  }
-  public ParentStack() {
-    this(null);
+  public interface StackHandler<T> {
+    void start(T n);
+
+    /**
+     * @param n the wrapped usage with counts for direct, accepted children and number of synonyms.
+     */
+    void end(SNC<T> n);
   }
 
-  static class SNC<T> {
+  /**
+   * @param removeFunc function to be called when the usage is removed from the stack and has correct children and synonym counts.
+   */
+  public ParentStack(Consumer<SNC<T>> removeFunc) {
+    handler.add(new StackHandler<T>() {
+      @Override
+      public void start(T n) {
+
+      }
+
+      @Override
+      public void end(SNC<T> n) {
+        removeFunc.accept(n);
+      }
+    });
+  }
+  public ParentStack() {
+  }
+
+  public static class SNC<T> {
     T usage;
     int children = 0;
     int synonyms = 0;
@@ -50,6 +78,9 @@ public class ParentStack<T extends NameUsageCore> {
     }
   }
 
+  public void addHandler(StackHandler<T> handler) {
+    this.handler.add(handler);
+  }
   public T find(Rank r) {
     for (SNC<T> p : parents) {
       if (p.usage.getRank() == r) {
@@ -130,7 +161,19 @@ public class ParentStack<T extends NameUsageCore> {
 
     } else if (nu.getParentId() == null) {
       // no parent, i.e. a new root!
-      clear();
+      doubtfulUsageID = null;
+      if (!handler.isEmpty()) {
+        // notify callback
+        while (!parents.isEmpty()) {
+          var p = parents.removeLast();
+          // notify handler about removal of accepted name
+          if (p.usage.getStatus().isTaxon()) {
+            handler.forEach(h -> h.end(p));
+          }
+        }
+      } else {
+        parents.clear();
+      }
 
     } else {
       while (!parents.isEmpty()) {
@@ -145,8 +188,8 @@ public class ParentStack<T extends NameUsageCore> {
             doubtfulUsageID = null;
           }
           // notify stack user about removal of accepted name
-          if (removeFunc != null && p.usage.getStatus().isTaxon()) {
-            removeFunc.accept(p);
+          if (!handler.isEmpty() && p.usage.getStatus().isTaxon()) {
+            handler.forEach(h -> h.end(p));
           }
         }
       }
@@ -164,7 +207,9 @@ public class ParentStack<T extends NameUsageCore> {
         parents.getLast().synonyms++;
       }
     }
-    parents.add(new SNC(nu));
+    // add to stack and notify handler
+    handler.forEach(h -> h.start(nu));
+    parents.add(new SNC<>(nu));
     if (nu.getStatus() != null && nu.getStatus().isTaxon()
         && pRank != null && pRank.notOtherOrUnranked()
         && nu.getRank().higherOrEqualsTo(pRank)
@@ -172,11 +217,6 @@ public class ParentStack<T extends NameUsageCore> {
       LOG.debug("Bad parent rank {}. Mark {} as doubtful", pRank, parents.getLast());
       markSubtreeAsDoubtful();
     }
-  }
-
-  private void clear() {
-    parents.clear();
-    doubtfulUsageID = null;
   }
 
   public int size() {
