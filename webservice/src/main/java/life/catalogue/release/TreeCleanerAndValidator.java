@@ -69,8 +69,13 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
   }
 
-  static class XLinneanNameUsage extends LinneanNameUsage {
+  public ParentStack<XLinneanNameUsage> stack() {
+    return parents;
+  }
+
+  public static class XLinneanNameUsage extends LinneanNameUsage {
     public Integer authorYear;
+    public Boolean extinct;
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
     }

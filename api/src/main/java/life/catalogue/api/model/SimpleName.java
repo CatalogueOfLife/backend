@@ -101,6 +101,16 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     }
   }
 
+  public SimpleName(LinneanNameUsage u) {
+    this.id = u.getId();
+    this.name = u.getScientificName();
+    this.authorship = u.getAuthorship();
+    this.rank = u.getRank();
+    this.code = u.getCode();
+    this.status = u.getStatus();
+    this.parent = u.getParentId();
+  }
+
   public SimpleName(String id) {
     this.id = id;
   }
