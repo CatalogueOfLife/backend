@@ -111,20 +111,6 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
     assertEquals(3, mapper().countChildrenWithRank(DSID.of(DATASET11.getKey(), "root-1"), Rank.SPECIES, true));
   }
 
-
-  @Test
-  public void getCounts() throws Exception {
-    // 2 Taxa pre-inserted through InitMybatisRule.apple()
-    mapper().create(TestEntityGenerator.newTaxon("t2"));
-    generateDatasetImport(DATASET11.getKey());
-
-    var cnt = mapper().getCounts(DSID.of(DATASET11.getKey(), "root-1"));
-    assertNotNull(cnt);
-
-    cnt = mapper().getCounts(DSID.of(DATASET11.getKey(), "notExisting"));
-    assertNull(cnt);
-  }
-
   @Test
   public void list() throws Exception {
     List<Taxon> taxa = new ArrayList<>();
@@ -307,37 +293,6 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
       Taxon p = parents.removeLast();
       assertEquals(p.getId(), ht.getId());
     }
-  }
-  
-  @Test
-  public void incDatasetSectorCount() throws Exception {
-    TreeNode n = getTreeNode(sector.getTarget().getId());
-    // t4 already has count=1 for subject dataset 11 when draft tree gets populated
-    assertEquals(1, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    
-    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), 7);
-    n = getTreeNode(sector.getTarget().getId());
-    assertEquals(8, n.getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    // cascades to all parents
-    assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-  
-  
-    mapper().incDatasetSectorCount(DSID.colID("unreal"), sector.getSubjectDatasetKey(), 10);
-    // no change
-    assertEquals(9, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(9, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(9, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-  
-    // remove keys, see https://github.com/Sp2000/colplus-backend/issues/567
-    mapper().incDatasetSectorCount(sector.getTargetAsDSID(), sector.getSubjectDatasetKey(), -8);
-    commit();
-    n = getTreeNode(sector.getTarget().getId());
-    assertFalse(n.getDatasetSectors().containsKey((int) sector.getSubjectDatasetKey()));
-    assertEquals(1, getTreeNode("t3").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(1, getTreeNode("t2").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
-    assertEquals(1, getTreeNode("t1").getDatasetSectors().get((int) sector.getSubjectDatasetKey()));
   }
   
   private TreeNode getTreeNode(String id) {

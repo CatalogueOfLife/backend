@@ -530,11 +530,6 @@ public class PgImport implements Callable<Boolean> {
               if (!parentsM.isEmpty()) {
                 // first add this taxon to the metrics to be added to the parent - otherwise we never add anything
                 m.incTaxonCount();
-                if (sn.getRank() == Rank.SPECIES) {
-                  m.incSpeciesCount();
-                  // we don't have sources in external dataset imports:
-                  //m.getSpeciesBySourceCount();
-                }
                 ((CountMap<Rank>)m.getTaxaByRankCount()).inc(sn.getRank());
                 // now aggregate child metrics with parent
                 var p = parentsM.peek();

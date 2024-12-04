@@ -121,8 +121,8 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
   @GET
   @Path("{id}/classification")
-  public List<SimpleName> classification(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(TaxonMapper.class).classificationSimple(DSID.of(datasetKey, id));
+  public List<SimpleName> classification(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return dao.classificationSimple(DSID.of(datasetKey, id));
   }
 
   @GET

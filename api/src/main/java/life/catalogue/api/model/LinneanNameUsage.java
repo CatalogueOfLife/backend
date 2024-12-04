@@ -14,6 +14,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String parentId;
   private Integer sectorKey;
   private TaxonomicStatus status;
+  private Boolean extinct;
   private String nameId;
   private NameType type;
   private NomCode code;
@@ -38,6 +39,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     this.parentId = other.parentId;
     this.sectorKey = other.sectorKey;
     this.status = other.status;
+    this.extinct = other.extinct;
     this.nameId = other.nameId;
     this.type = other.type;
     this.code = other.code;
@@ -60,6 +62,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     parentId = nu.getParentId();
     sectorKey = nu.getSectorKey();
     status = nu.getStatus();
+    extinct = nu.isTaxon() ? nu.asTaxon().isExtinct() : null;
     nameId = nu.getName().getId();
     type = nu.getName().getType();
     code = nu.getName().getCode();
@@ -107,6 +110,14 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
 
   public void setStatus(TaxonomicStatus status) {
     this.status = status;
+  }
+
+  public Boolean getExtinct() {
+    return extinct;
+  }
+
+  public void setExtinct(Boolean extinct) {
+    this.extinct = extinct;
   }
 
   public String getNameId() {
@@ -290,30 +301,12 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     if (this == o) return true;
     if (!(o instanceof LinneanNameUsage)) return false;
     LinneanNameUsage that = (LinneanNameUsage) o;
-    return Objects.equals(id, that.id)
-           && Objects.equals(parentId, that.parentId)
-           && Objects.equals(sectorKey, that.sectorKey)
-           && status == that.status
-           && Objects.equals(nameId, that.nameId)
-           && type == that.type
-           && code == that.code
-           && Objects.equals(scientificName, that.scientificName)
-           && Objects.equals(authorship, that.authorship)
-           && rank == that.rank
-           && Objects.equals(uninomial, that.uninomial)
-           && Objects.equals(genus, that.genus)
-           && Objects.equals(infragenericEpithet, that.infragenericEpithet)
-           && Objects.equals(specificEpithet, that.specificEpithet)
-           && Objects.equals(infraspecificEpithet, that.infraspecificEpithet)
-           && Objects.equals(cultivarEpithet, that.cultivarEpithet)
-           && Objects.equals(combinationAuthorship, that.combinationAuthorship)
-           && Objects.equals(basionymAuthorship, that.basionymAuthorship)
-           && Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
+    return Objects.equals(id, that.id) && Objects.equals(parentId, that.parentId) && Objects.equals(sectorKey, that.sectorKey) && status == that.status && Objects.equals(extinct, that.extinct) && Objects.equals(nameId, that.nameId) && type == that.type && code == that.code && Objects.equals(scientificName, that.scientificName) && Objects.equals(authorship, that.authorship) && rank == that.rank && Objects.equals(uninomial, that.uninomial) && Objects.equals(genus, that.genus) && Objects.equals(infragenericEpithet, that.infragenericEpithet) && Objects.equals(specificEpithet, that.specificEpithet) && Objects.equals(infraspecificEpithet, that.infraspecificEpithet) && Objects.equals(cultivarEpithet, that.cultivarEpithet) && Objects.equals(combinationAuthorship, that.combinationAuthorship) && Objects.equals(basionymAuthorship, that.basionymAuthorship) && Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, sectorKey, status, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(id, parentId, sectorKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override

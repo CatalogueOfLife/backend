@@ -10,6 +10,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.dao.MetricsDao;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
@@ -49,16 +50,16 @@ import io.dropwizard.auth.Auth;
 @Produces(MediaType.APPLICATION_JSON)
 public class DatasetExportResource {
   private final SqlSessionFactory factory;
-  private final NameUsageSearchService searchService;
+  private final MetricsDao metricsDao;
   private final ExportManager exportManager;
   private final WsServerConfig cfg;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetExportResource.class);
 
-  public DatasetExportResource(SqlSessionFactory factory, NameUsageSearchService searchService, ExportManager exportManager, WsServerConfig cfg) {
+  public DatasetExportResource(SqlSessionFactory factory, MetricsDao metricsDao, ExportManager exportManager, WsServerConfig cfg) {
     this.factory = factory;
-    this.searchService = searchService;
+    this.metricsDao = metricsDao;
     this.exportManager = exportManager;
     this.cfg = cfg;
   }
@@ -136,7 +137,7 @@ public class DatasetExportResource {
     params.init();
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, searchService, factory, writer)
+           T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, metricsDao, factory, writer)
       ) {
         modifier.accept(printer);
         printer.print();

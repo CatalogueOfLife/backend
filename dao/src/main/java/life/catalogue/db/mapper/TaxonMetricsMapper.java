@@ -17,4 +17,6 @@ public interface TaxonMetricsMapper {
 
   void create(@Param("obj") TaxonMetrics metrics);
 
+  int count(@Param("datasetKey") int datasetKey);
+  int deleteByDataset(@Param("datasetKey") int datasetKey);
 }

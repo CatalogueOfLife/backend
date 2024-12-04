@@ -1,6 +1,9 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.Taxon;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.DatasetProcessable;
@@ -13,8 +16,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
-
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 /**
  * Mapper dealing only with accepted name usages, i.e. Taxon instances.
@@ -53,13 +54,6 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
    */
   List<String> classificationIds(@Param("key") DSID<String> key);
 
-  List<TaxonSectorCountMap> classificationCounts(@Param("key") DSID<String> key);
-  
-  /**
-   * @return the sector count map for a given taxon
-   */
-  TaxonSectorCountMap getCounts(@Param("key") DSID<String> key);
-  
   int countChildren(@Param("key") DSID<String> key, @Param("extinct") Boolean inclExtinct);
   
   int countChildrenWithRank(@Param("key") DSID<String> key, @Param("rank") Rank rank, @Param("extinct") Boolean inclExtinct);
@@ -72,24 +66,5 @@ public interface TaxonMapper extends CRUD<DSID<String>, Taxon>, DatasetProcessab
    * @param rank optional rank cutoff filter to only include children with a rank lower than the one given
    */
   List<Taxon> children(@Param("key") DSID<String> key, @Nullable @Param("rank") Rank rank, @Param("page") Page page);
-
-  /**
-   * Recursively updates the sector count for a given taxon and all its parents.
-   * @param key the taxon datasetKey & id, pointing to a catalogue or release
-   * @param dkey the source datasetKey that sectors are counted for
-   * @param delta the change to apply to the count for the given datasetKey, can be negative
-   */
-  void incDatasetSectorCount(@Param("key") DSID<String> key, @Param("dkey") int dkey, @Param("delta") int delta);
-  
-  /**
-   * Updates a single taxon sector count map
-   */
-  void updateDatasetSectorCount(@Param("key") DSID<String> key, @Param("count") Int2IntOpenHashMap count);
-  
-  /**
-   * Sets all sector counts equal or above rank genus to null
-   * @param datasetKey
-   */
-  void resetDatasetSectorCount(@Param("datasetKey") int datasetKey);
 
 }

@@ -155,6 +155,25 @@ public class ParentStack<T extends NameUsageCore> {
     return null;
   }
 
+  /**
+   * Flushes the remaining usages from the stack and passes them to the handlers.
+   * Should be called at the end when all usages are pushed.
+   */
+  public void flush() {
+    if (!handler.isEmpty()) {
+      // notify callback
+      while (!parents.isEmpty()) {
+        var p = parents.removeLast();
+        // notify handler about removal of accepted name
+        if (p.usage.getStatus().isTaxon()) {
+          handler.forEach(h -> h.end(p));
+        }
+      }
+    } else {
+      parents.clear();
+    }
+  }
+
   public void push(T nu) {
     if (parents.isEmpty()) {
       // the very first entry can point to a missing parent, e.g. when we iterate over subtrees only
@@ -162,18 +181,7 @@ public class ParentStack<T extends NameUsageCore> {
     } else if (nu.getParentId() == null) {
       // no parent, i.e. a new root!
       doubtfulUsageID = null;
-      if (!handler.isEmpty()) {
-        // notify callback
-        while (!parents.isEmpty()) {
-          var p = parents.removeLast();
-          // notify handler about removal of accepted name
-          if (p.usage.getStatus().isTaxon()) {
-            handler.forEach(h -> h.end(p));
-          }
-        }
-      } else {
-        parents.clear();
-      }
+      flush();
 
     } else {
       while (!parents.isEmpty()) {

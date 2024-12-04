@@ -78,11 +78,6 @@
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
-  <resultMap id="taxonCountResultMap" type="TaxonSectorCountMap" autoMapping="false">
-    <id property="id" column="id"/>
-    <result property="count" column="dataset_sectors"/>
-  </resultMap>
-
 
   <select id="count" resultType="integer">
     SELECT count(*) FROM name_usage
@@ -203,26 +198,6 @@
     WHERE cl.id != #{key.id}
   </select>
 
-  <select id="getCounts" resultMap="taxonCountResultMap">
-    SELECT id, dataset_sectors
-    FROM name_usage
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id} AND NOT is_synonym(status)
-  </select>
-
-  <select id="classificationCounts" resultMap="taxonCountResultMap">
-    WITH RECURSIVE x AS(
-      SELECT id, parent_id, dataset_sectors
-      FROM name_usage u
-      WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id}
-    UNION
-      SELECT u.id, u.parent_id, u.dataset_sectors
-      FROM name_usage u, x
-      WHERE u.dataset_key=#{key.datasetKey} AND u.id = x.parent_id
-    )
-    SELECT id, dataset_sectors
-    FROM x
-  </select>
-
   <select id="get" resultMap="taxonResultMap" flushCache="true">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -257,41 +232,5 @@
     DELETE FROM name_usage
     WHERE dataset_key=#{datasetKey}
   </delete>
-
-  <update id="incDatasetSectorCount">
-    WITH RECURSIVE x AS (
-      SELECT u.id, u.parent_id
-      FROM name_usage u
-      WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id}
-    UNION
-      SELECT u.id, u.parent_id
-      FROM name_usage u, x
-      WHERE u.dataset_key=#{key.datasetKey} AND u.id = x.parent_id
-    )
-    UPDATE name_usage
-    SET dataset_sectors = CASE coalesce((dataset_sectors->'${dkey}')::int, 0) + ${delta}
-    WHEN 0 THEN
-      dataset_sectors - '${dkey}'
-    ELSE
-      jsonb_set( coalesce(dataset_sectors, '{}'::jsonb), '{"${dkey}"}',
-        to_jsonb( coalesce( (dataset_sectors->'${dkey}')::int, 0) + ${delta} ), true
-      )
-    END
-    WHERE dataset_key=#{key.datasetKey} AND id IN (SELECT id FROM x)
-  </update>
-
-  <update id="updateDatasetSectorCount">
-    UPDATE name_usage
-    SET dataset_sectors = to_jsonb( #{count, typeHandler=life.catalogue.db.type.FastutilIntIntHandler}::jsonb )
-    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
-  </update>
-
-  <update id="resetDatasetSectorCount">
-    UPDATE name_usage AS u SET dataset_sectors = NULL
-    FROM name n
-    WHERE u.dataset_key=#{datasetKey} AND n.dataset_key=#{datasetKey} AND n.id=u.name_id
-      AND n.rank &lt;= 'GENUS'
-      AND NOT is_synonym(u.status)
-  </update>
 
 </mapper>

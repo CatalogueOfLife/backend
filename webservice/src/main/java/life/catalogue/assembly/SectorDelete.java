@@ -108,7 +108,7 @@ public class SectorDelete extends SectorRunnable {
       // remove sector from all entities left
       SectorProcessable.MAPPERS.forEach(mc -> {
         int count;
-        SectorProcessable m = session.getMapper(mc);
+        SectorProcessable<?> m = session.getMapper(mc);
         if (mc.equals(VerbatimSourceMapper.class)) {
           count = m.deleteBySector(sectorKey);
           LOG.info("Deleted {} verbatim sources for sector {}", count, sectorKey);
@@ -119,8 +119,6 @@ public class SectorDelete extends SectorRunnable {
         }
       });
 
-      // update datasetSectors counts
-      SectorDao.incSectorCounts(session, s, -1);
       // remove sector itself
       session.getMapper(SectorMapper.class).delete(sectorKey);
       session.commit();

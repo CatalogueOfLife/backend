@@ -1475,7 +1475,6 @@ CREATE TABLE name_usage (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  dataset_sectors JSONB,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
@@ -1503,7 +1502,8 @@ CREATE TABLE taxon_metrics (
   child_extant_count INTEGER,
   taxa_by_rank_count HSTORE,
   species_by_source_count HSTORE,
-  classification SIMPLE_NAME[]
+  classification SIMPLE_NAME[],
+  source_dataset_keys INTEGER[]
 ) PARTITION BY HASH (dataset_key);
 CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
 

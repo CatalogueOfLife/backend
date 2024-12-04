@@ -8,14 +8,18 @@ public class CountMap<K> extends HashMap<K, Integer> {
    * Increase counter by one or set to 1 if not existing already
    */
   public void inc(K key) {
-    merge(key,1, Integer::sum);
+    if (key != null) {
+      merge(key,1, Integer::sum);
+    }
   }
 
   /**
    * Changes counter by the amount given as diff
    */
   public void inc(K key, int diff) {
-    merge(key,diff, Integer::sum);
+    if (key != null) {
+      merge(key,diff, Integer::sum);
+    }
   }
 
   /**
