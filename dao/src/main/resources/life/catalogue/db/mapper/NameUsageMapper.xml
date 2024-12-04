@@ -206,6 +206,19 @@
     </discriminator>
   </resultMap>
 
+  <resultMap id="taxonClassificationResultMap" type="TaxonWithClassification" autoMapping="true" extends="life.catalogue.db.mapper.TaxonMapper.taxonResultMap">
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+  </resultMap>
+
+  <resultMap id="usageClassificationResultMap" type="NameUsageBase" autoMapping="true">
+    <id property="id" column="id"/>
+    <id property="datasetKey" column="dataset_key"/>
+    <discriminator column="is_synonym" javaType="boolean">
+      <case value="false" resultType="TaxonWithClassification" resultMap="taxonClassificationResultMap"/>
+      <case value="true" resultType="Synonym" resultMap="life.catalogue.db.mapper.SynonymMapper.synonymResultMap"/>
+    </discriminator>
+  </resultMap>
+
   <resultMap id="bareNameResultMap" type="BareName" autoMapping="true">
     <id column="n_id"/>
     <id property="datasetKey" column="dataset_key"/>
@@ -550,9 +563,10 @@
     WHERE dataset_key=#{datasetKey}
   </insert>
 
-  <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
-    SELECT <include refid="SELECT_BASE"/>
+  <select id="processDataset" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT_BASE"/>, tm.classification
     FROM <include refid="FROM_BASE"/>
+      LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
     <where>
       u.dataset_key = #{datasetKey}
       <if test="maxRank != null">
@@ -702,15 +716,17 @@
     </if>
   </sql>
 
-  <select id="processTree" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processTree" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
-      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST_ROOT"/>
+      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST_ROOT"/>, tm.classification
       FROM <include refid="FROM_BASE"/>
+        LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
       WHERE u.dataset_key=#{param.datasetKey} AND
       <include refid="WHERE_START"/>
     UNION
-      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>
+      SELECT <include refid="SELECT_BASE"/> <include refid="DEPTH_FIRST"/>, tm.classification
       FROM <include refid="FROM_BASE"/>
+        LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id
       JOIN x ON x.id = u.parent_id
       <where>
         u.dataset_key=#{param.datasetKey}

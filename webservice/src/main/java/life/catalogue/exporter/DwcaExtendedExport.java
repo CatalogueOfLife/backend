@@ -23,16 +23,31 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DwcaExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExtendedExport.class);
   private static final String EML_FILENAME = "eml.xml";
+  private static final Map<Rank, DwcTerm> CLASSIFICATION_TERMS = Map.of(
+    Rank.KINGDOM, DwcTerm.kingdom,
+    Rank.PHYLUM, DwcTerm.phylum,
+    Rank.CLASS, DwcTerm.class_,
+    Rank.ORDER, DwcTerm.order,
+    Rank.SUPERFAMILY, DwcTerm.superfamily,
+    Rank.FAMILY, DwcTerm.family,
+    Rank.SUBFAMILY, DwcTerm.subfamily,
+    Rank.TRIBE, DwcTerm.tribe
+  );
+
   private TermWriter writer2;
   private final Archive arch = new Archive();
   private final AtomicInteger bareNameID = new AtomicInteger(1);
@@ -93,6 +108,14 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.namePublishedIn,
           DwcTerm.nomenclaturalCode,
           DwcTerm.nomenclaturalStatus,
+          DwcTerm.kingdom,
+          DwcTerm.phylum,
+          DwcTerm.class_,
+          DwcTerm.order,
+          DwcTerm.superfamily,
+          DwcTerm.family,
+          DwcTerm.subfamily,
+          DwcTerm.tribe,
           DwcTerm.taxonRemarks,
           DcTerm.references
         };
@@ -135,7 +158,14 @@ public class DwcaExtendedExport extends ArchiveExport {
 
     } else {
       writer.set(DwcTerm.parentNameUsageID, u.getParentId());
-      Taxon t = (Taxon) u;
+      TaxonWithClassification t = (TaxonWithClassification) u;
+      if (t.getClassification() != null) {
+        for (var ht : t.getClassification()) {
+          if (CLASSIFICATION_TERMS.containsKey(ht.getRank())) {
+            writer.set(CLASSIFICATION_TERMS.get(ht.getRank()), ht.getName());
+          }
+        }
+      }
       if (t.isExtinct() != null || (t.getEnvironments() != null && !t.getEnvironments().isEmpty())) {
         writer2.set(DwcTerm.taxonID, u.getId());
         writer2.set(GbifTerm.isExtinct, t.isExtinct());
