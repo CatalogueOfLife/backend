@@ -8,19 +8,25 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.csv.ColdpReader;
 import life.catalogue.img.ImageService;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
+import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +87,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.remarks, u.getRemarks());
 
     if (!u.isSynonym()) {
-      Taxon t = (Taxon) u;
+      TaxonWithClassification t = (TaxonWithClassification) u;
       writer.set(ColdpTerm.scrutinizer, t.getScrutinizer());
       writer.set(ColdpTerm.scrutinizerID, t.getScrutinizerID());
       writer.set(ColdpTerm.scrutinizerDate, t.getScrutinizerDate());
@@ -90,6 +96,13 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.temporalRangeEnd, t.getTemporalRangeEnd());
       writer.set(ColdpTerm.environment, t.getEnvironments(), PermissiveEnumSerde::enumValueName);
       writer.set(ColdpTerm.ordinal, t.getOrdinal());
+      if (t.getClassification() != null) {
+        for (var ht : t.getClassification()) {
+          if (ColdpReader.RANK2COLDP.containsKey(ht.getRank())) {
+            writer.set(ColdpReader.RANK2COLDP.get(ht.getRank()), ht.getName());
+          }
+        }
+      }
     }
   }
 
