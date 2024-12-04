@@ -178,6 +178,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
   @Test
   public void listOrphans() throws Exception {
     LocalDateTime bFirst = LocalDateTime.now();
+    TimeUnit.SECONDS.sleep(1);
 
     Name n = TestEntityGenerator.newName("n1");
     nameMapper.create(n);
