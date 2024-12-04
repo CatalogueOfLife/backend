@@ -11,39 +11,45 @@
     t.status,
     t.name_phrase,
     t.extinct,
-    (select count(*) from name_usage c WHERE c.dataset_key=#{datasetKey} AND c.parent_id=t.id AND NOT is_synonym(c.status) <if test="_parameter.containsKey('extinct') and !extinct">AND (c.extinct IS NULL OR NOT c.extinct)</if>) AS child_count,
     <include refid="life.catalogue.db.mapper.NameMapper.minimalNameCols">
       <property name="alias" value="n"/>
       <property name="prefix" value=""/>
     </include>
     ,
-    <if test="type == null">
-      NULL AS dataset_sectors,
-      NULL AS sector_key,
-      NULL AS est_id,
-      NULL AS ed_id
-    </if>
-    <if test="type != null">
-      t.dataset_sectors,
-      s.subject_dataset_key AS sector_dataset_key,
-      s.mode AS sector_mode,
-      <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
-        s.id AS sector_key,
+    <choose>
+      <when test="_parameter.containsKey('extinct') and !extinct">tm.child_extant_count</when>
+      <otherwise>tm.child_count</otherwise>
+    </choose> AS child_count,
+    tm.species_count AS count,
+    <choose>
+      <when test="type == null">
+        NULL AS source_dataset_keys,
+        NULL AS sector_key,
         NULL AS est_id,
-        <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
-          <property name="alias" value="ed."/>
-          <property name="prefix" value="ed_"/>
-        </include>
-      </if>
-      <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
-        t.sector_key AS sector_key,
-        NULL AS ed_id,
-        <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
-          <property name="alias" value="est."/>
-          <property name="prefix" value="est_"/>
-        </include>
-      </if>
-    </if>
+        NULL AS ed_id
+      </when>
+      <otherwise>
+        tm.source_dataset_keys,
+        s.subject_dataset_key AS sector_dataset_key,
+        s.mode AS sector_mode,
+        <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
+          s.id AS sector_key,
+          NULL AS est_id,
+          <include refid="life.catalogue.db.mapper.DecisionMapper.SelectVar">
+            <property name="alias" value="ed."/>
+            <property name="prefix" value="ed_"/>
+          </include>
+        </if>
+        <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
+          t.sector_key AS sector_key,
+          NULL AS ed_id,
+          <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
+            <property name="alias" value="est."/>
+            <property name="prefix" value="est_"/>
+          </include>
+        </if>
+      </otherwise>
+    </choose>
   </sql>
 
   <sql id="FROM_USAGE">
@@ -52,6 +58,7 @@
 
   <sql id="FROM">
     <include refid="FROM_USAGE"/>
+    LEFT JOIN taxon_metrics tm ON tm.dataset_key=t.dataset_key AND tm.taxon_id=t.id
     <if test="type != null">
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
         LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
@@ -76,7 +83,7 @@
 
   <resultMap id="treeResultMap" type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="datasetSectors" column="dataset_sectors"/>
+    <result property="sourceDatasetKeys" column="source_dataset_keys"/>
     <result property="sectorDatasetKey" column="sector_dataset_key"/>
     <result property="sectorMode" column="sector_mode"/>
     <association property="_name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap"/>

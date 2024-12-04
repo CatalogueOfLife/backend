@@ -71,13 +71,8 @@ public class MybatisTestUtils {
 
   public static void populateDraftTree(SqlSession session) {
     populateTestTree(COL, session);
-  
-    TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    tm.incDatasetSectorCount(DSID.colID("t4"), 11, 1);
-    tm.incDatasetSectorCount(DSID.colID("t5"), 11, 1);
     session.commit();
   }
-  
   public static void replaceTestData(TestDataRule.TestData data) throws IOException, SQLException {
     TestDataRule rule = new TestDataRule(data);
     try {

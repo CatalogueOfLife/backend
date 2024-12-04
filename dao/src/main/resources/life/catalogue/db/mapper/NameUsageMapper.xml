@@ -64,6 +64,7 @@
     u.parent_id,
     u.sector_key,
     u.status,
+    u.extinct,
     u.name_id,
     n.type,
     n.code,
@@ -114,9 +115,7 @@
     ${alias}temporal_range_start,
     ${alias}temporal_range_end,
     ${alias}environments,
-    ${alias}link,
-    <!-- calculated -->
-    ${alias}dataset_sectors
+    ${alias}link
   </sql>
 
   <sql id="COLS">

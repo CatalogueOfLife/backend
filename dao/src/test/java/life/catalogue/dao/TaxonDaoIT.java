@@ -309,33 +309,6 @@ public class TaxonDaoIT extends DaoTestBase {
     assertNotNull(t2.getName().getId());
     assertEquals(NameType.SCIENTIFIC, t2.getName().getType());
   }
-  
-  @Test
-  public void updateAllSectorCounts(){
-    MybatisTestUtils.populateDraftTree(session());
-    tDao.updateAllSectorCounts(Datasets.COL);
-  }
-
-  @Test
-  public void updateAllSectorCounts2() {
-
-    try (SqlSession session = factory().openSession(true)) {
-      MybatisTestUtils.populateDraftTree(session);
-      MybatisTestUtils.populateTestTree(12, session);
-      session.commit();
-    }
-
-    SectorDao sdao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
-    SectorDaoTest.setupSectors(sdao);
-
-    tDao.updateAllSectorCounts(3);
-    SectorDaoTest.assertSectorCounts();
-
-
-    // finally rebuild once more & check
-    tDao.updateAllSectorCounts(3);
-    SectorDaoTest.assertSectorCounts();
-  }
 
   @Test
   public void updateParentChange(){

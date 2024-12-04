@@ -74,8 +74,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   }
 
   public static class XLinneanNameUsage extends LinneanNameUsage {
-    public Integer authorYear;
-    public Boolean extinct;
+    Integer authorYear;
+    Boolean extinct;
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
     }

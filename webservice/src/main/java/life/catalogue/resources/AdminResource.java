@@ -339,12 +339,11 @@ public class AdminResource {
   }
 
   @POST
-  @Path("sector-count-update")
-  public BackgroundJob updateAllSectorCounts(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+  @Path("rebuild-taxon-metrics")
+  public BackgroundJob rebuildTaxonMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
-    return runJob(new SectorCountJob(user.getKey(), factory, indexService, validator, datasetKey));
+    return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
   }
-
 
   private BackgroundJob runJob(BackgroundJob job){
     exec.submit(job);

@@ -10,6 +10,7 @@
     <result property="taxaByRankCount" column="taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
     <result property="speciesBySourceCount" column="species_by_source_count" typeHandler="life.catalogue.db.type2.HstoreIntegerCountTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="sourceDatasetKeys" column="source_dataset_keys" typeHandler="life.catalogue.db.type.IntSetTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="taxonMetricsResultMap">
@@ -19,13 +20,23 @@
 
   <insert id="create" parameterType="TaxonMetrics" useGeneratedKeys="false" keyProperty="obj.id">
     INSERT INTO taxon_metrics (taxon_id,dataset_key, depth,max_depth,
-      taxon_count,species_count, child_count,child_extant_count, taxa_by_rank_count,species_by_source_count,classification)
+      taxon_count,species_count, child_count,child_extant_count, taxa_by_rank_count,species_by_source_count,classification,source_dataset_keys)
     VALUES (#{obj.id}, #{obj.datasetKey}, #{obj.depth}, #{obj.maxDepth},
-      #{obj.taxonCount}, #{obj.speciesCount}, #{obj.childCount}, #{obj.childExtantCount},
+      #{obj.taxonCount},#{obj.speciesCount}, #{obj.childCount}, #{obj.childExtantCount},
       #{obj.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
       #{obj.speciesBySourceCount, typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,
-      #{obj.classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[]
+      #{obj.classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
+      #{obj.sourceDatasetKeys, typeHandler=life.catalogue.db.type.IntSetTypeHandler}::INTEGER[]
     )
   </insert>
 
+  <select id="count" resultType="integer">
+    SELECT COUNT(*) FROM taxon_metrics
+    WHERE dataset_key=#{datasetKey}
+  </select>
+
+  <delete id="deleteByDataset"  parameterType="map">
+    DELETE FROM taxon_metrics
+    WHERE dataset_key=#{datasetKey}
+  </delete>
 </mapper>

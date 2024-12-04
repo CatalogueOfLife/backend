@@ -1,14 +1,13 @@
 package life.catalogue.api.model;
 
+import it.unimi.dsi.fastutil.ints.IntSet;
+
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,8 +48,7 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   private Integer sectorDatasetKey;
   private Boolean sectorRoot;
   private EditorialDecision decision;
-  // maps of included sectors, aggregated by their subject dataset key. This EXCLUDES the sectorKey of this node
-  private Int2IntOpenHashMap datasetSectors;
+  private IntSet sourceDatasetKeys;
   
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -226,13 +224,13 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   public void setDecision(EditorialDecision decision) {
     this.decision = decision;
   }
-  
-  public Int2IntOpenHashMap getDatasetSectors() {
-    return datasetSectors;
+
+  public IntSet getSourceDatasetKeys() {
+    return sourceDatasetKeys;
   }
-  
-  public void setDatasetSectors(Int2IntOpenHashMap datasetSectors) {
-    this.datasetSectors = datasetSectors;
+
+  public void setSourceDatasetKeys(IntSet sourceDatasetKeys) {
+    this.sourceDatasetKeys = sourceDatasetKeys;
   }
 
   @JsonIgnore
@@ -258,12 +256,12 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
            Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
            Objects.equals(sectorRoot, treeNode.sectorRoot) &&
            Objects.equals(decision, treeNode.decision) &&
-           Objects.equals(datasetSectors, treeNode.datasetSectors);
+           Objects.equals(sourceDatasetKeys, treeNode.sourceDatasetKeys);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, datasetSectors);
+    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, sourceDatasetKeys);
   }
 
   @Override

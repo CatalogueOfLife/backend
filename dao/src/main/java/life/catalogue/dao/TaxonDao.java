@@ -25,6 +25,9 @@ import jakarta.validation.Validator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +36,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
-public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
+public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
@@ -174,7 +177,27 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       }
     }
 
-    static class HomGroup {
+  public List<SimpleName> classificationSimple(DSID<String> key) {
+    try (SqlSession session = factory.openSession(true)) {
+      return classificationSimple(key, session);
+    }
+  }
+  private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
+    if (DatasetInfoCache.CACHE.info(key.getDatasetKey()).isMutable()) {
+      return session.getMapper(TaxonMapper.class).classificationSimple(key);
+    } else {
+      return session.getMapper(TaxonMetricsMapper.class).get(key).getClassification();
+    }
+  }
+
+  @Override
+  public int count(DSID<String> key, Rank countRank) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(TaxonMetricsMapper.class).get(key).getTaxaByRankCount().get(countRank);
+    }
+  }
+
+  static class HomGroup {
     final List<Synonym> homotypic = new ArrayList<>();
     final Set<String> nameIds;
 
@@ -253,7 +276,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
 
     // classification & taxgroup
     if (loadClassification) {
-      info.setClassification(session.getMapper(TaxonMapper.class).classificationSimple(usage));
+      info.setClassification(classificationSimple(usage, session));
       var g = groupAnalyzer.analyze(usage.toSimpleNameLink(), info.getClassification());
       info.setGroup(g);
     }
@@ -515,7 +538,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
   protected boolean updateAfter(Taxon t, Taxon old, int user, TaxonMapper tm, SqlSession session, boolean keepSessionOpen) {
     // has parent, i.e. classification been changed ?
     if (!Objects.equals(old.getParentId(), t.getParentId())) {
-      updatedParentCacheUpdate(tm, t, t.getParentId(), old.getParentId());
+      updatedParentCacheUpdate(t);
     }
     return super.updateAfter(t, old, user, tm, session, keepSessionOpen);
   }
@@ -524,26 +547,8 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
    * Updates cached information in both postgres and elastic when a parent id of a taxon has changed.
    * The actual parentID change is expected to have happened already in the database!
    * @param t the taxon that has been assigned a new parentID
-   * @param newParentId the newly assigned parentID (already set as the taxons parent_id)
-   * @param oldParentId the former parentID
    */
-  private void updatedParentCacheUpdate(TaxonMapper tm, DSID<String> t, String newParentId, String oldParentId){
-    // migrate entire DatasetSectors from old to new
-    Int2IntOpenHashMap delta = tm.getCounts(t).getCount();
-    if (delta != null && !delta.isEmpty()) {
-      DSID<String> parentKey =  DSID.of(t.getDatasetKey(), oldParentId);
-      // reusable catalogue key instance
-      final DSIDValue<String> catKey = DSID.of(t.getDatasetKey(), "");
-      // remove delta
-      for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, -1));
-      }
-      // add counts
-      parentKey.setId(newParentId);
-      for (TaxonSectorCountMap tc : tm.classificationCounts(parentKey)) {
-        tm.updateDatasetSectorCount(catKey.id(tc.getId()), mergeMapCounts(tc.getCount(), delta, 1));
-      }
-    }
+  private void updatedParentCacheUpdate(DSID<String> t){
     // async update classification of all descendants.
     CompletableFuture.runAsync(() -> indexService.updateClassification(t.getDatasetKey(), t.getId()))
       .exceptionally(ex -> {
@@ -557,26 +562,14 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
    *
    * @param t the taxon to change
    * @param newParentId the new parentId to move the taxon to
-   * @param oldParentId the current parentId of the taxon to be modified
    */
-  public void updateParent(SqlSession session, DSID<String> t, String newParentId, String oldParentId, int userKey){
+  public void updateParent(SqlSession session, DSID<String> t, String newParentId, int userKey){
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
     num.updateParentId(t, newParentId, userKey);
     session.commit();
-    updatedParentCacheUpdate(session.getMapper(TaxonMapper.class), t, newParentId, oldParentId);
+    updatedParentCacheUpdate(t);
     // update single taxon in ES
     indexService.update(t.getDatasetKey(), List.of(t.getId()));
-  }
-
-  private static Int2IntOpenHashMap mergeMapCounts(Int2IntOpenHashMap m1, Int2IntOpenHashMap m2, int factor) {
-    for (Int2IntMap.Entry e : m2.int2IntEntrySet()) {
-      if (m1.containsKey(e.getIntKey())) {
-        m1.put(e.getIntKey(), m1.get(e.getIntKey()) + factor * e.getIntValue());
-      } else {
-        m1.put(e.getIntKey(), factor * e.getIntValue());
-      }
-    }
-    return m1;
   }
   
   @Override
@@ -586,12 +579,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     int cnt = session.getMapper(NameUsageMapper.class).updateParentIds(did.getDatasetKey(), did.getId(), t.getParentId(), null, user);
     LOG.debug("Moved {} children of {} to {}", cnt, t.getId(), t.getParentId());
     
-    // if this taxon had a sector we need to adjust parental counts
-    // we keep the sector as a broken sector around
-    SectorMapper sm = session.getMapper(SectorMapper.class);
-    for (Sector s : sm.listByTarget(did)) {
-      tMapper.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), -1);
-    }
     // delete all associated infos (vernaculars, etc)
     // but keep the name record!
     for (Class<? extends TaxonProcessable<?>> m : TaxonProcessable.MAPPERS) {
@@ -609,30 +596,19 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
   public void deleteRecursively(DSID<String> id, boolean keepRoot, User user) {
     try (SqlSession session = factory.openSession(false)) {
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
-
-      // remember sector count map so we can update parents at the end
-      TaxonSectorCountMap delta = tm.getCounts(id);
-      if (delta == null) {
-        throw NotFoundException.notFound(Taxon.class, id);
-      }
-      LOG.info("Recursively delete {}taxon {} and its {} nested sectors from dataset {} by user {}", keepRoot ? "descendants of " : "", id, delta.size(), id.getDatasetKey(), user);
-
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
-      if (sectorKeys.size() != delta.size()) {
-        LOG.info("Recursive delete of {} detected {} included sectors, but {} are declared in the taxons sector count map", id, sectorKeys.size(), delta.size());
-      }
-      List<TaxonSectorCountMap> parents = tm.classificationCounts(id);
-
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       NameMapper nm = session.getMapper(NameMapper.class);
 
+      List<Integer> sectorKeys = sm.listDescendantSectorKeys(id);
+      LOG.info("Recursively delete {}taxon {} and its {} nested sectors from dataset {} by user {}", keepRoot ? "descendants of " : "", id, sectorKeys.size(), id.getDatasetKey(), user);
+
       List<TaxonProcessable<?>> taxProcMappers = TaxonProcessable.MAPPERS.stream()
-        .map(m -> session.getMapper(m))
+        .map(session::getMapper)
         .collect(Collectors.toList());
 
       List<NameProcessable<?>> nameProcMappers = NameProcessable.MAPPERS.stream()
-        .map(m -> session.getMapper(m))
+        .map(session::getMapper)
         .collect(Collectors.toList());
 
       // we remove usages & associated infos, names & relations and verbatim sources,
@@ -656,17 +632,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       );
       session.commit();
 
-      // remove delta from parents
-      var key = DSID.copy(id);
-      if (!delta.isEmpty()) {
-        for (TaxonSectorCountMap tc : parents) {
-          if (!tc.getId().equals(id.getId())) {
-            tm.updateDatasetSectorCount(key.id(tc.getId()), mergeMapCounts(tc.getCount(), delta.getCount(), -1));
-          }
-        }
-      }
-      session.commit();
-
       // remove included sectors
       for (int skey : sectorKeys) {
         LOG.info("Delete sector {} from project {} and its imports by user {}", skey, id.getDatasetKey(), user);
@@ -678,25 +643,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     // update ES
     indexService.deleteSubtree(id, keepRoot);
   }
-  
-  /**
-   * Resets all dataset sector counts for an entire catalogue
-   * and rebuilds the counts from the currently mapped sectors
-   *
-   * @param datasetKey
-   */
-  public void updateAllSectorCounts(int datasetKey) {
-    try (SqlSession readSession = factory.openSession(true);
-        SqlSession writeSession = factory.openSession(false)
-    ) {
-      TaxonMapper tm = writeSession.getMapper(TaxonMapper.class);
-      tm.resetDatasetSectorCount(datasetKey);
-      SectorCountUpdHandler scConsumer = new SectorCountUpdHandler(tm);
-      PgUtils.consume(() -> readSession.getMapper(SectorMapper.class).processDataset(datasetKey), scConsumer);
-      writeSession.commit();
-      LOG.info("Updated dataset sector counts from {} sectors", scConsumer.counter);
-    }
-  }
 
   public Treatment getTreatment(DSIDValue<String> key) {
     try (SqlSession session = factory.openSession()) {
@@ -705,23 +651,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
   }
 
-  static class SectorCountUpdHandler implements Consumer<Sector> {
-    private final TaxonMapper tm;
-    int counter = 0;
-  
-    SectorCountUpdHandler(TaxonMapper tm) {
-      this.tm = tm;
-    }
-  
-    @Override
-    public void accept(Sector s) {
-      if (s.getTarget() != null) {
-        counter++;
-        tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), 1);
-      }
-    }
-  }
-  
   private static String devNull(Reference r) {
     return null;
   }

@@ -156,6 +156,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new RepartitionCmd());
     bootstrap.addCommand(new ArchiveCmd());
     bootstrap.addCommand(new TaxGroupCmd());
+    bootstrap.addCommand(new TaxonMetricsCmd());
   }
 
   @Override
@@ -325,6 +326,7 @@ public class WsServer extends Application<WsServerConfig> {
     DoiResolver doiResolver = new DoiResolver(httpClient);
 
     // daos
+    MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), bus, validator);
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
@@ -339,7 +341,7 @@ public class WsServer extends Application<WsServerConfig> {
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
-    TreeDao trDao = new TreeDao(getSqlSessionFactory(), searchService);
+    TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService);
 
     // usage cache
@@ -414,7 +416,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
-    j.register(new DatasetExportResource(getSqlSessionFactory(), searchService, exportManager, cfg));
+    j.register(new DatasetExportResource(getSqlSessionFactory(), mdao, exportManager, cfg));
     j.register(new DatasetIssuesResource(getSqlSessionFactory()));
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetPatchResource());

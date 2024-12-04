@@ -119,8 +119,6 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         ;
       }
 
-      incSectorCounts(session, s, 1);
-  
       session.commit();
       return s.getKey();
     }
@@ -202,17 +200,13 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
    */
   @Override
   protected boolean updateAfter(Sector obj, Sector old, int user, SectorMapper mapper, SqlSession session, boolean keepSessionOpen) {
-    if (!Objects.equals(old.getTargetID(), obj.getTargetID())) {
-      incSectorCounts(session, obj, 1);
-      incSectorCounts(session, old, -1);
-    }
     // update usages in case the target has changed and it wasn't a MERGE!
     if (obj.getMode() != Sector.Mode.MERGE && simpleNameID(obj.getTarget()) != null && !Objects.equals(simpleNameID(old.getTarget()), simpleNameID(obj.getTarget()))) {
       // loop over sector root taxa as the old target id might be missing or even wrong. Only trust real usage data!
       final DSID<String> key = DSID.of(obj.getDatasetKey(), null);
       for (SimpleName sn : session.getMapper(NameUsageMapper.class).sectorRoot(obj)) {
         // obj.getTargetID() must exist if not null as we validated this in the before update method
-        tDao.updateParent(session, key.id(sn.getId()), obj.getTargetID(), sn.getParent(), user);
+        tDao.updateParent(session, key.id(sn.getId()), obj.getTargetID(), user);
       }
     }
     return false;
@@ -251,24 +245,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         LOG.info("Deleted {} existing {}s from {} {}", count, m.getSimpleName().replaceAll("Mapper", ""), sectorType, sectorKey);
       }
 
-      // update datasetSectors counts
-      SectorDao.incSectorCounts(session, s, -1);
-
       // we don't remove any sector metric anymore to avoid previous releases to be broken
       // see https://github.com/CatalogueOfLife/backend/issues/986
       //session.getMapper(SectorImportMapper.class).delete(sectorKey);
       session.getMapper(SectorMapper.class).delete(sectorKey);
       LOG.info("Deleted {} {}", sectorType, sectorKey);
-    }
-  }
-
-  /**
-   * Recursively updates the sector count for a given sectors target taxon and all its parents.
-   */
-  public static void incSectorCounts(SqlSession session, Sector s, int delta) {
-    if (s != null && s.getTarget() != null) {
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      tm.incDatasetSectorCount(s.getTargetAsDSID(), s.getSubjectDatasetKey(), delta);
     }
   }
 

@@ -41,15 +41,9 @@ public class SectorDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       MybatisTestUtils.populateDraftTree(session);
       MybatisTestUtils.populateTestTree(12, session);
-      
-      TaxonMapper txm = session.getMapper(TaxonMapper.class);
-      txm.resetDatasetSectorCount(3);
-      session.commit();
     }
 
     setupSectors(dao);
-
-    assertSectorCounts();
   }
 
   @Test
@@ -58,10 +52,6 @@ public class SectorDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       MybatisTestUtils.populateDraftTree(session);
       MybatisTestUtils.populateTestTree(12, session);
-
-      TaxonMapper txm = session.getMapper(TaxonMapper.class);
-      txm.resetDatasetSectorCount(3);
-      session.commit();
     }
 
     Sector s = SectorMapperTest.create();
@@ -118,30 +108,6 @@ public class SectorDaoTest extends DaoTestBase {
     s.setMode(Sector.Mode.ATTACH);
     dao.create(s, user);
   }
-  static void assertSectorCounts() {
-    try (SqlSession session = factory().openSession(true)) {
-      TreeMapper tm = session.getMapper(TreeMapper.class);
-
-      TreeNode tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t5"));
-      assertNull(tn.getDatasetSectors());
-
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
-      assertEquals(1, tn.getDatasetSectors().get(11));
-      assertFalse(tn.getDatasetSectors().containsKey(12));
-
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
-      assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(1, tn.getDatasetSectors().get(12));
-
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
-      assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(1, tn.getDatasetSectors().get(12));
-
-      tn = tm.get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t1"));
-      assertEquals(1, tn.getDatasetSectors().get(11));
-      assertEquals(2, tn.getDatasetSectors().get(12));
-    }
-  }
 
   @Test(expected = IllegalArgumentException.class)
   public void validate() {
@@ -192,10 +158,6 @@ public class SectorDaoTest extends DaoTestBase {
     try (SqlSession session = factory().openSession(true)) {
       MybatisTestUtils.populateDraftTree(session);
       MybatisTestUtils.populateTestTree(12, session);
-
-      TaxonMapper txm = session.getMapper(TaxonMapper.class);
-      txm.resetDatasetSectorCount(3);
-      session.commit();
     }
 
     Sector s = SectorMapperTest.create();

@@ -41,22 +41,27 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals("Malus sylvestris", tn.getName());
     assertEquals("<i>Malus sylvestris</i>", tn.getLabelHtml());
     assertNull(tn.getAuthorship());
-    assertNull(tn.getDatasetSectors());
+    assertTrue(tn.getSourceDatasetKeys().isEmpty());
   
-    MybatisTestUtils.populateDraftTree(session());
+    MybatisTestUtils.populateDraftTree(session()); // this does not create taxon metrics - all null below!
 
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
-    assertNotNull(tn.getDatasetSectors());
-    assertEquals(1, (int) tn.getDatasetSectors().get(11));
-  
+    assertTrue(tn.getSourceDatasetKeys().isEmpty());
+    assertEquals(0, tn.getChildCount());
+    assertNull(tn.getCount());
+
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
-    assertEquals(2, (int) tn.getDatasetSectors().get(11));
-  
+    assertTrue(tn.getSourceDatasetKeys().isEmpty());
+    assertEquals(0, tn.getChildCount());
+    assertNull(tn.getCount());
+
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
-    assertEquals(2, (int) tn.getDatasetSectors().get(11));
-  
+    assertTrue(tn.getSourceDatasetKeys().isEmpty());
+    assertEquals(0, tn.getChildCount());
+    assertNull(tn.getCount());
+
     tn = mapper().get(Datasets.COL, null, DSID.colID("t1"));
-    assertNull(tn.getDatasetSectors());
+    assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertNull(tn.getSectorKey());
     assertNull(tn.getSectorMode());
     assertNull(tn.getDecision());
