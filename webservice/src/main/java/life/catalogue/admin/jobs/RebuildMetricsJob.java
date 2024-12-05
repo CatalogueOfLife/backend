@@ -27,7 +27,7 @@ public class RebuildMetricsJob extends DatasetBlockingJob {
   public RebuildMetricsJob(int userKey, SqlSessionFactory factory, int datasetKey) {
     super(datasetKey, userKey, JobPriority.HIGH);
     this.factory = factory;
-    DaoUtils.requireProjectOrRelease(datasetKey);
+    DaoUtils.notProject(datasetKey);
   }
 
   @Override

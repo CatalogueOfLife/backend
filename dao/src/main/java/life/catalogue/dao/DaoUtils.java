@@ -57,6 +57,18 @@ public class DaoUtils {
     }
   }
 
+  /**
+   * @param datasetKey dataset to test
+   * @throws NotFoundException if deleted or not existing
+   * @throws IllegalArgumentException if the dataset is a project
+   */
+  public static void notProject(int datasetKey) throws NotFoundException {
+    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
+    if (origin == null || origin == DatasetOrigin.PROJECT) {
+      throw new IllegalArgumentException("Dataset " + datasetKey + " is of origin " + origin);
+    }
+  }
+
   public static boolean isProjectOrRelease(int datasetKey) {
     DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey, true).origin;
     if (origin != null) {
