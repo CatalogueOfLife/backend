@@ -62,11 +62,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
     this.factory = factory;
     this.datasetKey = datasetKey;
-    if (removeEmptyGenera) {
-      parents = new ParentStack<>(this::endClassificationStack);
-    } else {
-      parents = new ParentStack<>(null);
-    }
+    this.parents = removeEmptyGenera ? new ParentStack<>(this::endClassificationStack) : new ParentStack<>();
   }
 
   public ParentStack<XLinneanNameUsage> stack() {
