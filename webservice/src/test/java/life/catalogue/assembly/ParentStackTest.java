@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.MatchedParentStack;
@@ -14,7 +15,7 @@ public class ParentStackTest {
 
   @Test
   public void testStack() throws Exception {
-    SimpleNameWithNidx king = new SimpleNameWithNidx();
+    SimpleNameWithNidx king = new SimpleNameCached();
     king.setName("MasterTax");
     MatchedParentStack parents = new MatchedParentStack(king);
 
@@ -105,14 +106,14 @@ public class ParentStackTest {
     assertTrue(parents.isDoubtful());
   }
 
-  private SimpleNameWithNidx src(Rank rank, int key, Integer parentKey) {
+  private SimpleNameCached src(Rank rank, int key, Integer parentKey) {
     var sn = src(key, parentKey);
     sn.setRank(rank);
     return sn;
   }
 
-  private SimpleNameWithNidx src(int key, Integer parentKey) {
-    SimpleNameWithNidx u = new SimpleNameWithNidx();
+  private SimpleNameCached src(int key, Integer parentKey) {
+    var u = new SimpleNameCached();
     u.setId(String.valueOf(key));
     u.setParent(parentKey == null ? null : String.valueOf(parentKey));
     u.setName("Sciname #" + key);

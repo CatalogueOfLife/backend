@@ -34,7 +34,7 @@ public interface CacheLoader {
 
     @Override
     public SimpleNameCached load(DSID<String> key) {
-      return num.getSimplePub(key);
+      return num.getSimpleCached(key);
     }
 
     @Override
@@ -55,7 +55,7 @@ public interface CacheLoader {
     @Override
     public SimpleNameCached load(DSID<String> key) {
       try (SqlSession session = factory.openSession()) {
-        return session.getMapper(NameUsageMapper.class).getSimplePub(key);
+        return session.getMapper(NameUsageMapper.class).getSimpleCached(key);
       }
     }
 

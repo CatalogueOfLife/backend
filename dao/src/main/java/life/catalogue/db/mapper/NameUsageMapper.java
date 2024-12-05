@@ -59,7 +59,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * SimpleName.parent=parent.id
    * @param key
    */
-  SimpleNameCached getSimplePub(@Param("key") DSID<String> key);
+  SimpleNameCached getSimpleCached(@Param("key") DSID<String> key);
 
   /**
    * Retrieve the parent of the given key as a SimpleName with
@@ -216,6 +216,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Iterates over all usages for a given dataset in any order and returns simple names.
    */
   Cursor<SimpleName> processDatasetSimple(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Iterates over all usages for a given dataset in any order and returns simple names together with their names index match.
+   */
+  Cursor<SimpleNameCached> processDatasetSimpleNidx(@Param("datasetKey") int datasetKey);
 
   /**
    * Iterates over all bare names for a given dataset, optionally filtered by a minimum/maximum rank to include.

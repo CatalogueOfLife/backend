@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.EditorialDecision;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
 import org.gbif.nameparser.api.Rank;
@@ -50,13 +51,12 @@ public class MatchedParentStack {
   }
 
   public static class MatchedUsage {
-    public final SimpleNameWithNidx usage;
+    public final SimpleNameCached usage;
     public SimpleNameWithNidx match;
     @Nullable
     public EditorialDecision decision;
-    public boolean marker = false;
 
-    public MatchedUsage(SimpleNameWithNidx usage, @Nullable EditorialDecision decision) {
+    public MatchedUsage(SimpleNameCached usage, @Nullable EditorialDecision decision) {
       this.usage = usage;
       this.decision = decision;
     }
@@ -85,6 +85,12 @@ public class MatchedParentStack {
    */
   public List<MatchedUsage> classification() {
     return parents;
+  }
+
+  public List<SimpleNameCached> classificationSN() {
+    return parents.stream()
+      .map(u -> u.usage)
+      .collect(Collectors.toList());
   }
 
   public String classificationToString() {
@@ -165,7 +171,7 @@ public class MatchedParentStack {
     return parents.isEmpty() ? null : parents.getLast();
   }
 
-  public void push(SimpleNameWithNidx nu, EditorialDecision decision) {
+  public void push(SimpleNameCached nu, EditorialDecision decision) {
     if (nu.getParent() == null) {
       // no parent, i.e. a new root!
       clear();
@@ -223,7 +229,7 @@ public class MatchedParentStack {
    * Sets the marker flag for the last parent, i.e. current taxon
    */
   public void mark() {
-    parents.getLast().marker = true;
+    parents.getLast().usage.marked = true;
   }
   public int size() {
     return parents.size();

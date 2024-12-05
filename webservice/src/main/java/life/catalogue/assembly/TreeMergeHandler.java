@@ -68,9 +68,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // c) nothing, but there maybe is an incertae sedis taxon configured to collect all unplaced
     SimpleNameWithNidx trgt = null;
     if (target != null) {
-      trgt = matcher.toSimpleName(target);
+      trgt = matcher.toMatchedSimpleName(target);
     } else if (cfg != null && cfg.incertae != null) {
-      trgt = matcher.toSimpleName(cfg.incertae);
+      trgt = matcher.toMatchedSimpleName(cfg.incertae);
     }
     parents = new MatchedParentStack(trgt);
     if (sector.getSubject() != null) {
@@ -79,9 +79,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
         var num = session.getMapper(NameUsageMapper.class);
         // loop over classification incl the subject itself as the last usage
         for (var p : num.getClassification(sector.getSubjectAsDSID())) {
-          var nusn = matcher.toSimpleName(p);
+          var nusn = matcher.toMatchedSimpleName(p);
           parents.push(nusn, null);
-          UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classification(), false, false);
+          UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classificationSN(), false, false);
           if (match.isMatch()) {
             parents.setMatch(match.usage);
           }
@@ -224,7 +224,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var mod = processCommon(nu);
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
-    var nusn = matcher.toSimpleName(nu);
+    var nusn = matcher.toMatchedSimpleName(nu);
     parents.push(nusn, decisions.get(nu.getId()));
 
     final boolean qualifiedName = nu.getName().hasAuthorship();
@@ -242,7 +242,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classification(), true, unique);
+    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
     LOG.debug("{} matches {}", nu.getLabel(), match);
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
@@ -258,7 +258,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var nCanon = Name.copyCanonical(nu.getName());
       var tCanon = new Taxon(nu);
       tCanon.setName(nCanon);
-      match = matcher.matchWithParents(targetDatasetKey, tCanon, parents.classification(), false, false);
+      match = matcher.matchWithParents(targetDatasetKey, tCanon, parents.classificationSN(), false, false);
       if (match.isMatch() && sameLowClassification(match.usage.getClassification(), parents.classification())) {
         // make sure the species is in the same genus or family
         LOG.debug("Accepted {} {} has canonical match within the same family subtree", nu.getRank(), nu.getLabel());
@@ -466,7 +466,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   @Override
   protected Usage findExisting(Name n, Usage parent) {
     Taxon t = new Taxon(n);
-    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classification(), true, false);
+    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classificationSN(), true, false);
     // make sure rank is correct - canonical matches are across ranks
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
@@ -650,10 +650,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
         n.setPublishedInId(lookupReference(ref));
         n.setPublishedInPage(src.getPublishedInPage());
         n.setPublishedInPageLink(src.getPublishedInPageLink());
-        // also update the original match as we cache and reuse that
-        if (existingUsage != null) {
-          existingUsage.usage.setPublishedInID(n.getPublishedInId());
-        }
         LOG.debug("Updated {} with publishedIn", n);
       }
     }
