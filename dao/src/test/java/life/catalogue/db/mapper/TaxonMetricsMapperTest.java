@@ -41,6 +41,8 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
     tm1.setDepth(13);
     tm1.setChildCount(7);
     tm1.setChildExtantCount(1);
+    tm1.setLft(1);
+    tm1.setRgt(40);
     tm1.setTaxaByRankCount(Map.of(Rank.SPECIES, 13, Rank.GENUS, 7));
     tm1.setSpeciesBySourceCount(Map.of(1,2,3,4,5,6));
     tm1.setClassification(List.of(sn(Rank.FAMILY, "Pinaceae"), sn("Abies"), sn(Rank.SPECIES, "Abies alba", "Miller")));

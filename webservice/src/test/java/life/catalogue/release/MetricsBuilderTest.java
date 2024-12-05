@@ -41,6 +41,8 @@ public class MetricsBuilderTest {
       assertEquals(19, m.getTaxonCount());
       assertEquals(7, m.getMaxDepth());
       assertEquals(0, m.getDepth());
+      assertEquals(1, m.getLft());
+      assertEquals(40, m.getRgt());
 
       // t6 family Felidae
       m = tmm.get(key.id("t6"));
@@ -50,6 +52,8 @@ public class MetricsBuilderTest {
       assertEquals(5, m.getTaxonCount());
       assertEquals(7, m.getMaxDepth());
       assertEquals(4, m.getDepth());
+      assertEquals(25, m.getLft());
+      assertEquals(36, m.getRgt());
 
       // t30 genus Urocyon
       m = tmm.get(key.id("t30"));
@@ -59,6 +63,8 @@ public class MetricsBuilderTest {
       assertEquals(4, m.getTaxonCount());
       assertEquals(5, m.getMaxDepth());
       assertEquals(4, m.getDepth());
+      assertEquals(5, m.getLft());
+      assertEquals(14, m.getRgt());
     }
   }
 }

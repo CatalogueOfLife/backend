@@ -6,7 +6,6 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
@@ -32,11 +31,11 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.release.MetricsBuilder;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -391,7 +390,6 @@ public class PgImport implements Callable<Boolean> {
         EstimateMapper estimateMapper = session.getMapper(EstimateMapper.class);
         MediaMapper mediaMapper = session.getMapper(MediaMapper.class);
         TaxonMapper taxonMapper = session.getMapper(TaxonMapper.class);
-        TaxonMetricsMapper taxonMetricsMapper = session.getMapper(TaxonMetricsMapper.class);
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
         TaxonPropertyMapper propertyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
@@ -401,7 +399,7 @@ public class PgImport implements Callable<Boolean> {
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
           final Stack<Node> parentsN = new Stack<>();
-          final Stack<TaxonMetrics> parentsM = new Stack<>();
+          final MetricsBuilder mBuilder = new MetricsBuilder(MetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
           public void start(Node n) {
@@ -433,9 +431,10 @@ public class PgImport implements Callable<Boolean> {
 
               // push new postgres key onto stack for this taxon as we traverse in depth first
               // ES indexes only id,rank & name
-              parents.push(new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank()));
+              var sn = new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank());
+              parents.push(sn);
               parentsN.push(u.node);
-              parentsM.add(TaxonMetrics.create(u.usage.getKey()));
+              mBuilder.start(sn.getId());
 
               // insert vernacular
               for (VernacularName vn : u.vernacularNames) {
@@ -520,25 +519,7 @@ public class PgImport implements Callable<Boolean> {
               var sn = parents.pop();
               parentsN.pop();
               // update & store metrics
-              var m = parentsM.pop();
-              m.setId(sn.getId());
-              m.setDepth(parents.size());
-              m.setMaxDepthIfHigher(parents.size());
-              m.setClassification(parents);
-              taxonMetricsMapper.create(m);
-              // now add all metrics from this child taxon to it's parent - that's how we aggregate
-              if (!parentsM.isEmpty()) {
-                // first add this taxon to the metrics to be added to the parent - otherwise we never add anything
-                m.incTaxonCount();
-                ((CountMap<Rank>)m.getTaxaByRankCount()).inc(sn.getRank());
-                // now aggregate child metrics with parent
-                var p = parentsM.peek();
-                p.add(m);
-                p.incChildCount();
-                if (!sn.isExtinct()) {
-                  p.incChildExtantCount();
-                }
-              }
+              mBuilder.end(sn, null, null);
             }
           }
         });

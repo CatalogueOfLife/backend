@@ -19,9 +19,9 @@
   </select>
 
   <insert id="create" parameterType="TaxonMetrics" useGeneratedKeys="false" keyProperty="obj.id">
-    INSERT INTO taxon_metrics (taxon_id,dataset_key, depth,max_depth,
+    INSERT INTO taxon_metrics (taxon_id,dataset_key, depth,max_depth, lft,rgt,
       taxon_count,species_count, child_count,child_extant_count, taxa_by_rank_count,species_by_source_count,classification,source_dataset_keys)
-    VALUES (#{obj.id}, #{obj.datasetKey}, #{obj.depth}, #{obj.maxDepth},
+    VALUES (#{obj.id},#{obj.datasetKey}, #{obj.depth},#{obj.maxDepth}, #{obj.lft},#{obj.rgt},
       #{obj.taxonCount},#{obj.speciesCount}, #{obj.childCount}, #{obj.childExtantCount},
       #{obj.taxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
       #{obj.speciesBySourceCount, typeHandler=life.catalogue.db.type2.HstoreIntegerCountTypeHandler}::hstore,

@@ -15,6 +15,35 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 
+#### 2024-12-05 taxon metrics
+```
+ALTER TABLE name_usage DROP COLUMN dataset_sectors;
+
+CREATE TABLE taxon_metrics (
+  taxon_id TEXT NOT NULL,
+  dataset_key INTEGER NOT NULL,
+  depth INTEGER,
+  max_depth INTEGER,
+  taxon_count INTEGER,
+  species_count INTEGER,
+  child_count INTEGER,
+  child_extant_count INTEGER,
+  lft INTEGER,
+  rgt INTEGER,
+  taxa_by_rank_count HSTORE,
+  species_by_source_count HSTORE,
+  classification SIMPLE_NAME[],
+  source_dataset_keys INTEGER[]
+) PARTITION BY HASH (dataset_key);
+CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
+CREATE INDEX ON taxon_metrics (dataset_key, lft);
+CREATE INDEX ON taxon_metrics (dataset_key, rgt);
+```
+In the existing dbs we then need to create the actual partition tables.
+We can use the partition command for that, i.e. to create 24 partitions:
+> ./partition.sh taxon_metrics 24
+
+
 #### 2024-11-20 new extinct_filter on sector
 ```
 ALTER TABLE sector ADD COLUMN extinct_filter BOOLEAN;

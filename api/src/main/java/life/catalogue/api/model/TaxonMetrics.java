@@ -30,6 +30,9 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
    *  id, rank, name, authorship
    */
   private List<SimpleName> classification;
+  // nested set indices
+  private int lft;
+  private int rgt;
 
   public static TaxonMetrics create(DSID<String> key) {
     TaxonMetrics tm = new TaxonMetrics();
@@ -131,6 +134,22 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
     this.sourceDatasetKeys = sourceDatasetKeys;
   }
 
+  public int getLft() {
+    return lft;
+  }
+
+  public void setLft(int lft) {
+    this.lft = lft;
+  }
+
+  public int getRgt() {
+    return rgt;
+  }
+
+  public void setRgt(int rgt) {
+    this.rgt = rgt;
+  }
+
   /**
    * Warning - requires CountMap instances as metrics maps!!!
    */
@@ -147,11 +166,11 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
     if (this == o) return true;
     if (!(o instanceof TaxonMetrics)) return false;
     TaxonMetrics that = (TaxonMetrics) o;
-    return depth == that.depth && maxDepth == that.maxDepth && taxonCount == that.taxonCount && childCount == that.childCount && childExtantCount == that.childExtantCount && Objects.equals(taxaByRankCount, that.taxaByRankCount) && Objects.equals(speciesBySourceCount, that.speciesBySourceCount) && Objects.equals(sourceDatasetKeys, that.sourceDatasetKeys) && Objects.equals(classification, that.classification);
+    return depth == that.depth && maxDepth == that.maxDepth && taxonCount == that.taxonCount && childCount == that.childCount && childExtantCount == that.childExtantCount && lft == that.lft && rgt == that.rgt && Objects.equals(taxaByRankCount, that.taxaByRankCount) && Objects.equals(speciesBySourceCount, that.speciesBySourceCount) && Objects.equals(sourceDatasetKeys, that.sourceDatasetKeys) && Objects.equals(classification, that.classification);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(depth, maxDepth, taxonCount, childCount, childExtantCount, taxaByRankCount, speciesBySourceCount, sourceDatasetKeys, classification);
+    return Objects.hash(depth, maxDepth, taxonCount, childCount, childExtantCount, taxaByRankCount, speciesBySourceCount, sourceDatasetKeys, classification, lft, rgt);
   }
 }
