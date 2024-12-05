@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import jakarta.validation.Validator;
@@ -514,8 +515,10 @@ public class XRelease extends ProjectRelease {
    */
   private void validateAndCleanTree() {
     LOG.info("Clean, validate & produce taxon metrics for entire xrelease {}", newDatasetKey);
+    final AtomicInteger counter = new AtomicInteger();
     final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession session = factory.openSession(true);
+    try (SqlSession sessionRO = factory.openSession(true);
+         SqlSession session = factory.openSession(false);
          var consumer = new TreeCleanerAndValidator(factory, newDatasetKey, xCfg.removeEmptyGenera)
     ) {
       // add metrics generator to tree traversal
@@ -530,16 +533,20 @@ public class XRelease extends ProjectRelease {
         @Override
         public void end(ParentStack.SNC<TreeCleanerAndValidator.XLinneanNameUsage> n) {
           mb.end(n.usage, n.usage.getSectorKey(), n.usage.getExtinct());
+          if (counter.incrementAndGet() % 5000 == 0) {
+            session.commit();
+          }
         }
       });
       // traverse accepted tree
-      var num = session.getMapper(NameUsageMapper.class);
+      var num = sessionRO.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(newDatasetKey);
       params.setSynonyms(false);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
       stack.flush();
+      session.commit();
       metrics.setMaxClassificationDepth(consumer.getMaxDepth());
       LOG.info("{} usages out of {} flagged with issues during validation", consumer.getFlagged(), consumer.getCounter());
 

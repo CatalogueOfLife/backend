@@ -79,7 +79,9 @@ public class MetricsBuilder {
 
     LOG.info("Starting to rebuild all taxon metrics for dataset {}", datasetKey);
     AtomicInteger counter = new AtomicInteger();
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession sessionRO = factory.openSession(true);
+         SqlSession session = factory.openSession(false)
+    ) {
       // add metrics generator to tree traversal
       final var stack = new ParentStack<LinneanNameUsage>();
       MetricsBuilder mb = new MetricsBuilder(tracker(stack), datasetKey, session);
@@ -94,11 +96,11 @@ public class MetricsBuilder {
         }
       });
       // traverse accepted tree
-      var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
       params.setSynonyms(false);
 
+      var num = sessionRO.getMapper(NameUsageMapper.class);
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), u -> {
         stack.push(u);
         if (counter.incrementAndGet() % 5000 == 0) {
