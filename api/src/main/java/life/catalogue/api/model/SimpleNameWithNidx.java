@@ -16,6 +16,10 @@ public class SimpleNameWithNidx extends SimpleName {
     super(other);
   }
 
+  public SimpleNameWithNidx(SimpleName other, Integer canonicalId) {
+    super(other);
+    this.canonicalId = canonicalId;
+  }
   public SimpleNameWithNidx(SimpleNameWithNidx other) {
     super(other);
     canonicalId = other.canonicalId;
@@ -73,14 +77,12 @@ public class SimpleNameWithNidx extends SimpleName {
     if (!(o instanceof SimpleNameWithNidx)) return false;
     if (!super.equals(o)) return false;
     SimpleNameWithNidx that = (SimpleNameWithNidx) o;
-    return Objects.equals(canonicalId, that.canonicalId) &&
-      namesIndexMatchType == that.namesIndexMatchType &&
-      Objects.equals(namesIndexId, that.namesIndexId);
+    return Objects.equals(canonicalId, that.canonicalId) && Objects.equals(namesIndexId, that.namesIndexId) && namesIndexMatchType == that.namesIndexMatchType;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), canonicalId, namesIndexMatchType, namesIndexId);
+    return Objects.hash(super.hashCode(), canonicalId, namesIndexId, namesIndexMatchType);
   }
 
   @Override

@@ -78,7 +78,7 @@ public interface DSID<K> extends DatasetScoped, Entity<DSID<K>>, HasID<K> {
   }
 
   static <K> DSIDValue<K> copy(DSID<K> src) {
-    return new DSIDValue<K>(src.getDatasetKey(), src.getId());
+    return new DSIDValue<>(src.getDatasetKey(), src.getId());
   }
 
   static <K> DSIDValue<K> of(int datasetKey, K id) {

@@ -98,8 +98,7 @@ public class XReleaseConfig {
   public Map<Rank, Set<String>> enforceUnique = new HashMap<>();
 
   /**
-   * Checks the homonymExclusion list to see if this combination should be excluded.
-   * @return true if the name with the given parent should be excluded
+   * Checks if the canonical name is known to be unique and for which there should never be more than 1 accepted version.
    */
   public boolean enforceUnique(Name sn) {
     return enforceUnique.containsKey(sn.getRank()) && enforceUnique.get(sn.getRank()).contains(sn.getScientificName());

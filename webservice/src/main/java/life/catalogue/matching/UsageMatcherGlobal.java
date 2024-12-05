@@ -16,7 +16,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
 
-import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import life.catalogue.matching.nidx.NameIndex;
@@ -144,8 +143,8 @@ public class UsageMatcherGlobal {
    */
   public UsageMatch match(int datasetKey, NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
     classification = ObjectUtils.coalesce(classification, List.of()); // no nulls
-    // match classification from top down
-    List<MatchedParentStack.MatchedUsage> parents = new ArrayList<>();
+    // match classification to names index
+    List<SimpleNameCached> parents = new ArrayList<>();
     for (var sn : classification) {
       if (sn.getRank() == Rank.SPECIES) continue; // ignore binomials for now
       Name n = Name.newBuilder()
@@ -155,14 +154,7 @@ public class UsageMatcherGlobal {
                    .uninomial(sn.getName())
                    .code(nu.getName().getCode())
                    .build();
-      Taxon t = new Taxon(n);
-      canonNidxAndMatchIfNeeded(datasetKey, t, allowInserts);
-      var mu = new MatchedParentStack.MatchedUsage(toSimpleName(t), null);
-      parents.add(mu);
-      var m = matchWithParents(datasetKey, t, parents, allowInserts, false);
-      if (m.isMatch()) {
-        mu.match = m.usage;
-      }
+      parents.add(toMatchedSimpleName(new Taxon(n)));
     }
     return matchWithParents(datasetKey, nu, parents, allowInserts, verbose);
   }
@@ -175,7 +167,7 @@ public class UsageMatcherGlobal {
    * @param parents classification of the usage to be matched
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<MatchedParentStack.MatchedUsage> parents,
+  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<SimpleNameCached> parents,
                                      boolean allowInserts, boolean verbose
   ) throws NotFoundException {
     var canonNidx = canonNidxAndMatchIfNeeded(datasetKey, nu, allowInserts);
@@ -185,7 +177,7 @@ public class UsageMatcherGlobal {
     var existing = usages.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      var match = filterCandidates(datasetKey, nu, canonNidx, new ArrayList<>(existing), parents, verbose);
+      var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
       if (match.isMatch()) {
         // decide about usage match type - the match type we have so far is from names index matching only!
         if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
@@ -205,10 +197,10 @@ public class UsageMatcherGlobal {
     return UsageMatch.empty(datasetKey);
   }
 
-  public SimpleNameWithNidx toSimpleName(NameUsageBase nu) {
+  public SimpleNameCached toMatchedSimpleName(NameUsageBase nu) {
     if (nu != null) {
       var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
-      return new SimpleNameWithNidx(nu, canonNidx.getId());
+      return new SimpleNameCached(nu, canonNidx.getId());
     }
     return null;
   }
@@ -262,7 +254,7 @@ public class UsageMatcherGlobal {
     }
   }
 
-  private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<MatchedParentStack.MatchedUsage> r2parents) {
+  private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<SimpleNameCached> r2parents) {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN) {
       if (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED) {
@@ -271,7 +263,7 @@ public class UsageMatcherGlobal {
         // we compare the next concrete parent rank instead to make sure we dont see invalid rank orders and avoid the Biota match
         Rank concreteRank = r1 == Rank.UNRANKED ? r2 : r1;
         Optional<Rank> rankParent = r1 == Rank.UNRANKED ? r1pSupplier.get() : r2parents.stream()
-          .map(u -> u.usage.getRank())
+          .map(SimpleName::getRank)
           .filter(r -> !r.isUncomparable())
           .findFirst();
         return !rankParent.isPresent() || rankParent.get().lowerThan(concreteRank);
@@ -311,13 +303,12 @@ public class UsageMatcherGlobal {
   /**
    * @param datasetKey the target dataset to match against
    * @param nu         usage to be match
-   * @param canonNidx
    * @param existing   candidates with the same names index id to be matched against
    * @param parents    classification of the usage to be matched
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, CanonNidxMatch canonNidx, List<SimpleNameCached> existing, List<MatchedParentStack.MatchedUsage> parents, boolean verbose) throws NotFoundException {
+  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<SimpleNameCached> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match
@@ -397,14 +388,11 @@ public class UsageMatcherGlobal {
       if (parents != null && !existingWithCl.isEmpty()) {
         // trim parents when a marker exists
         var parentsCopy = parents;
-        var markerIdx = CollectionUtils.lastIndexOf(parents, p -> p.marker);
+        var markerIdx = CollectionUtils.lastIndexOf(parents, sn -> sn.marked);
         if (markerIdx >= 0) {
           parentsCopy = parents.subList(markerIdx, parents.size());
         }
-        List<SimpleName> parentsSN = parentsCopy.stream()
-                                        .map(p -> p.usage)
-                                        .collect(Collectors.toList());
-        var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsSN);
+        var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsCopy);
         if (existingWithCl.removeIf(rn -> !classificationMatches(group, rn))) {
           LOG.debug("Removed matches for usage {} with classifications not in {} group", nu.getName().getLabelWithRank(), group);
         }
@@ -595,22 +583,23 @@ public class UsageMatcherGlobal {
     return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
 
-  private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<MatchedParentStack.MatchedUsage> parents) {
+  private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<SimpleNameCached> parents) {
     var fam1 = u.getClassification().stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
-    var fam2 = parents.stream().filter(n -> n.usage.getRank()==Rank.FAMILY).findFirst();
-    return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().usage.getName());
+    var fam2 = parents.stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
+    return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().getName());
   }
 
-  private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<MatchedParentStack.MatchedUsage> parents) {
+  private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
     if (parents != null) {
-      for (var cp : candidate.getClassification()) {
-        // does the exact same usage exist in the parents list?
-        for (var p : parents) {
-          if (p.match != null && p.match.getId().equals(cp.getId())) {
-            return cp.getRank();
-          }
-        }
-      }
+      //TODO: find other solution without matched parents !!!
+      //for (var cp : candidate.getClassification()) {
+      //  // does the exact same usage exist in the parents list?
+      //  for (var p : parents) {
+      //    if (p.match != null && p.match.getId().equals(cp.getId())) {
+      //      return cp.getRank();
+      //    }
+      //  }
+      //}
     }
     return null;
   }
@@ -640,7 +629,7 @@ public class UsageMatcherGlobal {
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
   private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms,
-                                        List<MatchedParentStack.MatchedUsage> parents,
+                                        List<SimpleNameCached> parents,
                                         List<SimpleNameClassified<SimpleNameCached>> alt
   ) {
     if (parents == null || parents.isEmpty()) {
@@ -649,9 +638,12 @@ public class UsageMatcherGlobal {
       LOG.debug("No parent given for homomym match {}. Pick first", first);
       return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey, alt);
     }
+
+    // TODO: use tax group comparison !!!
+
     // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
     Set<Integer> parentCNidx = parents.stream()
-                                      .map(p -> p.match == null ? p.usage.getCanonicalId() : p.match.getCanonicalId())
+                                      .map(SimpleNameWithNidx::getCanonicalId)
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toSet());
     SimpleNameClassified<SimpleNameCached> best = homonyms.get(0);
