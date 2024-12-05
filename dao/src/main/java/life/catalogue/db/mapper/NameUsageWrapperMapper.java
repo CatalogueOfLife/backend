@@ -15,7 +15,14 @@ import org.apache.ibatis.cursor.Cursor;
  * Mapper sql should be reusing sql fragments from the 3 concrete implementations as much as possible avoiding duplication.
  */
 public interface NameUsageWrapperMapper {
-  
+
+  /**
+   * Issues and decisions are included, but publisherKey and sector information is not retrieved!
+   *
+   * @param datasetKey
+   * @param taxonId
+   * @return
+   */
   NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
 
   /**

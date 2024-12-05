@@ -1,0 +1,4 @@
+id,taxon_id,gazetteer,status,area
+1,1,TEXT,NATIVE,Brandenburg
+2,1,TEXT,NATIVE,Berlin
+3,1,ISO,NATIVE,GER

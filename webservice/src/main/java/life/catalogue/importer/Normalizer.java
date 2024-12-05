@@ -20,7 +20,7 @@ import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.txttree.TxtTreeInserter;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
@@ -174,14 +174,11 @@ public class Normalizer implements Callable<Boolean> {
       require(n, n.getRank(), "rank");
       require(n, n.getType(), "name type");
 
-
-      if (n.getVerbatimKey() != null){
-        VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
-        if (v != null) {
-          store.put(v);
-        }
+      // all names should have a verbatim record by now - even implicit ones!
+      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+      if (v != null) {
+        store.put(v);
       }
-
     });
 
     LOG.info("Apply dataset defaults");
@@ -798,17 +795,20 @@ public class Normalizer implements Callable<Boolean> {
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private NeoUsage createHigherTaxon(String uninomial, Rank rank) throws InterruptedException {
+  private NeoUsage createHigherTaxon(String name, Rank rank) throws InterruptedException {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
+    var eName = new ExtinctName(name);
+
     Name n = new Name();
-    var eName = new ExtinctName(uninomial);
-    n.setUninomial(eName.name);
     n.setRank(rank);
-    n.rebuildScientificName();
+    n.setScientificName(eName.name);
     n.setCode(dataset.getCode());
-    // determine type - can e.g. be placeholders
-    n.setType(NameParser.PARSER.determineType(n).orElse(NameType.SCIENTIFIC));
+    // parses the instance and determines the type - can e.g. be placeholders
+    NameParser.PARSER.parse(n, IssueContainer.VOID);
+    // reset rank as parser might have infered ranks from the name!
+    n.setRank(rank);
+
     t.usage.setName(n);
     if (eName.extinct || Boolean.TRUE.equals(dataset.getExtinct())) {
       t.asTaxon().setExtinct(true);
@@ -942,7 +942,7 @@ public class Normalizer implements Callable<Boolean> {
           inserter = new AcefInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         case TEXT_TREE:
-          inserter = new TxtTreeInserter(store, sourceDir, refFactory);
+          inserter = new TxtTreeInserter(store, sourceDir, dataset.getSettings(), refFactory);
           break;
         default:
           throw new NormalizationFailedException("Unsupported data format " + format);

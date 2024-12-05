@@ -10,9 +10,9 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 
@@ -76,11 +76,6 @@ public class ProjectCopyFactory {
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
     return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
-  }
-
-  @Deprecated
-  public ProjectRelease buildPrepRelease(final int projectKey, final int userKey) {
-    return new ProjectRelease.IdPreviewRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
   }
 
   /**

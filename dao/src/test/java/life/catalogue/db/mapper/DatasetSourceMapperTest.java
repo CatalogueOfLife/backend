@@ -14,9 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-/**
- *
- */
+
 public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper> {
 
   public DatasetSourceMapperTest() {
@@ -26,6 +24,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   public static Dataset createProjectSource() {
     Dataset d = new Dataset();
     DatasetMapperTest.populate(d);
+    d.setPrivat(true); // the default which is not stored in the archive
     d.setSourceKey(Datasets.COL);
     d.setAttempt(3);
     d.setGbifPublisherKey(null);
@@ -46,13 +45,11 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   @Test
   public void listProjectSources() throws Exception {
     mapper().listProjectSources(Datasets.COL, false);
-    mapper().listProjectSources(Datasets.COL, false);
     mapper().listProjectSources(Datasets.COL, true);
   }
 
   @Test
   public void listReleaseSources() throws Exception {
-    mapper().listReleaseSources(Datasets.COL, false);
     mapper().listReleaseSources(Datasets.COL, false);
     mapper().listReleaseSources(Datasets.COL, true);
   }
@@ -60,20 +57,13 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
   @Test
   public void listProjectSourcesSimple() throws Exception {
     mapper().listProjectSourcesSimple(Datasets.COL, false);
-    mapper().listProjectSourcesSimple(Datasets.COL, false);
     mapper().listProjectSourcesSimple(Datasets.COL, true);
   }
 
   @Test
   public void listReleaseSourcesSimple() throws Exception {
-    mapper().listReleaseSourcesSimple(Datasets.COL, false);
-    mapper().listReleaseSourcesSimple(Datasets.COL, false);
     mapper().listReleaseSourcesSimple(Datasets.COL, true);
-  }
-
-  @Test
-  public void listReleaseSourcesAuthorsOnly() throws Exception {
-    mapper().listReleaseSourcesAuthorsOnly(Datasets.COL);
+    mapper().listReleaseSourcesSimple(Datasets.COL, false);
   }
 
   void persistDatasetCitations(Dataset d){
@@ -101,9 +91,13 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     assertNull(col.getContainerKey());
     assertNull(col.getContainerTitle());
     assertNull(col.getContainerCreator());
+    // mapper takes these from the project
     d.setContainerKey(col.getKey());
     d.setContainerTitle(col.getTitle());
     d.setContainerCreator(col.getCreator());
+    d.setContainerPublisher(col.getPublisher());
+    d.setContainerVersion(col.getVersion());
+    d.setContainerIssued(col.getIssued());
 
     commit();
     assertEquals(d2, d);
@@ -147,13 +141,17 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     commit();
 
     // COL container
+    // mapper takes these from the project
     rs.setContainerKey(col.getKey());
     rs.setContainerTitle(col.getTitle());
     rs.setContainerCreator(col.getCreator());
+    rs.setContainerPublisher(col.getPublisher());
+    rs.setContainerVersion(col.getVersion());
+    rs.setContainerIssued(col.getIssued());
     assertEquals(rs2, rs);
 
     // now try to list sources
-    mapper().listReleaseSources(Datasets.COL, false);
+    mapper().listReleaseSources(Datasets.COL, true);
 
     // limit container authors to just 2 and verify
     DatasetSettings ds = dm.getSettings(Datasets.COL);

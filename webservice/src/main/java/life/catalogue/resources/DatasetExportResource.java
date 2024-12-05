@@ -10,39 +10,31 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.printer.*;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Streams;
 
 import io.dropwizard.auth.Auth;
 
@@ -131,7 +123,6 @@ public class DatasetExportResource {
       var ttp = TreeTraversalParameter.dataset(datasetKey);
       ttp.setTaxonID(taxonID);
       ttp.setSynonyms(synonyms);
-      ttp.setExtinct(extinct);
       if (ranks != null && !ranks.isEmpty()) {
         ttp.setLowestRank(RankUtils.lowestRank(ranks));
       } else if (minRank != null) {
@@ -144,11 +135,13 @@ public class DatasetExportResource {
   <T extends AbstractPrinter> Response printerExport(Class<T> printerClass, int key, ExportQueryParams params, Consumer<T> modifier) {
     params.init();
     StreamingOutput stream = os -> {
-      Writer writer = UTF8IoUtils.writerFromStream(os);
-      T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.countBy, searchService, factory, writer);
-      modifier.accept(printer);
-      printer.print();
-      writer.flush();
+      try (Writer writer = UTF8IoUtils.writerFromStream(os);
+           T printer = PrinterFactory.dataset(printerClass, params.toTreeTraversalParameter(key), params.ranks, params.extinct, params.countBy, searchService, factory, writer)
+      ) {
+        modifier.accept(printer);
+        printer.print();
+        writer.flush();
+      }
     };
     return Response.ok(stream).build();
   }

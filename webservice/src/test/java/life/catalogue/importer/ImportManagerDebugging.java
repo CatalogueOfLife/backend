@@ -10,22 +10,22 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 
-import javax.validation.Validator;
-
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -37,6 +37,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 
 import io.dropwizard.client.HttpClientBuilder;
+import jakarta.validation.Validator;
 
 @Ignore("manual import debugging")
 @RunWith(MockitoJUnitRunner.class)
@@ -93,7 +94,7 @@ public class ImportManagerDebugging {
 
     hc = new HttpClientBuilder(metrics).using(cfg.client).build("local");
     importManager = new ImportManager(cfg, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(),
-        NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
+        NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started(),
       diDao, datasetDao, sDao, dDao, indexService, new ImageServiceFS(cfg.img, null), jobExecutor, validator, null);
     importManager.start();
   }

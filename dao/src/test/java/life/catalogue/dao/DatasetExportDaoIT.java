@@ -6,8 +6,8 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobConfig;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetExportMapperTest;
 
 import org.junit.Test;
@@ -24,6 +24,7 @@ public class DatasetExportDaoIT extends DaoTestBase {
     DatasetExportDao dao = new DatasetExportDao(new JobConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(TestDataRule.APPLE.key);
+    req.setExtinct(true);
     var c = dao.current(req);
     assertNull(c);
 

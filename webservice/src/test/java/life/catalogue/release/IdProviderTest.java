@@ -1,13 +1,14 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -60,7 +61,7 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+      super(projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     }
 
     @Override
@@ -83,9 +84,18 @@ public class IdProviderTest {
         int datasetKey = 1000 + attempt;
         getDatasetAttemptMap().put(datasetKey, attempt);
         for (SimpleNameWithNidx sn : rel.getValue()) {
-          addReleaseId(datasetKey, sn, stats);
+          addReleaseId(datasetKey, DatasetOrigin.RELEASE, sn, stats);
         }
       }
+    }
+
+    @Override
+    protected Integer loadReleaseAttempts() {
+      int lastReleaseKey = 999;
+      int attempt = prevIdsByAttempt.isEmpty() ? 0 : prevIdsByAttempt.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+      addRelease(new Release(lastReleaseKey, DatasetOrigin.RELEASE, attempt)); // we add the max attempt as the last release
+      super.loadReleaseAttempts();
+      return lastReleaseKey;
     }
   }
 
@@ -123,7 +133,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(1, report.deleted.size());
     assertEquals(2, report.resurrected.size());
@@ -152,7 +163,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(2, report.deleted.size());
     assertEquals(2, report.resurrected.size());
@@ -179,7 +191,8 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    IdProvider.IdReport report = provider.run();
+    provider.mapIds();
+    IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(0, report.deleted.size());
     assertEquals(0, report.resurrected.size());

@@ -3,7 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.model.DSID;
 import life.catalogue.printer.SectorDiffService;
 
-import javax.ws.rs.Path;
+import jakarta.ws.rs.Path;
 
 @Path("/dataset/{key}/sector/{id}/diff")
 @SuppressWarnings("static-method")

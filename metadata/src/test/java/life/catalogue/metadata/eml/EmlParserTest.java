@@ -81,9 +81,7 @@ public class EmlParserTest {
     assertEquals("0000-0001-7757-1889", ag.agent(false).get().getOrcid());
   }
 
-  @Test
-  public void famous() throws Exception {
-    DatasetWithSettings d = read("famous.xml");
+  void validateFamous(DatasetWithSettings d) throws Exception {
     Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
     markus.setOrganisation("GBIF");
 
@@ -96,6 +94,19 @@ public class EmlParserTest {
     assertEquals("2017-01-19", d.getIssued().toString());
     assertEquals("http://www.marinespecies.org/aphia.php?p=taxdetails&id=146230", d.getLogo().toString());
     assertEquals("Famous People", d.getAlias());
+  }
+
+  @Test
+  public void famous() throws Exception {
+    DatasetWithSettings d = read("famous.xml");
+    validateFamous(d);
+  }
+
+  @Test
+  public void famousCOL() throws Exception {
+    DatasetWithSettings d = read("famous-col.xml");
+    validateFamous(d);
+    assertEquals("137.4.1", d.getVersion());
   }
 
   @Test

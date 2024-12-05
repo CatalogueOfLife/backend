@@ -7,9 +7,9 @@ import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class SectorCountJob extends DatasetBlockingJob {
     super(datasetKey, userKey, JobPriority.HIGH);
     this.factory = factory;
     this.indexService = indexService;
-    DaoUtils.requireProject(datasetKey);
+    DaoUtils.requireProjectOrRelease(datasetKey);
     this.validator = validator;
   }
 

@@ -2,14 +2,13 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
+public class NameDao extends SectorEntityDao<Name, NameMapper> {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameDao.class);
@@ -39,7 +38,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
     this.nameIndex = nameIndex;
   }
 
-  ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
+  public ResultPage<Name> search(int datasetKey, NameMapper.NameSearchRequest filter, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);
@@ -47,6 +46,7 @@ public class NameDao extends DatasetStringEntityDao<Name, NameMapper> {
       return new ResultPage<>(p, result, () -> mapper.count(datasetKey));
     }
   }
+
   public void createRelation(Name from, NomRelType type, Name to, int user) {
     Preconditions.checkArgument(from.getDatasetKey().equals(to.getDatasetKey()));
     createRelation(from.getDatasetKey(), from.getId(), type, to.getId(), user);

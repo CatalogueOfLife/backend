@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.Objects;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * GBIF UUID based publisher to be used in projects and releases as sector publishers.

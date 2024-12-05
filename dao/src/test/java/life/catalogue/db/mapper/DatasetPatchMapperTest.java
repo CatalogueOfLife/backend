@@ -2,10 +2,12 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetTest;
 import life.catalogue.api.vocab.Datasets;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
@@ -22,10 +24,26 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   public void deleteByDataset() throws Exception {
     mapper().deleteByDataset(Datasets.COL);
   }
+  @Test
+  public void roundTripNullPatch() throws Exception {
+    var d1 = DatasetTest.createNullPatchDataset(TestEntityGenerator.DATASET11.getKey());
+    // ignore the source property which we dont even store in the db!
+    d1.setSource(null);
+
+    TestEntityGenerator.setUserDate(d1);
+    mapper().create(Datasets.COL, d1);
+    commit();
+
+    removeDbCreatedProps(d1);
+    Dataset d2 = removeDbCreatedProps(mapper().get(Datasets.COL, d1.getKey()));
+    // if the equal fails on container properties make sure these properties are listed in Dataset.PATCH_PROPS
+    assertEquals(d1, d2);
+  }
 
   @Test
   public void roundtripCrud() throws Exception {
     Dataset u1 = removeNonPatchProps(DatasetMapperTest.populate(new Dataset()));
+    u1.setPrivat(true); // we dont store private flag in patches and it defaults to true
     // source key must be an existing dataset
     u1.setKey(TestEntityGenerator.DATASET11.getKey());
     TestEntityGenerator.setUserDate(u1);
@@ -80,6 +98,9 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
   Dataset removeDbCreatedProps(Dataset obj) {
     obj.setCreated(null);
     obj.setModified(null);
+    if (obj.getSource() == null) {
+      obj.setSource(new ArrayList<>());
+    }
     return obj;
   }
 

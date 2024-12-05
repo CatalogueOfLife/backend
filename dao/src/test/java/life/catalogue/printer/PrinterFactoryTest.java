@@ -2,9 +2,9 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.TreeTraversalParameter;
 
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Modifier;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -45,7 +44,7 @@ public class PrinterFactoryTest {
       }
     }
 
-    var ttp = TreeTraversalParameter.all(3, null, "x", null, Rank.GENUS, null, true);
+    var ttp = TreeTraversalParameter.all(3, "x", null, Rank.GENUS, true);
     var p2 = PrinterFactory.dataset(JsonFlatPrinter.class, ttp, null, new StringWriter());
     assertNotNull(p2);
   }

@@ -1,14 +1,17 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.LinneanNameUsage;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+
+import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -50,10 +53,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   final SqlSessionFactory factory;
   final int datasetKey;
-  final ParentStack<LinneanNameUsage> parents;
+  final ParentStack<XLinneanNameUsage> parents;
 
-  private LinneanNameUsage genus;
-  private Integer genusYear;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
   private int maxDepth = 0;
@@ -68,17 +69,18 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
   }
 
+  static class XLinneanNameUsage extends LinneanNameUsage {
+    public Integer authorYear;
+    public XLinneanNameUsage(LinneanNameUsage u) {
+      super(u);
+    }
+  }
   /**
    * To be called from the parent stack when a taxon gets removed from the stack
    * It considers to remove empty genera and creates missing autonyms
    * @param taxon
    */
-  void endClassificationStack(ParentStack.SNC<LinneanNameUsage> taxon) {
-    // remove tracked genus
-    if (taxon.usage.getRank() == Rank.GENUS) {
-      genus = null;
-      genusYear = null;
-    }
+  void endClassificationStack(ParentStack.SNC<XLinneanNameUsage> taxon) {
     // remove empty genera?
     if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
       LOG.info("Remove empty {}", taxon.usage);
@@ -103,14 +105,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   }
 
   @Override
-  public void accept(LinneanNameUsage sn) {
+  public void accept(LinneanNameUsage lnu) {
+    var sn = new XLinneanNameUsage(lnu);
     counter.incrementAndGet();
     final IssueContainer issues = IssueContainer.simple();
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
-    Integer authorYear = null; // TODO: parse year only once and share it with name validator?
     try {
-      authorYear = NameValidator.parseYear(sn);
+      sn.authorYear = NameValidator.parseYear(sn);
     } catch (NumberFormatException e) {
       // already flagged by name validator above!
     }
@@ -118,14 +120,15 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     if (sn.getRank().isSpeciesOrBelow()) {
       // flag parent mismatches
       if (sn.isParsed()) {
+        var genus = parents.getByRank(Rank.GENUS);
         if (sn.getRank().isInfraspecific()) {
           // we have a trinomial, compare species
           var sp = parents.find(Rank.SPECIES);
           if (sp == null) {
             issues.addIssue(Issue.PARENT_SPECIES_MISSING);
-          } else if (sp.isParsed()
-                    && !Objects.equals(sn.getGenus(), sp.getGenus())
-                    || !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet())
+          } else if (sp.isParsed() && (
+              !Objects.equals(sn.getGenus(), sp.getGenus()) ||
+              !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }
@@ -133,8 +136,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
           // we have a binomial, compare genus only
           if (genus == null) {
             issues.addIssue(Issue.MISSING_GENUS);
-          } else if (genus.isParsed()
-                   && !Objects.equals(sn.getGenus(), genus.getGenus())
+          } else if (genus.isParsed() &&
+              // genus should only have uninomial populated, but play safe here
+              !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
           ) {
             issues.addIssue(Issue.PARENT_NAME_MISMATCH);
           }
@@ -143,26 +147,21 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
         if (!issues.hasIssue(Issue.PARENT_NAME_MISMATCH)
             && !issues.hasIssue(Issue.MISSING_GENUS)
             && !issues.hasIssue(Issue.UNLIKELY_YEAR)
-            && genusYear != null
-            && authorYear != null
-            && genusYear > authorYear
+            && genus != null && genus.authorYear != null
+            && sn.authorYear != null
+            && genus.authorYear > sn.authorYear
         ) {
             // flag if the accepted bi/trinomial the ones that have an earlier publication date!
             issues.addIssue(Issue.PUBLISHED_BEFORE_GENUS);
         }
-
-        // TODO: create missing autonyms
       }
     }
-    if (sn.getRank() == Rank.GENUS) {
-      genus = sn;
-      genusYear = authorYear;
-    }
     parents.push(sn);
+
     // validate next higher concrete parent rank
     if (!sn.getRank().isUncomparable()) {
       parents.getLowestConcreteRank(true).ifPresent(r -> {
-        if (r.lowerOrEqualsTo(sn.getRank())) {
+        if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
           issues.addIssue(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
         }
       });

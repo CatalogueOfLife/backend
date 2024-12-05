@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -96,8 +96,8 @@ public class PortalPageRenderer {
    * @param id a COL checklist taxon or synonym ID. In case of synonyms redirect to the taxon page.
    * @param env
    */
-  public Response renderTaxon(String id, Environment env) throws TemplateException, IOException {
-    final int datasetKey = releaseKey(env);
+  public Response renderTaxon(String id, Environment env, boolean extended) throws TemplateException, IOException {
+    final int datasetKey = releaseKey(env, extended);
     final Map<String, Object> data = buildData(datasetKey);
 
     try {
@@ -117,6 +117,7 @@ public class PortalPageRenderer {
           false,
           false,
           true,
+          false,
           false,
           false,
           false,
@@ -158,9 +159,9 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderDatasource(int id, Environment env) throws TemplateException, IOException {
+  public Response renderDatasource(int id, Environment env, boolean extended) throws TemplateException, IOException {
     try {
-      final int datasetKey = releaseKey(env);
+      final int datasetKey = releaseKey(env, extended);
       final Map<String, Object> data = buildData(datasetKey);
 
       var d = checkFound(
@@ -175,9 +176,9 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderMetadata(Environment env) throws TemplateException, IOException {
+  public Response renderMetadata(Environment env, boolean extended) throws TemplateException, IOException {
     try {
-      final int datasetKey = releaseKey(env);
+      final int datasetKey = releaseKey(env, extended);
       final Map<String, Object> data = buildData(datasetKey);
 
       Dataset d;
@@ -282,10 +283,11 @@ public class PortalPageRenderer {
     return portalTemplateDir.resolve(Path.of(env.name(), pp.name()+".ftl"));
   }
 
-  private int releaseKey(Environment env) {
+  private int releaseKey(Environment env, boolean extended) {
     boolean preview = env == Environment.PREVIEW;
-    Integer key = preview ? cache.getLatestReleaseCandidate(Datasets.COL, false) : cache.getLatestRelease(Datasets.COL, false);
-    if (key == null) throw new NotFoundException("No COL" + (preview ? " preview" : "") + " release existing");
+    //TODO: for now we only have private extended releases, so show them also in non preview ENVs
+    Integer key = preview || extended ? cache.getLatestReleaseCandidate(Datasets.COL, extended) : cache.getLatestRelease(Datasets.COL, extended);
+    if (key == null) throw new NotFoundException("No COL " + (preview ? "preview " : "") + (extended ? "X-":"") + "release existing");
     return key;
   }
 }

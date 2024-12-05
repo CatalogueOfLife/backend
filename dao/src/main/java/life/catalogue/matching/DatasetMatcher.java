@@ -11,6 +11,7 @@ import life.catalogue.db.mapper.NameMatchMapper;
 
 import javax.annotation.Nullable;
 
+import life.catalogue.matching.nidx.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

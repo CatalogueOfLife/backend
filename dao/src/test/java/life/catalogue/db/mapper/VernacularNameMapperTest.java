@@ -17,10 +17,10 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.newVernacularName;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class VernacularNameMapperTest extends TaxonExtensionMapperTest<VernacularName, VernacularNameMapper> {
-
+  final int datasetKey = 3;
 	public VernacularNameMapperTest() {
 		super(VernacularNameMapper.class);
 	}
@@ -73,9 +73,24 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
     mapper().searchAll("adler's", null, new Page());
   }
 
+  @Test
+  public void exists() throws Exception {
+    assertFalse(mapper().entityExists(datasetKey));
+    var vnames = mapper().listByTaxon(tax);
+    assertNotNull(vnames);
+    assertTrue(vnames.isEmpty());
+
+    insert("Seeadler", "deu");
+    commit();
+    assertTrue(mapper().entityExists(datasetKey));
+    vnames = mapper().listByTaxon(tax);
+    assertFalse(vnames.isEmpty());
+    assertEquals(1, vnames.size());
+  }
+
   VernacularName insert(String name, String lang) {
 	  if (tax == null) {
-      tax = TestEntityGenerator.newTaxon(3);
+      tax = TestEntityGenerator.newTaxon(datasetKey);
       insertTaxon(tax);
     }
     VernacularName v = newVernacularName(name);

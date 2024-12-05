@@ -56,6 +56,11 @@ public class MetadataParserTest {
     assertEquals((Integer)95, d.getCompleteness());
     assertEquals("Remarks, comments and usage notes about this dataset", d.getNotes());
     assertEquals("ColDP Example", d.getAlias());
+
+    assertEquals(6, d.getUrlFormatter().size());
+    assertEquals("https://fishbase.mnhn.fr/summary/{ID}", d.getUrlFormatter().get("taxon"));
+    assertEquals("https://github.com/CatalogueOfLife/coldp-generator", d.getConversion().getUrl().toString());
+    assertEquals("The MySQL database is being exported on a monthly basis to ColDP CSV files with the help of a python script.", d.getConversion().getDescription());
   }
 
   @Test

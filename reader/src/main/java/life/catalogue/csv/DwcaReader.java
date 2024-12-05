@@ -308,7 +308,7 @@ public class DwcaReader extends CsvReader {
     }
     // assert we got at least one file
     if (files.isEmpty()) {
-      throw new IllegalArgumentException("at least one file location must be given");
+      throw new IllegalArgumentException("at least one file location must be given for " + rowType);
     }
 
     // final encoding

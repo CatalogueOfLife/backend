@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.sql.Connection;
 

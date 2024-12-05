@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.Issue;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.Year;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -117,6 +118,10 @@ public class NameValidator {
         v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
       }
     }
+    // rules that work on unparsed names too
+    if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
+      v.addIssue(Issue.AUTHORSHIP_UNLIKELY);
+    }
     return v.hasChanged() ? v.container : null;
   }
   
@@ -144,6 +149,12 @@ public class NameValidator {
         // TODO: allow ? in year comparisons and write a proper year parser???
         issues.addIssue(Issue.UNLIKELY_YEAR);
       }
+    }
+
+    if (!StringUtils.isBlank(n.getGenus()) && Objects.equals(n.getGenus(), n.getAuthorship()) ||
+        !StringUtils.isBlank(n.getUninomial()) && Objects.equals(n.getUninomial(), n.getAuthorship()) ||
+        !StringUtils.isBlank(n.getTerminalEpithet()) && Objects.equals(n.getTerminalEpithet(), n.getAuthorship())) {
+      issues.addIssue(Issue.AUTHORSHIP_UNLIKELY);
     }
 
     if (n.getUninomial() != null) {

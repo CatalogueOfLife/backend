@@ -32,6 +32,8 @@ public class LicenseParserTest extends ParserTestBase<License> {
     assertParse(CC_BY_NC, "cc-by-nc");
     assertParse(CC_BY_NC, "http://creativecommons.org/licenses/by-nc/4.0/");
     assertParse(CC_BY_NC, "http://creativecommons.org/licenses/by-nc/1.0/");
+
+    assertParse(OTHER, "cc-by-nc-nd");
   }
 
   @Override

@@ -1,34 +1,34 @@
 package life.catalogue.assembly;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.Partitioner;
-import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.dao.NameDao;
+import life.catalogue.dao.SectorDao;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.matching.NameIndexImpl;
-import life.catalogue.printer.TxtTreeDataRule;
-
-import org.apache.ibatis.io.Resources;
+import life.catalogue.db.mapper.VernacularNameMapper;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.junit.*;
+import life.catalogue.matching.decision.SectorRematchRequest;
+import life.catalogue.matching.decision.SectorRematcher;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.release.XReleaseConfig;
 
 import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.util.RankUtils;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
+import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -40,6 +40,14 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Parameterized SectorSync to test merge sectors with different sources.
@@ -70,10 +78,22 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   String project;
   List<String> trees;
   List<Sector> sectors = new ArrayList<>();
+  TreeMergeHandlerConfig mergeCfg;
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"bolyeriidae", List.of("itis", "reptiledb", "uksi", "pbdb")},
+      {"myosotis", List.of("taxref", "uksi", "pbdb", "bavaria")},
+      {"tetralobus", List.of("wfo", "bouchard", "plazi")},
+      {"cactus", List.of("wfo", "wcvp", "grin", "taxref", "tpl", "pbdb")},
+      {"aphanizomenon", List.of("worms","ncbi","dyntaxa")}, // https://github.com/CatalogueOfLife/xcol/issues/146
+      {"falcata", List.of("griis")}, // https://github.com/CatalogueOfLife/xcol/issues/183
+      {"anas", List.of("worms", "azores")},
+      {"author-dupes", List.of("iucn", "beetles", "swiss", "taxref", "taiwan", "plazi1", "fake")},
+      {"rankorder", List.of("itis", "wcvp", "wfo", "tpl")},
+      {"vernacular", List.of("v1", "v2")}, // extended trees
+      {"sector-parents", List.of("none", "subject", "target", "subject-target")},
       {"sic", List.of("millibase")},
       {"protoperidinium", List.of("itis", "worms", "brazil", "taxref", "dyntaxa", "artsnavebasen", "griis")},
       {"clavaria", List.of("unite")},
@@ -108,8 +128,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     // load text trees & create sectors
     List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
     data.add(getProjectDataRule());
-
     int dkey = 100;
+    boolean rematchSectors = false; // do we need to rematch sectors?
     for (String tree : trees) {
       String resource = "txtree/"+project + "/" + tree.toLowerCase();
       data.add(
@@ -119,6 +139,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       // do we have a config file?
       try {
         s = YamlUtils.read(Sector.class, Resources.getResourceAsStream(resource + ".yaml"));
+        if (s.getSubject() != null || s.getTarget() != null) {
+          rematchSectors = true;
+        }
       } catch (IOException e) {
         s = new Sector(); // use defaults
       }
@@ -126,6 +149,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
+      s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
       s.setPriority(dkey-99);
       s.setNote(tree);
       sectors.add(s);
@@ -143,14 +167,44 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
         sm.create(s);
       }
     }
-    // rematch
+
+    // do we have a merge handler config file?
+    try {
+      var xcfg = YamlUtils.read(XReleaseConfig.class, Resources.getResourceAsStream("txtree/"+project + "/xcfg.yaml"));
+      mergeCfg = new TreeMergeHandlerConfig(SqlSessionFactoryRule.getSqlSessionFactory(), xcfg, Datasets.COL, Users.TESTER);
+    } catch (IOException e) {
+    }
+
+    // rematch all names
     matchingRule.rematchAll();
+    //dumpNidx();
+    if (rematchSectors) {
+      // rematch sector subject/target
+      final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+      var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+      var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+      SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
+      SectorRematchRequest req = new SectorRematchRequest();
+      req.setTarget(true);
+      req.setSubject(true);
+      req.setDatasetKey(Datasets.COL);
+      SectorRematcher.match(dao, req, Users.TESTER);
+    }
+  }
+
+  void dumpNidx() {
+    System.out.println("\nNames Index from postgres:");
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
+    }
   }
 
   @Test
   public void syncAndCompare() throws Throwable {
-    syncAll();
-    assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
+    for (var s : sectors) {
+      sync(s, mergeCfg);
+    }
+    assertTree(Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
     // do once more with decisions?
     var decRes = getClass().getResourceAsStream("/txtree/" + project + "/decisions.yaml");
@@ -193,9 +247,48 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       }
 
       // sync and verify
-      syncAll();
+      syncAll(null, mergeCfg);
       assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected-with-decisions.txtree"));
     }
+
+    switch (project) {
+      case "vernacular":
+        validateVernacular(); break;
+    }
+  }
+
+  private void validateVernacular() {
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var vnm = session.getMapper(VernacularNameMapper.class);
+
+      var u = getByName(Datasets.COL, Rank.ORDER, "Diptera");
+      assertVNames(u, 3, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Aedes albopictus");
+      assertVNames(u, 2, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Drosophila melanogaster");
+      assertVNames(u, 5, vnm);
+
+      u = getByName(Datasets.COL, Rank.SPECIES, "Musca domestica");
+      assertVNames(u, 2, vnm);
+
+      u = getByName(Datasets.COL, Rank.PHYLUM, "Arthropoda");
+      assertVNames(u, 2, vnm);
+    }
+  }
+
+  void assertVNames(DSID<String> key, int num, VernacularNameMapper vnm) {
+    var vnames = vnm.listByTaxon(key);
+    assertEquals(num, vnames.size());
+    vnames.forEach(v -> {
+      if (v.getId() != 2) {
+        assertNotNull(v.getSectorKey());
+        assertNotNull(v.getLatin());
+      }
+      assertNotNull(v.getLanguage());
+      assertNotNull(v.getName());
+    });
   }
 
 }

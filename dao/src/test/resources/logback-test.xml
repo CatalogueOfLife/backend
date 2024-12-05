@@ -18,6 +18,7 @@
   <logger name="org.apache.ibatis.io" level="INFO" />
 	<logger name="java.sql" level="INFO" />
 	<logger name="life.catalogue.db" level="INFO" />
+  <logger name="ch.qos.logback" level="WARN" />
 
   <!--
 	<logger name="life.catalogue.db.mapper" level="DEBUG" />

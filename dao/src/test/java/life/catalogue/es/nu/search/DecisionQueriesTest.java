@@ -105,7 +105,7 @@ public class DecisionQueriesTest extends EsReadTestBase {
     SimpleDecision sd1 = new SimpleDecision();
     sd1.setId(100);
     sd1.setDatasetKey(1);
-    sd1.setMode(Mode.UPDATE_RECURSIVE);
+    sd1.setMode(Mode.UPDATE);
 
     SimpleDecision sd2a = new SimpleDecision();
     sd2a.setId(101);

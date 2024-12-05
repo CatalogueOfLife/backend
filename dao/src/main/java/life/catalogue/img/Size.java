@@ -2,7 +2,7 @@ package life.catalogue.img;
 
 import java.util.Objects;
 
-import javax.validation.constraints.Min;
+import jakarta.validation.constraints.Min;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -197,6 +197,7 @@ public class PgImport implements Callable<Boolean> {
   }
 
   private void insertVerbatim() throws InterruptedException {
+    LOG.info("Start inserting verbatim data for dataset {}: {}", dataset.getKey(), dataset.getTitle());
     try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
       VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
       int counter = 0;

@@ -25,7 +25,9 @@ public interface IssueContainer {
   }
 
   default void addIssues(Issue... issues) {
-    addIssues(Arrays.asList(issues));
+    if (issues != null && issues.length > 0) {
+      addIssues(Arrays.asList(issues));
+    }
   }
 
   default void addIssues(Collection<Issue> issues) {

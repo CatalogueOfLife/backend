@@ -32,6 +32,18 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
     assertParse(null, "anima");
 
     assertParse(TaxGroup.Birds, "Falconidae");
+    // recognize suffix
+    assertParse(TaxGroup.Algae, "Blablaphyceae");
+    assertParse(TaxGroup.Fungi, "Blablamycetes");
+    assertParse(TaxGroup.Plants, "Blablaphytina");
+    assertParse(TaxGroup.Viruses, "Blablaviridae");
+    // but not for binomials
+    assertParse(null, "Blabla blamycetes");
+    assertParse(null, "Blabla blaviridae");
+    assertParse(null, "Blabla blaphytina");
+    // zoological genus
+    assertParse(null, "Neophyta");
+    assertParse(null, "Protophyta");
   }
 
   @Test

@@ -3,27 +3,26 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/**
- *
- */
+
 public class DatasetTest extends SerdeTestBase<Dataset> {
-  
+  private static Set<?> IGNORE = Set.of(License.class);
+
   public DatasetTest() {
     super(Dataset.class);
   }
@@ -43,6 +42,7 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
       "name", "https://fishbase.mnhn.fr/summary/{ID}",
       "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
     ));
+    d.setConversion(new Dataset.UrlDescription("http://convert.me", "bli bla BLUB"));
     d.setTitle("gfdscdscw");
     d.setDescription("gefzw fuewh gczew fw hfueh j ijdfeiw jfie eö.. few . few .");
     d.setOrigin(DatasetOrigin.EXTERNAL);
@@ -107,8 +107,35 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   }
 
   @Test
+  public void nullTypesComplete() throws Exception {
+    for (var p : Dataset.PATCH_PROPS) {
+      System.out.println(p.getName() + "  -> " + p.getPropertyType());
+
+      if (!IGNORE.contains(p.getPropertyType())) {
+        assertTrue(p.getName(), Dataset.NULL_TYPES.containsKey(p.getName()));
+      }
+    }
+  }
+
+  public static Dataset createNullPatchDataset(int key) {
+    var d = new Dataset();
+    d.setKey(key);
+    try {
+      for (PropertyDescriptor p : Dataset.PATCH_PROPS) {
+        if (!IGNORE.contains(p.getPropertyType())) {
+          p.getWriteMethod().invoke(d, Dataset.NULL_TYPES.get(p.getName()));
+        }
+      }
+    } catch (IllegalAccessException | InvocationTargetException e) {
+      throw new RuntimeException(e);
+    }
+    return d;
+  }
+
+  @Test
   public void patch() throws Exception {
-    Dataset d = genTestValue();
+    Dataset orig = genTestValue();
+    Dataset d = new Dataset(orig);
 
     Dataset patch = new Dataset();
     patch.setTitle("Grundig");
@@ -117,6 +144,24 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
 
     assertEquals("Grundig", d.getTitle());
     assertEquals("grr", d.getAlias());
+
+    d = new Dataset(orig);
+    patch = createNullPatchDataset(-12);
+    d.applyPatch(patch);
+
+    assertNull(d.getTitle());
+    assertNull(d.getAlias());
+    assertNull(d.getDescription());
+    assertNull(d.getCreator());
+    assertNull(d.getPublisher());
+    assertNull(d.getDoi());
+    assertNull(d.getContributor());
+    assertNull(d.getContact());
+    assertNull(d.getIssued());
+    assertNull(d.getIdentifier());
+    assertNull(d.getKeyword());
+
+    assertEquals(orig.getLicense(), d.getLicense());
   }
 
   @Test
@@ -149,6 +194,10 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     patch.setAttempt(13);
     d.applyPatch(patch);
     assertEquals(copy, d);
+
+    // just making sure nothing bad happens when appling explicit nulls
+    d = TestEntityGenerator.newDataset("Hallo Spencer");
+    d.applyPatch(createNullPatchDataset(999));
   }
 
   @Test
@@ -176,11 +225,13 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setTitle("Catalogue of the Alucitoidea of the World");
     d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
     d.setEditor(Agent.parse(List.of("Hobern, Donald")));
-    d.setVersion("1.0.21.199 (18 Jul 2021)");
-    d.setIssued(FuzzyDate.of(2021,7,18));
     d.setUrl(URI.create("https://alucitoidea.hobern.net"));
     d.setDoi(DOI.col("e456fgvzb"));
-    d.setContainerTitle("Catalogue of Life Checklist");
+    // these are taken from the container (=COL) for sources by the mapper
+    d.setVersion("Annual Edition 2024");
+    d.setIssued(FuzzyDate.of(2024,6,18));
+    d.setPublisher(Agent.organisation("Catalogue of Life", null, "Amsterdam", null, Country.NETHERLANDS));
+    d.setContainerTitle("Catalogue of Life");
     d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
 
     System.out.println(CslUtil.buildCitation(d.toCSL()));

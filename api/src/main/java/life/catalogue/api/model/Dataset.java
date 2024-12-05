@@ -2,9 +2,7 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.constraints.AbsoluteURI;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.util.YamlUtils;
@@ -16,18 +14,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,14 +28,30 @@ import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLName;
 import de.undercouch.citeproc.csl.CSLType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Metadata about a dataset which can be archived
  */
 public class Dataset extends DataEntity<Integer> {
+  // key=json field name, value=java type specific instance which is considered to be null, but can be stored and moved around without loss
+  // only used for internal representation of explicit nulls for patches!!!
   public static final Map<String, Object> NULL_TYPES;
+  private static final DOI NULL_DOI = new DOI("10.0000", "null");
+  private static final URI NULL_URI = URI.create("null:null");
+  private static final FuzzyDate NULL_DATE = FuzzyDate.of(0);
+  private static final Agent NULL_AGENT = Agent.person("Null","Null","null@null.nl","0000-0000-0000-0000");
+  private static final List<String> NULL_LIST_STR = List.of("NULL","Null","null");
+  private static final UrlDescription NULL_DESC = new UrlDescription("http://null.nu/null", "null");
+  private static final Map<String,String> NULL_MAP = Map.of("NULL","NULL",  "Null","Null",  "null","null");
   // properties which are human mediated and can be patched
-  // title is the only required property, make sure it is not null !!!
+  // title & license are the only required property, make sure they are not null !!!
+  // this list of properties is not only used for patching,
+  // but also to copy/merge metadata found during imports!
   public static final List<PropertyDescriptor> PATCH_PROPS;
 
   static {
@@ -58,9 +65,18 @@ public class Dataset extends DataEntity<Integer> {
         "origin",
         "imported",
         "deleted",
+        "lastImportAttempt",
+        "lastImportState",
         "gbifKey",
         "gbifPublisherKey",
         "size",
+        "license", // required
+        "containerKey",
+        "containerTitle",
+        "containerCreator",
+        "containerVersion",
+        "containerPublisher",
+        "containerIssued",
         "notes",
         "aliasOrTitle",
         "created",
@@ -76,16 +92,29 @@ public class Dataset extends DataEntity<Integer> {
       for (PropertyDescriptor p : PATCH_PROPS) {
         Object nullType = null;
         if (p.getPropertyType().equals(URI.class)) {
-          nullType = URI.create("null:null");
+          nullType = NULL_URI;
         } else if (p.getPropertyType().equals(String.class)) {
           nullType = "";
         } else if (p.getPropertyType().equals(Integer.class)) {
           nullType = Integer.MIN_VALUE;
+        } else if (p.getPropertyType().equals(DOI.class)) {
+          nullType = NULL_DOI;
         } else if (p.getPropertyType().equals(Agent.class)) {
-          nullType = Agent.parse("null");
-        } else if (p.getPropertyType().equals(LocalDate.class)) {
-          nullType = LocalDate.of(1900, 1, 1);
+          nullType = NULL_AGENT;
+        } else if (p.getPropertyType().equals(FuzzyDate.class)) {
+          nullType = NULL_DATE;
+        } else if (p.getPropertyType().equals(UrlDescription.class)) {
+          nullType = NULL_DESC;
+        } else if (p.getPropertyType().equals(List.class)) {
+          if (p.getName().equals("keyword")) {
+            nullType = NULL_LIST_STR;
+          } else {
+            nullType = List.of(NULL_AGENT);
+          }
+        } else if (p.getPropertyType().equals(Map.class)) {
+          nullType = NULL_MAP;
         }
+
         if (nullType != null) {
           nullTypes.put(p.getName(), nullType);
         }
@@ -100,14 +129,17 @@ public class Dataset extends DataEntity<Integer> {
   // internal keys & flags
   private Integer key;
   private Integer sourceKey;
-  private boolean privat = false;
+  private boolean privat = true;
   @NotNull
   private DatasetType type;
   @NotNull
   private DatasetOrigin origin;
-  private Integer attempt;
-  private LocalDateTime imported; // from import table
+  private Integer attempt; // last successful import attempt that created the current data
+  private LocalDateTime imported; // linked via attempt from import table
   private LocalDateTime lastImportAttempt; // last try to import the dataset, will be set even for unchanged attempts
+  // state of the last import that was not unchanged.
+  // Does not have to correlate with the lastImportAttempt timestamp
+  private ImportState lastImportState;
   private LocalDateTime deleted;
   private UUID gbifKey;
   private UUID gbifPublisherKey;
@@ -141,6 +173,9 @@ public class Dataset extends DataEntity<Integer> {
   private String containerTitle;
   @Valid
   private List<Agent> containerCreator;
+  private String containerVersion;
+  private Agent containerPublisher;
+  private FuzzyDate containerIssued;
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
@@ -157,6 +192,7 @@ public class Dataset extends DataEntity<Integer> {
   private URI logo;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> urlFormatter = new HashMap<>();
+  private UrlDescription conversion;
   @Valid
   private List<Citation> source = new ArrayList<>();
   private String notes;
@@ -175,6 +211,7 @@ public class Dataset extends DataEntity<Integer> {
     this.origin = other.origin;
     this.attempt = other.attempt;
     this.lastImportAttempt = other.lastImportAttempt;
+    this.lastImportState = other.lastImportState;
     this.imported = other.imported;
     this.deleted = other.deleted;
     this.gbifKey = other.gbifKey;
@@ -198,6 +235,9 @@ public class Dataset extends DataEntity<Integer> {
     this.containerKey = other.containerKey;
     this.containerTitle = other.containerTitle;
     this.containerCreator = other.containerCreator;
+    this.containerVersion = other.containerVersion;
+    this.containerPublisher = other.containerPublisher;
+    this.containerIssued = other.containerIssued;
     this.geographicScope = other.geographicScope;
     this.taxonomicScope = other.taxonomicScope;
     this.temporalScope = other.temporalScope;
@@ -207,7 +247,51 @@ public class Dataset extends DataEntity<Integer> {
     this.url = other.url;
     this.logo = other.logo;
     this.urlFormatter = other.urlFormatter;
+    this.conversion = other.conversion;
     this.source = other.source;
+  }
+
+  public static class UrlDescription {
+    @AbsoluteURI
+    private URI url;
+    private String description;
+
+    public UrlDescription() {
+    }
+
+    public UrlDescription(String url, String description) {
+      this.url = url == null ? null : URI.create(url);
+      this.description = description;
+    }
+
+    public URI getUrl() {
+      return url;
+    }
+
+    public void setUrl(URI url) {
+      this.url = url;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof UrlDescription)) return false;
+      UrlDescription that = (UrlDescription) o;
+      return Objects.equals(url, that.url) && Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(url, description);
+    }
   }
 
   public static Dataset read(InputStream in){
@@ -251,11 +335,14 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public CSLItemData toCSL() {
+    return toCSLBuilder().build();
+  }
+
+  public CSLItemDataBuilder toCSLBuilder() {
     CSLItemDataBuilder builder = new CSLItemDataBuilder();
     builder
       .type(CSLType.DATASET)
       .shortTitle(alias)
-      .title(title)
       .version(version)
       .ISSN(issn);
     if (key != null) {
@@ -264,16 +351,10 @@ public class Dataset extends DataEntity<Integer> {
     if (keyword != null && !keyword.isEmpty()) {
       builder.keyword(String.join(", ", keyword));
     }
-    if (containerTitle != null) {
+    if (publisher != null && publisher.getOrganisation() != null) {
       builder
-        .type(CSLType.CHAPTER)
-        .author(toNamesArray(unique(merge(creator, editor))))
-        .containerTitle(containerTitle)
-        .containerAuthor(toNamesArray(containerCreator));
-    } else {
-      builder
-        .author(toNamesArray(creator))
-        .editor(toNamesArray(editor));
+        .publisher(publisher.getOrganisation())
+        .publisherPlace(publisher.getAddress());
     }
     if (doi != null) {
       builder.DOI(doi.toString());
@@ -284,12 +365,39 @@ public class Dataset extends DataEntity<Integer> {
     if (issued != null) {
       builder.issued(issued.toCSLDate());
     }
-    if (publisher != null && publisher.getOrganisation() != null) {
-      builder.publisher(publisher.getOrganisation());
-      builder.publisherPlace(publisher.getAddress());
+    if (containerTitle != null) {
+      // we change the title of a source to append the source version which otherwise would be lost
+      StringBuilder chapter = new StringBuilder();
+      chapter.append(title);
+      if (version != null) {
+        chapter
+          .append(" (version ")
+          .append(version)
+          .append(")");
+      }
+      builder
+        .type(CSLType.CHAPTER)
+        .title(chapter.toString())
+        .author(toNamesArray(unique(merge(creator, editor))))
+        .containerTitle(containerTitle)
+        .containerAuthor(toNamesArray(containerCreator))
+        .version(containerVersion);
+      if (containerIssued != null) {
+        builder.issued(containerIssued.toCSLDate());
+      }
+      if (containerPublisher != null && containerPublisher.getOrganisation() != null) {
+        builder
+          .publisher(containerPublisher.getOrganisation())
+          .publisherPlace(containerPublisher.getAddress());
+      }
+    } else {
+      builder
+        .title(title)
+        .author(toNamesArray(creator))
+        .editor(toNamesArray(editor));
     }
     // no license, distributor, contributor
-    return builder.build();
+    return builder;
   }
 
   public Citation toCitation() {
@@ -303,21 +411,29 @@ public class Dataset extends DataEntity<Integer> {
     c.setVersion(version);
     c.setIssn(issn);;
     c.setDoi(doi);
-    if (containerTitle != null) {
-      c.setType(CSLType.CHAPTER);
-      c.setAuthor(toNames(unique(merge(creator, editor))));
-      c.setContainerTitle(containerTitle);
-      c.setContainerAuthor(toNames(containerCreator));
-    } else {
-      c.setAuthor(toNames(creator));
-      c.setEditor(toNames(editor));
-    }
     if (url != null) {
       c.setUrl(url.toString());
     }
     if (publisher != null && publisher.getOrganisation() != null) {
       c.setPublisher(publisher.getOrganisation());
       c.setPublisherPlace(publisher.getAddress());
+    }
+    if (containerTitle != null) {
+      c.setType(CSLType.CHAPTER);
+      c.setAuthor(toNames(unique(merge(creator, editor))));
+      c.setContainerTitle(containerTitle);
+      c.setContainerAuthor(toNames(containerCreator));
+      c.setVersion(containerVersion);
+      if (containerIssued != null) {
+        c.setIssued(containerIssued);
+      }
+      if (containerPublisher != null && containerPublisher.getOrganisation() != null) {
+        c.setPublisher(containerPublisher.getOrganisation());
+        c.setPublisherPlace(containerPublisher.getAddress());
+      }
+    } else {
+      c.setAuthor(toNames(creator));
+      c.setEditor(toNames(editor));
     }
     // no license, distributor, contributor
     return c;
@@ -405,6 +521,14 @@ public class Dataset extends DataEntity<Integer> {
 
   public void setLastImportAttempt(LocalDateTime lastImportAttempt) {
     this.lastImportAttempt = lastImportAttempt;
+  }
+
+  public ImportState getLastImportState() {
+    return lastImportState;
+  }
+
+  public void setLastImportState(ImportState lastImportState) {
+    this.lastImportState = lastImportState;
   }
 
   public DOI getDoi() {
@@ -496,6 +620,30 @@ public class Dataset extends DataEntity<Integer> {
     this.containerCreator = containerCreator;
   }
 
+  public String getContainerVersion() {
+    return containerVersion;
+  }
+
+  public void setContainerVersion(String containerVersion) {
+    this.containerVersion = containerVersion;
+  }
+
+  public Agent getContainerPublisher() {
+    return containerPublisher;
+  }
+
+  public void setContainerPublisher(Agent containerPublisher) {
+    this.containerPublisher = containerPublisher;
+  }
+
+  public FuzzyDate getContainerIssued() {
+    return containerIssued;
+  }
+
+  public void setContainerIssued(FuzzyDate containerIssued) {
+    this.containerIssued = containerIssued;
+  }
+
   @JsonIgnore
   public String getAliasOrTitle() {
     return ObjectUtils.coalesce(alias, title);
@@ -513,6 +661,7 @@ public class Dataset extends DataEntity<Integer> {
     processAgent(publisher, processor);
     processAllAgents(contributor, processor);
     processAllAgents(containerCreator, processor);
+    processAgent(containerPublisher, processor);
   }
 
   private void processAgent(Agent agent, Consumer<Agent> processor){
@@ -758,6 +907,14 @@ public class Dataset extends DataEntity<Integer> {
     this.urlFormatter = urlFormatter;
   }
 
+  public UrlDescription getConversion() {
+    return conversion;
+  }
+
+  public void setConversion(UrlDescription conversion) {
+    this.conversion = conversion;
+  }
+
   public List<Citation> getSource() {
     return source;
   }
@@ -772,6 +929,23 @@ public class Dataset extends DataEntity<Integer> {
         source = new ArrayList<>();
       }
       source.add(citation);
+    }
+  }
+
+  public void addContainer(Dataset container, DatasetSettings settings) {
+    if (container == null) {
+      container = new Dataset();
+    }
+    containerKey = container.key;
+    containerTitle = container.title;
+    containerVersion = container.version;
+    containerPublisher = container.publisher;
+    containerIssued = container.issued;
+    if (container.creator != null) {
+      // limit the max container creators
+      // con.creator[:coalesce((con.settings->>'source max container authors')::int, 100)] AS containerCreator
+      var max = ObjectUtils.coalesce(settings.getInt(Setting.SOURCE_MAX_CONTAINER_AUTHORS), 100);
+      containerCreator = container.creator.size() > max ? new ArrayList<>(container.creator.subList(0, max)) : new ArrayList<>(container.creator);
     }
   }
 
@@ -812,6 +986,7 @@ public class Dataset extends DataEntity<Integer> {
            && origin == dataset.origin
            && Objects.equals(attempt, dataset.attempt)
            && Objects.equals(lastImportAttempt, dataset.lastImportAttempt)
+           && Objects.equals(lastImportState, dataset.lastImportState)
            && Objects.equals(imported, dataset.imported)
            && Objects.equals(deleted, dataset.deleted)
            && Objects.equals(gbifKey, dataset.gbifKey)
@@ -835,6 +1010,9 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(containerKey, dataset.containerKey)
            && Objects.equals(containerTitle, dataset.containerTitle)
            && Objects.equals(containerCreator, dataset.containerCreator)
+           && Objects.equals(containerVersion, dataset.containerVersion)
+           && Objects.equals(containerPublisher, dataset.containerPublisher)
+           && Objects.equals(containerIssued, dataset.containerIssued)
            && Objects.equals(geographicScope, dataset.geographicScope)
            && Objects.equals(taxonomicScope, dataset.taxonomicScope)
            && Objects.equals(temporalScope, dataset.temporalScope)
@@ -844,20 +1022,24 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(url, dataset.url)
            && Objects.equals(logo, dataset.logo)
            && Objects.equals(urlFormatter, dataset.urlFormatter)
+           && Objects.equals(conversion, dataset.conversion)
            && Objects.equals(source, dataset.source);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin, attempt, lastImportAttempt, imported, deleted,
+    return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin,
+      attempt, lastImportAttempt, lastImportState, imported, deleted,
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
-      containerKey, containerTitle, containerCreator,
-      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo, urlFormatter, source);
+      containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
+      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo,
+      urlFormatter, conversion,  source);
   }
 
   @Override
   public String toString() {
     return "Dataset " + key + ": " + attempt;
   }
+
 }

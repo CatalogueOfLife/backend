@@ -11,6 +11,7 @@ import life.catalogue.db.TempNameUsageRelated;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,6 +28,26 @@ import org.apache.ibatis.cursor.Cursor;
 public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyDataset, DatasetProcessable<NameUsageBase>, TempNameUsageRelated {
 
   NameUsageBase get(@Param("key") DSID<String> key);
+
+  /**
+   * Retrieves all parents and the original taxon in a single list, starting with the highest taxon and the requested taxon last
+   * @param key
+   * @return null in case the given key does not exist, otherwise the entire classification
+   */
+  default LinkedList<NameUsageBase> getClassification(DSID<String> key) {
+    var classification = new LinkedList<NameUsageBase>();
+    var u = get(key);
+    if (u == null) return null;
+
+    classification.addLast(u);
+
+    var pid = DSID.<String>root(key.getDatasetKey());
+    while (u.getParentId() != null) {
+      u = get(pid.id(u.getParentId()));
+      classification.addFirst(u);
+    }
+    return classification;
+  }
 
   /**
    * SimpleName.parent=parent.id
@@ -192,6 +213,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Nullable @Param("maxRank") Rank maxRank);
 
   /**
+   * Iterates over all usages for a given dataset in any order and returns simple names.
+   */
+  Cursor<SimpleName> processDatasetSimple(@Param("datasetKey") int datasetKey);
+
+  /**
    * Iterates over all bare names for a given dataset, optionally filtered by a minimum/maximum rank to include.
    */
   Cursor<BareName> processDatasetBareNames(@Param("datasetKey") int datasetKey,
@@ -220,6 +246,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   void updateParentId(@Param("key") DSID<String> key,
                       @Param("parentId") @Nullable String parentId,
                       @Param("userKey") int userKey);
+
+  /**
+   * Sets a taxon as provisional
+   * @param key
+   * @param status
+   * @param userKey
+   */
+  void updateStatus(@Param("key") DSID<String> key,
+                    @Param("status") TaxonomicStatus status,
+                    @Param("userKey") int userKey);
 
   /**
    * Moves the taxon given to a new parent by updating the parent_id and also sets a new status value.
@@ -380,7 +416,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
 
   /**
-   * Lists all usage ids of a given dataset that are involved in loops of the parent child classification.
+   * Lists all usage ids of taxa which have synonyms as their parent.
+   */
+  List<String> detectParentSynoynms(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Lists all usage ids of synonyms that have a synonym as their parent
+   */
+  List<String> detectChainedSynonyms(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Lists all usage ids of accepted names aka taxa a given dataset that are involved in loops of the parent child classification.
    */
   List<String> detectLoop(@Param("datasetKey") int datasetKey);
 
@@ -388,5 +434,18 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * Lists all parent ids of a given dataset that are breaking constraints and have no matching parent record.
    */
   List<String> listMissingParentIds(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Adds extra identifiers to the usage
+   * @param key usage to add to
+   * @param identifiers ids to add
+   */
+  default void addIdentifier(DSID<String> key, List<Identifier> identifiers) {
+    if (identifiers != null && !identifiers.isEmpty()) {
+      _addIdentifier(key, identifiers);
+    }
+  }
+
+  void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
 
 }

@@ -13,23 +13,26 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.InvalidQueryException;
-import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.es.NameUsageSuggestionService;
+import life.catalogue.es.*;
+
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
+import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -52,10 +55,11 @@ public class NameUsageResource {
   private final LatestDatasetKeyCache datasetKeyCache;
   private final TaxonDao dao;
 
-  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
+  public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, NameUsageIndexService indexService,
+                           LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
     this.searchService = search;
     this.suggestService = suggest;
-    this.indexService = null;
+    this.indexService = indexService;
     this.datasetKeyCache = datasetKeyCache;
     this.dao = dao;
   }
@@ -145,6 +149,26 @@ public class NameUsageResource {
   }
 
   @GET
+  @Hidden
+  @Path("{id}/nuw")
+  public NameUsageWrapper nuw(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    if (indexService instanceof NameUsageIndexServiceEs) {
+      var idxSrv = (NameUsageIndexServiceEs) indexService;
+      var usages = idxSrv.buildNameUsageWrappers(datasetKey, Set.of(id));
+      return usages == null || usages.isEmpty() ? null : usages.get(0);
+    }
+    throw new UnsupportedOperationException("No real NameUsageIndexServiceEs installed: " + indexService.getClass());
+  }
+
+  @GET
+  @Hidden
+  @Path("{id}/nues")
+  public EsNameUsage nues(@PathParam("key") int datasetKey, @PathParam("id") String id) throws IOException {
+    return NameUsageWrapperConverter.toDocument(nuw(datasetKey, id));
+  }
+
+  @GET
+  @Hidden
   @Path("{id}/info")
   public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
@@ -164,6 +188,7 @@ public class NameUsageResource {
                                                @QueryParam("rank") Rank rank,
                                                @QueryParam("decisionMode") String decisionMode,
                                                @Valid @BeanParam Page page,
+                                               @Context ContainerRequestContext ctx,
                                                @Context SqlSession session) {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
@@ -180,6 +205,9 @@ public class NameUsageResource {
     if (withDecision != null && projectKey == null) {
       throw new IllegalArgumentException("projectKey required when decisionMode is present");
     }
+    if (projectKey != null) {
+      ResourceUtils.dontCache(ctx);
+    }
     return session.getMapper(NameUsageMapper.class).listByRegex(datasetKey, projectKey, regex, status, rank, withDecision, mode, p);
   }
 
@@ -188,8 +216,12 @@ public class NameUsageResource {
   public ResultPage<NameUsageWrapper> searchDataset(@PathParam("key") int datasetKey,
                                                     @BeanParam NameUsageSearchRequest query,
                                                     @Valid @BeanParam Page page,
+                                                    @Context ContainerRequestContext ctx,
                                                     @Context UriInfo uri) throws InvalidQueryException {
     checkIllegalDatasetKeyParam(datasetKey, query, uri);
+    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+      ResourceUtils.dontCache(ctx);
+    }
     return searchService.search(query, page);
   }
 
@@ -197,8 +229,9 @@ public class NameUsageResource {
   @Path("search")
   public ResultPage<NameUsageWrapper> searchPOST(@PathParam("key") int datasetKey,
                                                  @Valid NameUsageSearchResource.SearchRequestBody req,
+                                                 @Context ContainerRequestContext ctx,
                                                  @Context UriInfo uri) throws InvalidQueryException {
-    return searchDataset(datasetKey, req.request, req.page, uri);
+    return searchDataset(datasetKey, req.request, req.page, ctx, uri);
   }
 
   @GET

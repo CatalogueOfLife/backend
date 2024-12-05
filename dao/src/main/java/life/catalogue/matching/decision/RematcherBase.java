@@ -1,16 +1,12 @@
 package life.catalogue.matching.decision;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetScopedEntity;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.*;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.BaseDecisionMapper;
 
-import java.util.List;
 import java.util.Objects;
 
 import org.apache.ibatis.session.SqlSession;
@@ -56,7 +52,7 @@ public abstract class RematcherBase<
 
   abstract S toSearchRequest(R req);
 
-  T verify(DSID<Integer> key, T obj) {
+  T exists(DSID<Integer> key, T obj) {
     if (obj == null) {
       throw new NotFoundException(type + " " + key.getId() + " does not exist in project " + projectKey);
     }
@@ -81,7 +77,7 @@ public abstract class RematcherBase<
     }
   
     public int getTotal() {
-      return broken + updated + unchanged;
+      return updated + unchanged;
     }
 
     @Override
@@ -101,7 +97,7 @@ public abstract class RematcherBase<
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);
       if (req.getId() != null){
-        T ed = verify(req, mapper.get(req));
+        T ed = exists(req, mapper.get(req));
         LOG.info("Match {} {} from project {}", type, req.getId(), projectKey);
         match(ed);
 
@@ -120,29 +116,23 @@ public abstract class RematcherBase<
   /**
    * @return true if the simple name id was changed
    */
-  boolean updateCounter(String idBefore, String idAfter) {
-    boolean changed = !Objects.equals(idBefore, idAfter);
-    if (idAfter == null) {
-      counter.broken++;
-    } else if (changed) {
-      counter.updated++;
-    } else {
-      counter.unchanged++;
-    }
-    return changed;
+  boolean updateCounter(boolean hasSubject, String idBefore, String idAfter) {
+    return updateCounter(hasSubject, idBefore, idAfter, false, null, null);
   }
 
   /**
    * @return true if the simple name id was changed
    */
-  boolean updateCounter(String sIdBefore, String sIdAfter, String tIdBefore, String tIdAfter) {
+  boolean updateCounter(boolean hasSubject, String sIdBefore, String sIdAfter, boolean hasTarget, String tIdBefore, String tIdAfter) {
     boolean changed = !Objects.equals(sIdBefore, sIdAfter) || !Objects.equals(tIdBefore, tIdAfter);
-    if (sIdAfter == null || tIdAfter == null) {
-      counter.broken++;
-    } else if (changed) {
+    if (changed) {
       counter.updated++;
     } else {
       counter.unchanged++;
+    }
+    // broken separately from (un)changed
+    if (hasSubject && sIdAfter == null || hasTarget && tIdAfter == null) {
+      counter.broken++;
     }
     return changed;
   }
@@ -166,35 +156,36 @@ public abstract class RematcherBase<
    * @return the unique match or null
    */
   private NameUsage matchUniquely(int datasetKey, DatasetScopedEntity<Integer> obj, SimpleName sn, String originalId){
-    List<? extends NameUsage> matches = mdao.matchDataset(sn, datasetKey);
-    if (matches.isEmpty()) {
-      LOG.warn("{} {} from project {} cannot be rematched to dataset {} - lost {}",
-        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
-    } else if (matches.size() > 1) {
+    var result = mdao.matchDataset(sn, datasetKey);
+    LOG.info("Match {} {} from project {} to dataset {}: {}", obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, result);
+
+    if (result.isEmpty()) {
+      LOG.warn("{} {} cannot be rematched - lost {}.", obj.getClass().getSimpleName(), obj.getKey(), sn);
+    } else if (result.size() > 1) {
       // keep the existing id if it still matches!
       if (sn.getId() != null) {
-        for (NameUsage nu : matches){
+        for (NameUsage nu : result.getMatches()){
           if (nu.getId().equals(sn.getId())) {
-            LOG.info("{} {} from project {} matches multiple usages in dataset {} - existing usage {} still matching",
-              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+            LOG.info("{} {} matches multiple usages in dataset {} - existing usage {} still matching",
+              obj.getClass().getSimpleName(), obj.getKey(), datasetKey, sn);
             return nu;
           }
         }
       }
-      // if we havent found the previous id, try with the original id
+      // if we haven't found the previous id, try with the original id
       if (originalId != null) {
-        for (NameUsage nu : matches){
+        for (NameUsage nu : result.getMatches()){
           if (nu.getId().equals(originalId)) {
-            LOG.info("{} {} from project {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
-              obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, originalId, nu.getLabel());
+            LOG.info("{} {} matches multiple usages in dataset {} - original usage ID {} still matching to {}",
+              obj.getClass().getSimpleName(), obj.getKey(), datasetKey, originalId, nu.getLabel());
             return nu;
           }
         }
       }
-      LOG.warn("{} {} from project {} cannot be uniquely rematched to dataset {} - multiple names like {}",
-        obj.getClass().getSimpleName(), obj.getKey(), projectKey, datasetKey, sn);
+      LOG.warn("{} {} cannot be uniquely rematched to dataset {} - multiple names like {}",
+        obj.getClass().getSimpleName(), obj.getKey(), datasetKey, sn);
     } else {
-      return matches.get(0);
+      return result.getMatches().get(0);
     }
     return null;
   }

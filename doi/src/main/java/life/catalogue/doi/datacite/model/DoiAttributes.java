@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 
 /**

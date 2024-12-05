@@ -7,8 +7,8 @@ import life.catalogue.printer.BaseDiffService;
 import java.io.IOException;
 import java.io.Reader;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,19 +28,10 @@ public abstract class AbstractDiffResource<K> {
   abstract K keyFromPath(DSID<Integer> dsid);
 
   @GET
-  @Path("tree")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffTree(@BeanParam DSIDValue<Integer> key,
-                         @QueryParam("attempts") String attempts) throws IOException {
-    return diff.treeDiff(keyFromPath(key), attempts);
-  }
-
-  @GET
-  @Path("names")
   @Produces(MediaType.TEXT_PLAIN)
   public Reader diffNames(@BeanParam DSIDValue<Integer> key,
                           @QueryParam("attempts") String attempts) throws IOException {
-    return diff.namesDiff(keyFromPath(key), attempts);
+    return diff.diff(keyFromPath(key), attempts);
   }
 
 }

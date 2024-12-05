@@ -12,7 +12,7 @@
 
   <properties>
     <mainClass>life.catalogue.WsServer</mainClass>
-    <swagger.version>2.2.8</swagger.version>
+    <swagger.version>2.2.22</swagger.version>
   </properties>
 
   <dependencies>
@@ -71,26 +71,20 @@
       <artifactId>gmetric4j</artifactId>
     </dependency>
 
-    <!-- WebSockets -->
-    <dependency>
-      <groupId>be.tomcools</groupId>
-      <artifactId>dropwizard-websocket-jsr356-bundle</artifactId>
-    </dependency>
-
     <!-- Swagger OpenAPI Docs -->
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-jaxrs2</artifactId>
+      <artifactId>swagger-jaxrs2-jakarta</artifactId>
       <version>${swagger.version}</version>
     </dependency>
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-core</artifactId>
+      <artifactId>swagger-core-jakarta</artifactId>
       <version>${swagger.version}</version>
     </dependency>
     <dependency>
       <groupId>io.swagger.core.v3</groupId>
-      <artifactId>swagger-models</artifactId>
+      <artifactId>swagger-models-jakarta</artifactId>
       <version>${swagger.version}</version>
     </dependency>
 
@@ -198,6 +192,15 @@
       <version>${elasticsearch.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.docker-java</groupId>
+      <artifactId>docker-java-transport-httpclient5</artifactId>
+    </dependency>
+
     <!-- collections & CSV -->
     <dependency>
       <groupId>it.unimi.dsi</groupId>
@@ -208,18 +211,6 @@
       <artifactId>univocity-parsers</artifactId>
     </dependency>
 
-    <!-- You usually also want to make sure that XML library in use is Woodstox since it is not only faster
-        than the Stax implementation JDK provides, but also works better and avoids some known issues like adding
-        unnecessary namespace prefixes -->
-    <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>woodstox-core-asl</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>stax2-api</artifactId>
-    </dependency>
-
     <!-- unicode, transliterations -->
     <dependency>
       <groupId>com.ibm.icu</groupId>
@@ -227,6 +218,10 @@
     </dependency>
 
     <!-- Jackson -->
+    <dependency>
+      <groupId>jakarta.xml.bind</groupId>
+      <artifactId>jakarta.xml.bind-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
@@ -290,8 +285,8 @@
       <artifactId>jetty-util</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
     </dependency>
 
     <!-- logging -->
@@ -308,12 +303,12 @@
       <artifactId>logback-classic</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>net.logstash.logback</groupId>
-      <artifactId>logstash-logback-encoder</artifactId>
+      <groupId>co.elastic.logging</groupId>
+      <artifactId>logback-ecs-encoder</artifactId>
     </dependency>
 
     <!-- TEST SCOPE -->
@@ -367,6 +362,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>elasticsearch</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

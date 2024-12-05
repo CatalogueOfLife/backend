@@ -9,6 +9,10 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexImpl;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.*;
@@ -26,7 +30,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
@@ -61,7 +64,7 @@ public class NameIndexImplTest {
       }}
     ).when(mapper).create(any());
 
-    ni = NameIndexFactory.memory(factory, aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), factory, aNormalizer).started();
     assertEquals(0, ni.size());
   }
 
@@ -330,15 +333,16 @@ public class NameIndexImplTest {
     final int canonID = m.getName().getCanonicalId();
     final int m1Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+    // new rank, new entry and therefore exact match
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
       n.setRank(Rank.VARIETY);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
     assertCanonicalNidx(m, canonID);
     final int m2Key = m.getNameKey();
 
-    // the scientificName is rebuilt if parsed, so this one is the exact same as above
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    // the scientificName contains the var marker, so counts as a variant
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.VARIETY);
       n.setScientificName("Abies alba var. alba");
     });
@@ -352,7 +356,8 @@ public class NameIndexImplTest {
     assertNidx(m, m2Key, canonID);
     final int m4Key = m.getNameKey();
 
-    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
+    // new rank, new entry
+    m = matchNameCopy(n1, MatchType.EXACT, n -> {
       n.setRank(Rank.FORM);
     });
     assertNotEquals(m1Key, (int) m.getNameKey());
@@ -368,7 +373,7 @@ public class NameIndexImplTest {
     });
     assertEquals(canonID, (int)m.getCanonicalNameKey());
 
-    m = matchNameCopy(n1, MatchType.EXACT, n -> {
+    m = matchNameCopy(n1, MatchType.VARIANT, n -> {
       n.setRank(Rank.FORM);
       n.setCombinationAuthorship(Authorship.authors("Mill"));
       n.setScientificName("Abies alba f. alba");

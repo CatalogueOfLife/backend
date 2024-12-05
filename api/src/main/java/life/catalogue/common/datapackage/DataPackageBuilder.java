@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 
+import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
@@ -18,6 +19,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -25,6 +31,7 @@ import com.google.common.collect.ImmutableSet;
 import de.undercouch.citeproc.csl.CSLType;
 
 public class DataPackageBuilder {
+  private static final Logger LOG = LoggerFactory.getLogger(DataPackageBuilder.class);
 
   // only non string data types here
   private static final Map<Class, String> dataTypes = Map.of(
@@ -88,12 +95,64 @@ public class DataPackageBuilder {
       .build();
 
   private static final Set<ColdpTerm> required = ImmutableSet.of(ColdpTerm.ID, ColdpTerm.scientificName);
-  
+
+  private Map<ColdpTerm, String> resourceDescriptions = new HashMap<>();
+  private Map<ColdpTerm, Map<ColdpTerm, String>> resourceFieldDescriptions = new HashMap<>();
+
   private String titleToName(String t) {
     if (StringUtils.hasContent(t)) {
       return UnicodeUtils.foldToAscii(t).replaceAll("\\s+", "-");
     }
     return null;
+  }
+
+  public DataPackageBuilder docs(String html) {
+    var doc = Jsoup.parse(html);
+    for (var rt : ColdpTerm.RESOURCES.keySet()) {
+      readEntity(doc, rt);
+    }
+    return this;
+  }
+
+  private void readEntity(Document doc, ColdpTerm rt) {
+    var anch = "a#user-content-" + rt.simpleName().toLowerCase();
+    var clsDiv = doc.select(anch).get(0).parent();
+    resourceDescriptions.put(rt, getDescription(clsDiv));
+    var fields = new HashMap<ColdpTerm, String>();
+    resourceFieldDescriptions.put(rt, fields);
+
+    var sib = clsDiv.nextElementSibling();
+    while (sib != null) {
+      if (sib.className().equals("markdown-heading")) {
+        if (sib.child(0).nodeName().equals("h2")) {
+          // next class, get out
+          return;
+        }
+        // field
+        if (sib.child(0).nodeName().equals("h4")) {
+          String fieldName = sib.child(0).text();
+          ColdpTerm ft = ColdpTerm.find(fieldName, false);
+          fields.put(ft, getDescription(sib));
+        }
+      }
+      sib = sib.nextElementSibling();
+    }
+  }
+
+  private String getDescription(Element heading) {
+    StringBuilder sb = new StringBuilder();
+    var sib = heading.nextElementSibling();
+    while (sib != null && sib.nodeName().equals("p")) {
+      var text = sib.text();
+      if (!text.startsWith("type:") && !text.startsWith("added in")) {
+        if (sb.length()>1) {
+          sb.append(" ");
+        }
+        sb.append(text.trim());
+      }
+      sib = sib.nextElementSibling();
+    }
+    return sb.toString();
   }
   
   public DataPackage build(PackageDescriptor pd) {
@@ -138,7 +197,10 @@ public class DataPackageBuilder {
     
     Schema s = new Schema();
     s.setRowType(rowType);
-    
+    s.setDescription(resourceDescriptions.get(rowType));
+
+    var fieldDescriptions = resourceFieldDescriptions.get(rowType);
+
     for (ColdpTerm t : ColdpTerm.RESOURCES.get(rowType)) {
       String type = dataTypes.get(t.getType());
       String format = dataFormats.getOrDefault(t.getType(), Field.FORMAT_DEFAULT);
@@ -156,7 +218,7 @@ public class DataPackageBuilder {
       if (foreignKeys.containsKey(t)) {
         s.getForeignKeys().add(foreignKeys.get(t));
       }
-      s.getFields().add(new Field(t.simpleName(), type, format, null, null, constraints));
+      s.getFields().add(new Field(t.simpleName(), type, format, t.simpleName(), fieldDescriptions == null ? null : fieldDescriptions.get(t), constraints));
     }
     return s;
   }

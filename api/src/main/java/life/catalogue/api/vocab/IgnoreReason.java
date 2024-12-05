@@ -14,6 +14,7 @@ public enum IgnoreReason {
   NOMENCLATURAL_STATUS(u -> u.getName().getNomStatus()),
   INDETERMINED(),
   RANK(u -> u.getName().getRank()),
+  EXTINCT(u -> u.isTaxon() ? u.asTaxon().isExtinct() : null),
   INCONSISTENT_NAME(),
   IGNORED_PARENT(NameUsageBase::getParentId),
   // ignored name types

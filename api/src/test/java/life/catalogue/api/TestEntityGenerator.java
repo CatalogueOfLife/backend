@@ -1,10 +1,8 @@
 package life.catalogue.api;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
@@ -249,7 +247,7 @@ public class TestEntityGenerator {
       Entity<?> obj = INSTANCES[i];
       int hash = obj.hashCode();
       if (hash != ORIGINAL_HASHES[i]){
-        System.out.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
+        System.err.println("Static " + obj.getClass().getSimpleName() + " test instance " + obj.getKey() + " has changed");
         return true;
       }
     }
@@ -286,6 +284,7 @@ public class TestEntityGenerator {
   
   public static Dataset newDataset(String title) {
     Dataset d = new Dataset();
+    d.setPrivat(false);
     d.setTitle(title);
     d.setAlias(title);
     d.setType(DatasetType.TAXONOMIC);
@@ -657,18 +656,67 @@ public class TestEntityGenerator {
 
   public static NameUsageWrapper newNameUsageTaxonWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(TAXON1);
+    nuw.setUsage(new Taxon(TAXON1));
+    nuw.getUsage().setSectorMode(Sector.Mode.MERGE);
     nuw.setIssues(EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT, Issue.DISTRIBUTION_AREA_INVALID));
     nuw.setSectorPublisherKey(UUID.randomUUID());
-    nuw.setSectorMode(Sector.Mode.MERGE);
     nuw.setSecondarySourceGroups(Set.of(InfoGroup.AUTHORSHIP, InfoGroup.PUBLISHED_IN));
     nuw.setSecondarySourceKeys(Set.of(1010,  2123));
     return copy(nuw);
   }
 
+  public static NameUsageWrapper newNameUsageTaxonWrapperComplete() {
+    var nuw = newNameUsageTaxonWrapper();
+    nuw.setGroup(TaxGroup.Algae);
+    nuw.setPublisherKey(UUID.randomUUID());
+    nuw.setSectorDatasetKey(4567);
+    nuw.setDecisions(new ArrayList<>(List.of( // array list to avoid kryo not doing a deep copy
+      new SimpleDecision(66, 456, EditorialDecision.Mode.UPDATE),
+      new SimpleDecision(62, 456, EditorialDecision.Mode.BLOCK)
+    )));
+    nuw.setClassification(new ArrayList<>(List.of(
+      SimpleName.sn("Karambula"),
+      SimpleName.sn(Rank.ORDER, "Karambulales"),
+      SimpleName.sn("d4f", Rank.PHYLUM, "Karambulatae", null) // authorship is not kept !!!
+    )));
+    var u = (Taxon) nuw.getUsage();
+    u.setParentId("P68");
+    u.setSectorKey(12);
+    u.setScrutinizerID("456ZT");
+    u.setExtinct(true);
+    u.setScrutinizer("drftg");
+    u.setScrutinizerDate(FuzzyDate.of("2008-08"));
+    u.setEnvironments(Set.of(Environment.TERRESTRIAL, Environment.MARINE));
+    u.setTemporalRangeStart("start");
+    u.setTemporalRangeEnd("end");
+    u.setTemporalRangeStart(GeoTime.byName("Neoarchean"));
+    u.setTemporalRangeEnd(GeoTime.byName("Cretaceous"));
+    u.setOrdinal(789);
+    u.setNamePhrase("ftgzhj");
+    u.setLink(URI.create("http://go.to/me"));
+    u.setRemarks("drfthuj gtzhu jz7ghu");
+    u.setIdentifier(List.of(
+      Identifier.parse("col:4r56"),
+      Identifier.parse("gbif:3456789")
+    ));
+    var n = u.getName();
+    n.setSectorKey(13);
+    n.setSectorMode(Sector.Mode.MERGE);
+    n.setGender(Gender.FEMININE);
+    n.setGenderAgreement(true);
+    n.setNomStatus(NomStatus.ESTABLISHED);
+    n.setPublishedInPage("14");
+    n.setPublishedInYear(1988);
+    n.setLink(URI.create("http://read.me"));
+    n.setRemarks("NR guzgqszugwqtfdwqw");
+    n.setEtymology("etym");
+    n.setNomenclaturalNote("nom notes not good");
+    return  nuw;
+  }
+
   public static NameUsageWrapper newNameUsageSynonymWrapper() {
     NameUsageWrapper nuw = new NameUsageWrapper();
-    nuw.setUsage(SYN2);
+    nuw.setUsage(new Synonym(SYN2));
     EnumSet<Issue> issues = EnumSet.of(Issue.ACCEPTED_NAME_MISSING, Issue.NAME_VARIANT,
         Issue.DISTRIBUTION_AREA_INVALID);
     nuw.setIssues(issues);

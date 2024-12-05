@@ -8,15 +8,16 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
+import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.decision.*;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.UsageMatcherGlobal;
-import life.catalogue.matching.decision.EstimateRematcher;
-import life.catalogue.matching.decision.MatchingDao;
-import life.catalogue.matching.decision.RematchRequest;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+
+import life.catalogue.release.UsageIdGen;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
@@ -51,19 +54,21 @@ public class SectorSync extends SectorRunnable {
   private final boolean project;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
-  private final @Nullable TreeMergeHandlerConfig mergeCfg;
+  private @Nullable TreeMergeHandlerConfig mergeCfg;
   private List<SimpleName> foreignChildren;
+  // map with foreign child id to original parent name
+  private final Map<String, Name> foreignChildrenParents = new HashMap<>();
+  private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
-  private final Supplier<String> usageIdGen;
   private final Supplier<String> typeMaterialIdGen;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
-             Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen,
-             User user) throws IllegalArgumentException {
-    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, user);
+             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
+             int user) throws IllegalArgumentException {
+    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;
@@ -78,7 +83,12 @@ public class SectorSync extends SectorRunnable {
     this.typeMaterialIdGen = typeMaterialIdGen;
     this.mergeCfg = mergeCfg;
   }
-  
+
+  @VisibleForTesting
+  protected void setMergeCfg(@Nullable TreeMergeHandlerConfig mergeCfg) {
+    this.mergeCfg = mergeCfg;
+  }
+
   @Override
   void doWork() throws Exception {
     if (project) {
@@ -93,6 +103,9 @@ public class SectorSync extends SectorRunnable {
 
       state.setState(ImportState.INSERTING);
       processTree();
+      checkIfCancelled();
+
+      processBareNames();
       checkIfCancelled();
 
     } finally {
@@ -133,13 +146,17 @@ public class SectorSync extends SectorRunnable {
     super.init(true);
     loadForeignChildren();
     if (!disableAutoBlocking) {
-      // also load all sector subjects to auto block them
+      // also load all sector subjects of non merge sources to auto block them
       try (SqlSession session = factory.openSession()) {
         AtomicInteger counter = new AtomicInteger();
         PgUtils.consume(
           () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
           s -> {
-            if (!s.getId().equals(sectorKey.getId()) && s.getSubject() != null && s.getSubject().getId() != null) {
+            if (!s.getId().equals(sectorKey.getId())
+                && s.getSubject() != null
+                && s.getSubject().getId() != null
+                && s.getMode() != Sector.Mode.MERGE
+            ) {
               EditorialDecision d = new EditorialDecision();
               d.setSubject(s.getSubject());
               d.setDatasetKey(sectorKey.getDatasetKey());
@@ -153,6 +170,32 @@ public class SectorSync extends SectorRunnable {
         );
         LOG.info("Loaded {} sector subjects for auto blocking", counter);
       }
+    }
+    // load override decisions
+    if (mergeCfg != null && mergeCfg.xCfg.decisions.containsKey(subjectDatasetKey)) {
+      int counter = 0;
+      try (var session = factory.openSession()) {
+        MatchingDao mdao = new MatchingDao(session);
+        for (var d : mergeCfg.xCfg.decisions.get(subjectDatasetKey)) {
+          if (d.getSubject() == null || d.getSubject().getName() == null) {
+            LOG.warn("Override decision for source {} in config without subject name", subjectDatasetKey);
+            continue;
+          }
+          var m = mdao.matchDataset(d.getSubject(), subjectDatasetKey);
+          if (m.isEmpty()) {
+            LOG.warn("Override decision for {} in source {} does not match any source name", d.getSubject(), subjectDatasetKey);
+          } else if (m.getMatches().size() > 1){
+            LOG.warn("Override decision for {} in source {} does match multiple source names", d.getSubject(), subjectDatasetKey);
+          } else {
+            var mu = m.getMatches().get(0);
+            d.getSubject().setId(mu.getId());
+            d.getSubject().setBroken(false);
+            decisions.put(d.getSubject().getId(), d);
+            counter++;
+          }
+        }
+      }
+      LOG.info("Loaded {} XR override decisions for source {}", counter, subjectDatasetKey);
     }
   }
 
@@ -169,7 +212,7 @@ public class SectorSync extends SectorRunnable {
    */
   private void rematchEstimates() {
     RematchRequest req = new RematchRequest(sectorKey.getDatasetKey(), true);
-    EstimateRematcher.match(estimateDao, req, user.getKey());
+    EstimateRematcher.match(estimateDao, req, user);
   }
 
   /**
@@ -183,7 +226,7 @@ public class SectorSync extends SectorRunnable {
         NameUsage parent = num.get(DSID.of(sectorKey.getDatasetKey(), sn.getParent()));
         foreignChildrenParents.put(sn.getId(), parent.getName());
         // update to new parent
-        num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), newParentID, user.getKey());
+        num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), newParentID, user);
     });
   }
   
@@ -204,7 +247,7 @@ public class SectorSync extends SectorRunnable {
           if (matches.size() > 1) {
             LOG.warn("{} with parent {} in sector {} matches {} times - pick first {}", sn.getName(), parent, sector.getKey(), matches.size(), matches.get(0));
           }
-          num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), matches.get(0).getId(), user.getKey());
+          num.updateParentId(DSID.of(sectorKey.getDatasetKey(), sn.getId()), matches.get(0).getId(), user);
         }
       });
     }
@@ -252,7 +295,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }
@@ -270,7 +313,11 @@ public class SectorSync extends SectorRunnable {
          TreeHandler treeHandler = sectorHandler()
     ){
       NameUsageMapper um = session.getMapper(NameUsageMapper.class);
-      LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(), sector.getSubject(), sector.getTarget(), blockedIds.size());
+      LOG.info("{} taxon tree {} to {}. Blocking {} nodes", sector.getMode(),
+        sector.getSubject() == null ? "without subject" : sector.getSubject(),
+        sector.getTarget() == null ? "entire target dataset" : sector.getTarget(),
+        blockedIds.size()
+      );
 
       if (sector.getMode() == Sector.Mode.ATTACH || sector.getMode() == Sector.Mode.MERGE) {
         String rootID = sector.getSubject() == null ? null : sector.getSubject().getId();
@@ -306,7 +353,10 @@ public class SectorSync extends SectorRunnable {
       } else {
         throw new NotImplementedException(sector.getMode() + " sectors are not supported");
       }
-
+      if (treeHandler.hasThrown()) {
+        LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey);
+        throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
+      }
       LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
       treeHandler.copyRelations();
@@ -318,6 +368,35 @@ public class SectorSync extends SectorRunnable {
     } catch (InterruptedRuntimeException e) {
       // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
       throw e.asChecked();
+    }
+  }
+
+  private void processBareNames() throws InterruptedException {
+    // we only merge bare names
+    if (sector.getMode() == Sector.Mode.MERGE) {
+      try (SqlSession session = factory.openSession(false);
+           TreeMergeHandler treeHandler = (TreeMergeHandler) sectorHandler()
+      ){
+        LOG.info("Merge bare names");
+        var num = session.getMapper(NameUsageMapper.class);
+        try (var cursor = num.processDatasetBareNames(subjectDatasetKey, null, null)){
+          for (var bn : cursor) {
+            treeHandler.acceptName(bn.getName());
+          }
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+
+        if (treeHandler.hasThrown()) {
+          LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey);
+          throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
+        }
+        LOG.info("Updated {} names from sector {}", treeHandler.getUpdated(), sectorKey);
+
+      } catch (InterruptedRuntimeException e) {
+        // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
+        throw e.asChecked();
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
@@ -8,10 +9,13 @@ import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedAuthorship;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.gbif.nameparser.api.Rank;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -41,9 +45,9 @@ public class AuthorComparatorTest {
   
   @Test
   public void testCompareName() throws Exception {
-    Name p1 = new Name();
-    Name p2 = new Name();
-    
+    var p1 = new Name();
+    var p2 = new Name();
+
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
     
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("L."));
@@ -71,8 +75,7 @@ public class AuthorComparatorTest {
     
     p1 = new Name();
     p1.getCombinationAuthorship().setAuthors(Lists.newArrayList("Reich."));
-    ;
-    
+
     p2 = new Name();
     p2.getCombinationAuthorship().getAuthors().add("");
     assertEquals(Equality.UNKNOWN, comp.compare(p1, p2));
@@ -101,6 +104,12 @@ public class AuthorComparatorTest {
     assertEquals(Equality.DIFFERENT, comp.compare(p1, p2));
 
 
+    p1 = new Name();
+    p1.setCombinationAuthorship(Authorship.yearAuthors("1776", "O.F. Müller"));
+
+    p2 = new Name();
+    p2.setCombinationAuthorship(Authorship.yearAuthors("1785", "Müller O.F."));
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
   }
   
   /**
@@ -128,7 +137,6 @@ public class AuthorComparatorTest {
    * Ignore the ex author and allow for swapped authors as ex is used differently in zoology and botany
    */
   @Test
-  @Ignore("not implemented")
   public void compareEx() throws Exception {
     Name p1 = new Name();
     Name p2 = new Name();
@@ -179,6 +187,27 @@ public class AuthorComparatorTest {
     assertAuth("Pallas, 1771", Equality.EQUAL, "Pallas");
     assertAuth("Pallas, 1771", Equality.DIFFERENT, "1778");
     assertAuth("Pallas", Equality.UNKNOWN, "1771");
+  }
+
+  @Test
+  public void vonBaldenstein() throws Exception {
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1828");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Conrad von Baldenstein, 1837");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. v. Baldenstein, 1824");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. Baldenstein, 1828");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "C. Baldenstein, 1838");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Baldenstein, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.EQUAL, "Baldenstone, 1827");
+
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Baldenstone, 1838");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Conrad von Buddenbrocks, 1827");
+    assertAuth("Conrad von Baldenstein, 1827", Equality.DIFFERENT, "Buddenbrocks, 1827");
+  }
+
+  @Test
+  public void ex() throws Exception {
+    assertAuth("Rollison ex Gordon", Equality.EQUAL, "Rollisson ex Godr.");
   }
 
   @Test
@@ -347,13 +376,20 @@ public class AuthorComparatorTest {
 
     assertAuth("A.M.C. Duméril", null, Equality.EQUAL, "A.Duméril", null);
     assertAuth("A.M.C. Duméril", null, Equality.DIFFERENT, "A.H.A. Duméril", null);
+
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuth("Reichenbach", null, Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Abasicarpon Andrz. ex Rchb.", "1837");
+    // ex author swapping in regular mode
+    assertAuth("Reichenbach", "1837", Equality.EQUAL, "Rchb. ex Andrz.", "1837");
+    assertAuth("Endlicher", "1837", Equality.EQUAL, "Endl.", null);
   }
   
   @Test
   public void testCompareStrict() throws Exception {
-    assertFalse(comp.compareStrict(null, null));
-    assertFalse(comp.compareStrict(new Authorship(), new Authorship()));
-    assertFalse(comp.compareStrict(null, new Authorship()));
+    assertFalse(comp.compareStrict(null, null, null, 0));
+    assertFalse(comp.compareStrict(new Authorship(), new Authorship(), null, 0));
+    assertFalse(comp.compareStrict(null, new Authorship(), null, 0));
     
     assertAuthStrict("", "  ", false, " ", "   ");
     assertAuthStrict("L.", null, false, null, null);
@@ -365,10 +401,14 @@ public class AuthorComparatorTest {
     assertAuthStrict(null, "1978", false, null, "1978");
     
     assertAuthStrict("H. Christ", null, false, "C. Chr.", null);
-    assertAuthStrict("Reichenbach", "1837", false, "Abasicarpon Andrz. ex Rchb.", null);
+    assertAuthStrict("Reichenbach", "1837", true, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", null, true, "Abasicarpon Andrz. ex Rchb.", null);
     assertAuthStrict("Reichenbach", "1837", true, "Abasicarpon Andrz. ex Rchb.", "1837");
-    
+    // no ex author swapping in scrict mode !!!
+    assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837");
+    assertAuthStrict("Reichenbach", "1837", false, "Rchb. ex Andrz.", "1837", NomCode.BOTANICAL);
+    assertAuthStrict("Reichenbach", "1837", true, "Rchb. ex Andrz.", "1837", NomCode.ZOOLOGICAL);
+
     assertAuthStrict("Torr et Gray", null, true, "Torr. & A.Gray", null);
     
     assertAuthStrict("Boed.", null, true, "Boed.", null);
@@ -415,7 +455,8 @@ public class AuthorComparatorTest {
     assertAuthStrict("Brugg.", null, true, "Brug.", null);
     assertAuthStrict("A.Bruggen.", null, false, "Brug.", null);
     assertAuthStrict("Brug.", null, true, "Pascal Bruggeman", null);
-    
+
+    assertAuthStrict("Endlicher", "1837", true, "Endl.", null);
   }
   
   @Test
@@ -604,7 +645,7 @@ public class AuthorComparatorTest {
   }
 
   private void assertAuth(AuthorshipNormalizer.Author a1, Equality eq, AuthorshipNormalizer.Author a2) {
-    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP));
+    assertEquals(eq, comp.compare(a1, a2, AuthorComparator.MIN_AUTHOR_LENGTH_WITHOUT_LOOKUP, AuthorComparator.MIN_JARO_SURNAME_DISTANCE));
   }
   private void assertAuth(String a1, String y1, Equality eq, String a2, String y2) throws InterruptedException {
     assertEquals(a1 + " VS " + a2, eq, comp.compare(parse(a1, y1), parse(a2, y2)));
@@ -615,9 +656,12 @@ public class AuthorComparatorTest {
   }
   
   private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2) throws InterruptedException {
-    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2)));
+    assertAuthStrict(a1, y1, eq, a2, y2, NomCode.BOTANICAL);
   }
-  
+  private void assertAuthStrict(String a1, String y1, boolean eq, String a2, String y2, NomCode code) throws InterruptedException {
+    assertEquals(eq, comp.compareStrict(parse(a1, y1), parse(a2, y2), code, 0));
+  }
+
   private void assertAuth(String a1, String y1, String a1b, String y1b, Equality eq, String a2, String y2, String a2b, String y2b) throws InterruptedException {
     Name p1 = new Name();
     p1.setCombinationAuthorship(parse(a1, y1));

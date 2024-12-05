@@ -48,6 +48,8 @@ public enum ColdpTerm implements Term, AlternativeNames {
   doi,
   link(URI.class),
   remarks,
+  modified(Date.class),
+  modifiedBy,
 
   Name((Class) null),
   Taxon((Class) null),
@@ -127,6 +129,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   nameRemarks, // alternative term to Name.remarks
   //link
   //remarks
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   Author((Class) null),
   //ID,
@@ -143,9 +149,14 @@ public enum ColdpTerm implements Term, AlternativeNames {
   birthPlace,
   death,
   interest,
+  affiliation,
   //referenceID,
   //link,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   NameRelation((Class) null, "NameRel"),
   nameID,
@@ -155,6 +166,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //referenceID,
   //page,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   TypeMaterial((Class) null),
   //ID,
@@ -178,6 +193,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //page,
   //link,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   TaxonConceptRelation((Class) null, "TaxonRelation"),
   //taxonID,
@@ -186,6 +205,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //type,
   //referenceID,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   SpeciesInteraction((Class) null),
   //taxonID,
@@ -195,6 +218,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //type,
   //referenceID,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   TaxonProperty((Class) null),
   //taxonID,
@@ -205,12 +232,21 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //referenceID,
   //page,
   //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   Treatment((Class) null),
   //taxonID,
   //sourceID,
   document,
   format,
+  //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   Distribution((Class) null),
   //taxonID,
@@ -220,7 +256,12 @@ public enum ColdpTerm implements Term, AlternativeNames {
   gazetteer(Enum.class),
   //status,
   //referenceID,
-  
+  //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
+
   Media((Class) null),
   //taxonID,
   //sourceID,
@@ -232,7 +273,12 @@ public enum ColdpTerm implements Term, AlternativeNames {
   creator,
   license(Enum.class),
   //link,
-  
+  //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
+
   VernacularName((Class) null),
   //taxonID,
   //sourceID,
@@ -243,16 +289,26 @@ public enum ColdpTerm implements Term, AlternativeNames {
   //country,
   //sex(Enum.class),
   //referenceID
+  //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy,
 
   SpeciesEstimate((Class) null),
   //taxonID,
   //sourceID,
   estimate(Integer.class),
   //type,
-  //referenceID
-  //remarks
+  //referenceID,
+  //remarks,
+  //created(Date.class),
+  //createdBy,
+  //modified(Date.class),
+  //modifiedBy
   ;
-  
+
+  public final static String VERSION = "1.1"; // ColDP version supported
   private final static Map<String, ColdpTerm> LOOKUP = Arrays.stream(values()).collect(Collectors.toMap(ColdpTerm::normalize, Function.identity()));
   
   /**
@@ -298,7 +354,9 @@ public enum ColdpTerm implements Term, AlternativeNames {
       issn,
       doi,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
     )), Map.entry(Name, List.of(
       ID,
       alternativeID,
@@ -335,7 +393,9 @@ public enum ColdpTerm implements Term, AlternativeNames {
       genderAgreement,
       etymology,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
     )), Map.entry(NameRelation, List.of(
       nameID,
       relatedNameID,
@@ -343,7 +403,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       type,
       referenceID,
       page,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(TypeMaterial, List.of(
       ID,
       nameID,
@@ -365,7 +428,9 @@ public enum ColdpTerm implements Term, AlternativeNames {
       institutionCode,
       catalogNumber,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
     )), Map.entry(Author, List.of(
       ID,
       sourceID,
@@ -380,10 +445,14 @@ public enum ColdpTerm implements Term, AlternativeNames {
       birth,
       birthPlace,
       death,
+      affiliation,
       interest,
       referenceID,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(Taxon, List.of(
       ID,
       alternativeID,
@@ -422,7 +491,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ordinal,
       branchLength,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(Synonym, List.of(
       ID,
       sourceID,
@@ -435,7 +507,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       status,
       referenceID,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(NameUsage, List.of(
       ID,
       alternativeID,
@@ -506,7 +581,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       branchLength,
       link,
       nameRemarks,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(SpeciesInteraction, List.of(
       taxonID,
       relatedTaxonID,
@@ -514,14 +592,20 @@ public enum ColdpTerm implements Term, AlternativeNames {
       relatedTaxonScientificName,
       type,
       referenceID,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(TaxonConceptRelation, List.of(
       taxonID,
       relatedTaxonID,
       sourceID,
       type,
       referenceID,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(TaxonProperty, List.of(
       taxonID,
       sourceID,
@@ -530,12 +614,18 @@ public enum ColdpTerm implements Term, AlternativeNames {
       ordinal,
       referenceID,
       page,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(Treatment, List.of(
       taxonID,
       sourceID,
       document,
-      format
+      format,
+      modified,
+      modifiedBy
+
     )), Map.entry(Distribution, List.of(
       taxonID,
       sourceID,
@@ -544,7 +634,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       gazetteer,
       status,
       referenceID,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(Media, List.of(
       taxonID,
       sourceID,
@@ -556,7 +649,10 @@ public enum ColdpTerm implements Term, AlternativeNames {
       creator,
       license,
       link,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(VernacularName, List.of(
       taxonID,
       sourceID,
@@ -568,14 +664,19 @@ public enum ColdpTerm implements Term, AlternativeNames {
       area,
       sex,
       referenceID,
-      remarks
+      remarks,
+      modified,
+      modifiedBy
+
     )), Map.entry(SpeciesEstimate, List.of(
       taxonID,
       sourceID,
       estimate,
       type,
       referenceID,
-      remarks)
+      remarks,
+      modified,
+      modifiedBy)
     ));
 
   private static final String PREFIX = "col";

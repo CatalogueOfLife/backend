@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -76,7 +76,9 @@ public class DuplicateDao {
     Integer sourceDatasetKey;
     // optional sector to restrict the duplicates to a single sector. Requires datasetKey to be a project or release
     Integer sectorKey;
-    // optional restriction to uni/bi/trinomials only
+    // optional restriction to require ALL records of a duplicate to come from a given source or sector.
+    // requires sourceDatasetKey or sectorKey to be present
+    Boolean sourceOnly;
     NameCategory category;
     // optional restriction on ranks
     Set<Rank> ranks;
@@ -99,6 +101,7 @@ public class DuplicateDao {
      * @param datasetKey the dataset to be analyzed
      * @param sourceDatasetKey the source dataset within a project to analyze. Requires datasetKey to be a project or release
      * @param sectorKey optional sector to restrict the duplicates to a single sector. Requires datasetKey to be a project or release
+     * @param sourceOnly optional restriction to require ALL records of a duplicate to come from a given source or sector. Requires sourceDatasetKey or sectorKey to be present.
      * @param category optional restriction to uni/bi/trinomials only
      * @param ranks optional restriction on ranks
      * @param status optional restriction on usage status
@@ -117,6 +120,7 @@ public class DuplicateDao {
                             @PathParam("key") int datasetKey,
                             @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
                             @QueryParam("sectorKey") Integer sectorKey,
+                            @QueryParam("sourceOnly") Boolean sourceOnly,
                             @QueryParam("category") NameCategory category,
                             @QueryParam("rank") Set<Rank> ranks,
                             @QueryParam("status") Set<TaxonomicStatus> status,
@@ -132,6 +136,7 @@ public class DuplicateDao {
       this.datasetKey = datasetKey;
       this.sourceDatasetKey = sourceDatasetKey;
       this.sectorKey = sectorKey;
+      this.sourceOnly = sourceOnly;
       this.category = category;
       this.ranks = ranks;
       this.status = status;
@@ -170,12 +175,16 @@ public class DuplicateDao {
     Preconditions.checkArgument(req.minSize > 1, "minimum group size must at least be 2");
     if (req.sourceDatasetKey != null){
       Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sourceDatasetKey is used");
+      req.projectKey = info.keyOrProjectKey(); // default to the main project
     }
     if (req.sectorKey != null){
       Preconditions.checkArgument(info.origin.isProjectOrRelease(), "datasetKey must be a project or release if parameter sectorKey is used");
     }
     if (req.withDecision != null) {
-      Preconditions.checkArgument(req.projectKey != null, "catalogueKey is required if parameter withDecision is used");
+      if (req.projectKey == null && info.origin.isProjectOrRelease()) {
+        req.projectKey = info.keyOrProjectKey(); // default to the main project
+      }
+      Preconditions.checkArgument(req.projectKey != null, "projectKey (=catalogueKey) is required if parameter withDecision is used");
     }
   }
 
@@ -187,14 +196,15 @@ public class DuplicateDao {
         return mapper.countNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
           req.codeDifferent);
       } else {
-        return mapper.count(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
-          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey);
+        return mapper.count(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.sourceOnly, req.category, req.ranks,
+          req.status, req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey);
       }
     }
   }
 
-  public ResultPage<Duplicate> page(DuplicateRequest req, Page page) {
-    var result = findOrList(req, ObjectUtils.defaultIfNull(page, new Page()));
+  public ResultPage<Duplicate> page(DuplicateRequest req, @Nullable Page page) {
+    page = ObjectUtils.defaultIfNull(page, new Page());
+    var result = findOrList(req, page);
     return new ResultPage<>(page, result, () -> count(req));
   }
 
@@ -251,8 +261,8 @@ public class DuplicateDao {
         dupsTmp = mapper.duplicateNames(req.mode, req.query, req.minSize, req.datasetKey, req.category, req.ranks, req.authorshipDifferent, req.rankDifferent,
           req.codeDifferent, page);
       } else {
-        dupsTmp = mapper.duplicates(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.category, req.ranks, req.status,
-          req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
+        dupsTmp = mapper.duplicates(req.mode, req.query, req.minSize, req.datasetKey, req.sourceDatasetKey, req.sectorKey, req.sourceOnly, req.category, req.ranks,
+          req.status, req.authorshipDifferent, req.acceptedDifferent, req.rankDifferent, req.codeDifferent, req.withDecision, req.projectKey, page);
       }
       if (dupsTmp.isEmpty()) {
         return Collections.EMPTY_LIST;

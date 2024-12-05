@@ -7,12 +7,10 @@ import life.catalogue.api.vocab.IgnoreReason;
 
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
-import life.catalogue.matching.NameIndexFactory;
-import life.catalogue.matching.NameIndexImplTest;
+import life.catalogue.release.UsageIdGen;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -23,11 +21,10 @@ import org.gbif.nameparser.api.Rank;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.stubbing.Answer;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -82,11 +79,16 @@ public class TreeBaseHandlerTest {
   class UselessHandler extends TreeBaseHandler {
 
     public UselessHandler() {
-      super(1, null, factory, null, null, SECTOR, null, null, null, null);
+      super(1, null, factory, null, 0, SECTOR, null, null, null, null);
     }
 
-    public UselessHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, User user, Sector sector, SectorImport state, Supplier<String> nameIdGen, Supplier<String> usageIdGen, Supplier<String> typeMaterialIdGen) {
-      super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, usageIdGen, typeMaterialIdGen);
+    public UselessHandler(int targetDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, int user, Sector sector, SectorImport state, Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
+      super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
+    }
+
+    @Override
+    protected List<EditorialDecision> findParentDecisions(String taxonID) {
+      return Collections.emptyList();
     }
 
     @Override
@@ -102,6 +104,11 @@ public class TreeBaseHandlerTest {
     @Override
     public void acceptThrows(NameUsageBase obj) throws InterruptedException {
 
+    }
+
+    @Override
+    public boolean hasThrown() {
+      return false;
     }
 
     @Override

@@ -12,6 +12,8 @@ import java.util.Set;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Print to the graphviz dot format
  * http://www.graphviz.org/doc/info/lang.html
@@ -30,8 +32,9 @@ public class DotPrinter extends AbstractTreePrinter {
   private static final String SYN_SYMBOL = "syn";
   private static final String SYN_COLOR = "darkgreen";
 
-  public DotPrinter(TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(params, ranks, countRank, taxonCounter, factory, writer);
+  public DotPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
+                    @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
     printHeader();
   }
 

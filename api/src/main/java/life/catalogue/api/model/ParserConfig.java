@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
 
+import org.gbif.nameparser.api.ParsedName;
+
 public class ParserConfig extends Name {
   private static String[] EMPTY = new String[2];
   private static Pattern Splitter = Pattern.compile("^(.+)\\|(.*)$");
@@ -62,6 +64,14 @@ public class ParserConfig extends Name {
 
   public void setExtinct(boolean extinct) {
     this.extinct = extinct;
+  }
+
+  public ParsedName toParsedName() {
+    ParsedName pn = Name.toParsedName(this);
+    // these properties are missing from the Name instance and need to be copied manually
+    pn.setTaxonomicNote(getTaxonomicNote());
+    pn.setExtinct(getExtinct());
+    return pn;
   }
 
   @Override

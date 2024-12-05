@@ -1,5 +1,13 @@
 package life.catalogue.metadata;
 
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
@@ -11,11 +19,12 @@ import life.catalogue.parser.CSLTypeParser;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.ParseException;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +49,7 @@ public class DoiResolver {
     request.addHeader(HttpHeaders.ACCEPT, MoreMediaTypes.APP_JSON_CSL);
 
     try (var resp = http.execute(request)) {
-      if (resp.getStatusLine().getStatusCode() / 100 == 2) {
+      if (resp.getCode() / 100 == 2) {
         HttpEntity entity = resp.getEntity();
         if (entity != null) {
           // return it as a String
@@ -53,15 +62,16 @@ public class DoiResolver {
           return c;
         }
       } else {
-        LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getStatusLine());
-        if (resp.getStatusLine().getStatusCode() == 404) {
+        LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getCode());
+        if (resp.getCode() == 404) {
           issues.addIssue(Issue.DOI_NOT_FOUND);
         } else {
           issues.addIssue(Issue.DOI_UNRESOLVED);
         }
       }
 
-    } catch (IOException e) {
+    } catch (IOException | ParseException e) {
+      // JacksonException are all covered with IOException
       LOG.error("Error resolving DOI {}", doi, e);
     }
 
@@ -69,15 +79,48 @@ public class DoiResolver {
   }
 
   public static class CrossRefCitation extends Citation {
+    private static ObjectReader ARRAY_READER = ApiModule.MAPPER.readerFor(
+      new TypeReference<List<String>>() {}
+    );
 
-    public void setISSN(List<String> issn) {
-      if (issn == null || issn.isEmpty()) {
-        setIssn(null);
-      } else {
-        setIssn(issn.get(0));
+    private String getSingleValue(JsonNode node){
+      if(node.getNodeType().equals(JsonNodeType.STRING)){
+        return node.textValue();
+      } else if(node.getNodeType().equals(JsonNodeType.ARRAY)){
+        try{
+          List<String> list = ARRAY_READER.readValue(node);
+          if (list != null && !list.isEmpty()) {
+            return list.get(0);
+          }
+        }catch (Exception ex){
+        }
       }
+      return null;
+    }
+    @JsonSetter("container-title")
+    public void setContainerTitle(JsonNode node){
+      //handle here as per your requirement
+      setContainerTitle(getSingleValue(node));
+    }
+    @JsonSetter("collection-title")
+    public void setCollectionTitle(JsonNode node){
+      //handle here as per your requirement
+      setCollectionTitle(getSingleValue(node));
     }
 
+    @JsonSetter("title")
+    public void setTitle(JsonNode node){
+      setTitle(getSingleValue(node));
+    }
+    @JsonSetter("ISBN")
+    public void setISBN(JsonNode node){
+      setIsbn(getSingleValue(node));
+    }
+
+    @JsonSetter("ISSN")
+    public void setISSN(JsonNode node){
+      setIssn(getSingleValue(node));
+    }
     public void setType(String type) {
       var ct = CSLTypeParser.PARSER.parseOrNull(type);
       super.setType(ct);

@@ -1,0 +1,90 @@
+{
+    "synonym": false,
+    "usage":
+    {
+        "key": "4L8K5",
+        "name": "Polygala vulgaris L.",
+        "canonicalName": "Polygala vulgaris",
+        "authorship": "L.",
+        "rank": "SPECIES",
+        "code": "BOTANICAL",
+        "genus": "Polygala",
+        "specificEpithet": "vulgaris",
+        "candidatus": false,
+        "type": "SCIENTIFIC",
+        "extinct": false,
+        "combinationAuthorship":
+        {
+            "authors":
+            [
+                "L."
+            ]
+        },
+        "doubtful": false,
+        "manuscript": false,
+        "warnings":
+        [],
+        "trinomial": false,
+        "abbreviated": false,
+        "autonym": false,
+        "binomial": false,
+        "incomplete": false,
+        "indetermined": false,
+        "phraseName": false
+    },
+    "classification":
+    [
+        {
+            "key": "5T6MX",
+            "name": "Biota",
+            "rank": "UNRANKED"
+        },
+        {
+            "key": "P",
+            "name": "Plantae",
+            "rank": "KINGDOM"
+        },
+        {
+            "key": "TP",
+            "name": "Tracheophyta",
+            "rank": "PHYLUM"
+        },
+        {
+            "key": "MG",
+            "name": "Magnoliopsida",
+            "rank": "CLASS"
+        },
+        {
+            "key": "383",
+            "name": "Fabales",
+            "rank": "ORDER"
+        },
+        {
+            "key": "627KC",
+            "name": "Polygalaceae",
+            "rank": "FAMILY"
+        },
+        {
+            "key": "63NFF",
+            "name": "Polygala",
+            "rank": "GENUS"
+        },
+        {
+            "key": "4L8K5",
+            "name": "Polygala vulgaris",
+            "rank": "SPECIES"
+        }
+    ],
+    "diagnostics":
+    {
+        "matchType": "HIGHERRANK",
+        "issues":
+        [
+            "TAXON_ID_NOT_FOUND"
+        ],
+        "confidence": 100,
+        "status": "ACCEPTED",
+        "note": "Similarity: name=110; authorship=0; classification=34; rank=6; status=1; score=151; nextMatch=1",
+        "timeTaken": 103
+    }
+}

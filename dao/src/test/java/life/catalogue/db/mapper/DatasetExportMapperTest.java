@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.nameparser.api.Rank;
@@ -33,6 +33,7 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     req.setRoot(new SimpleName("root", "Abies alba", Rank.SPECIES));
     req.setExcel(true);
     req.setSynonyms(true);
+    req.setExtinct(null);
     req.setMinRank(Rank.SPECIES);
 
     DatasetExport d = new DatasetExport();
@@ -111,5 +112,13 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
   void updateTestObj(DatasetExport obj) {
     obj.setTaxonCount(999912);
     obj.getRequest().getRoot().setId("9ewufczbz");
+    obj.getRequest().setExtinct(true);
+  }
+
+  @Override
+  DatasetExport removeDbCreatedProps(DatasetExport obj) {
+    obj.setModified(obj.getCreated());
+    obj.setModifiedBy(obj.getCreatedBy());
+    return obj;
   }
 }

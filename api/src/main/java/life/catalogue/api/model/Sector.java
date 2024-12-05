@@ -43,8 +43,8 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Set<EntityType> entities;
   private Set<NameType> nameTypes;
   private Set<NomStatus> nameStatusExclusion;
+  private Boolean extinctFilter = null; // true only syncs extinct, false only extant, null all
   private boolean copyAccordingTo = false;
-
   private boolean removeOrdinals = false;
   // other
   private String note;
@@ -92,6 +92,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.entities = other.entities == null ? null : EnumSet.copyOf(other.entities);
     this.nameTypes = other.nameTypes == null ? null : EnumSet.copyOf(other.nameTypes);
     this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
+    this.extinctFilter = other.extinctFilter;
     this.note = other.note;
     this.size = other.size;
   }
@@ -248,6 +249,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.nameStatusExclusion = nameStatusExclusion;
   }
 
+  public Boolean getExtinctFilter() {
+    return extinctFilter;
+  }
+
+  public void setExtinctFilter(Boolean extinctFilter) {
+    this.extinctFilter = extinctFilter;
+  }
+
   public boolean isCopyAccordingTo() {
     return copyAccordingTo;
   }
@@ -288,12 +297,13 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
            && Objects.equals(nameStatusExclusion, sector.nameStatusExclusion)
+           && Objects.equals(extinctFilter, sector.extinctFilter)
            && Objects.equals(note, sector.note);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, ranks, entities, nameTypes, nameStatusExclusion, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
   }
 
   @Override

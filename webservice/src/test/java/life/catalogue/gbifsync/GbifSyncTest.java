@@ -5,18 +5,13 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
@@ -26,8 +21,12 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 @Ignore("Long running tests to be manually executed when working on GbifSync")
 @RunWith(MockitoJUnitRunner.class)
@@ -45,7 +44,7 @@ public class GbifSyncTest {
   @BeforeClass
   public static void init() {
     cfg.syncFrequency = 1;
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider()
+    final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider()
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     ClientConfig ccfg = new ClientConfig(jacksonJsonProvider);
     ccfg.register(new LoggingFeature(Logger.getLogger(GbifSyncTest.class.getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));

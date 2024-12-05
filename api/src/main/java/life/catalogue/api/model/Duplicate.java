@@ -44,6 +44,69 @@ public class Duplicate {
     }
   }
 
+  public static class Homonym {
+    public final String id;
+    public final Integer sectorKey;
+
+    public Homonym(String id, Integer sectorKey) {
+      this.id = id;
+      this.sectorKey = sectorKey;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public Integer getSectorKey() {
+      return sectorKey;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Homonym)) return false;
+      Homonym homonym = (Homonym) o;
+      return Objects.equals(id, homonym.id) && Objects.equals(sectorKey, homonym.sectorKey);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id, sectorKey);
+    }
+  }
+  public static class Homonyms {
+    private String key;
+    private List<Homonym> usages;
+
+    public String getKey() {
+      return key;
+    }
+
+    public void setKey(String key) {
+      this.key = key;
+    }
+
+    public List<Homonym> getUsages() {
+      return usages;
+    }
+
+    public void setUsages(List<Homonym> usages) {
+      this.usages = usages;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof Homonyms)) return false;
+      Homonyms homonyms = (Homonyms) o;
+      return Objects.equals(key, homonyms.key) && Objects.equals(usages, homonyms.usages);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(key, usages);
+    }
+  }
   public static class IntKeys {
     private String name;
     private IntSet keys;

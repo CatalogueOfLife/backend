@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implements ExtensionEntity {
   private Integer datasetKey;
+  private Sector.Mode sectorMode;
   private Integer sectorKey;
   private Integer verbatimKey;
   private TaxonConceptRelType type;
@@ -27,6 +28,16 @@ public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implement
   @Override
   public Integer getSectorKey() {
     return sectorKey;
+  }
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
   }
 
   @Override
@@ -99,21 +110,14 @@ public class TaxonConceptRelation extends DatasetScopedEntity<Integer> implement
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof TaxonConceptRelation)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     TaxonConceptRelation that = (TaxonConceptRelation) o;
-    return Objects.equals(sectorKey, that.sectorKey) &&
-      Objects.equals(verbatimKey, that.verbatimKey) &&
-      Objects.equals(datasetKey, that.datasetKey) &&
-      type == that.type &&
-      Objects.equals(taxonId, that.taxonId) &&
-      Objects.equals(relatedTaxonId, that.relatedTaxonId) &&
-      Objects.equals(referenceId, that.referenceId) &&
-      Objects.equals(remarks, that.remarks);
+    return Objects.equals(datasetKey, that.datasetKey) && sectorMode == that.sectorMode && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(verbatimKey, that.verbatimKey) && type == that.type && Objects.equals(taxonId, that.taxonId) && Objects.equals(relatedTaxonId, that.relatedTaxonId) && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, verbatimKey, datasetKey, type, taxonId, relatedTaxonId, referenceId, remarks);
+    return Objects.hash(super.hashCode(), datasetKey, sectorMode, sectorKey, verbatimKey, type, taxonId, relatedTaxonId, referenceId, remarks);
   }
 }

@@ -7,7 +7,7 @@ import life.catalogue.common.io.Resources;
 import java.io.File;
 import java.net.URI;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;

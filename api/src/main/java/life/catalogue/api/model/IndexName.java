@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Preconditions;
 
 /**
  * A parsed or unparsed name that belongs to the names index.
@@ -133,16 +134,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     return cn;
   }
 
-  /**
-   * Very weak normalisation of ranks, mapping only null and uncomparable ranks to unranked.
-   */
-  public static Rank normRank(Rank r) {
-    if (r == null || r.otherOrUnranked() || r.isUncomparable()) {
-      return CANONICAL_RANK;
-    }
-    return r;
-  }
-
   @Override
   public Integer getKey() {
     return key;
@@ -171,7 +162,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
    * Use updateNameCache() instead!
    */
   public void setScientificName(String scientificName) {
-    this.scientificName = scientificName;
+    this.scientificName = Preconditions.checkNotNull(scientificName);
   }
   
   /**
@@ -221,7 +212,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public void setRank(Rank rank) {
-    this.rank = normRank(rank);
+    this.rank = Preconditions.checkNotNull(rank);
   }
 
   @Override
@@ -304,15 +295,6 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   public void setCultivarEpithet(String cultivarEpithet) {
     this.cultivarEpithet = cultivarEpithet;
-  }
-
-  /**
-   * @return true if any kind of authorship exists
-   */
-  @JsonIgnore
-  @Override
-  public boolean hasAuthorship() {
-    return FormattableName.super.hasAuthorship() || authorship != null;
   }
 
   /**

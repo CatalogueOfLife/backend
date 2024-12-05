@@ -3,7 +3,7 @@ package life.catalogue.dw.health;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -34,7 +34,7 @@ public class NamesIndexHealthCheck extends HealthCheck {
     if (nidx.hasStarted()) {
       NameMatch res = nidx.match(name, false, false);
       if (res.hasMatch()) {
-        return Result.healthy("%s names, created %s", nidx.size(), nidx.created());
+        return Result.healthy("%s names, %s created %s", nidx.size(), nidx.getClass().getSimpleName(), nidx.created());
       }
       return Result.unhealthy("Cannot match %s", name.getScientificName());
     }

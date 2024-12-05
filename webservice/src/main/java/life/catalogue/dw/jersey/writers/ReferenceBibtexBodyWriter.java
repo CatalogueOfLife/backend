@@ -1,5 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
+import de.undercouch.citeproc.csl.CSLItemData;
+
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.csl.CslDataConverter;
@@ -13,12 +15,12 @@ import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 
 import de.undercouch.citeproc.csl.CSLType;
 
@@ -34,20 +36,24 @@ public class ReferenceBibtexBodyWriter implements MessageBodyWriter<Reference> {
     return Reference.class.isAssignableFrom(type);
   }
 
+  static CSLItemData toCSL(Reference ref) {
+    CslData csl;
+    if (ref.getCsl() != null) {
+      csl = ref.getCsl();
+    } else {
+      csl = new CslData();
+      csl.setType(CSLType.WEBPAGE); // will become MISC in bibtex
+      csl.setTitle(ref.getCitation());
+    }
+    csl.setId(ref.getId());
+    return CslDataConverter.toCSLItemData(csl);
+  }
+
   @Override
   public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
     MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
-      CslData csl;
-      if (ref.getCsl() != null) {
-        csl = ref.getCsl();
-      } else {
-        csl = new CslData();
-        csl.setType(CSLType.WEBPAGE); // will become MISC in bibtex
-        csl.setTitle(ref.getCitation());
-      }
-      csl.setId(ref.getId());
-      w.write( CslUtil.toBibTexString(CslDataConverter.toCSLItemData(csl)));
+      w.write( CslUtil.toBibTexString(toCSL(ref)));
     }
   }
 }

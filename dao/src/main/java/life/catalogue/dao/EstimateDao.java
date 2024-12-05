@@ -8,7 +8,7 @@ import life.catalogue.db.mapper.EstimateMapper;
 
 import java.util.List;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

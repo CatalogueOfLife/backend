@@ -22,6 +22,12 @@ public class RandomUtilsTest {
     URI uri = RandomUtils.randomUri();
     assertNotNull(uri);
     assertTrue(uri.isAbsolute());
-    
+  }
+
+  @Test
+  public void randomUnicodeString() {
+    var x = RandomUtils.randomUnicodeString(75);
+    System.out.println(x);
+    assertEquals(75, x.length());
   }
 }

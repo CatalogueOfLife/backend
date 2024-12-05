@@ -9,7 +9,16 @@
     d.deleted,
     d.private,
     d.last_import_attempt,
+    dli.state AS last_import_state,
     <include refid="size"/> AS size
+  </sql>
+
+  <sql id="SELECT_SIMPLE">
+    d.key,
+    d.alias,
+    d.title,
+    d.issued,
+    d.version
   </sql>
 
   <sql id="size">coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)))</sql>
@@ -31,6 +40,8 @@
     dataset d
       LEFT JOIN dataset_import di ON di.attempt=d.attempt AND di.dataset_key=coalesce(d.source_key,d.key)
       LEFT JOIN usage_count uc ON uc.dataset_key=d.key
+      LEFT JOIN v_last_dataset_import li ON li.dataset_key=d.key AND d.origin='EXTERNAL'::DATASETORIGIN
+      LEFT JOIN dataset_import dli ON dli.attempt=li.attempt AND dli.dataset_key=d.key
   </sql>
 
   <sql id="FROM_PROJ">
@@ -158,8 +169,15 @@
       <if test="req.minSize != null">
         AND <include refid="size"/> >= #{req.minSize}
       </if>
+      <if test="req.lastImportState != null">
+        AND dli.state = #{req.lastImportState}::IMPORTSTATE
+      </if>
     </if>
   </sql>
+
+  <resultMap id="datasetSimpleResultMap" type="DatasetSimple" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
 
   <resultMap id="datasetResultMap" type="Dataset" autoMapping="true">
     <id property="key" column="key"/>
@@ -171,10 +189,18 @@
     <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <association property="conversion" javaType="life.catalogue.api.model.Dataset$UrlDescription">
+      <result property="url" column="conversion_url" />
+      <result property="description" column="conversion_description" />
+    </association>
     <collection property="source" ofType="Citation" column="{datasetKey=key}" select="life.catalogue.db.mapper.CitationMapper.list" />
   </resultMap>
 
   <resultMap id="datasetAttResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetAttempt" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
+
+  <resultMap id="releaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetRelease" autoMapping="true">
     <id property="key" column="key"/>
   </resultMap>
 
@@ -288,6 +314,27 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="suggest" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM dataset d
+    WHERE d.deleted IS NULL
+      <if test="contributesTo != null">
+        AND exists(
+        SELECT 1 FROM sector s
+        WHERE s.dataset_key=#{contributesTo} AND s.subject_dataset_key=d.key
+        <if test="!inclMerge">
+          AND s.mode != 'MERGE'
+        </if>
+        )
+      </if>
+      <if test="q != null">
+        <!-- we use dollar quoted strings with a token ($gbif$) to avoid escaping quotes -->
+        AND (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$) OR f_unaccent(title) ILIKE f_unaccent($gbif$%${q}%$gbif$))
+      </if>
+    ORDER BY alias NULLS LAST, title
+    LIMIT 25
+  </select>
+
   <select id="searchKeys" resultType="integer">
     SELECT d.key
     FROM <include refid="FROM"/> <include refid="FROM_PROJ"/>
@@ -314,6 +361,13 @@
     FROM <include refid="FROM"/>
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.created, d.key
+  </select>
+
+  <select id="listReleasesQuick" resultMap="releaseResultMap">
+    SELECT key, source_key AS projectKey, attempt, origin
+    FROM dataset d
+    WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
+    ORDER BY d.attempt, d.key
   </select>
 
   <select id="duplicates" resultMap="duplicateResultMap">

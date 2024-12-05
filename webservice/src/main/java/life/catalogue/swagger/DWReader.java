@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import javax.ws.rs.Consumes;
+import jakarta.ws.rs.Consumes;
 
 import com.fasterxml.jackson.annotation.JsonView;
 

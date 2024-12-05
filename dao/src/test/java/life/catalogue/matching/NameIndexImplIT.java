@@ -7,46 +7,53 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.io.TempFile;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
+
+import org.apache.commons.io.FileUtils;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.After;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class NameIndexImplIT {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
+  NamesIndexConfig.Store type;
+  NamesIndexConfig cfg;
   NameIndex ni;
 
   @ClassRule
@@ -55,21 +62,37 @@ public class NameIndexImplIT {
   @Rule
   public TestDataRule testDataRule = TestDataRule.apple();
 
+  @Parameterized.Parameters
+  public static Collection<Object[]> data() {
+    return Arrays.stream(NamesIndexConfig.Store.values())
+      .map(s -> new Object[]{s})
+      .collect(Collectors.toList());
+  }
+
+  public NameIndexImplIT(NamesIndexConfig.Store type) {
+    this.type = type;
+  }
+
   @After
   public void stop() throws Exception {
     if (ni != null) {
-      dumpIndex();
+      //dumpIndex();
       ni.close();
+    }
+    if (cfg.file != null) {
+      FileUtils.deleteQuietly(cfg.file);
     }
   }
 
-  void setupMemory(boolean erase) throws Exception {
+  void setupMemory(boolean erase) {
     if (erase) {
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         session.getMapper(NamesIndexMapper.class).truncate();
       }
     }
-    ni = NameIndexFactory.memory(SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    cfg = NamesIndexConfig.memory(512);
+    cfg.type = this.type;
+    ni = NameIndexFactory.build(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
     if (erase) {
       assertEquals(0, ni.size());
     } else {
@@ -77,8 +100,89 @@ public class NameIndexImplIT {
     }
   }
 
-  void setupPersistent(File location) throws Exception {
-    ni = NameIndexFactory.persistent(location, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer, true).started();
+  void setupPersistent() throws Exception {
+    File fIdx = TempFile.directoryFile();
+    if (fIdx.exists()) {
+      FileUtils.deleteQuietly(fIdx);
+    }
+    cfg = NamesIndexConfig.file(fIdx, 512);
+    cfg.type = this.type;
+    ni = NameIndexFactory.build(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+  }
+
+  @Test
+  @Ignore("manual test for debugging highly concurrent read/writes")
+  public void concurrency() throws Exception {
+    setupPersistent();
+    final int concurrency = 100;
+    final int size = 10000;
+    // setup some concurrent matcher reading data
+    final List<Thread> threads = new ArrayList<>();
+    try {
+      System.out.println(String.format("Creating %s matching threads", concurrency));
+      for (int idx=1; idx <=concurrency; idx++) {
+        var matcher = new ContinousMatcher(idx, idx==2, ni, size/10);
+        var t = new Thread(matcher, "matcher-"+idx);
+        threads.add(t);
+        t.start();
+      }
+
+      StopWatch watch = new StopWatch();
+      var pn = NameParser.PARSER.parse("Abies alba Mill.", Rank.SPECIES, NomCode.BOTANICAL, IssueContainer.VOID);
+      final IndexName n = new IndexName(pn.get().getName());
+      watch.start();
+      System.out.println(String.format("Start adding %s names to the index", size));
+      for (int key = 1; key <= size; key++) {
+        n.setKey(key);
+        n.setCanonicalId(key / 10);
+        n.setScientificName("Abies alba"+key);
+        n.setSpecificEpithet("alba"+key);
+        ni.add(n);
+
+        if (key % 100 == 0) {
+          System.out.println(String.format("Added %s names to the index", key));
+        }
+      }
+      watch.stop();
+      System.out.printf("Adding %s names to %s took %s\n", size, type, watch);
+
+    } finally {
+      for (var t : threads) {
+        t.interrupt();
+      }
+    }
+  }
+  static class ContinousMatcher implements Runnable {
+    private final int idx;
+    private final boolean verbose;
+    private final NameIndex nidx;
+    private final int maxIdx;
+    private long counter;
+
+    ContinousMatcher(int idx, boolean verbose, NameIndex nidx, int maxIdx) {
+      this.idx = idx;
+      this.verbose = verbose;
+      this.nidx = nidx;
+      this.maxIdx = maxIdx;
+    }
+
+    @Override
+    public void run() {
+      Name n = new Name();
+      n.setRank(Rank.SPECIES);
+      n.setScientificName("Abies alba");
+      int i = 0;
+      while (!Thread.currentThread().isInterrupted()) {
+        n.setScientificName("Abies alba"+i++);
+        if (i>maxIdx) {
+          i = 1;
+        }
+        NameMatch m = nidx.match(n, false, verbose);
+        if (counter++ % 10000 == 0) {
+          System.out.println(String.format("matcher %s matched %s names: %s", idx, counter, m));
+        }
+      }
+    }
   }
 
   @Test
@@ -139,6 +243,79 @@ public class NameIndexImplIT {
     m = ni.match(n, true, true);
     assertEquals(MatchType.VARIANT, m.getType());
     assertNotEquals(m.getCanonicalNameKey(), m.getNameKey());
+  }
+
+  void setupNames(List<SimpleName> names) {
+    setupMemory(true);
+    assertEquals(0, ni.size());
+
+    for (var sn : names) {
+      var n = NameParser.PARSER.parse(sn).get().getName();
+      n.setRank(sn.getRank()); // dont use interpreted ranks!
+      var m = ni.match(n, true, true);
+      assertTrue(m.getType() == MatchType.EXACT || m.getType() == MatchType.VARIANT);
+    }
+
+    assertAllUnique();
+  }
+
+  @Test
+  public void poecile() throws Exception {
+    setupNames(List.of(
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montanus affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.UNRANKED, "Poecile montana affinis", null),
+      SimpleName.sn(Rank.SPECIES, "Poecile montana", "(Conrad von Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana borealis", "Selys-Longchamps, 1843"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana kleinschmidti", "Hellmayr, 1900"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana songarus", "(Severtsov, 1873)"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poecile montana songarus", null),
+      SimpleName.sn(Rank.UNRANKED, "Poecile montanus", null)
+    ));
+
+    dumpIndex();
+    assertEquals(11, ni.size());
+    assertCanonicalSize(5);
+  }
+
+  @Test
+  public void authorYears() throws Exception {
+    setupNames(List.of(
+      SimpleName.sn(Rank.SUBSPECIES, "Poa montanus affinis", "Prjevalsky, 1876"),
+      SimpleName.sn(Rank.SUBSPECIES, "Poa montana affinis", "Prjevalsky, 1873"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Conrad von Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Conrad von Baldenstein, 1837)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Baldenstein, 1827)"),
+      SimpleName.sn(Rank.SPECIES, "Poa montana", "(Baldenbrooks, 1829)"),
+      SimpleName.sn(Rank.VARIETY, "Biota orientalis var. elegantissima", "Rollison ex Gordon"),
+      SimpleName.sn(Rank.VARIETY, "Biota orientalis var. elegantissima", "Rollisson ex Godr.")
+    ));
+
+    dumpIndex();
+    assertEquals(7, ni.size());
+    assertCanonicalSize(3);
+  }
+
+  private void assertAllUnique() {
+    var names = new HashSet<>();
+    for (var n : ni.all()) {
+      var sn = new SimpleName(null, n.getScientificName(), n.getAuthorship(), n.getRank());
+      if (!names.add(sn)) {
+        dumpIndex();
+        throw new IllegalStateException("Non unique name "+sn+" in names index");
+      }
+    }
+  }
+
+  private int assertCanonicalSize(int num) {
+    int count = 0;
+    for (var n : ni.all()) {
+      if (n.isCanonical()) {
+        count++;
+      }
+    }
+    assertEquals(num, count);
+    return count;
   }
 
   @Test
@@ -361,11 +538,7 @@ public class NameIndexImplIT {
 
   @Test
   public void truncate() throws Exception {
-    File fIdx = File.createTempFile("col", ".nidx");
-    if (fIdx.exists()) {
-      fIdx.delete();
-    }
-    setupPersistent(fIdx);
+    setupPersistent();
     ni.add(create("Abies", "alba", null, "Miller"));
     ni.add(create("Abies", "alba", null, "Duller"));
     assertEquals(7, ni.size());
@@ -404,33 +577,23 @@ public class NameIndexImplIT {
 
   @Test
   public void restart() throws Exception {
-    File fIdx = File.createTempFile("col", ".nidx");
-    if (fIdx.exists()) {
-      fIdx.delete();
-    }
+    setupPersistent();
 
+    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+
+    System.out.println("RESTART");
+    assertEquals(4, ni.size());
+    ni.stop();
+    ni.start();
+    assertEquals(4, ni.size());
+    assertMatch(4, "Larus erfundus", Rank.SPECIES);
+
+    ni.stop();
     try {
-      setupPersistent(fIdx);
-
-      assertMatch(4, "Larus erfundus", Rank.SPECIES);
-
-      System.out.println("RESTART");
-      assertEquals(4, ni.size());
-      ni.stop();
-      ni.start();
-      assertEquals(4, ni.size());
-      assertMatch(4, "Larus erfundus", Rank.SPECIES);
-
-      ni.stop();
-      try {
-        match("Larus erfundus", Rank.SPECIES);
-        fail("Names index is closed and should not return");
-      } catch (UnavailableException e) {
-        // expected!
-      }
-
-    } finally {
-      fIdx.delete();
+      match("Larus erfundus", Rank.SPECIES);
+      fail("Names index is closed and should not return");
+    } catch (UnavailableException e) {
+      // expected!
     }
   }
 

@@ -3,9 +3,9 @@ package life.catalogue.api.model;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.apache.commons.lang3.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import static life.catalogue.api.vocab.Datasets.COL;
 

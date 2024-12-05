@@ -54,8 +54,13 @@ import static org.junit.Assert.*;
       assertEquals("muller", AuthorshipNormalizer.normalize("Müller"));
       assertEquals("muller", AuthorshipNormalizer.normalize("Mueller"));
       assertEquals("moller", AuthorshipNormalizer.normalize("Moeller"));
-      
-      
+
+      assertEquals("o f muller", AuthorshipNormalizer.normalize("O.F. Müller"));
+      assertEquals("o f muller", AuthorshipNormalizer.normalize("Müller O.F."));
+      assertEquals("o g muller", AuthorshipNormalizer.normalize("Müller O G"));
+      assertEquals("h muller", AuthorshipNormalizer.normalize("Müller H"));
+      assertEquals("muller filius", AuthorshipNormalizer.normalize("Müller f"));
+
       assertEquals("l filius", AuthorshipNormalizer.normalize("L. f."));
       assertEquals("l filius", AuthorshipNormalizer.normalize("L.fil."));
       assertEquals("don filius", AuthorshipNormalizer.normalize("Don f."));
@@ -115,7 +120,7 @@ import static org.junit.Assert.*;
       assertEqual(comp.normalizeName(n), "doring", "walther");
       
       n.getCombinationAuthorship().setExAuthors(Lists.newArrayList("Käsekuchen"));
-      assertEqual(comp.normalizeName(n), "doring", "walther");
+      assertEqual(comp.normalizeName(n), "doring", "kasekuchen", "walther");
   
       n.setBasionymAuthorship(cr("1904", "B.C.Tremendous", "L.", "Linne"));
       n.getBasionymAuthorship().setExAuthors(Lists.newArrayList("BBC Tremendous", "L"));

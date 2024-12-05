@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import static life.catalogue.api.vocab.DatasetOrigin.*;
 
@@ -28,7 +26,7 @@ public class DatasetSourceDao {
   }
 
   /**
-   * @param datasetKey the dataset key of the release or managed project
+   * @param datasetKey the dataset key of the release or project
    * @param sourceDatasetKey the dataset key of the source within the release or project
    * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
@@ -37,20 +35,19 @@ public class DatasetSourceDao {
     Dataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
       if (EXTERNAL == info.origin) {
         throw new IllegalArgumentException("Dataset "+datasetKey+" is external");
 
       } else if (PROJECT == info.origin) {
-        d = psm.getProjectSource(sourceDatasetKey, datasetKey);
+        d = dsm.getProjectSource(sourceDatasetKey, datasetKey);
         if (d != null && !dontPatch) {
           // get latest version with patch applied
-          final Dataset project = dm.get(datasetKey);
-          patch(d, datasetKey, project, session.getMapper(DatasetPatchMapper.class));
+          patch(d, datasetKey, session.getMapper(DatasetPatchMapper.class));
         }
 
       } else {
-        d = psm.getReleaseSource(sourceDatasetKey, datasetKey);
+        d = dsm.getReleaseSource(sourceDatasetKey, datasetKey);
         // if the release was deleted, the source should also be marked as deleted
         if (info.deleted) {
           final Dataset release = dm.get(datasetKey);
@@ -81,18 +78,6 @@ public class DatasetSourceDao {
   }
 
   /**
-   * List the source datasets for a release, but only map alias,title,origin,type and authors (creator, editor, contributor, publisher).
-   * @param releaseKey dataset key of the release
-   */
-  public List<Dataset> listReleaseAuthors(int releaseKey){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(releaseKey).requireOrigin(RELEASE, XRELEASE);
-    try (SqlSession session = factory.openSession()) {
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      return psm.listReleaseSourcesAuthorsOnly(releaseKey);
-    }
-  }
-
-  /**
    * Returns simple source datasets like the main list method but without
    * - description
    * - container dataset
@@ -100,69 +85,77 @@ public class DatasetSourceDao {
    * - contributors
    *
    * @param datasetKey
-   * @param hidePublisherSources
    * @return
    */
-  public List<Dataset> listSimple(int datasetKey, boolean hidePublisherSources){
+  public List<Dataset> listSimple(int datasetKey, boolean inclPublisherSources){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<Dataset> sources;
     try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      final var container = dm.get(datasetKey);
+      final var settings = dm.getSettings(info.keyOrProjectKey());
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       if (info.origin.isRelease()) {
-        sources = psm.listReleaseSourcesSimple(datasetKey, hidePublisherSources);
+        sources = psm.listReleaseSourcesSimple(datasetKey, inclPublisherSources);
 
       } else {
+        sources = psm.listProjectSourcesSimple(datasetKey, inclPublisherSources);
         // a project, get latest version with patch applied
-        final Dataset project = session.getMapper(DatasetMapper.class).get(datasetKey);
-        DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
-
-        sources = psm.listProjectSourcesSimple(datasetKey, hidePublisherSources);
-        sources.forEach(d -> patch(d, datasetKey, project, pm));
+        final DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
+        sources.forEach(d -> patch(d, datasetKey, pm));
       }
+      sources.forEach(d -> d.addContainer(container, settings));
     }
     return sources;
   }
 
-  /**
-   * List the source datasets for a project or release.
-   * If the key points to a release the patched and archived source metadata is returned.
-   * If it points to a live project, the metadata is taken from the dataset archive at the time of the last successful sync attempt
-   * and then patched.
-   * @param datasetKey project or release key
-   * @param projectForPatching optional dataset used for building the source citations, if null master project is used
-   * @param rebuild if true force to rebuild source metadata and not take it from the source archive. Only relevant for release.
-   * @param hidePublisherSources if true hides the source datasets that are published by the configured sector publisher in the given project or release
-   */
-  public List<Dataset> list(int datasetKey, @Nullable Dataset projectForPatching, boolean rebuild, boolean hidePublisherSources){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
-    List<Dataset> sources;
+  public List<DatasetSimple> suggest(int datasetKey, String query, boolean inclMergeSources){
+    DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    try (SqlSession session = factory.openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      return dm.suggest(query, datasetKey, inclMergeSources);
+    }
+  }
+
+  public List<Dataset> listReleaseSources(int datasetKey, boolean inclPublisherSources){
+    DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE);
     try (SqlSession session = factory.openSession()) {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      if (info.origin.isRelease() && !rebuild) {
-        sources = psm.listReleaseSources(datasetKey, hidePublisherSources);
-
-      } else {
-        // get latest version with patch applied
-        final int projectKey = info.origin.isRelease() ? info.sourceKey : datasetKey;
-        final Dataset project = projectForPatching != null ? projectForPatching : session.getMapper(DatasetMapper.class).get(datasetKey);
-        DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
-
-        sources = psm.listProjectSources(datasetKey, hidePublisherSources);
-        sources.forEach(d -> patch(d, projectKey, project, pm));
-      }
+      return psm.listReleaseSources(datasetKey, inclPublisherSources);
     }
-    return sources;
   }
 
   /**
-   * Applies the projects dataset patch if existing to the dataset d
+   * Lists all project or release sources based on the sectors in the dataset,
+   * retrieving metadata either from the latest version
+   * or an archived copy depending on the import attempt of the last sync stored in the sectors.
+   * It does NOT rely on dataset_source records for releases and can be used to create them.
+   *
+   * @param projectKey the dataset key of the project to load patches from
+   * @param datasetKey project or release key to query for source sectors
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a sector publisher
+   */
+  public List<Dataset> listSectorBasedSources(int projectKey, int datasetKey, boolean inclPublisherSources){
+    try (SqlSession session = factory.openSession()) {
+      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+      DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
+      // get latest version with patch applied
+      List<Dataset> sources = psm.listProjectSources(datasetKey, inclPublisherSources);
+      sources.forEach(d -> patch(d, projectKey, pm));
+      return sources;
+    }
+  }
+
+  /**
+   * Loads and applies the projects metadata patch, if existing, to the dataset d
    * @param d dataset to be patched
+   * @param projectKey dataset key to project NOT a release
    * @return the same dataset instance d as given
    */
-  private Dataset patch(Dataset d, int projectKey, Dataset patchProject, DatasetPatchMapper pm){
+  private Dataset patch(Dataset d, int projectKey, DatasetPatchMapper pm){
     Dataset patch = pm.get(projectKey, d.getKey());
     if (patch != null) {
-      LOG.debug("Apply dataset patch from project {} to {}: {}", patchProject.getKey(), d.getKey(), d.getTitle());
+      LOG.debug("Apply dataset patch from project {} to {}: {}", projectKey, d.getKey(), d.getTitle());
       d.applyPatch(patch);
     }
     return d;

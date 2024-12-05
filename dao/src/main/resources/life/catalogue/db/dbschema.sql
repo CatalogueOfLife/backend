@@ -70,7 +70,6 @@ CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
   'BLOCK',
   'REVIEWED',
   'UPDATE',
-  'UPDATE_RECURSIVE',
   'IGNORE'
 );
 
@@ -80,6 +79,8 @@ CREATE TYPE ENTITYTYPE AS ENUM (
   'NAME',
   'NAME_RELATION',
   'NAME_USAGE',
+  'TAXON',
+  'SYNONYM',
   'TAXON_CONCEPT_RELATION',
   'TAXON_PROPERTY',
   'TYPE_MATERIAL',
@@ -146,15 +147,14 @@ CREATE TYPE IMPORTSTATE AS ENUM (
 );
 
 CREATE TYPE INFOGROUP AS ENUM (
-  'NAME',
   'AUTHORSHIP',
   'PUBLISHED_IN',
-  'BASIONYM',
-  'STATUS',
   'PARENT',
+  'BASIONYM',
   'EXTINCT',
-  'DOI',
-  'LINK'
+  'TEMPORAL_RANGE',
+  'RANK',
+  'HOLOTYPE'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -284,7 +284,8 @@ CREATE TYPE ISSUE AS ENUM (
   'NOTHO_NOT_APPLICABLE',
   'VERNACULAR_PREFERRED',
   'DOI_INVALID',
-  'RANK_NAME_SUFFIX_CONFLICT'
+  'RANK_NAME_SUFFIX_CONFLICT',
+  'AUTHORSHIP_UNLIKELY'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -299,11 +300,7 @@ CREATE TYPE JOBSTATUS AS ENUM (
 CREATE TYPE LICENSE AS ENUM (
   'CC0',
   'CC_BY',
-  'CC_BY_SA',
   'CC_BY_NC',
-  'CC_BY_ND',
-  'CC_BY_NC_SA',
-  'CC_BY_NC_ND',
   'UNSPECIFIED',
   'OTHER'
 );
@@ -314,7 +311,8 @@ CREATE TYPE MATCHTYPE AS ENUM (
   'CANONICAL',
   'AMBIGUOUS',
   'NONE',
-  'UNSUPPORTED'
+  'UNSUPPORTED',
+  'HIGHERRANK'
 );
 
 CREATE TYPE MEDIATYPE AS ENUM (
@@ -344,9 +342,10 @@ CREATE TYPE NOMCODE AS ENUM (
   'BACTERIAL',
   'BOTANICAL',
   'CULTIVARS',
-  'PHYTOSOCIOLOGICAL',
+  'PHYTO',
   'VIRUS',
-  'ZOOLOGICAL'
+  'ZOOLOGICAL',
+  'PHYLO'
 );
 
 CREATE TYPE NOMRELTYPE AS ENUM (
@@ -742,6 +741,8 @@ CREATE TABLE dataset (
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   license LICENSE,
   url_formatter HSTORE,
+  conversion_description TEXT,
+  conversion_url TEXT,
   url TEXT,
   logo TEXT,
   notes TEXT,
@@ -770,11 +771,13 @@ CREATE TABLE dataset (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(creator), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(publisher), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(editor), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contributor), ''))), 'D') ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'D')
+      setweight(to_tsvector('dataset', f_unaccent( left(
+        coalesce(description, '') ||
+        coalesce(agent_str(publisher), '') ||
+        coalesce(agent_str(creator), '') ||
+        coalesce(agent_str(editor), '') ||
+        coalesce(agent_str(contributor), '')
+      , 1024*1024))), 'D')
   ) STORED,
   EXCLUDE (doi WITH =) WHERE (deleted IS null)
 );
@@ -928,17 +931,17 @@ CREATE TABLE dataset_export (
   key UUID PRIMARY KEY,
   -- request
   dataset_key INTEGER NOT NULL REFERENCES dataset,
+  created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
-  extended BOOLEAN NOT NULL,
-  excel BOOLEAN NOT NULL,
   root SIMPLE_NAME,
+  min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
-  min_rank RANK,
-  created_by INTEGER NOT NULL REFERENCES "user",
+  excel BOOLEAN NOT NULL,
+  extended BOOLEAN NOT NULL,
+  extinct BOOLEAN,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  modified_by INTEGER,
-  modified TIMESTAMP WITHOUT TIME ZONE,
+
   -- results
   attempt INTEGER,
   started TIMESTAMP WITHOUT TIME ZONE,
@@ -990,6 +993,7 @@ CREATE TABLE sector (
   entities ENTITYTYPE[] DEFAULT NULL,
   name_types NAMETYPE[] DEFAULT NULL,
   name_status_exclusion NOMSTATUS[] DEFAULT NULL,
+  extinct_filter BOOLEAN,
   note TEXT,
   UNIQUE (dataset_key, subject_dataset_key, subject_id),
   PRIMARY KEY (dataset_key, id)
@@ -1918,6 +1922,24 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
 
+-- return simple_name of parent usage with given rank - or null
+CREATE OR REPLACE FUNCTION parent_by_rank(v_dataset_key INTEGER, v_id TEXT, v_rank RANK, v_max_depth INTEGER default 100) RETURNS simple_name AS $$
+  WITH RECURSIVE x AS (
+  SELECT t.id, t.parent_id, t.name_id, n.rank, 1 distance
+    FROM name_usage t JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = v_id
+   UNION ALL
+  SELECT t.id, t.parent_id, t.name_id, n.rank, x.distance+1
+    FROM x, name_usage t
+    JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
+    WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth AND n.rank >= v_rank
+  )
+
+  SELECT (x.id,x.rank,n.scientific_name,n.authorship)::simple_name
+  FROM x JOIN name n ON n.dataset_key=v_dataset_key AND n.id=x.name_id
+  WHERE x.rank = v_rank;
+
+$$ LANGUAGE SQL;
 
 -- email domain extract function
 create or replace function get_domainname(_value text)
@@ -1957,6 +1979,11 @@ CREATE VIEW v_name_usage AS (
   FROM name_usage u JOIN name n ON n.id=u.name_id AND u.dataset_key=n.dataset_key
 );
 
+CREATE VIEW v_last_dataset_import AS (
+ SELECT DISTINCT ON (dataset_key) dataset_key, attempt
+ FROM dataset_import
+ ORDER BY dataset_key, attempt
+);
 
 
 -- we track counts for usages and names to avoid long count() queries

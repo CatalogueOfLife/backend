@@ -1,10 +1,10 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 
 import java.io.IOException;
@@ -13,7 +13,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+
+import life.catalogue.junit.TestDataRule;
+
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -23,11 +32,12 @@ import static org.junit.Assert.assertNotNull;
 
 public class IdProviderIT {
 
-  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3, 1, 2,
+  public final static TestDataRule.TestData PROJECT_DATA = new TestDataRule.TestData("project", 3,
     Map.of(
     "distribution", Map.of("gazetteer", Gazetteer.ISO, "reference_id", "Flade2008"),
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), Set.of(3,11,12,13));
+      "sector", Map.of("created_by", 100, "modified_by", 100),
+      "name", Map.of("type", NameType.SCIENTIFIC)
+    ), Set.of(3,11,12,13), false);
   final int projectKey = PROJECT_DATA.key;
 
   @ClassRule
@@ -46,7 +56,7 @@ public class IdProviderIT {
 
   public void init(ReleaseConfig cfg) throws IOException {
     this.cfg = cfg;
-    provider = new IdProvider(projectKey, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -65,14 +75,15 @@ public class IdProviderIT {
   }
 
   @Test
-  public void run() throws Exception {
+  public void mapIds() throws Exception {
     init(new ReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
-    provider.run();
+    provider.mapIds();
+    //provider.report();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
@@ -106,10 +117,9 @@ public class IdProviderIT {
   public void ignoreLastRelease() throws Exception {
     var cfg = new ReleaseConfig();
     cfg.ignoredReleases = Map.of(projectKey, List.of(13));
-    cfg.additionalReleases = Map.of(projectKey, List.of(11));
     init(cfg);
 
-    provider.run();
+    provider.mapIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);

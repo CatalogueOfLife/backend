@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 public class AuthorlistGenerator {
   private final Validator validator;
@@ -39,7 +39,7 @@ public class AuthorlistGenerator {
     if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
       return false;
     }
-    var sources = dao.listReleaseAuthors(d.getKey());
+    var sources = dao.listSimple(d.getKey(), false);
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {

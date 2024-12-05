@@ -139,6 +139,12 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </delete>
 
+  <update id="removeAllIssues">
+    UPDATE verbatim_source
+    SET issues = '{}'
+    WHERE dataset_key = #{projectKey}
+  </update>
+
   <delete id="delete" parameterType="map">
     DELETE FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id};

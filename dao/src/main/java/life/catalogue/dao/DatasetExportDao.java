@@ -18,7 +18,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;

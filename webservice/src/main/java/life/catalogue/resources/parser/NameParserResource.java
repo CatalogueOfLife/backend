@@ -20,10 +20,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -40,9 +40,12 @@ public class NameParserResource {
   private static final Logger LOG = LoggerFactory.getLogger(NameParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
   private final ParserConfigDao dao;
+  private final SqlSessionFactory factory;
 
   public NameParserResource(SqlSessionFactory factory) {
     dao = new ParserConfigDao(factory);
+    this.factory = factory;
+
   }
 
   public static class CRName implements IssueContainer {
@@ -232,7 +235,7 @@ public class NameParserResource {
   @RolesAllowed({Roles.ADMIN})
   @Path("config")
   public String createConfig(@Valid ParserConfig config, @Auth User user) {
-    dao.putName(config, user.getKey());
+    dao.add(config, user.getKey());
     return config.getId();
   }
 
@@ -243,7 +246,7 @@ public class NameParserResource {
     List<String> ids = new ArrayList<>(configs.size());
     for (ParserConfig pc : configs) {
       if (pc == null) continue;
-      dao.putName(pc, user.getKey());
+      dao.add(pc, user.getKey());
       ids.add(pc.getId());
     }
     return ids;

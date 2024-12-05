@@ -8,6 +8,10 @@ import java.util.Set;
  * Constants for user keys mostly.
  */
 public class Users {
+  /**
+   * Not a real user, but a fake user key that has permissions to view all
+   */
+  public final static int SUPERUSER = User.ADMIN_MAGIC_KEY;
   public final static int TESTER = -1;
   public final static int DB_INIT = 0;
   public final static int IMPORTER = 10;

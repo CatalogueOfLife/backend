@@ -14,6 +14,8 @@ import org.apache.ibatis.cursor.Cursor;
 
 public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchRequest> {
 
+  Sector.Mode getMode(@Param("datasetKey") int datasetKey,
+                      @Param("id") int id);
   Sector getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("key") DSID<String> key);
   
@@ -22,6 +24,9 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey);
 
+  /**
+   * List all sectors in a project published by a given publisher
+   */
   List<Sector> listByDatasetPublisher(@Param("datasetKey") Integer datasetKey,
                                       @Param("publisherKey") UUID publisherKey);
 
@@ -107,4 +112,13 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
    * @return number of deleted sectors
    */
   int deleteOrphans(@Param("datasetKey") Integer datasetKey);
+
+  /**
+   * Lists all sectors of a project that have never been synced or have been synced from an older dataset import attempt.
+   * @param projectKey
+   * @param subjectDatasetKeys if existing limits the sectors to be considered to have the given subject dataset keys.
+   * @return
+   */
+  List<Sector> listOutdatedSectors(@Param("projectKey") int projectKey, @Param("subjectDatasetKeys") List<Integer> subjectDatasetKeys);
+
 }

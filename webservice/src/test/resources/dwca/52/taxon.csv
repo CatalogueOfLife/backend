@@ -1,0 +1,12 @@
+id	taxonID	parentNameUsageID	acceptedNameUsageID	scientificName	taxonRank	references	taxonRemarks
+SH0887892.09FU	SH0887892.09FU	763571	SH0879619.10FU	SH0887892.09FU	species hypothesis	dx.doi.org/10.15156/BIO/SH0887892.09FU	1.5%
+SH0879619.10FU	SH0879619.10FU	SH0097986.10FU		SH0879619.10FU	species hypothesis	dx.doi.org/10.15156/BIO/SH0879619.10FU	1.5%
+SH0097986.10FU	SH0097986.10FU	763571		SH0097986.10FU	species hypothesis	dx.doi.org/10.15156/BIO/SH0097986.10FU	3.0%
+SH0763571.10FU	SH0763571.10FU	SH0023252.10FU		SH0763571.10FU	species hypothesis	dx.doi.org/10.15156/BIO/SH0763571.10FU	1.5%
+763571	763571	760612		Podila humilis (Linnem. ex W. Gams) Vandepol & Bonito	Species	
+760612	760612	119792		Podila Stajich, Vandepol & Bonito	Genus	
+119792	119792	119237		Mortierellaceae Luerss.	Family	
+119237	119237	672213		Mortierellales Caval.-Sm.	Order	
+672213	672213	671028		Mortierellomycetes Doweld	Class	
+671028	671028	118934		Mortierellomycota Tedersoo, Sánchez-Ramírez, Kõljalg, Bahram, Döring, Schigel, T. May, M. Ryberg & Abarenkov	Phylum	
+118934	118934			Fungi R.T. Moore	Kingdom	

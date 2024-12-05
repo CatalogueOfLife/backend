@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -18,7 +17,7 @@ import life.catalogue.es.NameUsageIndexService;
 
 import java.time.LocalDateTime;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -55,7 +54,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, Validator validator,
                              int userKey, int datasetKey, boolean mapIds, boolean deleteOnError) {
     super(datasetKey, userKey, JobPriority.HIGH);
-    DaoUtils.requireManaged(datasetKey, "Only managed datasets can be duplicated.");
+    DaoUtils.requireProject(datasetKey, "Only managed datasets can be duplicated.");
     this.logToFile = true;
     this.deleteOnError = deleteOnError;
     this.actionName = actionName;
@@ -182,7 +181,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
     // cleanup failed remains?
     if (deleteOnError) {
-      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt(), e);
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt());
       dDao.delete(newDatasetKey, user);
     }
   }
@@ -277,4 +276,11 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), datasetKey, newDatasetKey);
   }
 
+  public int getAttempt() {
+    return attempt;
+  }
+
+  public Dataset getNewDataset() {
+    return newDataset;
+  }
 }

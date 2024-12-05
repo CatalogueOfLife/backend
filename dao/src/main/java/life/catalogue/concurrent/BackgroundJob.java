@@ -1,5 +1,7 @@
 package life.catalogue.concurrent;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
@@ -35,7 +37,7 @@ public abstract class BackgroundJob implements Runnable {
   // the following are added by the JobExecutor before a job is submitted
   private @Nullable EmailNotification emailer;
   // you can expect the following to exist and never be null!
-  private JobConfig cfg;
+  protected JobConfig cfg;
   private User user;
   private Timer timer;
   // if true copies job logs into the results directory
@@ -75,7 +77,7 @@ public abstract class BackgroundJob implements Runnable {
   }
 
   /**
-   * Final handler that can be implemented to e.g. persist jobs, or run notifications.
+   * Final handler that can be implemented to e.g. persist jobs, do final cleanups or run notifications.
    * The final job status is set along with potential exceptions and timestamps.
    * The method should only be fired when the job is truely done, i.e. status.isDone().
    *
@@ -218,6 +220,11 @@ public abstract class BackgroundJob implements Runnable {
     return error;
   }
 
+  @VisibleForTesting
+  public void setError(Exception error) {
+    this.error = error;
+  }
+
   public LocalDateTime getCreated() {
     return created;
   }
@@ -270,7 +277,7 @@ public abstract class BackgroundJob implements Runnable {
    * Return the fixed prefix to be used for email notification freemarker templates.
    * If null is returned no notification will be done. The prefix will be appended with the final status of the job to find the appropriate template.
    *
-   * See also getEmailData() whcih supplies the data model to render the freemarker template.
+   * See also getEmailData() which supplies the data model to render the freemarker template.
    */
   @JsonIgnore
   public String getEmailTemplatePrefix() {

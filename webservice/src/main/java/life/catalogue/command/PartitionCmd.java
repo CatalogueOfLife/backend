@@ -1,5 +1,7 @@
 package life.catalogue.command;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.dao.Partitioner;
 
@@ -45,9 +47,9 @@ public class PartitionCmd extends AbstractMybatisCmd {
 
   @Override
   public void execute() throws Exception {
-    String table = ns.getString(ARG_TABLE);
-    Integer num = ns.getInt(RepartitionCmd.ARG_NUMBERS);
-    LOG.info("Start adding partition tables for {}", table);
+    String table = Preconditions.checkNotNull(ns.getString(ARG_TABLE), "--table argument required");
+    Integer num = Preconditions.checkNotNull(ns.getInt(RepartitionCmd.ARG_NUMBERS), "--num argument required");
+    LOG.info("Start adding {} partition tables for {}", num, table);
     Partitioner.createPartitions(factory, table, num);
     System.out.println("Done !!!");
   }

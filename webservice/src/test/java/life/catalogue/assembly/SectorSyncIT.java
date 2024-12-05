@@ -4,11 +4,12 @@ import life.catalogue.TestDataGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.PgUtils;
+import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.*;
 
 import org.gbif.nameparser.api.NameType;
@@ -67,9 +68,9 @@ public class SectorSyncIT extends SectorSyncTestBase {
 
   @After
   public void after () throws IOException, SQLException {
+    //PgUtils.killAllConnections(draftRule.getSqlSession());
     draftRule.getSqlSession().close();
   }
-
 
   @Test
   public void accordingto() throws Exception {
@@ -269,15 +270,17 @@ public class SectorSyncIT extends SectorSyncTestBase {
     NameUsageBase coleoptera = getByName(d4key, Rank.ORDER, "Coleoptera");
     NameUsageBase insecta = getByName(Datasets.COL, Rank.CLASS, "Insecta");
     createSector(Sector.Mode.ATTACH, coleoptera, insecta);
-    
+    createDecision(d4key, simple(coleoptera), EditorialDecision.Mode.UPDATE, null, null, true);
+
     NameUsageBase src = getByID(d4key, "12");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null, null);
-  
+    createDecision(d4key, simple(src), EditorialDecision.Mode.BLOCK, null, null, null);
+
+
     src = getByID(d4key, "11");
     Name newName = new Name();
     newName.setScientificName("Euplectus cavicollis");
     newName.setAuthorship("LeConte, J. L., 1878");
-    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName, null);
+    createDecision(d4key, simple(src), EditorialDecision.Mode.UPDATE, newName, null, false);
     
     syncAll();
     assertTree("cat4.txt");
@@ -301,13 +304,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     createSector(Sector.Mode.ATTACH, subject, target);
 
     NameUsageBase src = getByName(dkey, Rank.SPECIES, "Acacia riparioides");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     src = getByName(dkey, Rank.SUBSPECIES, "Astragalus caprinus subsp. lanigerus");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     src = getByName(dkey, Rank.VARIETY, "Astragalus caprinus var. hirsutus");
-    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED);
+    createDecision(dkey, simple(src), EditorialDecision.Mode.UPDATE, null, TaxonomicStatus.ACCEPTED, null);
 
     syncAll();
     assertTree("cat1.txt");
@@ -636,29 +639,13 @@ public class SectorSyncIT extends SectorSyncTestBase {
     print(Datasets.COL);
 
     // by default we include all names
-    assertFalse(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_NO_NAME));
+    assertEquals(2, stats.getIgnoredByReasonCount().keySet().size());
+    assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.RANK));
+    assertEquals(7, (int)stats.getIgnoredByReasonCount().get(IgnoreReason.IGNORED_PARENT));
     var parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
+    assertNull(parent); // we dont sync unranked
     var reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
-    assertNotNull(parent);
-    assertNotNull(reticulatus);
-
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var sm = session.getMapper(SectorMapper.class);
-      s = sm.get(secID);
-      s.setNameTypes(Set.of(NameType.SCIENTIFIC)); // only sync proper scientific names
-      sm.update(s);
-    }
-
-    stats = sync(s);
-    print(Datasets.COL);
-
-    // synonym with a bad accepted name should be included if we allow no name types
-    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.IGNORED_PARENT));
-    assertTrue(stats.getIgnoredByReasonCount().containsKey(IgnoreReason.NAME_OTU)); // 3372 gets declared OTU apparently :(
-    parent = getByName(Datasets.COL, Rank.UNRANKED, "3372");
-    reticulatus = getByName(Datasets.COL, Rank.SPECIES, "Tenebrio reticulatus");
-    assertNull(parent);
-    assertNull(reticulatus);
+    assertNull(reticulatus); // we dont sync synonyms without parent
   }
 
   /**

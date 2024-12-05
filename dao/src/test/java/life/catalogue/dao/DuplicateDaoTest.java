@@ -3,9 +3,10 @@ package life.catalogue.dao;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DecisionMapper;
 
 import org.gbif.nameparser.api.Rank;
@@ -69,8 +70,12 @@ public class DuplicateDaoTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void duplicatesIAE() {
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      dm.list(new Page(1000)).forEach(d -> System.out.println(d.getKey() + " -> " + d.getOrigin()));
+    }
     // no catalogue/project given but filtering decisions
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, datasetKey, null, null, null, null, null, null, null, null, null, true, null);
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, MatchingMode.STRICT, null, null, 1001, null, null, null, null, null, null, null, null, null, null, true, null);
     dao.page(req, null);
   }
 
@@ -214,7 +219,7 @@ public class DuplicateDaoTest {
     } else {
       watch.resume();
     }
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, null, minSize, datasetKey, sourceDatasetKey, null, category, ranks, status,
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME_USAGE, mode, null, minSize, datasetKey, sourceDatasetKey, null, null, category, ranks, status,
       authorshipDifferent, acceptedDifferent, null, null, withDecision, Datasets.COL);
     ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();
@@ -228,7 +233,7 @@ public class DuplicateDaoTest {
       watch.resume();
     }
 
-    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, null, minSize, datasetKey, null, null, category, ranks,
+    var req = new DuplicateDao.DuplicateRequest(EntityType.NAME, mode, null, minSize, datasetKey, null, null, null, category, ranks,
       null, authorshipDifferent, null, null, null, null, Datasets.COL);
     ResultPage<Duplicate> result = dao.page(req, page);
     watch.suspend();

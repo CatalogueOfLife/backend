@@ -3,7 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
 
 import java.sql.Statement;

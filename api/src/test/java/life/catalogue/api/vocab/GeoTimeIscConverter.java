@@ -33,7 +33,7 @@ import com.univocity.parsers.csv.CsvWriterSettings;
  * The conversion should be triggered manually whenever the turtle file is updated from
  * https://github.com/CGI-IUGS/timescale-data/tree/master/rdf
  *
- * and placed into /vocab/geotime/geotime.csv resources so it is picked up durign builds.
+ * and placed into /vocab/geotime/geotime.csv resources so it is picked up during builds.
  */
 public class GeoTimeIscConverter {
   

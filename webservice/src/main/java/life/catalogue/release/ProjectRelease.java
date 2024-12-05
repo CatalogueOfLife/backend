@@ -33,15 +33,16 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.validation.Validator;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
@@ -92,6 +93,17 @@ public class ProjectRelease extends AbstractProjectCopy {
                        .path(newDataset.getKey().toString())
                        .build());
     dDao.update(newDataset, userKey);
+    // load project dataset for email templates & license checks
+    dataset = loadDataset(factory, datasetKey);
+  }
+
+  @Override
+  public String getEmailTemplatePrefix() {
+    return "release";
+  }
+
+  public URI getReportURI() {
+    return cfg.release.reportURI(datasetKey, attempt);
   }
 
   @Override
@@ -140,8 +152,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idProvider = new IdProvider(datasetKey, attempt, newDatasetKey, cfg.release, factory);
-    idProvider.run();
+    IdProvider idp = new IdProvider(datasetKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg.release, factory);
+    idp.mapIds();
+    idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
 
@@ -216,20 +229,21 @@ public class ProjectRelease extends AbstractProjectCopy {
     // remove orphan sectors and decisions not used in the data, e.g. merge sectors from the XCOL
     try (SqlSession session = factory.openSession(true)) {
       int del = session.getMapper(SectorMapper.class).deleteOrphans(newDatasetKey);
-      LOG.info("Removed {} unused sectors", del);
+      LOG.info("Removed {} sectors without data in release {}", del, newDatasetKey);
     }
 
     updateState(ImportState.ARCHIVING);
     LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true)) {
+      final AtomicInteger counter = new AtomicInteger(0);
       // treat source. Archive dataset metadata & logos & assign a potentially new DOI
-
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
-      final AtomicInteger counter = new AtomicInteger(0);
       final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
-      //TODO: do we want to create source dataset records for aggregated publishers ???
-      for (var d : srcDao.list(datasetKey, newDataset, true, true)) {
+      // create fixed source dataset records for this release.
+      // This DOES create source dataset records for aggregated publishers.
+      // It does not create source records for merge sectors without data in the release itself!
+      for (var d : srcDao.listSectorBasedSources(datasetKey, newDatasetKey, true)) {
         if (issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
@@ -243,7 +257,7 @@ public class ProjectRelease extends AbstractProjectCopy {
           d.setDoi(srcDOI);
         }
 
-        LOG.info("Archive dataset {}#{} for release {}", d.getKey(), attempt, newDatasetKey);
+        LOG.info("Archive dataset {}#{} for release {}: {}", d.getKey(), attempt, newDatasetKey, d.getAliasOrTitle());
         psm.create(newDatasetKey, d);
         cm.createRelease(d.getKey(), newDatasetKey, attempt);
         // archive logos
@@ -287,8 +301,21 @@ public class ProjectRelease extends AbstractProjectCopy {
         req.setDatasetKey(newDatasetKey);
         req.setFormat(df);
         req.setExcel(false);
-        req.setExtended(true);
+        req.setExtended(df != DataFormat.TEXT_TREE);
         exportManager.submit(req, user);
+      }
+    }
+    // generic hooks
+    if (cfg.release.actions != null && cfg.release.actions.containsKey(datasetKey)) {
+      // reload dataset metadata
+      final Dataset d;
+      try (SqlSession session = factory.openSession(true)) {
+        d = session.getMapper(DatasetMapper.class).get(newDatasetKey);
+      }
+      for (var action : cfg.release.actions.get(datasetKey)) {
+        if (!action.onPublish) {
+          action.call(client, d);
+        }
       }
     }
   }
@@ -299,24 +326,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     // remove reports
     File dir = cfg.release.reportDir(datasetKey, attempt);
     if (dir.exists()) {
-      LOG.debug("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
+      LOG.info("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);
     }
   }
 
-  public static class IdPreviewRelease extends ProjectRelease {
-    public IdPreviewRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService, DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager, DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-      super(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, datasetKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
-    }
-
-    @Override
-    void prepWork() throws Exception {
-      settings.disable(Setting.RELEASE_REMOVE_BARE_NAMES);
-      super.prepWork();
-      // turn off map ids which will prevent the tables from being deleted on error!
-      mapIds = false;
-      // now fail to ignore the rest of the release procedure
-      throw new RuntimeException("WE ONLY WANT THE PREPARATION STEP TO RUN AND SAVE ID MAP TABLES");
-    }
-  }
 }

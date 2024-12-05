@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.TabularFormat;
 import java.io.File;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.QueryParam;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class MatchingRequest extends TreeTraversalParameter {
 
   @NotNull
-  @DefaultValue("CSV")
+  @DefaultValue("TSV")
   @QueryParam("format")
   private TabularFormat format;
   @QueryParam("sourceDatasetKey")

@@ -26,8 +26,8 @@ public class NameParentPrinter extends AbstractTreePrinter {
   private boolean printParent = false;
   private Rank parentName;
 
-  public NameParentPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(params, ranks, countRank, taxonCounter, factory, writer);
+  public NameParentPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
   public void setParentName(@Nullable Rank parentName) {
@@ -48,11 +48,11 @@ public class NameParentPrinter extends AbstractTreePrinter {
     if (printParent && !parents.isEmpty()) {
       SimpleName p = null;
       if (parentName == null || u.getStatus().isSynonym()) {
-        p = parents.getLast();
+        p = parents.getLast().sn;
       } else {
         for (var sn : parents) {
-          if (parentName == sn.getRank()) {
-            p = sn;
+          if (parentName == sn.sn.getRank()) {
+            p = sn.sn;
             break;
           }
         }

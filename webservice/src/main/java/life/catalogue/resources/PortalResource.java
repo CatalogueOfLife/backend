@@ -6,10 +6,10 @@ import life.catalogue.portal.PortalPageRenderer.Environment;
 
 import java.io.IOException;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import io.swagger.v3.oas.annotations.Hidden;
 
@@ -32,19 +32,37 @@ public class PortalResource {
   @GET
   @Path("metadata")
   public Response metadata(@PathParam("env") Environment env) throws Exception {
-    return renderer.renderMetadata(env);
+    return renderer.renderMetadata(env, false);
+  }
+
+  @GET
+  @Path("metadata-x")
+  public Response xMetadata(@PathParam("env") Environment env) throws Exception {
+    return renderer.renderMetadata(env, true);
   }
 
   @GET
   @Path("dataset/{id}")
   public Response datasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
-    return renderer.renderDatasource(id, env);
+    return renderer.renderDatasource(id, env, false);
+  }
+
+  @GET
+  @Path("dataset-x/{id}")
+  public Response xDatasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
+    return renderer.renderDatasource(id, env, true);
   }
 
   @GET
   @Path("taxon/{id}")
   public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
-    return renderer.renderTaxon(id, env);
+    return renderer.renderTaxon(id, env, false);
+  }
+
+  @GET
+  @Path("taxon-x/{id}")
+  public Response xTaxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
+    return renderer.renderTaxon(id, env, true);
   }
 
 

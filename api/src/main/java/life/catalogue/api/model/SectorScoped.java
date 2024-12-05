@@ -19,5 +19,13 @@ public interface SectorScoped extends DatasetScoped {
   Integer getSectorKey();
   
   void setSectorKey(Integer sectorKey);
-  
+
+  @JsonIgnore
+  Sector.Mode getSectorMode();
+  void setSectorMode(Sector.Mode mode);
+
+  @Nullable
+  default Boolean isMerged() {
+    return getSectorMode() == null ? null : Sector.Mode.MERGE == getSectorMode();
+  }
 }

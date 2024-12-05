@@ -4,7 +4,6 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="life.catalogue.db.mapper.NameUsageMapper">
 
-
   <sql id="usageCols">
     ${alias}.id AS ${prefix}id,
     ${alias}.dataset_key AS ${prefix}dataset_key,
@@ -53,11 +52,11 @@
   </sql>
 
   <sql id="SELECT_SIMPLE">
-    u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
+    u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
   <sql id="SELECT_SIMPLE_CACHED">
-    u.id, u.sector_key, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
+    <include refid="SELECT_SIMPLE"/>, n.published_in_id, nm.index_id, ni.canonical_id, nm.type
   </sql>
 
   <sql id="SELECT_LINNEAN_USAGE">
@@ -184,6 +183,19 @@
   <sql id="FROM">
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
     <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_ACCEPTED"/>
+  </sql>
+
+  <sql id="FROM_NIDX_BASE">
+    names_index ni
+    JOIN name_match nm ON nm.index_id=ni.id
+    JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
+    JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
+  </sql>
+
+  <sql id="FROM_NIDX">
+    <include refid="FROM_NIDX_BASE"/>
+    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
+    <include refid="FROM_ACCEPTED"/>
   </sql>
 
   <resultMap id="usageResultMap" type="NameUsageBase" autoMapping="true">
@@ -397,19 +409,6 @@
     WHERE u.dataset_key = #{datasetKey} AND u.name_id=#{nameId}
   </select>
 
-  <sql id="FROM_NIDX_BASE">
-    names_index ni
-      JOIN name_match nm ON nm.index_id=ni.id
-      JOIN name n ON n.dataset_key=nm.dataset_key AND n.id=nm.name_id
-      JOIN name_usage u ON u.dataset_key=nm.dataset_key AND u.name_id=n.id
-  </sql>
-
-  <sql id="FROM_NIDX">
-    <include refid="FROM_NIDX_BASE"/>
-    LEFT JOIN reference r ON r.dataset_key=u.dataset_key AND r.id=u.according_to_id
-    <include refid="FROM_ACCEPTED"/>
-  </sql>
-
   <select id="listByCanonNIDX" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_NIDX_BASE"/>
@@ -525,6 +524,12 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <update id="updateStatus" parameterType="map">
+    UPDATE name_usage
+    SET (status, modified, modified_by) = (#{status}, now(), #{userKey})
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <update id="updateParentAndStatus" parameterType="map">
     UPDATE name_usage
     SET (parent_id, status, modified, modified_by) = (#{parentId}, #{status}::TAXONOMICSTATUS, now(), #{userKey})
@@ -558,6 +563,12 @@
         AND n.rank &lt;= #{minRank}::rank
       </if>
     </where>
+  </select>
+
+  <select id="processDatasetSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key=#{datasetKey}
   </select>
 
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -659,12 +670,6 @@
       </otherwise>
     </choose>
     AND NOT is_synonym(u.status)
-    <if test="param.extinct != null and param.extinct">
-      AND u.extinct
-    </if>
-    <if test="param.extinct != null and !param.extinct">
-      AND NOT u.extinct
-    </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
@@ -678,18 +683,9 @@
     <if test="!param.synonyms">
       AND NOT is_synonym(u.status)
     </if>
-    <if test="param.extinct != null and param.extinct">
-      AND u.extinct
-    </if>
-    <if test="param.extinct != null and !param.extinct">
-      AND NOT u.extinct
-    </if>
     <if test="param.exclusion != null and !param.exclusion.isEmpty()">
       AND u.id NOT IN
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
-    </if>
-    <if test="param.sectorKey != null">
-      AND u.sector_key = #{param.sectorKey}
     </if>
     <if test="param.lowestRank">
       AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
@@ -722,7 +718,8 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
+    SELECT * FROM x
+    <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
   <select id="foreignChildren" resultMap="simpleResultMap">
@@ -756,7 +753,8 @@
       </where>
     )
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
-    FROM x <if test="depthFirst">ORDER BY x.path</if>
+    FROM x
+    <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -773,7 +771,8 @@
         <include refid="WHERE_UNION"/>
       </where>
     )
-    SELECT * FROM x <if test="depthFirst">ORDER BY x.path</if>
+    SELECT * FROM x
+    <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
   <select id="processTreeIds" parameterType="map" resultMap="idResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
@@ -817,13 +816,27 @@
     WHERE dataset_key=#{datasetKey}
   </delete>
 
+  <select id="detectParentSynoynms" parameterType="map" resultType="string">
+    SELECT u.id
+    FROM name_usage u
+      JOIN name_usage s ON u.parent_id=s.id AND s.dataset_key=u.dataset_key
+    WHERE NOT is_synonym(u.status) AND is_synonym(s.status) AND u.parent_id IS NOT NULL AND u.dataset_key=#{datasetKey}
+  </select>
+
+  <select id="detectChainedSynonyms" parameterType="map" resultType="string">
+    SELECT s1.id
+    FROM name_usage s1
+      JOIN name_usage s2 ON s1.parent_id=s2.id AND s1.dataset_key=s2.dataset_key
+    WHERE is_synonym(s1.status) AND is_synonym(s2.status) AND s1.parent_id IS NOT NULL AND s1.dataset_key=#{datasetKey}
+  </select>
+
   <select id="detectLoop" parameterType="map" resultType="string">
-    WITH RECURSIVE parents(id, depth) AS (
-      SELECT u.id, 1
+    WITH RECURSIVE parents(id) AS (
+      SELECT u.id
       FROM name_usage u
-      WHERE u.dataset_key=#{datasetKey}
+      WHERE NOT is_synonym(u.status) AND u.dataset_key=#{datasetKey}
     UNION ALL
-      SELECT c.id, p.depth + 1
+      SELECT c.id
       FROM name_usage c, parents p
       WHERE p.id = c.parent_id AND c.dataset_key=#{datasetKey}
       ) CYCLE id SET is_cycle USING path
@@ -837,5 +850,11 @@
       SELECT TRUE FROM name_usage p WHERE p.dataset_key=#{datasetKey} AND p.id=u.parent_id
     )
   </select>
+
+  <update id="_addIdentifier" parameterType="map">
+    UPDATE name_usage
+    SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
 
 </mapper>

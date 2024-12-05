@@ -4,7 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.DaoTestBase;
 import life.catalogue.dao.FileMetricsDao;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,7 +58,7 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
   @Test(expected = FileMetricsDao.AttemptMissingException.class)
   public void missingFile() throws Exception {
     final File bad = new File("/tmp/I do not exist");
-    diff.namesDiff(provideTestKey(), new int[]{1,2,3}, i -> {
+    diff.diff(provideTestKey(), new int[]{1,2,3}, i -> {
       switch (i) {
         case 1: return bad;
         case 2: return bad;
@@ -95,7 +95,7 @@ public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
     final File f2 = Resources.toFile("names2.txt");
 
     final K key = provideTestKey();
-    NamesDiff d = diff.namesDiff(key, new int[]{1,2}, i -> {
+    NamesDiff d = diff.diff(key, new int[]{1,2}, i -> {
       switch (i) {
         case 1: return f1;
         case 2: return f2;

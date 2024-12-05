@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.EstimateSearchRequest;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.EntityType;
@@ -21,12 +22,9 @@ import org.gbif.dwc.terms.Term;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.cursor.Cursor;
@@ -46,7 +44,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
   private static final Logger LOG = LoggerFactory.getLogger(ArchiveExport.class);
   private static final String LOGO_FILENAME = "logo.png";
 
-  protected boolean fullDataset;
+  protected final boolean fullDataset;
   protected final Set<String> nameIDs = new HashSet<>();
   protected final Set<String> taxonIDs = new HashSet<>();
   protected final Set<String> refIDs = new HashSet<>();
@@ -59,6 +57,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected TermWriter writer;
   protected final DSID<String> entityKey = DSID.of(datasetKey, "");
   private final SXSSFWorkbook wb;
+  protected final boolean inclTreatments;
 
   ArchiveExport(DataFormat requiredFormat, int userKey, ExportRequest req, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
     super(req, userKey, requiredFormat, true, factory, cfg, imageService);
@@ -67,12 +66,15 @@ public abstract class ArchiveExport extends DatasetExportJob {
                        .maximumSize(10000)
                        .build(this::lookupReference);
 
+    fullDataset = !req.hasFilter();
+    inclTreatments = !req.isExcel() && req.isExtended() && requiredFormat == DataFormat.COLDP;
     if (req.isExcel()) {
       // we use SXSSF (Streaming Usermodel API) for low memory footprint
       // https://poi.apache.org/components/spreadsheet/how-to.html#sxssf
       wb = new SXSSFWorkbook(100); // keep 100 rows in memory, exceeding rows will be flushed to disk
     } else {
       wb = null;
+      // only include treatments with ColDP
     }
   }
 
@@ -104,8 +106,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   @Override
   protected void export() throws Exception {
-    // do we have a full dataset export request?
-    fullDataset = !req.hasFilter();
     try (SqlSession session = factory.openSession(false)) {
       this.session = session;
       init(session);
@@ -195,7 +195,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       if (fullDataset) {
         cursor = num.processDataset(datasetKey, null, null);
       } else {
-        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.getExtinct(), req.isSynonyms());
+        var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
         cursor = num.processTree(ttp);
       }
       PgUtils.consume(() -> cursor, this::consumeUsage);
@@ -229,6 +229,16 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void consumeUsage(NameUsageBase u){
     if (!fullDataset) {
+      if (req.getExtinct() != null) {
+        // filter out usages as the tree traversal cannot do that
+        if (u.isTaxon() && !Objects.equals(req.getExtinct(), ObjectUtils.coalesce(u.asTaxon().isExtinct(), false))) {
+          return;
+        }
+        // also remove synonyms of filtered accepted taxa
+        if (u.isSynonym() && !taxonIDs.contains(u.getParentId())) {
+          return;
+        }
+      }
       refIDs.add(u.getName().getPublishedInId());
       refIDs.addAll(u.getReferenceIds());
       refIDs.add(u.getAccordingToId());
@@ -274,6 +284,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     exportTaxonExtension(EntityType.DISTRIBUTION, DistributionMapper.class, this::write);
     exportTaxonExtension(EntityType.MEDIA, MediaMapper.class, this::write);
     exportTaxonExtension(EntityType.TAXON_PROPERTY, TaxonPropertyMapper.class, this::write);
+    exportTreatments();
     exportEstimates();
     exportTaxonRelation(EntityType.SPECIES_INTERACTION, SpeciesInteractionMapper.class, this::write);
     exportTaxonRelation(EntityType.TAXON_CONCEPT_RELATION, TaxonConceptRelationMapper.class, this::write);
@@ -403,6 +414,35 @@ public abstract class ArchiveExport extends DatasetExportJob {
           }
         } catch (RuntimeException e) {
           catchTruncation(e);
+        }
+      }
+    }
+  }
+
+  void writeTreatment(Treatment t) throws IOException {
+    // nothing by default - only ColDP supports this
+  }
+
+  private void exportTreatments() throws IOException {
+    if (inclTreatments) {
+      try (SqlSession session = factory.openSession()) {
+        var mapper = session.getMapper(TreatmentMapper.class);
+        if (fullDataset) {
+          PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
+            try {
+              writeTreatment(x);
+            } catch (final IOException e) {
+              throw new RuntimeException(e);
+            }
+          });
+        } else {
+          DSID<String> key = DSID.root(datasetKey);
+          for (String id : taxonIDs) {
+            var x = mapper.get(key.id(id));
+            if (x != null) {
+              writeTreatment(x);
+            }
+          }
         }
       }
     }

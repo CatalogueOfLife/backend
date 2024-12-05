@@ -22,8 +22,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class JsonTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
 
-  public JsonTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(params, ranks, countRank, taxonCounter, factory, writer);
+  public JsonTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
   @Override
@@ -40,6 +40,7 @@ public class JsonTreePrinter extends AbstractTreePrinter {
   }
 
   protected void start(SimpleName u) throws IOException {
+    final var pid = u.getParent(); // we need to set this back at the end, otherwise the tree printer gets mad at us
     u.setParent(null);
     if (last == EVENT.END) {
       writer.write(",");
@@ -52,6 +53,7 @@ public class JsonTreePrinter extends AbstractTreePrinter {
       writer.write(",\"" + countRankPropertyName(countRank) + "\":" + taxonCount);
     }
     writer.write(",\"children\":[");
+    u.setParent(pid);
   }
 
   protected void end(SimpleName u) throws IOException {

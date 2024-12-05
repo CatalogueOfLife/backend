@@ -2,14 +2,15 @@ package life.catalogue.assembly;
 
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;

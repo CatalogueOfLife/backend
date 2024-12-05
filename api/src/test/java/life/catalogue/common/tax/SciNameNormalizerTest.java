@@ -54,6 +54,11 @@ public class SciNameNormalizerTest {
     assertEquals("Larus fusc fusc", SciNameNormalizer.normalize("Larus fuscus fusca"));
     assertEquals("Eragrostis brown brown", SciNameNormalizer.normalize("Eragrostis brownei brownii"));
     assertEquals("Larus fusc Miller", SciNameNormalizer.normalize("Larus fuscus Miller"));
+
+    assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montanus affinis"));
+    assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montana affinis"));
+    assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montana affina"));
+    assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montanus affinus"));
   }
 
   @Test

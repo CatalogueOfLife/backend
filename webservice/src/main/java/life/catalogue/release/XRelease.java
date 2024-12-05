@@ -23,7 +23,12 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.*;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.RematchMissing;
+import life.catalogue.matching.UsageMatcherGlobal;
+
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,20 +37,14 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.NameType;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +61,8 @@ public class XRelease extends ProjectRelease {
   private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
+  private XIdProvider usageIdGen;
+  private int failedSyncs;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -112,7 +113,6 @@ public class XRelease extends ProjectRelease {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
     // ... or licenses of existing sectors are not compatible
-    dataset = loadDataset(factory, datasetKey);
     final License projectLicense = dataset.getLicense();
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -182,6 +182,9 @@ public class XRelease extends ProjectRelease {
     }
     createReleaseDOI();
 
+    // setup id generator
+    usageIdGen = new XIdProvider(datasetKey, attempt, newDatasetKey, cfg.release, ni, factory);
+
     // make sure the missing matching is completed before we deal with the real data
     thread.join();
   }
@@ -213,26 +216,16 @@ public class XRelease extends ProjectRelease {
 
   @Override
   void finalWork() throws Exception {
+    usageIdGen.removeIdsFromDataset(newDatasetKey);
+
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
-    // detect and group basionyms
-    if (xCfg.groupBasionyms) {
-      final LocalDateTime start = LocalDateTime.now();
-      final var prios = new SectorPriority(getDatasetKey(), factory);
-      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
-      hc.setBasionymExclusions(xCfg.basionymExclusions);
-      hc.consolidate();
-      DateUtils.logDuration(LOG, hc.getClass(), start);
+    processWithPrio();
 
-    } else {
-      LOG.warn("Homotypic grouping disabled in xrelease configs");
-    }
-
-    // flagging of suspicous usages
+    // flagging of suspicious usages
     validateAndCleanTree();
     cleanImplicitTaxa();
-    resolveDuplicateAcceptedNames();
 
     // remove orphan names and references
     removeOrphans(newDatasetKey);
@@ -244,8 +237,29 @@ public class XRelease extends ProjectRelease {
     buildSectorMetrics();
     // update metadata
     updateMetadata();
-    // finally also call the shared part which e.g. archives metadata
+    // write id reports
+    usageIdGen.report();
+    // finally also call the shared part which e.g. archives metadata and creates source dataset records
     super.finalWork();
+  }
+
+  private void processWithPrio() {
+    final var prios = new SectorPriority(getDatasetKey(), factory);
+    // detect and group basionyms
+    if (xCfg.homotypicConsolidation) {
+      final LocalDateTime start = LocalDateTime.now();
+      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
+      if (xCfg.basionymExclusions != null) {
+        hc.setBasionymExclusions(xCfg.basionymExclusions);
+      }
+      hc.consolidate(xCfg.homotypicConsolidationThreads);
+      DateUtils.logDuration(LOG, hc.getClass(), start);
+
+    } else {
+      LOG.warn("Homotypic grouping disabled in xrelease configs");
+    }
+
+    flagDuplicatesAsProvisional(prios);
   }
 
   private void updateMetadata() {
@@ -256,9 +270,46 @@ public class XRelease extends ProjectRelease {
   }
 
   /**
-   * flag loops and nonexisting parents
+   * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
   private void flagLoops() {
+    // any chained synonyms?
+    try (SqlSession session = factory.openSession(true)) {
+      var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
+      if (chains != null && !chains.isEmpty()) {
+        LOG.error("{} chained synonyms found in XRelease {}", chains.size(),newDatasetKey);
+
+        var num = session.getMapper(NameUsageMapper.class);
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        var key = DSID.<String>root(newDatasetKey);
+
+        for (var id : chains) {
+          key.id(id);
+          vsm.addIssue(key, Issue.CHAINED_SYNONYM);
+          var syn = num.getSimple(key);
+          num.updateParentId(key, syn.getParentId(), user);
+        }
+      }
+    }
+
+    // any accepted names below synonyms? Move to accepted
+    try (SqlSession session = factory.openSession(true)) {
+      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
+      if (synParents != null && !synParents.isEmpty()) {
+        LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
+        var num = session.getMapper(NameUsageMapper.class);
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+
+        var key = DSID.<String>root(newDatasetKey);
+        for (var id : synParents) {
+          key.id(id);
+          vsm.addIssue(key, Issue.SYNONYM_PARENT);
+          var syn = num.getSimpleParent(key);
+          num.updateParentId(key, syn.getParentId(), user);
+        }
+      }
+    }
+
     // cut potential cycles in the tree?
     try (SqlSession session = factory.openSession(true)) {
       var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);
@@ -289,6 +340,10 @@ public class XRelease extends ProjectRelease {
         }
         LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
       }
+
+    } catch (PersistenceException e) {
+      // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
+      LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
     }
 
     // look for non existing parents
@@ -366,6 +421,19 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, "Building sector metrics", start);
   }
 
+  @Override
+  protected void onFinishLocked() throws Exception {
+    // release id generator resources
+    try {
+      if (usageIdGen != null) {
+        usageIdGen.close();
+      }
+    } catch (Exception e) {
+      LOG.error("Failed to close id generator", e);
+    }
+    super.onFinishLocked();
+  }
+
   /**
    * We do all extended work here, e.g. sector merging
    */
@@ -373,15 +441,13 @@ public class XRelease extends ProjectRelease {
     final LocalDateTime start = LocalDateTime.now();
     // prepare merge handler config instance
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
-    // create id generators for extended records
-    final Supplier<String> nameIdGen = new XIdGen();
-    final Supplier<String> usageIdGen = new XIdGen();
-    final Supplier<String> typeMaterialIdGen = new XIdGen();
-
-    updateState(ImportState.INSERTING);
     final int size = sectors.size();
     int counter = 0;
-    int failedSyncs = 0;
+    failedSyncs = 0;
+    // sequential id generators for extended records
+    final Supplier<String> nameIdGen = new XIdGen();
+    final Supplier<String> typeMaterialIdGen = new XIdGen();
+    updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
       LOG.info("Merge {}. #{} out of {}", s, counter++, size);
       // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
@@ -398,7 +464,7 @@ public class XRelease extends ProjectRelease {
       checkIfCancelled();
       SectorSync ss;
       try {
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, usageIdGen, typeMaterialIdGen, fullUser);
+        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
@@ -422,8 +488,13 @@ public class XRelease extends ProjectRelease {
         }
       }
     }
+
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
-    DateUtils.logDuration(LOG, getClass(), start);
+    DateUtils.logDuration(LOG, "Merging sectors", start);
+  }
+
+  public int getFailedSyncs() {
+    return failedSyncs;
   }
 
   /**
@@ -431,9 +502,7 @@ public class XRelease extends ProjectRelease {
    * creating missing autonyms where needed.
    * An autonym is an infraspecific taxon that has the same species and infraspecific epithet.
    * We do this last to not persistent autonyms that we dont need after basionyms are grouped or status has changed for some other reason.
-   */
-
-  /**
+   *
    * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
    */
   private void cleanImplicitTaxa() {
@@ -464,8 +533,45 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }
 
-  private void resolveDuplicateAcceptedNames() {
-    LOG.info("Resolve duplicate accepted names");
+
+  /**
+   * Assigns a doubtful status to accepted names that only differ in authorship
+   */
+  private void flagDuplicatesAsProvisional(SectorPriority prios) {
+    LOG.info("Find homonyms and mark as provisional");
+    final LocalDateTime start = LocalDateTime.now();
+    try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var dum = session.getMapper(DuplicateMapper.class);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      // same names with the same rank and code
+      var dupes = dum.homonyms(newDatasetKey, Set.of(TaxonomicStatus.ACCEPTED));
+      LOG.info("Marking {} homonyms as provisional", dupes.size());
+
+      int counter = 0;
+      final DSID<String> key = DSID.root(newDatasetKey);
+      for (var d : dupes) {
+        int min = Integer.MAX_VALUE;
+        for (var u : d.getUsages()) {
+          min = Math.min(min, prios.priority(u.getSectorKey()));
+        }
+        for (var u : d.getUsages()) {
+          if (prios.priority(u.getSectorKey()) > min) {
+            num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
+            vsm.addIssue(key, Issue.DUPLICATE_NAME);
+            if (counter++ % 1000 == 0) {
+              session.commit();
+            }
+          }
+        }
+      }
+      session.commit();
+      LOG.info("Changed {} homonyms to provisional status", counter);
+
+    } catch (Exception e) {
+      LOG.error("Homonym flagging failed", e);
+    }
+    DateUtils.logDuration(LOG, "Homonym flagging", start);
   }
 
 }

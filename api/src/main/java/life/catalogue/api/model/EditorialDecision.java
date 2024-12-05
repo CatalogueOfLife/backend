@@ -49,15 +49,6 @@ public class EditorialDecision extends DatasetScopedEntity<Integer> {
      * leaving NULL values unchanged.
      */
     UPDATE,
-  
-    /**
-     * WARNING: NOT FULLY IMPLEMENTED YET !!!
-     * Updates the subject and all its descendants using the configured status, environment and extinct flag
-     * leaving NULL values unchanged.
-     *
-     * If configured, Name updates will be ignored!!!
-     */
-    UPDATE_RECURSIVE,
 
     /**
      * Ignores the subject, but still includes all it's descendants.

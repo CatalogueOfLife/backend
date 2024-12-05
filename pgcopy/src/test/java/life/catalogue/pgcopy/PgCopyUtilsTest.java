@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -59,9 +60,32 @@ public class PgCopyUtilsTest {
     Map<String, Object> defs = Map.of(
       "town", "Berlin"
     );
-    Map<String, Function<String[], String>> funcs = Map.of(
-      "size", row -> String.valueOf(row[0].length()),
-      "norm", row -> row[0].toLowerCase()
+    List<CsvFunction> funcs = List.of(
+      new CsvFunction() {
+        @Override
+        public List<String> columns() {
+          return List.of("size");
+        }
+
+        @Override
+        public LinkedHashMap<String, String> apply(String[] row) {
+          var data = new LinkedHashMap<String, String>();
+          data.put("size", String.valueOf(row[0].length()));
+          return data;
+        }
+      },
+      new CsvFunction() {
+        @Override
+        public List<String> columns() {
+          return List.of("norm");
+        }
+        @Override
+        public LinkedHashMap<String, String> apply(String[] row) {
+          var data = new LinkedHashMap<String, String>();
+          data.put("norm", row[0].toLowerCase());
+          return data;
+        }
+      }
     );
     PgCopyUtils.loadCSV(con, "person", "/test.csv", defs, funcs);
   }

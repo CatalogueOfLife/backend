@@ -15,6 +15,9 @@ public class SimpleDecision {
   public SimpleDecision() {
   }
 
+  public SimpleDecision(EditorialDecision ed) {
+    this(ed.getId(), ed.getDatasetKey(), ed.getMode());
+  }
   public SimpleDecision(Integer id, Integer datasetKey, EditorialDecision.Mode mode) {
     this.id = id;
     this.datasetKey = datasetKey;

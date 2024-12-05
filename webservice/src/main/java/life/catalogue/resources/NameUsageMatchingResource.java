@@ -4,12 +4,14 @@ import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.matching.*;
+
+import life.catalogue.parser.*;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -20,11 +22,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -44,6 +46,7 @@ public class NameUsageMatchingResource {
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
   private final UsageMatcherGlobal matcher;
+  private final UsageCache uCache;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
   public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
@@ -51,14 +54,7 @@ public class NameUsageMatchingResource {
     this.exec = exec;
     this.factory = factory;
     this.matcher = matcher;
-  }
-
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, boolean verbose) {
-    if (StringUtils.isBlank(sn.getName())) {
-      throw new IllegalArgumentException("Missing name");
-    }
-    IssueContainer issues = new IssueContainer.Simple();
-    return match(datasetKey, sn, issues, verbose);
+    this.uCache = matcher.getUCache();
   }
 
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
@@ -79,6 +75,46 @@ public class NameUsageMatchingResource {
   }
 
 
+  private static SimpleNameClassified<SimpleName> interpret(String id,
+                                                            String q,
+                                                            String name,
+                                                            String sciname,
+                                                            String authorship,
+                                                            String code,
+                                                            String rank,
+                                                            String status,
+                                                            Classification classification,
+                                                            IssueContainer issues) {
+    NomCode iCode = SafeParser.parse(NomCodeParser.PARSER, code)
+      .orNull(Issue.NOMENCLATURAL_CODE_INVALID, issues);
+
+    Rank iRank = SafeParser.parse(RankParser.PARSER, rank)
+      .orNull(Issue.RANK_INVALID, issues);
+
+    EnumNote<TaxonomicStatus> iStatus = SafeParser.parse(TaxonomicStatusParser.PARSER, status)
+      .orElse(() -> new EnumNote<>(TaxonomicStatus.ACCEPTED, null), Issue.TAXONOMIC_STATUS_INVALID, issues);
+
+    var sn = SimpleNameClassified.snc(id, iRank, iCode, iStatus.val, ObjectUtils.coalesce(sciname, name, q), authorship);
+    if (StringUtils.isBlank(sn.getName())) {
+      throw new IllegalArgumentException("Missing name");
+    }
+    if (classification != null) {
+      sn.setClassification(classification.asSimpleNames());
+    }
+    return sn;
+  }
+
+  @GET
+  @Path("{id}")
+  public UsageMatch map(@PathParam("key") int datasetKey,
+                                    @PathParam("id") String id,
+                                    @QueryParam("datasetKey") int targetDatasetKey,
+                                    @QueryParam("verbose") boolean verbose
+  ) throws InterruptedException {
+    return matcher.map(DSID.of(datasetKey, id), targetDatasetKey, verbose);
+  }
+
+
   @GET
   public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
                                       @QueryParam("id") String id,
@@ -86,20 +122,15 @@ public class NameUsageMatchingResource {
                                       @QueryParam("name") String name,
                                       @QueryParam("scientificName") String sciname,
                                       @QueryParam("authorship") String authorship,
-                                      @QueryParam("code") NomCode code,
-                                      @QueryParam("rank") Rank rank,
-                                      @QueryParam("status") @DefaultValue("ACCEPTED") TaxonomicStatus status,
+                                      @QueryParam("code") String code,
+                                      @QueryParam("rank") String rank,
+                                      @QueryParam("status") String status,
                                       @QueryParam("verbose") boolean verbose,
                                       @BeanParam Classification classification
   ) throws InterruptedException {
-    if (status == TaxonomicStatus.BARE_NAME) {
-      throw new IllegalArgumentException("Cannot match a bare name to a name usage");
-    }
-    SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(id, rank, code, status, ObjectUtils.coalesce(sciname, name, q), authorship);
-    if (classification != null) {
-      orig.setClassification(classification.asSimpleNames());
-    }
-    return match(datasetKey, orig, verbose);
+    IssueContainer issues = new IssueContainer.Simple();
+    SimpleNameClassified<SimpleName> orig = interpret(id, q, name, sciname, authorship, code, rank, status, classification, issues);
+    return match(datasetKey, orig, issues, verbose);
   }
 
   private MatchingJob submit(MatchingRequest req, User user) {

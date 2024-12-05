@@ -1,0 +1,87 @@
+alias: EuroLeps
+title: An updated checklist of the European Butterflies (Lepidoptera, Papilionoidea)
+doi: 10.3897/zookeys.811.28712
+url: https://doi.org/10.3897/zookeys.811.28712
+description: |
+  This paper presents an updated checklist of the butterflies of Europe, together with their original name combinations, and their occurrence status in each European country. 
+  According to this checklist, 496 species of the superfamily Papilionoidea occur in Europe. 
+  Changes in comparison with the last version (2.6.2) of Fauna Europaea are discussed. 
+  Compared to that version, 16 species are new additions, either due to cryptic species most of which have been discovered by molecular methods (13 cases) or due to discoveries of Asian species on the eastern border of the European territory in the Ural mountains (three cases). 
+  On the other hand, nine species had to be removed from the list, because they either do not occur in Europe or lost their species status due to new evidence. In addition, three species names had to be changed and 30 species changed their combination due to new evidence on phylogenetic relationships. 
+  Furthermore, minor corrections were applied to some authors’ names and years of publication. 
+  Finally, the name Polyommatus ottomanus Lefèbvre, 1831, which is threatened by its senior synonym Lycaena legeri Freyer, 1830, is declared a nomen protectum, thereby conserving its name in the current combination Lycaena ottomana.
+geographicScope: Europe
+taxonomicScope: Papilionoidea
+issued: 2018-12-31
+version: 1.0.0
+keywords: 
+  - checklist
+  - butterflies
+  - Europe
+creator: 
+  - given: Martin 
+    family: Wiemers
+  - given: Emilio 
+    family: Balletto
+  - given: Vlad 
+    family: Dincă
+  - given: Zdenek 
+    family: Faltynek Fric
+  - given: Gerardo 
+    family: Lamas
+  - given: Vladimir 
+    family: Lukhtanov
+  - given: Miguel L. 
+    family: Munguira
+  - given: Chris A. M.
+    family: van Swaay
+  - given: Roger 
+    family: Vila
+  - given: Albert 
+    family: Vliegenthart
+  - given: Niklas 
+    family: Wahlberg
+  - given: Rudi 
+    family: Verovnik
+contact: 
+  given: Markus
+  family: Döring
+  email: mdoering@gbif.org
+license: CC-BY
+source:
+  - id: Wiemers_2018
+    type: ARTICLE-JOURNAL
+    title: An updated checklist of the European Butterflies (Lepidoptera, Papilionoidea)
+    volume: 811
+    ISSN: 1313-2989
+    url: http://dx.doi.org/10.3897/zookeys.811.28712
+    doi: 10.3897/zookeys.811.28712
+    containerTitle: ZooKeys
+    publisher: Pensoft Publishers
+    author: 
+      - given: Martin 
+        family: Wiemers
+      - given: Emilio 
+        family: Balletto
+      - given: Vlad 
+        family: Dincă
+      - given: Zdenek 
+        family: Faltynek Fric
+      - given: Gerardo 
+        family: Lamas
+      - given: Vladimir 
+        family: Lukhtanov
+      - given: Miguel L. 
+        family: Munguira
+      - given: Chris A. M.
+        family: van Swaay
+      - given: Roger 
+        family: Vila
+      - given: Albert 
+        family: Vliegenthart
+      - given: Niklas 
+        family: Wahlberg
+      - given: Rudi 
+        family: Verovnik
+    issued: 2018-12-31
+    page: 9–45

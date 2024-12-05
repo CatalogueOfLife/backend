@@ -1,0 +1,5 @@
+io.dropwizard.logging.common.ConsoleAppenderFactory
+io.dropwizard.logging.common.FileAppenderFactory
+io.dropwizard.logging.common.SyslogAppenderFactory
+life.catalogue.dw.logging.JobAppenderFactory
+life.catalogue.dw.logging.EcsFileAppenderFactory

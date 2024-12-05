@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
@@ -17,13 +18,14 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 
@@ -79,11 +81,14 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @VaryAccept
   @Path("{id}")
   public Taxon get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    LoggingUtils.setDatasetMDC(datasetKey, getClass());
+    LoggingUtils.setJobMDC(UUID.randomUUID(), getClass());
     var key = new DSIDValue<>(datasetKey, id);
     return dao.getOr404(key);
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Path("{id}")
   @Produces(MediaType.TEXT_PLAIN)
@@ -93,10 +98,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
     ttp.setSynonyms(true);
 
     StreamingOutput stream = os -> {
-      Writer writer = UTF8IoUtils.writerFromStream(os);
-      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, dao.getFactory(), writer);
-      printer.print();
-      writer.flush();
+      try (Writer writer = UTF8IoUtils.writerFromStream(os);
+        var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, dao.getFactory(), writer)
+      ) {
+        printer.print();
+        writer.flush();
+      }
     };
     return Response.ok(stream).build();
   }

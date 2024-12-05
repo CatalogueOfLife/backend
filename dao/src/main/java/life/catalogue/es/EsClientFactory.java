@@ -3,7 +3,11 @@ package life.catalogue.es;
 import life.catalogue.concurrent.NamedThreadFactory;
 
 import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
@@ -34,8 +38,7 @@ public class EsClientFactory {
       int port = Integer.parseInt(ports[i]);
       httpHosts[i] = new HttpHost(hosts[i], port);
     }
-    LOG.info("Connecting to Elasticsearch using hosts={}; ports={}", cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
-    return RestClient.builder(httpHosts)
+    var builder = RestClient.builder(httpHosts)
         .setCompressionEnabled(true)
         .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
           @Override
@@ -51,6 +54,18 @@ public class EsClientFactory {
                 .setSocketTimeout(cfg.socketTimeout);
           }
         });
+
+    LOG.info("Connecting to Elasticsearch using hosts={}; ports={}", cfg.hosts, (cfg.ports == null ? "9200" : cfg.ports));
+    if (cfg.user != null) {
+      final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+      credentialsProvider.setCredentials(AuthScope.ANY,
+        new UsernamePasswordCredentials(cfg.user, cfg.password)
+      );
+      // add authentication
+      builder.setHttpClientConfigCallback(httpClientBuilder -> httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+      LOG.info("Adding authentication for user {} to Elasticsearch client", cfg.user);
+    }
+    return builder;
   }
 
 }

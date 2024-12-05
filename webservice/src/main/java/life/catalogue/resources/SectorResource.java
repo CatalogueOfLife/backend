@@ -25,12 +25,12 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -45,11 +45,11 @@ import io.dropwizard.auth.Auth;
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class SectorResource extends AbstractDatasetScopedResource<Integer, Sector, SectorSearchRequest> {
-  
+  private static final String PARTIAL_PARAMETER = "partial";
+
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorResource.class);
   private final SectorDao dao;
-  private final TaxonDao tdao;
   private final SectorImportDao sid;
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
@@ -59,7 +59,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     this.dao = dao;
     this.sid = sid;
     this.fmsDao = fmsDao;
-    this.tdao = tdao;
     this.assembly = assembly;
   }
 
@@ -78,12 +77,12 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteByDataset(@PathParam("key") int catalogueKey,
                               @QueryParam("datasetKey") int datasetKey,
-                              @QueryParam("full") boolean full,
+                              @DefaultValue("false") @QueryParam(PARTIAL_PARAMETER) boolean partial,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
     for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
-      assembly.deleteSector(s, full, user);
+      assembly.deleteSector(s, !partial, user.getKey());
       counter++;
     }
     LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
@@ -112,8 +111,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void sync(@PathParam("key") int datasetKey, RequestScope request, @Auth User user) {
-    DaoUtils.requireManaged(datasetKey);
-    assembly.sync(datasetKey, request, user);
+    DaoUtils.requireProject(datasetKey);
+    assembly.sync(datasetKey, request, user.getKey());
   }
 
   @DELETE
@@ -141,8 +140,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void delete(@PathParam("key") int datasetKey, @PathParam("id") Integer id, @Context UriInfo uri, @Auth User user) {
     // an asynchroneous sector deletion will be triggered which also removes catalogue data
-    boolean full = Boolean.parseBoolean(uri.getQueryParameters().getFirst("full"));
-    assembly.deleteSector(DSID.of(datasetKey, id), full, user);
+    boolean partial = Boolean.parseBoolean(uri.getQueryParameters().getFirst(PARTIAL_PARAMETER));
+    assembly.deleteSector(DSID.of(datasetKey, id), !partial, user.getKey());
   }
 
   @POST
@@ -159,7 +158,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void deleteSync(@PathParam("key") int datasetKey, @PathParam("id") int id, @Auth User user) {
-    DaoUtils.requireManaged(datasetKey);
+    DaoUtils.requireProject(datasetKey);
     assembly.cancel(DSID.of(datasetKey, id), user.getKey());
   }
 
@@ -190,19 +189,10 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   public SectorImport getSyncAttempt(@PathParam("key") int datasetKey, @PathParam("id") int id,
                                        @PathParam("attempt") int attempt,
                                        @Context SqlSession session) {
-    DaoUtils.requireManaged(datasetKey);
+    DaoUtils.requireProject(datasetKey);
     return session.getMapper(SectorImportMapper.class).get(DSID.of(datasetKey, id), attempt);
   }
 
-  @GET
-  @Path("{id}/sync/{attempt}/tree")
-  @Produces({MediaType.TEXT_PLAIN})
-  public Stream<String> getSyncAttemptTree(@PathParam("key") int datasetKey,
-                                           @PathParam("id") int id,
-                                           @PathParam("attempt") int attempt) {
-    return fmsDao.getTree(DSID.of(datasetKey, id), attempt);
-  }
-  
   @GET
   @Path("{id}/sync/{attempt}/names")
   @Produces({MediaType.TEXT_PLAIN})

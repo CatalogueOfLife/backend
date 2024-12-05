@@ -26,6 +26,7 @@
     <if test="type != null">
       t.dataset_sectors,
       s.subject_dataset_key AS sector_dataset_key,
+      s.mode AS sector_mode,
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
         s.id AS sector_key,
         NULL AS est_id,
@@ -54,7 +55,8 @@
     <if test="type != null">
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
         LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
-        LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{catalogueKey} AND s.subject_dataset_key=#{datasetKey} AND s.placeholder_rank IS NULL
+        LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{catalogueKey} AND s.subject_dataset_key=#{datasetKey}
+          AND s.placeholder_rank IS NULL AND s.mode != 'MERGE'
       </if>
       <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
         LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
@@ -75,6 +77,8 @@
   <resultMap id="treeResultMap" type="life.catalogue.api.model.TreeNode$TreeNodeMybatis" autoMapping="true">
     <id property="id" column="id"/>
     <result property="datasetSectors" column="dataset_sectors"/>
+    <result property="sectorDatasetKey" column="sector_dataset_key"/>
+    <result property="sectorMode" column="sector_mode"/>
     <association property="_name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap"/>
     <association property="decision" javaType="EditorialDecision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"
                  notNullColumn="id"/>

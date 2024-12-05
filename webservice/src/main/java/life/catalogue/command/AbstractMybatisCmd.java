@@ -13,8 +13,7 @@ import life.catalogue.dw.jersey.ColJerseyBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.ws.rs.client.Client;
-
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.CommonProperties;
@@ -29,7 +28,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.JerseyClientBuilder;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.core.setup.Bootstrap;
+import jakarta.ws.rs.client.Client;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
@@ -45,6 +45,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
   Client jerseyClient;
   ExecutorService exec;
   private final boolean jersey;
+  CloseableHttpClient httpClient;
 
   public AbstractMybatisCmd(String name, String description) {
     this(name, false, description);
@@ -71,6 +72,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
     ns = namespace;
 
     try {
+      LOG.info("Connecting to database {} on {}", cfg.db.database, cfg.db.host);
       dataSource = cfg.db.pool();
       factory = MybatisFactory.configure(dataSource, getClass().getSimpleName());
       DatasetInfoCache.CACHE.setFactory(factory);
@@ -91,7 +93,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
       if (jersey) {
         final String userAgent = "ColCli/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
         bootstrap.addBundle(new ColJerseyBundle());
-        var httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
+        httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
           .using(cfg.client)
           .build(userAgent);
         exec = Executors.newFixedThreadPool(4);

@@ -14,7 +14,7 @@ public class TestEntityUnmodifiedRule extends ExternalResource {
   @Override
   protected void after() {
     if (TestEntityGenerator.hasObjectsChanged()) {
-      throw new IllegalStateException("static test instances have been changed after the test");
+      throw new IllegalStateException("static test instances have been changed DURING the test !!!");
     }
   }
 }

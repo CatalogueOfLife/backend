@@ -6,7 +6,7 @@ import life.catalogue.api.model.SpeciesEstimate;
 import life.catalogue.api.search.EstimateSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EstimateType;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;

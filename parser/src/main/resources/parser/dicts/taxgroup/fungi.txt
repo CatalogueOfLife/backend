@@ -1,5 +1,8 @@
+Amastigomycota
+Dikarya
 Eumycota
 Fungi
 Holomycota
 Pilze
+Symbiomycota
 Yeast

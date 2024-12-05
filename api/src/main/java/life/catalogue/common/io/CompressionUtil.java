@@ -1,12 +1,22 @@
 package life.catalogue.common.io;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.*;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveStreamFactory;
+import org.apache.commons.compress.compressors.CompressorException;
+import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.HiddenFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -24,8 +34,7 @@ public class CompressionUtil {
   
   private static final Logger LOG = LoggerFactory.getLogger(CompressionUtil.class);
   private static final int BUFFER = 2048;
-  private static final String APPLE_RESOURCE_FORK = "__MACOSX";
-  
+
   /**
    * Tries to decompress a file trying gzip or zip regardless of the filename or its suffix.
    * If nothing works leave file as it is.
@@ -48,20 +57,19 @@ public class CompressionUtil {
     // first try zip
     try {
       files = unzipFile(directory, compressedFile);
-      
+
     } catch (ZipException e) {
       LOG.debug("No zip compression");
       // Try gzip if needed
       try {
-        files = ungzipFile(directory, compressedFile);
-        
+        files = unpackOther(directory, compressedFile);
+
       } catch (Exception e2) {
         LOG.debug("No gzip compression");
         files = copyOriginalFile(directory, compressedFile);
         LOG.info("Assuming source file is uncompressed");
       }
     }
-    
     return files;
   }
   
@@ -70,76 +78,73 @@ public class CompressionUtil {
     FileUtils.copyFile(sourceFile, targetFile);
     return Lists.newArrayList(targetFile);
   }
-  
-  /**
-   * Extracts a gzipped file. Subdirectories or hidden files (i.e. files starting with a dot) are being ignored.
-   *
-   * @param directory where the file should be extracted to
-   * @param zipFile   to extract
-   * @return a list of all created files
-   */
-  public static List<File> ungzipFile(File directory, File zipFile) throws IOException {
-    List<File> files = new ArrayList<File>();
-    try (TarArchiveInputStream in = new TarArchiveInputStream(new GZIPInputStream(new FileInputStream(zipFile)))){
-      TarArchiveEntry entry;
-      while ((entry = in.getNextTarEntry()) != null) {
-        if (entry.isDirectory()) {
-          LOG.debug("TAR archive contains directories which are being ignored");
-          continue;
-        }
-        String fn = new File(entry.getName()).getName();
-        if (fn.startsWith(".")) {
-          LOG.debug("TAR archive contains a hidden file which is being ignored");
-          continue;
-        }
-        File targetFile = new File(directory, fn);
-        if (targetFile.exists()) {
-          LOG.warn("TAR archive contains duplicate filenames, only the first is being extracted");
-          continue;
-        }
-        LOG.debug("Extracting file: {} to: {}", entry.getName(), targetFile.getAbsolutePath());
-        try (FileOutputStream out = new FileOutputStream(targetFile)){
-          IOUtils.copy(in, out);
-        }
-        files.add(targetFile);
-      }
-    }
-    return files;
-  }
-  
-  /**
-   * Gunzip a file.  Use this method with isTarred false if the gzip contains a single file.  If it's a gzip
-   * of a tar archive pass true to isTarred (or call @ungzipFile(directory, zipFile) which is what this method
-   * just redirects to for isTarred).
-   *
-   * @param directory the output directory for the uncompressed file(s)
-   * @param zipFile   the gzip file
-   * @param isTarred  true if the gzip contains a tar archive
-   * @return a List of the uncompressed file name(s)
-   * @throws IOException if reading or writing fails
-   */
-  public static List<File> ungzipFile(File directory, File zipFile, boolean isTarred) throws IOException {
-    if (isTarred) return ungzipFile(directory, zipFile);
-    
-    List<File> files = new ArrayList<>();
-    // assume that the gzip filename is the filename + .gz
-    String unzippedName = zipFile.getName().substring(0, zipFile.getName().lastIndexOf("."));
-    File outputFile = new File(directory, unzippedName);
 
-    try (GZIPInputStream in = new GZIPInputStream(new FileInputStream(zipFile));
-         BufferedOutputStream dest = new BufferedOutputStream(new FileOutputStream(outputFile), BUFFER);
-    ){
-      LOG.debug("Extracting file: {} to: {}", unzippedName, outputFile.getAbsolutePath());
-      int count;
-      byte[] data = new byte[BUFFER];
-      while ((count = in.read(data, 0, BUFFER)) != -1) {
-        dest.write(data, 0, count);
+  /**
+   * Uses apache to decompress any archive and preserve subdirectories, but remove hidden files and directories
+   */
+  public static List<File> unpackOther(File directory, File zipFile) throws IOException {
+    List<File> files = new ArrayList<>();
+    try (var fin = new BufferedInputStream(new FileInputStream(zipFile))) {
+      try (var in = new CompressorStreamFactory().createCompressorInputStream(fin)) {
+        files = unarchive(directory, in, zipFile.getName());
+      } catch (CompressorException e) {
+        // tar only?
+        files = unarchive(directory, fin, zipFile.getName());
       }
-      files.add(outputFile);
     }
     return files;
   }
-  
+
+  private static List<File> unarchive(File directory, InputStream in, String originalFilename) throws IOException {
+    try (ArchiveInputStream ain = new ArchiveStreamFactory().createArchiveInputStream(new BufferedInputStream(in))) {
+      ArchiveEntry entry;
+      while ((entry = ain.getNextEntry()) != null) {
+        // ignore hidden directories
+        if (entry.isDirectory()) {
+          if (isHiddenFile(new File(entry.getName()))) {
+            LOG.debug("Ignoring hidden directory: {}", entry.getName());
+          } else {
+            new File(directory, entry.getName()).mkdir();
+          }
+        }
+        // ignore hidden files
+        else {
+          if (isHiddenFile(new File(entry.getName()))) {
+            LOG.debug("Ignoring hidden file: {}", entry.getName());
+          } else {
+            File targetFile = new File(directory, entry.getName());
+            // ensure parent folder always exists, and extract file
+            targetFile.getParentFile().mkdirs();
+            LOG.debug("Extracting file: {} to: {}", entry.getName(), targetFile.getAbsolutePath());
+            try (FileOutputStream out = new FileOutputStream(targetFile)) {
+              IOUtils.copy(ain, out);
+            }
+          }
+        }
+      }
+      // remove the wrapping root directory and flatten structure
+      removeRootDirectories(directory);
+      return listFiles(directory);
+
+    } catch (ArchiveException e) {
+      // single, compressed file
+      File targetFile = new File(directory, FilenameUtils.getBaseName(originalFilename));
+      LOG.info("No archive. Using single file: {} ", targetFile.getAbsolutePath());
+      try (FileOutputStream out = new FileOutputStream(targetFile)) {
+        IOUtils.copy(in, out);
+      }
+      return List.of(targetFile);
+    }
+  }
+
+  static List<File> listFiles(File root) throws IOException {
+    var rootPath = root.toPath();
+    return Files.walk(rootPath)
+      .filter(p -> !p.equals(rootPath))
+      .map(Path::toFile)
+      .collect(Collectors.toList());
+  }
+
   /**
    * Zip a directory with all files but skipping included subdirectories.
    * Only files directly within the directory are added to the archive.
@@ -212,7 +217,7 @@ public class CompressionUtil {
   
   /**
    * Extracts a zipped file into a target directory. If the file is wrapped in a root directory, this is removed by
-   * default. Other subdirectories are ignored according to the parameter keepSubdirectories.
+   * default. Other subdirectories, unless hidden, are kept.
    * </br>
    * The following types of files are also ignored by default:
    * i) hidden files (i.e. files starting with a dot)
@@ -228,12 +233,8 @@ public class CompressionUtil {
       Enumeration<? extends ZipEntry> entries = zf.entries();
       while (entries.hasMoreElements()) {
         ZipEntry entry = entries.nextElement();
-        // ignore resource fork directories and subfiles
-        if (entry.getName().toUpperCase().contains(APPLE_RESOURCE_FORK)) {
-          LOG.debug("Ignoring resource fork file: {}", entry.getName());
-        }
-        // ignore directories and hidden directories (e.g. .svn) (based on flag)
-        else if (entry.isDirectory()) {
+        // ignore hidden directories
+        if (entry.isDirectory()) {
           if (isHiddenFile(new File(entry.getName()))) {
             LOG.debug("Ignoring hidden directory: {}", entry.getName());
           } else {
@@ -254,8 +255,8 @@ public class CompressionUtil {
       }
     }
     // remove the wrapping root directory and flatten structure
-    removeRootDirectory(directory);
-    return (directory.listFiles() == null) ? new ArrayList<>() : Arrays.asList(directory.listFiles());
+    removeRootDirectories(directory);
+    return listFiles(directory);
   }
   
   /**
@@ -275,15 +276,17 @@ public class CompressionUtil {
    * Removes a wrapping root directory and flatten its structure by moving all that root directory's files and
    * subdirectories up to the same level as the root directory.
    */
-  private static void removeRootDirectory(File directory) {
+  private static void removeRootDirectories(File directory) {
     File[] rootFiles = directory.listFiles((FileFilter) HiddenFileFilter.VISIBLE);
     if (rootFiles != null && rootFiles.length == 1) {
       File root = rootFiles[0];
       if (root.isDirectory()) {
         LOG.debug("Removing single root folder {} found in decompressed archive", root.getAbsoluteFile());
         for (File f : org.apache.commons.io.FileUtils.listFilesAndDirs(root, TrueFileFilter.TRUE, TrueFileFilter.TRUE)) {
-          File f2 = new File(directory, f.getName());
-          f.renameTo(f2);
+          if (!f.equals(root)) {
+            File f2 = new File(f.getAbsolutePath().replaceFirst(root.getAbsolutePath(), directory.getAbsolutePath()));
+            f.renameTo(f2);
+          }
         }
         root.delete();
       }

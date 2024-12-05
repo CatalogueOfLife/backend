@@ -34,6 +34,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   public static Dataset populate(Dataset d) {
+    d.setPrivat(false);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
@@ -64,6 +65,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
       "name", "http://" + RandomUtils.randomLatinString(8) + ".org/name/{ID}",
       "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
     ));
+    d.setConversion(new Dataset.UrlDescription("http://www.gbif.org/readme", "My first instructions how to read"));
     d.setNotes("my notes");
     d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);
@@ -127,6 +129,11 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(3, mapper().keysAbove(1, LocalDateTime.now()).size());
     assertEquals(0, mapper().keysAbove(1, LocalDateTime.MIN).size());
     assertEquals(0, mapper().keysAbove(10000, null).size());
+  }
+
+  @Test
+  public void keysByPublisher() throws Exception {
+    assertEquals(0, mapper().keysByPublisher(UUID.randomUUID()).size());
   }
 
   @Test
@@ -495,6 +502,40 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void sourceSuggest() throws Exception {
+    final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
+    final Integer d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms");
+    final Integer d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset");
+    final Integer d4 = createSearchableDataset("FOO", "bar;Döring", "BAR", null);
+    final Integer d5 = createSearchableDataset("WORMS worms", "beard", "WORMS", "Worms with even more worms than worms");
+    final Integer d6 = createSearchableDataset("Lista taxonómica de las especies de equinodermos de México", "Solís Marín", null, "La lista taxonómica de equinodermos de México incluye 1438 taxones con estatus válido: un phylum, cinco clases, 35 órdenes, 120 familias, 409 géneros, 34 subgéneros, 797 especies, 35 subespecies, dos variedades; así como 1031 taxones con estatus sinónimo: tres familias, 158 géneros, 20 subgéneros, 829 especies, 4 subespecies, 13 variedades y 4 formas.");
+    createSector(Datasets.COL, d1);
+    createSector(Datasets.COL, d2);
+    createSector(Datasets.COL, d3);
+    createSector(Datasets.COL, d4);
+    createSector(Datasets.COL, d6);
+    commit();
+
+    for (boolean b : List.of(true, false)) {
+      assertTrue(mapper().suggest("qwertz", Datasets.COL, b).isEmpty());
+      assertTrue(mapper().suggest("gbif", Datasets.COL, b).isEmpty());
+      assertEquals(d1, mapper().suggest("ITI", Datasets.COL, b).get(0).getKey());
+      assertEquals(d1, mapper().suggest("itis", Datasets.COL, b).get(0).getKey());
+
+      assertEquals(2, mapper().suggest("worm", null, b).size());
+      assertEquals(d3, mapper().suggest("worm", Datasets.COL, b).get(0).getKey());
+      assertEquals(d6, mapper().suggest("Lista taxonómica de las especies de equinodermos de México", Datasets.COL, b).get(0).getKey());
+      assertEquals(d6, mapper().suggest("Lista taxonomica de las especies de equinodermos de Mexico", Datasets.COL, b).get(0).getKey());
+      assertEquals(d6, mapper().suggest("especies de equinodermos de Mexico", Datasets.COL, b).get(0).getKey());
+    }
+
+    mapper().delete(d5);
+    commit();
+    assertEquals(1, mapper().suggest("worm", null, true).size());
+    assertEquals(d3, mapper().suggest("worm", Datasets.COL, true).get(0).getKey());
+  }
+
+  @Test
   public void search() throws Exception {
     final Integer d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms");
     commit();
@@ -634,12 +675,6 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     query.setHasSourceDataset(99); // non existing
     assertEquals(0, mapper().search(query, null, new Page()).size());
 
-    // partial search not supported anymore!
-    // https://github.com/Sp2000/colplus-backend/issues/353
-//    query = DatasetSearchRequest.byQuery("wor");
-//    List<Dataset> res = mapper().search(query, null, new Page());
-//    assertEquals(1, res.size());
-
     // create another catalogue to test non draft sectors
     Dataset cat = TestEntityGenerator.newDataset("cat2");
     TestEntityGenerator.setUser(cat);
@@ -702,15 +737,24 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     query.setQ("Döring");
     var res = mapper().search(query, null, new Page());
     assertEquals(d4, res.get(0).getKey());
+
+    // lastImportState
+    query = new DatasetSearchRequest();
+    assertEquals(8, mapper().search(query, null, new Page()).size());
+    query.setLastImportState(ImportState.FAILED);
+    assertEquals(0, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
     Dataset ds = new Dataset();
+    ds.setPrivat(false);
     ds.setTitle(title);
     if (author != null) {
       ds.setCreator(Agent.parse(List.of(author.split(";"))));
     }
-    ds.setContributor(List.of(Agent.parse(organisation)));
+    if (organisation != null) {
+      ds.setContributor(List.of(Agent.parse(organisation)));
+    }
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
     ds.setOrigin(DatasetOrigin.PROJECT);

@@ -2,7 +2,7 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * DataCite DOI configuration.

@@ -1,8 +1,8 @@
 package life.catalogue.es;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -19,6 +19,14 @@ public class EsConfig {
    */
   @NotNull
   public String ports = "9200";
+
+  /**
+   * Username to use for authentication.
+   * If NULL no auth will be added to the client.
+   */
+  public String user;
+
+  public String password;
 
   /**
    * Configuration settings for the name usage index

@@ -21,8 +21,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class JsonFlatPrinter extends AbstractPrinter {
   private boolean first;
 
-  public JsonFlatPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
-    super(false, params, ranks, countRank, taxonCounter, factory, writer);
+  public JsonFlatPrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct, @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+    super(false, params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
   @Override

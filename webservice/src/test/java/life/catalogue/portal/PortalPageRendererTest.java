@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -103,7 +103,7 @@ public class PortalPageRendererTest {
 
   @Test
   public void renderTombstone() throws Exception {
-    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD);
+    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD, false);
     assertEquals(HttpStatus.SC_OK, res.getStatus());
     System.out.println(res.getEntity().toString());
   }

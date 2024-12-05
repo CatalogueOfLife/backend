@@ -6,9 +6,9 @@ import life.catalogue.api.model.User;
 import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
-import javax.annotation.security.RolesAllowed;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -40,7 +40,9 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @POST
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public Integer create(T obj, @Auth User user) {
-    obj.applyUser(user);
+    if (obj != null) {
+      obj.applyUser(user);
+    }
     return dao.create(obj, user.getKey());
   }
 
@@ -86,7 +88,7 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
   @DELETE
   @Path("{key}")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void delete(@PathParam("key") Integer key, @Auth User user) {
+  public void delete(@PathParam("key") Integer key, @QueryParam("async") boolean async, @Auth User user) {
     int i = dao.delete(key, user.getKey());
     if (i == 0) {
       throw NotFoundException.notFound(objClass, key);

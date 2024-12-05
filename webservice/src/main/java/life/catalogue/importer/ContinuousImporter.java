@@ -1,6 +1,5 @@
 package life.catalogue.importer;
 
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.Managed;
 import life.catalogue.common.util.LoggingUtils;

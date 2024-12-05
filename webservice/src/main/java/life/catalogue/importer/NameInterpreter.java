@@ -6,14 +6,10 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.lang.InterruptedRuntimeException;
-import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.parser.*;
 
 import life.catalogue.parser.NameParser;
-
-import org.apache.commons.collections4.ListUtils;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.*;
@@ -107,6 +103,7 @@ public class NameInterpreter {
     NamePart nothoVal = parse(NamePartParser.PARSER, v.get(notho)).orNull(Issue.NOTHO_INVALID, v);
     Boolean originalSpellingVal = parse(BooleanParser.PARSER, v.get(originalSpelling)).orNull(Issue.ORIGINAL_SPELLING_INVALID, v);
 
+    // now the real thing
     var opt = interpret(vrank==null,
       id, code, rank, sciname, authorship, publishedInYear,
       uninomial, genus, infraGenus, species, infraspecies, cultivar,
@@ -327,7 +324,7 @@ public class NameInterpreter {
       pnu.getName().rebuildScientificName();
 
       // look for irregularities and flag issues
-      if (pnu.getName().hasAuthorship()) {
+      if (pnu.getName().hasParsedAuthorship()) {
         verifyNomenYear(pnu.getName().getCombinationAuthorship(), issues);
         verifyNomenYear(pnu.getName().getBasionymAuthorship(), issues);
       }

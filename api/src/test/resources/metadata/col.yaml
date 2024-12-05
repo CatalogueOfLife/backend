@@ -1,11 +1,11 @@
 doi: 10.15468/col.grt63j
 identifier:
   col: 2278
-alias: COL21
-title: Catalogue of Life Checklist
+alias: COL24
+title: Catalogue of Life
 issn: 2405-8858
-issued: 2021-06-15
-version: 2021-06-15
+issued: 2024-06-15
+version: 2024-06-15
 
 description: |
   The Catalogue of Life (CoL) is an assembly of expert-based global species checklists with the aim to build a comprehensive catalogue of all known species of organisms on Earth.
@@ -21,21 +21,20 @@ contact:
   email: support@catalogueoflife.org
 
 creator:
-  - organisation: Catalogue of Life Consortium
-  - given: Nicolas
-    family: Bailly
+  - given: Olaf
+    family: Bankí
     orcid: 0000-0003-4994-0653
-  - given: Rainer
-    family: Froese
-    orcid: 0000-0001-9745-636X
-  - given: Daniel
-    family: Pauly
-    orcid: 0000-0003-3756-4793
+  - given: Yuri
+    family: Roskov
+  - given: Diana
+    family: Hernández
+  - given: Camila
+    family: Plata
   # ... and all other GSD authors & COL team members listed here
 
 publisher:
-  organisation: Species 2000 & ITIS
-  city: Leiden
+  organisation: Catalogue of Life
+  city: Amsterdam
   country: NL
 
 contributor:

@@ -1,0 +1,4 @@
+†Larus fuscus [species] {ID=root-2 REF=ref-1,ref-1b CHRONO=Aalenian-Sinemurian}
+  =Larus erfundus [species] {ID=s2}
+  =Larus fusca [species] {ID=s1}
+Malus sylvestris [species] {ID=root-1 PUB=ref-1 REF=ref-1 VERN=deu:Apfel,eng:Apple,nld:Meeuw}

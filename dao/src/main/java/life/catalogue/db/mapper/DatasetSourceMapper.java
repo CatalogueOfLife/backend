@@ -35,33 +35,49 @@ public interface DatasetSourceMapper extends DatasetAgentMapper {
    * Retrieves a single source dataset for a project, reading either from the latest version
    * or the dataset archive if the last successful sync attempt was older.
    * @param key the source dataset key
-   * @param datasetKey the project dataset key. No release keys allowed!
+   * @param projectKey the project dataset key. No release keys allowed!
    */
-  Dataset getProjectSource(@Param("key") int key, @Param("datasetKey") int datasetKey);
+  Dataset getProjectSource(@Param("key") int key, @Param("datasetKey") int projectKey);
 
   /**
    * @param datasetKey the release dataset key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
    */
   List<Dataset> listReleaseSources(@Param("datasetKey") int datasetKey,
-                                   @Param("hidePublisher") boolean hidePublisherSources
-  );
-  List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey,
-                                         @Param("hidePublisher") boolean hidePublisherSources
-  );
-
-  List<Dataset> listReleaseSourcesAuthorsOnly(@Param("datasetKey") int datasetKey);
+                                   @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
-   * Lists all project or release sources retrieving metadata either from the latest version
+   * Same as listReleaseSources, but returns a stripped down Dataset instances.
+   * See listProjectSourcesSimple for details
+   * @param datasetKey the release dataset key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
+   */
+  List<Dataset> listReleaseSourcesSimple(@Param("datasetKey") int datasetKey,
+                                         @Param("inclPublisherSources") boolean inclPublisherSources);
+
+  /**
+   * Lists all project or release sources based on the sectors in the dataset,
+   * retrieving metadata either from the latest version
    * or an archived copy depending on the import attempt of the last sync stored in the sectors.
+   * This does not return datasets of sectors created by a sector publisher.
+   * It does NOT rely on dataset_source records for releases and can be used to create them.
+   * @param datasetKey the project/release key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
    */
   List<Dataset> listProjectSources(@Param("datasetKey") int datasetKey,
-                                   @Param("hidePublisher") boolean hidePublisherSources
-  );
+                                   @Param("inclPublisherSources") boolean inclPublisherSources);
 
+  /**
+   * Same as listProjectSources above, but with stripped down Dataset instances:
+   *  - no description
+   *  - no container dataset
+   *  - no bibliography
+   *  - no contributors
+   * @param datasetKey the project/release key
+   * @param inclPublisherSources if true includes all sources, if false excludes the sources which have a publisher configured
+   */
   List<Dataset> listProjectSourcesSimple(@Param("datasetKey") int datasetKey,
-                                         @Param("hidePublisher") boolean hidePublisherSources
-  );
+                                         @Param("inclPublisherSources") boolean inclPublisherSources);
 
   /**
    * Deletes a single source dataset for the given release

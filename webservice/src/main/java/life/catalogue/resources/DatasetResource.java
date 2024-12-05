@@ -1,5 +1,6 @@
 package life.catalogue.resources;
 
+import life.catalogue.admin.jobs.ValidationJob;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -12,6 +13,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.job.DeleteDatasetJob;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
@@ -24,12 +26,12 @@ import life.catalogue.release.ProjectRelease;
 
 import java.util.*;
 
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -51,13 +53,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final JobExecutor exec;
   private final ProjectCopyFactory jobFactory;
 
-  private final AuthorlistGenerator authGen;
-
   public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
     this.sourceDao = sourceDao;
-    this.authGen = new AuthorlistGenerator(sourceDao);
     this.assembly = assembly;
     this.jobFactory = jobFactory;
     this.exec = exec;
@@ -67,7 +66,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
    * @return the primary key of the object. Together with the CreatedResponseFilter will return a 201 location
    */
   @POST
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Consumes({MediaType.APPLICATION_XML, MediaType.TEXT_XML, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
   public Integer createAlt(Dataset obj, @Auth User user) {
     return this.create(obj, user);
@@ -123,6 +121,18 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
       dao.patchMetadata(new DatasetWithSettings(old,settings), obj);
     }
     this.update(key, old, user);
+  }
+
+
+  @Override
+  public void delete(Integer key, boolean async, User user) {
+    if (async) {
+      // the constructor already makes sure the dataset exists
+      var job = new DeleteDatasetJob(key, user.getKey(), dao);
+      exec.submit(job);
+    } else {
+      super.delete(key, async, user);
+    }
   }
 
   @PUT
@@ -224,20 +234,17 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @POST
+  @Path("/{key}/validate")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void validate(@PathParam("key") int key, @Auth User user) {
+    exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
+  }
+
+  @POST
   @Path("/{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void release(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildRelease(key, user.getKey());
-    exec.submit(job);
-  }
-
-  @POST
-  @Hidden
-  @Path("/{key}/preprelease")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN})
-  public void preprelease(@PathParam("key") int key, @Auth User user) {
-    var job = jobFactory.buildPrepRelease(key, user.getKey());
     exec.submit(job);
   }
 
@@ -259,11 +266,11 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Path("/{key}/source")
-  public List<Dataset> projectSources(@PathParam("key") int datasetKey,
-                                      @QueryParam("showPublisherSources") boolean showPublisherSources,
-                                      @QueryParam("notCurrentOnly") boolean notCurrentOnly
+  public List<Dataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
+                                               @QueryParam("inclPublisherSources") boolean inclPublisherSources,
+                                               @QueryParam("notCurrentOnly") boolean notCurrentOnly
   ) {
-    var ds = sourceDao.listSimple(datasetKey, !showPublisherSources);
+    var ds = sourceDao.listSimple(datasetKey, inclPublisherSources);
     if (notCurrentOnly) {
       List<Dataset> notCurrent = new ArrayList<>();
       try (SqlSession session = factory.openSession()) {
@@ -280,6 +287,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     } else {
       return ds;
     }
+  }
+
+  @GET
+  @Path("/{key}/source/suggest")
+  public List<DatasetSimple> projectOrReleaseSourceSuggest(@PathParam("key") int datasetKey,
+                                                     @QueryParam("merge") boolean inclMerge,
+                                                     @QueryParam("q") String query
+  ) {
+    return sourceDao.suggest(datasetKey, query, inclMerge);
   }
 
   @GET

@@ -2,7 +2,7 @@ package life.catalogue.api.model;
 
 import java.util.Objects;
 
-import javax.ws.rs.PathParam;
+import jakarta.ws.rs.PathParam;
 
 /**
  * Globally unique identifier across all datasets by combining the datasetKey and ID.

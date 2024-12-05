@@ -3,6 +3,7 @@ package life.catalogue.matching.decision;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.SectorMapper;
@@ -36,6 +37,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     // subject
     if (needsRematching(req.isSubject(), obj.getSubject())) {
       LOG.debug("Match subject {} of sector {} in project {}", obj.getSubject(), obj.getId(), projectKey);
+      // we dont want to let the parent break a subject - thats mostly useful for editorial decision
+      obj.getSubject().setParent(null);
       NameUsage u = matchSubjectUniquely(obj.getSubjectDatasetKey(), obj, obj.getSubject(), obj.getOriginalSubjectId());
       obj.getSubject().setId(null);
       if (u != null) {
@@ -51,6 +54,8 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     // target can have multiple sectors
     if (needsRematching(req.isTarget(), obj.getTarget())) {
       LOG.debug("Match target {} of sector {} in project {}", obj.getTarget(), obj.getId(), projectKey);
+      // we dont want to let the parent break a target - thats mostly useful for editorial decision
+      obj.getTarget().setParent(null);
       NameUsage u = matchTargetUniquely(obj, obj.getTarget());
       obj.getTarget().setId(null);
       if (u != null) {
@@ -58,14 +63,17 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       }
     }
     // counter
-    if (updateCounter(old.getSubjectID(), obj.getSubjectID(),   old.getTargetID(), obj.getTargetID())) {
+    if (updateCounter(obj.getSubject() != null, old.getSubjectID(), obj.getSubjectID(),
+                      obj.getTarget()  != null, old.getTargetID(), obj.getTargetID())
+    ) {
       dao.update(obj, old, userKey, session);
     }
   }
 
-  private static boolean needsRematching(Boolean flag, SimpleName sn){
+  private static boolean needsRematching(Boolean flag, SimpleNameLink sn){
+    if (sn == null) return false;
     if (flag != null) return flag;
-    return sn == null || sn.getId() == null;
+    return sn.isBroken() || sn.getId() == null;
   }
   
 }

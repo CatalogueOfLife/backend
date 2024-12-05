@@ -44,14 +44,18 @@ public class SectorPriority {
     LOG.info("Loaded {} merge sector priorities for dataset {} from {} to {}", mergeSectorPrios.size(), datasetKey, min, max);
   }
 
-  public Integer priority(LinneanNameUsage u) {
-    if (u.getSectorKey() == null) {
+  public int priority(LinneanNameUsage u) {
+    return priority(u.getSectorKey());
+  }
+
+  public int priority(Integer sectorKey) {
+    if (sectorKey == null) {
       // project managed data has highest priority
       return minimum-2;
 
     } else {
-      if (mergeSectorPrios.containsKey((int) u.getSectorKey())) {
-        return mergeSectorPrios.get((int) u.getSectorKey());
+      if (mergeSectorPrios.containsKey((int) sectorKey)) {
+        return mergeSectorPrios.get((int) sectorKey);
       }
       // no merge sector, use 2nd highest priority
       return minimum-1;

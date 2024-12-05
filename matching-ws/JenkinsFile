@@ -1,0 +1,27 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Download Dockerfile') {
+            steps {
+                script {
+                    // Download Dockerfile from URL
+                    sh "curl -o Dockerfile https://raw.githubusercontent.com/CatalogueOfLife/backend/matching-ws/matching-ws/Dockerfile"
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def datasetIds = params.CLB_DATASET_ID.split(',')
+                    for (def datasetID in datasetIds) {
+                        // Run Docker build with parameters
+                        sh "docker build --platform linux/amd64 --build-arg CLB_DATASET_ID=${datasetID} --build-arg CLB_URL=${CLB_URL} --build-arg CLB_USER=${CLB_USER} --build-arg CLB_PASSWORD=${CLB_PASSWORD} . -t docker.gbif.org/matching-ws/${datasetID}:1.0-SNAPSHOT"
+                        sh "docker push docker.gbif.org/matching-ws/${datasetID}:1.0-SNAPSHOT"
+                    }
+                }
+            }
+        }
+    }
+}

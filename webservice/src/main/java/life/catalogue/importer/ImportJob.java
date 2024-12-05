@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.ChecksumUtils;
 import life.catalogue.common.io.CompressionUtil;
+import life.catalogue.common.io.DownloadException;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
@@ -29,7 +30,7 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
@@ -40,6 +41,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -47,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -218,7 +220,7 @@ public class ImportJob implements Runnable {
       } else {
         // copy uploaded data to repository
         LOG.info("Move upload for dataset {} from {} to {}", datasetKey, req.upload, archive);
-        Files.move(req.upload, archive.toPath());
+        Files.move(req.upload, archive.toPath(), StandardCopyOption.REPLACE_EXISTING);
       }
 
     } else if (DatasetOrigin.EXTERNAL == dataset.getOrigin()){
@@ -235,6 +237,13 @@ public class ImportJob implements Runnable {
         } else {
           LOG.info("Download source for dataset {} from {} to {}", datasetKey, dataset.getDataAccess(), archive);
           downloader.downloadIfModified(di.getDownloadUri(), archive);
+        }
+        // make sure we received a real archive and not just a plain text error response
+        // https://github.com/CatalogueOfLife/backend/issues/1327
+        var size = Files.size(archive.toPath());
+        // 22 bytes is the minimum zip file length, BDJ responds with 14 text bytes only
+        if (size < 22) {
+          throw new DownloadException(di.getDownloadUri(), "Tiny file with "+size+" bytes. Cannot be an archive");
         }
       }
 
@@ -253,16 +262,23 @@ public class ImportJob implements Runnable {
       try (SqlSession session = factory.openSession()) {
         String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
         if (Objects.equals(lastMD5, di.getMd5())) {
-          LOG.info("MD5 unchanged: {}", di.getMd5());
-          isModified = false;
           // replace archive with symlink to last archive to save space
           File lastArchive = cfg.normalizer.archive(datasetKey, dataset.getImportAttempt());
           if (lastArchive.exists()) {
-            Path lastReal = lastArchive.toPath().toRealPath();
-            if (archive.exists()) {
-              archive.delete();
+            // we have seen wrong MD5 hashes being stored (BDJ), so lets recalculate the last one from the file to make sure!
+            var lastMD5Redone = ChecksumUtils.getMD5Checksum(lastArchive);
+            if (lastMD5Redone.equals(lastMD5)) {
+              isModified = false;
+              LOG.info("MD5 unchanged: {}", di.getMd5());
+              Path lastReal = lastArchive.toPath().toRealPath();
+              if (archive.exists()) {
+                archive.delete();
+              }
+              Files.createSymbolicLink(archive.toPath(), lastReal);
+
+            } else {
+              LOG.info("MD5 stored for attempt {} differs from stored file. Consider archive {}#{} modified", dataset.getImportAttempt(), datasetKey, getAttempt());
             }
-            Files.createSymbolicLink(archive.toPath(), lastReal);
           }
         } else {
           LOG.info("MD5 changed from attempt {}: {} to {}", dataset.getImportAttempt(), lastMD5, di.getMd5());

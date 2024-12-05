@@ -5,12 +5,12 @@ import life.catalogue.api.vocab.Issue;
 import java.util.List;
 import java.util.Objects;
 
-import javax.ws.rs.QueryParam;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
+
+import jakarta.ws.rs.QueryParam;
 
 public class ReferenceSearchRequest {
   

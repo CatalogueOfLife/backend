@@ -17,13 +17,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -67,17 +68,25 @@ public class NameUsageSearchResource {
 
   @GET
   @Path("search")
-  public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query, @Valid @BeanParam Page page, @Context UriInfo uri) throws InvalidQueryException {
+  public NameUsageSearchResponse search(@BeanParam NameUsageSearchRequest query,
+                                        @Valid @BeanParam Page page,
+                                        @Context ContainerRequestContext ctx,
+                                        @Context UriInfo uri) throws InvalidQueryException {
     if (uri != null) {
       query.addFilters(uri.getQueryParameters());
+    }
+    if (query.hasFilter(NameUsageSearchParameter.CATALOGUE_KEY)) {
+      ResourceUtils.dontCache(ctx);
     }
     return searchService.search(query, page);
   }
 
   @POST
   @Path("search")
-  public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req, @Context UriInfo uri) throws InvalidQueryException {
-    return search(req.request, req.page, uri);
+  public NameUsageSearchResponse searchPOST(@Valid SearchRequestBody req,
+                                            @Context ContainerRequestContext ctx,
+                                            @Context UriInfo uri) throws InvalidQueryException {
+    return search(req.request, req.page, ctx, uri);
   }
 
   public static class SearchRequestBody {

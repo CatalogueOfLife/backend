@@ -3,12 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Treatment;
 import life.catalogue.db.CopyDataset;
+import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.TaxonProcessable;
 
 import org.apache.ibatis.annotations.Param;
 
-public interface TreatmentMapper extends CopyDataset, SectorProcessable<Treatment>, TaxonProcessable<Treatment> {
+public interface TreatmentMapper extends CopyDataset, SectorProcessable<Treatment>, TaxonProcessable<Treatment>, DatasetProcessable<Treatment> {
 
   Treatment get(@Param("key") DSID<String> taxonID);
 

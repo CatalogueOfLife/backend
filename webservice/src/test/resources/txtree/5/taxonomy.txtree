@@ -1,0 +1,15 @@
+Chordata [phylum] {ID=http://myid.org/chordate}
+  Mammalia [class] {ID=urn:lsid:ipni.org:names:49802-2}
+    †Eugeneodontiformes [order] {ID=1}
+    Carnivora [order] {ID=2}
+      Canidae [family] {ID=can}
+        Canis [genus] {ID=can}
+          =Alopsis [genus] {ID=gbif:123456654}
+          =Lupulus [genus]
+          Canis adustus [species]
+          Canis argentinus [species]
+          Canis aureus [species]
+      Felidae [division]
+        Lynx [grrr]
+          Lynx lynx [art]
+          Lynx rufus [art]

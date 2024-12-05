@@ -1,25 +1,23 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dw.auth.Roles;
-
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
-
 import life.catalogue.dw.jersey.filter.ProjectOnly;
+
+import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriInfo;
 
 @SuppressWarnings("static-method")
 /**
@@ -48,7 +46,7 @@ public abstract class AbstractDatasetScopedResource<K, T extends DatasetScopedEn
   }
 
   /**
-   * Default search is simply a paging through all by datasetKey.
+   * Default "search" is simply a paging through all by datasetKey.
    * Override to provide real searches
    */
   ResultPage<T> searchImpl(int datasetKey, R request, Page page) {

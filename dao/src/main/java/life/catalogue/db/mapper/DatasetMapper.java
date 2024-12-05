@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import jakarta.ws.rs.QueryParam;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -9,6 +11,7 @@ import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -102,6 +105,15 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
 
   /**
+   * Filters datasets to only list those that contribute as a source dataset with at least one sector to a given project.
+   * @param contributesTo project or release to contribute to, i.e. be a source. If null all datasets are candidates
+   */
+  List<DatasetSimple> suggest(@Param("q") String query,
+                              @Param("contributesTo") Integer contributesTo,
+                              @Param("inclMerge") boolean inclMergeSources
+  );
+
+  /**
    * List all dataset keys filtered by a search request.
    * Contrary to the regular search this will include private datasets.
    */
@@ -117,6 +129,50 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * List all releases of a project, including deleted and private ones.
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
+
+  /**
+   * Same as above, but returning just a minimal object which is much quicker to load
+   */
+  List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
+
+  class DatasetRelease {
+    private int key;
+    private int projectKey;
+    private int attempt;
+    private DatasetOrigin origin;
+
+    public int getKey() {
+      return key;
+    }
+
+    public void setKey(int key) {
+      this.key = key;
+    }
+
+    public int getProjectKey() {
+      return projectKey;
+    }
+
+    public void setProjectKey(int projectKey) {
+      this.projectKey = projectKey;
+    }
+
+    public int getAttempt() {
+      return attempt;
+    }
+
+    public void setAttempt(int attempt) {
+      this.attempt = attempt;
+    }
+
+    public DatasetOrigin getOrigin() {
+      return origin;
+    }
+
+    public void setOrigin(DatasetOrigin origin) {
+      this.origin = origin;
+    }
+  }
 
   /**
    * Looks for potential duplicates of a dataset by aggregating them on title and description.
@@ -143,7 +199,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * @return list of all dataset keys which have not been deleted and are published by the given gbif publisher key.
    */
-  List<Integer> keysByPublisher(@Param("publisher") UUID publisher);
+  Set<Integer> keysByPublisher(@Param("publisher") UUID publisher);
 
   /**
    * list datasets which have not been imported before, ordered by date created.
@@ -243,6 +299,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * This looks up the public release just before the given one, ignoring any intermediate private releases.
+   * Only previous releases with the same origin are considered!
    * @param key release dataset key
    */
   Integer previousRelease(@Param("key") int key);

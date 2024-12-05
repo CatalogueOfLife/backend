@@ -1,6 +1,6 @@
 package life.catalogue.api.search;
 
-import javax.ws.rs.QueryParam;
+import jakarta.ws.rs.QueryParam;
 
 public class QuerySearchRequest {
   

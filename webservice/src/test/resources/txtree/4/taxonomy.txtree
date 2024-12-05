@@ -1,0 +1,15 @@
+Chordata [phylum]
+  Mammalia [class]
+    †Eugeneodontiformes [order] # sedis mutabilis
+    Carnivora [order]
+      Canidae [family] {CHRONO=Jurassic-Creticeous} # misspelled Cretaceous
+        Canis [genus] {CHRONO=Jurassic}
+          =Alopsis [genus]
+          =Lupulus [genus]
+          Canis adustus [species]
+          Canis argentinus [species]
+          Canis aureus [species]
+      Felidae [division]
+        Lynx [grrr]
+          Lynx lynx [art]
+          Lynx rufus [art]

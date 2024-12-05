@@ -32,7 +32,7 @@ import org.gbif.nameparser.api.Rank;
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
- * Interprets a verbatim ACEF record and transforms it into a name, taxon and unique references.
+ * Interprets a verbatim ColDP record and transforms it into a name, taxon and unique references.
  */
 public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> SYN_NOTE = new EnumNote<>(TaxonomicStatus.SYNONYM, null);
@@ -336,11 +336,12 @@ public class ColdpInterpreter extends InterpreterBase {
         ColdpTerm.link, remarksTerm, altIdTerm, v);
     if (opt.isPresent()) {
       Name n = opt.get().getName();
-      // gender & agreement exist only in ColDP
+      // etymology, gender & agreement exist only in ColDP
       // for simplicity we interpret them here and not in the base class
       n.setGenderAgreement(bool(v, ColdpTerm.genderAgreement));
       n.setGender(SafeParser.parse(GenderParser.PARSER, v.get(ColdpTerm.gender)).orNull(Issue.GENDER_INVALID, v));
-
+      n.setEtymology(v.get(ColdpTerm.etymology));
+      
       // publishedIn
       n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));
       setReference(v, refIdTerm, rid -> {

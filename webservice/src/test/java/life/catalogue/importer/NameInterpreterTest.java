@@ -7,21 +7,18 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.gbif.nameparser.api.NomCode.ZOOLOGICAL;
+import static org.gbif.nameparser.api.NomCode.BACTERIAL;
 import static org.junit.Assert.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -133,14 +130,51 @@ public class NameInterpreterTest {
     ParsedNameUsage pnu;
     Name n;
 
+    pnu = ib.interpret(SimpleName.sn(BACTERIAL, "Bacteroides tectus (corrig.) Love et al. 1986"), v).get();
+    assertEquals("Bacteroides tectus", pnu.getName().getScientificName());
+    assertFalse(pnu.getName().isOriginalSpelling());
+    assertEquals("Love et al. 1986", pnu.getName().getAuthorship());
+    assertEquals("Bacteroides tectus corrig. Love et al. 1986", pnu.getName().getLabel());
+
+    for (var pn : List.of(
+      ib.interpret(SimpleName.sn(Rank.GENUS, BACTERIAL, "Achromobacter", "Yabuuchi and Yano, 1981 emend. Yabuuchi et al., 1998"), v).get(),
+      ib.interpret(SimpleName.sn(Rank.GENUS, "Achromobacter Yabuuchi and Yano, 1981 emend. Yabuuchi et al., 1998"), v).get()
+    )) {
+      assertEquals(Rank.GENUS, pn.getName().getRank());
+      assertEquals("Achromobacter", pn.getName().getScientificName());
+      assertEquals("Yabuuchi & Yano, 1981", pn.getName().getAuthorship());
+      assertNull(pn.getName().isOriginalSpelling());
+      assertEquals("Achromobacter Yabuuchi & Yano, 1981", pn.getName().getLabel());
+      // emend. is considered a taxonomic note which we onky store in a taxon, so we only get this in the taxon label:
+      Taxon t = new Taxon(pn.getName());
+      t.setNamePhrase(pn.getTaxonomicNote());
+      assertEquals("Achromobacter Yabuuchi & Yano, 1981 emend. Yabuuchi et al., 1998", t.getLabel());
+    }
+
+    for (var pn : List.of(
+      ib.interpret(SimpleName.sn(Rank.FAMILY, BACTERIAL, "Alcanivoracaceae", "corrig. Golyshin et al., 2005"), v).get(),
+      ib.interpret(SimpleName.sn(Rank.FAMILY, "Alcanivoracaceae corrig. Golyshin et al., 2005"), v).get()
+    )) {
+      assertEquals(Rank.FAMILY, pn.getName().getRank());
+      assertEquals("Alcanivoracaceae", pn.getName().getScientificName());
+      assertEquals("Golyshin et al., 2005", pn.getName().getAuthorship());
+      assertFalse(pn.getName().isOriginalSpelling());
+      assertEquals("Alcanivoracaceae corrig. Golyshin et al., 2005", pn.getName().getLabel());
+    }
+
     pnu = ib.interpret(SimpleName.sn("Barleeidae [sic]"), v).get();
     assertTrue(pnu.getName().isOriginalSpelling());
     assertEquals("Barleeidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());
 
-    pnu = ib.interpret(SimpleName.sn(Rank.FAMILY,"Barleeidae", "[sic]"), v).get();
+    pnu = ib.interpret(SimpleName.sn("Barleeidae", "[sic]"), v).get();
     assertTrue(pnu.getName().isOriginalSpelling());
     assertEquals("Barleeidae", pnu.getName().getScientificName());
+    assertNull(pnu.getName().getAuthorship());
+
+    pnu = ib.interpret(SimpleName.sn(Rank.FAMILY,"Polynicidae", "[sic!]"), v).get();
+    assertTrue(pnu.getName().isOriginalSpelling());
+    assertEquals("Polynicidae", pnu.getName().getScientificName());
     assertNull(pnu.getName().getAuthorship());
 
     // test various ways to supply the authorship

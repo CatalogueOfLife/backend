@@ -2,18 +2,17 @@ package life.catalogue.basgroup;
 
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.assembly.SectorSyncIT;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import java.io.IOException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -34,12 +33,14 @@ public class HomotypicConsolidatorIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(dataRule)
-    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree"))
+    .around(new TxtTreeDataRule(datasetKey, "txtree/homconsolidation.txtree")) // loads prio values into sector keys
     .around(matchingRule);
 
   @Test
   public void homconsolidation() throws IOException {
-    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey, LinneanNameUsage::getSectorKey);
+    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,
+      lnu -> lnu.getSectorKey() == null ? Integer.MAX_VALUE : lnu.getSectorKey()
+    );
     hc.consolidate();
     assertNoLoop(datasetKey);
     SectorSyncIT.assertTree(datasetKey, null, getClass().getResourceAsStream("/txtree/homconsolidation-expected.txtree"));

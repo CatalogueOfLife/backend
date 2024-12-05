@@ -1,5 +1,6 @@
 package life.catalogue.api.search;
 
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NomCode;
@@ -26,10 +27,10 @@ public class NameUsageSuggestion {
   private TaxonomicStatus status;
   private NomCode nomCode;
   private float score;
+  private TaxGroup group;
 
   /**
-   * Returns a single-line suggestion string. Could be used to populate a drop-down list. Probably not actually useful because it's not
-   * multi-lingual.
+   * Returns a single-line suggestion string. Could be used to populate a drop-down list.
    */
   public String getSuggestion() {
     if (status == null || status.isBareName()) {
@@ -84,6 +85,14 @@ public class NameUsageSuggestion {
     this.context = name;
   }
 
+  public TaxGroup getGroup() {
+    return group;
+  }
+
+  public void setGroup(TaxGroup group) {
+    this.group = group;
+  }
+
   public String getUsageId() {
     return usageId;
   }
@@ -134,7 +143,7 @@ public class NameUsageSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(context, match, nomCode, rank, score, status, usageId, acceptedUsageId);
+    return Objects.hash(context, group, match, nomCode, rank, score, status, usageId, acceptedUsageId);
   }
 
   @Override
@@ -148,6 +157,7 @@ public class NameUsageSuggestion {
     NameUsageSuggestion other = (NameUsageSuggestion) obj;
     return Objects.equals(context, other.context)
         && Objects.equals(match, other.match)
+        && group == other.group
         && nomCode == other.nomCode
         && rank == other.rank
         && Float.floatToIntBits(score) == Float.floatToIntBits(other.score)

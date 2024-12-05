@@ -7,11 +7,12 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.dao.TreeRepoRule;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.config.SyncManagerConfig;
+import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.MapperTestBase;
@@ -50,7 +51,7 @@ public class AssemblyCoordinatorTest {
   public void init() throws Exception {
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, syncFactoryRule.getDiDao());
 
-    coord = new SyncManager(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
+    coord = new SyncManager(new SyncManagerConfig(), SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), new MetricRegistry());
     coord.start();
   }
   
@@ -74,7 +75,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
 
-    coord.sync(Datasets.COL, RequestScope.sector(sector), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.COL, RequestScope.sector(sector), TestEntityGenerator.USER_EDITOR.getKey());
   }
   
   @Test
@@ -97,7 +98,7 @@ public class AssemblyCoordinatorTest {
       sm.create(sector);
     }
     
-    coord.sync(Datasets.COL, RequestScope.all(), TestEntityGenerator.USER_EDITOR);
+    coord.sync(Datasets.COL, RequestScope.all(), TestEntityGenerator.USER_EDITOR.getKey());
   }
   
 }

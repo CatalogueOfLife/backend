@@ -1,16 +1,13 @@
 package life.catalogue.matching;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
-
-import java.util.List;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.junit.Before;
 import org.junit.ClassRule;

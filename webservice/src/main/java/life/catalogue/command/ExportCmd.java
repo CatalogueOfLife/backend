@@ -27,8 +27,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 
@@ -113,7 +113,7 @@ public class ExportCmd extends AbstractMybatisCmd {
 
     EventBus bus = new EventBus();
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    UserDao udao = new UserDao(factory, bus, validator);
+    UserDao udao = new UserDao(factory, cfg.mail, null, bus, validator);
     mail.run(cfg, null);
     exec = new JobExecutor(cfg.job, metrics, mail.getEmailNotification(), udao);
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
@@ -121,7 +121,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    copy = new PublicReleaseListener(cfg, factory, exportDao, doiService, converter);
+    copy = new PublicReleaseListener(cfg, factory, httpClient, exportDao, doiService, converter);
   }
 
   @Override

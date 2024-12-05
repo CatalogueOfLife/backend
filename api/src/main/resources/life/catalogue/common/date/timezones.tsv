@@ -1,0 +1,210 @@
+ACDT	Australian Central Daylight Saving Time	+1030
+ACST	Australian Central Standard Time	+0930
+ACT	Acre Time	-0500
+ACT	ASEAN Common Time (proposed)	+0800
+ACWST	Australian Central Western Standard Time (unofficial)	+0845
+ADT	Atlantic Daylight Time	-0300
+AEDT	Australian Eastern Daylight Saving Time	+1100
+AEST	Australian Eastern Standard Time	+1000
+AET (AEST/AEDT)	Australian Eastern Time	+10 / +1100
+AFT	Afghanistan Time	+0430
+AKDT	Alaska Daylight Time	-0800
+AKST	Alaska Standard Time	-0900
+ALMT	Alma-Ata Time	+0600
+AMST	Amazon Summer Time (Brazil)	-0300
+AMT	Amazon Time (Brazil)	-0400
+AMT	Armenia Time	+0400
+ANAT	Anadyr Time	+1200
+AQTT	Aqtobe Time	+0500
+ART	Argentina Time	-0300
+AST	Arabia Standard Time	+0300
+AST	Atlantic Standard Time	-0400
+AWST	Australian Western Standard Time	+0800
+AZOST	Azores Summer Time	+0000
+AZOT	Azores Standard Time	-0100
+AZT	Azerbaijan Time	+0400
+BNT	Brunei Time	+0800
+BIOT	British Indian Ocean Time	+0600
+BIT	Baker Island Time	-1200
+BOT	Bolivia Time	-0400
+BRST	Brasília Summer Time	-0200
+BRT	Brasília Time	-0300
+BST	Bangladesh Standard Time	+0600
+BST	Bougainville Standard Time	+1100
+BST	British Summer Time (British Standard Time from Mar 1968 to Oct 1971)	+0100
+BTT	Bhutan Time	+0600
+CAT	Central Africa Time	+0200
+CCT	Cocos Islands Time	+0630
+CDT	Central Daylight Time (North America)	-0500
+CDT	Cuba Daylight Time	-0400
+CEST	Central European Summer Time	+0200
+CET	Central European Time	+0100
+CHADT	Chatham Daylight Time	+1345
+CHAST	Chatham Standard Time	+1245
+CHOT	Choibalsan Standard Time	+0800
+CHOST	Choibalsan Summer Time	+0900
+CHST	Chamorro Standard Time	+1000
+CHUT	Chuuk Time	+1000
+CIST	Clipperton Island Standard Time	-0800
+CKT	Cook Island Time	-1000
+CLST	Chile Summer Time	-0300
+CLT	Chile Standard Time	-0400
+COST	Colombia Summer Time	-0400
+COT	Colombia Time	-0500
+CST	Central Standard Time (Central America)	-0600
+CST	China Standard Time	+0800
+CST	Cuba Standard Time	-0500
+CT (CST/CDT)	Central Time	-06 / -0500
+CVT	Cape Verde Time	-0100
+CWST	Central Western Standard Time (Australia) unofficial	+0845
+CXT	Christmas Island Time	+0700
+DAVT	Davis Time	+0700
+DDUT	Dumont d'Urville Time	+1000
+DFT	AIX-specific equivalent of Central European Time[NB 1]	+0100
+EASST	Easter Island Summer Time	-0500
+EAST	Easter Island Standard Time	-0600
+EAT	East Africa Time	+0300
+ECT	Eastern Caribbean Time (does not recognise DST)	-0400
+ECT	Ecuador Time	-0500
+EDT	Eastern Daylight Time (North America)	-0400
+EEST	Eastern European Summer Time	+0300
+EET	Eastern European Time	+0200
+EGST	Eastern Greenland Summer Time	+0000
+EGT	Eastern Greenland Time	-0100
+EST	Eastern Standard Time (North America)	-0500
+ET (EST/EDT)	Eastern Time (North America)	-05 / -0400
+FET	Further-eastern European Time	+0300
+FJT	Fiji Time	+1200
+FKST	Falkland Islands Summer Time	-0300
+FKT	Falkland Islands Time	-0400
+FNT	Fernando de Noronha Time	-0200
+GALT	Galápagos Time	-0600
+GAMT	Gambier Islands Time	-0900
+GET	Georgia Standard Time	+0400
+GFT	French Guiana Time	-0300
+GILT	Gilbert Island Time	+1200
+GIT	Gambier Island Time	-0900
+GMT	Greenwich Mean Time	+0000
+GST	South Georgia and the South Sandwich Islands Time	-0200
+GST	Gulf Standard Time	+0400
+GYT	Guyana Time	-0400
+HDT	Hawaii–Aleutian Daylight Time	-0900
+HAEC	Heure Avancée d'Europe Centrale French-language name for CEST	+0200
+HST	Hawaii–Aleutian Standard Time	-1000
+HKT	Hong Kong Time	+0800
+HMT	Heard and McDonald Islands Time	+0500
+HOVST	Hovd Summer Time (not used from 2017-present)	+0800
+HOVT	Hovd Time	+0700
+ICT	Indochina Time	+0700
+IDLW	International Date Line West time zone	-1200
+IDT	Israel Daylight Time	+0300
+IOT	Indian Ocean Time	+0600
+IRDT	Iran Daylight Time	+0430
+IRKT	Irkutsk Time	+0800
+IRST	Iran Standard Time	+0330
+IST	Indian Standard Time	+0530
+IST	Irish Standard Time	+0100
+IST	Israel Standard Time	+0200
+JST	Japan Standard Time	+0900
+KALT	Kaliningrad Time	+0200
+KGT	Kyrgyzstan Time	+0600
+KOST	Kosrae Time	+1100
+KRAT	Krasnoyarsk Time	+0700
+KST	Korea Standard Time	+0900
+LHST	Lord Howe Standard Time	+1030
+LHST	Lord Howe Summer Time	+1100
+LINT	Line Islands Time	+1400
+MAGT	Magadan Time	+1200
+MART	Marquesas Islands Time	-0930
+MAWT	Mawson Station Time	+0500
+MDT	Mountain Daylight Time (North America)	-0600
+MET	Middle European Time (same zone as CET)	+0100
+MEST	Middle European Summer Time (same zone as CEST)	+0200
+MHT	Marshall Islands Time	+1200
+MIST	Macquarie Island Station Time	+1100
+MIT	Marquesas Islands Time	-0930
+MMT	Myanmar Standard Time	+0630
+MSK	Moscow Time	+0300
+MST	Malaysia Standard Time	+0800
+MST	Mountain Standard Time (North America)	-0700
+MT (MST/MDT)	Mountain Time (North America)	-07 / -0600
+MUT	Mauritius Time	+0400
+MVT	Maldives Time	+0500
+MYT	Malaysia Time	+0800
+NCT	New Caledonia Time	+1100
+NDT	Newfoundland Daylight Time	-0230
+NFT	Norfolk Island Time	+1100
+NOVT	Novosibirsk Time 	+0700
+NPT	Nepal Time	+0545
+NST	Newfoundland Standard Time	-0330
+NT	Newfoundland Time	-0330
+NUT	Niue Time	-1100
+NZDT	New Zealand Daylight Time	+1300
+NZST	New Zealand Standard Time	+1200
+OMST	Omsk Time	+0600
+ORAT	Oral Time	+0500
+PDT	Pacific Daylight Time (North America)	-0700
+PET	Peru Time	-0500
+PETT	Kamchatka Time	+1200
+PGT	Papua New Guinea Time	+1000
+PHOT	Phoenix Island Time	+1300
+PHT	Philippine Time	+0800
+PHST	Philippine Standard Time	+0800
+PKT	Pakistan Standard Time	+0500
+PMDT	Saint Pierre and Miquelon Daylight Time	-0200
+PMST	Saint Pierre and Miquelon Standard Time	-0300
+PONT	Pohnpei Standard Time	+1100
+PST	Pacific Standard Time (North America)	-0800
+PT	Pacific Time (North America)	-08 / -0700
+PWT	Palau Time	+0900
+PYST	Paraguay Summer Time	-0300
+PYT	Paraguay Time	-0400
+RET	Réunion Time	+0400
+ROTT	Rothera Research Station Time	-0300
+SAKT	Sakhalin Island Time	+1100
+SAMT	Samara Time	+0400
+SAST	South African Standard Time	+0200
+SBT	Solomon Islands Time	+1100
+SCT	Seychelles Time	+0400
+SDT	Samoa Daylight Time	-1000
+SGT	Singapore Time	+0800
+SLST	Sri Lanka Standard Time	+0530
+SRET	Srednekolymsk Time	+1100
+SRT	Suriname Time	-0300
+SST	Samoa Standard Time	-1100
+SYOT	Showa Station Time	+0300
+TAHT	Tahiti Time	-1000
+THA	Thailand Standard Time	+0700
+TFT	French Southern and Antarctic Time	+0500
+TJT	Tajikistan Time	+0500
+TKT	Tokelau Time	+1300
+TLT	Timor Leste Time	+0900
+TMT	Turkmenistan Time	+0500
+TRT	Turkey Time	+0300
+TOT	Tonga Time	+1300
+TST	Taiwan Standard Time	+0800
+TVT	Tuvalu Time	+1200
+ULAST	Ulaanbaatar Summer Time	+0900
+ULAT	Ulaanbaatar Standard Time	+0800
+UTC	Coordinated Universal Time	+0000
+UYST	Uruguay Summer Time	-0200
+UYT	Uruguay Standard Time	-0300
+UZT	Uzbekistan Time	+0500
+VET	Venezuelan Standard Time	-0400
+VLAT	Vladivostok Time	+1000
+VOLT	Volgograd Time	+0300
+VOST	Vostok Station Time	+0600
+VUT	Vanuatu Time	+1100
+WAKT	Wake Island Time	+1200
+WAST	West Africa Summer Time	+0200
+WAT	West Africa Time	+0100
+WEST	Western European Summer Time	+0100
+WET	Western European Time	+0000
+WIB	Western Indonesian Time	+0700
+WIT	Eastern Indonesian Time	+0900
+WITA	Central Indonesia Time	+0800
+WGST	West Greenland Summer Time	-0200
+WGT	West Greenland Time	-0300
+WST	Western Standard Time	+0800
+YAKT	Yakutsk Time	+0900
+YEKT	Yekaterinburg Time	+0500

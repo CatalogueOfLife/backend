@@ -57,40 +57,4 @@ public class IndexNameTest {
     assertEquals("petruska", in.getSpecificEpithet());
   }
 
-  @Test
-  public void normalizeRank() {
-    assertEquals(Rank.ORDER, IndexName.normRank(Rank.ORDER));
-    assertEquals(Rank.PARVCLASS, IndexName.normRank(Rank.PARVCLASS));
-    assertEquals(Rank.FAMILY, IndexName.normRank(Rank.FAMILY));
-    assertEquals(Rank.SUPERFAMILY, IndexName.normRank(Rank.SUPERFAMILY));
-    assertEquals(Rank.INFRAFAMILY, IndexName.normRank(Rank.INFRAFAMILY));
-    assertEquals(Rank.TRIBE, IndexName.normRank(Rank.TRIBE));
-    assertEquals(Rank.SUBGENUS, IndexName.normRank(Rank.SUBGENUS));
-    assertEquals(Rank.SECTION_BOTANY, IndexName.normRank(Rank.SECTION_BOTANY));
-    assertEquals(Rank.SECTION_ZOOLOGY, IndexName.normRank(Rank.SECTION_ZOOLOGY));
-    assertEquals(Rank.SERIES, IndexName.normRank(Rank.SERIES));
-    assertEquals(Rank.SPECIES, IndexName.normRank(Rank.SPECIES));
-    assertEquals(Rank.SPECIES_AGGREGATE, IndexName.normRank(Rank.SPECIES_AGGREGATE));
-    assertEquals(Rank.SUBSPECIES, IndexName.normRank(Rank.SUBSPECIES));
-    assertEquals(Rank.CULTIVAR_GROUP, IndexName.normRank(Rank.CULTIVAR_GROUP));
-    assertEquals(Rank.VARIETY, IndexName.normRank(Rank.VARIETY));
-    assertEquals(Rank.FORM, IndexName.normRank(Rank.FORM));
-    assertEquals(Rank.SUBFORM, IndexName.normRank(Rank.SUBFORM));
-    assertEquals(Rank.SUBVARIETY, IndexName.normRank(Rank.SUBVARIETY));
-    assertEquals(Rank.CULTIVAR, IndexName.normRank(Rank.CULTIVAR));
-    assertEquals(Rank.FORMA_SPECIALIS, IndexName.normRank(Rank.FORMA_SPECIALIS));
-
-    assertEquals(Rank.UNRANKED, IndexName.normRank(Rank.SUPRAGENERIC_NAME));
-    assertEquals(Rank.UNRANKED, IndexName.normRank(Rank.INFRAGENERIC_NAME));
-    assertEquals(Rank.UNRANKED, IndexName.normRank(Rank.INFRASPECIFIC_NAME));
-    assertEquals(Rank.UNRANKED, IndexName.normRank(Rank.UNRANKED));
-    assertEquals(Rank.UNRANKED, IndexName.normRank(Rank.OTHER));
-    assertEquals(Rank.UNRANKED, IndexName.normRank(null));
-
-    // make sure we never get an IAE
-    for (Rank r : Rank.values()) {
-      assertNotNull(IndexName.normRank(r));
-    }
-  }
-
 }

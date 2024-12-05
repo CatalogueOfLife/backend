@@ -21,11 +21,13 @@ public class ColdpTermTest {
   }
 
   @Test
-  public void remarks() {
+  public void remarksAndModified() {
     for (ColdpTerm cl : ColdpTerm.RESOURCES.keySet()) {
       if (cl != Treatment) {
         assertTrue(cl + " has no remarks", ColdpTerm.RESOURCES.get(cl).contains(remarks));
       }
+      assertTrue(cl + " has no modified", ColdpTerm.RESOURCES.get(cl).contains(modified));
+      assertTrue(cl + " has no modifiedBy", ColdpTerm.RESOURCES.get(cl).contains(modifiedBy));
     }
   }
 

@@ -464,13 +464,22 @@ public class NeoDb {
    * Creates both a name and a usage neo4j node.
    * The name node is returned while the usage node is set on the NeoUsage object.
    * The name instance is taken from the usage object which is removed from the usage.
+   *
+   * If the usage ID is not unique a name will be created, but not a usage. In this case the usage id is reset to null.
+   *
    * @return the created name node or null if it could not be created
    */
   public Node createNameAndUsage(NeoUsage u) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
     Preconditions.checkArgument(u.nameNode == null, "NeoUsage already has a neo4j name node");
     Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
-    
+
+    // is no true verbatim record existed create a new one to hold issues for validation etc.
+    if (u.usage.getVerbatimKey() == null) {
+      VerbatimRecord v = new VerbatimRecord();
+      put(v);
+      u.usage.setVerbatimKey(v.getId());
+    }
     // first create the name in a new node
     NeoName nn = new NeoName(u.usage.getName());
     if (nn.getId() == null) {
@@ -480,11 +489,7 @@ public class NeoDb {
       nn.setVerbatimKey(u.getVerbatimKey());
     }
     if (nn.getName().getOrigin() == null) {
-      if (u.isSynonym()) {
-        nn.getName().setOrigin(u.asSynonym().getOrigin());
-      } else {
-        nn.getName().setOrigin(u.asTaxon().getOrigin());
-      }
+      nn.getName().setOrigin(u.asNameUsageBase().getOrigin());
     }
     nn.homotypic = u.homotypic;
     u.nameNode = names.create(nn);
@@ -493,7 +498,10 @@ public class NeoDb {
       // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
       if (!u.usage.isBareName()) {
-        usages.create(u);
+        var unode = usages.create(u);
+        if (unode == null) {
+          u.setId(null); // non unique id
+        }
       }
     } else {
       LOG.debug("Skip usage {} as no name node was created for {}", u.getId(), nn.getName().getLabel());

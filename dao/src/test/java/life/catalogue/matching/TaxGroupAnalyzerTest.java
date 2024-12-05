@@ -78,4 +78,17 @@ public class TaxGroupAnalyzerTest {
     assertNull(analyzer.analyze(sn(Rank.GENUS, "Dictymia", "Sm."), List.of(sn(Rank.KINGDOM, "incertae sedis"))));
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/xcol/issues/146
+   */
+  @Test
+  public void algae() {
+    assertEquals(TaxGroup.Algae, analyzer.analyze(sn("Acrochaetium"),
+      List.of(sn("Protista"), sn("Rhodophyta"), sn("Florideophyceae"), sn("Acrochaetiales"), sn("Acrochaetiaceae")))
+    );
+    assertEquals(TaxGroup.Algae, analyzer.analyze(sn("Acrochaetium"),
+      List.of(sn("Biota"), sn("Plantae"), sn("Rhodophyta"), sn("Eurhodophytina"), sn("Florideophyceae"), sn("Acrochaetiales"), sn("Acrochaetiaceae")))
+    );
+  }
+
 }

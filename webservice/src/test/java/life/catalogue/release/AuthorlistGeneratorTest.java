@@ -20,7 +20,6 @@ import static org.mockito.Mockito.mock;
 
 public class AuthorlistGeneratorTest {
 
-
   @Test
   public void appendSourceAuthors() throws Exception {
     final int projectKey = 10;
@@ -46,7 +45,7 @@ public class AuthorlistGeneratorTest {
     ));
     sources.add(s2);
 
-    doReturn(sources).when(dao).listReleaseAuthors(anyInt());
+    doReturn(sources).when(dao).listSimple(anyInt(), anyBoolean());
 
     var gen = new AuthorlistGenerator(dao);
 

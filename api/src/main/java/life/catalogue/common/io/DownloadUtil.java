@@ -7,17 +7,21 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
+import life.catalogue.common.date.DateUtils;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpEntity;
+import org.apache.hc.core5.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +36,7 @@ public class DownloadUtil {
   private static final Pattern GITHUB_DOMAINS = Pattern.compile("github(usercontent)?\\.com", Pattern.CASE_INSENSITIVE);
   private static final Pattern GEOFF = Pattern.compile("^/gdower", Pattern.CASE_INSENSITIVE);
   //https://codeload.github.com/gdower/data-cycads/zip/master
-  
+
   private final CloseableHttpClient hc;
   private final String githubToken;
   private final String githubTokenGeoff;
@@ -122,25 +126,25 @@ public class DownloadUtil {
     
     // execute
     try (CloseableHttpResponse response = hc.execute(get)) {
-      final StatusLine status = response.getStatusLine();
-      
-      if (status.getStatusCode() == HttpStatus.SC_NOT_MODIFIED) {
+      final int status = response.getCode();
+      System.out.println(String.format("%s -> %s", status, get));
+      if (status == HttpStatus.SC_NOT_MODIFIED) {
         LOG.debug("Content not modified since last request");
         return false;
         
-      } else if (status.getStatusCode() / 100 == 2) {
+      } else if (status / 100 == 2) {
         // write to file only when download succeeds
         saveToFile(response, downloadTo);
         LOG.debug("Successfully downloaded {} to {}", url, downloadTo.getAbsolutePath());
         return true;
         
       } else {
-        LOG.error("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status.getStatusCode());
+        LOG.error("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status);
         StringBuilder sb = new StringBuilder()
             .append("http ")
-            .append(status.getStatusCode())
+            .append(status)
             .append(" ")
-            .append(status.getReasonPhrase())
+            .append(response.getReasonPhrase())
             .append(" for URL ")
             .append(url);
         throw new DownloadException(url, sb.toString());
@@ -189,15 +193,14 @@ public class DownloadUtil {
       Header modHeader = response.getFirstHeader(LAST_MODIFIED);
       if (modHeader != null) {
         try {
-          TemporalAccessor serverModified = DateTimeFormatter.RFC_1123_DATE_TIME.parse(modHeader.getValue());
-          downloadTo.setLastModified(Instant.from(serverModified).toEpochMilli());
+          DateUtils.parseRFC1123(modHeader.getValue()).ifPresent(mod -> downloadTo.setLastModified(Instant.from(mod).toEpochMilli()));
         } catch (Exception e) {
           LOG.warn("Failed to set local file date to {} header {}", modHeader.getName(), modHeader.getValue(), e);
         }
       }
     }
   }
-  
+
   public CloseableHttpClient getClient() {
     return hc;
   }

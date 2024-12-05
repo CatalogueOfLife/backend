@@ -26,20 +26,12 @@ public enum License {
    */
   CC_BY("Creative Commons Attribution (CC BY) 4.0", "http://creativecommons.org/licenses/by/4.0/legalcode"),
 
-  CC_BY_SA("Creative Commons Attribution Share Alike (CC BY-SA) 4.0", "https://creativecommons.org/licenses/by-sa/4.0/legalcode"),
-
   /**
    * Creative Commons Attribution-NonCommercial version 4.0.
    *
    * @see <a href="http://creativecommons.org/licenses/by-nc/4.0/legalcode">legal document</a>
    */
   CC_BY_NC("Creative Commons Attribution Non Commercial (CC BY-NC) 4.0", "http://creativecommons.org/licenses/by-nc/4.0/legalcode"),
-
-  CC_BY_ND("Creative Commons Attribution No Derivatives (CC BY-ND) 4.0", "https://creativecommons.org/licenses/by-nd/4.0/legalcode"),
-
-  CC_BY_NC_SA("Creative Commons Attribution Non Commercial Share Alike (CC BY-NC-SA) 4.0", "https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode"),
-
-  CC_BY_NC_ND("Creative Commons Attribution Non Commercial No Derivatives (CC BY-NC-ND) 4.0", "https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode"),
 
   /**
    * No license has been specified.

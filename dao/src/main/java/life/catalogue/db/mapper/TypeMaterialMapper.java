@@ -23,4 +23,9 @@ public interface TypeMaterialMapper extends CRUD<DSID<String>, TypeMaterial>,
    * @return number of deleted type material records
    */
   int deleteOrphans(@Param("datasetKey") int datasetKey, @Param("before") @Nullable LocalDateTime before);
+
+  /**
+   * @return true if there is at least one type material record in the given dataset
+   */
+  boolean entityExists(@Param("datasetKey") int datasetKey);
 }

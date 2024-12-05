@@ -2,8 +2,8 @@ package life.catalogue.exporter;
 
 import life.catalogue.ApiUtils;
 import life.catalogue.WsServerConfig;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;

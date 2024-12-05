@@ -3,7 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.ApiAnalytics;
 
 import life.catalogue.api.vocab.Country;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.time.LocalDateTime;
 import java.util.Map;

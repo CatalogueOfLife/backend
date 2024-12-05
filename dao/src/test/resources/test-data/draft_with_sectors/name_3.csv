@@ -1,24 +1,24 @@
-sector_key,id,scientific_name,authorship,uninomial,rank,genus,specific_epithet,infraspecific_epithet
-,k1,Animalia,,Animalia,KINGDOM,,,
-,k2,Archaea,,Archaea,KINGDOM,,,
-,k3,Bacteria,,Bacteria,KINGDOM,,,
-,k4,Chromista,,Chromista,KINGDOM,,,
-,k5,Fungi,,Fungi,KINGDOM,,,
-,k6,Plantae,,Plantae,KINGDOM,,,
-,k7,Protozoa,,Protozoa,KINGDOM,,,
-,k8,Viruses,,Viruses,KINGDOM,,,
-,p1,Annelida,,Annelida,PHYLUM,,,
-,p2,Arthropoda,,Arthropoda,PHYLUM,,,
-,p3,Chordata,,Chordata,PHYLUM,,,
-,p4,Bryophyta,,Bryophyta,PHYLUM,,,
-,p5,Tracheophyta,,Tracheophyta,PHYLUM,,,
-,p6,Ascomycota,,Ascomycota,PHYLUM,,,
-,p7,Basidiomycota,,Basidiomycota,PHYLUM,,,
-,c1,Arachnida,,Arachnida,CLASS,,,
-,c2,Insecta,,Insecta,CLASS,,,
-,c3,Aves,,Aves,CLASS,,,
-100,1,Abies,,Abies,GENUS,,,
-100,2,Abies alba,Mill.,,SPECIES,Abies,alba,
-100,3,Abies alba var. montana,DC.,,VARIETY,Abies,alba,montana
-100,4,Abies albi,Mill.,,SPECIES,Abies,alba,
-100,5,Picea alba var. montana,DC.,,VARIETY,Abies,alba,montana
+sector_key,id,scientific_name,authorship,rank
+,k1,Animalia,,KINGDOM
+,k2,Archaea,,KINGDOM
+,k3,Bacteria,,KINGDOM
+,k4,Chromista,,KINGDOM
+,k5,Fungi,,KINGDOM
+,k6,Plantae,,KINGDOM
+,k7,Protozoa,,KINGDOM
+,k8,Viruses,,KINGDOM
+,p1,Annelida,,PHYLUM
+,p2,Arthropoda,,PHYLUM
+,p3,Chordata,,PHYLUM
+,p4,Bryophyta,,PHYLUM
+,p5,Tracheophyta,,PHYLUM
+,p6,Ascomycota,,PHYLUM
+,p7,Basidiomycota,,PHYLUM
+,c1,Arachnida,,CLASS
+,c2,Insecta,,CLASS
+,c3,Aves,,CLASS
+100,1,Abies,,GENUS
+100,2,Abies alba,Mill.,SPECIES
+100,3,Abies alba var. montana,DC.,VARIETY
+100,4,Abies albi,Mill.,SPECIES
+100,5,Picea alba var. montana,DC.,VARIETY

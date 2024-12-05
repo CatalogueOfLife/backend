@@ -11,11 +11,11 @@ import life.catalogue.dw.auth.Roles;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Valid;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 
@@ -41,12 +41,7 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
 
   @Override
   ResultPage<Name> searchImpl(int datasetKey, NameMapper.NameSearchRequest req, Page page) {
-    Page p = page == null ? new Page() : page;
-    try (SqlSession session = dao.getFactory().openSession()) {
-      NameMapper mapper = session.getMapper(NameMapper.class);
-      List<Name> result = mapper.search(datasetKey, req, p);
-      return new ResultPage<>(p, result, () -> -1);
-    }
+    return dao.search(datasetKey, req, page);
   }
 
   @GET

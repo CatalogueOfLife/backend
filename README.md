@@ -7,8 +7,8 @@ The COL backend is a [Dropwizard](https://www.dropwizard.io/) application, that 
 
 ## Prerequisites
 1. Java 11 JDK
-1. Maven 3
-1. Postgres 13
+1. Maven 3.8
+1. Postgres 17
 
 ## Run the COL WS application locally
 1. cd into `webservice`

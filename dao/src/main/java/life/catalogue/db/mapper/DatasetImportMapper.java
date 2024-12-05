@@ -36,9 +36,17 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
 
   /**
    * @param datasetKey
-   * @return Return last import attempt for given dataset or null
+   * @return Return last import attempt for given dataset no matter which state it is in or null
    */
   DatasetImport last(@Param("key") int datasetKey);
+
+  /**
+   * Return last successful import for the given dataset
+   * as it is stored in the dataset table
+   * @param datasetKey
+   * @return Return last successful import for the given dataset
+   */
+  DatasetImport current(@Param("key") int datasetKey);
 
   /**
    * Count all imports by their state
@@ -96,4 +104,5 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
   List<StringCount> countVerbatimByType(@Param("key") int datasetKey);
   List<StringCount> countVerbatimTerms(@Param("key") int datasetKey, @Param("rowType") Term rowType);
   List<StringCount> countVernacularsByLanguage(@Param("key") int datasetKey);
+
 }

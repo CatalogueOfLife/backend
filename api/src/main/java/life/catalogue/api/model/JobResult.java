@@ -13,6 +13,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class JobResult extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(JobResult.class);
   //TODO: not nice. Should better only be on JobConfig!
@@ -69,6 +71,7 @@ public class JobResult extends DataEntity<UUID> {
     return DOWNLOAD_BASE_URI.resolve(downloadFilePath(key));
   }
 
+  @JsonIgnore
   public File getFile() {
     return new File(DOWNLOAD_DIR, downloadFilePath(key));
   }

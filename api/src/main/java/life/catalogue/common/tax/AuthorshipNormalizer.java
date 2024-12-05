@@ -2,10 +2,13 @@ package life.catalogue.common.tax;
 
 import com.google.common.base.Preconditions;
 
+import jakarta.validation.constraints.NotNull;
+
 import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.util.*;
@@ -21,8 +24,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Utility to compare scientific name authorships, i.e. the recombination and basionym author and publishing year.
  * Author strings are normalized to ASCII and then compared. As authors are often abbreviated in all kind of ways a shared common substring is accepted
@@ -37,6 +38,7 @@ public class AuthorshipNormalizer {
 
   private static final Pattern FIL = Pattern.compile("([A-Z][a-z]*)[\\. ]\\s*f(:?il)?\\.?\\b");
   private static final Pattern TRANSLITERATIONS = Pattern.compile("([auo])e", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TRAILING_INITIALS = Pattern.compile("^(.*[a-z]{2,})((?: [a-z])+)$", Pattern.CASE_INSENSITIVE);
   private static final Pattern AUTHOR = Pattern.compile("^((?:[a-z]\\s)*).*?([a-z]+)( (?:filius|fil|fl|f|bis|ter)\\.?)?$");
   private static final String AUTHOR_MAP_FILENAME = "authorship/authormap.txt";
   private static final Pattern PUNCTUATION = Pattern.compile("[\\p{Punct}&&[^,]]+");
@@ -50,20 +52,32 @@ public class AuthorshipNormalizer {
   
   private static AuthorshipNormalizer createWithAuthormap() {
     Map<String, String> map = new HashMap<>();
-    Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
-      map.put(row[0], row[2]);
-      map.put(row[1], row[2]);
-    });
+    try {
+      Resources.tabRows(AUTHOR_MAP_FILENAME).forEach(row -> {
+        var value = row[0];
+        for (int i = 1; i < row.length; i++) {
+          map.put(row[i], value);
+        }
+      });
+    } catch (Exception e) {
+      LOG.warn("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME);
+      if (LOG.isDebugEnabled()){
+        LOG.debug("Failed to load author abbreviation map from {}", AUTHOR_MAP_FILENAME, e);
+      }
+    }
     return new AuthorshipNormalizer(map);
   }
   
   
-  public AuthorshipNormalizer(Map<String, String> authors) {
+  private AuthorshipNormalizer(Map<String, String> authors) {
     Map<String, String> map = Maps.newHashMap();
     for (Map.Entry<String, String> entry : authors.entrySet()) {
       String key = normalize(entry.getKey());
       String val = normalize(entry.getValue());
       if (key != null && val != null) {
+        if (map.containsKey(key) && !map.get(key).equals(val)) {
+          LOG.warn("Authormap contains duplicate key {} for {} - verbatim={} - previous standard value={}", key, val, entry.getKey(), map.get(key));
+        }
         map.put(key, val);
       }
     }
@@ -72,16 +86,30 @@ public class AuthorshipNormalizer {
   }
   
   /**
+   * We combine both regular and ex authors to a list of normalised strings if no code is given.
+   * Otherwise the code specific relevant part is only extracted, i.e. the authors/last in botany
+   * and the first exAuthors for zoology.
+   *
    * @return queue of normalized authors, never null.
    * ascii only, lower cased string without punctuation. Empty string instead of null.
    * Umlaut transliterations reduced to single letter
    */
-  public static List<String> normalize(Authorship authorship) {
-    return authorship == null ? Collections.EMPTY_LIST : normalize(authorship.getAuthors());
-  }
-  
-  private static List<String> normalize(List<String> authors) {
-    if (authors == null || authors.isEmpty()) {
+  public static List<String> normalize(Authorship authorship, NomCode code) {
+    if (authorship == null) return Collections.EMPTY_LIST;
+
+    final List<String> authors = new ArrayList<>();
+    if (authorship.hasExAuthors()) {
+      if (authorship.getAuthors() != null && (code != NomCode.ZOOLOGICAL)) {
+        authors.addAll(authorship.getAuthors());
+      }
+      if (authorship.getExAuthors() != null  && (code == null || code == NomCode.ZOOLOGICAL)) {
+        authors.addAll(authorship.getExAuthors());
+      }
+
+    } else if (authorship.getAuthors() != null) {
+      authors.addAll(authorship.getAuthors());
+    }
+    if (authors.isEmpty()) {
       return Collections.EMPTY_LIST;
     }
     List<String> normed = new ArrayList<>(authors.size());
@@ -107,7 +135,7 @@ public class AuthorshipNormalizer {
    * See https://github.com/Sp2000/colplus-backend/issues/341
    */
   public List<String> normalizeName(Name n) {
-    if (n.hasAuthorship()) {
+    if (n.hasParsedAuthorship()) {
       // only compare basionym if existing, ignore ex and year
       Authorship authors;
       if (n.hasBasionymAuthorship()) {
@@ -115,7 +143,7 @@ public class AuthorshipNormalizer {
       } else {
         authors = n.getCombinationAuthorship();
       }
-      return lookup(normalize(authors)).stream()
+      return lookup(normalize(authors, null)).stream()
           .map(Author::new)
           .map(a -> a.surname)
           .distinct()
@@ -133,8 +161,6 @@ public class AuthorshipNormalizer {
     if (StringUtils.isBlank(x)) {
       return null;
     }
-    // normalize filius
-    x = FIL.matcher(x).replaceAll("$1 filius");
     // fold to ascii
     x = UnicodeUtils.foldToAscii(x);
     // simplify umlauts transliterated properly with additional e
@@ -143,7 +169,14 @@ public class AuthorshipNormalizer {
     x = PUNCTUATION.matcher(x).replaceAll(" ");
     // norm space
     x = StringUtils.normalizeSpace(x);
-    
+    // move initials to front
+    var m = TRAILING_INITIALS.matcher(x);
+    if (m.find() && !m.group(2).trim().equals("f")) {
+      x = m.replaceFirst("$2 $1").trim();
+    }
+    // normalize filius
+    x = FIL.matcher(x).replaceAll("$1 filius");
+
     if (StringUtils.isBlank(x)) {
       return null;
     }

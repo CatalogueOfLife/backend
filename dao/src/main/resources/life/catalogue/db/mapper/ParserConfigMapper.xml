@@ -99,6 +99,11 @@
     WHERE id = #{id}
   </select>
 
+  <select id="list" parameterType="map" resultMap="parserConfigResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+  </select>
+
   <select id="process" parameterType="map" resultMap="parserConfigResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

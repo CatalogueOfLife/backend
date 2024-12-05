@@ -16,9 +16,6 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.After;
@@ -26,8 +23,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
 
 import static org.junit.Assert.*;
 
@@ -43,7 +42,7 @@ public class DataCiteServiceIT {
 
   @Before
   public void setup() throws IOException {
-    final JacksonJsonProvider jacksonJsonProvider = new JacksonJaxbJsonProvider(ApiModule.MAPPER, JacksonJaxbJsonProvider.DEFAULT_ANNOTATIONS);
+    final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider(ApiModule.MAPPER);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
     cfg.register(new UserAgentFilter());
@@ -105,7 +104,7 @@ public class DataCiteServiceIT {
     assertEquals("The Global Biodiversity Information Facility", data.getPublisher());
     assertEquals("https://www.gbif.org/occurrence/download/0006447-200221144449610", data.getUrl());
     assertEquals(1, data.getCreators().size());
-    assertEquals("Occdownload Gbif.Org", data.getCreators().get(0).getName());
+    assertEquals("GBIF.Org User", data.getCreators().get(0).getName());
     // IPT dataset
     doi = new DOI("10.15472/ciasei");
     data = prodReadService.resolve(doi);

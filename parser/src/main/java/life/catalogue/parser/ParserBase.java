@@ -27,6 +27,15 @@ abstract class ParserBase<T> implements Parser<T> {
     this.throwUnparsableException = throwUnparsableException;
   }
 
+  /**
+   * Before proper parsing this method is called to check if the normalised value
+   * should be considered as empty/null without any error being thrown.
+   * @param normalisedValue non null, normalised (usually upper case) value
+   */
+  protected boolean isEmpty(String normalisedValue) {
+    return false;
+  }
+
   @Override
   public Optional<? extends T> parse(String value) throws UnparsableException {
     String x = normalize(value);
@@ -35,6 +44,9 @@ abstract class ParserBase<T> implements Parser<T> {
       if (throwUnparsableException && value != null && VISIBLE.matchesAnyOf(value)) {
         throw new UnparsableException(valueClass, value);
       }
+      return Optional.empty();
+    }
+    if (isEmpty(x)) {
       return Optional.empty();
     }
     

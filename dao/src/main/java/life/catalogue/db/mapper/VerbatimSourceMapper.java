@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
@@ -119,5 +119,10 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   void delete(@Param("key") DSID<String> key);
 
+  /**
+   * Removes all issues from all verbatim source records of the given project
+   * @param projectKey
+   */
+  void removeAllIssues(@Param("projectKey") int projectKey);
 }
 

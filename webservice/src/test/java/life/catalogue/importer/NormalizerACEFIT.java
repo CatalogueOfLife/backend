@@ -9,9 +9,12 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
 
+import life.catalogue.parser.NameParser;
+
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -313,8 +316,12 @@ public class NormalizerACEFIT extends NormalizerITBase {
   
   
       int counter = 0;
+      int counterSrc = 0;
       for (VerbatimRecord vr : store.verbatimList()) {
         counter++;
+        if (vr.getType() != null && vr.getFile() != null && vr.getLine() > 0) {
+          counterSrc++;
+        }
         if (vr.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
           if (vr.get(AcefTerm.AcceptedTaxonID).equals("Scr-04-.01-.01-.00-.002-.000-.009-.b")) {
             // this is the duplicate
@@ -327,7 +334,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
           }
         }
       }
-      assertEquals(5, counter);
+      assertEquals(15, counter);
+      assertEquals(5, counterSrc);
     }
   }
   
@@ -447,7 +455,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void aspilota() throws Exception {
     // before we run this we configure the name parser to do better
     // then we check that it really worked and no issues get attached
-    ParserConfigDao.addToParser(NormalizerTxtTreeIT.aspilotaCfg());
+    var pcfg = NormalizerTxtTreeIT.aspilotaCfg();
+    NameParser.PARSER.configs().add(pcfg.getScientificName(), pcfg.getAuthorship(), pcfg.toParsedName());
 
     normalize(22);
     store.dump();

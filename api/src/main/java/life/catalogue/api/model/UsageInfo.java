@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.TaxGroup;
+
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import life.catalogue.api.vocab.TaxGroup;
 
 /**
  * Aggregated usage information, mostly for taxa, but also for synonyms

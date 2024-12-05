@@ -6,10 +6,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -172,6 +172,22 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
     res = mapper().listByRegex(testDataRule.testData.key, 3,"[A-Za-z]+\\s", null, null, null, EditorialDecision.Mode.UPDATE, new Page());
     assertEquals(0, res.size());
+  }
+
+
+  @Test
+  public void addIdentifier() throws Exception {
+    NameUsageBase t = TestEntityGenerator.TAXON1.copy();
+
+    mapper().addIdentifier(t, List.of());
+    var n2 = mapper().get(t);
+    assertEquals(t.getIdentifier(), n2.getIdentifier());
+
+    final var id = new Identifier(Identifier.Scope.IPNI, "2345678uio");
+    mapper().addIdentifier(t, List.of(id));
+    n2 = mapper().get(t);
+    t.setIdentifier(List.of(id));
+    assertEquals(t.getIdentifier(), n2.getIdentifier());
   }
 
   @Test

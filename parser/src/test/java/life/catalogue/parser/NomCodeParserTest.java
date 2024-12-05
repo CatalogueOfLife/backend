@@ -23,6 +23,11 @@ public class NomCodeParserTest extends ParserTestBase<NomCode> {
     assertParse(NomCode.BOTANICAL, "plants");
     assertParse(NomCode.BOTANICAL, "ICBN");
     assertParse(NomCode.BOTANICAL, "ICNafp");
+
+    assertParse(NomCode.ZOOLOGICAL, "zoology");
+    assertParse(NomCode.ZOOLOGICAL, "ICZN");
+
+    assertParse(NomCode.PHYLO, "phylogenetic");
   }
 
   @Override

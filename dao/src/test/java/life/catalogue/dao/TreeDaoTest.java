@@ -1,10 +1,10 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.printer.SectorDataRule;
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.SectorDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 import life.catalogue.es.NameUsageSearchService;
 
 import org.gbif.nameparser.api.Rank;

@@ -60,10 +60,13 @@ public final class FuzzyDate {
   @JsonCreator
   public static FuzzyDate of(String isoDate) {
     if (StringUtils.isBlank(isoDate)) return null;
-
+    isoDate = isoDate.trim();
     int dashCnt = StringUtils.countMatches(isoDate, '-');
     switch (dashCnt) {
       case 0:
+        while(isoDate.length() < 4) {
+          isoDate = "0" + isoDate;
+        }
         return new FuzzyDate(Year.parse(isoDate));
       case 1:
         return new FuzzyDate(YearMonth.parse(isoDate));

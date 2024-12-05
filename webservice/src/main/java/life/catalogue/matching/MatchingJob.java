@@ -24,11 +24,14 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.importer.NameInterpreter;
 import life.catalogue.parser.*;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -146,8 +149,9 @@ public class MatchingJob extends DatasetBlockingJob {
                                    new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
         // match
         if (req.getUpload() != null) {
-          LOG.info("Match uploaded names from {}", req.getUpload());
-          writeMatches(writer, streamUpload());
+          LOG.info("Match uploaded names from {} file {}", req.getFormat(), req.getUpload());
+          var mstream = streamUpload();
+          writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
           // delete file upload
           FileUtils.deleteQuietly(req.getUpload());
 
@@ -156,12 +160,12 @@ public class MatchingJob extends DatasetBlockingJob {
             // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
             final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
             ttp.setDatasetKey(req.getSourceDatasetKey());
-            writeMatches(writer, TreeStreams.dataset(session, ttp)
+            writeMatches(writer, null, TreeStreams.dataset(session, ttp)
                                             .map(sn -> {
                                               if (rootClassification != null) {
                                                 sn.getClassification().addAll(rootClassification);
                                               }
-                                              return new IssueName(sn, new IssueContainer.Simple());
+                                              return new IssueName(sn, new IssueContainer.Simple(), null);
                                             })
             );
           }
@@ -182,63 +186,89 @@ public class MatchingJob extends DatasetBlockingJob {
   static class IssueName {
     final SimpleNameClassified<SimpleName> name;
     final IssueContainer issues;
+    final String[] row;
 
-    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues) {
+    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues, String[] row) {
       this.issues = issues;
       this.name = name;
+      this.row = row;
     }
   }
 
-  private void writeMatches(AbstractWriter<?> writer, Stream<IssueName> names) throws IOException {
-    // write header
-    writer.writeHeaders(
-      "inputID",
-      "inputRank",
-      "inputName",
-
-      "matchType",
-      "ID",
-      "rank",
-      "label",
-      "scientificName",
-      "authorship",
-      "status",
-      "acceptedName",
-      "classification",
-      "issues"
-    );
-
-    // match & write to file
+  private void writeMatches(AbstractWriter<?> writer, String[] srcHeader, Stream<IssueName> names) {
     AtomicLong counter = new AtomicLong(0);
     AtomicLong none = new AtomicLong(0);
-    names.map(this::match).forEach(m -> {
-      var row = new String[13];
-      row[0] = m.original.getId();
-      row[1] = str(m.original.getRank());
-      row[2] = m.original.getLabel();
-      row[3] = str(m.type);
-      if (m.usage != null) {
-        row[4] = m.usage.getId();
-        row[5] = str(m.usage.getRank());
-        row[6] = m.usage.getLabel();
-        row[7] = m.usage.getName();
-        row[8] = m.usage.getAuthorship();
-        row[9] = str(m.usage.getStatus());
-        if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
-          row[10] = m.usage.getClassification().get(0).getLabel();
-        } else {
-          row[10] = null;
+
+    try (names) {
+      // write header
+      List<String> cols = new ArrayList<>();
+      cols.addAll(List.of(
+        "inputID",
+        "inputRank",
+        "inputName",
+
+        "matchType",
+        "ID",
+        "rank",
+        "label",
+        "scientificName",
+        "authorship",
+        "status",
+        "acceptedName",
+        "classification",
+        "issues"
+      ));
+      final int firstCustomColIdx = cols.size();
+      if (srcHeader != null) {
+        for (var h : srcHeader) {
+          cols.add(StringUtils.stripToEmpty(h));
         }
-        row[11] = str(m.usage.getClassification());
-        row[12] = concat(m.issues);
-      } else {
-        none.incrementAndGet();
       }
-      writer.writeRow(row);
-      if (counter.incrementAndGet() % 25000 == 0) {
-        LOG.info("Matched {} out of {} names so far", counter.get()-none.get(), counter);
-      }
-    });
+      writer.writeHeaders(cols);
+      final int size = cols.size();
+
+      // match & write to file
+      names.forEach(n -> {
+          var m = match(n);
+          var row = new String[size];
+          row[0] = m.original.getId();
+          row[1] = str(m.original.getRank());
+          row[2] = m.original.getLabel();
+          row[3] = str(m.type);
+          if (m.usage != null) {
+              row[4] = m.usage.getId();
+              row[5] = str(m.usage.getRank());
+              row[6] = m.usage.getLabel();
+              row[7] = m.usage.getName();
+              row[8] = m.usage.getAuthorship();
+              row[9] = str(m.usage.getStatus());
+              if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
+                  row[10] = m.usage.getClassification().get(0).getLabel();
+              } else {
+                  row[10] = null;
+              }
+              row[11] = str(m.usage.getClassification());
+              row[12] = concat(m.issues);
+          } else {
+              none.incrementAndGet();
+          }
+          // also add all original input columns if provided (only works with file uploads)
+          if (srcHeader != null && n.row != null) {
+              int idx = 0;
+              for (String val : n.row) {
+                  if (idx < size - firstCustomColIdx) {
+                      // make sure we dont have more columns than headers
+                      row[firstCustomColIdx + idx] = val;
+                  }
+                  idx++;
+              }
+          }
+          writer.writeRow(row);
+          if (counter.incrementAndGet() % 25000 == 0) {
+              LOG.info("Matched {} out of {} names so far", counter.get() - none.get(), counter);
+          }
+      });
+    }
     writer.flush();
     LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
   }
@@ -256,9 +286,18 @@ public class MatchingJob extends DatasetBlockingJob {
     return new UsageMatchWithOriginal(match, n.issues, n.name);
   }
 
-  private Stream<IssueName> streamUpload() throws IOException {
+  private static class MappedStream {
+    final RowMapper mapper;
+    final Stream<IssueName> stream;
+
+    private MappedStream(RowMapper mapper, Stream<IssueName> stream) {
+      this.mapper = mapper;
+      this.stream = stream;
+    }
+  }
+  private MappedStream streamUpload() throws IOException {
     final InputStream data = new FileInputStream(req.getUpload());
-    final AbstractParser<?> parser = req.getUpload().getName().endsWith("csv") ?
+    final AbstractParser<?> parser = req.getFormat() == TabularFormat.CSV ?
                                TabReader.newParser(CsvReader.csvSetting()) :
                                TabReader.newParser(CsvReader.tsvSetting());
 
@@ -268,10 +307,10 @@ public class MatchingJob extends DatasetBlockingJob {
     final RowMapper mapper = new RowMapper(iter.next());
 
     Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false);
-    return rowStream.map(row -> {
+    return new MappedStream(mapper, rowStream.map(row -> {
       final IssueContainer issues = new IssueContainer.Simple();
-      return new IssueName(mapper.build(row, issues), issues);
-    });
+      return new IssueName(mapper.build(row, issues), issues, row);
+    }));
   }
 
   static String str(Enum<?> val) {
@@ -304,11 +343,13 @@ public class MatchingJob extends DatasetBlockingJob {
 
   static class RowMapper {
     final Object2IntMap<Term> header;
+    final String[] rawHeader;
 
     public RowMapper(String[] header) {
       if (header == null) {
         throw new IllegalArgumentException("Header columns required. Failed to read matching input");
       }
+      this.rawHeader = header;
       this.header = new Object2IntOpenHashMap<>();
       int idx = 0;
       for (String h : header) {

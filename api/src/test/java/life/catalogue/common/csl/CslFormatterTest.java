@@ -30,13 +30,24 @@ import static org.junit.Assert.assertFalse;
 public class CslFormatterTest {
 
   @Test
+  public void colApa() throws Exception {
+    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
+    CSLItemData csl = d.toCSL();
+    PrintWriter writer = new PrintWriter(System.out);
+
+    CslFormatter apa = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
+    writer.println(apa.cite(csl));
+    writer.flush();
+  }
+
+  @Test
   public void colStyles() throws Exception {
     var d = Dataset.read(Resources.stream("metadata/col.yaml"));
     CSLItemData csl = d.toCSL();
-    List<CSLItemData> sources = d.getSource().stream().map(Citation::toCSL).collect(Collectors.toList());
 
-    List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.HTML)).collect(Collectors.toList());
     PrintWriter writer = new PrintWriter(System.out);
+    List<CSLItemData> sources = d.getSource().stream().map(Citation::toCSL).collect(Collectors.toList());
+    List<CslFormatter> styles = Arrays.stream(CslFormatter.STYLE.values()).map(s -> new CslFormatter(s, CslFormatter.FORMAT.TEXT)).collect(Collectors.toList());
     for (var style : styles) {
       writer.println(style.style);
       writer.println(style.cite(csl));

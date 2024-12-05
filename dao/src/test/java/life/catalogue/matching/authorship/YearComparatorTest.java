@@ -24,9 +24,9 @@ public class YearComparatorTest {
 
     // 1 year diff is ok
     assertEquals(Equality.EQUAL, new YearComparator(1, "2001", "2001").compare());
-    assertEquals(Equality.EQUAL, new YearComparator(1, "2001", "2000").compare());
-    assertEquals(Equality.EQUAL, new YearComparator(1, "2000", "1999").compare());
-    assertEquals(Equality.EQUAL, new YearComparator(1, "189", "190").compare());
+    assertEquals(Equality.UNKNOWN, new YearComparator(1, "2001", "2000").compare());
+    assertEquals(Equality.UNKNOWN, new YearComparator(1, "2000", "1999").compare());
+    assertEquals(Equality.UNKNOWN, new YearComparator(1, "189", "190").compare());
 
     // now year diff
     assertEquals(Equality.EQUAL, new YearComparator( "2001", "2001").compare());

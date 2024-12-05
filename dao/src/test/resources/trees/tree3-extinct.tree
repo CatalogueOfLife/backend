@@ -1,0 +1,13 @@
+†Canis [genus] {ID=t20}
+  †Canis adustus [species] {ID=t23}
+  †Canis argentinus [species] {ID=t24}
+†Urocyon ×minicephalus [species] {ID=t33}
+†Trilobita [class] {ID=ttl3}
+  †Asaphida [order] {ID=ttl4}
+    †Asaphidae [family] {ID=ttl5}
+    †Remopleurididae [family] {ID=ttl6}
+      †Asaphus [genus] {ID=ttl10}
+        †Asaphus expansus Wahlenberg, 1818 [species] {ID=ttl14}
+      †Gog [genus] {ID=ttl11}
+        †Gog catillus Fortey, 1975 [species] {ID=ttl12}
+        †Gog yangtzeensis (Lu, 1975) [species] {ID=ttl13}

@@ -1,5 +1,7 @@
 package life.catalogue;
 
+import io.dropwizard.core.Configuration;
+
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
@@ -21,16 +23,19 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
+import life.catalogue.matching.DockerConfig;
+
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 
 
@@ -74,6 +79,10 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   public GbifConfig gbif = new GbifConfig();
 
   @Valid
+  @NotNull
+  public DockerConfig docker = new DockerConfig();
+
+  @Valid
   public DoiConfig doi;
 
   @Valid
@@ -83,7 +92,11 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Valid
   @NotNull
   public ImporterConfig importer = new ImporterConfig();
-  
+
+  @Valid
+  @NotNull
+  public SyncManagerConfig syncs = new SyncManagerConfig();
+
   @Valid
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();
@@ -124,17 +137,9 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
   @Min(1)
   public int diffTimeout = 30;
 
-  /**
-   * Names index kvp file to persist map on disk.
-   * If empty will use a passthrough index that always returns no matches
-   */
-  public File namesIndexFile;
-
-  /**
-   * If true verifies the existing names index file if it is in sync with the latest index in the database.
-   * For a large names index reloading it from the database can take an hour.
-   */
-  public boolean namesIndexVerification = true;
+  @Valid
+  @NotNull
+  public NamesIndexConfig namesIndex = new NamesIndexConfig();
 
   /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.

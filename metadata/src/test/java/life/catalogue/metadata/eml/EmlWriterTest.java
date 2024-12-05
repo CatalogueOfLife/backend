@@ -32,6 +32,7 @@ public class EmlWriterTest {
     File f = File.createTempFile("col-eml", ".xml");
     try {
       Dataset d = DatasetTest.generateTestDataset();
+      d.setConversion(null);
       d.setCreator(List.of(
         Agent.person("Max", "Meier", "null@dev.null", "1234-5678-9012-3456"),
         Agent.person("Fax", "Feier")

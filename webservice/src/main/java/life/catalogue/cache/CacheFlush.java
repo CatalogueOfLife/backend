@@ -1,16 +1,15 @@
 package life.catalogue.cache;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.FlushDatasetCache;
 
 import java.net.URI;
 
-import javax.ws.rs.core.UriBuilder;
-
-import life.catalogue.api.event.FlushDatasetCache;
-
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 
 import com.google.common.eventbus.Subscribe;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 
 /**
@@ -20,6 +19,7 @@ public class CacheFlush {
   private final UriBuilder projectUrlBuilder;
   private final UriBuilder datasetUrlBuilder;
   private final UriBuilder logoUrlBuilder;
+  private final URI dataset;
   private final URI colseo;
   private final CloseableHttpClient client;
 
@@ -29,12 +29,15 @@ public class CacheFlush {
     this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/");
     this.logoUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/logo");
     this.colseo = UriBuilder.fromUri(api).path("colseo").build();
+    this.dataset= UriBuilder.fromUri(api).path("dataset").build();
   }
 
   @Subscribe
   public void flushDatasetEvent(FlushDatasetCache event){
     if (event.logoOnly) {
       VarnishUtils.ban(client, logoUrlBuilder.build(event.datasetKey));
+    } else if (event.datasetKey < 0) {
+      VarnishUtils.ban(client, dataset);
     } else {
       VarnishUtils.ban(client, datasetUrlBuilder.build(event.datasetKey));
     }

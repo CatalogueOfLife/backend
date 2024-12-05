@@ -1,26 +1,31 @@
 package life.catalogue.api.search;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.TaxGroup;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import life.catalogue.api.vocab.TaxGroup;
 
 public class NameUsageWrapper extends SimpleNameClassification {
 
   private NameUsage usage;
+  // publisher of the usages dataset
+  private UUID publisherKey;
   private Set<Issue> issues;
   // decisions about this usage in any number of project or releases
   private List<SimpleDecision> decisions;
+  // subject datasetKey of usage sector
   private Integer sectorDatasetKey;
+  // publisher of the usage sectors subject dataset
   private UUID sectorPublisherKey;
-  private Sector.Mode sectorMode;
-  private UUID publisherKey;
   private Set<InfoGroup> secondarySourceGroups;
   private Set<Integer> secondarySourceKeys;
   private TaxGroup group;
@@ -80,20 +85,16 @@ public class NameUsageWrapper extends SimpleNameClassification {
     this.publisherKey = publisherKey;
   }
 
+  /**
+   *
+   * @return
+   */
   public UUID getSectorPublisherKey() {
     return sectorPublisherKey;
   }
 
   public void setSectorPublisherKey(UUID sectorPublisherKey) {
     this.sectorPublisherKey = sectorPublisherKey;
-  }
-
-  public Sector.Mode getSectorMode() {
-    return sectorMode;
-  }
-
-  public void setSectorMode(Sector.Mode sectorMode) {
-    this.sectorMode = sectorMode;
   }
 
   public Set<InfoGroup> getSecondarySourceGroups() {
@@ -126,12 +127,20 @@ public class NameUsageWrapper extends SimpleNameClassification {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     NameUsageWrapper that = (NameUsageWrapper) o;
-    return Objects.equals(usage, that.usage) && Objects.equals(issues, that.issues) && Objects.equals(decisions, that.decisions) && Objects.equals(sectorDatasetKey, that.sectorDatasetKey) && Objects.equals(sectorPublisherKey, that.sectorPublisherKey) && sectorMode == that.sectorMode && Objects.equals(publisherKey, that.publisherKey) && Objects.equals(secondarySourceGroups, that.secondarySourceGroups) && Objects.equals(secondarySourceKeys, that.secondarySourceKeys) && group == that.group;
+    return Objects.equals(usage, that.usage) &&
+      Objects.equals(issues, that.issues) &&
+      Objects.equals(decisions, that.decisions) &&
+      Objects.equals(sectorDatasetKey, that.sectorDatasetKey) &&
+      Objects.equals(sectorPublisherKey, that.sectorPublisherKey) &&
+      Objects.equals(publisherKey, that.publisherKey) &&
+      Objects.equals(secondarySourceGroups, that.secondarySourceGroups) &&
+      Objects.equals(secondarySourceKeys, that.secondarySourceKeys) &&
+      group == that.group;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, sectorMode, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
+    return Objects.hash(super.hashCode(), usage, issues, decisions, sectorDatasetKey, sectorPublisherKey, publisherKey, secondarySourceGroups, secondarySourceKeys, group);
   }
 
   @Override

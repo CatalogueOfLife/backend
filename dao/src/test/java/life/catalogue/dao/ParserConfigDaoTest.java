@@ -4,8 +4,8 @@ import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.Authorship;
@@ -34,7 +34,7 @@ public class ParserConfigDaoTest {
     cfg.setCombinationAuthorship(Authorship.yearAuthors("1977", "zur Straßen"));
 
     assertParsed("Jezzinothrips cretacicus", "zur Strassen, 1973", Rank.SPECIES, "1973","zur Strassen");
-    dao.putName(cfg, Users.TESTER);
+    dao.add(cfg, Users.TESTER);
     assertParsed("Jezzinothrips cretacicus", "zur Strassen, 1973", Rank.SPECIES, "1977","zur Straßen");
     assertParsed("Jezzinothrips cretacicus", "zur Strassen,1973", Rank.SPECIES, "1977","zur Straßen");
     assertParsed("Jezzinothrips  cretacicus", " zur  Strassen , 1973 ", Rank.SPECIES, "1977","zur Straßen");

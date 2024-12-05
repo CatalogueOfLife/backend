@@ -17,7 +17,7 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.*;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -32,9 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.stream.Collectors.toList;
-import static life.catalogue.db.PgSetupRule.getSqlSessionFactory;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static life.catalogue.junit.PgSetupRule.getSqlSessionFactory;
+import static org.junit.Assert.*;
 
 /*
  * Full round-trips into Postgres via DAOs, out of Postgres via the NameUsageWrapperMapper, into Elasticsearch via the NameUsageIndexService
@@ -106,7 +105,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     // that suits us fine now.
     InputStream is = getClass().getResourceAsStream("/elastic/Issue407_document.json");
     EsNameUsage doc = EsModule.readDocument(is);
-    NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(doc.getPayload());
+    NameUsageWrapper nuw = NameUsageWrapperConverter.decode(doc.getPayload());
     NameUsageWrapperConverter.enrichPayload(nuw, doc);
     Taxon taxon = (Taxon) nuw.getUsage();
 
@@ -211,7 +210,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     assertEquals(pgTaxa.get(2).getId(), res.getResult().get(0).getUsage().getId());
     dao.delete(key, 0);
     res = query(new TermQuery("usageId", pgTaxa.get(2).getId()));
-    assertNull(res.getResult().get(0).getDecisions());
+    assertTrue(res.getResult().get(0).getDecisions().isEmpty());
   }
 
   // Some JSON to send using the REST API

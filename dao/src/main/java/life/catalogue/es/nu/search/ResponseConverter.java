@@ -47,7 +47,7 @@ class ResponseConverter implements UpwardConverter<EsResponse<EsNameUsage>, Name
     List<NameUsageWrapper> nuws = new ArrayList<>(hits.size());
     for (SearchHit<EsNameUsage> hit : hits) {
       String payload = hit.getSource().getPayload();
-      NameUsageWrapper nuw = NameUsageWrapperConverter.inflate(payload);
+      NameUsageWrapper nuw = NameUsageWrapperConverter.decode(payload);
       NameUsageWrapperConverter.enrichPayload(nuw, hit.getSource());
       nuws.add(nuw);
     }

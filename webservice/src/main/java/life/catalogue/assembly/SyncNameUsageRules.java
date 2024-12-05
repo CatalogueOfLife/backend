@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.NomStatus;
@@ -8,8 +9,13 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import org.gbif.nameparser.api.NomCode;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 public class SyncNameUsageRules {
   private static final Logger LOG = LoggerFactory.getLogger(SyncNameUsageRules.class);
@@ -25,6 +31,13 @@ public class SyncNameUsageRules {
         n.setBasionymAuthorship(null);
         n.setSanctioningAuthor(null);
         LOG.debug("remove authorship from botanical autonym {}", u.getLabel());
+      }
+    // zoological rules only
+    } else if (NomCode.ZOOLOGICAL == n.getCode()) {
+      // accepted trinomials become subspecies
+      if (u.getStatus().isTaxon() && n.isTrinomial() && n.getRank() == Rank.INFRASPECIFIC_NAME) {
+        n.setRank(Rank.SUBSPECIES);
+        LOG.debug("Change accepted, zoological, infraspecific name to subspecies rank: {}", u.getLabel());
       }
     }
     // change tax status of manuscript names
@@ -48,6 +61,15 @@ public class SyncNameUsageRules {
       n.setUninomial(StringUtils.capitalize(n.getUninomial().trim().toLowerCase()));
       LOG.debug("All capital {} {} converted to {}", n.getRank(), n.getScientificName(), n.getUninomial());
       n.rebuildScientificName();
+    }
+    // remove all local alternative identifiers
+    removeLocalIdentifiers(u.getIdentifier());
+    removeLocalIdentifiers(n.getIdentifier());
+  }
+
+  private static void removeLocalIdentifiers(List<Identifier> identifier) {
+    if (identifier != null) {
+      identifier.removeIf(Identifier::isLocal);
     }
   }
 

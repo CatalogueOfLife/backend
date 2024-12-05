@@ -29,7 +29,8 @@ public class JwtCodec {
     parser = Jwts.parser()
         .requireIssuer(ISSUER)
         .setAllowedClockSkewSeconds(3 * 60) // allow for 3 minutes time skew
-        .setSigningKey(key);
+        .setSigningKey(key)
+        .build();
   }
   
   public String generate(User user) throws JwtException {

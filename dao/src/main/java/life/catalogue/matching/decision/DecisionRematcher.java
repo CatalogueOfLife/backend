@@ -44,7 +44,7 @@ public class DecisionRematcher extends RematcherBase<EditorialDecision, Decision
           obj.getSubject().setId(u.getId());
         }
       }
-      if (updateCounter(old.getSubject().getId(), obj.getSubject().getId())) {
+      if (updateCounter(true, old.getSubject().getId(), obj.getSubject().getId())) {
         dao.update(obj, old, userKey, session);
       }
     }

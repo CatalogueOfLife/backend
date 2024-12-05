@@ -1,14 +1,11 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
-import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 
+import life.catalogue.matching.nidx.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;

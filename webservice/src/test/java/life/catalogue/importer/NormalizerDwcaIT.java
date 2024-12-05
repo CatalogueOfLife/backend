@@ -352,15 +352,6 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
   
   @Test
-  @Ignore("No testing yet")
-  public void testWormsParents() throws Exception {
-    normalize(32);
-
-    try (Transaction tx = store.getNeo().beginTx()) {
-    }
-  }
-  
-  @Test
   public void dwc8Nons() throws Exception {
     normalize(34);
     try (Transaction tx = store.getNeo().beginTx()) {
@@ -575,6 +566,45 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals(1884, (int) n.getPublishedInYear());
 
       assertTrue(v.getIssues().contains(Issue.UPPERCASE_EPITHET));
+    }
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/backend/issues/1335
+   */
+  @Test
+  public void subgenera() throws Exception {
+    var settings = new DatasetSettings();
+
+    normalize(51, settings);
+    printTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      store.usages().all().forEach( un -> {
+        var u = store.usageWithName(un.getId());
+        var n = u.getNeoName().getName();
+        if (n.getRank().isInfragenericStrictly()) {
+          assertNotNull(n.getInfragenericEpithet());
+          assertNull(n.getUninomial());
+          assertNull(n.getSpecificEpithet());
+        }
+      });
+    }
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/785
+   * @throws Exception
+   */
+  @Test
+  public void unite() throws Exception {
+    var settings = new DatasetSettings();
+
+    normalize(52, settings);
+    printTree();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      assertEquals(11, store.usages().all().count());
     }
   }
 

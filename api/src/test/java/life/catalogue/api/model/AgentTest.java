@@ -1,7 +1,7 @@
 package life.catalogue.api.model;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.junit.Test;
 

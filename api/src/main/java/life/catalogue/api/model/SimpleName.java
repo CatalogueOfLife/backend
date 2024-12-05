@@ -9,11 +9,11 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Comparator;
 import java.util.Objects;
 
-import javax.validation.constraints.NotNull;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * A small class representing a name usage with an id. It can act as a reference to a scientific name in a dataset.
@@ -52,8 +52,14 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
   public static SimpleName sn(Rank rank, String name) {
     return new SimpleName(null, name, rank);
   }
+  public static SimpleName sn(NomCode code, String name) {
+    return new SimpleName(null, name, null, null, code);
+  }
   public static SimpleName sn(Rank rank, String name, String authorship) {
     return new SimpleName(null, name, authorship, rank);
+  }
+  public static SimpleName sn(Rank rank, NomCode code, String name, String authorship) {
+    return new SimpleName(null, name, authorship, rank, code);
   }
   public static SimpleName sn(String id, Rank rank, String name, String authorship) {
     return new SimpleName(id, name, authorship, rank);
@@ -110,6 +116,14 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.name = name;
     this.authorship = authorship;
     this.rank = rank;
+  }
+
+  public SimpleName(String id, String name, String authorship, Rank rank, NomCode code) {
+    this.id = id;
+    this.name = name;
+    this.authorship = authorship;
+    this.rank = rank;
+    this.code = code;
   }
 
   public String getId() {

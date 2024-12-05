@@ -30,7 +30,9 @@ public class Identifier {
     TSN, // ITIS
     IPNI,
     IF,
-    ZOOBANK;
+    ZOOBANK,
+    INAT, // iNaturalist
+    INA; // Index Nominum Algarum
 
     public String prefix() {
       return name().toLowerCase();

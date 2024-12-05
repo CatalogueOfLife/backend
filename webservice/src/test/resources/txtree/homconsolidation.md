@@ -15,5 +15,6 @@ Diacyclops stammeri & westfalicus have lower prio and should be merged into the 
 
 There is another version under family Moneraceae which is not provisional.
  
-# Solter vulgaris Wheeler, 1906
- is a prop parte synonym. The species with the same
+# Langeraceae
+## Solter vulgaris Wheeler, 1906
+ is a pro parte synonym. Together with Persus vulgaris it stays as the source said - they all share the same priority! 

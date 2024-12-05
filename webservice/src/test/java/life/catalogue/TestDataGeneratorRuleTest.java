@@ -1,8 +1,8 @@
 package life.catalogue;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.release.IdProviderIT;
@@ -28,12 +28,12 @@ public class TestDataGeneratorRuleTest {
   @Parameterized.Parameters(name= "{index}: {0}")
   public static Iterable<Object[]> data() {
     List<TestDataRule.TestData> list = List.of(
-      TestDataGenerator.SYNCS,
       XReleaseBasicIT.XRELEASE_DATA,
+      IdProviderIT.PROJECT_DATA,
+      TestDataGenerator.SYNCS,
       TestDataGenerator.MATCHING,
       TestDataGenerator.XCOL,
-      TestDataGenerator.GROUPING,
-      IdProviderIT.PROJECT_DATA
+      TestDataGenerator.GROUPING
     );
     return list.stream().map(t -> new Object[]{t}).collect(Collectors.toList());
   }

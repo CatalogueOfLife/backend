@@ -1,7 +1,10 @@
 package life.catalogue.csv;
 
 import life.catalogue.api.util.VocabularyUtils;
+import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.Resources;
+
+import life.catalogue.common.io.TempFile;
 
 import org.gbif.dwc.terms.*;
 
@@ -140,6 +143,21 @@ public class DwcaReaderTest {
   }
 
   @Test
+  public void dwca52() throws Exception {
+    DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/52"));
+
+    assertTrue(reader.coreSchema().isTsv());
+
+    final AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(DwcTerm.Taxon).forEach(tr -> {
+      counter.incrementAndGet();
+      assertNotNull(tr.get(DwcTerm.scientificName));
+      assertNotNull(tr.get(DwcaTerm.ID));
+    });
+    assertEquals(11, counter.get());
+  }
+
+  @Test
   public void dwca14() throws Exception {
     DwcaReader reader = DwcaReader.from(Resources.toPath("dwca/14"));
     
@@ -256,6 +274,30 @@ public class DwcaReaderTest {
       assertEquals(tr.get(DwcaTerm.ID), tr.get(DwcTerm.taxonID));
     });
     assertEquals(9, counter.get());
+  }
+
+  /**
+   * BDJ with 1 records only
+   */
+  @Test
+  public void bdj() throws Exception {
+    try (var dir = TempFile.directory()) {
+
+      CompressionUtil.decompressFile(dir.file, Resources.toFile("dwca/bdj.archive"));
+      DwcaReader reader = DwcaReader.from(dir.file.toPath());
+
+      assertEquals(4, reader.size());
+      assertEquals(DwcTerm.Taxon, reader.coreRowType());
+      assertFalse(reader.coreSchema().isTsv());
+
+      final AtomicInteger counter = new AtomicInteger(0);
+      reader.stream(DwcTerm.Taxon).forEach(tr -> {
+        counter.incrementAndGet();
+        assertNotNull(tr.get(DwcTerm.scientificName));
+        assertEquals(tr.get(DwcaTerm.ID), tr.get(DwcTerm.taxonID));
+      });
+      assertEquals(1, counter.get());
+    }
   }
 
 }

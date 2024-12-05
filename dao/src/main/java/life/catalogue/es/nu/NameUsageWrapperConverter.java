@@ -1,5 +1,9 @@
 package life.catalogue.es.nu;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.util.ObjectUtils;
@@ -7,14 +11,11 @@ import life.catalogue.api.vocab.NameField;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.es.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
 import static life.catalogue.api.vocab.NameField.*;
 import static life.catalogue.common.collection.CollectionUtils.notEmpty;
@@ -25,31 +26,44 @@ import static life.catalogue.common.collection.CollectionUtils.notEmpty;
  * document.
  */
 public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWrapper, EsNameUsage> {
+  final private static EsKryoPool pool = new EsKryoPool(8);
+  final private static int bufferSize = 1024;
+
 
   /**
-   * Serializes, deflates and base64-encodes a NameUsageWrapper. NB you can't store raw byte arrays in Elasticsearch. You must base64-encode
-   * them.
+   * Serializes and base64-encodes a NameUsageWrapper with Kryo.
+   * NB you can't store raw byte arrays in Elasticsearch. You must base64-encode them.
    */
-  public static String deflate(NameUsageWrapper nuw) throws IOException {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-    try (DeflaterOutputStream dos = new DeflaterOutputStream(baos)) {
-      EsModule.write(dos, nuw);
+  public static String encode(NameUsageWrapper nuw) throws IOException {
+    Kryo kryo = pool.obtain();
+    try {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream(bufferSize);
+      Output output = new Output(buffer, bufferSize);
+      kryo.writeObject(output, nuw);
+      output.close();
+      byte[] bytes = Base64.getEncoder().encode(buffer.toByteArray());
+      return new String(bytes, StandardCharsets.US_ASCII);
+
+    } finally {
+      pool.free(kryo);
     }
-    byte[] bytes = Base64.getEncoder().encode(baos.toByteArray());
-    return new String(bytes, StandardCharsets.US_ASCII);
   }
 
   /**
-   * Base64-decodes, unzips and deserializes the provided payload string back to a NameUsageWrapper instance.
+   * Base64-decodes and deserializes the provided kryo payload string back to a NameUsageWrapper instance.
    * 
-   * @param payload
+   * @param payload Base64 encoded kryo byte array for a NameUsageWrapper
    * @return
    * @throws IOException
    */
-  public static NameUsageWrapper inflate(String payload) throws IOException {
-    byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-    return EsModule.readNameUsageWrapper(new InflaterInputStream(bais));
+  public static NameUsageWrapper decode(String payload) throws IOException {
+    Kryo kryo = pool.obtain();
+    try {
+      byte[] bytes = Base64.getDecoder().decode(payload.getBytes());
+      return kryo.readObject(new Input(bytes), NameUsageWrapper.class);
+    } finally {
+      pool.free(kryo);
+    }
   }
 
   /**
@@ -130,7 +144,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     Name name = nuw.getUsage().getName();
     name.setId(null);
     name.setDatasetKey(null);
-    name.setSectorKey(null);
     name.setScientificName(null);
     name.setNomStatus(null);
     name.setPublishedInId(null);
@@ -143,6 +156,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setId(null);
     u.setDatasetKey(null);
     u.setSectorKey(null);
+    u.setSectorMode(null);
     u.setOrigin(null);
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
@@ -151,7 +165,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
       s.getAccepted().setDatasetKey(null);
-      s.getAccepted().setSectorKey(null);
       s.getAccepted().getName().setScientificName(null);
     }
     // decisions
@@ -189,6 +202,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     u.setId(doc.getUsageId());
     u.setDatasetKey(doc.getDatasetKey());
     u.setSectorKey(doc.getSectorKey());
+    u.setSectorMode(doc.getSectorMode());
     u.setOrigin(doc.getOrigin());
     if (nuw.getUsage().getClass() == Taxon.class) {
       Taxon t = (Taxon) nuw.getUsage();
@@ -197,7 +211,6 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     } else if (nuw.getUsage().getClass() == Synonym.class) {
       Synonym s = (Synonym) nuw.getUsage();
       s.getAccepted().setDatasetKey(doc.getDatasetKey());
-      s.getAccepted().setSectorKey(doc.getSectorKey());
       s.getAccepted().getName().setScientificName(doc.getAcceptedName());
     }
     // decisions
@@ -219,13 +232,12 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
    * @return
    * @throws IOException
    */
-  public EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
+  public static EsNameUsage toDocument(NameUsageWrapper nuw) throws IOException {
     EsNameUsage doc = new EsNameUsage();
     // wrapper
     doc.setIssues(nuw.getIssues());
     doc.setGroup(nuw.getGroup());
     doc.setPublisherKey(nuw.getPublisherKey());
-    doc.setSectorMode(nuw.getSectorMode());
     doc.setSectorDatasetKey(nuw.getSectorDatasetKey());
     doc.setSectorPublisherKey(nuw.getSectorPublisherKey());
     // name
@@ -243,6 +255,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     doc.setUsageId(nuw.getUsage().getId());
     doc.setDatasetKey(ObjectUtils.coalesce(nuw.getUsage().getDatasetKey(), name.getDatasetKey()));
     doc.setSectorKey(ObjectUtils.coalesce(nuw.getUsage().getSectorKey(), name.getSectorKey()));
+    doc.setSectorMode(ObjectUtils.coalesce(nuw.getUsage().getSectorMode(), name.getSectorMode()));
     doc.setOrigin(nuw.getUsage().getOrigin());
     doc.setStatus(nuw.getUsage().getStatus());
     doc.setSecondarySourceGroup(nuw.getSecondarySourceGroups());
@@ -260,7 +273,7 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     // decision
     saveDecisions(nuw, doc);
     prunePayload(nuw);
-    doc.setPayload(deflate(nuw));
+    doc.setPayload(encode(nuw));
     return doc;
   }
 

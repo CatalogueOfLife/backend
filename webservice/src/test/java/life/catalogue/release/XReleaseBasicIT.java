@@ -3,18 +3,16 @@ package life.catalogue.release;
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
+import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.dao.*;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.doi.DoiUpdater;
@@ -29,9 +27,13 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
 
-import javax.validation.Validation;
+import jakarta.validation.Validation;
 
+import life.catalogue.junit.TreeRepoRule;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.NameType;
+
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -44,10 +46,11 @@ import static org.mockito.Mockito.mock;
 
 public class XReleaseBasicIT {
 
-  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13, 1, 2,
+  public final static TestDataRule.TestData XRELEASE_DATA = new TestDataRule.TestData("xrelease", 13,
     Map.of(
-      "sector", Map.of("created_by", 100, "modified_by", 100)
-    ), null);
+      "sector", Map.of("created_by", 100, "modified_by", 100),
+      "name", Map.of("type", NameType.SCIENTIFIC)
+    ), null, false);
   final int projectKey = Datasets.COL;
 
 
@@ -74,7 +77,7 @@ public class XReleaseBasicIT {
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    provider = new IdProvider(projectKey, 1, -1, cfg.release, factory);
+    provider = new IdProvider(projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
 
     EventBus bus = mock(EventBus.class);
     ExportManager exm = mock(ExportManager.class);
@@ -107,6 +110,7 @@ public class XReleaseBasicIT {
   public void release() throws Exception {
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
     xrel.run();
+    assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
 
     assertEquals(ImportState.FINISHED, xrel.getMetrics().getState());
 
@@ -136,6 +140,9 @@ public class XReleaseBasicIT {
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
     }
+
+    // test email templates
+    EmailNotificationTemplateTest.testTemplates(xrel);
   }
 
 }

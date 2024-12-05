@@ -33,6 +33,28 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   public LinneanNameUsage() {
   }
 
+  public LinneanNameUsage(LinneanNameUsage other) {
+    this.id = other.id;
+    this.parentId = other.parentId;
+    this.sectorKey = other.sectorKey;
+    this.status = other.status;
+    this.nameId = other.nameId;
+    this.type = other.type;
+    this.code = other.code;
+    this.scientificName = other.scientificName;
+    this.authorship = other.authorship;
+    this.rank = other.rank;
+    this.uninomial = other.uninomial;
+    this.genus = other.genus;
+    this.infragenericEpithet = other.infragenericEpithet;
+    this.specificEpithet = other.specificEpithet;
+    this.infraspecificEpithet = other.infraspecificEpithet;
+    this.cultivarEpithet = other.cultivarEpithet;
+    this.combinationAuthorship = other.combinationAuthorship;
+    this.basionymAuthorship = other.basionymAuthorship;
+    this.sanctioningAuthor = other.sanctioningAuthor;
+  }
+
   public LinneanNameUsage(NameUsageBase nu) {
     id = nu.getId();
     parentId = nu.getParentId();

@@ -3,17 +3,14 @@ package life.catalogue.release;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.common.io.Resources;
+import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.db.NameMatchingRule;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.io.File;
@@ -28,16 +25,12 @@ import life.catalogue.printer.TextTreePrinter;
 
 import org.apache.ibatis.session.SqlSession;
 
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 import static org.junit.Assert.*;
 
@@ -129,6 +122,9 @@ public class ProjectReleaseIT extends ProjectBaseIT {
       var rel = session.getMapper(DatasetMapper.class).get(release.newDatasetKey);
       assertTrue(rel.isPrivat());
     }
+
+    // test email templates
+    EmailNotificationTemplateTest.testTemplates(release);
   }
 
   private ProjectRelease buildRelease() {

@@ -6,8 +6,8 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.SqlSessionFactoryRule;
-import life.catalogue.db.TestDataRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
@@ -129,7 +129,7 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status) {
+  public static EditorialDecision createDecision(int datasetKey, SimpleNameLink src, EditorialDecision.Mode mode, Name name, @Nullable TaxonomicStatus status, @Nullable Boolean extinct) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       EditorialDecision ed = new EditorialDecision();
       ed.setMode(mode);
@@ -138,6 +138,7 @@ public abstract class SectorSyncTestBase {
       ed.setSubject(src);
       ed.setName(name);
       ed.setStatus(status);
+      ed.setExtinct(extinct);
       ed.applyUser(TestDataRule.TEST_USER);
       session.getMapper(DecisionMapper.class).create(ed);
       return ed;
@@ -145,19 +146,23 @@ public abstract class SectorSyncTestBase {
   }
 
   public void syncAll() {
-    syncAll(null);
+    syncAll(null, null);
+  }
+
+  public void syncAll(@Nullable TreeMergeHandlerConfig mergeCfg) {
+    syncAll(null, mergeCfg);
   }
 
   public void syncMergesOnly() {
-    syncAll(s -> s.getMode() == Sector.Mode.MERGE);
+    syncAll(s -> s.getMode() == Sector.Mode.MERGE, null);
   }
 
-  public static List<SectorImport> syncAll(@Nullable Predicate<Sector> filter) {
+  public static List<SectorImport> syncAll(@Nullable Predicate<Sector> filter, @Nullable TreeMergeHandlerConfig mergeCfg) {
     List<SectorImport> imports = new ArrayList<>();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       for (Sector s : session.getMapper(SectorMapper.class).list(Datasets.COL, null)) {
         if (filter == null || filter.test(s)) {
-          imports.add(sync(s));
+          imports.add(sync(s, mergeCfg));
         }
       }
     }
@@ -168,9 +173,20 @@ public abstract class SectorSyncTestBase {
    * Syncs into the project
    */
   public static SectorImport sync(Sector s) {
-    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    return sync(s,null);
+  }
+
+  /**
+   * Syncs into the project and optionally applies a merge handler config
+   * which normally is restricted to release based merges, but allows us to test incertae sedis placements.
+   */
+  public static SectorImport sync(Sector s, @Nullable TreeMergeHandlerConfig mergeCfg) {
+    SectorSync ss = SyncFactoryRule.getFactory().project(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     if (s.getNote() != null && s.getNote().contains("disableAutoBlocking")) {
       ss.setDisableAutoBlocking(true);
+    }
+    if (mergeCfg != null) {
+      ss.setMergeCfg(mergeCfg);
     }
     return runSync(ss);
   }
@@ -185,24 +201,16 @@ public abstract class SectorSyncTestBase {
     if (ss.getState().getState() != ImportState.FINISHED){
       throw new IllegalStateException("SectorSync failed with error: " + ss.getState().getError());
     }
-    //try {
-    //  final int projectKey = ss.sectorKey.getDatasetKey();
-    //  String tree = readTree(projectKey, null);
-    //  System.out.println("\n*** DATASET "+projectKey+" TREE ***");
-    //  System.out.println(tree);
-    //} catch (IOException e) {
-    //  throw new RuntimeException(e);
-    //}
     return ss.getState();
   }
   void deleteFull(Sector s) {
-    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDeleteFull sd = SyncFactoryRule.getFactory().deleteFull(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR FULL DELETION " + s.getKey() + " ***");
     sd.run();
   }
 
   void delete(Sector s) {
-    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER);
+    SectorDelete sd = SyncFactoryRule.getFactory().delete(s, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestDataRule.TEST_USER.getKey());
     System.out.println("\n*** SECTOR DELETION " + s.getKey() + " ***");
     sd.run();
   }

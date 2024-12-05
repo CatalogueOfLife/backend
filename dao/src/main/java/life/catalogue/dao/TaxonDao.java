@@ -6,7 +6,6 @@ import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
@@ -14,11 +13,6 @@ import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.TaxGroupAnalyzer;
-import life.catalogue.parser.NameParser;
-
-import life.catalogue.parser.TaxGroupParser;
-
-import org.gbif.nameparser.api.NameType;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -26,7 +20,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -68,12 +62,12 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
    * An optional set of associated entity types can be indicated to be copied too.
    *
    * The sectorKey found on the main taxon will also be applied to associated name, reference and other copied entities.
-   * See {@link CatCopy#copyUsage} for details.
+   * See {@link CopyUtil#copyUsage} for details.
    *
    * @return the original source taxon id
    */
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
-    CatCopy.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+    CopyUtil.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
 
   /**
@@ -201,8 +195,16 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
     }
     UsageInfo info = new UsageInfo(usage);
     fillUsageInfo(session, info, null, true, true, true, true, true, true, true,
-      true, true, true, true, true, true);
+      true, true, true, true, true, true, true);
     return info;
+  }
+
+  private static void addSectorMode(SectorScoped obj, Map<Integer, Sector.Mode> cache, SectorMapper sm) {
+    if (sm != null && obj.getSectorKey() != null) {
+      obj.setSectorMode(
+        cache.computeIfAbsent(obj.getSectorKey(), sk -> sm.getMode(obj.getDatasetKey(), sk))
+      );
+    }
   }
 
   /**
@@ -222,9 +224,17 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
                             boolean loadProperties,
                             boolean loadConceptRelations,
                             boolean loadSpeciesInteractions,
-                            boolean loadDecisions) {
+                            boolean loadDecisions,
+                            boolean loadSectorModes
+                            ) {
     var usage = info.getUsage();
     final boolean isTaxon = usage.isTaxon();
+    // we don't expect too many different sectors to show up, so lets fetch them as we go and reuse them
+    // sectors only exist in projects and releases anyways
+    final Map<Integer, Sector.Mode> sectorModes = loadSectorModes ? new HashMap<>() : null;
+    SectorMapper sm = loadSectorModes ? session.getMapper(SectorMapper.class) : null;
+    addSectorMode(usage, sectorModes, sm);
+    addSectorMode(usage.getName(), sectorModes, sm);
 
     // all reference, name and taxon keys so we can select their details at the end
     Set<String> taxonIds = new HashSet<>();
@@ -246,6 +256,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       info.getSynonyms().forEach(s -> {
         refIds.add(s.getName().getPublishedInId());
         refIds.addAll(s.getReferenceIds());
+        addSectorMode(s, sectorModes, sm);
       });
     }
 
@@ -284,6 +295,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
           refIds.add(r.getReferenceId());
           nameIds.add(r.getNameId());
           nameIds.add(r.getRelatedNameId());
+          addSectorMode(r, sectorModes, sm);
         });
       }
     }
@@ -309,9 +321,10 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       }
       // extract all refs
       info.getTypeMaterial().values().forEach(
-        types -> types.forEach(
-          t -> refIds.add(t.getReferenceId())
-        )
+        types -> types.forEach(t -> {
+          refIds.add(t.getReferenceId());
+          addSectorMode(t, sectorModes, sm);
+        })
       );
     }
 
@@ -355,25 +368,37 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
              .filter(d -> d.getArea() != null)
              .collect(Collectors.toList())
         );
-        info.getDistributions().forEach(d -> refIds.add(d.getReferenceId()));
+        info.getDistributions().forEach(d -> {
+          refIds.add(d.getReferenceId());
+          addSectorMode(d, sectorModes, sm);
+        });
       }
 
       if (loadMedia) {
         MediaMapper mm = session.getMapper(MediaMapper.class);
         info.setMedia(mm.listByTaxon(usage));
-        info.getMedia().forEach(m -> refIds.add(m.getReferenceId()));
+        info.getMedia().forEach(m -> {
+          refIds.add(m.getReferenceId());
+          addSectorMode(m, sectorModes, sm);
+        });
       }
 
       if (loadVernacular) {
         VernacularNameMapper vm = session.getMapper(VernacularNameMapper.class);
         info.setVernacularNames(vm.listByTaxon(usage));
-        info.getVernacularNames().forEach(d -> refIds.add(d.getReferenceId()));
+        info.getVernacularNames().forEach(v -> {
+          refIds.add(v.getReferenceId());
+          addSectorMode(v, sectorModes, sm);
+        });
       }
 
       if (loadProperties) {
         var mapper = session.getMapper(TaxonPropertyMapper.class);
         info.setProperties(mapper.listByTaxon(usage));
-        info.getProperties().forEach(p -> refIds.add(p.getReferenceId()));
+        info.getProperties().forEach(p -> {
+          refIds.add(p.getReferenceId());
+          addSectorMode(p, sectorModes, sm);
+        });
       }
 
       if (loadConceptRelations) {
@@ -384,6 +409,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
           refIds.add(r.getReferenceId());
           taxonIds.add(r.getTaxonId());
           taxonIds.add(r.getRelatedTaxonId());
+          addSectorMode(r, sectorModes, sm);
         });
       }
 
@@ -395,6 +421,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
           refIds.add(r.getReferenceId());
           taxonIds.add(r.getTaxonId());
           taxonIds.add(r.getRelatedTaxonId());
+          addSectorMode(r, sectorModes, sm);
         });
       }
     }
@@ -412,17 +439,20 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> {
       } else {
         info.setReferences(refCache.getAll(refIds));
       }
+      info.getReferences().values().forEach(r -> addSectorMode(r, sectorModes, sm));
     }
 
     if (!nameIds.isEmpty()) {
       NameMapper mapper = session.getMapper(NameMapper.class);
       List<Name> names = mapper.listByIds(usage.getDatasetKey(), nameIds);
+      names.forEach(n -> addSectorMode(n, sectorModes, sm));
       info.addNames(names);
     }
 
     if (!taxonIds.isEmpty()) {
       TaxonMapper mapper = session.getMapper(TaxonMapper.class);
       List<Taxon> taxa = mapper.listByIds(usage.getDatasetKey(), taxonIds);
+      taxa.forEach(t -> addSectorMode(t, sectorModes, sm));
       info.addTaxa(taxa);
     }
   }

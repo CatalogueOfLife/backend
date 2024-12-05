@@ -7,11 +7,13 @@ import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
-import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -25,13 +27,18 @@ import java.util.stream.Collectors;
  * Print an entire dataset in a nested way using start/end calls similar to SAX
  */
 public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(AbstractPrinter.class);
   protected final UsageCounter counter = new UsageCounter();
   protected final Writer writer;
+  // sql tree traversal
   protected final TreeTraversalParameter params;
+  // filter
   protected final Set<Rank> ranks;
-  protected final Rank countRank;
-  protected int taxonCount;
-  protected final TaxonCounter taxonCounter;
+  protected final Boolean extinct;
+  // optional counts in results
+  protected int taxonCount; // count
+  protected final Rank countRank; // count by
+  protected final TaxonCounter taxonCounter; // method to do the counting
   protected final SqlSessionFactory factory;
   protected SqlSession session;
   protected final boolean ordered;
@@ -42,7 +49,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
    * @param ranks set of ranks to include. Can be null or empty to include all
    * @param countRank the rank to be used when counting with the taxonCounter
    */
-  public AbstractPrinter(boolean ordered, TreeTraversalParameter params, Set<Rank> ranks, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
+  public AbstractPrinter(boolean ordered, TreeTraversalParameter params, Set<Rank> ranks, Boolean extinct, Rank countRank, TaxonCounter taxonCounter, SqlSessionFactory factory, Writer writer) {
     this.ordered = ordered;
     this.writer = writer;
     this.factory = factory;
@@ -55,6 +62,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
     } else {
       this.ranks = Collections.EMPTY_SET;
     }
+    this.extinct = extinct;
     this.countRank = countRank;
     this.taxonCounter = taxonCounter;
   }
@@ -65,28 +73,40 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
    */
   public int print() throws IOException {
     counter.clear();
+    LOG.info("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
     try {
       session = factory.openSession(true);
-      PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+      if (ordered || params.hasFilter()) {
+        PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+      } else {
+        PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processDatasetSimple(params.getDatasetKey()), this);
+      }
       postIter();
     } finally {
-      close();
-      session.close();
+      try {
+        close();
+      } finally {
+        session.close();
+      }
     }
     return counter.size();
   }
 
   @Override
   public void accept(SimpleName u) {
-    if (ranks.isEmpty() || ranks.contains(u.getRank())) {
+    if (!filter(u)) {
       counter.inc(u);
-      if (countRank != null) {
+      if (countRank != null && taxonCounter != null) {
         taxonCount = taxonCounter.count(DSID.of(params.getDatasetKey(), u.getId()), countRank);
       }
       print(u);
     }
   }
 
+  protected boolean filter(SimpleName u) {
+    return (!ranks.isEmpty() && !ranks.contains(u.getRank())) ||
+      (extinct != null && u.isExtinct() != extinct);
+  }
   protected abstract void print(SimpleName u);
 
   /**

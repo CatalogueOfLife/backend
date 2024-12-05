@@ -16,8 +16,8 @@ import life.catalogue.doi.service.DoiService;
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     // setup
     doiService = new DataCiteService(cfg.doi, jerseyClient);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    UserDao udao = new UserDao(factory, new EventBus(), validator);
+    UserDao udao = new UserDao(factory, cfg.mail, null, new EventBus(), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
     try (SqlSession session = factory.openSession(true)) {
@@ -84,9 +84,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       Dataset project = dm.get(key);
       LOG.info("Update all DOIs for releases of project {}: {}", key, project.getTitle());
       //TODO: what about extended releases?
+      updateReleaseOrProject(project, false, null, null, dm);
       final var latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
       LOG.info("Latest release of project {} is {}", key, latestReleaseKey);
-      updateReleaseOrProject(project, false, null, null, dm);
       // list all releases in chronological order, starting with the very first release
       DOI prev = null;
       for (Dataset release : dm.listReleases(key)) {

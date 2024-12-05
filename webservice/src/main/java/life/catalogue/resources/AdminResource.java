@@ -1,16 +1,13 @@
 package life.catalogue.resources;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
-import life.catalogue.cache.VarnishUtils;
+import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -32,9 +29,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.GlobalMatcherJob;
-import life.catalogue.matching.NameIndex;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.RematchJob;
-import life.catalogue.admin.jobs.RematchSchedulerJob;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
@@ -44,22 +40,23 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.validation.Validator;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 @Path("/admin")
 @Hidden
@@ -86,8 +83,9 @@ public class AdminResource {
   private final JobExecutor exec;
   private final ManagedService componedService;
   private final EventBus bus;
+  private final LatestDatasetKeyCache lrCache;
 
-  public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        JobExecutor executor, IdMap idMap, Validator validator, EventBus bus) {
@@ -107,6 +105,7 @@ public class AdminResource {
     this.exec = executor;
     this.idMap = idMap;
     this.validator = validator;
+    this.lrCache = lrCache;
   }
 
   @GET
@@ -200,7 +199,7 @@ public class AdminResource {
   @POST
   @Path("/counter-update")
   public BackgroundJob updateCounter(@Auth User user) {
-    return runJob(new UsageCountJob(user, JobPriority.HIGH, factory));
+    return runJob(new UsageCountJob(user.getKey(), JobPriority.HIGH, factory));
   }
 
   @POST
@@ -222,6 +221,14 @@ public class AdminResource {
     }
   }
 
+
+  @DELETE
+  @Path("/reindex")
+  public int createEmptyIndex(@Auth User user) {
+    LOG.warn("Drop and recreate empty search index by {}", user);
+    return indexService.createEmptyIndex();
+  }
+
   @POST
   @Path("/reindex")
   public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, RequestScope req, @Auth User user) {
@@ -234,7 +241,19 @@ public class AdminResource {
     if (req.getDatasetKey() == null && !req.getAll()) {
       throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
     }
-    return runJob(new IndexJob(req, user.getKey(), priority, indexService));
+    return runJob(new IndexJob(req, user.getKey(), priority, indexService, bus));
+  }
+
+  @GET
+  @Path("/reindex/preview")
+  public Response reindexPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, null);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
   }
 
   @POST
@@ -243,8 +262,9 @@ public class AdminResource {
    * Reindex all datasets which have not been fully indexed before.
    */
   public BackgroundJob reindexBroken(@Auth User user, @QueryParam("threshold") @DefaultValue("0.95") double threshold) {
-    return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService));
+    return runJob(new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, bus));
   }
+
 
   @POST
   @Path("/rematch")
@@ -266,6 +286,27 @@ public class AdminResource {
     }
   }
 
+  @GET
+  @Path("/rematch/preview")
+  public Response rematchPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, null);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
+  /**
+   * Rematch all datasets which have not been fully matched before.
+   */
+  @POST
+  @Path("/rematch/scheduler")
+  public BackgroundJob rematchIncomplete(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    return runJob(new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, bus));
+  }
+
   @POST
   @Path("/rematch/missing")
   /**
@@ -275,30 +316,13 @@ public class AdminResource {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
-  @GET
-  @Path("/rematch/overview")
-  public Response rematchOverview(@Auth User user) {
-    var job = new RematchSchedulerJob(user.getKey(), 1, factory, namesIndex, exec, null);
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      job.write(writer);
-      writer.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  @DELETE
-  @Path("/reindex")
-  public int createEmptyIndex(@Auth User user) {
-    LOG.warn("Drop and recreate empty search index by {}", user);
-    return indexService.createEmptyIndex();
-  }
 
   @DELETE
   @Path("/cache")
   public boolean clearCaches(@Auth User user) {
     LOG.info("Clear dataset info cache with {} entries by {}", DatasetInfoCache.CACHE.size(), user);
     DatasetInfoCache.CACHE.clear();
+    lrCache.clear();
     return true;
   }
 

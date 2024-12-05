@@ -1,6 +1,6 @@
 package life.catalogue.dw.jersey.filter;
 
-import javax.ws.rs.core.UriInfo;
+import jakarta.ws.rs.core.UriInfo;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

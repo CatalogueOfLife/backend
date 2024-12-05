@@ -11,29 +11,31 @@ import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
-import life.catalogue.db.*;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.printer.TxtTreeDataRule;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.NameIndexFactory;
+import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.junit.TxtTreeDataRule;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.*;
@@ -45,6 +47,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.eventbus.EventBus;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -89,6 +94,14 @@ public class XReleaseIT extends SectorSyncTestBase {
     biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
 
     return Arrays.asList(new Object[][] {
+      {"dupe-genera", cfg(biotaSedis), List.of(
+        tax("src1"),
+        tax("src2")
+      )},
+      {"ex-authors", cfg(biotaSedis), List.of(
+        tax("worms"),
+        tax("uksi")
+      )},
       {"inverse_ranks", cfg(biotaSedis), List.of(
         tax("repdb")
       )},
@@ -197,6 +210,15 @@ public class XReleaseIT extends SectorSyncTestBase {
   public void syncAndCompare() throws Throwable {
     LOG.info("Project {}. Trees: {}", project, sources);
     testNum++;
+    // set project default settings
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var settings = dm.getSettings(Datasets.COL);
+      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
+      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
+      dm.updateSettings(Datasets.COL, settings, Users.TESTER);
+    }
+
     // load text trees & create sectors
     List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
     data.add(

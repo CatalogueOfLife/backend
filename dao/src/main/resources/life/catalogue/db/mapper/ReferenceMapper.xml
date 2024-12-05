@@ -110,7 +110,7 @@
   <select id="listByIds" resultMap="referenceResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE r.dataset_key=#{datasetKey} AND id IN
+    WHERE r.dataset_key=#{datasetKey} AND r.id IN
     <foreach item="k" index="idx" collection="ids" open="(" separator="," close=")">#{k}</foreach>
   </select>
 

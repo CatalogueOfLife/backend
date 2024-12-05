@@ -5,11 +5,11 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.metadata.DoiResolver;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/parser/reference")
 @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML, MoreMediaTypes.APP_JSON_CSL, MoreMediaTypes.APP_BIBTEX})

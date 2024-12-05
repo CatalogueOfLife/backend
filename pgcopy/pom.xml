@@ -15,8 +15,8 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>jsr305</artifactId>
+      <groupId>org.gbif</groupId>
+      <artifactId>name-parser-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -45,10 +45,6 @@
     </dependency>
 
     <!-- TEST SCOPE -->
-    <dependency>
-      <groupId>de.bytefish</groupId>
-      <artifactId>pgbulkinsert</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>

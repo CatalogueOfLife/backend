@@ -63,12 +63,11 @@
   <@tag name="title" value=title indent=2 />
   <@tag name="shortName" value=alias! indent=2 />
   <#if creator?has_content>
+   <#list creator as c>
   <creator>
-    <@agent a=creator?first indent=4/>
+    <@agent a=c indent=4/>
   </creator>
-  </#if>
-  <#if creator?has_content>
-    <@party role="author" agents=creator[1..] />
+   </#list>
   </#if>
   <@party role="editor" agents=editor />
   <@party role="contributor" agents=contributor />

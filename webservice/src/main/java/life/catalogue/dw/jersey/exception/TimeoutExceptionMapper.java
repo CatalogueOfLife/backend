@@ -3,7 +3,7 @@ package life.catalogue.dw.jersey.exception;
 import life.catalogue.api.exception.TimeoutException;
 import life.catalogue.dw.jersey.MoreStatus;
 
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Converts a TimeoutException into a http 524 response which is a cloudfare specific code.

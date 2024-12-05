@@ -6,8 +6,8 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.metadata.DoiResolver;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import java.util.List;
 

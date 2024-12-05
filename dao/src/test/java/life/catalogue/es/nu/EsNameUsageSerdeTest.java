@@ -1,7 +1,6 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.NameField;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.EsModule;
@@ -15,45 +14,15 @@ import java.io.IOException;
 import java.util.EnumSet;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 
-/*
- * Also separately tests serde for payload field, which contains the serialized NameUsageWrapper object. NB Can't extend
- * SerdeTestBase b/c it's specifically about (de)serialization to ES documents, which uses another ObjectMapper.
- */
 public class EsNameUsageSerdeTest extends EsReadTestBase {
-
-  static Logger LOG = LoggerFactory.getLogger(EsNameUsageSerdeTest.class);
-
-  @Test
-  public void testTaxon() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageTaxonWrapper());
-  }
-
-  @Test
-  public void testSynonym() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageSynonymWrapper());
-  }
-
-  @Test
-  public void testBareName() throws IOException {
-    roundtrip(TestEntityGenerator.newNameUsageBareNameWrapper());
-  }
-
-  static void roundtrip(NameUsageWrapper nuwIn) throws IOException {
-    String json = EsModule.write(nuwIn);
-    System.out.println(json);
-    NameUsageWrapper nuwOut = EsModule.readNameUsageWrapper(json);
-    assertEquals(nuwIn, nuwOut);
-  }
 
   @Test
   public void testEsNameUsage() throws IOException {
     EsNameUsage docIn = new EsNameUsage();
-    docIn.setPayload(EsModule.write(TestEntityGenerator.newNameUsageTaxonWrapper()));
+    docIn.setPayload(NameUsageWrapperConverter.encode(TestEntityGenerator.newNameUsageTaxonWrapper()));
     docIn.setAuthorshipComplete("John Smith");
     docIn.setDatasetKey(472);
     docIn.setNameFields(EnumSet.of(NameField.COMBINATION_EX_AUTHORS, NameField.UNINOMIAL));

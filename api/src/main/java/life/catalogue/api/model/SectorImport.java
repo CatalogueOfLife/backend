@@ -9,6 +9,7 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
   private static final int MAX_WARN_SIZE = 25;
 
   private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private Integer datasetAttempt;
 
   private final List<String> warnings = new ArrayList<>();
@@ -40,6 +41,16 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
     this.sectorKey = sectorKey;
   }
 
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
+  }
+
   public Integer getDatasetAttempt() {
     return datasetAttempt;
   }
@@ -54,14 +65,12 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
     if (!(o instanceof SectorImport)) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return Objects.equals(sectorKey, that.sectorKey)
-           && Objects.equals(datasetAttempt, that.datasetAttempt)
-           && Objects.equals(warnings, that.warnings);
+    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(warnings, that.warnings);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, datasetAttempt, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, datasetAttempt, warnings);
   }
 
   @Override

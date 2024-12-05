@@ -1,8 +1,8 @@
 package life.catalogue.analytics;
 
 import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.db.PgSetupRule;
-import life.catalogue.db.SqlSessionFactoryRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
 import life.catalogue.es.EsConfig;
 

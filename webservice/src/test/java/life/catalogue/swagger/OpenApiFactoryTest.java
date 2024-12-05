@@ -4,7 +4,7 @@ import life.catalogue.WsServerConfig;
 
 import org.junit.Test;
 
-import io.dropwizard.setup.Environment;
+import io.dropwizard.core.setup.Environment;
 
 public class OpenApiFactoryTest {
 

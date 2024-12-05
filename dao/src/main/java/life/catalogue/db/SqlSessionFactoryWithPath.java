@@ -3,6 +3,8 @@ package life.catalogue.db;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.ibatis.session.*;
 
 /**
@@ -16,18 +18,20 @@ public class SqlSessionFactoryWithPath implements SqlSessionFactory {
 
   public SqlSessionFactoryWithPath(SqlSessionFactory factory, String schema) {
     this.factory = factory;
-    this.schema = schema;
+    this.schema = Preconditions.checkNotNull(schema);
   }
 
   private SqlSession withSearchPath(SqlSession session) {
-    if (schema != null) {
-      try (var st = session.getConnection().createStatement()) {
-        st.execute(String.format("SET search_path TO %s, public", schema));
-      } catch (SQLException e) {
-        throw new RuntimeException(e);
-      }
-    }
+    setSearchPath(session.getConnection(), schema);
     return session;
+  }
+
+  public static void setSearchPath(Connection c, String schema) {
+    try (var st = c.createStatement()) {
+      st.execute(String.format("SET search_path TO %s, public", schema));
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

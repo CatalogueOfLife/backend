@@ -5,6 +5,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.function.Function;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -55,6 +57,10 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
     return getStatus() != null && getStatus().isTaxon();
   }
 
+  default Taxon asTaxon() {
+    return this instanceof Taxon ? (Taxon) this : null;
+  }
+
   @JsonIgnore
   default boolean isBareName() {
     return getStatus() == null || getStatus().isBareName();
@@ -62,6 +68,14 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
 
   default SimpleNameLink toSimpleNameLink() {
     SimpleNameLink sn = SimpleNameLink.of(getId(), getName().getScientificName(), getName().getAuthorship(), getName().getRank());
+    sn.setStatus(getStatus());
+    sn.setCode(getName().getCode());
+    sn.setParent(getParentId());
+    return sn;
+  }
+
+  default SimpleNameWithNidx toSimpleNameWithNidx(Function<Integer, Integer> nidx2canonical) {
+    SimpleNameWithNidx sn = new SimpleNameWithNidx(getName(), nidx2canonical.apply(getName().getNamesIndexId()));
     sn.setStatus(getStatus());
     sn.setCode(getName().getCode());
     sn.setParent(getParentId());

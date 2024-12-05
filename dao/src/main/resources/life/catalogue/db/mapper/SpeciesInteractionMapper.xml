@@ -6,8 +6,9 @@
 
   <sql id="SELECT">
     si.id,
-    si.verbatim_key,
     si.dataset_key,
+    si.sector_key,
+    si.verbatim_key,
     si.type,
     si.taxon_id,
     si.related_taxon_id,
@@ -53,8 +54,7 @@
   </sql>
 
   <sql id="FROM">
-    species_interaction si
-  </sql>
+    species_interaction si</sql>
 
   <resultMap id="speciesInteractionResultMap" type="SpeciesInteraction" autoMapping="true">
     <id property="id" column="id"/>

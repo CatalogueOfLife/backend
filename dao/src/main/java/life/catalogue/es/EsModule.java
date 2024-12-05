@@ -85,9 +85,6 @@ public class EsModule extends SimpleModule {
   private static final ObjectReader documentReader = contentMapper.readerFor(EsNameUsage.class);
   private static final ObjectWriter documentWriter = contentMapper.writerFor(EsNameUsage.class);
 
-  private static final ObjectReader nameUsageReader = contentMapper.readerFor(NameUsageWrapper.class);
-  private static final ObjectWriter nameUsageWriter = contentMapper.writerFor(NameUsageWrapper.class);
-
   private static final TypeReference<Map<String, Object>> mapType = new TypeReference<Map<String, Object>>() {};
 
   /**
@@ -153,14 +150,6 @@ public class EsModule extends SimpleModule {
     return documentReader.readValue(json);
   }
 
-  public static NameUsageWrapper readNameUsageWrapper(InputStream is) throws IOException {
-    return nameUsageReader.readValue(is);
-  }
-
-  public static NameUsageWrapper readNameUsageWrapper(String json) throws IOException {
-    return nameUsageReader.readValue(json);
-  }
-
   public static String write(IndexDefinition indexDef) throws JsonProcessingException {
     return ddlWriter.writeValueAsString(indexDef);
   }
@@ -171,14 +160,6 @@ public class EsModule extends SimpleModule {
 
   public static String write(EsNameUsage document) throws JsonProcessingException {
     return documentWriter.writeValueAsString(document);
-  }
-
-  public static String write(NameUsageWrapper nuw) throws JsonProcessingException {
-    return nameUsageWriter.writeValueAsString(nuw);
-  }
-
-  public static void write(OutputStream out, NameUsageWrapper nuw) throws IOException {
-    nameUsageWriter.writeValue(out, nuw);
   }
 
   public static String writeDebug(Object obj) {

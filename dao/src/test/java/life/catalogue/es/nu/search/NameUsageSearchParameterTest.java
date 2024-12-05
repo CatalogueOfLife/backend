@@ -273,16 +273,16 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
   @Test
   public void testSectorMode() {
     NameUsageWrapper nuw1 = minimalTaxon();
-    nuw1.setSectorMode(Sector.Mode.ATTACH);
+    nuw1.getUsage().setSectorMode(Sector.Mode.ATTACH);
 
     NameUsageWrapper nuw2 = minimalTaxon();
-    nuw2.setSectorMode(Sector.Mode.ATTACH);
+    nuw2.getUsage().setSectorMode(Sector.Mode.ATTACH);
 
     NameUsageWrapper nuw3 = minimalTaxon();
-    nuw3.setSectorMode(Sector.Mode.MERGE);
+    nuw3.getUsage().setSectorMode(Sector.Mode.MERGE);
 
     NameUsageWrapper nuw4 = minimalTaxon();
-    nuw4.setSectorMode(null);
+    nuw4.getUsage().setSectorMode(null);
 
     index(nuw1, nuw2, nuw3, nuw4);
 
@@ -393,7 +393,7 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw4.setId("4");
     sd = new SimpleDecision();
     sd.setDatasetKey(101);
-    sd.setMode(Mode.UPDATE_RECURSIVE);
+    sd.setMode(Mode.UPDATE);
     nuw4.setDecisions(new ArrayList<>(List.of(sd)));
 
     NameUsageWrapper nuw5 = minimalTaxon();
@@ -703,11 +703,11 @@ public class NameUsageSearchParameterTest extends EsReadTestBase {
     nuw2.setUsage(new BareName(n));
 
     // Let's also check that the conversion from NameUsageWrapperConverter to document is as expected
-    EsNameUsage doc = new NameUsageWrapperConverter().toDocument(nuw1);
+    EsNameUsage doc = NameUsageWrapperConverter.toDocument(nuw1);
     assertEquals(List.of("Cornelius", "Jim", "John", "Mark"), new ArrayList<>(doc.getAuthorship()));
     assertEquals(List.of("2000"), new ArrayList<>(doc.getAuthorshipYear()));
 
-    doc = new NameUsageWrapperConverter().toDocument(nuw2);
+    doc = NameUsageWrapperConverter.toDocument(nuw2);
     assertEquals(List.of("Aaron", "Billy", "Cornelius"), new ArrayList<>(doc.getAuthorship()));
     assertEquals(List.of("1752"), new ArrayList<>(doc.getAuthorshipYear()));
 

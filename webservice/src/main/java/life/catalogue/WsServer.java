@@ -1,6 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.admin.jobs.cron.CronExecutor;
+import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
@@ -18,8 +19,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
-import life.catalogue.printer.DatasetDiffService;
-import life.catalogue.printer.SectorDiffService;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
@@ -48,12 +47,14 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.matching.NameIndex;
-import life.catalogue.matching.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
+import life.catalogue.printer.DatasetDiffService;
+import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
@@ -67,14 +68,13 @@ import org.gbif.dwc.terms.TermFactory;
 import java.io.IOException;
 import java.sql.Connection;
 import java.time.LocalDateTime;
-
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;
@@ -86,19 +86,21 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.dockerjava.api.DockerClient;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 
-import io.dropwizard.Application;
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Application;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
+import jakarta.ws.rs.client.Client;
 
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
@@ -141,6 +143,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // add some cli commands not accessible via the admin interface
     bootstrap.addCommand(new PartitionCmd());
+    bootstrap.addCommand(new DockerCmd());
     bootstrap.addCommand(new ExecSqlCmd());
     bootstrap.addCommand(new IndexCmd());
     bootstrap.addCommand(new InitCmd());
@@ -237,23 +240,32 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
     // validation
-    Validator validator = env.getValidator();
+    var validator = env.getValidator();
+
+    UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), bus, validator);
 
     // job executor
-    UserDao udao = new UserDao(getSqlSessionFactory(), bus, validator);
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
 
     // cron jobs
-    var cron = CronExecutor.startWith(new TempDatasetCleanup());
+    var cron = CronExecutor.startWith(
+      new TempDatasetCleanup(),
+      new ProjectCounterUpdate(getSqlSessionFactory())
+    );
     env.lifecycle().manage(cron);
 
     // name parser
-    ParserConfigDao dao = new ParserConfigDao(getSqlSessionFactory());
-    dao.loadParserConfigs();
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
+    env.lifecycle().addServerLifecycleListener(server -> {
+      try {
+        NameParser.PARSER.configs().loadFromCLB();
+      } catch (Exception e) {
+        LOG.error("Failed to load name parser configs", e);
+      }
+    });
 
     // CSL Util
     env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
@@ -276,12 +288,16 @@ public class WsServer extends Application<WsServerConfig> {
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }
 
+    // Docker
+    DockerClient docker = cfg.docker.newDockerClient();
+    env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
+
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, bus);
 
     // name index
-    if (cfg.namesIndexFile != null) {
-      ni = NameIndexFactory.persistent(cfg.namesIndexFile, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE, cfg.namesIndexVerification);
+    if (cfg.namesIndex.file != null) {
+      ni = NameIndexFactory.build(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
       // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
       managedService.manage(Component.NamesIndex, ni);
       env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
@@ -317,7 +333,7 @@ public class WsServer extends Application<WsServerConfig> {
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), bus, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, indexService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
@@ -378,7 +394,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     // assembly
-    SyncManager syncManager = new SyncManager(getSqlSessionFactory(), ni, syncFactory, env.metrics());
+    SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
 
     // link assembly and import manager so they are aware of each other
@@ -391,7 +407,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
+      getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus)
     );
     j.register(new DataPackageResource());
@@ -404,6 +420,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetPatchResource());
     j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
+    j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new DecisionResource(decdao));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
     j.register(new DuplicateResource(dupeDao));
@@ -415,7 +432,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, coljersey.getCache(), tdao));
+    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new PublisherResource(pdao));
@@ -454,7 +471,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       bus.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), exdao, doiService, converter));
+    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     bus.register(doiUpdater);
     bus.register(uCache);
     bus.register(exportManager);
@@ -494,11 +511,11 @@ public class WsServer extends Application<WsServerConfig> {
   public static RequestConfig requestConfig(JerseyClientConfiguration cfg) {
     final String cookiePolicy =
         cfg.isCookiesEnabled() ? CookieSpecs.DEFAULT : CookieSpecs.IGNORE_COOKIES;
+
     return RequestConfig.custom()
         .setCookieSpec(cookiePolicy)
-        .setSocketTimeout((int) cfg.getTimeout().toMilliseconds())
-        .setConnectTimeout((int) cfg.getConnectionTimeout().toMilliseconds())
-        .setConnectionRequestTimeout((int) cfg.getConnectionRequestTimeout().toMilliseconds())
+        .setConnectTimeout(Timeout.of(cfg.getConnectionTimeout().toMilliseconds(), TimeUnit.MILLISECONDS))
+        .setConnectionRequestTimeout(Timeout.of(cfg.getConnectionRequestTimeout().toMilliseconds(), TimeUnit.MILLISECONDS))
         .build();
   }
 }

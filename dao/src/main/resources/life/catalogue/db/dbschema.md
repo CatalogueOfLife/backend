@@ -14,7 +14,328 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-keep_original_name BOOLEAN,
+
+#### 2024-11-20 new extinct_filter on sector
+```
+ALTER TABLE sector ADD COLUMN extinct_filter BOOLEAN;
+```
+
+#### 2024-11-18 new name validation issue
+```
+ALTER TYPE ISSUE ADD VALUE 'AUTHORSHIP_UNLIKELY';
+```
+
+#### 2024-11-13 license enum
+```
+ALTER TABLE dataset ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_archive ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_source ALTER COLUMN license TYPE TEXT;
+ALTER TABLE dataset_patch ALTER COLUMN license TYPE TEXT;
+
+ALTER TABLE media ALTER COLUMN license TYPE TEXT;
+
+DROP TYPE LICENSE;
+
+CREATE TYPE LICENSE AS ENUM (
+  'CC0',
+  'CC_BY',
+  'CC_BY_NC',
+  'UNSPECIFIED',
+  'OTHER'
+);
+
+
+UPDATE dataset SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_archive SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_source SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+UPDATE dataset_patch SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+
+ALTER TABLE dataset ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_archive ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_source ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+ALTER TABLE dataset_patch ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+
+UPDATE media SET license='OTHER' WHERE license NOT IN ('CC0','CC_BY','CC_BY_NC','UNSPECIFIED','OTHER');
+ALTER TABLE media ALTER COLUMN license TYPE LICENSE using license::LICENSE;
+```
+
+#### 2024-09-26 conversion_description
+```
+ALTER TABLE dataset ADD COLUMN conversion_description TEXT,
+                    ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_archive ADD COLUMN conversion_description TEXT,
+                            ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_source ADD COLUMN conversion_description TEXT,
+                           ADD COLUMN conversion_url TEXT;
+ALTER TABLE dataset_patch ADD COLUMN conversion_description TEXT,
+                          ADD COLUMN conversion_url TEXT;  
+```
+
+#### 2024-09-24 holotype infogroup
+```
+ALTER TYPE INFOGROUP ADD VALUE 'HOLOTYPE';
+```
+
+#### 2024-09-19 add more entities to vocab
+```
+ALTER TYPE ENTITYTYPE ADD VALUE 'SYNONYM' AFTER 'NAME_USAGE';
+ALTER TYPE ENTITYTYPE ADD VALUE 'TAXON' AFTER 'NAME_USAGE';
+```
+
+#### 2024-09-05 remove UPDATE RECURSIVE
+```
+ALTER TABLE decision ALTER COLUMN mode TYPE text;
+DROP TYPE EDITORIALDECISION_MODE;
+CREATE TYPE EDITORIALDECISION_MODE AS ENUM (
+'BLOCK',
+'REVIEWED',
+'UPDATE',
+'IGNORE'
+);
+ALTER TABLE decision ALTER COLUMN mode TYPE EDITORIALDECISION_MODE USING mode::EDITORIALDECISION_MODE;
+```
+
+
+#### 2024-08-14 update legacy issue values
+!!! This caused the prod server to crash with 360g of wal logs !!!
+we have NOT EXECUTED THIS ON PROD !
+
+remove IDENTIFIER_WITHOUT_SCHEME in favor over IDENTIFIER_WITHOUT_SCOPE
+```
+UPDATE verbatim SET issues = array_remove(issues, 'IDENTIFIER_WITHOUT_SCHEME'::ISSUE) WHERE issues && ARRAY['IDENTIFIER_WITHOUT_SCHEME'::ISSUE];
+UPDATE verbatim_source SET issues = array_remove(issues, 'IDENTIFIER_WITHOUT_SCHEME'::ISSUE) WHERE issues && ARRAY['IDENTIFIER_WITHOUT_SCHEME'::ISSUE];
+UPDATE dataset_import SET issues_by_issue_count = delete(issues_by_issue_count, array['IDENTIFIER_WITHOUT_SCHEME']);
+UPDATE sector_import SET issues_by_issue_count = delete(issues_by_issue_count, array['IDENTIFIER_WITHOUT_SCHEME']);
+```
+
+now change the issue enumeration in pg
+```
+ALTER TYPE ISSUE RENAME TO ISSUE_OLD;
+
+CREATE TYPE ISSUE AS ENUM (
+  'NOT_INTERPRETED',
+  'ESCAPED_CHARACTERS',
+  'REFERENCE_ID_INVALID',
+  'ID_NOT_UNIQUE',
+  'URL_INVALID',
+  'PARTIAL_DATE',
+  'PREVIOUS_LINE_SKIPPED',
+  'SELF_REFERENCED_RELATION',
+  'UNPARSABLE_NAME',
+  'PARTIALLY_PARSABLE_NAME',
+  'UNPARSABLE_AUTHORSHIP',
+  'DOUBTFUL_NAME',
+  'INCONSISTENT_AUTHORSHIP',
+  'INCONSISTENT_NAME',
+  'PARSED_NAME_DIFFERS',
+  'UNUSUAL_NAME_CHARACTERS',
+  'MULTI_WORD_EPITHET',
+  'UPPERCASE_EPITHET',
+  'CONTAINS_REFERENCE',
+  'NULL_EPITHET',
+  'BLACKLISTED_EPITHET',
+  'SUBSPECIES_ASSIGNED',
+  'LC_MONOMIAL',
+  'INDETERMINED',
+  'HIGHER_RANK_BINOMIAL',
+  'QUESTION_MARKS_REMOVED',
+  'REPL_ENCLOSING_QUOTE',
+  'MISSING_GENUS',
+  'NOMENCLATURAL_STATUS_INVALID',
+  'AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE',
+  'CONFLICTING_NOMENCLATURAL_STATUS',
+  'NOMENCLATURAL_CODE_INVALID',
+  'BASIONYM_AUTHOR_MISMATCH',
+  'BASIONYM_DERIVED',
+  'HOMOTYPIC_CONSOLIDATION_UNRESOLVED',
+  'CHAINED_BASIONYM',
+  'NAME_NOT_UNIQUE',
+  'POTENTIAL_CHRESONYM',
+  'PUBLISHED_BEFORE_GENUS',
+  'BASIONYM_ID_INVALID',
+  'RANK_INVALID',
+  'UNMATCHED_NAME_BRACKETS',
+  'TRUNCATED_NAME',
+  'DUPLICATE_NAME',
+  'NAME_VARIANT',
+  'AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE',
+  'TYPE_STATUS_INVALID',
+  'LAT_LON_INVALID',
+  'ALTITUDE_INVALID',
+  'COUNTRY_INVALID',
+  'TAXON_VARIANT',
+  'TAXON_ID_INVALID',
+  'NAME_ID_INVALID',
+  'PARENT_ID_INVALID',
+  'ACCEPTED_ID_INVALID',
+  'ACCEPTED_NAME_MISSING',
+  'PARENT_SPECIES_MISSING',
+  'TAXONOMIC_STATUS_INVALID',
+  'PROVISIONAL_STATUS_INVALID',
+  'ENVIRONMENT_INVALID',
+  'IS_EXTINCT_INVALID',
+  'NAME_CONTAINS_EXTINCT_SYMBOL',
+  'GEOTIME_INVALID',
+  'SCRUTINIZER_DATE_INVALID',
+  'CHAINED_SYNONYM',
+  'PARENT_CYCLE',
+  'SYNONYM_PARENT',
+  'CLASSIFICATION_RANK_ORDER_INVALID',
+  'CLASSIFICATION_NOT_APPLIED',
+  'PARENT_NAME_MISMATCH',
+  'DERIVED_TAXONOMIC_STATUS',
+  'TAXONOMIC_STATUS_DOUBTFUL',
+  'SYNONYM_DATA_MOVED',
+  'SYNONYM_DATA_REMOVED',
+  'REFTYPE_INVALID',
+  'ACCORDING_TO_CONFLICT',
+  'VERNACULAR_NAME_INVALID',
+  'VERNACULAR_LANGUAGE_INVALID',
+  'VERNACULAR_SEX_INVALID',
+  'VERNACULAR_COUNTRY_INVALID',
+  'VERNACULAR_NAME_TRANSLITERATED',
+  'DISTRIBUTION_INVALID',
+  'DISTRIBUTION_AREA_INVALID',
+  'DISTRIBUTION_STATUS_INVALID',
+  'DISTRIBUTION_GAZETEER_INVALID',
+  'MEDIA_CREATED_DATE_INVALID',
+  'UNPARSABLE_YEAR',
+  'UNLIKELY_YEAR',
+  'MULTIPLE_PUBLISHED_IN_REFERENCES',
+  'UNPARSABLE_REFERENCE',
+  'UNPARSABLE_REFERENCE_TYPE',
+  'UNMATCHED_REFERENCE_BRACKETS',
+  'CITATION_CONTAINER_TITLE_UNPARSED',
+  'CITATION_DETAILS_UNPARSED',
+  'CITATION_AUTHORS_UNPARSED',
+  'CITATION_UNPARSED',
+  'UNPARSABLE_TREATMENT',
+  'UNPARSABLE_TREAMENT_FORMAT',
+  'ESTIMATE_INVALID',
+  'ESTIMATE_TYPE_INVALID',
+  'INVISIBLE_CHARACTERS',
+  'HOMOGLYPH_CHARACTERS',
+  'RELATED_NAME_MISSING',
+  'DIACRITIC_CHARACTERS',
+  'MULTI_WORD_MONOMIAL',
+  'WRONG_MONOMIAL_CASE',
+  'AUTHORSHIP_REMOVED',
+  'DOI_NOT_FOUND',
+  'DOI_UNRESOLVED',
+  'TYPE_MATERIAL_SEX_INVALID',
+  'IDENTIFIER_WITHOUT_SCOPE',
+  'HOMOTYPIC_CONSOLIDATION',
+  'SYNC_OUTSIDE_TARGET',
+  'MULTIPLE_BASIONYMS',
+  'PUBLISHED_YEAR_CONFLICT',
+  'MULTILINE_RECORD',
+  'NOTHO_INVALID',
+  'ORIGINAL_SPELLING_INVALID',
+  'UNINOMIAL_FIELD_MISPLACED',
+  'INFRAGENERIC_FIELD_MISPLACED',
+  'ORDINAL_INVALID',
+  'GENDER_INVALID',
+  'GENDER_AGREEMENT_NOT_APPLICABLE',
+  'NOTHO_NOT_APPLICABLE',
+  'VERNACULAR_PREFERRED',
+  'DOI_INVALID',
+  'RANK_NAME_SUFFIX_CONFLICT'
+);
+
+ALTER TABLE verbatim_source ADD COLUMN issues2 ISSUE[];
+UPDATE verbatim_source SET issues2 = (issues::text[])::ISSUE[];
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues2);
+ALTER TABLE verbatim_source RENAME COLUMN issues TO issues_old;
+ALTER TABLE verbatim_source RENAME COLUMN issues2 TO issues;
+ALTER TABLE verbatim_source DROP COLUMN issues_old;
+
+ALTER TABLE verbatim ADD COLUMN issues2 ISSUE[];
+UPDATE verbatim SET issues2 = (issues::text[])::ISSUE[];
+CREATE INDEX ON verbatim USING GIN (dataset_key, issues2);
+ALTER TABLE verbatim RENAME COLUMN issues TO issues_old;
+ALTER TABLE verbatim RENAME COLUMN issues2 TO issues;
+ALTER TABLE verbatim DROP COLUMN issues_old;
+
+DROP TYPE ISSUE_OLD;
+```
+
+#### 2024-07-15 new info group 
+```
+ALTER TYPE INFOGROUP ADD VALUE 'RANK';
+```
+
+#### 2024-07-08 new match type for ported GBIF matching
+```
+ALTER TYPE MATCHTYPE ADD VALUE 'HIGHERRANK';
+```
+
+#### 2024-06-11 limit full text search dataset content
+```
+ALTER TABLE dataset ADD column
+doc2 tsvector GENERATED ALWAYS AS (
+setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(taxonomic_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+setweight(to_tsvector('dataset', f_unaccent( left(
+coalesce(description, '') ||
+coalesce(agent_str(publisher), '') ||
+coalesce(agent_str(creator), '') ||
+coalesce(agent_str(editor), '') ||
+coalesce(agent_str(contributor), '')
+, 1024*1024))), 'D')
+) STORED;
+
+ALTER TABLE dataset DROP column doc;
+ALTER TABLE dataset RENAME column doc2 to doc;
+```
+
+#### 2024-05-08 new code
+```
+ALTER TYPE NOMCODE ADD VALUE 'PHYLOGENETIC';
+ALTER TYPE NOMCODE RENAME VALUE 'PHYTOSOCIOLOGICAL' to 'PHYTO';
+ALTER TYPE NOMCODE RENAME VALUE 'PHYLOGENETIC' to 'PHYLO';
+```
+
+### 2024-04-24 latest dataset attempt state
+```sql
+ALTER TABLE dataset_export DROP COLUMN modified_by;
+ALTER TABLE dataset_export DROP COLUMN modified;
+ALTER TABLE dataset_export ADD COLUMN extinct BOOLEAN;
+```
+
+
+### 2024-04-24 latest dataset attempt state
+```sql
+CREATE VIEW v_last_dataset_import AS
+ SELECT distinct on (dataset_key) dataset_key, attempt
+ FROM dataset_import
+ ORDER BY dataset_key, attempt DESC;
+```
+
+### 2024-04-24 change info group
+```sql
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE text;
+DROP TYPE INFOGROUP;
+CREATE TYPE INFOGROUP AS ENUM (
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'PARENT',
+  'BASIONYM',
+  'EXTINCT',
+  'TEMPORAL_RANGE'
+);
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;
+```
+
 ### 2024-02-14 add keep_original_name to decisions
 ```sql
 ALTER TABLE decision ADD COLUMN keep_original_name BOOLEAN;

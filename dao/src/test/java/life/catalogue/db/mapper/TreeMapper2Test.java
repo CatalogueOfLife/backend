@@ -4,8 +4,8 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeNode;
-import life.catalogue.db.TestDataRule;
-import life.catalogue.printer.TxtTreeDataRule;
+import life.catalogue.junit.TestDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import org.gbif.nameparser.api.Rank;
 

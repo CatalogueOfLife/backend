@@ -3,12 +3,17 @@ package life.catalogue.common.io;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-
-import life.catalogue.api.vocab.Environment;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -30,7 +35,52 @@ public class DownloadUtilTest {
     FileUtils.deleteQuietly(f);
     hc.close();
   }
-  
+
+  @Test
+  @Ignore("manual only")
+  public void testBdjRateLimiting() throws IOException, ExecutionException, InterruptedException {
+    DownloadUtil d = new DownloadUtil(hc);
+    var keys = new int[]{94202,98935,96601};
+    int attempt = 0;
+    File dir = new File("/Users/markus/Downloads/bdj");
+    if (dir.exists()) {
+      FileUtils.cleanDirectory(dir);
+    } else {
+      dir.mkdir();
+    }
+    List<Future<Boolean>> jobs = new ArrayList<>();
+    while (attempt<100) {
+      for (var key : keys) {
+        attempt++;
+        File down = new File(dir, attempt+"-"+key+".zip");
+        var uri = URI.create("https://bdj.pensoft.net/lib/ajax_srv/archive_download.php?archive_type=2&document_id="+key);
+        jobs.add(CompletableFuture.supplyAsync(() -> download(d, uri, down)));
+      }
+    }
+
+    for (var f : jobs) {
+      if (!f.get()) {
+        System.out.println("Failed job");
+      }
+    }
+  }
+
+  @Test
+  @Ignore("manual debugging")
+  public void plazi() throws IOException {
+    DownloadUtil d = new DownloadUtil(hc);
+    d.download(URI.create("https://tb.plazi.org/GgServer/dwca/1C5A0163FFCBF3266052EB7D4D70FFF7.zip"), f);
+  }
+
+  boolean download(DownloadUtil d, URI uri, File down) {
+    try {
+      d.download(uri, down);
+      return true;
+    } catch (DownloadException e) {
+      System.out.println(e);
+      return false;
+    }
+  }
   @Test(expected = DownloadException.class)
   public void downloadFail() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);

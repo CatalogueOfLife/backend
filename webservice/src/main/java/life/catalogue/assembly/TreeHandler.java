@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleName;
@@ -8,6 +9,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.func.ThrowingConsumer;
 
 import org.gbif.nameparser.api.Rank;
+
+import javax.annotation.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +23,11 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
 
   void reset() throws InterruptedException;
 
+  /**
+   * @return true if exception had been thrown during handling of records
+   */
+  boolean hasThrown();
+
   void copyRelations();
 
   Map<IgnoreReason, Integer> getIgnoredCounter();
@@ -31,20 +39,17 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
 
   class Usage {
     String id;
+    String parentId;
     Rank rank;
     TaxonomicStatus status;
+    EditorialDecision decision;
 
-    Usage(String id, Rank rank, TaxonomicStatus status) {
+    Usage(String id, String parentId, Rank rank, TaxonomicStatus status, EditorialDecision decision) {
       this.id = id;
+      this.parentId = parentId;
       this.rank = rank;
       this.status = status;
-    }
-    Usage(SimpleName sn) {
-      this(sn.getId(), sn.getRank(), sn.getStatus());
-    }
-
-    Usage(NameUsage nu) {
-      this(nu.getId(), nu.getRank(), nu.getStatus());
+      this.decision = decision;
     }
   }
 

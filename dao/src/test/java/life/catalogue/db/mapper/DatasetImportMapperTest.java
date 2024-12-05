@@ -181,7 +181,29 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     assertFalse(mapper().list(req, page).isEmpty());
     commit();
   }
-  
+
+
+  @Test
+  public void current() throws Exception {
+    DatasetImport d1 = create();
+    mapper().create(d1);
+    final int datasetKey = d1.getDatasetKey();
+
+    // nothing on dataset yet
+    assertNull(mapper().current(datasetKey));
+
+    DatasetImport d2 = create();
+    d2.setState(ImportState.FAILED);
+    d2.setError("damn error");
+    mapper().create(d2);
+    assertNull(mapper().current(datasetKey));
+
+    mapper(DatasetMapper.class).updateLastImport(datasetKey, d1.getAttempt());
+    var curr = mapper().current(datasetKey);
+    assertNotNull(curr);
+    assertEquals(d1.getAttempt(), curr.getAttempt());
+  }
+
   @Test
   public void listCount() throws Exception {
     mapper().create(create(ImportState.FAILED));

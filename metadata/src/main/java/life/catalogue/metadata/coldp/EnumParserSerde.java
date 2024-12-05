@@ -6,6 +6,8 @@ import life.catalogue.parser.UnparsableException;
 
 import java.io.IOException;
 
+import org.gbif.dwc.terms.Term;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +63,7 @@ public class EnumParserSerde<T extends Enum<T>> {
         }
         return null;
       }
-      throw ctxt.mappingException("Expected String");
+      throw ctxt.wrongTokenException(jp, Enum.class, JsonToken.VALUE_STRING, "Expected string");
     }
   }
   

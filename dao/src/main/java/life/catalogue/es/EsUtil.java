@@ -266,6 +266,15 @@ public class EsUtil {
     throw new EsRequestException("_delete_by_query request failed to complete");
   }
 
+  public static boolean bulkResponseHasErrors(Response resp) {
+    Map<String, Object> content = readResponse(resp);
+    if ((Boolean) content.get("errors")) {
+      LOG.error("ES Bulk response contains errors");
+      return true;
+    }
+    return false;
+  }
+
   /**
    * Makes all index documents become visible to clients. This is a blocking call because it is assumed that if you call this method, you
    * really need the result of your inserts/updates/deletes to become visible before you can proceed.
