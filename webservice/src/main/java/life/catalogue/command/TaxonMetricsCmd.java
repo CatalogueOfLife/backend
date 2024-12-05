@@ -3,6 +3,7 @@ package life.catalogue.command;
 import life.catalogue.admin.jobs.RebuildMetricsJob;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -50,7 +51,7 @@ public class TaxonMetricsCmd extends AbstractMybatisCmd {
     LOG.info("Rebuild metrics for {} datasets using {} threads", keys.size(), threads);
     ExecutorService exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("metrics-builder"));
     for (int key : keys) {
-      var job = new RebuildMetricsJob(userKey, factory, key);
+      var job = new RebuildMetricsJob(Users.DB_INIT, factory, key);
       exec.submit(job);
     }
     ExecutorUtils.shutdown(exec);
