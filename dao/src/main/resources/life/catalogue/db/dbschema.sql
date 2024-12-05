@@ -1500,12 +1500,16 @@ CREATE TABLE taxon_metrics (
   species_count INTEGER,
   child_count INTEGER,
   child_extant_count INTEGER,
+  lft INTEGER,
+  rgt INTEGER,
   taxa_by_rank_count HSTORE,
   species_by_source_count HSTORE,
   classification SIMPLE_NAME[],
   source_dataset_keys INTEGER[]
 ) PARTITION BY HASH (dataset_key);
 CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
+CREATE INDEX ON taxon_metrics (dataset_key, lft);
+CREATE INDEX ON taxon_metrics (dataset_key, rgt);
 
 CREATE TABLE verbatim_source (
   id TEXT NOT NULL,

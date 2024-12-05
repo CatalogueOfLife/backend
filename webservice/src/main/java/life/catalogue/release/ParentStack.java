@@ -1,10 +1,6 @@
 package life.catalogue.release;
 
-import com.google.common.collect.ImmutableList;
-
 import life.catalogue.api.model.NameUsageCore;
-
-import life.catalogue.importer.neo.traverse.StartEndHandler;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -12,9 +8,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
-
-import org.neo4j.graphdb.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +21,7 @@ public class ParentStack<T extends NameUsageCore> {
   private static final Logger LOG = LoggerFactory.getLogger(ParentStack.class);
 
   private final List<StackHandler<T>> handler = new ArrayList<>();
+
   private final LinkedList<SNC<T>> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
 
@@ -35,32 +29,13 @@ public class ParentStack<T extends NameUsageCore> {
    * An event handler interface that accepts a start and end event for taxa / accepted names in depth first iteration of a usage tree.
    * The parent stack can listen to these handlers and fire the events for a sorted postgres stream.
    */
-  public interface StackHandler<T> {
-    void start(T n);
+  public interface StackHandler<XT> {
+     void start(XT n);
 
     /**
      * @param n the wrapped usage with counts for direct, accepted children and number of synonyms.
      */
-    void end(SNC<T> n);
-  }
-
-  /**
-   * @param removeFunc function to be called when the usage is removed from the stack and has correct children and synonym counts.
-   */
-  public ParentStack(Consumer<SNC<T>> removeFunc) {
-    handler.add(new StackHandler<T>() {
-      @Override
-      public void start(T n) {
-
-      }
-
-      @Override
-      public void end(SNC<T> n) {
-        removeFunc.accept(n);
-      }
-    });
-  }
-  public ParentStack() {
+    void end(SNC<XT> n);
   }
 
   public static class SNC<T> {
@@ -174,7 +149,7 @@ public class ParentStack<T extends NameUsageCore> {
     }
   }
 
-  public void push(T nu) {
+  public <XT extends T> void push(XT nu) {
     if (parents.isEmpty()) {
       // the very first entry can point to a missing parent, e.g. when we iterate over subtrees only
 
@@ -227,7 +202,7 @@ public class ParentStack<T extends NameUsageCore> {
     }
   }
 
-  public int size() {
+  public int depth() {
     return parents.size();
   }
 }

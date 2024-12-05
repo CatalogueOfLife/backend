@@ -1,8 +1,5 @@
 package life.catalogue.release;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
@@ -21,8 +18,6 @@ import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.util.RankUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +49,6 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   final SqlSessionFactory factory;
   final int datasetKey;
   final ParentStack<XLinneanNameUsage> parents;
-
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
   private int maxDepth = 0;
@@ -62,42 +56,45 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
     this.factory = factory;
     this.datasetKey = datasetKey;
-    this.parents = removeEmptyGenera ? new ParentStack<>(this::endClassificationStack) : new ParentStack<>();
+    this.parents = new ParentStack<>();
+    if (removeEmptyGenera) {
+      // add stack handler that considers to remove empty genera and creates missing autonyms
+      parents.addHandler(new ParentStack.StackHandler<>() {
+        @Override
+        public void start(XLinneanNameUsage n) {
+          // nothing
+        }
+        @Override
+        public void end(ParentStack.SNC<XLinneanNameUsage> taxon) {
+          if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
+            LOG.info("Remove empty {}", taxon.usage);
+            final var key = DSID.of(datasetKey, taxon.usage.getId());
+            try (SqlSession session = factory.openSession(true)) {
+              var vm = session.getMapper(VerbatimSourceMapper.class);
+              var um = session.getMapper(NameUsageMapper.class);
+              // first remove all synonyms
+              for (var c : um.childrenIds(key)) {
+                vm.delete(key.id(c));
+                um.delete(key);
+              }
+              vm.delete(key.id(taxon.usage.getId()));
+              um.delete(key);
+              // names, references and related are removed as orphans at the end of the release
+            }
+          }
+        }
+      });
+    }
   }
 
-  public ParentStack<XLinneanNameUsage> stack() {
+  ParentStack<XLinneanNameUsage> stack() {
     return parents;
   }
 
   public static class XLinneanNameUsage extends LinneanNameUsage {
     Integer authorYear;
-    Boolean extinct;
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
-    }
-  }
-  /**
-   * To be called from the parent stack when a taxon gets removed from the stack
-   * It considers to remove empty genera and creates missing autonyms
-   * @param taxon
-   */
-  void endClassificationStack(ParentStack.SNC<XLinneanNameUsage> taxon) {
-    // remove empty genera?
-    if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
-      LOG.info("Remove empty {}", taxon.usage);
-      final var key = DSID.of(datasetKey, taxon.usage.getId());
-      try (SqlSession session = factory.openSession(true)) {
-        var vm = session.getMapper(VerbatimSourceMapper.class);
-        var um = session.getMapper(NameUsageMapper.class);
-        // first remove all synonyms
-        for (var c : um.childrenIds(key)) {
-          vm.delete(key.id(c));
-          um.delete(key);
-        }
-        vm.delete(key.id(taxon.usage.getId()));
-        um.delete(key);
-        // names, references and related are removed as orphans at the end of the release
-      }
     }
   }
 
@@ -168,8 +165,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       });
     }
     // track maximum depth of accepted taxa
-    if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.size()) {
-      maxDepth = parents.size();
+    if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.depth()) {
+      maxDepth = parents.depth();
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {

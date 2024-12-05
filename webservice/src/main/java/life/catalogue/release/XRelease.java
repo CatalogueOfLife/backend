@@ -520,8 +520,18 @@ public class XRelease extends ProjectRelease {
     ) {
       // add metrics generator to tree traversal
       var stack = consumer.stack();
-      MetricsBuilder mb = new MetricsBuilder(stack, newDatasetKey, session);
-      stack.addHandler(mb);
+      MetricsBuilder mb = new MetricsBuilder(MetricsBuilder.tracker(stack), newDatasetKey, session);
+      stack.addHandler(new ParentStack.StackHandler<>() {
+        @Override
+        public void start(TreeCleanerAndValidator.XLinneanNameUsage n) {
+          mb.start(n.getId());
+        }
+
+        @Override
+        public void end(ParentStack.SNC<TreeCleanerAndValidator.XLinneanNameUsage> n) {
+          mb.end(n.usage, n.usage.getSectorKey(), n.usage.getExtinct());
+        }
+      });
       // traverse accepted tree
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
