@@ -46,10 +46,17 @@
         <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
           t.sector_key AS sector_key,
           NULL AS ed_id,
-          <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
-            <property name="alias" value="est."/>
-            <property name="prefix" value="est_"/>
-          </include>
+          <choose>
+            <when test="estimates">
+              <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
+                <property name="alias" value="est."/>
+                <property name="prefix" value="est_"/>
+              </include>
+            </when>
+            <otherwise>
+              NULL AS est_id
+            </otherwise>
+          </choose>
         </if>
       </otherwise>
     </choose>
@@ -64,13 +71,15 @@
     LEFT JOIN taxon_metrics tm ON tm.dataset_key=t.dataset_key AND tm.taxon_id=t.id
     <if test="type != null">
       <if test="type == @life.catalogue.api.model.TreeNode$Type@SOURCE">
-        LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
         LEFT JOIN sector s ON s.subject_id=t.id AND s.dataset_key=#{catalogueKey} AND s.subject_dataset_key=#{datasetKey}
           AND s.placeholder_rank IS NULL AND s.mode != 'MERGE'
+        LEFT JOIN decision ed ON ed.subject_id=t.id AND ed.dataset_key=#{catalogueKey} AND ed.subject_dataset_key=#{datasetKey}
       </if>
       <if test="type == @life.catalogue.api.model.TreeNode$Type@CATALOGUE">
-        LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
         LEFT JOIN sector s ON s.id=t.sector_key AND s.dataset_key=#{catalogueKey}
+        <if test="estimates">
+          LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
+        </if>
       </if>
     </if>
   </sql>
