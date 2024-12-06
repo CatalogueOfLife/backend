@@ -49,7 +49,7 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listByPriority(@Param("datasetKey") Integer datasetKey, @Param("mode") Sector.Mode... modes);
 
   /**
-   * List all sector keys which have a targetID within the given subtree starting with ad including the given key.
+   * List all sector keys which have a targetID within the given subtree starting with and including the given key.
    */
   List<Integer> listDescendantSectorKeys(@Param("key") DSID<String> key);
 

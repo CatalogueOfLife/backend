@@ -24,6 +24,9 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("subject")
   private boolean subject = false;
 
+  @QueryParam("nested")
+  private boolean nested = false;
+
   @Min(0)
   @QueryParam("minSize")
   private Integer minSize;
@@ -86,6 +89,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.withoutData = withoutData;
   }
 
+  public boolean isNested() {
+    return nested;
+  }
+
+  public void setNested(boolean nested) {
+    this.nested = nested;
+  }
+
   public Integer getMinSize() {
     return minSize;
   }
@@ -105,14 +116,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof SectorSearchRequest)) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && withoutData == that.withoutData && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, minSize, withoutData, publisherKey);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, publisherKey);
   }
 }

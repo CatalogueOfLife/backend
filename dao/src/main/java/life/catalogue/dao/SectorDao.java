@@ -42,9 +42,40 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     validate(request);
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
-      SectorMapper mapper = session.getMapper(SectorMapper.class);
-      List<Sector> result = mapper.search(request, p);
-      return new ResultPage<>(p, result, () -> mapper.countSearch(request));
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      List<Sector> result = sm.search(request, p);
+      if (request.isNested() && request.getName() != null) {
+        // find nested sectors by searching for the usage and then look for all sectors underneath!
+        var num = session.getMapper(NameUsageMapper.class);
+        var usages = num.listByName(request.getDatasetKey(), request.getName(), request.getRank(), new Page());
+        if (!usages.isEmpty()) {
+          Set<Integer> nestedSectorsKeys = new HashSet<>();
+          for (var u : usages) {
+            nestedSectorsKeys.addAll( sm.listDescendantSectorKeys(u) );
+          }
+          if (!nestedSectorsKeys.isEmpty()) {
+            // nested sectors do exist!
+            // make them pageable after the regular hits
+            final int regularCnt = sm.countSearch(request);
+            final int nestedCnt = nestedSectorsKeys.size();
+            if (regularCnt < p.getLimitWithOffset()) {
+              // we need to add nested results
+              final Page nestedPage = new Page(Math.max(0, p.getOffset()-regularCnt), p.getLimit() - result.size());
+              List<Integer> nestedPageKeys = nestedSectorsKeys.stream()
+                .sorted()
+                .collect(Collectors.toList())
+                .subList(nestedPage.getOffset(), Math.min(nestedSectorsKeys.size(), nestedPage.getLimitWithOffset()));
+
+              result.addAll(nestedPageKeys.stream()
+                .map(k -> sm.get(DSID.of(request.getDatasetKey(), k)))
+                .collect(Collectors.toList())
+              );
+            }
+            return new ResultPage<>(p, regularCnt+nestedCnt, result);
+          }
+        }
+      }
+      return new ResultPage<>(p, result, () -> sm.countSearch(request));
     }
   }
 
