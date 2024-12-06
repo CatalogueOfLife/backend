@@ -47,12 +47,15 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (request.isNested() && request.getName() != null) {
         // find nested sectors by searching for the usage and then look for all sectors underneath!
         var num = session.getMapper(NameUsageMapper.class);
-        var usages = num.listByName(request.getDatasetKey(), request.getName(), request.getRank(), new Page());
-        LOG.info("Found {} usages as parents with name {} and rank {} for the nested sector query", usages.size(), request.getName(), request.getRank());
+        var usages = num.findSimple(request.getDatasetKey(), null, null, request.getRank(), request.getName());
+        // we don't want synonyms for sector attachment points
+        usages.removeIf(SimpleName::isSynonym);
+        LOG.info("Found {} taxa with name {} and rank {} for the nested sector query", usages.size(), request.getName(), request.getRank());
         if (!usages.isEmpty()) {
           Set<Integer> nestedSectorsKeys = new HashSet<>();
+          final var key = DSID.<String>root(request.getDatasetKey());
           for (var u : usages) {
-            nestedSectorsKeys.addAll( sm.listDescendantSectorKeys(u) );
+            nestedSectorsKeys.addAll( sm.listDescendantSectorKeys(key.id(u.getId())) );
           }
           if (!nestedSectorsKeys.isEmpty()) {
             // nested sectors do exist!
