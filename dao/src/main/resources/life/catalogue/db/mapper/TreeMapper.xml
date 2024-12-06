@@ -17,6 +17,9 @@
     </include>
     ,
     <choose>
+      <when test="_parameter.containsKey('catalogueKey') and catalogueKey == datasetKey">
+        (select count(*) from name_usage c WHERE c.dataset_key=#{datasetKey} AND c.parent_id=t.id AND NOT is_synonym(c.status) <if test="_parameter.containsKey('extinct') and !extinct">AND (c.extinct IS NULL OR NOT c.extinct)</if>)
+      </when>
       <when test="_parameter.containsKey('extinct') and !extinct">tm.child_extant_count</when>
       <otherwise>tm.child_count</otherwise>
     </choose> AS child_count,
