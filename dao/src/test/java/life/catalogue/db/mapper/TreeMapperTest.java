@@ -42,8 +42,9 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals("<i>Malus sylvestris</i>", tn.getLabelHtml());
     assertNull(tn.getAuthorship());
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
-  
-    MybatisTestUtils.populateDraftTree(session()); // this does not create taxon metrics - all null below!
+
+    // this does not create taxon metrics - all null below, but the project calls which use dynamic counts!
+    MybatisTestUtils.populateDraftTree(session());
 
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
@@ -52,12 +53,12 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
 
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
-    assertEquals(0, tn.getChildCount());
+    assertEquals(2, tn.getChildCount());
     assertNull(tn.getCount());
 
     tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
-    assertEquals(0, tn.getChildCount());
+    assertEquals(1, tn.getChildCount());
     assertNull(tn.getCount());
 
     tn = mapper().get(Datasets.COL, null, DSID.colID("t1"));
@@ -70,7 +71,6 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void root() {
-
     assertEquals(2, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11, true, new Page())).size());
     TreeNode tn = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  true, new Page()).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
@@ -101,6 +101,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   public void children() {
     assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true, new Page())).size());
     assertEquals(0, valid(mapper().childrenWithPlaceholder(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), null, true, new Page())).size());
+
+    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.of(Datasets.COL, "root-1"), true, new Page())).size());
   }
 
   @Test
