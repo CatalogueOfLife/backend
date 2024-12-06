@@ -1,5 +1,7 @@
 package life.catalogue.db.mapper;
 
+import jakarta.ws.rs.QueryParam;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TreeNode;
@@ -25,11 +27,13 @@ public interface TreeMapper {
    */
   TreeNode get(@Param("catalogueKey") int catalogueKey,
                @Nullable @Param("type") TreeNode.Type type,
-               @Param("key") DSID<String> key);
+               @Param("key") DSID<String> key,
+               @Param("estimates") boolean estimates);
 
   List<TreeNode> classification(@Param("catalogueKey") int catalogueKey,
                                 @Param("type") TreeNode.Type type,
-                                @Param("key") DSID<String> key);
+                                @Param("key") DSID<String> key,
+                                @Param("estimates") boolean estimates);
 
   /**
    * Lists children or root taxa if the key id is just a datasetKey
@@ -39,6 +43,7 @@ public interface TreeMapper {
                           @Nullable @Param("type") TreeNode.Type type,
                           @Param("key") DSID<String> key,
                           @Param("extinct") boolean inclExtinct,
+                          @Param("estimates") boolean estimates,
                           @Param("page") Page page);
 
   /**
@@ -51,6 +56,7 @@ public interface TreeMapper {
                                          @Param("key") DSID<String> key,
                                          @Nullable @Param("rank") Rank rank,
                                          @Param("extinct") boolean inclExtinct,
+                                         @Param("estimates") boolean estimates,
                                          @Param("page") Page page);
 
   /**

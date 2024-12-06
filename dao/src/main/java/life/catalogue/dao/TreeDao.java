@@ -26,18 +26,18 @@ public class TreeDao {
     this.factory = factory;
   }
 
-  public ResultPage<TreeNode> root(int datasetKey, int projectKey, boolean placeholder, boolean inclExtinct, TreeNode.Type type, Page page) {
-    return rootOrChildren(DSID.root(datasetKey), projectKey, placeholder, inclExtinct, type, page);
+  public ResultPage<TreeNode> root(int datasetKey, int projectKey, boolean placeholder, boolean estimates, boolean inclExtinct, TreeNode.Type type, Page page) {
+    return rootOrChildren(DSID.root(datasetKey), projectKey, placeholder, estimates, inclExtinct, type, page);
   }
 
-  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page) {
-    return rootOrChildren(id, projectKey, placeholder, inclExtinct, type, page);
+  public ResultPage<TreeNode> children(final DSID<String> id, final int projectKey, final boolean placeholder, boolean estimates, boolean inclExtinct, final TreeNode.Type type, final Page page) {
+    return rootOrChildren(id, projectKey, placeholder, estimates, inclExtinct, type, page);
   }
 
   /**
    * @return classification starting with the given start id
    */
-  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type) {
+  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, boolean estimates, TreeNode.Type type) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -46,7 +46,7 @@ public class TreeDao {
       LinkedList<TreeNode> classification = new LinkedList<>();
       if (key.rank != null) {
         // the requested key is a placeholder node itself. First get the "real" parent
-        TreeNode parentNode = trm.get(projectKey, type, key);
+        TreeNode parentNode = trm.get(projectKey, type, key, estimates);
         // first add a node for the given key - we dont know if the parent is also a placeholder yet. this can be changed later
         TreeNode thisPlaceholder = placeholder(parentNode, null, key.rank);
         classification.add(thisPlaceholder);
@@ -58,7 +58,7 @@ public class TreeDao {
         pRank = parentNode.getRank();
       }
       boolean first = true;
-      for (TreeNode tn : trm.classification(projectKey, type, key)) {
+      for (TreeNode tn : trm.classification(projectKey, type, key, estimates)) {
         if (first) {
           first = false;
         } else if (placeholder) {
@@ -135,18 +135,18 @@ public class TreeDao {
   /**
    * @param id not null, but might be a root with id=null
    */
-  private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page) {
+  private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, boolean estimates, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
       TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
       // not null, but parent.id might be null
       final RankID parent = RankID.parseID(id);
-      final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent);
+      final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent, estimates);
       final Integer sectorKey = tnParent == null ? null : tnParent.getSectorKey();
       List<TreeNode> result = placeholder ?
-        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, page) :
-        trm.children(projectKey, type, parent, inclExtinct, page);
+        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, estimates, page) :
+        trm.children(projectKey, type, parent, inclExtinct, estimates, page);
       Supplier<Integer> countSupplier;
       if (placeholder && !result.isEmpty()) {
         countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank(), inclExtinct);

@@ -15,8 +15,9 @@ public class ExecuteCmd {
   @Test
   public void test() throws Exception {
     // to run a command that needs configs please point the second argument to a matching yaml file
-    //new WsServer().run(new String[]{"init", "/Users/markus/code/col/backend/webservice/config-local.yaml", "--prompt", "0", "--num", "4"});
-    new WsServer().run(new String[]{"index", "/Users/markus/code/col/backend/webservice/config-dev.yaml", "--prompt", "0", "--key", "1049"});
+    //new WsServer().run(new String[]{"init", "/Users/markus/code/col/backend/webservice/config-local.yaml", "--prompt", "10", "--num", "4"});
+    new WsServer().run(new String[]{"partition", "/Users/markus/code/col/backend/webservice/config-local.yaml", "--prompt", "10", "--num", "4", "--table", "taxon_metrics"});
+    //new WsServer().run(new String[]{"index", "/Users/markus/code/col/backend/webservice/config-dev.yaml", "--prompt", "0", "--key", "1049"});
     //new WsServer().run(new String[]{"index", "/Users/markus/code/col/backend/webservice/config-dev.yaml", "--prompt", "0", "--key", "1049"});
     //new WsServer().run(new String[]{"init", "/Users/markus/code/col/backend/webservice/config-scrap.yaml", "--prompt", "0", "--num", "32"});
     //new WsServer().run(new String[]{"execSql", "/Users/markus/code/col/backend/webservice/config-scrap.yaml", "--prompt", "0", "--origin", "EXTERNAL", "--sqlfile", "/Users/markus/code/col/deploy/sql/migrate-sequences.sql"});
