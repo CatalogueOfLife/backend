@@ -106,4 +106,8 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   protected void onFinishLocked() throws Exception {
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + " #" + datasetKey + " " + getKey() + ": " + getStatus();
+  }
 }

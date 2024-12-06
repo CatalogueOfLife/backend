@@ -140,23 +140,23 @@ public abstract class BackgroundJob implements Runnable {
       LOG.info(marker, "Started {} job {}", getClass().getSimpleName(), key);
       execute();
       status = JobStatus.FINISHED;
-      LOG.info("Finished {} job {}", getClass().getSimpleName(), key);
+      LOG.info("Finished {}", this);
 
     } catch (BlockedException e) {
       status = JobStatus.BLOCKED;
-      LOG.info("Blocked {} job {}", getClass().getSimpleName(), key);
+      LOG.info("Blocked {}", this);
       // rethrow - we want this to surface to the JobExecutor which handles rescheduling
       throw e;
 
     } catch (InterruptedException e) {
       status = JobStatus.CANCELED;
-      LOG.warn("Interrupted {} job {}", getClass().getSimpleName(), key);
+      LOG.warn("Interrupted {}", this);
       onCancel();
 
     } catch (Exception e) {
       status = JobStatus.FAILED;
       error = e;
-      LOG.error("Error running {} job {}", getClass().getSimpleName(), key, e);
+      LOG.error("Error running {}", this, e);
       onError(e);
 
     } finally {
