@@ -48,6 +48,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         // find nested sectors by searching for the usage and then look for all sectors underneath!
         var num = session.getMapper(NameUsageMapper.class);
         var usages = num.listByName(request.getDatasetKey(), request.getName(), request.getRank(), new Page());
+        LOG.info("Found {} usages as parents with name {} and rank {} for the nested sector query", usages.size(), request.getName(), request.getRank());
         if (!usages.isEmpty()) {
           Set<Integer> nestedSectorsKeys = new HashSet<>();
           for (var u : usages) {
@@ -58,6 +59,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
             // make them pageable after the regular hits
             final int regularCnt = sm.countSearch(request);
             final int nestedCnt = nestedSectorsKeys.size();
+            LOG.info("Found {} nested sectors in addition to {} regular sectors for {} {}", nestedCnt, regularCnt, request.getRank(), request.getName());
             if (regularCnt < p.getLimitWithOffset()) {
               // we need to add nested results
               final Page nestedPage = new Page(Math.max(0, p.getOffset()-regularCnt), p.getLimit() - result.size());
