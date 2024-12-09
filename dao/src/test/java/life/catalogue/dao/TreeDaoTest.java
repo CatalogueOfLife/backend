@@ -5,7 +5,6 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.SectorDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
-import life.catalogue.es.NameUsageSearchService;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -163,7 +162,7 @@ public class TreeDaoTest {
     }
 
     // start with genus Amechilus in placeholder sector
-    List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "100:60"), catKey, true, true, true, TreeNode.Type.CATALOGUE));
+    List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "100:60"), catKey, true, true, true, TreeNode.Type.PROJECT));
     assertEquals(6, classification.size());
     assertNode(classification.get(0), Rank.GENUS, "Amechilus");
     assertSector(classification.get(0), sectorRule.sectorKey(0));
@@ -206,7 +205,7 @@ public class TreeDaoTest {
 
     // browse the project catalogue
     key = DSID.of(catKey, "9");
-    ResultPage<TreeNode> children = valid(dao.children(key, catKey, true, true, true, TreeNode.Type.CATALOGUE, PAGE));
+    ResultPage<TreeNode> children = valid(dao.children(key, catKey, true, true, true, TreeNode.Type.PROJECT, PAGE));
     verifyChildren(key, children);
     assertEquals(2, children.size());
     assertNode(children.getResult().get(0), Rank.SUPERFAMILY, "Agnostoidea");
@@ -217,17 +216,17 @@ public class TreeDaoTest {
 
     // browse the project catalogue, ignoring extinct taxa
     key = DSID.of(catKey, "9");
-    children = valid(dao.children(key, catKey, true, true, false, TreeNode.Type.CATALOGUE, PAGE));
+    children = valid(dao.children(key, catKey, true, true, false, TreeNode.Type.PROJECT, PAGE));
     assertEquals(0, children.size());
 
     // mammalia with 2 placeholders below that should show up with sectorKeys
     key = DSID.of(catKey, "18");
-    children = valid(dao.children(key, catKey, true, true, true, TreeNode.Type.CATALOGUE, PAGE));
+    children = valid(dao.children(key, catKey, true, true, true, TreeNode.Type.PROJECT, PAGE));
     verifyChildren(key, children);
     assertEquals(3, children.size());
 
     // once again, filtering extinct which should not make a difference
-    children = valid(dao.children(key, catKey, true, true, false, TreeNode.Type.CATALOGUE, PAGE));
+    children = valid(dao.children(key, catKey, true, true, false, TreeNode.Type.PROJECT, PAGE));
     verifyChildren(key, children);
     assertEquals(3, children.size());
 
