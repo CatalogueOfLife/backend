@@ -399,6 +399,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
       }
       parent = usage(p);
+
+    } else if (nu.isSynonym() && parent == null) {
+      LOG.warn("Ignore synonym without a parent: {}", nu.getLabel());
+      ignored++;
+      return null;
     }
 
     // add well known identifiers
