@@ -239,6 +239,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * Creates a new usage with the lowest current matched parent.
    * Updates the parent stack with the newly created taxon as the current parent match.
    * Increases stat counters.
+   * @param parent maybe null for accepted names, but must exist for synonyms
    * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
   protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
