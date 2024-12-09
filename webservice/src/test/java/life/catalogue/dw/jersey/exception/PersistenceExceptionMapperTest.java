@@ -23,7 +23,7 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   @Test
   public void missing404() throws Exception {
     try {
-      mapper(TreeMapper.class).get(9999, TreeNode.Type.CATALOGUE, DSID.of(9999, "1"), true);
+      mapper(TreeMapper.class).get(9999, TreeNode.Type.PROJECT, DSID.of(9999, "1"), true);
     } catch (PersistenceException e) {
       PersistenceExceptionMapper map = new PersistenceExceptionMapper();
       Response resp = map.toResponse(e);

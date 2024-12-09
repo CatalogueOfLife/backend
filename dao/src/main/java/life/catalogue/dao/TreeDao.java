@@ -101,7 +101,7 @@ public class TreeDao {
             n.setSectorKey(s.getId());
           }
         }
-      } else if (type == TreeNode.Type.CATALOGUE) {
+      } else if (type == TreeNode.Type.PROJECT) {
         // look at all sectors of children - if they are all the same the placeholder also belongs to them
         List<Integer> secKeys = tm.childrenSectors(key, key.rank);
         if (secKeys.size() == 1) {

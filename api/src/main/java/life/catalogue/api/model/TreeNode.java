@@ -12,8 +12,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
  * Adds various additional infos to support the assembly tree.
@@ -21,7 +19,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 public abstract class TreeNode implements DSID<String>, SectorScoped {
 
   public static enum Type {
-    CATALOGUE,
+    PROJECT,
     SOURCE;
   }
 

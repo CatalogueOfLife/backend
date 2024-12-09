@@ -46,17 +46,17 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     // this does not create taxon metrics - all null below, but the project calls which use dynamic counts!
     MybatisTestUtils.populateDraftTree(session());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"), true);
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(0, tn.getChildCount());
     assertNull(tn.getCount());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"), true);
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(2, tn.getChildCount());
     assertNull(tn.getCount());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"), true);
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(1, tn.getChildCount());
     assertNull(tn.getCount());
@@ -102,7 +102,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true, true, new Page())).size());
     assertEquals(0, valid(mapper().childrenWithPlaceholder(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), null, true, true, new Page())).size());
 
-    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.of(Datasets.COL, "root-1"), true, true, new Page())).size());
+    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.of(Datasets.COL, "root-1"), true, true, new Page())).size());
   }
 
   @Test
@@ -185,19 +185,19 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t1"), true, true, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t1"), true, true, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
   
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t2"), true, false, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"), true, false, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
     
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t3"), true, true, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"), true, true, new Page());
     assertEquals(2, nodes.size());
     valid(nodes);
 
-    nodes = mapper().classification(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID("t4"), false);
+    nodes = mapper().classification(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"), false);
     assertEquals(4, nodes.size());
     valid(nodes);
   }
@@ -292,7 +292,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     SpeciesEstimate s3 = newEstimate("t2");
     em.create(s3);
 
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.CATALOGUE, DSID.colID(null), true, true, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID(null), true, true, new Page());
     assertEquals(1, nodes.size());
     assertEquals(2, nodes.get(0).getEstimates().size());
     for (SpeciesEstimate s : nodes.get(0).getEstimates()) {
