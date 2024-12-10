@@ -32,7 +32,7 @@ public class MetricsBuilderTest {
       var tm = session.getMapper(TaxonMapper.class);
       var tcnt = tm.count(key.getDatasetKey());
       assertEquals(20, tcnt);
-      assertEquals(tcnt, tmm.count(key.getDatasetKey()));
+      assertEquals(tcnt, tmm.countByDataset(key.getDatasetKey()));
       // t1 Animalia
       var m = tmm.get(key.id("t1"));
       assertTrue(m.getSourceDatasetKeys().isEmpty());

@@ -245,7 +245,7 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/reindex/preview")
+  @Path("/reindex/scheduler/preview")
   public Response reindexPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     var job = new ReindexSchedulerJob(user.getKey(), threshold, factory, exec, searchService, indexService, null);
     StreamingOutput stream = os -> {
@@ -287,7 +287,7 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/rematch/preview")
+  @Path("/rematch/scheduler/preview")
   public Response rematchPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     var job = new RematchSchedulerJob(user.getKey(), threshold, factory, namesIndex, exec, null);
     StreamingOutput stream = os -> {
@@ -316,6 +316,35 @@ public class AdminResource {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
+  @POST
+  @Path("/metrics")
+  public BackgroundJob rebuildMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
+    if (datasetKey == null) {
+      throw new IllegalArgumentException("Request parameter datasetKey must be provided");
+    }
+    return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
+  }
+
+  @GET
+  @Path("/metrics/scheduler/preview")
+  public Response rebuildMetricsPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new MetricsSchedulerJob(user.getKey(), factory, threshold, exec);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
+  /**
+   * Rematch all datasets which have not been fully matched before.
+   */
+  @POST
+  @Path("/metrics/scheduler")
+  public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
+  }
 
   @DELETE
   @Path("/cache")

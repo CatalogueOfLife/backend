@@ -1,15 +1,9 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Publisher;
 import life.catalogue.api.model.TaxonMetrics;
-import life.catalogue.api.model.Treatment;
-import life.catalogue.db.*;
 
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface TaxonMetricsMapper {
 
@@ -17,6 +11,6 @@ public interface TaxonMetricsMapper {
 
   void create(@Param("obj") TaxonMetrics metrics);
 
-  int count(@Param("datasetKey") int datasetKey);
+  int countByDataset(@Param("datasetKey") int datasetKey);
   int deleteByDataset(@Param("datasetKey") int datasetKey);
 }
