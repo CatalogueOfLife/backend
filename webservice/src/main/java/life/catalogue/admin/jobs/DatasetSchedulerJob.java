@@ -1,5 +1,6 @@
 package life.catalogue.admin.jobs;
 
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
@@ -19,16 +20,19 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
   protected final SqlSessionFactory factory;
   private final JobExecutor exec;
   private final double threshold;
+  private final DatasetOrigin[] origins;
 
   /**
-   * @param threshold the lowest percentage of names already matched that triggers a reprocessing.
+   * @param threshold the lowest percentage of records already processed that still triggers a reprocessing.
    *                  Can be zero or negative to process all incomplete datasets even if a single record is missing.
+   * @param origins optional list of dataset origins to restrict the scheduler to
    */
-  public DatasetSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, JobExecutor exec) {
+  public DatasetSchedulerJob(int userKey, final double threshold, SqlSessionFactory factory, JobExecutor exec, DatasetOrigin...origins) {
     super(userKey);
     this.exec = exec;
     this.factory = factory;
     this.threshold = threshold;
+    this.origins = origins;
   }
 
   @Override
@@ -75,7 +79,7 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
       init(session);
-      for (int key : dm.keys()) {
+      for (int key : dm.keys(origins)) {
         var usages = dm.usageCount(key);
         var done = countDone(key);
         consumer.accept(new DatasetMetrics(key, usages, done));

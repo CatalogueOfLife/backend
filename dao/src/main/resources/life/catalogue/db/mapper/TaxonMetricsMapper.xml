@@ -30,7 +30,7 @@
     )
   </insert>
 
-  <select id="count" resultType="integer">
+  <select id="countByDataset" resultType="integer">
     SELECT COUNT(*) FROM taxon_metrics
     WHERE dataset_key=#{datasetKey}
   </select>
