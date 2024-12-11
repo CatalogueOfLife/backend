@@ -1390,7 +1390,7 @@ CREATE INDEX ON name_rel (dataset_key, reference_id);
 
 
 CREATE TABLE type_material (
-  id TEXT NOT NULL,
+  id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
@@ -1398,7 +1398,7 @@ CREATE TABLE type_material (
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
-  name_id TEXT NOT NULL,
+  specimen_id TEXT NULL,
   citation TEXT,
   status TYPESTATUS,
   country TEXT,
@@ -1428,6 +1428,18 @@ CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
 CREATE INDEX ON type_material (dataset_key, reference_id);
+
+CREATE TABLE type_material_name (
+  dataset_key INTEGER NOT NULL,
+  sector_key INTEGER,
+   INTEGER NOT NULL,
+  name_id TEXT NOT NULL,
+  PRIMARY KEY (dataset_key, type_material_id, name_id),
+  FOREIGN KEY (dataset_key, type_material_id) REFERENCES type_material DEFERRABLE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON type_material_name (dataset_key, name_id);
 
 
 CREATE TABLE name_match (
