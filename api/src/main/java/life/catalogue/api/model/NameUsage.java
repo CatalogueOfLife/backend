@@ -60,6 +60,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
   default Taxon asTaxon() {
     return this instanceof Taxon ? (Taxon) this : null;
   }
+  default Synonym asSynonym() {
+    return this instanceof Synonym ? (Synonym) this : null;
+  }
 
   @JsonIgnore
   default boolean isBareName() {

@@ -240,6 +240,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   }
 
   /**
+   * Builds up the info for any usage, synonym or taxon.
    * @param info existing usage info with at least the usage property given so we can load the rest.
    */
   public void fillUsageInfo(final SqlSession session, final UsageInfo info,
@@ -276,7 +277,14 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
 
     // classification & taxgroup
     if (loadClassification) {
-      info.setClassification(classificationSimple(usage, session));
+      List<SimpleName> cl;
+      if (isTaxon) {
+        cl = classificationSimple(usage, session);
+      } else {
+        cl = classificationSimple(usage.getParentKey(), session);
+        cl.add(new SimpleName(info.getUsage().asSynonym().getAccepted()));
+      }
+      info.setClassification(cl);
       var g = groupAnalyzer.analyze(usage.toSimpleNameLink(), info.getClassification());
       info.setGroup(g);
     }

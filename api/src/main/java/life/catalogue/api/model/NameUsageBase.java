@@ -227,7 +227,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   public void setOrigin(Origin origin) {
     this.origin = origin;
   }
-  
+
+  @JsonIgnore
+  public DSID<String> getParentKey() {
+    return DSID.of(getDatasetKey(), parentId);
+  }
+
   public String getParentId() {
     return parentId;
   }

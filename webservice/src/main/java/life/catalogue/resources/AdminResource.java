@@ -324,7 +324,7 @@ public class AdminResource {
   }
 
   @POST
-  @Path("rebuild-taxon-metrics")
+  @Path("/rebuild-taxon-metrics")
   public BackgroundJob rebuildTaxonMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
