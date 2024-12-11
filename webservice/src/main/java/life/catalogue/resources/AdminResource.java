@@ -316,36 +316,6 @@ public class AdminResource {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
   }
 
-  @POST
-  @Path("/metrics")
-  public BackgroundJob rebuildMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
-    if (datasetKey == null) {
-      throw new IllegalArgumentException("Request parameter datasetKey must be provided");
-    }
-    return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
-  }
-
-  @GET
-  @Path("/metrics/scheduler/preview")
-  public Response rebuildMetricsPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
-    var job = new MetricsSchedulerJob(user.getKey(), factory, threshold, exec);
-    StreamingOutput stream = os -> {
-      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-      job.write(writer);
-      writer.flush();
-    };
-    return Response.ok(stream).build();
-  }
-
-  /**
-   * Rematch all datasets which have not been fully matched before.
-   */
-  @POST
-  @Path("/metrics/scheduler")
-  public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
-    return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
-  }
-
   @DELETE
   @Path("/cache")
   public boolean clearCaches(@Auth User user) {
@@ -372,6 +342,27 @@ public class AdminResource {
   public BackgroundJob rebuildTaxonMetrics(@QueryParam("datasetKey") Integer datasetKey, @Auth User user) {
     Preconditions.checkArgument(datasetKey != null, "A datasetKey parameter must be given");
     return runJob(new RebuildMetricsJob(user.getKey(), factory, datasetKey));
+  }
+
+  @GET
+  @Path("/rebuild-taxon-metrics/scheduler/preview")
+  public Response rebuildMetricsPreview(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    var job = new MetricsSchedulerJob(user.getKey(), factory, threshold, exec);
+    StreamingOutput stream = os -> {
+      Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+      job.write(writer);
+      writer.flush();
+    };
+    return Response.ok(stream).build();
+  }
+
+  /**
+   * Rematch all datasets which have not been fully matched before.
+   */
+  @POST
+  @Path("/rebuild-taxon-metrics/scheduler")
+  public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
+    return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
   }
 
   private BackgroundJob runJob(BackgroundJob job){
