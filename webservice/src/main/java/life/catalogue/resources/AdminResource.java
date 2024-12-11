@@ -34,10 +34,7 @@ import life.catalogue.matching.RematchJob;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Validator;
@@ -222,25 +219,14 @@ public class AdminResource {
   }
 
 
-  @DELETE
-  @Path("/reindex")
-  public int createEmptyIndex(@Auth User user) {
-    LOG.warn("Drop and recreate empty search index by {}", user);
-    return indexService.createEmptyIndex();
-  }
-
   @POST
   @Path("/reindex")
-  public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, RequestScope req, @Auth User user) {
-    if (req == null) {
-      req = new RequestScope();
+  public BackgroundJob reindex(@QueryParam("datasetKey") Integer datasetKey, @QueryParam("prio") JobPriority priority, @Auth User user) {
+    if (datasetKey == null) {
+      throw new IllegalArgumentException("Request parameter datasetKey must be provided");
     }
-    if (datasetKey != null) {
-      req.setDatasetKey(datasetKey);
-    }
-    if (req.getDatasetKey() == null && !req.getAll()) {
-      throw new IllegalArgumentException("Request parameter all or datasetKey must be provided");
-    }
+    var req = new RequestScope();
+    req.setDatasetKey(datasetKey);
     return runJob(new IndexJob(req, user.getKey(), priority, indexService, bus));
   }
 
