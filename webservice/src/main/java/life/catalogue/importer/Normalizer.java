@@ -333,6 +333,7 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private void matchAndCount() {
+    LOG.info("Start matching all names from dataset {}", datasetKey);
     final Map<MatchType, AtomicInteger> counts = Maps.newHashMap();
     for (MatchType mt : MatchType.values()) {
       counts.put(mt, new AtomicInteger(0));

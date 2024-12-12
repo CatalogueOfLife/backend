@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.TypeStatus;
 import life.catalogue.common.text.StringUtils;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,10 +21,9 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
   private Integer verbatimKey;
 
   /**
-   * The citation generated from the CSL data or the verbatim citation if it could not be parsed
-   * into a structured CSLData object.
+   * List of names this type is associated with
    */
-  private String nameId;
+  private List<String> nameId;
 
   /**
    * Material citation of the type material, i.e. type specimen.
