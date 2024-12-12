@@ -21,6 +21,7 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
   private final JobExecutor exec;
   private final double threshold;
   private final DatasetOrigin[] origins;
+  private DatasetMapper dm;
 
   /**
    * @param threshold the lowest percentage of records already processed that still triggers a reprocessing.
@@ -77,14 +78,18 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
   private void processDatasets(ThrowingConsumer<DatasetMetrics, IOException> consumer) {
     // load dataset keys to rematch if there are no or less matches below the threshold
     try (SqlSession session = factory.openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
+      this.dm = session.getMapper(DatasetMapper.class);
       init(session);
       for (int key : dm.keys(origins)) {
-        var usages = dm.usageCount(key);
+        var usages = countToBeDone(key);
         var done = countDone(key);
         consumer.accept(new DatasetMetrics(key, usages, done));
       }
     }
+  }
+
+  protected int countToBeDone(int datasetKey) {
+    return dm.usageCount(datasetKey);
   }
 
   public void write(Writer writer) throws IOException {
