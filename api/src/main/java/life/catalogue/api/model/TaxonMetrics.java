@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
@@ -76,6 +78,7 @@ public class TaxonMetrics extends DatasetScopedEntityNotManaged<String> {
     this.taxonCount++;
   }
 
+  @JsonIgnore
   public int getSpeciesCount() {
     return taxaByRankCount == null || !taxaByRankCount.containsKey(Rank.SPECIES) ? 0 : taxaByRankCount.get(Rank.SPECIES);
   }
