@@ -188,6 +188,8 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       if (m == null) {
         LOG.warn("Missing taxon metrics for {}", key);
       } else {
+        // metrics start with highest to lowest rank - this methods dose it the other way around!
+        Collections.reverse(m.getClassification());
         return m.getClassification();
       }
     }
