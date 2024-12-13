@@ -183,11 +183,15 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
   private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
-    if (DatasetInfoCache.CACHE.info(key.getDatasetKey()).isMutable()) {
-      return session.getMapper(TaxonMapper.class).classificationSimple(key);
-    } else {
-      return session.getMapper(TaxonMetricsMapper.class).get(key).getClassification();
+    if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isMutable()) {
+      var m = session.getMapper(TaxonMetricsMapper.class).get(key);
+      if (m == null) {
+        LOG.warn("Missing taxon metrics for {}", key);
+      } else {
+        return m.getClassification();
+      }
     }
+    return session.getMapper(TaxonMapper.class).classificationSimple(key);
   }
 
   @Override
