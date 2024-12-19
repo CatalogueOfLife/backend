@@ -109,17 +109,17 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     if (req.isBroken() && !s.getTarget().isBroken() && !s.getSubject().isBroken()) {
       return false;
     }
-    if (req.getMode() != null && !req.getMode().isEmpty()) {
-      if (!req.getMode().contains(s.getMode())) {
-        return false;
-      }
+    if (req.getMode() != null && !req.getMode().isEmpty() && !req.getMode().contains(s.getMode())) {
+      return false;
     }
-    if (req.getModifiedBy() != null) {
-      if ( !Objects.equals(s.getCreatedBy(), req.getModifiedBy())
-        && !Objects.equals(s.getModifiedBy(), req.getModifiedBy())
-      ) {
-        return false;
-      }
+    if (req.getRank() != null && s.getSubject() != null && !Objects.equals(s.getSubject().getRank(), req.getRank())) {
+      return false;
+    }
+    if (req.getModifiedBy() != null
+      && !Objects.equals(s.getCreatedBy(), req.getModifiedBy())
+      && !Objects.equals(s.getModifiedBy(), req.getModifiedBy())
+    ) {
+      return false;
     }
     if (req.isWithoutData()) {
       // TODO: how???
