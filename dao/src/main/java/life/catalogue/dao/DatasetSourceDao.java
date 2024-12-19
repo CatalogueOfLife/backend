@@ -161,7 +161,7 @@ public class DatasetSourceDao {
     return d;
   }
 
-  static class SourceMetrics extends ImportMetrics {
+  public static class SourceMetrics extends ImportMetrics {
     private final int sourceKey;
     // current attempt of the imported dataset
     private Integer latestAttempt;
@@ -243,7 +243,7 @@ public class DatasetSourceDao {
    * @param sourceKey dataset key of the source in the project/release
    * @return
    */
-  public ImportMetrics sourceMetrics(int datasetKey, int sourceKey) {
+  public SourceMetrics sourceMetrics(int datasetKey, int sourceKey) {
     SourceMetrics metrics = new SourceMetrics(datasetKey, sourceKey);
 
     try (SqlSession session = factory.openSession()) {
