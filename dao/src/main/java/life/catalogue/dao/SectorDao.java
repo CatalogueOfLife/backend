@@ -44,13 +44,26 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     try (SqlSession session = factory.openSession()) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
       List<Sector> result = sm.search(request, p);
-      if (request.isNested() && request.getName() != null) {
+      if (request.isNested()) {
         // find nested sectors by searching for the usage and then look for all sectors underneath!
         var num = session.getMapper(NameUsageMapper.class);
-        var usages = num.findSimple(request.getDatasetKey(), null, null, request.getRank(), request.getName());
+        List<SimpleName> usages = null;
+        if (request.getId() != null) {
+          var sn = num.getSimple(DSID.of(request.getDatasetKey(), request.getId()));
+          if (sn != null) {
+            usages = new ArrayList<>(); // we want a mutable list
+            usages.add(sn);
+          }
+
+        } else if (request.getName() != null) {
+          usages = num.findSimple(request.getDatasetKey(), null, null, request.getRank(), request.getName());
+
+        } else {
+          throw new IllegalArgumentException("A nested sector search requires either an ID or NAME parameter");
+        }
         // we don't want synonyms for sector attachment points
         usages.removeIf(SimpleName::isSynonym);
-        LOG.info("Found {} taxa with name {} and rank {} for the nested sector query", usages.size(), request.getName(), request.getRank());
+        LOG.info("Found {} taxa matching name={}, rank={} and id={} for the nested sector query", usages.size(), request.getName(), request.getRank(), request.getId());
         if (!usages.isEmpty()) {
           Set<Integer> nestedSectorsKeys = new HashSet<>();
           final var key = DSID.<String>root(request.getDatasetKey());
