@@ -79,14 +79,22 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
             if (regularCnt < p.getLimitWithOffset()) {
               // we need to add nested results
               final Page nestedPage = new Page(Math.max(0, p.getOffset()-regularCnt), p.getLimit() - result.size());
-              List<Integer> nestedPageKeys = nestedSectorsKeys.stream()
+              List<Integer> nestedKeys = nestedSectorsKeys.stream()
                 .sorted()
-                .collect(Collectors.toList())
-                .subList(nestedPage.getOffset(), Math.min(nestedSectorsKeys.size(), nestedPage.getLimitWithOffset()));
-
-              result.addAll(nestedPageKeys.stream()
-                .map(k -> sm.get(DSID.of(request.getDatasetKey(), k)))
-                .collect(Collectors.toList())
+                .collect(Collectors.toList());
+              // we might need to apply request filters to the sectors, so we cannot just load the first page
+              List<Sector> nestedSectors = new ArrayList<>();
+              for (var sKey : nestedKeys) {
+                if (nestedSectors.size() >= nestedPage.getLimit()) {
+                  break;
+                }
+                var s = sm.get(DSID.of(request.getDatasetKey(), sKey));
+                if (filterSector(s, request)) {
+                  nestedSectors.add(s);
+                }
+              }
+              result.addAll(
+                nestedSectors.subList(nestedPage.getOffset(), Math.min(nestedSectorsKeys.size(), nestedPage.getLimitWithOffset()))
               );
             }
             return new ResultPage<>(p, regularCnt+nestedCnt, result);
@@ -95,6 +103,28 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       }
       return new ResultPage<>(p, result, () -> sm.countSearch(request));
     }
+  }
+
+  private boolean filterSector(Sector s, SectorSearchRequest req) {
+    if (req.isBroken() && !s.getTarget().isBroken() && !s.getSubject().isBroken()) {
+      return false;
+    }
+    if (req.getMode() != null && !req.getMode().isEmpty()) {
+      if (!req.getMode().contains(s.getMode())) {
+        return false;
+      }
+    }
+    if (req.getModifiedBy() != null) {
+      if ( !Objects.equals(s.getCreatedBy(), req.getModifiedBy())
+        && !Objects.equals(s.getModifiedBy(), req.getModifiedBy())
+      ) {
+        return false;
+      }
+    }
+    if (req.isWithoutData()) {
+      // TODO: how???
+    }
+    return true;
   }
 
   /**
