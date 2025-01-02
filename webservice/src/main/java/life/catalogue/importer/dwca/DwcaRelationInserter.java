@@ -170,7 +170,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       // could not find anything?
       if (usages.isEmpty()) {
         v.addIssue(invalidIdIssue);
-        LOG.debug("{} {} not existing", idTerm.simpleName(), unsplitIds);
+        LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
 

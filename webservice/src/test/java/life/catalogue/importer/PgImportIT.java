@@ -620,7 +620,7 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImportFolder(new File("/Users/markus/Downloads/benton"), TEXT_TREE);
+    normalizeAndImportFolder(new File("/Users/markus/Downloads/dataset-53133"), DWCA);
     //normalizeAndImport(URI.create("https://bdj.pensoft.net/lib/ajax_srv/archive_download.php?archive_type=2&document_id=80487"), DWCA);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
