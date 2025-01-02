@@ -1,11 +1,8 @@
 package life.catalogue.db.mapper;
 
-import jakarta.ws.rs.QueryParam;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
@@ -324,7 +321,9 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   /**
    * Lists all dataset keys of non deleted datasets that have a UUID GBIF registry key.
    */
-  List<Integer> listGBIF();
+  List<Integer> listKeysGBIF();
+
+  List<DatasetGBIF> listGBIF();
 
   /**
    * @return the last import attempt or null if never attempted

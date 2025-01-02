@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.WsServerConfig;
 import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetGBIF;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
@@ -218,6 +219,11 @@ public class AdminResource {
     }
   }
 
+  @GET
+  @Path("gbif-deleted")
+  public List<DatasetGBIF> listDeletedInGBIF() {
+    return ddao.listDeletedInGBIF();
+  }
 
   @POST
   @Path("/reindex")

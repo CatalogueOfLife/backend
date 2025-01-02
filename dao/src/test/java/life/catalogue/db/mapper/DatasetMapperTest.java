@@ -132,6 +132,12 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void gbif() throws Exception {
+    assertEquals(0, mapper().listGBIF().size());
+    assertEquals(0, mapper().listKeysGBIF().size());
+  }
+
+  @Test
   public void keysByPublisher() throws Exception {
     assertEquals(0, mapper().keysByPublisher(UUID.randomUUID()).size());
   }

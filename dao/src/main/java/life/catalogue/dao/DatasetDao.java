@@ -1,8 +1,5 @@
 package life.catalogue.dao;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.exception.NotFoundException;
@@ -14,6 +11,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.text.CitationUtils;
+import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
@@ -29,18 +27,22 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
-import jakarta.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hc.client5.http.classic.methods.HttpHead;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.HttpStatus;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -50,6 +52,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.EventBus;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
@@ -83,12 +90,14 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final NameUsageIndexService indexService;
   private final EventBus bus;
   private final TempIdProvider tempIds;
+  private final URI gbifDatasetApi;
+
 
   /**
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
   public DatasetDao(SqlSessionFactory factory,
-                    NormalizerConfig nCfg, ReleaseConfig rCfg, ImporterConfig iCfg,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg, ImporterConfig iCfg, GbifConfig gbifCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -110,6 +119,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this.indexService = indexService;
     this.bus = bus;
     this.tempIds = new TempIdProvider();
+    this.gbifDatasetApi = URI.create(gbifCfg.api).resolve("dataset/");
   }
 
   /**
@@ -118,7 +128,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
   }
 
   public Dataset get(UUID gbifKey) {
@@ -716,6 +726,31 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     LOG.info("Deleted {} expired temporary datasets", toDelete.size());
     return toDelete.size();
+  }
+
+  public List<DatasetGBIF> listDeletedInGBIF() {
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var ds = dm.listGBIF();
+      ds.removeIf(d -> !existsInGBIF(d.getGbifKey()));
+      return ds;
+    }
+  }
+
+  private boolean existsInGBIF(UUID gbifKey) {
+    try {
+      var req = new HttpHead(gbifDatasetApi.resolve(gbifKey.toString()));
+      int code = downloader.getClient().execute(req, HttpResponse::getCode);
+      if (code != 200) {
+        LOG.info("GBIF Dataset {} with non OK API response: {}", gbifKey, code);
+      }
+      return code != HttpStatus.SC_NOT_FOUND;
+
+    } catch (IOException e) {
+      LOG.warn("Unable to lookup GBIF dataset {}", gbifKey, e);
+      // we rather report this dataset as existing to not remove sth because of API outages
+      throw new RuntimeException("Unable to lookup GBIF dataset " + gbifKey, e);
+    }
   }
 
 

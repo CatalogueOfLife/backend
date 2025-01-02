@@ -20,7 +20,6 @@ import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.release.AuthorlistGenerator;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.ProjectRelease;
 
