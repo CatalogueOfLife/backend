@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.JobConfig;
+import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
@@ -41,7 +42,7 @@ public class DatasetDaoTest extends DaoTestBase {
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
     dao = new DatasetDao(factory(),
-      new NormalizerConfig(), new ReleaseConfig(), iCfg,
+      new NormalizerConfig(), new ReleaseConfig(), iCfg, new GbifConfig(),
       null,
       ImageService.passThru(),
       diDao, exDao,
