@@ -1,5 +1,6 @@
 package life.catalogue.release;
 
+import life.catalogue.admin.jobs.RebuildMetricsJob;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -218,6 +219,10 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // update usage counter
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).updateUsageCounter(datasetKey);
+    }
+    // build taxon metrics
+    if (newDatasetOrigin.isRelease()) {
+      MetricsBuilder.rebuildMetrics(factory, newDatasetKey);
     }
     // create new dataset "import" metrics in mother project
     // metrics.maxClassificationDepth needs to be set before!
