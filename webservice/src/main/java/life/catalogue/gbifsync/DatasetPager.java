@@ -184,6 +184,7 @@ public class DatasetPager {
     }
 
     DatasetWithSettings d = new DatasetWithSettings();
+    d.setPrivat(false);
     d.setGbifKey(g.key);
     d.setGbifPublisherKey(g.publishingOrganizationKey);
     d.setPublisher(publisherCache.get(g.publishingOrganizationKey));
