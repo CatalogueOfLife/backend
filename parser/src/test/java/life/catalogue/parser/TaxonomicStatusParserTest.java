@@ -27,6 +27,10 @@ public class TaxonomicStatusParserTest extends EnumNoteParserTestBase<TaxonomicS
     assertParse(ACCEPTED, "accepted");
 
     assertParse(PROVISIONALLY_ACCEPTED,"provisional");
+    assertParse(PROVISIONALLY_ACCEPTED,"To determine");
+    assertParse(PROVISIONALLY_ACCEPTED,"To be determined");
+    assertParse(PROVISIONALLY_ACCEPTED,"To be done");
+    assertParse(PROVISIONALLY_ACCEPTED,"tbd");
 
     assertParse(SYNONYM, "synonym");
     assertParse(SYNONYM, "juniorsynonym");

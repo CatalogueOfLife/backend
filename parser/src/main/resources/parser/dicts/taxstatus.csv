@@ -22,8 +22,11 @@ temporary,PROVISIONALLY_ACCEPTED
 temporaryname,PROVISIONALLY_ACCEPTED
 provisional,PROVISIONALLY_ACCEPTED
 to determine,PROVISIONALLY_ACCEPTED
+to be determined,PROVISIONALLY_ACCEPTED
 not determined,PROVISIONALLY_ACCEPTED
 undetermined,PROVISIONALLY_ACCEPTED
+to be done,PROVISIONALLY_ACCEPTED
+tbd,PROVISIONALLY_ACCEPTED
 
 5,SYNONYM
 alternaterepresentation,SYNONYM
@@ -82,6 +85,5 @@ misapplied,MISAPPLIED
 misappliedname,MISAPPLIED
 
 bare,BARE_NAME
-todetermine,BARE_NAME
 unplaced,BARE_NAME
 unresolved,BARE_NAME
