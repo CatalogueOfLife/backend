@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -728,28 +729,39 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     return toDelete.size();
   }
 
-  public List<DatasetGBIF> listDeletedInGBIF() {
+  public Stream<Object[]> listDeletedInGBIF() {
+    List<DatasetGBIF> ds;
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      var ds = dm.listGBIF();
-      ds.removeIf(d -> !existsInGBIF(d.getGbifKey()));
-      return ds;
+      ds = dm.listGBIF();
     }
+    return ds.stream()
+      .filter(d -> deletedInGBIF(d))
+      .map(this::map2Rows);
   }
 
-  private boolean existsInGBIF(UUID gbifKey) {
+  private Object[] map2Rows(DatasetGBIF d) {
+    return new Object[]{d.getKey(), d.getGbifKey(), d.getGbifPublisherKey(), d.getAlias(), d.getTitle()};
+  }
+
+  private boolean deletedInGBIF(DatasetGBIF d) {
+    // skip all plazi datasets as there are far too many
+    // Plazi also registers first with CLB, so it is more difficult to evaluate if a dataset was truely deleted in GBIF
+    if (java.util.Objects.equals(d.getGbifPublisherKey(), Publishers.PLAZI)) {
+      return false;
+    }
     try {
-      var req = new HttpHead(gbifDatasetApi.resolve(gbifKey.toString()));
+      var req = new HttpHead(gbifDatasetApi.resolve(d.getGbifKey().toString()));
       int code = downloader.getClient().execute(req, HttpResponse::getCode);
       if (code != 200) {
-        LOG.info("GBIF Dataset {} with non OK API response: {}", gbifKey, code);
+        LOG.info("GBIF Dataset {} with non OK API response: {}", d.getGbifKey(), code);
       }
-      return code != HttpStatus.SC_NOT_FOUND;
+      return code == HttpStatus.SC_NOT_FOUND;
 
     } catch (IOException e) {
-      LOG.warn("Unable to lookup GBIF dataset {}", gbifKey, e);
+      LOG.warn("Unable to lookup GBIF dataset {}", d, e);
       // we rather report this dataset as existing to not remove sth because of API outages
-      throw new RuntimeException("Unable to lookup GBIF dataset " + gbifKey, e);
+      throw new RuntimeException("Unable to lookup GBIF dataset " + d, e);
     }
   }
 

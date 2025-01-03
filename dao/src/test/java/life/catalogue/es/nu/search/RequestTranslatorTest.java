@@ -5,6 +5,7 @@ import life.catalogue.api.search.NameUsageRequest.SearchType;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Publishers;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.es.query.Query;
 
@@ -24,7 +25,7 @@ public class RequestTranslatorTest {
     req.addFilter(NameUsageSearchParameter.USAGE_ID, "abcdef");
     assertNotNull(RequestTranslator.generateQuery(req));
 
-    req.addFilter(NameUsageSearchParameter.PUBLISHER_KEY, GbifConfig.PLAZI_KEY);
+    req.addFilter(NameUsageSearchParameter.PUBLISHER_KEY, Publishers.PLAZI);
     assertNotNull(RequestTranslator.generateQuery(req));
 
     req = new NameUsageSearchRequest();

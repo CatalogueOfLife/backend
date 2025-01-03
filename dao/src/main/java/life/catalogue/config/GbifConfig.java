@@ -5,11 +5,12 @@ import java.util.UUID;
 
 import jakarta.validation.constraints.NotNull;
 
+import life.catalogue.api.vocab.Publishers;
+
 /**
  *
  */
 public class GbifConfig {
-  public static final UUID PLAZI_KEY = UUID.fromString("7ce8aef0-9e92-11dc-8738-b8a03c50a862");
 
   @NotNull
   public String api = "https://api.gbif.org/v1/";
@@ -34,6 +35,6 @@ public class GbifConfig {
    * GBIF publisher keys for journals and other publishers who exclusively publish article based datasets, e.g. Plazi & Pensoft.
    */
   @NotNull
-  public Set<UUID> articlePublishers = Set.of(PLAZI_KEY);
+  public Set<UUID> articlePublishers = Set.of(Publishers.PLAZI);
 
 }
