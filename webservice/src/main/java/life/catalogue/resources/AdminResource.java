@@ -32,11 +32,13 @@ import life.catalogue.importer.ImportManager;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.RematchJob;
+import life.catalogue.printer.PrinterFactory;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.validation.Validator;
 
@@ -55,6 +57,9 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+
+import static life.catalogue.common.ws.MoreMediaTypes.TEXT_CSV;
+import static life.catalogue.common.ws.MoreMediaTypes.TEXT_TSV;
 
 @Path("/admin")
 @Hidden
@@ -221,7 +226,8 @@ public class AdminResource {
 
   @GET
   @Path("gbif-deleted")
-  public List<DatasetGBIF> listDeletedInGBIF() {
+  @Produces({TEXT_TSV, TEXT_CSV})
+  public Stream<Object[]> listDeletedInGBIF() {
     return ddao.listDeletedInGBIF();
   }
 
