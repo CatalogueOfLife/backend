@@ -307,6 +307,10 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
     commit();
     assertEquals(5, mapper().count(null, null));
+
+    var req = new DatasetSearchRequest();
+    req.setGbifPublisherKeyExclusion(List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+    assertEquals(5, mapper().count(req, null));
   }
 
   @Test

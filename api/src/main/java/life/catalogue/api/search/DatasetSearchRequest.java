@@ -12,6 +12,7 @@ import org.gbif.nameparser.api.NomCode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.Preconditions;
@@ -90,6 +91,12 @@ public class DatasetSearchRequest {
    */
   @QueryParam("gbifPublisherKey")
   private UUID gbifPublisherKey;
+
+  /**
+   * Exclude datasets that belong to gbif Publishers.
+   */
+  @QueryParam("gbifPublisherKeyExclusion")
+  private List<UUID> gbifPublisherKeyExclusion;
 
   /**
    * Filters datasets that have no sector in the given projects dataset key
@@ -261,6 +268,14 @@ public class DatasetSearchRequest {
     this.gbifPublisherKey = gbifPublisherKey;
   }
 
+  public List<UUID> getGbifPublisherKeyExclusion() {
+    return gbifPublisherKeyExclusion;
+  }
+
+  public void setGbifPublisherKeyExclusion(List<UUID> gbifPublisherKeyExclusion) {
+    this.gbifPublisherKeyExclusion = gbifPublisherKeyExclusion;
+  }
+
   public Integer getWithoutSectorInProject() {
     return withoutSectorInProject;
   }
@@ -423,14 +438,13 @@ public class DatasetSearchRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof DatasetSearchRequest)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     DatasetSearchRequest that = (DatasetSearchRequest) o;
-    return codeIsNull == that.codeIsNull && reverse == that.reverse && Objects.equals(q, that.q) && Objects.equals(alias, that.alias) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(hasGbifKey, that.hasGbifKey) && Objects.equals(gbifKey, that.gbifKey) && Objects.equals(gbifPublisherKey, that.gbifPublisherKey) && Objects.equals(withoutSectorInProject, that.withoutSectorInProject) && lastImportState == that.lastImportState && Objects.equals(editor, that.editor) && Objects.equals(reviewer, that.reviewer) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(rowType, that.rowType) && Objects.equals(modified, that.modified) && Objects.equals(modifiedBefore, that.modifiedBefore) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(created, that.created) && Objects.equals(createdBefore, that.createdBefore) && Objects.equals(createdBy, that.createdBy) && Objects.equals(issued, that.issued) && Objects.equals(issuedBefore, that.issuedBefore) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
+    return codeIsNull == that.codeIsNull && reverse == that.reverse && Objects.equals(q, that.q) && Objects.equals(alias, that.alias) && code == that.code && Objects.equals(privat, that.privat) && Objects.equals(releasedFrom, that.releasedFrom) && Objects.equals(contributesTo, that.contributesTo) && Objects.equals(hasSourceDataset, that.hasSourceDataset) && Objects.equals(hasGbifKey, that.hasGbifKey) && Objects.equals(gbifKey, that.gbifKey) && Objects.equals(gbifPublisherKey, that.gbifPublisherKey) && Objects.equals(gbifPublisherKeyExclusion, that.gbifPublisherKeyExclusion) && Objects.equals(withoutSectorInProject, that.withoutSectorInProject) && lastImportState == that.lastImportState && Objects.equals(editor, that.editor) && Objects.equals(reviewer, that.reviewer) && Objects.equals(origin, that.origin) && Objects.equals(type, that.type) && Objects.equals(license, that.license) && Objects.equals(rowType, that.rowType) && Objects.equals(modified, that.modified) && Objects.equals(modifiedBefore, that.modifiedBefore) && Objects.equals(modifiedBy, that.modifiedBy) && Objects.equals(created, that.created) && Objects.equals(createdBefore, that.createdBefore) && Objects.equals(createdBy, that.createdBy) && Objects.equals(issued, that.issued) && Objects.equals(issuedBefore, that.issuedBefore) && Objects.equals(minSize, that.minSize) && sortBy == that.sortBy;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, codeIsNull, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, codeIsNull, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, gbifPublisherKeyExclusion, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
   }
 }

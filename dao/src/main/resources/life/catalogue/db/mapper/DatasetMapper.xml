@@ -130,6 +130,9 @@
       <if test="req.gbifPublisherKey != null">
         AND d.gbif_publisher_key=#{req.gbifPublisherKey}
       </if>
+      <if test="req.gbifPublisherKeyExclusion != null and !req.gbifPublisherKeyExclusion.isEmpty()">
+        AND (d.gbif_publisher_key IS NULL OR d.gbif_publisher_key NOT IN <foreach item="pk" collection="req.gbifPublisherKeyExclusion" open="(" separator="," close=")">#{pk}</foreach>)
+      </if>
       <if test="req.license != null and !req.license.isEmpty()">
         AND d.license IN <foreach item="o" collection="req.license" open="(" separator="," close=")">#{o}::LICENSE</foreach>
       </if>
