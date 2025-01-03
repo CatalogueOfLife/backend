@@ -3,7 +3,7 @@ package life.catalogue;
 /**
  * Wrapper class to manually execute a database initialisation using the regular InitCmd cli command.
  * Requires a regular yaml service configuration to define the database to be initialised which must be passed as the first argument
- * and a second integer parameter to specify the number of partions to be created for external datasets.
+ * and a second integer parameter to specify the number of partitions to be created for external datasets.
  *
  * Warning. This will erase all existing data!
  */
