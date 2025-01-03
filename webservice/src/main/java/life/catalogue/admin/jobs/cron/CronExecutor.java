@@ -41,10 +41,10 @@ public class CronExecutor implements Managed {
   @Override
   public void stop() throws Exception {
     LOG.info("Stopping cron executor with {} jobs", futures.size());
-    scheduler.shutdown();
     for (var f : futures) {
       f.cancel(true);
     }
+    scheduler.shutdown();
     LOG.info("Cron executor stopped");
   }
 }

@@ -16,6 +16,7 @@ public class TempDatasetCleanup extends CronJob {
 
   @Override
   public void run() {
+    LOG.info("Looking for temporary datasets to be removed");
     int cnt = dao.deleteTempDatasets();
     if (cnt > 0) {
       LOG.info("Removed {} temporary datasets", cnt);
