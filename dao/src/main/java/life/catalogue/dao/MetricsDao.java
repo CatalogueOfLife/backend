@@ -29,7 +29,8 @@ public class MetricsDao implements TaxonCounter {
   @Override
   public int count(DSID<String> key, Rank countRank) {
     try (SqlSession session = factory.openSession(true)) {
-      return session.getMapper(TaxonMetricsMapper.class).get(key).getTaxaByRankCount().get(countRank);
+      var tax = session.getMapper(TaxonMetricsMapper.class).get(key);
+      return tax == null ? -1 : tax.getTaxaByRankCount().get(countRank);
     }
   }
 
