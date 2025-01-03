@@ -105,7 +105,7 @@ public class VocabResource {
   
   @GET
   @Path("term")
-  public <TE extends Enum & Term> List<Term> terms(@QueryParam("prefix") String prefix) {
+  public <TE extends Enum & Term> List<Term> terms(@QueryParam("prefix") String prefix, @QueryParam("classOnly") boolean classOnly) {
     Set<Class<? extends Enum>> classes = new HashSet<>( TermFactory.instance().listRegisteredTermEnums() );
     if (prefix != null) {
       prefix = prefix.toLowerCase().trim();
@@ -122,7 +122,9 @@ public class VocabResource {
     for (Class<? extends Enum> clazz : classes) {
       Class<TE> tec = (Class<TE>) clazz;
       for (TE te : tec.getEnumConstants()) {
-        terms.add(te);
+        if (!classOnly || te.isClass()) {
+          terms.add(te);
+        }
       }
     }
     
