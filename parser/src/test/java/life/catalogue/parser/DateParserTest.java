@@ -282,11 +282,11 @@ public class DateParserTest {
    * https://github.com/Sp2000/colplus-backend/issues/110
    */
   @Test
-  @Ignore("To be fixed")
   public void test110() throws UnparsableException {
     for (String raw : Lists.newArrayList("1996", "May-1996", "1996/1997")) {
       Optional<FuzzyDate> date = DateParser.PARSER.parse(raw);
       System.out.println(date.get().toLocalDate());
+      assertEquals(1996, date.get().toLocalDate().get(ChronoField.YEAR));
     }
   }
 
