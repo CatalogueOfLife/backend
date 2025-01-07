@@ -84,6 +84,10 @@ public class DateParser implements Parser<FuzzyDate> {
       this.pattern = pattern;
     }
 
+    @Override
+    public String toString() {
+      return pattern;
+    }
   }
 
   /**
@@ -139,7 +143,7 @@ public class DateParser implements Parser<FuzzyDate> {
     if (debug) {
       LOG.debug("Parsing \"{}\"", text);
     }
-    if (StringUtils.isEmpty(text)) {
+    if (StringUtils.isBlank(text)) {
       return Optional.empty();
     }
     for (ParseSpec spec : parseSpecs) {
