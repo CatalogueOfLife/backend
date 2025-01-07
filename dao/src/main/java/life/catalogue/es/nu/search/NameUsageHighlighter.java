@@ -5,6 +5,8 @@ import life.catalogue.api.search.NameUsageSearchRequest.SearchContent;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.search.NameUsageWrapper;
 
+import life.catalogue.es.nu.NameUsageWrapperConverter;
+
 import org.gbif.nameparser.api.Authorship;
 
 import java.util.Set;
@@ -17,8 +19,7 @@ import com.google.common.annotations.VisibleForTesting;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.AUTHORSHIP;
 import static life.catalogue.api.search.NameUsageSearchRequest.SearchContent.SCIENTIFIC_NAME;
 import static life.catalogue.common.collection.CollectionUtils.isEmpty;
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
+import static life.catalogue.es.nu.NameUsageWrapperConverter.normalize;
 
 /*
  * A DIY highlighter we use in stead of Elasticsearch's highlight capabilities.
@@ -54,8 +55,8 @@ class NameUsageHighlighter {
       pattern = Pattern.compile(Pattern.quote(request.getQ().toLowerCase()));
     }
     if (sc.contains(SCIENTIFIC_NAME)) {
-      String qWN = normalizeWeakly(request.getQ());
-      String qSN = normalizeStrongly(request.getQ());
+      String qWN = normalize(request.getQ());
+      String qSN = NameUsageWrapperConverter.normalize(request.getQ());
       patternWN = Pattern.compile(Pattern.quote(qWN));
       patternSN = qWN.equals(qSN) ? null : Pattern.compile(Pattern.quote(qSN));
     }
@@ -89,11 +90,11 @@ class NameUsageHighlighter {
 
   private void highlightScientificName(NameUsageWrapper nuw) {
     String original = nuw.getUsage().getName().getScientificName();
-    Matcher matcher = patternWN.matcher(normalizeWeakly(original));
+    Matcher matcher = patternWN.matcher(normalize(original));
     String highlighted = highlight(original, matcher);
     if (highlighted.length() == original.length() && patternSN != null) {
       // Then no highlighting took place; let's try with the strongly normalized name
-      matcher = patternSN.matcher(normalizeStrongly(original));
+      matcher = patternSN.matcher(NameUsageWrapperConverter.normalize(original));
       highlighted = highlight(original, matcher);
     }
     nuw.getUsage().getName().setScientificName(highlighted);

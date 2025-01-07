@@ -9,6 +9,7 @@ import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.FastUtilsSerializers;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
@@ -33,6 +34,7 @@ public class NameIndexKryoPool extends Pool<Kryo> {
     kryo.register(IndexName.class);
     kryo.register(Authorship.class);
     kryo.register(Rank.class);
+    kryo.register(NameType.class);
     kryo.register(LocalDateTime.class);
     kryo.register(ArrayList.class);
     kryo.register(HashMap.class);

@@ -26,6 +26,10 @@ public class TabReader implements IterableResult<String[], ParsingContext>, Auto
     return csv(new ReaderInputStream(reader, StandardCharsets.UTF_8), StandardCharsets.UTF_8, skip, 2);
   }
 
+  public static TabReader csv(File file, int skip) throws IOException  {
+    return csv(file, StandardCharsets.UTF_8, skip, 2);
+  }
+
   public static TabReader csv(File file, Charset charset, int skip) throws IOException  {
     return csv(file, charset, skip, 2);
   }
@@ -40,6 +44,10 @@ public class TabReader implements IterableResult<String[], ParsingContext>, Auto
 
   public static TabReader tab(Reader reader, int skip) throws IOException  {
     return tab(new ReaderInputStream(reader, StandardCharsets.UTF_8), StandardCharsets.UTF_8, skip, 2);
+  }
+
+  public static TabReader tab(File file, int skip) throws IOException  {
+    return tab(file, StandardCharsets.UTF_8, skip, 2);
   }
 
   public static TabReader tab(File file, Charset charset, int skip) throws IOException  {

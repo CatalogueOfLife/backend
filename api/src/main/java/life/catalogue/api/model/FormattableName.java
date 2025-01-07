@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
+import org.gbif.nameparser.api.NameType;
+
 /**
  * Most of the Name class with all getters needed to format a Name using the NameFormatter.
  */
@@ -33,6 +35,8 @@ public interface FormattableName extends LinneanName, ScientificName {
   String getNomenclaturalNote();
 
   String getUnparsed();
+
+  NameType getType();
 
   /**
    * @return the terminal epithet. Infraspecific epithet if existing, the species epithet or null
@@ -123,6 +127,6 @@ public interface FormattableName extends LinneanName, ScientificName {
    */
   @JsonIgnore
   default String getScientificNameNormalized() {
-    return SciNameNormalizer.normalize(getScientificName());
+    return SciNameNormalizer.normalize(getScientificName(), getType());
   }
 }

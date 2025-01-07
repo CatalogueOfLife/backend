@@ -10,7 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import static life.catalogue.es.ddl.Analyzer.SCINAME_AUTO_COMPLETE;
 import static life.catalogue.es.ddl.Analyzer.SCINAME_IGNORE_CASE;
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
+import static life.catalogue.es.nu.NameUsageWrapperConverter.normalize;
 
 /**
  * An object embedded within the name usage document solely aimed at optimizing searchability. The name strings within this class do not
@@ -44,17 +44,17 @@ public class NameStrings {
     }
     if (!StringUtils.isBlank(name.getGenus())) {
       genusLetter = Character.toLowerCase(name.getGenus().charAt(0));
-      genusOrMonomial = getStrings(name.getGenus(), normalizeWeakly(name.getGenus()));
+      genusOrMonomial = getStrings(name.getGenus(), normalize(name.getGenus()));
     } else if (!StringUtils.isBlank(name.getUninomial())) {
-      genusOrMonomial = getStrings(name.getUninomial().toLowerCase(), normalizeWeakly(name.getUninomial()));
+      genusOrMonomial = getStrings(name.getUninomial().toLowerCase(), normalize(name.getUninomial()));
     }
     // we used to use the strong normaliser to index species/infraspecific epithets...
     // But that caused more problems than it helped...
     if (!StringUtils.isBlank(name.getSpecificEpithet())) {
-      specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalizeWeakly(name.getSpecificEpithet()));
+      specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalize(name.getSpecificEpithet()));
     }
     if (!StringUtils.isBlank(name.getInfraspecificEpithet())) {
-      infraspecificEpithet = getStrings(name.getInfraspecificEpithet().toLowerCase(), normalizeWeakly(name.getInfraspecificEpithet()));
+      infraspecificEpithet = getStrings(name.getInfraspecificEpithet().toLowerCase(), normalize(name.getInfraspecificEpithet()));
     }
   }
 

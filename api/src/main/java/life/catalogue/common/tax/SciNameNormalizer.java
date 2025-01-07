@@ -1,5 +1,7 @@
 package life.catalogue.common.tax;
 
+import org.gbif.nameparser.api.NameType;
+
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -96,50 +98,35 @@ public class SciNameNormalizer {
    * The return will be a strictly ASCII encoded string.
    */
   public static String normalize(String s) {
-    return normalize(s, false, true);
+    return normalize(s, null, true);
   }
-  
-  /**
-   * Normalizes an entire name string including monomials and genus parts of a name.
-   */
-  public static String normalizeAll(String s) {
-    return normalize(s, true, true);
+
+  public static String normalize(String s, NameType type) {
+    return normalize(s, type, true);
   }
-  
-  private static String normalize(String s, boolean normMonomials, boolean stemming) {
+
+  private static String normalize(String s, NameType type, boolean stemEpithets) {
     if (!hasContent(s)) return "";
     
     s = normalizedAscii(s);
     
     // Remove a hybrid cross, or a likely hybrid cross.
     s = removeHybridMarker(s);
-    
-    // Only for bi/trinomials, otherwise we mix up ranks.
-    if (normMonomials) {
-      s = normStrongly(s, stemming);
-      
-    } else if (s.indexOf(' ') > 2) {
-      String[] parts = s.split(" +");
-      StringBuilder sb = new StringBuilder();
-      sb.append(parts[0]);
-      for (int i = 1; i < parts.length; i++) {
-        sb.append(" ");
-        if (Character.isLowerCase(parts[i].charAt(0))) {
-          sb.append(normStrongly(parts[i], stemming));
-        } else {
-          sb.append(parts[i]);
-        }
+
+    // corrent common misspellings
+    if (type != null && type.isParsable()) {
+      s = normSpellings(s);
+
+      // apply stemming only for epithets, never monomials!
+      if (stemEpithets && s.indexOf(' ') > 2) {
+        s = stemEpithet(s);
       }
-      s = sb.toString();
     }
-    
+
     return s.trim();
   }
-  
-  private static String normStrongly(String s, boolean stemming) {
-    if (stemming) {
-      s = stemEpithet(s);
-    }
+
+  private static String normSpellings(String s) {
     // normalize frequent variations of i
     s = i.matcher(s).replaceAll("i");
     // remove repeated letters→leters in binomials
@@ -152,7 +139,7 @@ public class SciNameNormalizer {
    * Stems and normalizes some few, but frequent misspellings
    */
   public static String normalizeEpithet(String epithet) {
-    return normStrongly(epithet, true);
+    return stemEpithet(normSpellings(epithet));
   }
 
   /**

@@ -1,11 +1,16 @@
 package life.catalogue.common.tax;
 
+import life.catalogue.common.io.TabReader;
+
 import org.junit.Test;
+
+import java.io.*;
 
 import static org.junit.Assert.assertEquals;
 
 
 public class SciNameNormalizerTest {
+
   @Test
   public void removeHybridMarker() throws Exception {
     assertEquals("Abies", SciNameNormalizer.removeHybridMarker("Abies"));
@@ -18,7 +23,7 @@ public class SciNameNormalizerTest {
   public void testNormalize() throws Exception {
     assertEquals("", SciNameNormalizer.normalize(""));
     assertEquals("Abies", SciNameNormalizer.normalize("Abies "));
-    assertEquals("Abiies", SciNameNormalizer.normalize("Abiies "));
+    assertEquals("Abies", SciNameNormalizer.normalize("Abiies "));
     assertEquals("Abyes", SciNameNormalizer.normalize("Abyes "));
     assertEquals("Abyes alb", SciNameNormalizer.normalize("Abyes  albus"));
     assertEquals("Abyes albiet", SciNameNormalizer.normalize("Abyes albieta"));
@@ -63,41 +68,41 @@ public class SciNameNormalizerTest {
 
   @Test
   public void testNormalizeAll() throws Exception {
-    assertEquals("", SciNameNormalizer.normalizeAll(""));
-    assertEquals("Abies", SciNameNormalizer.normalizeAll("Abies "));
-    assertEquals("Abies", SciNameNormalizer.normalizeAll("Abiies "));
-    assertEquals("Abies", SciNameNormalizer.normalizeAll("Abyes "));
-    assertEquals("Abies alb", SciNameNormalizer.normalizeAll("Abyes  albus"));
-    assertEquals("Abies albiet", SciNameNormalizer.normalizeAll("Abyes albieta"));
-    assertEquals("Abies albiet", SciNameNormalizer.normalizeAll("Abies albijeta"));
-    assertEquals("Abies albiet", SciNameNormalizer.normalizeAll("Abies albyeta"));
-    assertEquals("Abies alb", SciNameNormalizer.normalizeAll(" \txAbies × ållbbus\t"));
+    assertEquals("", SciNameNormalizer.normalize(""));
+    assertEquals("Abies", SciNameNormalizer.normalize("Abies "));
+    assertEquals("Abies", SciNameNormalizer.normalize("Abiies "));
+    assertEquals("Abies", SciNameNormalizer.normalize("Abyes "));
+    assertEquals("Abies alb", SciNameNormalizer.normalize("Abyes  albus"));
+    assertEquals("Abies albiet", SciNameNormalizer.normalize("Abyes albieta"));
+    assertEquals("Abies albiet", SciNameNormalizer.normalize("Abies albijeta"));
+    assertEquals("Abies albiet", SciNameNormalizer.normalize("Abies albyeta"));
+    assertEquals("Abies alb", SciNameNormalizer.normalize(" \txAbies × ållbbus\t"));
 
-    assertEquals("Abies alb", SciNameNormalizer.normalizeAll(" \txAbies × ållbbus\t"));
-    assertEquals("Rachis takt", SciNameNormalizer.normalizeAll("Rhachis taktos"));
+    assertEquals("Abies alb", SciNameNormalizer.normalize(" \txAbies × ållbbus\t"));
+    assertEquals("Rachis takt", SciNameNormalizer.normalize("Rhachis taktos"));
 
-    assertEquals("Hieracium sabaud", SciNameNormalizer.normalizeAll("Hieracium sabaudum"));
-    assertEquals("Hieracium scorzoneraefoli", SciNameNormalizer.normalizeAll("Hieracium scorzoneræfolium"));
-    assertEquals("Hieracium scorzonerifoli", SciNameNormalizer.normalizeAll("Hieracium scorzonerifolium"));
-    assertEquals("Macrozamia platirach", SciNameNormalizer.normalizeAll("Macrozamia platyrachis"));
-    assertEquals("Macrozamia platirach", SciNameNormalizer.normalizeAll("Macrozamia platyrhachis"));
-    assertEquals("Cicas circinal", SciNameNormalizer.normalizeAll("Cycas circinalis"));
-    assertEquals("Cicas circinal", SciNameNormalizer.normalizeAll("Cycas circinnalis"));
-    assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perieri"));
-    assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perrieri"));
-    assertEquals("Isolona perier", SciNameNormalizer.normalizeAll("Isolona perrierii"));
+    assertEquals("Hieracium sabaud", SciNameNormalizer.normalize("Hieracium sabaudum"));
+    assertEquals("Hieracium scorzoneraefoli", SciNameNormalizer.normalize("Hieracium scorzoneræfolium"));
+    assertEquals("Hieracium scorzonerifoli", SciNameNormalizer.normalize("Hieracium scorzonerifolium"));
+    assertEquals("Macrozamia platirach", SciNameNormalizer.normalize("Macrozamia platyrachis"));
+    assertEquals("Macrozamia platirach", SciNameNormalizer.normalize("Macrozamia platyrhachis"));
+    assertEquals("Cicas circinal", SciNameNormalizer.normalize("Cycas circinalis"));
+    assertEquals("Cicas circinal", SciNameNormalizer.normalize("Cycas circinnalis"));
+    assertEquals("Isolona perier", SciNameNormalizer.normalize("Isolona perieri"));
+    assertEquals("Isolona perier", SciNameNormalizer.normalize("Isolona perrieri"));
+    assertEquals("Isolona perier", SciNameNormalizer.normalize("Isolona perrierii"));
 
-    assertEquals("Carex caiouet", SciNameNormalizer.normalizeAll("Carex ×cayouettei"));
-    assertEquals("Platanus hispanic", SciNameNormalizer.normalizeAll("Platanus x hispanica"));
+    assertEquals("Carex caiouet", SciNameNormalizer.normalize("Carex ×cayouettei"));
+    assertEquals("Platanus hispanic", SciNameNormalizer.normalize("Platanus x hispanica"));
     // https://github.com/gbif/checklistbank/issues/7
-    assertEquals("Eragrostis brown", SciNameNormalizer.normalizeAll("Eragrostis brownii"));
-    assertEquals("Eragrostis brown", SciNameNormalizer.normalizeAll("Eragrostis brownei"));
+    assertEquals("Eragrostis brown", SciNameNormalizer.normalize("Eragrostis brownii"));
+    assertEquals("Eragrostis brown", SciNameNormalizer.normalize("Eragrostis brownei"));
   }
 
   @Test
   public void testHybridCross() throws Exception {
-    assertEquals("xcayouettei", SciNameNormalizer.normalize("xcayouettei"));
-    assertEquals("cayouettei", SciNameNormalizer.normalize("×cayouettei"));
+    assertEquals("xcaiouetei", SciNameNormalizer.normalize("xcayouettei"));
+    assertEquals("caiouetei", SciNameNormalizer.normalize("×cayouettei"));
 
     assertEquals("Carex xcaiouet", SciNameNormalizer.normalize("Carex xcayouettei"));
     assertEquals("Carex caiouet", SciNameNormalizer.normalize("Carex ×cayouettei"));
@@ -113,8 +118,8 @@ public class SciNameNormalizerTest {
 
   @Test
   public void testNonAscii() throws Exception {
-    assertEquals("Cem Andrexi", SciNameNormalizer.normalize("Çem Ándrexï"));
-    assertEquals("SOEZsoezY¥µAAAAAAAECEEEEIIIIDNOOOOOOUUUUYssaaaaaaaeceeeeiiiidnoooooouuuuyy", SciNameNormalizer.normalize("ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ"));
+    assertEquals("CemAndrexi", SciNameNormalizer.normalize("Çem_Ándrexï"));
+    assertEquals("SOEZsoezY¥µAECEIDNOUYsaeceidnoui", SciNameNormalizer.normalize("ŠŒŽšœžŸ¥µÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýÿ"));
   }
 
   @Test

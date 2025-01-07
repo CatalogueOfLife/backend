@@ -1,13 +1,12 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.Origin;
+import life.catalogue.common.io.TabReader;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -15,8 +14,14 @@ import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.parser.RankParser;
+
+import life.catalogue.parser.UnparsableException;
+
 import org.gbif.nameparser.api.*;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +33,9 @@ import java.util.stream.Stream;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.util.RankUtils;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +72,7 @@ public class NameIndexImplTest {
       }}
     ).when(mapper).create(any());
 
-    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), factory, aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.memory(512, 10_000_000), factory, aNormalizer).started();
     assertEquals(0, ni.size());
   }
 
@@ -834,5 +842,50 @@ public class NameIndexImplTest {
     NameMatch m = ni.match(name(name, rank), false, true);
     return m;
   }
-  
+
+
+  /**
+   * Reads a simple ColDP NameUsage file and adds 4 more columns to it:
+   *  1) normalised name
+   *  2) name type
+   *  3) nidx id
+   *  4) nidx canonical id
+   */
+  @Test
+  public void procColDP() throws Exception {
+    File dir = new File("/Users/markus/Downloads/col12");
+    File fni = new File(dir, "NameUsage.tsv");
+    File fno = new File(dir, "NameUsageOut.tsv");
+    try (
+      TabReader reader = TabReader.tab(fni, 1);
+      FileWriter fw = new FileWriter(fno)
+    ) {
+      for (var row : reader) {
+        fw.write(processLine(row) + "\n");
+      }
+    }
+    // report nidx
+    System.out.println("\n\n+++++ NIDX +++++");
+    System.out.println("Total records: " + ni.store().count());
+
+    // avoid large dumps
+    ni.close();
+    ni = null;
+  }
+
+  private String processLine(String[] row) throws UnparsableException, InterruptedException {
+    // col:ID	col:parentID	col:status	col:rank	col:scientificName	col:authorship
+    String[] extra = new String[4];
+    Rank rank = RankParser.PARSER.parse(row[3]).get();
+    Name n = TestEntityGenerator.setUserDate(NameParser.PARSER.parse(row[4], row[5], rank, null, VerbatimRecord.VOID).get().getName());
+    n.setRank(rank);
+    extra[0] = SciNameNormalizer.normalize(row[4], n.getType());
+    var nm = ni.match(n, true, false);
+    extra[1] = n.getType().toString();
+    if (nm.hasMatch()) {
+      extra[2] = nm.getNameKey().toString();
+      extra[3] = nm.getCanonicalNameKey().toString();
+    }
+    return String.join("\t", row) + "\t" + String.join("\t", extra);
+  }
 }

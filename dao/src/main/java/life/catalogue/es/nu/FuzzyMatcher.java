@@ -4,8 +4,7 @@ import life.catalogue.api.search.NameUsageRequest;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
 
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeStrongly;
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
+import static life.catalogue.es.nu.NameUsageWrapperConverter.normalize;
 
 /**
  * Abstract base class for fuzzy matching.
@@ -20,10 +19,10 @@ abstract class FuzzyMatcher extends QMatcher implements MatcherMixIn {
   @Override
   Query matchAsMonomial() {
     String[] terms = request.getSciNameSearchTerms();
-    String termWN = normalizeWeakly(terms[0]);
+    String termWN = normalize(terms[0]);
     // we used to use the strongly normalised terms to index/query species/infraspecific epithets.
     // But that caused more problems than it helped...
-    String termSN = normalizeStrongly(terms[0]);
+    String termSN = NameUsageWrapperConverter.normalize(terms[0]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery() // Prefer subspecies over species and species over genera
             .should(matchAsEpithet(FLD_SUBSPECIES, termWN).withBoost(1.2))
@@ -34,10 +33,10 @@ abstract class FuzzyMatcher extends QMatcher implements MatcherMixIn {
   @Override
   Query matchAsBinomial() {
     String[] terms = request.getSciNameSearchTerms();
-    String term0WN = normalizeWeakly(terms[0]);
-    String term0SN = normalizeStrongly(terms[0]);
-    String term1WN = normalizeWeakly(terms[1]);
-    String term1SN = normalizeStrongly(terms[1]);
+    String term0WN = normalize(terms[0]);
+    String term0SN = NameUsageWrapperConverter.normalize(terms[0]);
+    String term1WN = normalize(terms[1]);
+    String term1SN = NameUsageWrapperConverter.normalize(terms[1]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery()
             .must(matchAsGenericEpithet(term0WN))
@@ -64,9 +63,9 @@ abstract class FuzzyMatcher extends QMatcher implements MatcherMixIn {
   @Override
   Query matchAsTrinomial() {
     String[] terms = request.getSciNameSearchTerms();
-    String term0WN = normalizeWeakly(terms[0]);
-    String term1SN = normalizeStrongly(terms[1]);
-    String term2SN = normalizeStrongly(terms[2]);
+    String term0WN = normalize(terms[0]);
+    String term1SN = NameUsageWrapperConverter.normalize(terms[1]);
+    String term2SN = NameUsageWrapperConverter.normalize(terms[2]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery()
             .must(matchAsGenericEpithet(term0WN))

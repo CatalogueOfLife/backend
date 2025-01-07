@@ -53,58 +53,58 @@ public class NameUsageWrapperConverterTest {
   }
 
   @Test
-  public void testNormalizeWeakly1() {
-    String s = NameUsageWrapperConverter.normalizeWeakly("Larus");
+  public void testNormalize1() {
+    String s = NameUsageWrapperConverter.normalize("Larus");
     assertEquals("larus", s);
   }
 
   @Test
-  public void testNormalizeWeakly2() {
-    String s = NameUsageWrapperConverter.normalizeWeakly("等待");
+  public void testNormalize2() {
+    String s = NameUsageWrapperConverter.normalize("等待");
     assertEquals("等待", s);
   }
 
   @Test
-  public void testNormalizeWeakly3() {
-    String s = NameUsageWrapperConverter.normalizeWeakly("sérieux");
+  public void testNormalize3() {
+    String s = NameUsageWrapperConverter.normalize("sérieux");
     assertEquals("serieux", s);
   }
 
   @Test
-  public void testNormalizeStrongly1a() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("Larus");
+  public void testNormalize1A() {
+    String s = NameUsageWrapperConverter.normalize("Larus");
     System.out.println(s);
     assertEquals("lar", s);
   }
 
   @Test
-  public void testNormalizeStrongly1b() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("Larus fuscus");
+  public void testNormalize1B() {
+    String s = NameUsageWrapperConverter.normalize("Larus fuscus");
     assertEquals("larus fusc", s);
   }
 
   @Test
-  public void testNormalizeStrongly1c() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("Larus fuscus fuscus");
+  public void testNormalize1C() {
+    String s = NameUsageWrapperConverter.normalize("Larus fuscus fuscus");
     System.out.println(s);
     assertEquals("larus fuscus fusc", s);
   }
 
   @Test
-  public void testNormalizeStrongly2() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("等待");
+  public void testNormalize2b() {
+    String s = NameUsageWrapperConverter.normalize("等待");
     assertEquals("等待", s);
   }
 
   @Test
-  public void testNormalizeStrongly3() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("sérieux");
+  public void testNormalize3b() {
+    String s = NameUsageWrapperConverter.normalize("sérieux");
     assertEquals("serieux", s);
   }
 
   @Test
-  public void testNormalizeStrongly4() {
-    String s = NameUsageWrapperConverter.normalizeStrongly("sylvestris");
+  public void testNormalize4() {
+    String s = NameUsageWrapperConverter.normalize("sylvestris");
     System.out.println(s);
     assertEquals("silvestr", s);
   }

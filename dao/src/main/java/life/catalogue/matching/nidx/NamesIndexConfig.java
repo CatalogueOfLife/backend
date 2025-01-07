@@ -12,9 +12,16 @@ public class NamesIndexConfig {
   public enum Store {MAPDB, CHRONICLE}
 
   public static NamesIndexConfig memory(int poolsize){
+    return memory(poolsize, -1);
+  }
+
+  public static NamesIndexConfig memory(int poolsize, int maxEntries){
     var cfg = new NamesIndexConfig();
     cfg.file = null;
     cfg.kryoPoolSize = poolsize;
+    if (maxEntries > 0) {
+      cfg.maxEntries = maxEntries;
+    }
     return cfg;
   }
 
@@ -42,12 +49,12 @@ public class NamesIndexConfig {
   public int kryoPoolSize = 1024;
 
   @NotNull
-  public Store type = Store.MAPDB;
+  public Store type = Store.CHRONICLE;
 
   /**
    * Maximum numbers of names index entries supported by a chronicle store
    */
   @Min(1_000)
-  public int maxEntries = 1_000;
+  public int maxEntries = 10_000;
 
 }

@@ -14,6 +14,10 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2024-12-05 taxon metrics
+```
+ALTER TABLE names_index ADD COLUMN type NAMETYPE;
+```
 
 #### 2024-12-05 taxon metrics
 ```

@@ -108,7 +108,8 @@ public class NameIndexImpl implements NameIndex {
       if (name.getRank() == null) {
         name.setRank(IndexName.CANONICAL_RANK);
       }
-      List<IndexName> candidates = store.get(key(name));
+      var key = key(name);
+      List<IndexName> candidates = store.get(key);
       if (candidates != null && !candidates.isEmpty()) {
         m = matchCandidates(name, candidates);
         if (verbose) {
@@ -493,7 +494,7 @@ public class NameIndexImpl implements NameIndex {
    */
   private static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);
-    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
+    return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName), n.getType()).toLowerCase(), '*');
   }
   
   /**

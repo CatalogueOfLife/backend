@@ -5,7 +5,7 @@ import life.catalogue.es.NameStrings;
 import life.catalogue.es.query.BoolQuery;
 import life.catalogue.es.query.Query;
 
-import static life.catalogue.es.nu.NameUsageWrapperConverter.normalizeWeakly;
+import static life.catalogue.es.nu.NameUsageWrapperConverter.normalize;
 
 /**
  * Abstract base class for non-fuzzy matching. Search terms are not normalized, so they can only hit the non-normalized versions of the
@@ -22,7 +22,7 @@ abstract class SimpleMatcher extends QMatcher implements MatcherMixIn {
   @Override
   Query matchAsMonomial() {
     String[] terms = request.getSciNameSearchTerms();
-    String term0 = normalizeWeakly(terms[0]);
+    String term0 = normalize(terms[0]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery() // Prefer genus over species over subspecies
             .should(matchAsEpithet(FLD_SUBSPECIES, term0).withBoost(1.0))
@@ -33,8 +33,8 @@ abstract class SimpleMatcher extends QMatcher implements MatcherMixIn {
   @Override
   Query matchAsBinomial() {
     String[] terms = request.getSciNameSearchTerms();
-    String term0 = normalizeWeakly(terms[0]);
-    String term1 = normalizeWeakly(terms[1]);
+    String term0 = normalize(terms[0]);
+    String term1 = normalize(terms[1]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery()
             .must(matchAsGenericEpithet(term0))

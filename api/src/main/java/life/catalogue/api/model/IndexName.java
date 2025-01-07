@@ -4,10 +4,7 @@ import life.catalogue.api.jackson.IsEmptyFilter;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.text.StringUtils;
 
-import org.gbif.nameparser.api.Authorship;
-import org.gbif.nameparser.api.NamePart;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.*;
 
 import java.util.Objects;
 
@@ -38,6 +35,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   private String authorship;
   @Nonnull
   private Rank rank;
+  private NameType type;
   private String uninomial;
   private String genus;
   private String infragenericEpithet; // we only use this for true infrageneric names, not bi-/trinomials!
@@ -60,6 +58,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.scientificName = other.scientificName;
     this.authorship = other.authorship;
     this.rank = other.rank;
+    this.type = other.type;
     this.uninomial = other.uninomial;
     this.genus = other.genus;
     this.infragenericEpithet = other.infragenericEpithet;
@@ -83,6 +82,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     this.scientificName = n.getScientificName();
     this.authorship = n.getAuthorship();
     setRank(n.getRank());
+    this.type = n.getType();
     this.uninomial = n.getUninomial();
     this.genus = n.getGenus();
     this.infragenericEpithet = n.getInfragenericEpithet();
@@ -112,6 +112,7 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
   public static IndexName newCanonical(IndexName n) {
     IndexName cn = new IndexName();
     cn.setRank(CANONICAL_RANK);
+    cn.setType(n.getType());
     // we keep a canonical infrageneric name in uninomial and ignore its genus placement!
     if (n.getInfragenericEpithet() != null && n.isInfrageneric()) {
       cn.setUninomial(n.getInfragenericEpithet());
@@ -293,6 +294,15 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
     return null;
   }
 
+  @Override
+  public NameType getType() {
+    return type;
+  }
+
+  public void setType(NameType type) {
+    this.type = type;
+  }
+
   public void setCultivarEpithet(String cultivarEpithet) {
     this.cultivarEpithet = cultivarEpithet;
   }
@@ -377,29 +387,15 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof IndexName)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     IndexName indexName = (IndexName) o;
-    return Objects.equals(key, indexName.key) &&
-      Objects.equals(canonicalId, indexName.canonicalId) &&
-      scientificName.equals(indexName.scientificName) &&
-      Objects.equals(authorship, indexName.authorship) &&
-      rank == indexName.rank &&
-      Objects.equals(uninomial, indexName.uninomial) &&
-      Objects.equals(genus, indexName.genus) &&
-      Objects.equals(infragenericEpithet, indexName.infragenericEpithet) &&
-      Objects.equals(specificEpithet, indexName.specificEpithet) &&
-      Objects.equals(infraspecificEpithet, indexName.infraspecificEpithet) &&
-      Objects.equals(cultivarEpithet, indexName.cultivarEpithet) &&
-      Objects.equals(combinationAuthorship, indexName.combinationAuthorship) &&
-      Objects.equals(basionymAuthorship, indexName.basionymAuthorship) &&
-      Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor);
+    return Objects.equals(key, indexName.key) && Objects.equals(canonicalId, indexName.canonicalId) && Objects.equals(scientificName, indexName.scientificName) && Objects.equals(authorship, indexName.authorship) && rank == indexName.rank && type == indexName.type && Objects.equals(uninomial, indexName.uninomial) && Objects.equals(genus, indexName.genus) && Objects.equals(infragenericEpithet, indexName.infragenericEpithet) && Objects.equals(specificEpithet, indexName.specificEpithet) && Objects.equals(infraspecificEpithet, indexName.infraspecificEpithet) && Objects.equals(cultivarEpithet, indexName.cultivarEpithet) && Objects.equals(combinationAuthorship, indexName.combinationAuthorship) && Objects.equals(basionymAuthorship, indexName.basionymAuthorship) && Objects.equals(sanctioningAuthor, indexName.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(super.hashCode(), key, canonicalId, scientificName, authorship, rank, type, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override
@@ -413,6 +409,8 @@ public class IndexName extends DataEntity<Integer> implements FormattableName {
       sb.append(" [CANONICAL]");
     } else {
       sb.append(getLabelWithRank());
+      sb.append(" cid=");
+      sb.append(getCanonicalId());
     }
     return sb.toString();
   }

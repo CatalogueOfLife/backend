@@ -317,9 +317,8 @@ public class NameIndexChronicleStore implements NameIndexStore {
         int size = in.readInt();
         byte[] bytes = new byte[size];
         in.read(bytes);
-        if (using != null) {
-          System.out.println("WARN: IndexName instance existing: " + using);
-        }
+        // kryo creates a new instance anyways, so we always create a new instance
+        // we can only reuse any existing object (happens always in memory mode) with even more effort
         return kryo.readObject(new Input(bytes), IndexName.class);
       } finally {
         if (kryo != null) {

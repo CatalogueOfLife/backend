@@ -67,23 +67,13 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
   }
 
   /**
-   * Provides a weakly normalized version of the provided string. Used to index generic epithets. See {@link NameStrings}.
+   * Provides a normalized version of the provided string. Used to index generic epithets. See {@link NameStrings}.
    */
-  public static String normalizeWeakly(String s) {
+  public static String normalize(String s) {
     if (s == null) {
       return null;
     }
     return SciNameNormalizer.normalize(s.toLowerCase());
-  }
-
-  /**
-   * Provides a strongly normalized version of the provided string. Used to index specific epithets and infraspecific epithets.
-   */
-  public static String normalizeStrongly(String s) {
-    if (s == null) {
-      return null;
-    }
-    return SciNameNormalizer.normalizeAll(s.toLowerCase());
   }
 
   /**
