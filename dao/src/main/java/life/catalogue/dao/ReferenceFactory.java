@@ -11,10 +11,7 @@ import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.metadata.DoiResolver;
-import life.catalogue.parser.CSLTypeParser;
-import life.catalogue.parser.DateParser;
-import life.catalogue.parser.SafeParser;
-import life.catalogue.parser.UnparsableException;
+import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DcTerm;
 
@@ -26,6 +23,9 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.dwc.terms.Term;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +34,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 
 import de.undercouch.citeproc.csl.CSLType;
+
+import static life.catalogue.parser.SafeParser.parse;
 
 /**
  * Dataset specific factory for reference instances. It mostly manages the CSL parsing and works
@@ -156,10 +158,23 @@ public class ReferenceFactory {
     csl.setVersion(v.get(ColdpTerm.version));
     csl.setISBN(v.get(ColdpTerm.isbn));
     csl.setISSN(v.get(ColdpTerm.issn));
-    csl.setDOI(v.get(ColdpTerm.doi));
-    csl.setURL(v.get(ColdpTerm.link));
-
+    setDoiNlink(csl, v, ColdpTerm.doi, ColdpTerm.link);
     return fromCsl(datasetKey, csl, v.get(ColdpTerm.citation), v.get(ColdpTerm.remarks), v);
+  }
+
+  private void setDoiNlink(CslData csl, VerbatimRecord v, Term doiTerm, Term urlTerm) {
+    if (v.hasTerm(doiTerm)) {
+      Optional<DOI> doi = DOI.parse(v.getRaw(doiTerm));
+      if (doi.isPresent()) {
+        csl.setDOI(doi.get());
+      } else {
+        v.addIssue(Issue.DOI_INVALID);
+      }
+    }
+
+    if (v.hasTerm(urlTerm)) {
+      csl.setURL(parse(UriParser.PARSER, v.getRaw(urlTerm)).orNull(Issue.URL_INVALID, v));
+    }
   }
 
   /**
@@ -179,8 +194,7 @@ public class ReferenceFactory {
     csl.setAuthor(parseAuthors(v.get(BiboOntTerm.authorList), v));
     csl.setEditor(parseAuthors(v.get(BiboOntTerm.editorList), v));
     csl.setIssued(ReferenceFactory.toCslDate(v.getFirst(DcTerm.issued, DcTerm.created)));
-    csl.setURL(v.get(BiboOntTerm.uri));
-    csl.setDOI(v.get(BiboOntTerm.doi));
+    setDoiNlink(csl, v, BiboOntTerm.doi, BiboOntTerm.uri);
 
     return fromCsl(datasetKey, csl, v.get(EolReferenceTerm.full_reference), null, v);
   }
