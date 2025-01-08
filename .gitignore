@@ -2,6 +2,7 @@
 **/target
 **/.idea
 **/java-xjc/
+**/.surefire-*
 
 dao/127.0.0.1/
 dao/dataset/

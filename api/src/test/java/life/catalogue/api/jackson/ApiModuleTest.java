@@ -10,6 +10,8 @@ import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.coldp.ColdpTerm;
+
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -35,8 +37,6 @@ public class ApiModuleTest {
 
   @Test
   public void testTermFactory() throws IOException {
-    ObjectMapper map = ApiModule.MAPPER;
-
     for( String t : List.of(
       "acef:AcceptedInfraSpecificTaxa",
       "acef:AcceptedSpecies",
@@ -70,8 +70,14 @@ public class ApiModuleTest {
       "http://unknown.org/col/Description",
       "tt:Tree"
     )) {
-      System.out.println(t);
-      System.out.println( TermFactory.instance().findTerm(t, true) );
+      var t2 = TermFactory.instance().findTerm(t, true);
+      if (t.startsWith("http")) {
+        assertEquals(t, t2.qualifiedName());
+      } else if (t.equals("col:NameRel")) {
+        assertEquals(ColdpTerm.NameRelation, t2);
+      } else {
+        assertEquals(t, t2.prefixedName());
+      }
     }
   }
   
@@ -100,7 +106,7 @@ public class ApiModuleTest {
   public void localDate() throws IOException {
     LocalDate date = LocalDate.now();
     String json = ApiModule.MAPPER.writeValueAsString(date);
-    System.out.println(json);
+    //System.out.println(json);
     LocalDate date2 = ApiModule.MAPPER.readValue(json, LocalDate.class);
     assertEquals(date2, date);
   }
@@ -138,7 +144,7 @@ public class ApiModuleTest {
     );
 
     String json = ApiModule.MAPPER.writeValueAsString(resp);
-    System.out.println(json);
+    //System.out.println(json);
     assertTrue(json.contains("\"nomStatus\""));
     assertFalse(json.contains("\"NOM_STATUS\""));
     assertFalse(json.contains("\"nom status\""));
