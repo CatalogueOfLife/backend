@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import java.net.URI;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -743,10 +744,14 @@ public class CslData {
     return URL;
   }
   
-  public void setURL(String uRL) {
-    URL = uRL;
+  public void setURL(String url) {
+    URL = url;
   }
-  
+
+  public void setURL(URI url) {
+    URL = url == null ? null : url.toString();
+  }
+
   public String getVersion() {
     return version;
   }
