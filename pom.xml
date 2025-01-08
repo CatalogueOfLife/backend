@@ -922,14 +922,15 @@
             Some modules run tests that share static information and will override this configuration.
             See https://maven.apache.org/surefire/maven-surefire-plugin/examples/fork-options-and-parallel-execution.html
             -->
-            <parallel>all</parallel>
-            <useUnlimitedThreads>true</useUnlimitedThreads>
             <reuseForks>true</reuseForks>
+            <!-- Creates half as many forks as there are CPU cores. -->
+            <forkCount>0.5C</forkCount>
+            <!-- run all of maven with the following to also build entire modules in parallel: mvn -T 0.5C test -->
 
             <useSystemClassLoader>false</useSystemClassLoader>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
-            <runOrder>random</runOrder>
+            <runOrder>failedfirst</runOrder>
 
             <includes>
               <!-- include regular unit tests -->
