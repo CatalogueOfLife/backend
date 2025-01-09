@@ -3,18 +3,17 @@ package life.catalogue.release;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.dao.DatasetSourceDao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import scala.reflect.internal.util.Set;
 
 public class AuthorlistGenerator {
   private final Validator validator;
@@ -39,11 +38,18 @@ public class AuthorlistGenerator {
     if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
       return false;
     }
-    var sources = dao.listSimple(d.getKey(), false);
+    var exclusion = new HashSet<>();
+    if (ds.has(Setting.RELEASE_AUTHOR_SOURCE_EXCLUSION)) {
+      List<DatasetType> types = ds.getList(Setting.RELEASE_AUTHOR_SOURCE_EXCLUSION);
+      exclusion.addAll(types);
+    }
+    var sources = dao.listSimple(d.getKey(), true);
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
     if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
-      sources.forEach(src -> {
+      sources.stream()
+        .filter(src -> !exclusion.contains(src.getType()))
+        .forEach(src -> {
         if (src.getCreator() != null) {
           authors.addAll(addSourceNote(src, src.getCreator()));
         }

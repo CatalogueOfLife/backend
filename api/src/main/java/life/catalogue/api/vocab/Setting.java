@@ -94,6 +94,12 @@ public enum Setting {
   RELEASE_ADD_SOURCE_AUTHORS(Boolean.class, PROJECT),
 
   /**
+   * Optional list of dataset types to exclude from sources to generate the release authors from.
+   * E.g. ARTICLE to exclude all authors from Plazi and BDJ sources.
+   */
+  RELEASE_AUTHOR_SOURCE_EXCLUSION(DatasetType.class, true, PROJECT),
+
+  /**
    * If true a release will include as its authors all contributors of the project (not source contributors).
    */
   RELEASE_ADD_CONTRIBUTORS(Boolean.class, PROJECT),
