@@ -14,6 +14,8 @@ import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.gbif.nameparser.api.Rank;
+
 public class DatasetWithSettings {
 
   private Dataset dataset;
@@ -104,11 +106,11 @@ public class DatasetWithSettings {
     settings.put(Setting.NOMENCLATURAL_CODE, code);
   }
 
-  public Boolean getExtinct() {
-    return settings.getBool(Setting.EXTINCT);
+  public Rank getExtinct() {
+    return settings.getEnum(Setting.EXTINCT);
   }
 
-  public void setExtinct(Boolean extinct){
+  public void setExtinct(Rank extinct){
     settings.put(Setting.EXTINCT, extinct);
   }
 
