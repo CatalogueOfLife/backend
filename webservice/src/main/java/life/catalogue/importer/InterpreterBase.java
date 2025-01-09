@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NameType;
 
+import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
 import org.jsoup.Jsoup;
@@ -454,6 +455,10 @@ public class InterpreterBase {
     return Collections.emptyList();
   }
 
+  protected boolean isExtinctBySetting(Rank rank) {
+    return settings.get(Setting.EXTINCT) != null && rank != null && !rank.isUncomparable() && !rank.higherThan(settings.getEnum(Setting.EXTINCT));
+  }
+
   public NeoUsage interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Map<Term, Identifier.Scope> altIdTerms) {
     NeoUsage u;
     // a synonym by status?
@@ -471,9 +476,7 @@ public class InterpreterBase {
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
       var t = (Taxon) u.usage;
-      if (pnu.isExtinct() ||
-        (settings.containsKey(Setting.EXTINCT) && t.getRank() != null && !t.getRank().isUncomparable() && !t.getRank().higherThan(settings.getEnum(Setting.EXTINCT)))
-      ) {
+      if (pnu.isExtinct() || isExtinctBySetting(t.getRank())) {
         t.setExtinct(true);
       }
       if (pnu.isDoubtful()) {
