@@ -146,13 +146,16 @@ public class Normalizer implements Callable<Boolean> {
     }
   }
 
+  private Boolean isExtinctBySetting(Rank rank) {
+    return dataset.getExtinct() != null && rank != null && !rank.isUncomparable() && !rank.higherThan(dataset.getExtinct());
+  }
+
   /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail,
    * but also does further issue flagging and applying of missing dataset defaults.
    */
   private void validateAndDefaults() throws InterruptedException {
     final NomCode defaultCode = dataset.getCode();
-    final Boolean defaultExtinct = dataset.getExtinct();
     final Set<Environment> defaultEnvironment = dataset.getEnvironment() == null ? null : Set.of(dataset.getEnvironment());
 
     LOG.info("Start name validation");
@@ -201,8 +204,8 @@ public class Normalizer implements Callable<Boolean> {
 
           // dataset defaults
           boolean updateNeeded = false;
-          if (defaultExtinct != null && t.isExtinct() == null) {
-            t.setExtinct(defaultExtinct);
+          if (t.isExtinct() == null && isExtinctBySetting(t.getRank())) {
+            t.setExtinct(true);
             updateNeeded = true;
           }
           if (defaultEnvironment != null && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
@@ -810,7 +813,8 @@ public class Normalizer implements Callable<Boolean> {
     n.setRank(rank);
 
     t.usage.setName(n);
-    if (eName.extinct || Boolean.TRUE.equals(dataset.getExtinct())) {
+
+    if (eName.extinct || isExtinctBySetting(rank)) {
       t.asTaxon().setExtinct(true);
     }
     if (dataset.getEnvironment() != null) {
