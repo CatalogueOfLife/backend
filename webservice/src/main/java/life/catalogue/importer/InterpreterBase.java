@@ -27,6 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.NameType;
 
+import org.gbif.nameparser.util.RankUtils;
+
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -469,10 +471,10 @@ public class InterpreterBase {
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
       var t = (Taxon) u.usage;
-      if (pnu.isExtinct()) {
+      if (pnu.isExtinct() ||
+        (settings.containsKey(Setting.EXTINCT) && t.getRank() != null && !t.getRank().isUncomparable() && !t.getRank().higherThan(settings.getEnum(Setting.EXTINCT)))
+      ) {
         t.setExtinct(true);
-      } else if (settings.containsKey(Setting.EXTINCT)) {
-        t.setExtinct(settings.getBool(Setting.EXTINCT));
       }
       if (pnu.isDoubtful()) {
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
