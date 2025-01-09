@@ -50,9 +50,11 @@ public enum Setting {
   NOMENCLATURAL_CODE(NomCode.class, EXTERNAL, PROJECT),
 
   /**
-   * Default value for the extinct flag in case it is not given explicitly.
+   * The setting is used to set the extinct flag for names in the dataset during imports.
+   * If given, it defines the highest rank of the names that will be flagged.
+   * E.g. if extinct=genus, then all genera, species, subspecies and other lower taxa are flagged as extinct.
    */
-  EXTINCT(Boolean.class, EXTERNAL, PROJECT),
+  EXTINCT(Rank.class, EXTERNAL, PROJECT),
 
   /**
    * Default value for the environment field in case it is not given explicitly.
