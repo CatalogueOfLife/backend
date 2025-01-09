@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -787,7 +789,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     commit();
 
     DatasetSettings ds = new DatasetSettings();
-    ds.put(Setting.EXTINCT, true);
+    ds.put(Setting.EXTINCT, Rank.GENUS);
     ds.put(Setting.NOMENCLATURAL_CODE, NomCode.ZOOLOGICAL);
     mapper().updateSettings(d1, ds, Users.TESTER);
 

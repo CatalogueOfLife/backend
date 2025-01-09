@@ -100,10 +100,8 @@ public class ColdpInterpreter extends InterpreterBase {
       t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, ColdpTerm.scrutinizerDate));
       if (v.hasTerm(ColdpTerm.extinct)) {
         t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, ColdpTerm.extinct));
-      } else if (n.pnu.isExtinct()){
-        t.setExtinct(n.pnu.isExtinct());
-      } else if (settings.containsKey(Setting.EXTINCT)) {
-        t.setExtinct(settings.getBool(Setting.EXTINCT));
+      } else if (n.pnu.isExtinct() || isExtinctBySetting(t.getRank())){
+        t.setExtinct(true);
       }
       // geotime
       t.setTemporalRangeStart(parse(GeoTimeParser.PARSER, v.get(ColdpTerm.temporalRangeStart)).orNull(Issue.GEOTIME_INVALID, v));
