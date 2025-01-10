@@ -52,7 +52,7 @@ public class ColdpExportSpecsTest {
     ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
     System.out.println(exp.getArchive());
-    assertTrue(exp.getArchive().exists());
+    ExportTest.assertExportExists(exp.getArchive());
   }
 
 }

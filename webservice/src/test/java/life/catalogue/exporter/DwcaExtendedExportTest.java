@@ -18,7 +18,7 @@ public class DwcaExtendedExportTest extends ExportTest {
     DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
-    assertTrue(exp.getArchive().exists());
+    assertExportExists(exp.getArchive());
   }
 
   @Test
@@ -28,7 +28,7 @@ public class DwcaExtendedExportTest extends ExportTest {
     DwcaExtendedExport exp = new DwcaExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
-    assertTrue(exp.getArchive().exists());
+    assertExportExists(exp.getArchive());
   }
 
 }

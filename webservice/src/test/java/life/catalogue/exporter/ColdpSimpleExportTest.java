@@ -46,15 +46,16 @@ public class ColdpSimpleExportTest extends ExportTest {
     var exp = ColdpSimpleExport.build(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
-    assertTrue(exp.getArchive().exists());
+    assertExportExists(exp.getArchive());
   }
 
   @Test
   public void bareName() {
     req.setBareNames(true);
-    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    var exp = ColdpSimpleExport.build(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
-    assertTrue(exp.getArchive().exists());
+    assertExportExists(exp.getArchive());
   }
+
 }

@@ -10,8 +10,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.nio.file.Files;
+
+import static org.junit.Assert.assertTrue;
 
 public class ExportTest {
+  private static final Logger LOG = LoggerFactory.getLogger(ExportTest.class);
 
   WsServerConfig cfg;
 
@@ -37,7 +45,12 @@ public class ExportTest {
 
   @After
   public void cleanup()  {
+    LOG.info("Cleaning up download directory {}", cfg.job.downloadDir);
     FileUtils.deleteQuietly(cfg.job.downloadDir);
+  }
+
+  static void assertExportExists(File file) {
+    assertTrue("Export file missing: " + file, Files.exists(file.toPath()));
   }
 
 }
