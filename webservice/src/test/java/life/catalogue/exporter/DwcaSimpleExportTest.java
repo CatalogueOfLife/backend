@@ -18,6 +18,6 @@ public class DwcaSimpleExportTest extends ExportTest {
     var exp = DwcaSimpleExport.build(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
-    assertTrue(exp.getArchive().exists());
+    assertExportExists(exp.getArchive());
   }
 }

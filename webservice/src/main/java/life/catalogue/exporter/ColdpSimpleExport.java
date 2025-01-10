@@ -15,8 +15,12 @@ public class ColdpSimpleExport<T extends ColdpPrinter> extends PrinterExport<T> 
     super(clazz, "ColDP", DataFormat.COLDP, req, userKey, factory, cfg, imageService);
   }
 
-  public static ColdpSimpleExport build(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
-    return new ColdpSimpleExport(req.getTabFormat() == TabularFormat.CSV ? ColdpPrinter.CSV.class : ColdpPrinter.TSV.class, req, userKey, factory, cfg, imageService);
+  public static ColdpSimpleExport<? extends ColdpPrinter> build(ExportRequest req, int userKey, SqlSessionFactory factory, WsServerConfig cfg, ImageService imageService) {
+    if (req.getTabFormat() == TabularFormat.CSV) {
+      return new ColdpSimpleExport<>(ColdpPrinter.CSV.class, req, userKey, factory, cfg, imageService);
+
+    }
+    return new ColdpSimpleExport<>(ColdpPrinter.TSV.class, req, userKey, factory, cfg, imageService);
   }
 
   @Override
