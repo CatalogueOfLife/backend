@@ -57,7 +57,15 @@ public class DwcaInserterTest extends InserterBaseTest {
 
       t = store.usageWithName("4").asTaxon();
       assertTrue(t.isExtinct());
+      assertEquals(Set.of(), t.getEnvironments());
+
+      t = store.usageWithName("5").asTaxon();
+      assertTrue(t.isExtinct());
       assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
+
+      t = store.usageWithName("6").asTaxon();
+      assertNull(t.isExtinct());
+      assertEquals(Set.of(), t.getEnvironments());
     }
   }
 

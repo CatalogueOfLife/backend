@@ -59,11 +59,6 @@ public class DwcInterpreter extends InterpreterBase {
       }
       if (u.isNameUsageBase()) {
         u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
-        if (!u.isSynonym()) {
-          Taxon tax = u.asTaxon();
-          tax.setExtinct(null);
-          // TODO: lifezones come through the species profile extension.
-        }
         // explicit accordingTo & namePhrase - the authorship could already have set these properties!
         if (v.hasTerm(DwcTerm.nameAccordingTo)) {
           setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
