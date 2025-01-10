@@ -2,4 +2,6 @@ taxonID,taxonRank,scientificName
 1,Species,Cambarus Uhleri
 2,Species,Abies alba
 3,Species,Quercus robur
-4,Species,Tyrannosaurus rex
+4,Species,†Tyrannosaurus rex
+5,Genus,Calendula
+6,Genus,Abies
