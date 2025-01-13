@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ExportTest {
   private static final Logger LOG = LoggerFactory.getLogger(ExportTest.class);
@@ -50,7 +52,15 @@ public class ExportTest {
   }
 
   static void assertExportExists(File file) {
-    assertTrue("Export file missing: " + file, Files.exists(file.toPath()));
+    if (!Files.exists(file.toPath())) {
+      // we sometimes see result files not found on jenkins sometimes. give the FS a bit more time
+      try {
+        TimeUnit.MILLISECONDS.sleep(500);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+      assertTrue("Export file missing: " + file, Files.exists(file.toPath()));
+    }
   }
 
 }
