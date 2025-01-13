@@ -339,7 +339,6 @@ Corophiidira
 Corophiinae
 Corophiini
 Corophioidea
-Corystidae
 Corystoidea
 Covracytherini
 Crangonidae
@@ -561,7 +560,6 @@ Gecarcinucoidea
 Geisinidae
 Gerodiidae
 Geroiidae
-Geryonidae
 Gigantapseudidae
 Gigantocypridinini
 Giniphargidae
@@ -786,7 +784,6 @@ Leptognathiidae
 Leptostraca
 Lernaeodiscidae
 Lestrigonidae
-Leuconidae
 Leucosiidae
 Leucosioidea
 Leucothoidae

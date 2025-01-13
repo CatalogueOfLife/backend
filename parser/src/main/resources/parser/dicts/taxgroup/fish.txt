@@ -438,7 +438,6 @@ Parodontidae
 Pataecidae
 Pegasidae
 Pempheridae
-Pentacerotidae
 Percichthyidae
 Percidae
 Perciformes
@@ -474,7 +473,6 @@ Polycentridae
 Polymixiidae
 Polymixiiformes
 Polynemidae
-Polyodontidae
 Polyprionidae
 Polypteridae
 Polypteriformes

@@ -92,7 +92,7 @@ public class CitationUtilsTest {
     );
 
     assertEquals("Froese R., Pauly D. (eds.) (2019-04-21). fish: FishBase (version v2.0). In: Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.fromTemplate(d,proj, "{editorsOrAuthors} ({project.issued}). {alias}: {title} (version {version}). In: {project.title}, {project.issued}.")
+      CitationUtils.fromTemplate(d,proj, "{editorsOrAuthors} ({base.issued}). {alias}: {title} (version {version}). In: {base.title}, {base.issued}.")
     );
   }
 }
