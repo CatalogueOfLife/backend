@@ -22,7 +22,7 @@ import static life.catalogue.api.vocab.TaxGroup.*;
 
 public class TaxGroupAnalyzer {
   private static final Logger LOG = LoggerFactory.getLogger(TaxGroupAnalyzer.class);
-  final TaxGroupParser parser = TaxGroupParser.PARSER;
+  private static final TaxGroupParser parser = TaxGroupParser.PARSER;
   private static final Pattern YEAR_PATTERN = Pattern.compile("([12]\\d{3})");
   private static final Pattern BAS_COMB_PATTERN = Pattern.compile("\\(\\s*[A-Z].+\\)[^()]*[A-Z]");
   // map of suffix to groups, sorted by suffix length

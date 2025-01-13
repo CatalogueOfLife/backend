@@ -163,6 +163,13 @@ public class MatchedParentStack {
     return parents.stream().filter(u -> u.match != null && !exclusion.contains(u.match.getId())).collect(Collectors.toCollection(LinkedList::new));
   }
 
+  public List<SimpleNameCached> matchedParentsOnlySN() {
+    return parents.stream()
+      .filter(u -> u.match != null)
+      .map(u -> u.usage)
+      .collect(Collectors.toList());
+  }
+
   public MatchedUsage secondLast() {
     return parents.isEmpty() ? null : parents.get(parents.size()-2);
   }

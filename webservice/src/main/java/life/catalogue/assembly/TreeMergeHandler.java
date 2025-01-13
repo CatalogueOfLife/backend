@@ -39,6 +39,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
+  private final TaxGroupAnalyzer groupAnalyzer;
   private final UsageCache uCache;
   private final CacheLoader loader;
   private int counter = 0;  // all source usages
@@ -61,6 +62,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcher;
     uCache = matcher.getUCache();
+    groupAnalyzer = new TaxGroupAnalyzer();
 
     // figure out the lowest insertion point in the project/release
     // a) a target is given
@@ -320,12 +322,31 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     } else {
       // *** CREATE ***
-      if ( nu.isTaxon() && syncTaxa  ||  nu.isSynonym() && syncSynonyms) {
+      if ( nu.isTaxon() && syncTaxa && !isAmbiguousGenus(nu) ||  nu.isSynonym() && syncSynonyms) {
         sn = create(nu, parent);
       }
     }
 
     processEnd(sn, mod);
+  }
+
+  /**
+   * Detects unqualified genus usages without authorship
+   * which are placed under no parents or Biota and similar parents which have no taxonomic group at all.
+   *
+   * These ambiguous genera often cause trouble as they match later on to pretty much anything alike
+   * and also adapt (wrong) authorships.
+   */
+  private boolean isAmbiguousGenus(NameUsageBase nu) {
+    if (nu.getRank() == Rank.GENUS) {
+      var psn = parents.matchedParentsOnlySN();
+      var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), psn);
+      if (group == null || group.equals(TaxGroup.Eukaryotes)) {
+        LOG.info("Ignore canonical genus {} with vague parents: {}", nu.getLabel(), psn);
+        return true;
+      }
+    }
+    return false;
   }
 
   public void acceptName(Name n) throws InterruptedException {
