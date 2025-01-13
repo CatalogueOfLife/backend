@@ -86,9 +86,13 @@ public enum Setting {
 
   /**
    * Template used to build a new release version.
-   * See RELEASE_TITLE_TEMPLATE for usage.
    */
   RELEASE_VERSION_TEMPLATE(String.class, PROJECT),
+
+  /**
+   * Template used to build a new release description.
+   */
+  RELEASE_DESCRIPTION_TEMPLATE(String.class, PROJECT),
 
   /**
    * If true a release will include as its authors all authors of all it's sources.

@@ -104,7 +104,7 @@ public class XRelease extends ProjectRelease {
       d.setVersion(version);
     }
     if (xCfg.description != null) {
-      String description = CitationUtils.fromTemplate(d, xCfg.description);
+      String description = CitationUtils.fromTemplate(d, dDao.get(baseReleaseKey), xCfg.description);
       d.setDescription(description);
     }
   }

@@ -242,16 +242,16 @@ public class CitationUtils {
     }
   }
 
-  static class ProjectWrapper extends DatasetWrapper {
-    final DatasetWrapper project;
+  static class BaseReleaseWrapper extends DatasetWrapper {
+    final DatasetWrapper base;
 
-    public ProjectWrapper(Dataset dataset, Dataset project) {
+    public BaseReleaseWrapper(Dataset dataset, Dataset base) {
       super(dataset);
-      this.project = new DatasetWrapper(project);
+      this.base = new DatasetWrapper(base);
     }
 
-    public DatasetWrapper getProject() {
-      return project;
+    public DatasetWrapper getBase() {
+      return base;
     }
   }
 
@@ -270,9 +270,9 @@ public class CitationUtils {
     return null;
   }
 
-  public static String fromTemplate(Dataset d, Dataset project, String template){
+  public static String fromTemplate(Dataset d, Dataset base, String template){
     if (template != null) {
-      return SimpleTemplate.render(template, new ProjectWrapper(d, project));
+      return SimpleTemplate.render(template, new BaseReleaseWrapper(d, base));
     }
     return null;
   }

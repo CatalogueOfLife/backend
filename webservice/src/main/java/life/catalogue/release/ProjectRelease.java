@@ -124,6 +124,9 @@ public class ProjectRelease extends AbstractProjectCopy {
     String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
     d.setAlias(alias);
 
+    String description = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_DESCRIPTION_TEMPLATE, d.getDescription());
+    d.setDescription(description);
+
     // all releases are private candidate releases first
     d.setPrivat(true);
   }
