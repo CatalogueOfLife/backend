@@ -22,10 +22,7 @@ import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -47,13 +44,13 @@ public class TxtTreeDao {
     this.sdao = sdao;
   }
 
-  public void readTxtree(int datasetKey, String id, OutputStream os) throws IOException {
+  public void readTxtree(int datasetKey, String id, Set<Rank> ranks, OutputStream os) throws IOException {
     var ttp = TreeTraversalParameter.dataset(datasetKey);
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
 
     try (Writer writer = UTF8IoUtils.writerFromStream(os);
-         TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, null, null, null, null, factory, writer)
+         TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, factory, writer)
     ) {
       printer.print();
       writer.flush();

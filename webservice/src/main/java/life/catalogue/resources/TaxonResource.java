@@ -88,27 +88,6 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
-  @Hidden
-  @VaryAccept
-  @Path("{id}")
-  @Produces(MediaType.TEXT_PLAIN)
-  public Response getTxt(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("rank") Set<Rank> ranks) {
-    final var ttp = TreeTraversalParameter.dataset(datasetKey);
-    ttp.setTaxonID(id);
-    ttp.setSynonyms(true);
-
-    StreamingOutput stream = os -> {
-      try (Writer writer = UTF8IoUtils.writerFromStream(os);
-        var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, dao.getFactory(), writer)
-      ) {
-        printer.print();
-        writer.flush();
-      }
-    };
-    return Response.ok(stream).build();
-  }
-
-  @GET
   @Path("{id}/synonyms")
   public Synonymy synonyms(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return dao.getSynonymy(datasetKey, id, null);
@@ -204,8 +183,8 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}/tree")
   @Produces(MediaType.TEXT_PLAIN)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
-  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, os);
+  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("rank") Set<Rank> ranks) {
+    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, ranks, os);
     return Response.ok(stream).build();
   }
 

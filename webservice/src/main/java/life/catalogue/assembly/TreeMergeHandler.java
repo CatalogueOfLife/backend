@@ -349,6 +349,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return false;
   }
 
+  @Override
+  protected boolean allowImplicitName(Usage parent, Taxon u) {
+    return !isAmbiguousGenus(u);
+  }
+
   public void acceptName(Name n) throws InterruptedException {
     try {
       acceptNameThrowsNoCatch(n);

@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.dao.DatasetEntityDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.nidx.NameIndex;
@@ -269,7 +268,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
         u.getName().setInfragenericEpithet(null);
         u.getName().rebuildScientificName();
       }
-      parent = createImplicit(parent, (Taxon) u);
+      // check if implicit names is allowed - to be subclassed
+      if (allowImplicitName(parent, (Taxon) u)) {
+        parent = createImplicit(parent, (Taxon) u);
+      }
     }
 
     // copy usage with all associated information. This assigns a new id !!!
@@ -293,6 +295,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     }
 
     return new SimpleNameWithNidx(u, nm.getCanonicalNameKey());
+  }
+
+  protected boolean allowImplicitName(Usage parent, Taxon u) {
+    return true;
   }
 
   static String idOrNull(Usage u) {
