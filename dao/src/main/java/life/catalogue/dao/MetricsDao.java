@@ -30,7 +30,7 @@ public class MetricsDao implements TaxonCounter {
   public int count(DSID<String> key, Rank countRank) {
     try (SqlSession session = factory.openSession(true)) {
       var tax = session.getMapper(TaxonMetricsMapper.class).get(key);
-      return tax == null ? -1 : tax.getTaxaByRankCount().get(countRank);
+      return tax == null || !tax.getTaxaByRankCount().containsKey(countRank) ? 0 : tax.getTaxaByRankCount().get(countRank);
     }
   }
 
