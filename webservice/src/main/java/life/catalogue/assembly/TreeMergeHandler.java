@@ -227,6 +227,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // track parent classification and match to existing usages. Create new ones if they dont yet exist
     var nusn = matcher.toMatchedSimpleName(nu);
+    // this also removes lower entries from the parents list from the last usage
     parents.push(nusn, decisions.get(nu.getId()));
 
     final boolean qualifiedName = nu.getName().hasAuthorship();

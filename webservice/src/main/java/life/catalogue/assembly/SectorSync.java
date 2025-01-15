@@ -354,7 +354,7 @@ public class SectorSync extends SectorRunnable {
         throw new NotImplementedException(sector.getMode() + " sectors are not supported");
       }
       if (treeHandler.hasThrown()) {
-        LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey);
+        LOG.error("TreeHandler has thrown an exception. Abort sector {}", sectorKey);
         throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
       }
       LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);

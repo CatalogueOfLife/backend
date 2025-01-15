@@ -343,18 +343,6 @@ public class UsageMatcherGlobal {
       );
     }
 
-    // remove non matching codes if more than 1 exist
-    // there are issues with ambiregnal taxa and mixed codes and we would create many duplicates otherwise
-    if (nu.getRank().isSupraspecific() && existing.size() > 1 && nu.getName().getCode() != null) {
-      existing.removeIf(u -> {
-        var rem = u.getCode() != null && u.getCode() != nu.getName().getCode();
-        if (rem) {
-          LOG.debug("Removed matches for usage {} [code={}] having a different code {}", nu.getName().getLabelWithRank(), nu.getName().getCode(), u.getCode());
-        }
-        return rem;
-      });
-    }
-
     // from here on we need the classification of all candidates
     var loader = loaders.getOrDefault(datasetKey, defaultLoader);
     final var existingWithCl = existing.stream()
@@ -374,6 +362,7 @@ public class UsageMatcherGlobal {
       return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
     }
 
+    // tax group matching based on classification for all but Supragenerics
     if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
       // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
       // snap to that single higher taxon right away!
@@ -397,6 +386,18 @@ public class UsageMatcherGlobal {
           LOG.debug("Removed matches for usage {} with classifications not in {} group", nu.getName().getLabelWithRank(), group);
         }
       }
+    }
+
+    // remove non matching codes if more than 1 exist
+    // there are issues with ambiregnal taxa and mixed codes and we would create many duplicates otherwise
+    if (nu.getRank().isSupraspecific() && existingWithCl.size() > 1 && nu.getName().getCode() != null) {
+      existingWithCl.removeIf(u -> {
+        var rem = u.getCode() != null && u.getCode() != nu.getName().getCode();
+        if (rem) {
+          LOG.debug("Removed matches for usage {} [code={}] having a different code {}", nu.getName().getLabelWithRank(), nu.getName().getCode(), u.getCode());
+        }
+        return rem;
+      });
     }
 
     // first try exact single match with authorship
