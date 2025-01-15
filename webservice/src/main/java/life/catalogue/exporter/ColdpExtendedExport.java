@@ -37,6 +37,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(ColdpExtendedExport.class);
   private static final String METADATA_FILENAME = "metadata.yaml";
   private Writer cslWriter;
+  private Writer cslWriterJSONL;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
   private final File treatmentDir;
@@ -213,6 +214,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     if (cslWriter != null) {
       cslWriter.write("\n]\n");
       cslWriter.close();
+      cslWriterJSONL.close();
     }
   }
 
@@ -253,11 +255,16 @@ public class ColdpExtendedExport extends ArchiveExport {
         cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
         cslWriter.write("[\n");
         cslFirst = false;
+
+        cslWriterJSONL = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
       } else {
         cslWriter.write(",\n");
+        cslWriterJSONL.write("\n");
       }
       // serialising to the writer directly will close the stream!
-      cslWriter.write(ApiModule.MAPPER.writeValueAsString(csl));
+      String json = ApiModule.MAPPER.writeValueAsString(csl);
+      cslWriter.write(json);
+      cslWriterJSONL.write(json.replaceAll("[\n\r]+", " "));
     }
   }
 
