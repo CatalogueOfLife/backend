@@ -76,6 +76,7 @@ public class ColdpReader extends CsvReader {
 
   private File bibtex;
   private File cslJson;
+  private File cslJsonL;
   private Path treatments;
 
   private ColdpReader(Path folder) throws IOException {
@@ -96,7 +97,11 @@ public class ColdpReader extends CsvReader {
       if (PathUtils.getFilename(df).equalsIgnoreCase("reference.bib")) {
         bibtex  = df.toFile();
         LOG.info("BibTeX file found: {}", bibtex.getAbsolutePath());
-      
+
+      } else if (PathUtils.getFilename(df).equalsIgnoreCase("reference.jsonl")) {
+        cslJsonL = df.toFile();
+        LOG.info("CSL-JSONL file found: {}", cslJsonL.getAbsolutePath());
+
       } else if (PathUtils.getFilename(df).equalsIgnoreCase("reference.json")) {
         cslJson = df.toFile();
         LOG.info("CSL-JSON file found: {}", cslJson.getAbsolutePath());
@@ -161,7 +166,7 @@ public class ColdpReader extends CsvReader {
   }
   
   public boolean hasExtendedReferences() {
-    return bibtex != null || cslJson != null;
+    return bibtex != null || cslJson != null || cslJsonL != null;
   }
 
   public boolean hasTreatments() {
@@ -266,6 +271,10 @@ public class ColdpReader extends CsvReader {
   
   public File getCslJsonFile() {
     return cslJson;
+  }
+
+  public File getCslJsonLinesFile() {
+    return cslJsonL;
   }
 
   public Iterable<Path> getTreatments() throws IOException {

@@ -483,6 +483,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
 
   private void closeWriter() throws IOException {
     if (writer != null) {
+      closeAdditionalWriters(writer.getRowType());
       writer.close();
       writer = null;
     }
@@ -499,18 +500,28 @@ public abstract class ArchiveExport extends DatasetExportJob {
       } else {
         writer = new TermWriter.TSV(tmpDir, rowType, cols);
       }
+      openAdditionalWriters(rowType);
       return true;
     }
     return false;
   }
 
-  /**
-   * Defines the terms to be used for a data file of a given entity.
-   * If NULL is returned the entity is to be ignored in the archive.
-   * The first term MUST be the row type class term.
-   * The second term MUST be the ID term if there is one
-   * The following terms are other terms to be included in the given order.
-   */
+  protected void openAdditionalWriters(Term rowType) throws IOException {
+    // nothing to be done by default, to be subclassed if needed, e.g. with references
+  }
+
+  protected void closeAdditionalWriters(Term rowType) throws IOException {
+    // nothing to be done by default, to be subclassed if needed, e.g. with references
+  }
+
+
+    /**
+     * Defines the terms to be used for a data file of a given entity.
+     * If NULL is returned the entity is to be ignored in the archive.
+     * The first term MUST be the row type class term.
+     * The second term MUST be the ID term if there is one
+     * The following terms are other terms to be included in the given order.
+     */
   abstract Term[] define(EntityType entity);
 
   void write(NameUsageBase u){

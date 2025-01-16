@@ -36,24 +36,11 @@ public class ReferenceBibtexBodyWriter implements MessageBodyWriter<Reference> {
     return Reference.class.isAssignableFrom(type);
   }
 
-  static CSLItemData toCSL(Reference ref) {
-    CslData csl;
-    if (ref.getCsl() != null) {
-      csl = ref.getCsl();
-    } else {
-      csl = new CslData();
-      csl.setType(CSLType.WEBPAGE); // will become MISC in bibtex
-      csl.setTitle(ref.getCitation());
-    }
-    csl.setId(ref.getId());
-    return CslDataConverter.toCSLItemData(csl);
-  }
-
   @Override
   public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
     MoreMediaTypes.setUTF8ContentType(mt, headers);
     try (Writer w = UTF8IoUtils.writerFromStream(out)) {
-      w.write( CslUtil.toBibTexString(toCSL(ref)));
+      w.write( CslUtil.toBibTexString(ref));
     }
   }
 }

@@ -42,6 +42,6 @@ public class ReferenceCslBodyWriter implements MessageBodyWriter<Reference> {
 
   @Override
   public void writeTo(Reference ref, Class<?> aClass, Type type, Annotation[] annotations, MediaType mt, MultivaluedMap<String, Object> headers, OutputStream out) throws IOException, WebApplicationException {
-    JSON_WRITER.writeValue(out, ReferenceBibtexBodyWriter.toCSL(ref));
+    JSON_WRITER.writeValue(out, CslUtil.toCSL(ref));
   }
 }

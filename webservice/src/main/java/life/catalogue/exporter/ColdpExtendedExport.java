@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.csv.ColdpReader;
 import life.catalogue.img.ImageService;
@@ -38,6 +39,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   private static final String METADATA_FILENAME = "metadata.yaml";
   private Writer cslWriter;
   private Writer cslWriterJSONL;
+  private Writer bibWriter;
   private boolean cslFirst = true;
   private NameUsageKeyMap nameUsageKeyMap;
   private final File treatmentDir;
@@ -215,6 +217,27 @@ public class ColdpExtendedExport extends ArchiveExport {
       cslWriter.write("\n]\n");
       cslWriter.close();
       cslWriterJSONL.close();
+      bibWriter.close();
+    }
+  }
+
+  @Override
+  protected void openAdditionalWriters(Term rowType) throws IOException {
+    if (rowType == ColdpTerm.Reference) {
+      LOG.info("Export references also as CSL-JSON and BibTex");
+      bibWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.bib"));
+      cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
+      cslWriter.write("[\n");
+      cslWriterJSONL = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
+    }
+  }
+
+  @Override
+  protected void closeAdditionalWriters(Term rowType) throws IOException {
+    if (rowType == ColdpTerm.Reference && bibWriter != null) {
+      bibWriter.close();
+      cslWriter.close();
+      cslWriterJSONL.close();
     }
   }
 
@@ -224,6 +247,10 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
     writer.set(ColdpTerm.remarks, r.getRemarks());
+    // BibTex
+    bibWriter.write( CslUtil.toBibTexString(r) );
+    bibWriter.write("\n");
+
     if (r.getCsl() != null) {
       var csl = r.getCsl();
       writer.set(ColdpTerm.type, csl.getType());
@@ -251,16 +278,12 @@ public class ColdpExtendedExport extends ArchiveExport {
 
       // write also to CSL-JSON file
       if (cslFirst) {
-        LOG.info("Export references also as CSL-JSON");
-        cslWriter = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.json"));
-        cslWriter.write("[\n");
         cslFirst = false;
-
-        cslWriterJSONL = UTF8IoUtils.writerFromFile(new File(tmpDir, "reference.jsonl"));
       } else {
         cslWriter.write(",\n");
         cslWriterJSONL.write("\n");
       }
+
       // serialising to the writer directly will close the stream!
       String json = ApiModule.MAPPER.writeValueAsString(csl);
       cslWriter.write(json);
