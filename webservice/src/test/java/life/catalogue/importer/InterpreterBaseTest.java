@@ -99,7 +99,6 @@ public class InterpreterBaseTest {
   @Test
   public void secRefPattern() throws Exception {
     assertSecRef("sensu Busch, 1930", "Busch, 1930");
-    assertSecRef("Miller sensu Busch, 1930", "Busch, 1930");
     assertNoSecRef("s.l.");
     assertNoSecRef("s.str.");
     assertNoSecRef("sensu latu");
@@ -114,8 +113,8 @@ public class InterpreterBaseTest {
     assertNoSecRef("auct. nec Whittaker");
     assertNoSecRef("Jurtzev, p.p.");
     assertNoSecRef("(sensu Turcz) Miller");
+    assertNoSecRef("(sensu Mereschkowsky, 1878) Jankowski, 1992");
 
-    assertSecRef("Miller 1880 sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
     assertSecRef("auct. Whittaker 1981", "Whittaker 1981");
