@@ -7,6 +7,7 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
@@ -37,8 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-import static life.catalogue.matching.NameValidator.MAX_YEAR;
-import static life.catalogue.matching.NameValidator.MIN_YEAR;
+import static life.catalogue.matching.NameValidator.*;
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -48,7 +48,7 @@ public class InterpreterBase {
   
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
-  static final Pattern SEC_REF = Pattern.compile("\\b(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
+  static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
   private static final Pattern YEAR_PATTERN = Pattern.compile("^(\\d{3})(\\d|\\s*\\?)(?:-[0-9-]+)?(?:\\s*[a-zA-Z])?$");
   private static final Pattern SPLIT_COMMA = Pattern.compile("(?<!\\\\),");
   protected final NeoDb store;
@@ -161,14 +161,15 @@ public class InterpreterBase {
       v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
       if (m.find()) {
-        setAccordingTo(u, m.group(2).trim(), v);
         String remainder = m.replaceFirst("");
         if (!StringUtils.isBlank(remainder)) {
           u.setNamePhrase(remainder.trim());
         }
+        setAccordingTo(u, m.group(2).trim(), v);
       } else {
         u.setNamePhrase(taxNote);
       }
+      NameValidator.flagSuspicousPhrase(u.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
     }
   }
 

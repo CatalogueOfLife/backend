@@ -25,7 +25,6 @@ import life.catalogue.matching.NameValidator;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 

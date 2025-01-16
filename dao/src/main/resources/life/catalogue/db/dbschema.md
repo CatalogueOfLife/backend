@@ -14,6 +14,8 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-01-14 new name issue
+ALTER TYPE ISSUE ADD VALUE 'NAME_PHRASE_UNLIKELY';
 
 #### 2024-12-05 taxon metrics
 ```

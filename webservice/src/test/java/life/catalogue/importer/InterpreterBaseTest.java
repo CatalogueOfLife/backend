@@ -113,7 +113,9 @@ public class InterpreterBaseTest {
     assertNoSecRef("sensu auct. non Whittaker");
     assertNoSecRef("auct. nec Whittaker");
     assertNoSecRef("Jurtzev, p.p.");
+    assertNoSecRef("(sensu Turcz) Miller");
 
+    assertSecRef("Miller 1880 sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("sensu Turcz., p.p.", "Turcz., p.p.");
     assertSecRef("auct. Jurtzev, p.p.", "Jurtzev, p.p.");
     assertSecRef("auct. Whittaker 1981", "Whittaker 1981");

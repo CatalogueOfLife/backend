@@ -1,15 +1,12 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
-
-import org.gbif.nameparser.util.RankUtils;
 
 import org.junit.Test;
 

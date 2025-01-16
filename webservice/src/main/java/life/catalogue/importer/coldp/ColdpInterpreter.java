@@ -12,9 +12,8 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
-
-import org.apache.poi.ss.formula.functions.T;
 
 import org.gbif.dwc.terms.Term;
 
@@ -164,6 +163,7 @@ public class ColdpInterpreter extends InterpreterBase {
     }
 
     u.usage.setName(n.getName());
+    NameValidator.flagSuspicousPhrase(u.usage.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
   }
 
   Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {

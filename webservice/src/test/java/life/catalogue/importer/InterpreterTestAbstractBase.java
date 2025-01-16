@@ -11,6 +11,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public abstract class InterpreterTestAbstractBase<I extends InterpreterBase> {
   
@@ -25,7 +27,7 @@ public abstract class InterpreterTestAbstractBase<I extends InterpreterBase> {
 
   @Before
   public void init() {
-    //when(store.references()).thenReturn(refStore);
+    when(store.references()).thenReturn(refStore);
     interpreter = buildInterpreter(new DatasetSettings(), new ReferenceFactory(1, refStore, null), store);
   }
 
