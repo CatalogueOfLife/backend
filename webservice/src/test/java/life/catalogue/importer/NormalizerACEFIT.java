@@ -232,12 +232,9 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Placostegus crystallinus", u.usage.getName().getScientificName());
       assertNull(u.usage.getName().getAuthorship());
       assertNull(u.usage.getName().getNomenclaturalNote());
-      assertEquals("(non Scacchi, 1836)", u.usage.getNamePhrase());
+      assertEquals("(non Scacchi, 1836) sensu Zibrowius, 1968", u.usage.getNamePhrase());
       assertNull(u.usage.getName().getRemarks());
-      Reference sec = accordingTo(u.usage);
-      assertEquals("Zibrowius, 1968", sec.getCitation());
-      assertEquals((Integer)1968, sec.getYear());
-      assertEquals("Zibrowius", sec.getCsl().getAuthor()[0].getFamily());
+      assertNull(accordingTo(u.usage));
 
       u = usageByID("9");
       assertEquals("Strombidium striatum", u.usage.getName().getScientificName());
@@ -245,7 +242,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertNull(u.usage.getName().getNomenclaturalNote());
       assertNull(u.usage.getNamePhrase());
       assertNull(u.usage.getName().getRemarks());
-      sec = accordingTo(u.usage);
+      var sec = accordingTo(u.usage);
       assertEquals("Busch, 1930", sec.getCitation());
       assertEquals((Integer)1930, sec.getYear());
       assertEquals("Busch", sec.getCsl().getAuthor()[0].getFamily());
