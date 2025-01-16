@@ -13,20 +13,15 @@ import life.catalogue.csv.ColdpReader;
 import life.catalogue.img.ImageService;
 import life.catalogue.metadata.coldp.DatasetYamlWriter;
 
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,6 +238,7 @@ public class ColdpExtendedExport extends ArchiveExport {
 
   @Override
   void write(Reference r) throws IOException {
+    // tabular
     writer.set(ColdpTerm.ID, r.getId());
     writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
@@ -250,7 +246,18 @@ public class ColdpExtendedExport extends ArchiveExport {
     // BibTex
     bibWriter.write( CslUtil.toBibTexString(r) );
     bibWriter.write("\n");
-
+    // CSL-JSON + lines file
+    if (cslFirst) {
+      cslFirst = false;
+    } else {
+      cslWriter.write(",\n");
+      cslWriterJSONL.write("\n");
+    }
+    // serialising to the writer directly will close the stream!
+    String json = ApiModule.MAPPER.writeValueAsString(CslUtil.toCSL(r));
+    cslWriter.write(json);
+    cslWriterJSONL.write(json.replaceAll("[\n\r]+", " "));
+    // tabular, atomised
     if (r.getCsl() != null) {
       var csl = r.getCsl();
       writer.set(ColdpTerm.type, csl.getType());
@@ -275,19 +282,6 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.doi, csl.getDOI());
       writer.set(ColdpTerm.link, r.getCsl().getURL());
       writer.set(ColdpTerm.remarks, ObjectUtils.coalesce(r.getRemarks(), csl.getNote()));
-
-      // write also to CSL-JSON file
-      if (cslFirst) {
-        cslFirst = false;
-      } else {
-        cslWriter.write(",\n");
-        cslWriterJSONL.write("\n");
-      }
-
-      // serialising to the writer directly will close the stream!
-      String json = ApiModule.MAPPER.writeValueAsString(csl);
-      cslWriter.write(json);
-      cslWriterJSONL.write(json.replaceAll("[\n\r]+", " "));
     }
   }
 
