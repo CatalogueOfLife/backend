@@ -21,6 +21,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;

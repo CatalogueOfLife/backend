@@ -21,6 +21,7 @@ import org.gbif.dwc.terms.Term;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -65,7 +66,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
     // update CSV reader with manual dataset settings if existing
     // see https://github.com/Sp2000/colplus-backend/issues/582
     if (settings.has(Setting.CSV_DELIMITER) || settings.has(Setting.CSV_QUOTE) || settings.has(Setting.CSV_QUOTE_ESCAPE)) {
-      boolean isTsv = '\t' == settings.getChar(Setting.CSV_DELIMITER) && !settings.has(Setting.CSV_QUOTE);
+      boolean isTsv = Objects.equals(settings.getChar(Setting.CSV_DELIMITER), '\t')  && !settings.has(Setting.CSV_QUOTE);
       for (Schema s : reader.schemas()) {
         if (isTsv) {
           if (!s.isTsv()) {
