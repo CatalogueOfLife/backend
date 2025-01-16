@@ -149,7 +149,7 @@ public class CslUtil {
     }
   }
 
-  public static CSLItemData toCSL(Reference ref) {
+  public static CslData toCSL(Reference ref) {
     CslData csl;
     if (ref.getCsl() != null) {
       csl = ref.getCsl();
@@ -159,11 +159,15 @@ public class CslUtil {
       csl.setTitle(ref.getCitation());
     }
     csl.setId(ref.getId());
-    return CslDataConverter.toCSLItemData(csl);
+    return csl;
+  }
+
+  public static CSLItemData toCSLItem(Reference ref) {
+    return CslDataConverter.toCSLItemData(toCSL(ref));
   }
 
   public static String toBibTexString(Reference ref) {
-    return toBibTexString(toCSL(ref));
+    return toBibTexString(toCSLItem(ref));
   }
 
   public static String toBibTexString(CSLItemData data) {
