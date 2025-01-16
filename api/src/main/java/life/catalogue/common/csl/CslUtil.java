@@ -1,5 +1,7 @@
 package life.catalogue.common.csl;
 
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Reference;
@@ -145,6 +147,23 @@ public class CslUtil {
     public void format(BibTeXEntry entry, Writer writer) throws IOException {
       super.format(entry, writer);
     }
+  }
+
+  public static CSLItemData toCSL(Reference ref) {
+    CslData csl;
+    if (ref.getCsl() != null) {
+      csl = ref.getCsl();
+    } else {
+      csl = new CslData();
+      csl.setType(CSLType.WEBPAGE); // will become MISC in bibtex
+      csl.setTitle(ref.getCitation());
+    }
+    csl.setId(ref.getId());
+    return CslDataConverter.toCSLItemData(csl);
+  }
+
+  public static String toBibTexString(Reference ref) {
+    return toBibTexString(toCSL(ref));
   }
 
   public static String toBibTexString(CSLItemData data) {

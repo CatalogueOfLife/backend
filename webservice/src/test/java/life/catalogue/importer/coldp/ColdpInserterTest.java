@@ -234,7 +234,33 @@ public class ColdpInserterTest extends InserterBaseTest {
     assertEquals(14, r.getCsl().getIssued().getDateParts()[0][2]);
     assertEquals((Integer) 1970, r.getYear());
   }
-  
+
+  @Test
+  public void cslLines() throws Exception {
+    // warm up CSL formatter
+    CslUtil.buildCitation(TestEntityGenerator.newReference("My Sharona"));
+    CslUtil.buildCitation(TestEntityGenerator.newReference("Telecon in Death Valley"));
+
+    NeoInserter inserter = setup("/coldp/csl-lines");
+    inserter.insertAll();
+
+    Reference r = store.references().get("10.1093/database/baw125");
+    assertEquals("The Global Genome Biodiversity Network (GGBN) Data Standard specification", r.getCsl().getTitle());
+    assertEquals(2016, r.getCsl().getIssued().getDateParts()[0][0]);
+    assertEquals((Integer) 2016, r.getYear());
+
+    r = store.references().get("10.1126/science.169.3946.635");
+    assertEquals("The Structure of Ordinary Water: New data and interpretations are yielding new insights into this fascinating substance", r.getCsl().getTitle());
+    assertEquals("American Association for the Advancement of Science (AAAS)", r.getCsl().getPublisher());
+    assertEquals("Science", r.getCsl().getContainerTitle());
+    assertEquals("10.1126/science.169.3946.635", r.getCsl().getDOI());
+    assertEquals("http://dx.doi.org/10.1126/science.169.3946.635", r.getCsl().getURL());
+    assertEquals(1970, r.getCsl().getIssued().getDateParts()[0][0]);
+    assertEquals(8, r.getCsl().getIssued().getDateParts()[0][1]);
+    assertEquals(14, r.getCsl().getIssued().getDateParts()[0][2]);
+    assertEquals((Integer) 1970, r.getYear());
+  }
+
   @Override
   public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
     return new ColdpInserter(store, resource, settings, refFactory);

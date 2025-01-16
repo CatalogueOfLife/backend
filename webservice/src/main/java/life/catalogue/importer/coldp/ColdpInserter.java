@@ -252,8 +252,12 @@ public class ColdpInserter extends NeoCsvInserter {
         BibTexInserter bibIns = new BibTexInserter(store, coldp.getBibtexFile(), refFactory);
         bibIns.insertAll();
       }
+      if (coldp.getCslJsonLinesFile() != null) {
+        CslJsonInserter bibIns = new CslJsonInserter(store, coldp.getCslJsonLinesFile(), true, refFactory);
+        bibIns.insertAll();
+      }
       if (coldp.getCslJsonFile() != null) {
-        CslJsonInserter bibIns = new CslJsonInserter(store, coldp.getCslJsonFile(), refFactory);
+        CslJsonInserter bibIns = new CslJsonInserter(store, coldp.getCslJsonFile(), false, refFactory);
         bibIns.insertAll();
       }
     }
