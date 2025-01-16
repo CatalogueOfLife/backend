@@ -1,8 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.FormattableName;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.Name;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.Rank;
@@ -38,6 +36,8 @@ public class NameValidator {
   // ë is exceptionally allowed in botanical code. See Article 60.6
   // The diaeresis, indicating that a vowel is to be pronounced separately from the preceding vowel (as in Cephaëlis, Isoëtes), is a phonetic device that is not considered to alter the spelling; as such, its use is optional
   static final Pattern NON_LETTER = Pattern.compile("[^a-z-ë]", Pattern.CASE_INSENSITIVE);
+  static final Pattern ASCII_LETTER = Pattern.compile("[A-Za-z]");
+  static final Pattern BOOLEAN = Pattern.compile("^(true|false|t|f)$", Pattern.CASE_INSENSITIVE);
   static final CharMatcher OPEN_BRACKETS = CharMatcher.anyOf("[({");
   static final CharMatcher CLOSE_BRACKETS = CharMatcher.anyOf("])}");
 
@@ -100,6 +100,14 @@ public class NameValidator {
       }
     });
   }
+
+  public static void flagSuspicousPhrase(String value, IssueContainer v, Issue issue) {
+    if (!StringUtils.isBlank(value)) {
+      if (hasUnmatchedBrackets(value) || hasNoLetter(value) || isBoolean(value)) {
+        v.addIssue(issue);
+      }
+    }
+  }
   
   /**
    * Validates consistency of name properties adding issues to the name if found.
@@ -129,6 +137,13 @@ public class NameValidator {
     return !Strings.isNullOrEmpty(x) && OPEN_BRACKETS.countIn(x) != CLOSE_BRACKETS.countIn(x);
   }
 
+  public static boolean hasNoLetter(String x) {
+    return !Strings.isNullOrEmpty(x) && !ASCII_LETTER.matcher(x).find();
+  }
+
+  public static boolean isBoolean(String x) {
+    return !Strings.isNullOrEmpty(x) && BOOLEAN.matcher(x).find();
+  }
   public static Integer parseYear(FormattableName n) throws NumberFormatException {
     if (n.getCombinationAuthorship() != null && n.getCombinationAuthorship().getYear() != null) {
       return Integer.parseInt(n.getCombinationAuthorship().getYear().trim());

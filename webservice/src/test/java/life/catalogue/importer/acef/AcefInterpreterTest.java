@@ -65,6 +65,37 @@ public class AcefInterpreterTest extends InterpreterTestAbstractBase<AcefInterpr
     assertEquals("new combination, valid: No", n.getRemarks());
   }
 
+  @Test
+  public void sensuAuthorship() {
+    // https://github.com/CatalogueOfLife/data/issues/902
+    VerbatimRecord v = new VerbatimRecord();
+    v.put(AcefTerm.AcceptedTaxonID, "1");
+    v.put(AcefTerm.Genus, "Pseudofolliculina");
+    v.put(AcefTerm.SpeciesEpithet, "grandis");
+    v.put(AcefTerm.Sp2000NameStatus, "accepted name");
+
+    v.put(AcefTerm.AuthorString, "Miller sensu Busch, 1930");
+    var nu = interpreter.interpretSynonym(v).get();
+    assertEquals("Pseudofolliculina grandis", nu.usage.getName().getScientificName());
+    assertEquals("Miller", nu.usage.getName().getAuthorship());
+    assertNull(nu.usage.getNamePhrase());
+    assertEquals("Busch, 1930", nu.usage.getAccordingTo());
+
+    v.put(AcefTerm.AuthorString, "(sensu Mereschkowsky, 1878) Jankowski, 1992");
+    nu = interpreter.interpretSynonym(v).get();
+    assertEquals("Pseudofolliculina grandis", nu.usage.getName().getScientificName());
+    assertNull(nu.usage.getName().getAuthorship());
+    assertNull(nu.usage.getAccordingTo());
+    assertEquals("(sensu Mereschkowsky, 1878) Jankowski, 1992", nu.usage.getNamePhrase());
+
+    v.put(AcefTerm.AuthorString, "(Mereschkowsky, 1878) sensu Jankowski, 1992");
+    nu = interpreter.interpretSynonym(v).get();
+    assertEquals("Pseudofolliculina grandis", nu.usage.getName().getScientificName());
+    assertEquals("(Mereschkowsky, 1878)", nu.usage.getName().getAuthorship());
+    assertEquals("Jankowski, 1992", nu.usage.getAccordingTo());
+    assertNull(nu.usage.getNamePhrase());
+  }
+
   @Override
   protected AcefInterpreter buildInterpreter(DatasetSettings settings, ReferenceFactory refFactory, NeoDb store) {
     var mappings = new MappingInfos();

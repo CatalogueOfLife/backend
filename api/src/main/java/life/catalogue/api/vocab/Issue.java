@@ -457,6 +457,9 @@ public enum Issue {
 
   AUTHORSHIP_UNLIKELY(NAME, Level.WARNING,
     "The authorship of the name is unlikely a true author, e.g. resembles part of the scientific name."),
+
+  NAME_PHRASE_UNLIKELY(NAME_USAGE, Level.WARNING,
+    "The name phrase is unlikely, e.g. is just a number or a boolean value."),
   ;
 
   /**
