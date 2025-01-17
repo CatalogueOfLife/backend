@@ -168,8 +168,29 @@ public class CslDataConverter {
           return "article";
         case BOOK:
           return "book";
+        case PAMPHLET:
+          return "booklet";
         case CHAPTER:
-          return "incollection";
+          return "incollection"; // inbook
+        case PAPER_CONFERENCE:
+          return "inproceedings";
+        case THESIS:
+          return "phdthesis";
+        case REPORT:
+          return "techreport";
+        case PATENT:
+          return "patent";
+        case WEBPAGE:
+          return "online";
+        case LEGISLATION:
+        case LEGAL_CASE:
+        case BILL:
+          return "standard";
+        case MANUSCRIPT:
+          return "unpublished";
+        case FIGURE:
+        case GRAPHIC:
+          return "artwork";
       }
     }
     return "misc";

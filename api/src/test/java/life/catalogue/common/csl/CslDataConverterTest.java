@@ -1,8 +1,12 @@
 package life.catalogue.common.csl;
 
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
+import de.undercouch.citeproc.csl.CSLType;
+
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 
+import org.jbibtex.Key;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,15 +14,26 @@ import org.junit.Test;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 public class CslDataConverterTest {
   @Test
   @Ignore
   public void toCSLItemData() {
   }
-  
+
+  @Test
+  public void typeRoundtrip() {
+    var bibConv = new BibTeXConverter();
+    for (var type : CSLType.values()) {
+      var bibType = CslDataConverter.toBibTexType(type);
+      assertNotNull(bibType);
+      var cslType = bibConv.toType(new Key(bibType));
+      System.out.println(type + " -> " + bibType + " -> "+ cslType);
+      //assertEquals(type, cslType);
+    }
+  }
+
   @Test
   public void toCSLDate() {
     assertNull(CslDataConverter.toCSLDate(null));
