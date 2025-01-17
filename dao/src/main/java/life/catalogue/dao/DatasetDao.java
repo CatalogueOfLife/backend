@@ -16,6 +16,8 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.MybatisFactory;
+import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;

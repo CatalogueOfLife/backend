@@ -264,7 +264,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       match = matcher.matchWithParents(targetDatasetKey, tCanon, parents.classificationSN(), false, false);
       if (match.isMatch() && sameLowClassification(match.usage.getClassification(), parents.classification())) {
         // make sure the species is in the same genus or family
-        LOG.debug("Accepted {} {} has canonical match within the same family subtree", nu.getRank(), nu.getLabel());
+        LOG.debug("Accepted {} {} has canonical match within the same family subtree: {}", nu.getRank(), nu.getLabel(), match.usage);
         match = UsageMatch.ignore(match);
       }
     }
@@ -402,6 +402,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
+  private void warnIfNull(Object obj, String msg) {
+    if (obj == null) {
+      LOG.warn("Unexpected NULL: {}", msg);
+    }
+  }
+
   private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
     // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
     // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
@@ -413,6 +419,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (parent != null && parent.status.isSynonym()) {
       // use accepted instead
       var p = numRO.getSimpleParent(targetKey.id(parent.id));
+      warnIfNull(p, String.format("Parent %s with id %s not found", parent.rank, parent.id));
       // make sure rank hierarchy makes sense - can be distorted by synonyms
       if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
         while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
