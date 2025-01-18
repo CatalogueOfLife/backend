@@ -39,7 +39,6 @@ import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -70,9 +69,6 @@ public class DatasetIndex {
   @Value("${working.dir:/tmp/}")
   String workingDir;
 
-  @Autowired
-  IOUtil ioUtil;
-
   private boolean isInitialised = false;
 
   public boolean getIsInitialised() {
@@ -98,10 +94,7 @@ public class DatasetIndex {
     if (new File(mainIndexPath).exists()) {
       log.info("Loading lucene index from {}", mainIndexPath);
       try {
-        MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
-        mMapDirectory.setPreload(true);
-
-        initWithDir(mMapDirectory);
+        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
@@ -773,7 +766,7 @@ public class DatasetIndex {
             // Deserialize the byte array using Avro
             ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
               bytesRef.offset, bytesRef.length);
-            StoredClassification storedClassification = ioUtil.deserializeStoredClassification(inputStream);
+            StoredClassification storedClassification = IOUtil.deserializeStoredClassification(inputStream);
 
             classification = storedClassification.getNames().stream()
               .map(r -> NameUsageMatch.RankedName.builder()
@@ -831,23 +824,20 @@ public class DatasetIndex {
     return u;
   }
 
-  private NameUsageMatch.Usage constructUsage(Document doc) {
+  private static NameUsageMatch.Usage constructUsage(Document doc) {
     StoredParsedName pn = null;
     BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME_AVRO);
+    byte[] avroData = bytesRef.bytes;
 
-    if (bytesRef != null) {
-      byte[] avroData = bytesRef.bytes;
+    if (avroData != null) {
+      try {
+        // Deserialize the byte array using Avro
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
+          bytesRef.offset, bytesRef.length);
+        pn = IOUtil.deserializeStoredParsedName(inputStream);
 
-      if (avroData != null) {
-        try {
-          // Deserialize the byte array using Avro
-          ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
-            bytesRef.offset, bytesRef.length);
-          pn = ioUtil.deserializeStoredParsedName(inputStream);
-
-        } catch (Exception e) {
-          log.error("Cannot parse parsed name json", e);
-        }
+      } catch (Exception e) {
+        log.error("Cannot parse parsed name json", e);
       }
     }
 

@@ -99,8 +99,6 @@ public class IndexingService {
   @Value("${indexing.fetchsize:50000}")
   Integer dbFetchSize;
 
-  protected final IOUtil ioUtil;
-
   protected final MatchingService matchingService;
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
@@ -108,9 +106,8 @@ public class IndexingService {
 
   protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
 
-  public IndexingService(MatchingService matchingService, IOUtil ioUtil) {
+  public IndexingService(MatchingService matchingService) {
     this.matchingService = matchingService;
-    this.ioUtil = ioUtil;
   }
 
   protected static IndexWriterConfig getIndexWriterConfig() {
@@ -462,14 +459,14 @@ public class IndexingService {
     log.info("Start building a new RAM index");
     Directory dir = new ByteBuffersDirectory();
     IndexWriter writer = getIndexWriter(dir);
-    IOUtil ioUtil = new IOUtil();
+
     // creates initial index segments
     writer.commit();
     int counter = 0;
     for (var iter : usages) {
       for (NameUsage u : iter) {
         if (u != null && u.getId() != null) {
-          writer.addDocument(toDoc(u, ioUtil));
+          writer.addDocument(toDoc(u));
           counter ++;
         }
       }
@@ -613,12 +610,10 @@ public class IndexingService {
     private final IndexWriter writer;
     private final List<Document> docs;
     private final IndexSearcher searcher;
-    private final IOUtil ioUtil;
 
-    public DenormIndexTask(IndexSearcher searcher, IndexWriter writer, IOUtil ioUtil, List<Document> docs) {
+    public DenormIndexTask(IndexSearcher searcher, IndexWriter writer, List<Document> docs) {
       this.searcher = searcher;
       this.writer = writer;
-      this.ioUtil = ioUtil;
       this.docs = docs;
     }
 
@@ -632,7 +627,7 @@ public class IndexingService {
 
           // Serialize the User object to a byte array
           ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          ioUtil.serialize(storedClassification, outputStream);
+          IOUtil.serialize(storedClassification, outputStream);
           outputStream.close();
 
           byte[] avroBytes = outputStream.toByteArray();
@@ -830,13 +825,13 @@ public class IndexingService {
       if (batch.size() >= 10000) {
         log.info("Denormalisation - starting batch: {} taxa", counter.get());
         List<Document> finalBatch = batch;
-        exec.submit(new DenormIndexTask(searcher, denormIndexWriter, ioUtil, finalBatch));
+        exec.submit(new DenormIndexTask(searcher, denormIndexWriter, finalBatch));
         batch = new ArrayList<>();
       }
     }
 
     //final batch
-    exec.submit(new DenormIndexTask(searcher, denormIndexWriter, ioUtil, batch));
+    exec.submit(new DenormIndexTask(searcher, denormIndexWriter, batch));
 
     log.info("Finished reading main index file. Finishing denormalisation of index...");
 
@@ -912,13 +907,13 @@ public class IndexingService {
         batch.add(nameUsage);
         if (batch.size() >= indexingBatchSize) {
           List<NameUsage> finalBatch = batch;
-          exec.submit(new IndexingTask(indexWriter, ioUtil, finalBatch));
+          exec.submit(new IndexingTask(indexWriter, finalBatch));
           batch = new ArrayList<>();
         }
       }
 
       //final batch
-      exec.submit(new IndexingTask(indexWriter, ioUtil, batch));
+      exec.submit(new IndexingTask(indexWriter, batch));
 
       log.info("Finished reading CSV file. Indexing re" + MAIN_INDEX_DIR + "ing taxa...");
 
@@ -953,19 +948,17 @@ public class IndexingService {
   static class IndexingTask implements Runnable {
     private final IndexWriter writer;
     private final List<NameUsage> nameUsages;
-    private final IOUtil ioUtil;
 
-    public IndexingTask(IndexWriter writer, IOUtil ioUtil, List<NameUsage> nameUsages) {
+    public IndexingTask(IndexWriter writer, List<NameUsage> nameUsages) {
       this.writer = writer;
       this.nameUsages = nameUsages;
-      this.ioUtil = ioUtil;
     }
 
     @Override
     public void run() {
       try {
         for (NameUsage nameUsage : nameUsages) {
-          Document doc = toDoc(nameUsage, ioUtil);
+          Document doc = toDoc(nameUsage);
           writer.addDocument(doc);
         }
         writer.flush();
@@ -996,16 +989,7 @@ public class IndexingService {
    * @param nameUsage to convert to lucene document
    * @return lucene document
    */
-  protected Document toDoc(NameUsage nameUsage) {
-    return toDoc(nameUsage, new IOUtil());
-  }
-
-  /**
-   * Generate the lucene document for a name usage
-   * @param nameUsage to convert to lucene document
-   * @return lucene document
-   */
-  protected static Document toDoc(NameUsage nameUsage, IOUtil ioUtil) {
+  protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
     /*
@@ -1040,7 +1024,7 @@ public class IndexingService {
 
         // Serialize the User object to a byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ioUtil.serialize(storedParsedName, outputStream);
+        IOUtil.serialize(storedParsedName, outputStream);
         outputStream.close();
 
         byte[] avroBytes = outputStream.toByteArray();
