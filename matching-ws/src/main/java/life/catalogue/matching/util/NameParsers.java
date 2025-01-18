@@ -3,9 +3,6 @@ package life.catalogue.matching.util;
 import lombok.extern.slf4j.Slf4j;
 
 import org.gbif.nameparser.NameParserGBIF;
-import org.gbif.nameparser.api.NameParser;
-
-import java.io.IOException;
 
 /**
  * Utility class to provide a shared NameParser instance.

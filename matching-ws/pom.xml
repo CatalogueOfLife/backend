@@ -32,6 +32,7 @@
     <zookeeper.version>3.8.1</zookeeper.version>
     <spring-cloud-zookeeper.version>3.1.5</spring-cloud-zookeeper.version>
     <spring-boot-admin.version>2.7.16</spring-boot-admin.version>
+    <kryo.version>5.6.0</kryo.version>
   </properties>
   <dependencies>
     <!-- COL -->
@@ -444,6 +445,11 @@
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>kryo</artifactId>
+      <version>${kryo.version}</version>
     </dependency>
   </dependencies>
   <build>

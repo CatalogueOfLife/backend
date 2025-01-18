@@ -26,8 +26,6 @@ import java.io.*;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -58,9 +56,6 @@ public class MatchingService {
 
   @Value("${working.dir:/tmp/}")
   protected String metadataFilePath;
-
-  @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
-  protected String dictionariesUrl = "https://rs.gbif.org/dictionaries/";
 
   private static final int MIN_CONFIDENCE = 80;
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
@@ -95,9 +90,6 @@ public class MatchingService {
           TaxonomicStatus.MISAPPLIED, -10);
 
   private final AuthorComparator authComp;
-
-  private final static Pattern TAB_PAT = Pattern.compile("\t");
-
 
   /**
    * The matching mode to use.
@@ -261,6 +253,11 @@ public class MatchingService {
     );
   }
 
+  /**
+   * Match a name usage query, returning the best match
+   * @param query the query
+   * @return the best match
+   */
   public NameUsageMatch match(NameUsageQuery query) {
 
     StopWatch watch = new StopWatch();
