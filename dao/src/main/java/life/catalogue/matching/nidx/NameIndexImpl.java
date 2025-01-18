@@ -170,10 +170,14 @@ public class NameIndexImpl implements NameIndex {
     return store.byCanonical(key);
   }
 
+  private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
+    return matchCandidates(query, candidates, authComp);
+  }
+
   /**
    * Does comparison by rank, name & author to pick real match from candidates
    */
-  private NameMatch matchCandidates(Name query, final List<IndexName> candidates) {
+  public static NameMatch matchCandidates(Name query, final List<IndexName> candidates, AuthorComparator authComp) {
     final Rank rank = query.getRank();
     final boolean hasRank = rank != IndexName.CANONICAL_RANK;
     final boolean hasAuthorship = query.hasAuthorship();
@@ -189,7 +193,7 @@ public class NameIndexImpl implements NameIndex {
       // 0 to 6
       int score = 0;
 
-      // for non canonical matches ranks need to match up exactly
+      // for non-canonical matches ranks need to match up exactly
       boolean isCanon = n.isCanonical();
       if (!isCanon && hasRank && rank != n.getRank()) {
         continue;
@@ -303,7 +307,7 @@ public class NameIndexImpl implements NameIndex {
   /**
    * @return new best score
    */
-  private int addOrRemove(int score, IndexName n, int bestScore, List<IndexName> matches) {
+  private static int addOrRemove(int score, IndexName n, int bestScore, List<IndexName> matches) {
     if (score < bestScore) {
       LOG.trace("Worse match {}<{}: {}", score, bestScore, n.getLabel());
       return bestScore;

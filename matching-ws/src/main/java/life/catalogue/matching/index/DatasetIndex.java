@@ -6,10 +6,8 @@ import static life.catalogue.matching.util.IndexConstants.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +22,7 @@ import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
 import life.catalogue.matching.util.IUCNUtils;
 import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
@@ -628,7 +627,7 @@ public class DatasetIndex {
 
   /**
    * Matches an external ID
-   * @param key the external ID to match
+   * @param suppliedKey the external ID to match
    * @param notFoundIssue the issue to add if the identifier is not found
    * @param ignoredIssue the issue to add if the identifier is ignored
    * @return NameUsageMatch
@@ -731,49 +730,6 @@ public class DatasetIndex {
   }
 
   /**
-   * Loads the higher classification of a taxon starting from the given parentID. The parentID is
-   * not included in the result.
-   * This might be the naive approach. Need to check performance vs MapDB or denormalise
-   * during index generation.
-   *
-   * @param parentID the parentID to start from
-   * @return List of RankedName
-   */
-  private List<NameUsageMatch.RankedName> loadHigherTaxa(String parentID) {
-
-    if (parentID == null) {
-      return new ArrayList<>();
-    }
-
-    List<NameUsageMatch.RankedName> higherTaxa = new ArrayList<>();
-    String currentParentID = parentID;
-    while (currentParentID != null) {
-      NameUsageMatch.RankedName cachedName = null; // higherTaxonomyCache.get(currentParentID);
-      if (cachedName != null) {
-        higherTaxa.add(0, cachedName);
-        currentParentID = cachedName.getParentID();
-      } else {
-        Optional<Document> docOpt = getByUsageKey(currentParentID);
-        if (docOpt.isPresent()) {
-          Document doc = docOpt.get();
-          NameUsageMatch.RankedName higherTaxon = new NameUsageMatch.RankedName();
-          higherTaxon.setKey(doc.get(FIELD_ID));
-          higherTaxon.setName(doc.get(FIELD_CANONICAL_NAME));
-          higherTaxon.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
-          higherTaxon.setParentID(doc.get(FIELD_PARENT_ID));
-          higherTaxa.add(0, higherTaxon);
-          // get next parent
-          currentParentID = doc.get(FIELD_PARENT_ID);
-        } else {
-          currentParentID = null;
-        }
-      }
-    }
-
-    return higherTaxa;
-  }
-
-  /**
    * Converts a lucene document into a NameUsageMatch object.
    *
    * @param doc the lucene document to convert to a NameUsageMatch
@@ -799,36 +755,38 @@ public class DatasetIndex {
       }
     }
 
-    // set the higher classification
-    String parentID = doc.get(FIELD_PARENT_ID);
-    List<NameUsageMatch.RankedName> classification = null;
-    if (acceptedParentID != null) {
-      classification = loadHigherTaxa(acceptedParentID);
-    } else {
-      classification = loadHigherTaxa(parentID);
+    BytesRef bytesRef = doc.getBinaryValue(FIELD_CLASSIFICATION_AVRO);
+    List<NameUsageMatch.RankedName> classification = new ArrayList<>();
+    if (bytesRef != null) {
+      try {
+
+        byte[] avroData = bytesRef.bytes;
+        if (avroData != null) {
+          try {
+            // Deserialize the byte array using Avro
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
+              bytesRef.offset, bytesRef.length);
+            StoredClassification storedClassification = IOUtil.deserializeStoredClassification(inputStream);
+
+            classification = storedClassification.getNames().stream()
+              .map(r -> NameUsageMatch.RankedName.builder()
+                .key(r.getKey())
+                .rank(Rank.valueOf(r.getRank()))
+                .canonicalName(r.getName())
+                .name(r.getName())
+                .build())
+              .collect(Collectors.toList());
+            u.setClassification(classification);
+
+          } catch (Exception e) {
+            log.error("Cannot parse parsed name json", e);
+          }
+        }
+      } catch (Exception e) {
+        log.error("Cannot parse parsed name json", e);
+      }
     }
 
-    u.setClassification(classification);
-
-    // add leaf
-    if (u.getAcceptedUsage() != null) {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key( u.getAcceptedUsage().getKey())
-          .name(u.getAcceptedUsage().getCanonicalName())
-          .rank(u.getAcceptedUsage().getRank())
-          .canonicalName(u.getAcceptedUsage().getCanonicalName())
-          .build());
-    } else {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key(doc.get(FIELD_ID))
-          .name(doc.get(FIELD_CANONICAL_NAME))
-          .rank(Rank.valueOf(doc.get(FIELD_RANK)))
-          .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-          .build()
-        );
-    }
     u.setSynonym(synonym);
 
     // if ancillary join indexes are present, add them to the match
@@ -868,10 +826,16 @@ public class DatasetIndex {
 
   private static NameUsageMatch.Usage constructUsage(Document doc) {
     StoredParsedName pn = null;
-    String parsedNameJson = doc.get(FIELD_PARSED_NAME_JSON);
-    if (parsedNameJson != null) {
+    BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME_AVRO);
+    byte[] avroData = bytesRef.bytes;
+
+    if (avroData != null) {
       try {
-        pn = MAPPER.readValue(parsedNameJson, StoredParsedName.class);
+        // Deserialize the byte array using Avro
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
+          bytesRef.offset, bytesRef.length);
+        pn = IOUtil.deserializeStoredParsedName(inputStream);
+
       } catch (Exception e) {
         log.error("Cannot parse parsed name json", e);
       }
@@ -910,7 +874,7 @@ public class DatasetIndex {
         .doubtful(pn.isDoubtful())
         .manuscript(pn.isManuscript())
         .state(pn.getState())
-        .warnings(pn.getWarnings());
+        .warnings(pn.getWarnings().stream().collect(Collectors.toSet()));
 
         if (pn.getCombinationAuthorship() != null
           && pn.getCombinationAuthorship().getAuthors() != null

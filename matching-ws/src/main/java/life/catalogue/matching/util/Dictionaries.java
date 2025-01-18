@@ -22,7 +22,6 @@ public class Dictionaries {
 
   public static Dictionaries createDefault() {
     return new Dictionaries("dictionaries/");
-//    return new Dictionaries("https://rs.gbif.org/dictionaries/");
   }
 
   /**

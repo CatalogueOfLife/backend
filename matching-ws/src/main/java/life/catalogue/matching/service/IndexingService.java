@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriterBuilder;
@@ -28,17 +27,15 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.model.*;
 import life.catalogue.matching.db.DatasetMapper;
 import life.catalogue.matching.index.ScientificNameAnalyzer;
-import life.catalogue.matching.model.Classification;
-import life.catalogue.matching.model.StoredParsedName;
-import life.catalogue.matching.model.Dataset;
-import life.catalogue.matching.model.NameUsage;
-import life.catalogue.matching.model.NameUsageMatch;
+import life.catalogue.matching.util.IOUtil;
 import life.catalogue.matching.util.NameParsers;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -93,18 +90,16 @@ public class IndexingService {
   @Value("${clb.password}")
   String clPassword;
 
-  @Value("${clb.driver}")
-  String clDriver;
-
   @Value("${indexing.threads:6}")
   Integer indexingThreads;
+
+  @Value("${indexing.batchsize:100000}")
+  Integer indexingBatchSize;
 
   @Value("${indexing.fetchsize:50000}")
   Integer dbFetchSize;
 
   protected final MatchingService matchingService;
-
-  protected static final ObjectMapper MAPPER = new ObjectMapper();
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
@@ -136,7 +131,7 @@ public class IndexingService {
     try {
       datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
       return lookupDataset(factory, datasetKey.get());
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException ignored) {
     }
 
     // otherwise, resolve magic key
@@ -358,12 +353,9 @@ public class IndexingService {
       }
     }
     Path metadataPath = Paths.get(joinIndexPath + "/" + METADATA_JSON);
-    if (!Files.exists(metadataPath) || Files.size(metadataPath) == 0) {
-      return false;
-    }
+    return Files.exists(metadataPath) && Files.size(metadataPath) != 0;
 
     // check for metadata file
-    return true;
   }
 
   @Transactional
@@ -507,7 +499,7 @@ public class IndexingService {
       Directory ancillaryDirectory = FSDirectory.open(indexDirectory);
 
       // create the join index
-      Long[] counters = createJoinIndex(matchingService, tempDirectory, ancillaryDirectory, acceptedOnly, true, indexingThreads);
+      Long[] counters = createJoinIndex(matchingService, tempDirectory, ancillaryDirectory, acceptedOnly, true, indexingThreads, indexingBatchSize);
 
       // load export metadata
       ObjectMapper mapper = new ObjectMapper();
@@ -535,14 +527,16 @@ public class IndexingService {
    * @param acceptedOnly if true only accepted taxa are indexed
    * @param closeDirectoryOnExit if true the output directory will be closed on exit
    * @param indexingThreads the number of threads to use for indexing
-   * @return the number of documents indexed and the number of documents matched to the main index
+   * @return an array containing the number of documents indexed and the number of documents matched to the main index
    * @throws IOException if the index cannot be created
    */
   public static Long[] createJoinIndex(MatchingService matchingService,
                                        Directory tempUsageIndexDirectory,
                                        Directory outputDirectory,
                                        boolean acceptedOnly,
-                                       boolean closeDirectoryOnExit, int indexingThreads)
+                                       boolean closeDirectoryOnExit,
+                                       int indexingThreads,
+                                       int indexingBatchSize)
     throws IOException {
 
     IndexWriterConfig config = getIndexWriterConfig();
@@ -571,7 +565,7 @@ public class IndexingService {
       Document doc = searcher.storedFields().document(hit.doc);
       batch.add(doc);
 
-      if (batch.size() >= 100000) {
+      if (batch.size() >= indexingBatchSize) {
         log.info("Starting batch: {} taxa", counter.get());
         List<Document> finalBatch = batch;
         exec.submit(new JoinIndexTask(matchingService, searcher, joinIndexWriter, finalBatch, acceptedOnly, matchedCounter));
@@ -610,6 +604,43 @@ public class IndexingService {
     }
 
     return new Long[]{counter.get(), matchedCounter.get()};
+  }
+
+  static class DenormIndexTask implements Runnable {
+    private final IndexWriter writer;
+    private final List<Document> docs;
+    private final IndexSearcher searcher;
+
+    public DenormIndexTask(IndexSearcher searcher, IndexWriter writer, List<Document> docs) {
+      this.searcher = searcher;
+      this.writer = writer;
+      this.docs = docs;
+    }
+
+    @Override
+    public void run() {
+      try {
+        for (Document doc : docs) {
+
+          // set the higher classification
+          StoredClassification storedClassification = loadHierarchyWithIDs(searcher, doc);
+
+          // Serialize the User object to a byte array
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          IOUtil.serialize(storedClassification, outputStream);
+          outputStream.close();
+
+          byte[] avroBytes = outputStream.toByteArray();
+          doc.add(new StoredField(
+            FIELD_CLASSIFICATION_AVRO,
+            avroBytes));
+          writer.addDocument(doc);
+        }
+        writer.flush();
+      } catch (Exception e) {
+        log.error("Error writing documents to " + ANCILLARY_DIR + " index: {}", e.getMessage(), e);
+      }
+    }
   }
 
   static class JoinIndexTask implements Runnable {
@@ -663,7 +694,7 @@ public class IndexingService {
               );
 
               // reduce the side of these indexes by removing the parsed name
-              doc.removeField(FIELD_PARSED_NAME_JSON);
+              doc.removeField(FIELD_PARSED_NAME_AVRO);
 
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
@@ -700,7 +731,7 @@ public class IndexingService {
     return Optional.empty();
   }
 
-  public static Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
+  private static Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
     Map<String, String> classification = new HashMap<>();
     while (id != null) {
       Optional<Document> docOpt = getById(searcher, id);
@@ -714,15 +745,125 @@ public class IndexingService {
     return classification;
   }
 
+  public static StoredClassification loadHierarchyWithIDs(IndexSearcher searcher, Document leafDoc) {
+
+    // get leaf node
+    StoredClassification.StoredClassificationBuilder builder = StoredClassification.builder();
+
+    ArrayDeque<StoredName> classification = new ArrayDeque<>();
+    String id = leafDoc.get(FIELD_PARENT_ID);
+    String acceptedId = leafDoc.get(FIELD_ACCEPTED_ID);
+    if (acceptedId != null){
+      id = acceptedId;
+    }
+
+    // get leaf node
+    while (id != null) {
+      Optional<Document> docOpt = getById(searcher, id);
+      if (docOpt.isEmpty()) {
+        break;
+      }
+      Document doc = docOpt.get();
+      classification.addFirst(StoredName.builder()
+        .key(doc.get(FIELD_ID))
+        .rank(doc.get(FIELD_RANK))
+        .name(doc.get(FIELD_CANONICAL_NAME))
+        .build()
+      );
+
+      // for next step
+      id = doc.get(FIELD_PARENT_ID);
+    }
+    return builder.names(new ArrayList<>(classification)).build();
+  }
+
   @Transactional
-  public void createMainIndex(String datasetId) throws Exception {
+  public void createMainIndex(String datasetKey) throws Exception {
     final String mainIndexPath = indexPath + "/" + MAIN_INDEX_DIR;
+    final String tempDenormedPath = indexPath + "/denormed";
     if (indexExists(mainIndexPath)){
       log.info("Main index already exists at path {}", mainIndexPath);
       return;
     }
-    writeCLBToFile(datasetId);
-    indexFile(exportPath + "/" + datasetId, mainIndexPath);
+    writeCLBToFile(datasetKey);
+    indexFile(exportPath + "/" + datasetKey, mainIndexPath);
+    denormalizeMainIndex(mainIndexPath, tempDenormedPath);
+  }
+
+  private void denormalizeMainIndex(String mainIndexPath, String denormedTempPath) throws IOException {
+
+    StopWatch watch = new StopWatch();
+    watch.start();
+    log.info("De-normalizing main index...");
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+    Directory mainDirectory = FSDirectory.open(Paths.get(mainIndexPath));
+    IndexReader tempReader = DirectoryReader.open(mainDirectory);
+
+    IndexWriter denormIndexWriter = new IndexWriter(FSDirectory.open(
+      Paths.get(denormedTempPath)), getIndexWriterConfig());
+
+    IndexSearcher searcher = new IndexSearcher(tempReader);
+    TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+    ScoreDoc[] hits = results.scoreDocs;
+
+    AtomicLong counter = new AtomicLong(0);
+
+    ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
+      5000L, TimeUnit.MILLISECONDS,
+      new ArrayBlockingQueue<Runnable>(indexingThreads * 2, true),
+      new ThreadPoolExecutor.CallerRunsPolicy());
+
+    List<Document> batch = new ArrayList<>();
+    // Write document data
+    for (ScoreDoc hit : hits) {
+
+      counter.incrementAndGet();
+      Document doc = searcher.storedFields().document(hit.doc);
+      batch.add(doc);
+
+      if (batch.size() >= 10000) {
+        log.info("Denormalisation - starting batch: {} taxa", counter.get());
+        List<Document> finalBatch = batch;
+        exec.submit(new DenormIndexTask(searcher, denormIndexWriter, finalBatch));
+        batch = new ArrayList<>();
+      }
+    }
+
+    //final batch
+    exec.submit(new DenormIndexTask(searcher, denormIndexWriter, batch));
+
+    log.info("Finished reading main index file. Finishing denormalisation of index...");
+
+    exec.shutdown();
+    try {
+      if (!exec.awaitTermination(60, TimeUnit.MINUTES)) {
+        log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
+        exec.shutdownNow();
+      }
+    } catch (InterruptedException var4) {
+      log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
+      exec.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+
+    // close temp
+    tempReader.close();
+    mainDirectory.close();
+
+    // optimize the index
+    log.info("Disk size before optimisation: {}", FileUtils.sizeOfDirectory(new File(denormedTempPath)));
+    finishIndex(denormIndexWriter);
+    denormIndexWriter.commit();
+    log.info("Disk size after optimisation: {}", FileUtils.sizeOfDirectory(new File(denormedTempPath)));
+
+    // remove old index, and move new one into place
+    FileUtils.copyFile(new File(mainIndexPath + "/" + METADATA_JSON), new File(denormedTempPath + "/" + METADATA_JSON));
+    FileUtils.deleteDirectory(new File(mainIndexPath));
+    FileUtils.moveDirectory(new File(denormedTempPath), new File(mainIndexPath));
+
+    watch.stop();
+    log.info("Denormalisation complete: {} documents written, time taken {} mins", counter.get(), watch.getTime(TimeUnit.MINUTES));
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {
@@ -736,10 +877,12 @@ public class IndexingService {
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
-    log.info("Indexing dataset from CSV...");
+
     final AtomicLong counter = new AtomicLong(0);
     final String filePath = exportPath + "/" + INDEX_CSV;
     final String metadataPath = exportPath + "/" + METADATA_JSON;
+
+    log.info("Indexing dataset from CSV {} to {}", filePath, indexPath);
 
     ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
       5000L, TimeUnit.MILLISECONDS,
@@ -762,7 +905,7 @@ public class IndexingService {
         NameUsage nameUsage = iterator.next();
         counter.incrementAndGet();
         batch.add(nameUsage);
-        if (batch.size() >= 100000) {
+        if (batch.size() >= indexingBatchSize) {
           List<NameUsage> finalBatch = batch;
           exec.submit(new IndexingTask(indexWriter, finalBatch));
           batch = new ArrayList<>();
@@ -878,15 +1021,24 @@ public class IndexingService {
         // if there an authorship, reparse with it to get the component authorship parts
         StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
           getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
+
+        // Serialize the User object to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        IOUtil.serialize(storedParsedName, outputStream);
+        outputStream.close();
+
+        byte[] avroBytes = outputStream.toByteArray();
+
         // store the parsed name components in JSON
         doc.add(new StoredField(
-          FIELD_PARSED_NAME_JSON,
-          MAPPER.writeValueAsString(storedParsedName))
+            FIELD_PARSED_NAME_AVRO,
+            avroBytes
+          )
         );
-      } catch (UnparsableNameException | InterruptedException e) {
+      } catch (UnparsableNameException e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
-      } catch ( JsonProcessingException e) {
+      } catch (Exception e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
       }
@@ -951,50 +1103,52 @@ public class IndexingService {
 
   @NotNull
   private static StoredParsedName getStoredParsedName(ParsedName pn) {
-    StoredParsedName storedParsedName = new StoredParsedName();
-    storedParsedName.setAbbreviated(pn.isAbbreviated());
-    storedParsedName.setAutonym(pn.isAutonym());
-    storedParsedName.setBinomial(pn.isBinomial());
-    storedParsedName.setCandidatus(pn.isCandidatus());
-    storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
-    storedParsedName.setDoubtful(pn.isDoubtful());
-    storedParsedName.setGenus(pn.getGenus());
-    storedParsedName.setUninomial(pn.getUninomial());
-    storedParsedName.setUnparsed(pn.getUnparsed());
-    storedParsedName.setTrinomial(pn.isTrinomial());
-    storedParsedName.setIncomplete(pn.isIncomplete());
-    storedParsedName.setIndetermined(pn.isIndetermined());
-    storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
-    storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
-    storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
-    storedParsedName.setExtinct(pn.isExtinct());
-    storedParsedName.setPublishedIn(pn.getPublishedIn());
-    storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
-    storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
-    storedParsedName.setPhrase(pn.getPhrase());
-    storedParsedName.setPhraseName(pn.isPhraseName());
-    storedParsedName.setVoucher(pn.getVoucher());
-    storedParsedName.setNominatingParty(pn.getNominatingParty());
-    storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
-    storedParsedName.setWarnings(pn.getWarnings());
+    StoredParsedName.StoredParsedNameBuilder storedParsedName = StoredParsedName.builder()
+    .isAbbreviated(pn.isAbbreviated())
+    .isAutonym(pn.isAutonym())
+    .isBinomial(pn.isBinomial())
+    .candidatus(pn.isCandidatus())
+    .cultivarEpithet(pn.getCultivarEpithet())
+    .doubtful(pn.isDoubtful())
+    .genus(pn.getGenus())
+    .uninomial(pn.getUninomial())
+    .unparsed(pn.getUnparsed())
+    .isTrinomial(pn.isTrinomial())
+    .isIncomplete(pn.isIncomplete())
+    .isIndetermined(pn.isIndetermined())
+    .terminalEpithet(pn.getTerminalEpithet())
+    .infragenericEpithet(pn.getInfragenericEpithet())
+    .infraspecificEpithet(pn.getInfraspecificEpithet())
+    .extinct(pn.isExtinct())
+    .publishedIn(pn.getPublishedIn())
+    .sanctioningAuthor(pn.getSanctioningAuthor())
+    .specificEpithet(pn.getSpecificEpithet())
+    .phrase(pn.getPhrase())
+    .isPhraseName(pn.isPhraseName())
+    .voucher(pn.getVoucher())
+    .nominatingParty(pn.getNominatingParty())
+    .nomenclaturalNote(pn.getNomenclaturalNote())
+    .warnings(pn.getWarnings());
+
     if (pn.getBasionymAuthorship() != null) {
-      storedParsedName.setBasionymAuthorship(
+      storedParsedName.basionymAuthorship(
         StoredParsedName.StoredAuthorship.builder()
           .authors(pn.getBasionymAuthorship().getAuthors())
           .exAuthors(pn.getBasionymAuthorship().getExAuthors())
-          .year(pn.getBasionymAuthorship().getYear()).build()
+          .year(pn.getBasionymAuthorship().getYear())
+          .build()
       );
     }
     if (pn.getCombinationAuthorship() != null) {
-      storedParsedName.setCombinationAuthorship(
+      storedParsedName.combinationAuthorship(
         StoredParsedName.StoredAuthorship.builder()
           .authors(pn.getCombinationAuthorship().getAuthors())
           .exAuthors(pn.getCombinationAuthorship().getExAuthors())
           .year(pn.getCombinationAuthorship().getYear()).build()
       );
     }
-    storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
-    storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
-    return storedParsedName;
+    storedParsedName.type(pn.getType() != null ? pn.getType().name() : null);
+    storedParsedName.notho(pn.getNotho() != null ? pn.getNotho().name() : null);
+    return storedParsedName.build();
   }
 }

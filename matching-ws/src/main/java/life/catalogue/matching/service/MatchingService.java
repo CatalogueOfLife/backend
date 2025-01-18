@@ -26,8 +26,6 @@ import java.io.*;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -58,9 +56,6 @@ public class MatchingService {
 
   @Value("${working.dir:/tmp/}")
   protected String metadataFilePath;
-
-  @Value("${online.dictionary.url:'https://rs.gbif.org/dictionaries/'}")
-  protected String dictionariesUrl = "https://rs.gbif.org/dictionaries/";
 
   private static final int MIN_CONFIDENCE = 80;
   private static final int MIN_CONFIDENCE_FOR_HIGHER_MATCHES = 90;
@@ -95,7 +90,6 @@ public class MatchingService {
           TaxonomicStatus.MISAPPLIED, -10);
 
   private final AuthorComparator authComp;
-
 
   /**
    * The matching mode to use.
@@ -259,6 +253,11 @@ public class MatchingService {
     );
   }
 
+  /**
+   * Match a name usage query, returning the best match
+   * @param query the query
+   * @return the best match
+   */
   public NameUsageMatch match(NameUsageQuery query) {
 
     StopWatch watch = new StopWatch();
@@ -306,8 +305,9 @@ public class MatchingService {
         query.taxonID,
         MatchingIssue.TAXON_ID_NOT_FOUND,
         MatchingIssue.TAXON_MATCH_TAXON_ID_IGNORED
-      );
-      log.debug("{} Match of taxonID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonID, watch);
+        );
+      log.debug(
+        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
 
       if (isMatch(idMatch)) {
           checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
@@ -323,9 +323,9 @@ public class MatchingService {
     // Match with taxonConceptID
     if (StringUtils.isNotBlank(query.taxonConceptID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
-        query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED
-      );
-      log.debug("{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
+        query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
+      log.debug(
+        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
       if (isMatch(idMatch)){
         checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
