@@ -299,11 +299,11 @@ public class MatchController implements ErrorController {
         exclude,
         strict,
         verbose);
-    NameUsageMatch nameUsageMatch = matchingService.match(query);
-    watch.stop();
-    log("v2/species/match", query, watch);
-    nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
-    return nameUsageMatch;
+      NameUsageMatch nameUsageMatch = matchingService.match(query);
+      watch.stop();
+      log("v2/species/match", query, watch);
+      nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
+      return nameUsageMatch;
   }
 
   @Operation(
@@ -747,6 +747,10 @@ public class MatchController implements ErrorController {
       addIfNotNull(joiner, query.taxonConceptID);
       addIfNotNull(joiner, query.scientificNameID);
       addIfNotNull(joiner, query.scientificName);
+      addIfNotNull(joiner, query.authorship);
+      addIfNotNull(joiner, query.rank);
+      addIfNotNull(joiner, query.genericName);
+      addIfNotNull(joiner, query.specificEpithet);
 
       log.info("[{}ms] [{}] {}",
         String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)),

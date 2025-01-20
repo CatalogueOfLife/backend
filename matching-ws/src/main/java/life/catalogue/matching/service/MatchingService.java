@@ -30,9 +30,9 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.metrics.startup.StartupTimeMetricsListener;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -112,7 +112,7 @@ public class MatchingService {
   DatasetIndex datasetIndex;
   Dictionaries dictionaries;
 
-  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp, Dictionaries dictionaries) {
+  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp, Dictionaries dictionaries, StartupTimeMetricsListener startupTimeMetrics) {
     this.datasetIndex = datasetIndex;
     this.htComp = htComp;
     this.dictionaries = dictionaries;
@@ -159,6 +159,9 @@ public class MatchingService {
   private static NameUsageMatch higherMatch(NameUsageMatch match, NameUsageMatch firstMatch) {
     match.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
     addAlternatives(match, firstMatch.getDiagnostics().getAlternatives());
+    Optional.ofNullable(firstMatch.getDiagnostics().getTimings()).ifPresent(timings -> timings.forEach((key, value) ->
+      match.getDiagnostics().getTimings().merge(key, value, (v1, v2) -> v1 + v2) // Combine values for common keys
+    ));
     return match;
   }
 
@@ -260,22 +263,22 @@ public class MatchingService {
    */
   public NameUsageMatch match(NameUsageQuery query) {
 
-    StopWatch watch = new StopWatch();
-    watch.start();
+    Map<String, Long> timings = new HashMap<>();
 
     // When provided a usageKey is used exclusively
     if (StringUtils.isNotBlank(query.usageKey)) {
+      long start = System.currentTimeMillis();
       NameUsageMatch match = datasetIndex.matchByUsageKey(query.usageKey);
-      match
-        .getDiagnostics()
-        .setNote("All provided names were ignored since the usageKey was provided");
-      watch.stop();
-      match.getDiagnostics().setTimeTaken(watch.getTime());
-      log.debug("{} Match of usageKey[{}] in {}", match.getDiagnostics().getMatchType(), query.usageKey, watch);
+      timings.put("usageKeyMatch", System.currentTimeMillis() - start);
+      NameUsageMatch.Diagnostics diagnostics = match.getDiagnostics();
+      diagnostics.setTimings(timings);
+      diagnostics.setNote("All provided names were ignored since the usageKey was provided");
+      log.debug("{} Match of usageKey[{}]", match.getDiagnostics().getMatchType(), query.usageKey);
       return match;
     }
 
     // match by scientific name + classification
+    long startSciNameMatch = System.currentTimeMillis();
     NameUsageMatch sciNameMatch = matchByClassification(
       query.scientificName,
       query.authorship,
@@ -287,33 +290,45 @@ public class MatchingService {
       query.exclude,
       query.strict,
       query.verbose);
+    if (sciNameMatch != null) {
+      Optional.ofNullable(sciNameMatch.getDiagnostics().getTimings()).ifPresent(sTimings ->
+        sTimings.forEach((key, value) ->
+          timings.merge(key, value, Long::sum) // Combine values for common keys
+        ));
+      timings.put("sciNameMatch", System.currentTimeMillis() - startSciNameMatch);
+    }
 
     if (isMatch(sciNameMatch)) {
       log.debug(
-        "{} Match of {} >{}< to {} [{}] in {}",
+        "{} Match of {} >{}< to {} [{}] ",
         sciNameMatch.getDiagnostics().getMatchType(),
         query.rank,
         query.scientificName,
         sciNameMatch.getUsage().getKey(),
-        sciNameMatch.getUsage().getName(),
-        watch);
+        sciNameMatch.getUsage().getName());
     }
 
     // Match with taxonID
     if (StringUtils.isNotBlank(query.taxonID)) {
+      long idMatchStart = System.currentTimeMillis();
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
         query.taxonID,
         MatchingIssue.TAXON_ID_NOT_FOUND,
         MatchingIssue.TAXON_MATCH_TAXON_ID_IGNORED
         );
+      timings.put("idMatchTaxonID", System.currentTimeMillis() - idMatchStart);
+
       log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
+        "{} Match of taxonConceptID[{}]", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID);
 
       if (isMatch(idMatch)) {
+         long checkConsistencyStart = System.currentTimeMillis();
           checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
+          timings.put("checkScientificNameAndIDConsistencyTaxonID", System.currentTimeMillis() - checkConsistencyStart);
+          long checkConsistencyClassStart = System.currentTimeMillis();
           checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
-          watch.stop();
-          idMatch.getDiagnostics().setTimeTaken(watch.getTime());
+          timings.put("checkConsistencyWithClassificationMatchTaxonID", System.currentTimeMillis() - checkConsistencyClassStart);
+          idMatch.getDiagnostics().setTimings(timings);
           return idMatch;
       } else {
         sciNameMatch.addMatchIssue(MatchingIssue.TAXON_ID_NOT_FOUND);
@@ -322,15 +337,20 @@ public class MatchingService {
 
     // Match with taxonConceptID
     if (StringUtils.isNotBlank(query.taxonConceptID)) {
+      long idMatchStart = System.currentTimeMillis();
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
         query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
+      timings.put("idMatchTaxonConceptID", System.currentTimeMillis() - idMatchStart);
       log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
+        "{} Match of taxonConceptID[{}]", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID);
       if (isMatch(idMatch)){
+        long checkConsistencyStart = System.currentTimeMillis();
         checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
+        timings.put("checkScientificNameAndIDConsistencyTaxonConceptID", System.currentTimeMillis() - checkConsistencyStart);
+        long checkConsistencyWithClassificationMatch = System.currentTimeMillis();
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
-        watch.stop();
-        idMatch.getDiagnostics().setTimeTaken(watch.getTime());
+        timings.put("checkConsistencyWithClassificationMatchTaxonConceptID", System.currentTimeMillis() - checkConsistencyWithClassificationMatch);
+        idMatch.getDiagnostics().setTimings(timings);
         return idMatch;
       } else {
         sciNameMatch.addMatchIssue(MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND);
@@ -339,23 +359,27 @@ public class MatchingService {
 
     // Match with scientificNameID
     if (StringUtils.isNotBlank(query.scientificNameID)) {
+      long idMatchStart = System.currentTimeMillis();
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(query.scientificNameID,
         MatchingIssue.SCIENTIFIC_NAME_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_SCIENTIFIC_NAME_ID_IGNORED);
+      timings.put("idMatchScientificNameID", System.currentTimeMillis() - idMatchStart);
       log.debug(
-        "{} Match of scientificNameID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.scientificNameID, watch);
+        "{} Match of scientificNameID[{}]", idMatch.getDiagnostics().getMatchType(), query.scientificNameID);
       if (isMatch(idMatch)) {
+        idMatchStart = System.currentTimeMillis();
         checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
+        timings.put("checkScientificNameAndIDConsistencyScientificNameID", System.currentTimeMillis() - idMatchStart);
+        idMatchStart = System.currentTimeMillis();
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
-        watch.stop();
-        idMatch.getDiagnostics().setTimeTaken(watch.getTime());
+        timings.put("checkConsistencyWithClassificationMatch", System.currentTimeMillis() - idMatchStart);
+        idMatch.getDiagnostics().setTimings(timings);
         return idMatch;
       } else {
         sciNameMatch.addMatchIssue(MatchingIssue.SCIENTIFIC_NAME_ID_NOT_FOUND);
       }
     }
 
-    watch.stop();
-    sciNameMatch.getDiagnostics().setTimeTaken(watch.getTime());
+    sciNameMatch.getDiagnostics().setTimings(timings);
     return sciNameMatch;
   }
 
@@ -378,9 +402,9 @@ public class MatchingService {
   /**
    * Check if the scientific name provided in the match is consistent with the scientific name provided in the request.
    * If not, add an issue to the diagnostics.
-   * @param idMatch
-   * @param scientificName
-   * @param rank
+   * @param idMatch the match to check
+   * @param scientificName the scientific name provided in the request
+   * @param rank the rank provided in the request
    */
   private void checkScientificNameAndIDConsistency(@Nullable NameUsageMatch idMatch, @Nullable String scientificName, @Nullable Rank rank) {
 
@@ -407,8 +431,10 @@ public class MatchingService {
                                                @Nullable Rank suppliedRank,
                                                @Nullable LinneanClassification classification,
                                                Set<String> exclude, boolean strict, boolean verbose) {
+    Map<String, Long> timings = new HashMap<>();
 
     // construct the best name and rank we can with the supplied values
+    long start = System.currentTimeMillis();
     NameNRank nr =
       NameNRank.build(
         suppliedScientificName,
@@ -418,6 +444,7 @@ public class MatchingService {
         infraSpecificEpithet,
         suppliedRank,
         classification);
+    timings.put("nameNRank", System.currentTimeMillis() - start);
 
     String scientificName = nr.name;
     Rank rank = nr.rank;
@@ -454,7 +481,9 @@ public class MatchingService {
         // we build the name with flags manually as we wanna exclude indet. names such as "Abies
         // spec." and rather match them to Abies only
         Rank npRank = rank == null ? null : Rank.valueOf(rank.name());
+        start = System.currentTimeMillis();
         parsedName = NameParsers.INSTANCE.parse(scientificName, npRank, null);
+        timings.put("nameParse", System.currentTimeMillis() - start);
         queryNameType = NameType.valueOf(parsedName.getType().name());
         scientificName = parsedName.canonicalNameMinimal();
 
@@ -510,6 +539,7 @@ public class MatchingService {
     }
 
     // run the initial match
+    start = System.currentTimeMillis();
     NameUsageMatch match1 = match(
         queryNameType,
         parsedName,
@@ -520,6 +550,7 @@ public class MatchingService {
         mainMatchingMode,
         verbose
     );
+    timings.put("luceneMatch", System.currentTimeMillis() - start);
 
     // use genus higher match instead of fuzzy one?
     // https://github.com/gbif/portal-feedback/issues/2930
@@ -529,6 +560,7 @@ public class MatchingService {
         && parsedName != null
         && !match1.getUsage().getCanonicalName().startsWith(getGenusOrAbove(parsedName) + " ")
         && nextAboveGenusDiffers(classification, match1)) {
+      start = System.currentTimeMillis();
       NameUsageMatch genusMatch =
           match(
               NameType.valueOf(parsedName.getType().name()),
@@ -539,6 +571,7 @@ public class MatchingService {
               exclude,
               MatchingMode.HIGHER,
               verbose);
+      timings.put("luceneGenusMatch", System.currentTimeMillis() - start);
       if (isMatch(genusMatch) && genusMatch.getUsage().getRank() == Rank.GENUS) {
         return higherMatch(genusMatch, match1);
       }
@@ -558,6 +591,7 @@ public class MatchingService {
       ){
           match1.getDiagnostics().setMatchType(MatchType.HIGHERRANK);
       }
+      match1.getDiagnostics().setTimings(timings);
       return match1;
     }
 
@@ -570,6 +604,7 @@ public class MatchingService {
         if (parsedName.getInfraspecificEpithet() != null || (rank != null && rank.isInfraspecific())) {
           // try with species
           String species = parsedName.getGenus() + " " + parsedName.getSpecificEpithet();
+          start = System.currentTimeMillis();
           match =
               match(
                   parsedName.getType(),
@@ -580,6 +615,7 @@ public class MatchingService {
                   exclude,
                   MatchingMode.FUZZY,
                   verbose);
+          timings.put("luceneHigherRankMatch", System.currentTimeMillis() - start);
           if (isMatch(match)) {
             return higherMatch(match, match1);
           }
@@ -589,6 +625,7 @@ public class MatchingService {
         // we're not sure if this is really a genus, so don't set the rank
         // we get non species names sometimes like "Chaetognatha eyecount" that refer to a phylum
         // called "Chaetognatha"
+        start = System.currentTimeMillis();
         match =
             match(
                 parsedName.getType(),
@@ -599,6 +636,7 @@ public class MatchingService {
                 exclude,
                 MatchingMode.HIGHER,
                 verbose);
+        timings.put("luceneGenusMatch2", System.currentTimeMillis() - start);
         if (isMatch(match)) {
           return higherMatch(match, match1);
         }

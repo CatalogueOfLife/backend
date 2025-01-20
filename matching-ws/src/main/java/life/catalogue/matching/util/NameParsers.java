@@ -9,7 +9,7 @@ import org.gbif.nameparser.NameParserGBIF;
  */
 @Slf4j
 public class NameParsers {
-  public static final NameParserGBIF INSTANCE = new NameParserGBIF(20000);
+  public static final NameParserGBIF INSTANCE = new NameParserGBIF(10000);
 
   private NameParsers() {};
 }
