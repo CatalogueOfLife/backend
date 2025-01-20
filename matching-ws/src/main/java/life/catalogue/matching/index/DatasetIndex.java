@@ -94,7 +94,10 @@ public class DatasetIndex {
     if (new File(mainIndexPath).exists()) {
       log.info("Loading lucene index from {}", mainIndexPath);
       try {
-        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+        MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
+        mMapDirectory.setPreload(true);
+
+        initWithDir(mMapDirectory);
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
@@ -766,7 +769,7 @@ public class DatasetIndex {
             // Deserialize the byte array using Avro
             ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
               bytesRef.offset, bytesRef.length);
-            StoredClassification storedClassification = IOUtil.deserializeStoredClassification(inputStream);
+            StoredClassification storedClassification = IOUtil.getInstance().deserializeStoredClassification(inputStream);
 
             classification = storedClassification.getNames().stream()
               .map(r -> NameUsageMatch.RankedName.builder()
@@ -827,17 +830,20 @@ public class DatasetIndex {
   private static NameUsageMatch.Usage constructUsage(Document doc) {
     StoredParsedName pn = null;
     BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME_AVRO);
-    byte[] avroData = bytesRef.bytes;
 
-    if (avroData != null) {
-      try {
-        // Deserialize the byte array using Avro
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
-          bytesRef.offset, bytesRef.length);
-        pn = IOUtil.deserializeStoredParsedName(inputStream);
+    if (bytesRef != null) {
+      byte[] avroData = bytesRef.bytes;
 
-      } catch (Exception e) {
-        log.error("Cannot parse parsed name json", e);
+      if (avroData != null) {
+        try {
+          // Deserialize the byte array using Avro
+          ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
+            bytesRef.offset, bytesRef.length);
+          pn = IOUtil.getInstance().deserializeStoredParsedName(inputStream);
+
+        } catch (Exception e) {
+          log.error("Cannot parse parsed name json", e);
+        }
       }
     }
 

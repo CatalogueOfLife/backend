@@ -627,7 +627,7 @@ public class IndexingService {
 
           // Serialize the User object to a byte array
           ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          IOUtil.serialize(storedClassification, outputStream);
+          IOUtil.getInstance().serialize(storedClassification, outputStream);
           outputStream.close();
 
           byte[] avroBytes = outputStream.toByteArray();
@@ -1024,7 +1024,7 @@ public class IndexingService {
 
         // Serialize the User object to a byte array
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        IOUtil.serialize(storedParsedName, outputStream);
+        IOUtil.getInstance().serialize(storedParsedName, outputStream);
         outputStream.close();
 
         byte[] avroBytes = outputStream.toByteArray();
