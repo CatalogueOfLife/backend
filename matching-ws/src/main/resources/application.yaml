@@ -34,3 +34,7 @@ management.endpoint.loggers.enabled: true
 spring:
   banner:
     location: classpath:banner.txt
+
+grpc:
+  server:
+    port: 9090

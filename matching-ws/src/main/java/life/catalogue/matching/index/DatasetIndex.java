@@ -39,6 +39,7 @@ import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -69,6 +70,9 @@ public class DatasetIndex {
   @Value("${working.dir:/tmp/}")
   String workingDir;
 
+  @Autowired
+  IOUtil ioUtil;
+
   private boolean isInitialised = false;
 
   public boolean getIsInitialised() {
@@ -94,7 +98,9 @@ public class DatasetIndex {
     if (new File(mainIndexPath).exists()) {
       log.info("Loading lucene index from {}", mainIndexPath);
       try {
-        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+        MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
+        mMapDirectory.setPreload(true);
+        initWithDir(mMapDirectory);
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
@@ -422,6 +428,7 @@ public class DatasetIndex {
   public static DatasetIndex newDatasetIndex(Directory mainIndexDir)  {
     DatasetIndex datasetIndex = new DatasetIndex();
     datasetIndex.initWithDir(mainIndexDir);
+    datasetIndex.ioUtil = new IOUtil();
     return datasetIndex;
   }
 
@@ -469,7 +476,6 @@ public class DatasetIndex {
       return NO_MATCH;
     }
   }
-
 
   /**
    * Matches an external ID. Intended for debug purposes only, to quickly
@@ -755,18 +761,18 @@ public class DatasetIndex {
       }
     }
 
-    BytesRef bytesRef = doc.getBinaryValue(FIELD_CLASSIFICATION_AVRO);
+    BytesRef bytesRef = doc.getBinaryValue(FIELD_CLASSIFICATION);
     List<NameUsageMatch.RankedName> classification = new ArrayList<>();
     if (bytesRef != null) {
       try {
 
-        byte[] avroData = bytesRef.bytes;
-        if (avroData != null) {
+        byte[] kryoData = bytesRef.bytes;
+        if (kryoData != null) {
           try {
-            // Deserialize the byte array using Avro
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
+            // Deserialize the byte array using kryo
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(kryoData,
               bytesRef.offset, bytesRef.length);
-            StoredClassification storedClassification = IOUtil.deserializeStoredClassification(inputStream);
+            StoredClassification storedClassification = ioUtil.deserializeStoredClassification(inputStream);
 
             classification = storedClassification.getNames().stream()
               .map(r -> NameUsageMatch.RankedName.builder()
@@ -824,20 +830,23 @@ public class DatasetIndex {
     return u;
   }
 
-  private static NameUsageMatch.Usage constructUsage(Document doc) {
+  private NameUsageMatch.Usage constructUsage(Document doc) {
     StoredParsedName pn = null;
-    BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME_AVRO);
-    byte[] avroData = bytesRef.bytes;
+    BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME);
 
-    if (avroData != null) {
-      try {
-        // Deserialize the byte array using Avro
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
-          bytesRef.offset, bytesRef.length);
-        pn = IOUtil.deserializeStoredParsedName(inputStream);
+    if (bytesRef != null) {
+      byte[] kyroData = bytesRef.bytes;
 
-      } catch (Exception e) {
-        log.error("Cannot parse parsed name json", e);
+      if (kyroData != null) {
+        try {
+          // Deserialize the byte array using kyro
+          ByteArrayInputStream inputStream = new ByteArrayInputStream(kyroData,
+            bytesRef.offset, bytesRef.length);
+          pn = ioUtil.deserializeStoredParsedName(inputStream);
+
+        } catch (Exception e) {
+          log.error("Cannot parse parsed name json", e);
+        }
       }
     }
 

@@ -1,7 +1,9 @@
 package life.catalogue.release;
 
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectReleaseConfig {
@@ -27,6 +29,13 @@ public class ProjectReleaseConfig {
      * Template used to build a new release description.
      */
     public String description;
+    public List<String> keyword;
+    public Dataset.UrlDescription conversion = new Dataset.UrlDescription();
+    public Integer confidence;
+    public Integer completeness;
+    public String geographicScope;
+    public String taxonomicScope;
+    public String temporalScope;
 
     /**
      * If true a release will include as its authors all authors of all it's sources.

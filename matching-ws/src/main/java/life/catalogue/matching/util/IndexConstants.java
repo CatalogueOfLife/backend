@@ -13,8 +13,8 @@ public class IndexConstants {
   public static final String FIELD_STATUS = "status";
   public static final String FIELD_PARENT_ID = "parentId";
   public static final String FIELD_NOMENCLATURAL_CODE = "nomcode";
-  public static final String FIELD_PARSED_NAME_AVRO = "parsedName";
-  public static final String FIELD_CLASSIFICATION_AVRO = "classification";
+  public static final String FIELD_PARSED_NAME = "parsedName";
+  public static final String FIELD_CLASSIFICATION = "classification";
   public static final String FIELD_CATEGORY = "category";
   public static final String FIELD_JOIN_ID = "joinId";
   public static final String MAIN_INDEX_DIR = "main";

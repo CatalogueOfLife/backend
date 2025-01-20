@@ -509,7 +509,7 @@ public class XRelease extends ProjectRelease {
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession session = factory.openSession(true)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
       for (var d : decisions) {
         // we create decisions on the fly to auto block - ignore those
@@ -519,11 +519,9 @@ public class XRelease extends ProjectRelease {
             dm.createWithID(d);
           } catch (PersistenceException e) {
             // swallow, expected for some cases
-            LOG.info("Failed to create decision {}: {}", d, PgUtils.toMessage(e));
           }
         }
       }
-      session.commit();
     }
   }
 

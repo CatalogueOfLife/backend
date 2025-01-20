@@ -299,11 +299,11 @@ public class MatchController implements ErrorController {
         exclude,
         strict,
         verbose);
-    NameUsageMatch nameUsageMatch = matchingService.match(query);
-    watch.stop();
-    log("v2/species/match", query, watch);
-    nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
-    return nameUsageMatch;
+      NameUsageMatch nameUsageMatch = matchingService.match(query);
+      watch.stop();
+      log("v2/species/match", query, watch);
+      nameUsageMatch.getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
+      return nameUsageMatch;
   }
 
   @Operation(
@@ -460,7 +460,7 @@ public class MatchController implements ErrorController {
       if (optionalNameUsageMatchV1.isPresent()) {
         return optionalNameUsageMatchV1.get();
       } else {
-        return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+        return Map.of("message", "Unable to support API v1 for this checklist. Please use v2 instead.");
       }
     } catch (Exception e){
       log.error(e.getMessage(), e);
@@ -632,7 +632,7 @@ public class MatchController implements ErrorController {
       optionalNameUsageMatchV1.get().getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
       return optionalNameUsageMatchV1.get();
     } else {
-      return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+      return Map.of("message", "Unable to support API v1 for this checklist. Please use v2 instead.");
     }
   }
 
@@ -738,7 +738,7 @@ public class MatchController implements ErrorController {
     log.info("[{}ms] {}: {}", String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)), requestPath, query);
   }
 
-  private static void log(String requestPath, NameUsageQuery query, StopWatch watch) {
+  protected static void log(String requestPath, NameUsageQuery query, StopWatch watch) {
     if (log.isInfoEnabled()) {
       StringJoiner joiner = new StringJoiner(", ");
 
@@ -747,6 +747,10 @@ public class MatchController implements ErrorController {
       addIfNotNull(joiner, query.taxonConceptID);
       addIfNotNull(joiner, query.scientificNameID);
       addIfNotNull(joiner, query.scientificName);
+      addIfNotNull(joiner, query.authorship);
+      addIfNotNull(joiner, query.rank);
+      addIfNotNull(joiner, query.genericName);
+      addIfNotNull(joiner, query.specificEpithet);
 
       log.info("[{}ms] [{}] {}",
         String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)),
@@ -757,7 +761,7 @@ public class MatchController implements ErrorController {
   }
 
   private static void addIfNotNull(StringJoiner joiner, Object value) {
-    if (Objects.nonNull(value)) {
+    if (Objects.nonNull(value) && !value.toString().isEmpty()) {
       joiner.add(value.toString());
     }
   }
