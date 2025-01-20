@@ -260,10 +260,10 @@ public class XReleaseIT extends SectorSyncTestBase {
 
     // regular release
     var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
-    final int releaseKey = rel.getNewDatasetKey();
-    System.out.println("\n*** RELEASE " + releaseKey + " ***");
     var job = new Thread(rel);
     job.run();
+    final int releaseKey = rel.getNewDatasetKey();
+    System.out.println("\n*** RELEASED " + releaseKey + " ***");
     assertSameTree(Datasets.COL, releaseKey);
     // poor mans release publishing
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
@@ -276,10 +276,10 @@ public class XReleaseIT extends SectorSyncTestBase {
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);
     xrel.setCfg(xCfg);
-    final int xreleaseKey = xrel.getNewDatasetKey();
-    System.out.println("\n*** XRELEASE " + xreleaseKey + " ***");
     job = new Thread(xrel);
     job.run();
+    final int xreleaseKey = xrel.getNewDatasetKey();
+    System.out.println("\n*** XRELEASED " + xreleaseKey + " ***");
 
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree

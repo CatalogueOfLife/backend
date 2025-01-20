@@ -1,9 +1,12 @@
 package life.catalogue.release;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import com.google.common.base.Preconditions;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -12,8 +15,10 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.CitationMapper;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -27,6 +32,8 @@ import life.catalogue.img.ImageService;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -43,6 +50,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import jakarta.ws.rs.core.UriBuilder;
+
+import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
@@ -62,6 +71,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
   private Integer prevReleaseKey;
+  protected ProjectReleaseConfig rCfg;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -72,9 +82,9 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   ProjectRelease(String action, SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
-                 int datasetKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
+                 int baseReleaseOrProjectKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(action, factory, diDao, dDao, indexService, validator, userKey, datasetKey, true, cfg.release.deleteOnError);
+    super(action, factory, diDao, dDao, indexService, validator, userKey, baseReleaseOrProjectKey, true, cfg.release.deleteOnError);
     this.imageService = imageService;
     this.doiService = doiService;
     this.rDao = rDao;
@@ -87,14 +97,78 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
+  }
+
+  @Override
+  void initJob() throws Exception {
+    super.initJob();
     // point to release in CLB - this requires the datasetKey to exist already
     newDataset.setUrl(UriBuilder.fromUri(cfg.clbURI)
-                       .path("dataset")
-                       .path(newDataset.getKey().toString())
-                       .build());
-    dDao.update(newDataset, userKey);
-    // load project dataset for email templates & license checks
-    dataset = loadDataset(factory, datasetKey);
+      .path("dataset")
+      .path(newDataset.getKey().toString())
+      .build());
+    dDao.update(newDataset, user);
+  }
+
+  @Override
+  protected void loadConfigs() {
+    rCfg = loadConfig(ProjectReleaseConfig.class, settings.getURI(Setting.RELEASE_CONFIG));
+    verifyConfigTemplates();
+  }
+
+  /**
+   * Verifies settings values, in particular the freemarker citation templates
+   */
+  protected void verifyConfigTemplates() throws IllegalArgumentException {
+    Dataset d = new Dataset();
+    d.setKey(1);
+    d.setAlias("alias");
+    d.setTitle("title");
+    d.setOrigin(DatasetOrigin.PROJECT);
+    d.setIssued(FuzzyDate.now());
+    d.setLogo(URI.create("https://gbif.org"));
+    d.setUrl(d.getLogo());
+    d.setCreated(LocalDateTime.now());
+    d.setModified(LocalDateTime.now());
+    d.setImported(LocalDateTime.now());
+
+    CitationUtils.ReleaseWrapper dw = new CitationUtils.ReleaseWrapper(d,d,d);
+    // verify all templates and throw early otherwise
+    verifyTemplate("alias", rCfg.metadata.alias, dw);
+    verifyTemplate("title", rCfg.metadata.title, dw);
+    verifyTemplate("version", rCfg.metadata.version, dw);
+    verifyTemplate("description", rCfg.metadata.description, dw);
+  }
+
+  private void verifyTemplate(String field, String template, CitationUtils.ReleaseWrapper d) throws IllegalArgumentException {
+    if (template != null) {
+      try {
+        CitationUtils.fromTemplate(d, template);
+      } catch (RuntimeException e) {
+        throw new IllegalArgumentException("Bad template for " + field + ": " + e.getMessage(), e);
+      }
+    }
+  }
+
+  @VisibleForTesting
+  public static <T> T loadConfig(Class<T> configClass, URI url) {
+    if (url == null) {
+      LOG.warn("No {} config supplied, use defaults", configClass.getSimpleName());
+      try {
+        return configClass.getDeclaredConstructor().newInstance();
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new RuntimeException(e);
+      }
+
+    } else {
+      try (InputStream in = url.toURL().openStream()) {
+        // odd workaround to use the stream directly - which breaks the yaml parsing for some reason
+        String yaml = InputStreamUtils.readEntireStream(in);
+        return YamlUtils.readString(configClass, yaml);
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Invalid release configuration at "+ url, e);
+      }
+    }
   }
 
   @Override
@@ -103,29 +177,22 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   public URI getReportURI() {
-    return cfg.release.reportURI(datasetKey, attempt);
+    return cfg.release.reportURI(projectKey, attempt);
   }
 
   @Override
-  protected void modifyDataset(Dataset d, DatasetSettings ds) {
-    super.modifyDataset(d, ds);
-    modifyDatasetForRelease(d, ds);
-  }
-
-  public static void modifyDatasetForRelease(Dataset d, DatasetSettings ds) {
+  protected void modifyDataset(Dataset d) {
+    super.modifyDataset(d);
     d.setOrigin(DatasetOrigin.RELEASE);
 
     final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
 
-    String version = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_VERSION_TEMPLATE, DEFAULT_VERSION_TEMPLATE);
-    d.setVersion(version);
-
-    String alias = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_ALIAS_TEMPLATE, DEFAULT_ALIAS_TEMPLATE);
-    d.setAlias(alias);
-
-    String description = CitationUtils.fromTemplate(d, ds, Setting.RELEASE_DESCRIPTION_TEMPLATE, d.getDescription());
-    d.setDescription(description);
+    var data = new CitationUtils.ReleaseWrapper(d, base, dataset);
+    d.setAlias( CitationUtils.fromTemplate(data, coalesce(rCfg.metadata.alias, DEFAULT_ALIAS_TEMPLATE)) );
+    d.setTitle( CitationUtils.fromTemplate(data, coalesce(rCfg.metadata.title, d.getTitle())) );
+    d.setVersion( CitationUtils.fromTemplate(data, coalesce(rCfg.metadata.version, DEFAULT_VERSION_TEMPLATE)) );
+    d.setDescription( CitationUtils.fromTemplate(data, coalesce(rCfg.metadata.description, d.getDescription())) );
 
     // all releases are private candidate releases first
     d.setPrivat(true);
@@ -145,8 +212,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   void prepWork() throws Exception {
     LocalDateTime start = LocalDateTime.now();
 
-    if (settings.isEnabled(Setting.RELEASE_REMOVE_BARE_NAMES)) {
-      removeOrphans(datasetKey);
+    if (rCfg.removeBareNames) {
+      removeOrphans(projectKey);
     }
 
     prevReleaseKey = createReleaseDOI();
@@ -155,7 +222,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(datasetKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg.release, factory);
+    IdProvider idp = new IdProvider(projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg.release, factory);
     idp.mapIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
@@ -164,7 +231,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   @Override
   protected void onLogAppenderClose() {
     // set MDC again just to make sure we copy the logs correctly in case some other code has changed the MDC wrongly
-    LoggingUtils.setDatasetMDC(datasetKey, attempt, getClass());
+    LoggingUtils.setDatasetMDC(projectKey, attempt, getClass());
     LOG.info(LoggingUtils.COPY_RELEASE_LOGS_MARKER, "Copy release logs for {} {}", getJobName(), getKey());
     super.onLogAppenderClose();
   }
@@ -193,7 +260,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       updateDataset(newDataset);
 
       LOG.info("Use previous release {} for DOI metadata of {}", prevReleaseKey, newDatasetKey);
-      var attr = doiUpdater.buildReleaseMetadata(datasetKey, false, newDataset, prevReleaseKey);
+      var attr = doiUpdater.buildReleaseMetadata(projectKey, false, newDataset, prevReleaseKey);
       LOG.info("Creating new DOI {} for release {}", newDataset.getDoi(), newDatasetKey);
       doiService.createSilently(attr);
     }
@@ -212,7 +279,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null && prevSrc.getDoi().isCOL()) {
         // compare basic metrics
-        var metrics = srcDao.sourceMetrics(datasetKey, sourceKey);
+        var metrics = srcDao.sourceMetrics(projectKey, sourceKey);
         var prevMetrics = srcDao.sourceMetrics(prevReleaseKey, sourceKey);
         if (Objects.equals(metrics.getTaxaByRankCount(), prevMetrics.getTaxaByRankCount())
             && Objects.equals(metrics.getSynonymsByRankCount(), prevMetrics.getSynonymsByRankCount())
@@ -242,12 +309,11 @@ public class ProjectRelease extends AbstractProjectCopy {
       // treat source. Archive dataset metadata & logos & assign a potentially new DOI
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
-      final var issueSourceDOIs = settings.isEnabled(Setting.RELEASE_ISSUE_SOURCE_DOIS);
       // create fixed source dataset records for this release.
       // This DOES create source dataset records for aggregated publishers.
       // It does not create source records for merge sectors without data in the release itself!
-      for (var d : srcDao.listSectorBasedSources(datasetKey, newDatasetKey, true)) {
-        if (issueSourceDOIs && cfg.doi != null) {
+      for (var d : srcDao.listSectorBasedSources(projectKey, newDatasetKey, true)) {
+        if (rCfg.issueSourceDOIs && cfg.doi != null) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
           if (srcDOI == null) {
@@ -279,7 +345,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // aggregate authors for release from sources
     checkIfCancelled();
     var authGen = new AuthorlistGenerator(validator, srcDao);
-    if (authGen.appendSourceAuthors(newDataset, settings)) {
+    if (authGen.appendSourceAuthors(newDataset, rCfg.metadata)) {
       dDao.update(newDataset, user);
     }
 
@@ -287,17 +353,17 @@ public class ProjectRelease extends AbstractProjectCopy {
     checkIfCancelled();
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.updateLastImport(datasetKey, attempt);
+      dm.updateLastImport(projectKey, attempt);
       dm.updateLastImport(newDatasetKey, attempt);
     }
     // flush varnish cache for dataset/3LR and LRC (or LXR & LXRC)
     if (client != null && datasetApiBuilder != null) {
-      URI api = datasetApiBuilder.build(datasetKey);
+      URI api = datasetApiBuilder.build(projectKey);
       VarnishUtils.ban(client, api);
       VarnishUtils.ban(client, portalURI); // flush also /colseo which also points to latest releases
     }
     // kick off exports
-    if (settings.isEnabled(Setting.RELEASE_PREPARE_DOWNLOADS)) {
+    if (rCfg.prepareDownloads) {
       LOG.info("Prepare exports for release {}", newDatasetKey);
       for (DataFormat df : EXPORT_FORMATS) {
         ExportRequest req = new ExportRequest();
@@ -309,13 +375,13 @@ public class ProjectRelease extends AbstractProjectCopy {
       }
     }
     // generic hooks
-    if (cfg.release.actions != null && cfg.release.actions.containsKey(datasetKey)) {
+    if (cfg.release.actions != null && cfg.release.actions.containsKey(projectKey)) {
       // reload dataset metadata
       final Dataset d;
       try (SqlSession session = factory.openSession(true)) {
         d = session.getMapper(DatasetMapper.class).get(newDatasetKey);
       }
-      for (var action : cfg.release.actions.get(datasetKey)) {
+      for (var action : cfg.release.actions.get(projectKey)) {
         if (!action.onPublish) {
           action.call(client, d);
         }
@@ -327,9 +393,9 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected void onError(Exception e) {
     super.onError(e);
     // remove reports
-    File dir = cfg.release.reportDir(datasetKey, attempt);
+    File dir = cfg.release.reportDir(projectKey, attempt);
     if (dir.exists()) {
-      LOG.info("Remove release report {}-{} for failed dataset {}", datasetKey, metrics.attempt(), newDatasetKey);
+      LOG.info("Remove release report {}-{} for failed dataset {}", projectKey, metrics.attempt(), newDatasetKey);
       FileUtils.deleteQuietly(dir);
     }
   }

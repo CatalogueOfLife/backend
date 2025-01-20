@@ -31,22 +31,21 @@ public class AuthorlistGenerator {
    * Appends a list of unique and sorted source authors to the creator list of a given release dataset.
    * Sources are taken from the project.
    * @param d dataset to append authors to and to take contributors from
-   * @param ds settings to consider for appending
+   * @param cfg metadata configs from the release
    * @return true if source authors were added
    */
-  public boolean appendSourceAuthors(Dataset d, DatasetSettings ds) {
-    if (!ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS) && !ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS)) {
+  public boolean appendSourceAuthors(Dataset d, ProjectReleaseConfig.MetadataConfig cfg) {
+    if (!cfg.addSourceAuthors && !cfg.addContributors) {
       return false;
     }
     var exclusion = new HashSet<>();
-    if (ds.has(Setting.RELEASE_AUTHOR_SOURCE_EXCLUSION)) {
-      List<DatasetType> types = ds.getList(Setting.RELEASE_AUTHOR_SOURCE_EXCLUSION);
-      exclusion.addAll(types);
+    if (cfg.authorSourceExclusion != null) {
+      exclusion.addAll(cfg.authorSourceExclusion);
     }
     var sources = dao.listSimple(d.getKey(), true);
     // append authors for release?
     final List<Agent> authors = new ArrayList<>();
-    if (ds.isEnabled(Setting.RELEASE_ADD_SOURCE_AUTHORS)) {
+    if (cfg.addSourceAuthors) {
       sources.stream()
         .filter(src -> !exclusion.contains(src.getType()))
         .forEach(src -> {
@@ -58,7 +57,7 @@ public class AuthorlistGenerator {
         }
       });
     }
-    if (ds.isEnabled(Setting.RELEASE_ADD_CONTRIBUTORS) && d.getContributor() != null) {
+    if (cfg.addContributors && d.getContributor() != null) {
       authors.addAll(d.getContributor());
       // remove contributors from release now that they are part of the creators
       d.setContributor(Collections.EMPTY_LIST);

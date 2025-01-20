@@ -10,9 +10,7 @@ import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.date.DateUtils;
-import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
-import life.catalogue.common.util.YamlUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
@@ -30,9 +28,6 @@ import life.catalogue.matching.UsageMatcherGlobal;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -69,14 +64,14 @@ public class XRelease extends ProjectRelease {
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, WsServerConfig cfg, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE).sourceKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
+    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcher = matcher;
     this.ni = matcher.getNameIndex();
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
-    LOG.info("Build extended release for project {} from public release {}", datasetKey, baseReleaseKey);
+    LOG.info("Build extended release for project {} from public release {}", projectKey, baseReleaseKey);
   }
 
   @VisibleForTesting
@@ -85,28 +80,16 @@ public class XRelease extends ProjectRelease {
   }
 
   @Override
-  protected void modifyDataset(Dataset d, DatasetSettings ds) {
-    super.modifyDataset(d, ds);
-    if (xCfg == null) {
-      xCfg = loadConfig(ds.getURI(Setting.XRELEASE_CONFIG));
-    }
+  protected void loadConfigs() {
+    rCfg = loadConfig(XReleaseConfig.class, settings.getURI(Setting.XRELEASE_CONFIG));
+    verifyConfigTemplates();
+    xCfg = (XReleaseConfig) rCfg;
+  }
+
+  @Override
+  protected void modifyDataset(Dataset d) {
+    super.modifyDataset(d);
     d.setOrigin(DatasetOrigin.XRELEASE);
-    if (xCfg.alias != null) {
-      String alias = CitationUtils.fromTemplate(d, xCfg.alias);
-      d.setAlias(alias);
-    }
-    if (xCfg.title != null) {
-      String title = CitationUtils.fromTemplate(d, xCfg.title);
-      d.setTitle(title);
-    }
-    if (xCfg.version != null) {
-      String version = CitationUtils.fromTemplate(d, xCfg.version);
-      d.setVersion(version);
-    }
-    if (xCfg.description != null) {
-      String description = CitationUtils.fromTemplate(d, dDao.get(baseReleaseKey), xCfg.description);
-      d.setDescription(description);
-    }
   }
 
   @Override
@@ -119,12 +102,12 @@ public class XRelease extends ProjectRelease {
       var dm = session.getMapper(DatasetMapper.class);
       var sm = session.getMapper(SectorMapper.class);
       Set<Integer> sourceKeys = new HashSet<>();
-      for (var s : sm.listByPriority(datasetKey, Sector.Mode.MERGE)) {
+      for (var s : sm.listByPriority(projectKey, Sector.Mode.MERGE)) {
         if (!sourceKeys.contains(s.getSubjectDatasetKey())) {
           Dataset src = dm.get(s.getSubjectDatasetKey());
           if (!License.isCompatible(src.getLicense(), projectLicense)) {
-            LOG.warn("License {} of project {} is not compatible with license {} of source {}: {}", projectLicense, datasetKey, src.getLicense(), src.getKey(), src.getTitle());
-            throw new IllegalArgumentException("Source license " +src.getLicense()+ " of " + s + " is not compatible with license " +projectLicense+ " of project " + datasetKey);
+            LOG.warn("License {} of project {} is not compatible with license {} of source {}: {}", projectLicense, projectKey, src.getLicense(), src.getKey(), src.getTitle());
+            throw new IllegalArgumentException("Source license " +src.getLicense()+ " of " + s + " is not compatible with license " +projectLicense+ " of project " + projectKey);
           }
           sourceKeys.add(s.getSubjectDatasetKey());
         }
@@ -138,11 +121,11 @@ public class XRelease extends ProjectRelease {
 
     try (SqlSession session = factory.openSession(true)) {
       var pm = session.getMapper(PublisherMapper.class);
-      var publisher = pm.listAll(datasetKey);
+      var publisher = pm.listAll(projectKey);
       // create missing sectors in project from publishers for compatible licenses only
       for (var p : publisher) {
-        int newSectors = sDao.createMissingMergeSectorsFromPublisher(datasetKey, fullUser.getKey(), p.getId(), xCfg.sourceDatasetExclusion);
-        LOG.info("Created {} newly published merge sectors in project {} from publisher {} {}", newSectors, datasetKey, p.getAlias(), p.getId());
+        int newSectors = sDao.createMissingMergeSectorsFromPublisher(projectKey, fullUser.getKey(), p.getId(), xCfg.sourceDatasetExclusion);
+        LOG.info("Created {} newly published merge sectors in project {} from publisher {} {}", newSectors, projectKey, p.getAlias(), p.getId());
       }
     }
 
@@ -150,7 +133,7 @@ public class XRelease extends ProjectRelease {
     // note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      sectors = sm.listByPriority(datasetKey, Sector.Mode.MERGE);
+      sectors = sm.listByPriority(projectKey, Sector.Mode.MERGE);
       // make sure dataset still exists for MERGE sectors
       var iter = sectors.iterator();
       while(iter.hasNext()){
@@ -184,26 +167,10 @@ public class XRelease extends ProjectRelease {
     createReleaseDOI();
 
     // setup id generator
-    usageIdGen = new XIdProvider(datasetKey, attempt, newDatasetKey, cfg.release, ni, factory);
+    usageIdGen = new XIdProvider(projectKey, attempt, newDatasetKey, cfg.release, ni, factory);
 
     // make sure the missing matching is completed before we deal with the real data
     thread.join();
-  }
-
-  @VisibleForTesting
-  protected static XReleaseConfig loadConfig(URI url) {
-    if (url == null) {
-      LOG.warn("No XRelease config supplied, use defaults");
-      return new XReleaseConfig();
-    } else {
-      try (InputStream in = url.toURL().openStream()) {
-        // odd workaround to use the stream directly - which breaks the yaml parsing for some reason
-        String yaml = InputStreamUtils.readEntireStream(in);
-        return YamlUtils.readString(XReleaseConfig.class, yaml);
-      } catch (IOException e) {
-        throw new IllegalArgumentException("Invalid xrelease configuration at "+ url, e);
-      }
-    }
   }
 
   @Override
@@ -396,7 +363,7 @@ public class XRelease extends ProjectRelease {
             sm.createWithID(s);
           }
           // revert sectors as we might use the sectors as project sectors later on again, better don't alter them
-          s.setDatasetKey(datasetKey);
+          s.setDatasetKey(projectKey);
         }
         session.commit();
       } else if (entity.equals(EditorialDecision.class)) {
@@ -476,7 +443,7 @@ public class XRelease extends ProjectRelease {
           // and also update our release copy!
           try (SqlSession session = factory.openSession(true)) {
             SectorMapper sm = session.getMapper(SectorMapper.class);
-            sm.updateReleaseAttempts(DSID.of(datasetKey, s.getId()), newDatasetKey);
+            sm.updateReleaseAttempts(DSID.of(projectKey, s.getId()), newDatasetKey);
           }
         }
       } catch (NotFoundException e) {

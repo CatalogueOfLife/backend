@@ -5,9 +5,11 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
 import life.catalogue.basgroup.HomotypicConsolidationJob;
+import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
@@ -31,6 +33,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import life.catalogue.release.ProjectReleaseConfig;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -152,26 +156,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   })
   public Dataset getMetadataArchive(@PathParam("key") Integer key, @PathParam("attempt") Integer attempt) {
     return dao.getArchive(key, attempt);
-  }
-
-  @GET
-  @Path("{key}/preview")
-  @VaryAccept
-  @Produces({MediaType.APPLICATION_JSON,
-    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
-    MoreMediaTypes.APP_JSON_CSL,
-    MoreMediaTypes.APP_BIBTEX
-  })
-  public Dataset preview(@PathParam("key") Integer key) {
-    Dataset d = super.get(key);
-    if (d.getOrigin() != DatasetOrigin.PROJECT) {
-      throw new IllegalArgumentException("Release metadata preview requires a project");
-    }
-
-    var ds = dao.getSettings(key);
-    ProjectRelease.modifyDatasetForRelease(d, ds);
-    return d;
   }
 
   @GET

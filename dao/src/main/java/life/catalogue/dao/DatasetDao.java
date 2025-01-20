@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -284,41 +285,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   public void putSettings(int key, DatasetSettings settings, int userKey) {
     // verify templates
-    verifySettings(settings);
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       dm.updateSettings(key, settings, userKey);
       session.commit();
-    }
-  }
-
-  /**
-   * Verifies settings values, in particular the freemarker citation templates
-   */
-  static void verifySettings(DatasetSettings ds) throws IllegalArgumentException {
-    Dataset d = new Dataset();
-    d.setKey(1);
-    d.setAlias("alias");
-    d.setTitle("title");
-    d.setOrigin(DatasetOrigin.PROJECT);
-    d.setIssued(FuzzyDate.now());
-    d.setLogo(URI.create("https://gbif.org"));
-    d.setUrl(d.getLogo());
-    d.setCreated(LocalDateTime.now());
-    d.setModified(LocalDateTime.now());
-    d.setImported(LocalDateTime.now());
-    // try with all templates, throwing IAE if bad
-    verifySetting(ds, Setting.RELEASE_ALIAS_TEMPLATE, d);
-    verifySetting(ds, Setting.RELEASE_VERSION_TEMPLATE, d);
-  }
-
-  static void verifySetting(DatasetSettings ds, Setting setting, Dataset d) throws IllegalArgumentException {
-    if (ds.containsKey(setting)) {
-      try {
-        CitationUtils.fromTemplate(d, ds.getString(setting));
-      } catch (RuntimeException e) {
-        throw new IllegalArgumentException("Bad template for " + setting + ": " + e.getMessage(), e);
-      }
     }
   }
 
@@ -639,7 +609,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
-  public Dataset copy(int datasetKey, int userKey, BiConsumer<Dataset, DatasetSettings> modifier){
+  public Dataset copy(int datasetKey, int userKey, Consumer<Dataset> modifier){
     Dataset copy;
 
     try (SqlSession session = factory.openSession(true)) {
@@ -654,13 +624,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       copy.setCreatedBy(userKey);
 
       if (modifier != null) {
-        DatasetSettings ds = dm.getSettings(datasetKey);
-        int before = ds.hashCode();
-        modifier.accept(copy, ds);
-        // modifier might have changed the settings, persist if so!
-        if (ds.hashCode() != before) {
-          dm.updateSettings(datasetKey, ds, userKey);
-        }
+        modifier.accept(copy);
       }
       copy.setKey(null); // make sure we have no key so we create
     }
