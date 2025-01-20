@@ -3,7 +3,6 @@ package life.catalogue.common.text;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.date.FuzzyDate;
 
 import java.net.URI;
@@ -18,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CitationUtils {
 
-  static class DatasetWrapper {
+  public static class DatasetWrapper {
     final Dataset d;
 
     public DatasetWrapper(Dataset dataset) {
@@ -242,25 +241,30 @@ public class CitationUtils {
     }
   }
 
-  static class BaseReleaseWrapper extends DatasetWrapper {
+  public static class ReleaseWrapper extends DatasetWrapper {
     final DatasetWrapper base;
+    final DatasetWrapper proj;
 
-    public BaseReleaseWrapper(Dataset dataset, Dataset base) {
+    public ReleaseWrapper(Dataset dataset, Dataset base, Dataset project) {
       super(dataset);
       this.base = new DatasetWrapper(base);
+      this.proj = new DatasetWrapper(project);
     }
 
     public DatasetWrapper getBase() {
       return base;
     }
+
+    public DatasetWrapper getProj() {
+      return proj;
+    }
   }
 
-  public static String fromTemplate(Dataset d, DatasetSettings ds, Setting setting, String defaultTemplate){
-    String tmpl = defaultTemplate;
-    if (ds != null && ds.has(setting)) {
-      tmpl = ds.getString(setting);
+  public static String fromTemplate(DatasetWrapper dw, String template){
+    if (template != null) {
+      return SimpleTemplate.render(template, dw);
     }
-    return fromTemplate(d, tmpl);
+    return null;
   }
 
   public static String fromTemplate(Dataset d, String template){
@@ -270,27 +274,9 @@ public class CitationUtils {
     return null;
   }
 
-  public static String fromTemplate(Dataset d, Dataset base, String template){
-    if (template != null) {
-      return SimpleTemplate.render(template, new BaseReleaseWrapper(d, base));
-    }
-    return null;
-  }
-
-  public static String concat(List<Agent> people) {
+  static String concat(List<Agent> people) {
     return people == null ? null : people.stream().map(Agent::getName).collect(Collectors.joining(", "));
   }
 
-  public static String concatEditors(List<Agent> editors) {
-    String x = concat(editors);
-    if (x != null) {
-      if (editors.size() > 1) {
-        return x + " (eds.)";
-      } else {
-        return x + " (ed.)";
-      }
-    }
-    return x;
-  }
 
 }

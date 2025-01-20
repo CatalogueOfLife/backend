@@ -80,50 +80,9 @@ public enum Setting {
   MERGE_METADATA(Boolean.class, EXTERNAL, PROJECT),
 
   /**
-   * Template used to build a new release alias.
+   * URL to a yaml file with the configuration for an release.
    */
-  RELEASE_ALIAS_TEMPLATE(String.class, PROJECT),
-
-  /**
-   * Template used to build a new release version.
-   */
-  RELEASE_VERSION_TEMPLATE(String.class, PROJECT),
-
-  /**
-   * Template used to build a new release description.
-   */
-  RELEASE_DESCRIPTION_TEMPLATE(String.class, PROJECT),
-
-  /**
-   * If true a release will include as its authors all authors of all it's sources.
-   */
-  RELEASE_ADD_SOURCE_AUTHORS(Boolean.class, PROJECT),
-
-  /**
-   * Optional list of dataset types to exclude from sources to generate the release authors from.
-   * E.g. ARTICLE to exclude all authors from Plazi and BDJ sources.
-   */
-  RELEASE_AUTHOR_SOURCE_EXCLUSION(DatasetType.class, true, PROJECT),
-
-  /**
-   * If true a release will include as its authors all contributors of the project (not source contributors).
-   */
-  RELEASE_ADD_CONTRIBUTORS(Boolean.class, PROJECT),
-
-  /**
-   * If true a release will issue new DOIs to changed sources.
-   */
-  RELEASE_ISSUE_SOURCE_DOIS(Boolean.class, PROJECT),
-
-  /**
-   * If true a release will first delete all bare names from the project before it copies data.
-   */
-  RELEASE_REMOVE_BARE_NAMES(Boolean.class, PROJECT),
-
-  /**
-   * If true a release will prepare exports for the entire release in all common formats.
-   */
-  RELEASE_PREPARE_DOWNLOADS(Boolean.class, PROJECT),
+  RELEASE_CONFIG(URI.class, PROJECT),
 
   /**
    * URL to a yaml file with the configuration for an extended release.

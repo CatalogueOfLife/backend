@@ -123,7 +123,7 @@ public class XReleaseBasicIT {
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
 
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      var names = num.listByRegex(xrel.newDatasetKey, xrel.datasetKey, "^Urocyon citrinus", null, null, null, null, new Page());
+      var names = num.listByRegex(xrel.newDatasetKey, xrel.projectKey, "^Urocyon citrinus", null, null, null, null, new Page());
       assertEquals(1, names.size());
       assertEquals("Stoker, 1887", names.get(0).getAuthorship()); // not Stokker from 101
       var dsid = names.get(0).toDSID(xrel.newDatasetKey);

@@ -1,6 +1,5 @@
 package life.catalogue.release;
 
-import life.catalogue.admin.jobs.RebuildMetricsJob;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -8,10 +7,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
-import life.catalogue.dao.DaoUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -25,6 +21,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
@@ -41,21 +39,27 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected final NameUsageIndexService indexService;
   protected final Validator validator;
   protected final int user;
-  protected final int datasetKey; // projectKey
-  protected final int attempt;
-  protected final DatasetImport metrics;
+  protected final int projectKey;
   protected final String actionName;
-  protected final Dataset newDataset;
-  protected final int newDatasetKey;
-  private final DatasetOrigin newDatasetOrigin;
+  protected int attempt;
+  protected DatasetImport metrics;
+  protected Dataset newDataset;
+  protected int newDatasetKey;
   protected boolean mapIds;
   protected DatasetSettings settings;
+  protected Dataset base;
   private final boolean deleteOnError;
 
+  private static int projectKey(int baseReleaseOrProjectKey) {
+    return DatasetInfoCache.CACHE.info(baseReleaseOrProjectKey).keyOrProjectKey();
+  }
+
   public AbstractProjectCopy(String actionName, SqlSessionFactory factory, DatasetImportDao diDao, DatasetDao dDao, NameUsageIndexService indexService, Validator validator,
-                             int userKey, int datasetKey, boolean mapIds, boolean deleteOnError) {
-    super(datasetKey, userKey, JobPriority.HIGH);
-    DaoUtils.requireProject(datasetKey, "Only managed datasets can be duplicated.");
+                             int userKey, int baseReleaseOrProjectKey, boolean mapIds, boolean deleteOnError) {
+    super(projectKey(baseReleaseOrProjectKey), userKey, JobPriority.HIGH);
+    var info = DatasetInfoCache.CACHE.info(baseReleaseOrProjectKey);
+    this.projectKey = info.keyOrProjectKey();
+    DaoUtils.requireProject(projectKey, "Only projects can be duplicated.");
     this.logToFile = true;
     this.deleteOnError = deleteOnError;
     this.actionName = actionName;
@@ -67,17 +71,35 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     this.validator = validator;
     this.user = userKey;
     this.mapIds = mapIds;
-    this.datasetKey = datasetKey;
-    metrics = diDao.createWaiting(datasetKey, this, userKey);
-    metrics.setJob(getClass().getSimpleName());
-    attempt = metrics.getAttempt();
-    newDataset = dDao.copy(datasetKey, userKey, this::modifyDataset);
-    newDatasetKey = newDataset.getKey();
-    newDatasetOrigin = newDataset.getOrigin();
-    LoggingUtils.setDatasetMDC(datasetKey, attempt, getClass());
+    // load settings & configs early
+    try (SqlSession session = factory.openSession(true)) {
+      settings = session.getMapper(DatasetMapper.class).getSettings(projectKey);
+    }
+    loadConfigs(); // can throw before we create an import record and new dataset if external configs are invalid
+    // load data needed for templates & license checks
+    dataset = loadDataset(factory, projectKey);
+    if (info.origin.isRelease()) {
+      base = loadDataset(factory, baseReleaseOrProjectKey);
+    }
   }
 
-  protected void modifyDataset(Dataset d, DatasetSettings ds) {
+  public int getDatasetKey() {
+    return projectKey;
+  }
+
+  public int getNewDatasetKey() {
+    return newDatasetKey;
+  }
+
+  public DatasetImport getMetrics() {
+    return metrics;
+  }
+
+  protected void loadConfigs() throws IllegalArgumentException{
+    // override to load configs before the new dataset with metadata is created
+  }
+
+  protected void modifyDataset(Dataset d) {
     d.setAlias(null); // must be unique
     d.setGbifKey(null); // must be unique
     d.setGbifPublisherKey(null);
@@ -87,16 +109,22 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     d.appendNotes(String.format("Created by %s#%s %s.", getJobName(), attempt, getKey()));
   }
 
-  public int getDatasetKey() {
-    return datasetKey;
-  }
+  /**
+   * Called as the very first thing to finish the initialisation of the job.
+   * This includes creating a new import metric and the new dataset
+   * @throws Exception
+   */
+  void initJob() throws Exception {
+    // new import/release attempt
+    metrics = diDao.createWaiting(projectKey, this, user);
+    metrics.setJob(getClass().getSimpleName());
+    attempt = metrics.getAttempt();
+    LoggingUtils.setDatasetMDC(projectKey, attempt, getClass());
+    updateState(ImportState.PREPARING);
 
-  public int getNewDatasetKey() {
-    return newDatasetKey;
-  }
-
-  public DatasetImport getMetrics() {
-    return metrics;
+    // create new dataset, e.g. release
+    newDataset = dDao.copy(projectKey, user, this::modifyDataset);
+    newDatasetKey = newDataset.getKey();
   }
 
   void prepWork() throws Exception {
@@ -110,7 +138,10 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   @Override
   public void runWithLock() throws Exception {
     checkIfCancelled();
-    LOG.info("{} project {} to new dataset {}", actionName, datasetKey, getNewDatasetKey());
+    initJob();
+
+    checkIfCancelled();
+    LOG.info("{} project {} to new dataset {}", actionName, projectKey, newDatasetKey);
     // prepare new tables
     updateState(ImportState.PROCESSING);
 
@@ -122,19 +153,14 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // is an id mapping table needed?
     if (mapIds) {
       checkIfCancelled();
-      LOG.info("Create clean id mapping tables for project {}", datasetKey);
+      LOG.info("Create clean id mapping tables for project {}", projectKey);
       try (SqlSession session = factory.openSession(true)) {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
         DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
-          dmp.dropTable(t, datasetKey);
-          dmp.createIdMapTable(t, datasetKey);
+          dmp.dropTable(t, projectKey);
+          dmp.createIdMapTable(t, projectKey);
         });
       }
-    }
-
-    // load settings
-    try (SqlSession session = factory.openSession(true)) {
-      settings = session.getMapper(DatasetMapper.class).getSettings(datasetKey);
     }
 
     // call prep
@@ -150,8 +176,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     finalWork();
 
     // remove sequences if not a project
-    if (newDatasetOrigin != DatasetOrigin.PROJECT) {
-      LOG.info("Removing db sequences for {} {}", newDatasetOrigin, newDatasetKey);
+    if (newDataset.getOrigin() != DatasetOrigin.PROJECT) {
+      LOG.info("Removing db sequences for {} {}", newDataset.getOrigin(), newDatasetKey);
       try (SqlSession session = factory.openSession(true)) {
         session.getMapper(DatasetPartitionMapper.class).createSequences(newDatasetKey);
       }
@@ -168,21 +194,25 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       index();
     } catch (Exception e) {
       // allow indexing to fail - sth we can do afterwards again
-      LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, datasetKey, e);
+      LOG.error("Error indexing new dataset {} into ES. Source dataset={}", newDatasetKey, projectKey, e);
     }
 
     metrics.setState(ImportState.FINISHED);
-    LOG.info("Successfully finished {} project {} into dataset {}", actionName,  datasetKey, newDatasetKey);
+    LOG.info("Successfully finished {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
   }
 
   @Override
   protected void onError(Exception e) {
-    metrics.setState(ImportState.FAILED);
-    metrics.setError(Exceptions.getFirstMessage(e));
-    LOG.error("Error {} project {} into dataset {}", actionName, datasetKey, newDatasetKey, e);
+    String attempt = null;
+    LOG.error("Error {} project {} into dataset {}", actionName, projectKey, newDatasetKey, e);
+    if (metrics != null) {
+      metrics.setState(ImportState.FAILED);
+      metrics.setError(Exceptions.getFirstMessage(e));
+      attempt = metrics.attempt();
+    }
     // cleanup failed remains?
     if (deleteOnError) {
-      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt());
+      LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, projectKey, attempt);
       dDao.delete(newDatasetKey, user);
     }
   }
@@ -190,9 +220,9 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   @Override
   protected void onCancel() {
     metrics.setState(ImportState.CANCELED);
-    LOG.warn("Cancelled {} project {} into dataset {}", actionName, datasetKey, newDatasetKey);
+    LOG.warn("Cancelled {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
     // cleanup failed remains
-    LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, datasetKey, metrics.attempt());
+    LOG.info("Remove failed {} dataset {} aka {}-{}", actionName, newDatasetKey, projectKey, metrics.attempt());
     dDao.delete(newDatasetKey, user);
   }
 
@@ -202,26 +232,26 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(metrics.getDuration(), "HH:mm:ss"));
     diDao.update(metrics);
     if (mapIds) {
-      LOG.info("Remove id mapping tables for project {}", datasetKey);
+      LOG.info("Remove id mapping tables for project {}", projectKey);
       try (SqlSession session = factory.openSession(true)) {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, datasetKey));
+        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
       } catch (Exception e) {
         // avoid any exceptions as it would bring down the finally block
-        LOG.error("Failed to remove id mapping tables for project {}", datasetKey, e);
+        LOG.error("Failed to remove id mapping tables for project {}", projectKey, e);
       }
     }
   }
 
   private void metrics() throws InterruptedException {
-    LOG.info("Build import metrics for dataset " + datasetKey);
+    LOG.info("Build import metrics for dataset " + projectKey);
     updateState(ImportState.ANALYZING);
     // update usage counter
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetPartitionMapper.class).updateUsageCounter(datasetKey);
+      session.getMapper(DatasetPartitionMapper.class).updateUsageCounter(projectKey);
     }
     // build taxon metrics
-    if (newDatasetOrigin.isRelease()) {
+    if (newDataset.getOrigin().isRelease()) {
       MetricsBuilder.rebuildMetrics(factory, newDatasetKey);
     }
     // create new dataset "import" metrics in mother project
@@ -277,8 +307,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
-    int count = session.getMapper(mapperClass).copyDataset(datasetKey, newDatasetKey, mapIds);
-    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), datasetKey, newDatasetKey);
+    int count = session.getMapper(mapperClass).copyDataset(projectKey, newDatasetKey, mapIds);
+    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), projectKey, newDatasetKey);
   }
 
   public int getAttempt() {

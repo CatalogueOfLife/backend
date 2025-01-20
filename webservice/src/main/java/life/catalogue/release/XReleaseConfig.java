@@ -13,29 +13,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+import life.catalogue.config.ReleaseConfig;
+
 import org.gbif.nameparser.api.Rank;
 
-public class XReleaseConfig {
-
-  /**
-   * XRelease alias with project variables allowed to be applied to a release
-   */
-  public String alias;
-
-  /**
-   * XRelease title with project variables allowed to be applied to a release
-   */
-  public String title;
-
-  /**
-   * XRelease version with project variables allowed to be applied to a release
-   */
-  public String version;
-
-  /**
-   * XRelease description with project variables allowed to be applied to a release
-   */
-  public String description;
+public class XReleaseConfig extends ProjectReleaseConfig {
 
   /**
    * Selected list of CLB dataset keys to exclude as sectors being created for aboves source publisher keys

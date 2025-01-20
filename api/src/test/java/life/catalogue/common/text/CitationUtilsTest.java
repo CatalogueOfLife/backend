@@ -41,10 +41,6 @@ public class CitationUtilsTest {
     assertEquals("Miller F., Miller F., Miller F.", CitationUtils.concat(people(3)));
   }
 
-  @Test
-  public void concatEds() {
-    assertEquals("Miller F., Miller F., Miller F. (eds.)", CitationUtils.concatEditors(people(3)));
-  }
 
   @Test
   public void attempt() throws Exception {
@@ -83,16 +79,18 @@ public class CitationUtilsTest {
     d.setEditor(people("Rainer", "Froese", "David", "Pauly"));
     d.setIssued(FuzzyDate.of("2019-07-13"));
 
+    var data = new CitationUtils.ReleaseWrapper(d, d, proj);
+
     assertEquals("Mama",
-      CitationUtils.fromTemplate(d,proj, "Mama")
+      CitationUtils.fromTemplate(data, "Mama")
     );
 
     assertEquals("Mama FishBase",
-      CitationUtils.fromTemplate(d,proj, "Mama {title}")
+      CitationUtils.fromTemplate(data, "Mama {title}")
     );
 
     assertEquals("Froese R., Pauly D. (eds.) (2019-04-21). fish: FishBase (version v2.0). In: Species 2000 & ITIS Catalogue of Life, 2019-04-21.",
-      CitationUtils.fromTemplate(d,proj, "{editorsOrAuthors} ({base.issued}). {alias}: {title} (version {version}). In: {base.title}, {base.issued}.")
+      CitationUtils.fromTemplate(data, "{editorsOrAuthors} ({proj.issued}). {alias}: {title} (version {version}). In: {proj.title}, {proj.issued}.")
     );
   }
 }

@@ -22,8 +22,8 @@ public class ProjectDuplication extends AbstractProjectCopy {
   }
 
   @Override
-  protected void modifyDataset(Dataset d, DatasetSettings ds) {
-    super.modifyDataset(d, ds);
+  protected void modifyDataset(Dataset d) {
+    super.modifyDataset(d);
     d.setTitle(d.getTitle() + " copy");
   }
 }
