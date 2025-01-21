@@ -47,6 +47,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private int thrown = 0;
   private int created = 0;
   private int updated = 0; // updates
+  private Throwable exception;
   private final @Nullable TreeMergeHandlerConfig cfg;
   private final DSID<Integer> vKey;
   private final Identifier.Scope nameIdScope;
@@ -191,6 +192,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
+  public Throwable lastException() {
+    return exception;
+  }
+
+  @Override
   public Map<IgnoreReason, Integer> getIgnoredCounter() {
     return ignoredCounter;
   }
@@ -208,11 +214,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
       throw e; // rethrow real interruptions
 
     } catch (RuntimeException e) {
+      exception = e;
       LOG.error("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
       LOG.error("Merge error for " + nu.getLabel(), e);
       thrown++;
 
     } catch (Exception e) {
+      exception = e;
       LOG.error("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
       LOG.error("Merge error for " + nu.getLabel(), e);
       thrown++;
@@ -364,10 +372,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
       throw e; // rethrow real interruptions
 
     } catch (RuntimeException e) {
+      exception = e;
       LOG.error("Unable to process name {}. {}:{}", n, e.getClass().getSimpleName(), e.getMessage(), e);
       thrown++;
 
     } catch (Exception e) {
+      exception = e;
       LOG.error("Unable to process name {}. {}:{}", n, e.getClass().getSimpleName(), e.getMessage(), e);
       thrown++;
       throw new RuntimeException(e);

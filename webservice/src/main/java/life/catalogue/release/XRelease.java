@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSync;
+import life.catalogue.assembly.SycnException;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
@@ -436,7 +437,10 @@ public class XRelease extends ProjectRelease {
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
-          LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError());
+          if (mergeCfg.xCfg.failOnSyncErrors) {
+            throw new SycnException(ss.lastException());
+          }
+          LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError(), ss.lastException());
         } else {
           // copy attempts to local instances as it finished successfully
           s.setSyncAttempt(ss.getState().getAttempt());

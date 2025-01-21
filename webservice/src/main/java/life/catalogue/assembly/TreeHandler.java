@@ -28,6 +28,11 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
    */
   boolean hasThrown();
 
+  /**
+   * @return the last exception thrown or null if no exceptions was ever thrown
+   */
+  Throwable lastException();
+
   void copyRelations();
 
   Map<IgnoreReason, Integer> getIgnoredCounter();

@@ -139,6 +139,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
     num= batchSession.getMapper(NameUsageMapper.class);
   }
 
+  @Override
+  public Throwable lastException() {
+    return null;
+  }
+
   protected ModifiedUsage processCommon(NameUsageBase nu) {
     ModifiedUsage mod;
     // make rank non null

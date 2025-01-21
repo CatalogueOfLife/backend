@@ -8,7 +8,6 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
-import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -61,6 +60,7 @@ public class SectorSync extends SectorRunnable {
   private final UsageIdGen usageIdGen;
   private final Supplier<String> nameIdGen;
   private final Supplier<String> typeMaterialIdGen;
+  private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
@@ -139,6 +139,10 @@ public class SectorSync extends SectorRunnable {
   @VisibleForTesting
   void setDisableAutoBlocking(boolean disableAutoBlocking) {
     this.disableAutoBlocking = disableAutoBlocking;
+  }
+
+  public Throwable lastException() {
+    return exception;
   }
 
   @Override
@@ -355,7 +359,8 @@ public class SectorSync extends SectorRunnable {
       }
       if (treeHandler.hasThrown()) {
         LOG.error("TreeHandler has thrown an exception. Abort sector {}", sectorKey);
-        throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
+        exception = treeHandler.lastException();
+        throw new SycnException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
       }
       LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
@@ -369,6 +374,10 @@ public class SectorSync extends SectorRunnable {
       // tree handlers are throwing consumer which wrap exceptions as runtime exceptions - unpack them!
       throw e.asChecked();
     }
+  }
+
+  public Throwable getException() {
+    return exception;
   }
 
   private void processBareNames() throws InterruptedException {
@@ -388,8 +397,9 @@ public class SectorSync extends SectorRunnable {
         }
 
         if (treeHandler.hasThrown()) {
-          LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey);
-          throw new IllegalStateException("Sync of sector "+ sectorKey +" has thrown an exception");
+          exception = treeHandler.lastException();
+          LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey, exception);
+          throw new SycnException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
         }
         LOG.info("Updated {} names from sector {}", treeHandler.getUpdated(), sectorKey);
 
