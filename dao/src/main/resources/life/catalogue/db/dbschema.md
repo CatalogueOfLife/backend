@@ -14,8 +14,24 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-01-20 move release settings to file
+```
+UPDATE dataset SET settings = ((((((((((settings - 'release alias template') 
+ - 'release title template')
+ - 'release version template') 
+ - 'release description template')
+ - 'release remove bare names')
+ - 'release add source authors')
+ - 'release add contributors')
+ - 'release author source exclusion')
+ - 'release issue source dois')
+ - 'release prepare downloads');
+```
+
 #### 2025-01-14 new name issue
+```
 ALTER TYPE ISSUE ADD VALUE 'NAME_PHRASE_UNLIKELY';
+```
 
 #### 2024-12-05 taxon metrics
 ```
