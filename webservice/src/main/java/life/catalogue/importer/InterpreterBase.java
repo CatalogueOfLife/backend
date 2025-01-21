@@ -293,8 +293,7 @@ public class InterpreterBase {
                                                    BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
 
-      final DistributionStatus status = parse(DistributionStatusParser.PARSER, statusRaw)
-          .orElse(DistributionStatus.NATIVE, Issue.DISTRIBUTION_STATUS_INVALID, rec);
+      final DistributionStatus status = parse(DistributionStatusParser.PARSER, statusRaw).orNull(Issue.DISTRIBUTION_STATUS_INVALID, rec);
 
       if (standard == Gazetteer.TEXT) {
         return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, tRemarks, addReference) );
