@@ -414,12 +414,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
   }
 
-  private void warnIfNull(Object obj, String msg) {
-    if (obj == null) {
-      LOG.warn("Unexpected NULL: {}", msg);
-    }
-  }
-
   private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
     // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
     // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
@@ -431,15 +425,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (parent != null && parent.status.isSynonym()) {
       // use accepted instead
       var p = numRO.getSimpleParent(targetKey.id(parent.id));
-      warnIfNull(p, String.format("Parent %s with id %s not found", parent.rank, parent.id));
       // make sure rank hierarchy makes sense - can be distorted by synonyms
-      if (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank())) {
+      if (p == null || (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank()))) {
         while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
           p = numRO.getSimpleParent(targetKey.id(p.getId()));
         }
         if (p == null) {
           // nothing to attach to. Better skip this taxon, but include children
-          LOG.debug("Ignore name which links to a synonym and for which we cannot find a suitable parent: {}", nu.getLabel());
+          LOG.info("Ignore name which links to a synonym and for which we cannot find a suitable parent: {}", nu.getLabel());
           ignored++;
           return null;
         }
