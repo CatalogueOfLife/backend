@@ -537,7 +537,7 @@
 
   <update id="updateStatus" parameterType="map">
     UPDATE name_usage
-    SET (status, modified, modified_by) = (#{status}, now(), #{userKey})
+    SET (status, modified, modified_by) = (#{status}::TAXONOMICSTATUS, now(), #{userKey})
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
