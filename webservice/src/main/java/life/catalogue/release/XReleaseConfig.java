@@ -20,6 +20,11 @@ import org.gbif.nameparser.api.Rank;
 public class XReleaseConfig extends ProjectReleaseConfig {
 
   /**
+   * If false failing sector syncs will be swallowed, logged and the release will continue with the rest of the sectors.
+   */
+  public boolean failOnSyncErrors = true;
+
+  /**
    * Selected list of CLB dataset keys to exclude as sectors being created for aboves source publisher keys
    */
   public Set<Integer> sourceDatasetExclusion;
