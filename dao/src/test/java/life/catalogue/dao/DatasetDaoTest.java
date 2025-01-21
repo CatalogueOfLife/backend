@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
@@ -134,7 +135,7 @@ public class DatasetDaoTest extends DaoTestBase {
     dao.create(d, Users.TESTER);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test(expected = NotUniqueException.class)
   public void duplicateDOI() throws Exception {
     final DOI doi = DOI.col("1234567");
     Dataset d = DatasetMapperTest.create();
@@ -144,6 +145,20 @@ public class DatasetDaoTest extends DaoTestBase {
     d = DatasetMapperTest.create();
     d.setDoi(doi);
     dao.create(d, Users.TESTER);
+  }
+
+  @Test(expected = NotUniqueException.class)
+  public void duplicateDOIupd() throws Exception {
+    final DOI doi = DOI.col("1234567");
+    Dataset d2 = DatasetMapperTest.create();
+    d2.setDoi(doi);
+    dao.create(d2, Users.TESTER);
+
+    Dataset d = DatasetMapperTest.create();
+    dao.create(d, Users.TESTER);
+
+    d.setDoi(doi);
+    dao.update(d, Users.TESTER);
   }
 
   @Test(expected = IllegalArgumentException.class)

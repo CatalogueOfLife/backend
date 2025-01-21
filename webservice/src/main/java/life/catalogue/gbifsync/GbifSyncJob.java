@@ -1,6 +1,7 @@
 package life.catalogue.gbifsync;
 
 import life.catalogue.api.exception.NotUniqueException;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -11,6 +12,7 @@ import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.time.LocalDate;
@@ -19,6 +21,7 @@ import java.util.*;
 
 import jakarta.ws.rs.client.Client;
 
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -146,10 +149,23 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // create new dataset
           gbif.setCreatedBy(Users.GBIF_SYNC);
           gbif.setModifiedBy(Users.GBIF_SYNC);
-          dao.create(gbif, Users.GBIF_SYNC);
+          try {
+            dao.create(gbif, Users.GBIF_SYNC);
+          } catch (NotUniqueException e) {
+            // catch DOI unique constraint errors and try again without the DOI
+            // in the GBIF registry, especially with Plazi datasets, it happens that multiple datasets have the same DOI!
+            DOI doi = gbif.getDoi();
+            if (doi != null) {
+              gbif.setDoi(null);
+              dao.create(gbif, Users.GBIF_SYNC);
+              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+            } else {
+              throw e;
+            }
+          }
+          LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
           created++;
           key = gbif.getKey();
-          LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
 
         } else if (curr.isEnabled(Setting.GBIF_SYNC_LOCK)) {
           LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
@@ -172,18 +188,27 @@ public class GbifSyncJob extends GlobalBlockingJob {
           curr.setPublisher(gbif.getPublisher());
           curr.setUrl(gbif.getUrl());
           curr.setDoi(gbif.getDoi());
-          dao.update(curr, Users.GBIF_SYNC);
+          try {
+            dao.update(curr, Users.GBIF_SYNC);
+          } catch (NotUniqueException e) {
+            // catch DOI unique constraint errors and try again without the DOI
+            // in the GBIF registry, especially with Plazi datasets, it happens that multiple datasets have the same DOI!
+            DOI doi = curr.getDoi();
+            if (doi != null) {
+              curr.setDoi(null);
+              dao.update(curr, Users.GBIF_SYNC);
+              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+            } else {
+              throw e;
+            }
+          }
           updated++;
         }
       }
     } catch (Exception e) {
-      if (e instanceof NotUniqueException && gbif.getDataset().getDoi() != null) {
-        // treat unique DOI constraints differently as we expect that to happen somtimes
-        LOG.warn("Failed to sync GBIF dataset {} >{}<. Non unique DOI {}", gbif.getGbifKey(), gbif.getTitle(), gbif.getDataset().getDoi());
-      } else {
-        LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
-      }
+      LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
     }
     return key;
   }
+
 }
