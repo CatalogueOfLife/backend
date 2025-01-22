@@ -33,20 +33,20 @@ public class TreeMergeHandlerConfig {
   private final Set<String> blockedNames = new HashSet<>();
   private final List<Pattern> blockedNamePatterns = new ArrayList<>();
 
-  public TreeMergeHandlerConfig(SqlSessionFactory factory, XReleaseConfig xcfg, int datasetKey, int user) {
+  public TreeMergeHandlerConfig(SqlSessionFactory factory, XReleaseConfig rcfg, int datasetKey, int user) {
     this.factory = factory;
-    this.xCfg = xcfg;
+    this.xCfg = rcfg == null ? new XReleaseConfig() : rcfg;
     this.datasetKey = datasetKey;
     this.user = user;
     incertae = createIncertaeSedisRoot();
     // upper case blocked names
-    if (xcfg.blockedNames != null) {
-      for (var bn : xcfg.blockedNames) {
+    if (xCfg.blockedNames != null) {
+      for (var bn : xCfg.blockedNames) {
         blockedNames.add(bn.trim().toUpperCase());
       }
     }
-    if (xcfg.blockedNamePatterns != null) {
-      for (var bnp : xcfg.blockedNamePatterns) {
+    if (xCfg.blockedNamePatterns != null) {
+      for (var bnp : xCfg.blockedNamePatterns) {
         if (!StringUtils.isBlank(bnp)){
           try {
             var p = Pattern.compile(bnp.trim(), Pattern.CASE_INSENSITIVE);

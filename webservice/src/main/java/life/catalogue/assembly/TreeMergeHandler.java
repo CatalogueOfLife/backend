@@ -413,11 +413,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   private SimpleNameWithNidx create(NameUsageBase nu, Usage parent) {
-    // replace accepted taxa with doubtful ones for all nomenclators and for genus parents which are synonyms
+    // replace accepted taxa with doubtful ones for genus parents which are synonyms
     // provisionally accepted species & infraspecies will not create an implicit genus or species !!!
-    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && (source.getType() == DatasetType.NOMENCLATURAL ||
-      parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS)
-    ) {
+    if (nu.getStatus() == TaxonomicStatus.ACCEPTED && parent != null && parent.status.isSynonym() && parent.rank == Rank.GENUS) {
       nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
     if (parent != null && parent.status.isSynonym()) {
@@ -455,6 +453,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // track if we are outside of the sector target
     Issue[] issues;
     if (target != null && parent != null
+      && !Objects.equals(parent.id, target.getId())
       && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), target.getId())
     ) {
       issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};

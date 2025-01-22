@@ -3,10 +3,7 @@ package life.catalogue.assembly;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.EntityType;
-import life.catalogue.api.vocab.Users;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.NameDao;
@@ -77,8 +74,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   int testNum = 0;
   String project;
   List<String> trees;
-  List<Sector> sectors = new ArrayList<>();
-  TreeMergeHandlerConfig mergeCfg;
+
+  ProjectTestInfo info;
+
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
@@ -118,31 +116,45 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     this.trees = trees;
   }
 
-  private TxtTreeDataRule.TreeDataset getProjectDataRule() {
+  public static TxtTreeDataRule.TreeDataset getProjectDataRule(String project) {
     return new TxtTreeDataRule.TreeDataset(Datasets.COL, "txtree/"+project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT);
   }
 
-  @Before
-  public void init () throws Throwable {
-    System.out.printf("\n\n*** Project %s ***\n\n", project);
-    LOG.info("Project {}. Trees: {}", project, trees);
-    testNum++;
+  public static class ProjectTestInfo {
+    public final String project;
+    public final List<String> sources;
+    public final List<Sector> sectors = new ArrayList<>();
+    public final List<TxtTreeDataRule.TreeDataset> rules = new ArrayList<>();
+    public boolean rematchSectors = false; // do we need to rematch sectors?
+    public XReleaseConfig cfg;
+
+    public ProjectTestInfo(String project, List<String> sources) {
+      this.project = project;
+      this.sources = sources;
+    }
+
+    public TreeMergeHandlerConfig buildMergeConfig() {
+      return new TreeMergeHandlerConfig(PgSetupRule.getSqlSessionFactory(), cfg, Datasets.COL, Users.TESTER);
+    }
+  }
+
+  public static ProjectTestInfo setupProject(String project, List<String> sources) throws Throwable {
+    ProjectTestInfo info = new ProjectTestInfo(project, sources);
     // load text trees & create sectors
-    List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
-    data.add(getProjectDataRule());
+    info.rules.add(getProjectDataRule(project));
     int dkey = 100;
-    boolean rematchSectors = false; // do we need to rematch sectors?
-    for (String tree : trees) {
+    for (String tree : sources) {
       String resource = "txtree/"+project + "/" + tree.toLowerCase();
-      data.add(
-        new TxtTreeDataRule.TreeDataset(dkey, resource + ".txtree", tree, DatasetOrigin.EXTERNAL)
+      boolean nomenclatural = tree.equalsIgnoreCase("ipni") || tree.equalsIgnoreCase("zoobank");
+      info.rules.add(
+        new TxtTreeDataRule.TreeDataset(dkey, resource + ".txtree", tree, DatasetOrigin.EXTERNAL, nomenclatural ? DatasetType.NOMENCLATURAL : DatasetType.TAXONOMIC)
       );
       Sector s;
-      // do we have a config file?
+      // do we have a sector file?
       try {
         s = YamlUtils.read(Sector.class, Resources.getResourceAsStream(resource + ".yaml"));
         if (s.getSubject() != null || s.getTarget() != null) {
-          rematchSectors = true;
+          info.rematchSectors = true;
         }
       } catch (IOException e) {
         s = new Sector(); // use defaults
@@ -154,17 +166,17 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
       s.setPriority(dkey-99);
       s.setNote(tree);
-      sectors.add(s);
+      info.sectors.add(s);
       dkey++;
     }
 
-    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(data)) {
+    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(info.rules)) {
       treeRule.before();
     }
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
-      for (var s : sectors) {
+      for (var s : info.sectors) {
         s.applyUser(Users.TESTER);
         sm.create(s);
       }
@@ -172,15 +184,13 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
     // do we have a merge handler config file?
     try {
-      var xcfg = YamlUtils.read(XReleaseConfig.class, Resources.getResourceAsStream("txtree/"+project + "/xcfg.yaml"));
-      mergeCfg = new TreeMergeHandlerConfig(SqlSessionFactoryRule.getSqlSessionFactory(), xcfg, Datasets.COL, Users.TESTER);
+      info.cfg = YamlUtils.read(XReleaseConfig.class, Resources.getResourceAsStream("txtree/"+project + "/xcfg.yaml"));
     } catch (IOException e) {
+      info.cfg = new XReleaseConfig();
     }
 
-    // rematch all names
-    matchingRule.rematchAll();
     //dumpNidx();
-    if (rematchSectors) {
+    if (info.rematchSectors) {
       // rematch sector subject/target
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
@@ -192,9 +202,21 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       req.setDatasetKey(Datasets.COL);
       SectorRematcher.match(dao, req, Users.TESTER);
     }
+    return info;
   }
 
-  void dumpNidx() {
+  @Before
+  public void init () throws Throwable {
+    System.out.printf("\n\n*** Project %s ***\n\n", project);
+    LOG.info("Project {}. Trees: {}", project, trees);
+    testNum++;
+    // load text trees & create sectors
+    this.info = setupProject(project, trees);
+    // rematch all names
+    matchingRule.rematchAll();
+  }
+
+  static void dumpNidx() {
     System.out.println("\nNames Index from postgres:");
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
@@ -203,8 +225,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
   @Test
   public void syncAndCompare() throws Throwable {
-    for (var s : sectors) {
-      sync(s, mergeCfg);
+    var mcfg = info.buildMergeConfig();
+    for (var s : info.sectors) {
+      sync(s, mcfg);
     }
     assertTree(Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
@@ -218,7 +241,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
         ddao.deleteData(Datasets.COL, session);
         session.commit();
       }
-      try (TxtTreeDataRule treeRule = new TxtTreeDataRule(List.of(getProjectDataRule()))) {
+      try (TxtTreeDataRule treeRule = new TxtTreeDataRule(List.of(getProjectDataRule(project)))) {
         treeRule.before();
       }
       matchingRule.rematch(Datasets.COL);
@@ -228,7 +251,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       List<EditorialDecision> decisions = YamlUtils.read(ref, decRes);
       // update subject & source keys
       Map<String, Integer> sourceKeys = new HashMap<>();
-      for (var s : sectors) {
+      for (var s : info.sectors) {
         if (s.getNote() != null) {
           sourceKeys.put(s.getNote().trim().toLowerCase(), s.getSubjectDatasetKey());
         }
@@ -249,7 +272,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       }
 
       // sync and verify
-      syncAll(null, mergeCfg);
+      syncAll(null, mcfg);
       assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected-with-decisions.txtree"));
     }
 
