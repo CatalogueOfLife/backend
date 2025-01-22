@@ -1,4 +1,4 @@
-
+# taxon to use for incertae sedis names during merges
 incertaeSedis:
   name: incertae sedis
   rank: kingdom
@@ -7,11 +7,5 @@ incertaeSedis:
     - 
       name: Biota
       rank: unranked
-  
-blockedNames:
-  - Abies alba
-  - Picea nigra DC.
 
-blockedNamePatterns:
-  - ^Homularia
-  - chaos\b
+blockedNames: []

@@ -6,10 +6,12 @@ import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncMergeIT;
 import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -29,9 +31,12 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.junit.TxtTreeDataRule;
 
+import org.apache.ibatis.io.Resources;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -84,98 +89,52 @@ public class XReleaseIT extends SectorSyncTestBase {
 
   int testNum = 0;
   String project;
-  List<Src> sources;
-  List<Sector> sectors = new ArrayList<>();
-  XReleaseConfig xCfg;
+  List<String> sources;
+  SectorSyncMergeIT.ProjectTestInfo info;
 
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
-    final var biotaSedis = SimpleNameClassified.snc(null, Rank.KINGDOM, null, TaxonomicStatus.PROVISIONALLY_ACCEPTED, "incertae sedis", null);
-    biotaSedis.setClassification(List.of(SimpleName.sn("Biota")));
-
     return Arrays.asList(new Object[][] {
-      {"dupe-genera", cfg(biotaSedis), List.of(
-        tax("src1"),
-        tax("src2")
+      {"dupe-genera", List.of(
+        "src1",
+        "src2"
       )},
-      {"ex-authors", cfg(biotaSedis), List.of(
-        tax("worms"),
-        tax("uksi")
+      {"ex-authors", List.of(
+        "worms",
+        "uksi"
       )},
-      {"inverse_ranks", cfg(biotaSedis), List.of(
-        tax("repdb")
+      {"inverse_ranks", List.of(
+        "repdb"
       )},
-      {"abronia", cfg(biotaSedis), List.of(
-        tax("itis"),
-        tax("wcvp"),
-        tax("repdb")
+      {"abronia", List.of(
+        "itis",
+        "wcvp",
+        "repdb"
       )},
-      {"unplaced_synonyms", cfg(biotaSedis), List.of(
-        tax("wcvp")
+      {"unplaced_synonyms", List.of(
+        "wcvp"
       )},
-      {"incertae", cfg(biotaSedis, Set.of("Dictymia serbia", "Dictymia braunii", "Dictymia brownii Döring")), List.of(
-        tax("sedis"),
-        tax("src2"),
-        nom("nomen", Rank.ORDER,Rank.FAMILY,Rank.GENUS,Rank.SPECIES)
+      {"incertae",List.of(
+        "sedis",
+        "src2",
+        "nomen"
       )},
-      {"homonyms", cfg(), List.of(
-        tax("worms"),
-        tax("itis"),
-        tax("wcvp"),
-        tax("taxref"),
-        tax("ala"),
-        nom("ipni"),
-        tax("irmng")
+      {"homonyms", List.of(
+        "worms",
+        "itis",
+        "wcvp",
+        "taxref",
+        "ala",
+        "ipni",
+        "irmng"
       )}
     });
   }
 
-  public XReleaseIT(String project, XReleaseConfig xCfg, List<Src> sources) {
+  public XReleaseIT(String project, List<String> sources) {
     this.project = project.toLowerCase();
     this.sources = sources;
-    this.xCfg = xCfg;
   }
-
-  static Src tax(String name) {
-    return new Src(name, DatasetType.TAXONOMIC);
-  }
-  static Src tax(String name, Rank... rank) {
-    return new Src(name, DatasetType.TAXONOMIC, rank);
-  }
-  static Src nom(String name) {
-    return new Src(name, DatasetType.NOMENCLATURAL);
-  }
-  static Src nom(String name, Rank... rank) {
-    return new Src(name, DatasetType.NOMENCLATURAL, rank);
-  }
-
-  static class Src {
-    public final String name;
-    public final DatasetType type;
-    public final Set<Rank> ranks;
-
-    Src(String name, DatasetType type, Rank... rank) {
-      this.name = name;
-      this.type = type;
-      this.ranks = Set.of(rank);
-    }
-  }
-
-  static XReleaseConfig cfg() {
-    return new XReleaseConfig();
-  }
-  static XReleaseConfig cfg(SimpleNameClassified<SimpleName> incertaeSedis) {
-    var cfg = new XReleaseConfig();
-    cfg.incertaeSedis = incertaeSedis;
-    return cfg;
-  }
-  static XReleaseConfig cfg(SimpleNameClassified<SimpleName> incertaeSedis, Set<String> blockedNames) {
-    var cfg = new XReleaseConfig();
-    cfg.incertaeSedis = incertaeSedis;
-    cfg.blockedNames = blockedNames;
-    return cfg;
-  }
-
 
   @Before
   public void init () throws Throwable {
@@ -204,12 +163,19 @@ public class XReleaseIT extends SectorSyncTestBase {
       exportManager, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater,
       SqlSessionFactoryRule.getSqlSessionFactory(), validator, cfg
     );
+
+    // load text trees & create sectors
+    info = SectorSyncMergeIT.setupProject(project, sources);
   }
 
   @Test
   public void syncAndCompare() throws Throwable {
     LOG.info("Project {}. Trees: {}", project, sources);
     testNum++;
+
+    // rematch
+    matchingRule.rematchAll();
+
     // set project default settings
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
@@ -218,45 +184,6 @@ public class XReleaseIT extends SectorSyncTestBase {
       settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
       dm.updateSettings(Datasets.COL, settings, Users.TESTER);
     }
-
-    // load text trees & create sectors
-    List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
-    data.add(
-      new TxtTreeDataRule.TreeDataset(Datasets.COL, "txtree/"+project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT)
-    );
-
-    int dkey = 100;
-    for (Src src : sources) {
-      data.add(
-        new TxtTreeDataRule.TreeDataset(dkey, "txtree/"+project + "/" + src.name.toLowerCase()+".txtree", src.name, DatasetOrigin.EXTERNAL, src.type)
-      );
-      Sector s = new Sector();
-      s.setDatasetKey(Datasets.COL);
-      s.setSubjectDatasetKey(dkey);
-      s.setMode(Sector.Mode.MERGE);
-      s.setPriority(dkey-99);
-      s.setNote(src.name);
-      if (src.ranks != null) {
-        s.setRanks(src.ranks);
-      }
-      sectors.add(s);
-      dkey++;
-    }
-
-    // load source datasets
-    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(data)) {
-      treeRule.before();
-    }
-
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      for (var s : sectors) {
-        s.applyUser(Users.TESTER);
-        sm.create(s);
-      }
-    }
-    // rematch
-    matchingRule.rematchAll();
 
     // regular release
     var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
@@ -275,7 +202,7 @@ public class XReleaseIT extends SectorSyncTestBase {
 
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);
-    xrel.setCfg(xCfg);
+    xrel.setCfg(info.cfg);
     job = new Thread(xrel);
     job.run();
     final int xreleaseKey = xrel.getNewDatasetKey();

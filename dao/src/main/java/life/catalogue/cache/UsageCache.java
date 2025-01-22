@@ -85,6 +85,10 @@ public interface UsageCache extends AutoCloseable, Managed {
     return sncl;
   }
 
+  /**
+   * @return entire classification including the start ID
+   * @throws NotFoundException if the start ID or any subsequent parentID cannot be resolved
+   */
   default List<SimpleNameCached> getClassification(DSID<String> start, CacheLoader loader) throws NotFoundException {
     List<SimpleNameCached> classification = new ArrayList<>();
     addParents(classification, DSID.copy(start), loader);
