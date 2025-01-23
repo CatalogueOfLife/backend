@@ -117,7 +117,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   }
 
   public static TxtTreeDataRule.TreeDataset getProjectDataRule(String project) {
-    return new TxtTreeDataRule.TreeDataset(Datasets.COL, "txtree/"+project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT);
+    return new TxtTreeDataRule.TreeDataset(Datasets.COL, "txtree/" + project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT);
   }
 
   public static class ProjectTestInfo {
