@@ -215,10 +215,10 @@ public class XReleaseIT extends SectorSyncTestBase {
     // compare with expected tree
     assertTree(project, xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
 
-    conditionalChecks(project, xrel);
+    conditionalChecks(xrel);
   }
 
-  private void conditionalChecks(String project, XRelease xrel) {
+  private void conditionalChecks(XRelease xrel) {
     if (project.equals("inverse_ranks")) {
       // wrong rank order issue
       final DSID<String> key = DSID.root(xrel.newDatasetKey);
