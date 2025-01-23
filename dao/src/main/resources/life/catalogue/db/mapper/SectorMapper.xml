@@ -222,6 +222,9 @@
       <if test="datasetKey != null">
         AND s.dataset_key = #{datasetKey}
       </if>
+      <if test="mode != null">
+        AND s.mode = #{mode}::SECTOR_MODE
+      </if>
     </where>
   </select>
 

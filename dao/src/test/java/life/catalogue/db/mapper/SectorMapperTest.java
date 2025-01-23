@@ -109,8 +109,10 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   @Test
   public void list() {
     add2Sectors();
-    assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey).size());
-    assertEquals(0, mapper().listByDataset(targetDatasetKey,-432).size());
+    assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey, null).size());
+    assertEquals(0, mapper().listByDataset(targetDatasetKey,-432, null).size());
+    assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey, Sector.Mode.ATTACH).size());
+    assertEquals(0, mapper().listByDataset(targetDatasetKey,subjectDatasetKey, Sector.Mode.MERGE).size());
     // no results, but make sure sql works
     assertEquals(0, mapper().listByDatasetPublisher(targetDatasetKey,UUID.randomUUID()).size());
   }

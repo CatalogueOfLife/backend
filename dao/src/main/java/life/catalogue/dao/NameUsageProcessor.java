@@ -119,7 +119,7 @@ public class NameUsageProcessor {
       if (sectorKey != null) {
         sectors.put(sectorKey, new SectorProps(sm.get(sKey.id(sectorKey)), dm));
       } else {
-        sm.listByDataset(datasetKey, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
+        sm.listByDataset(datasetKey, null, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
       }
 
       // build temporary table collecting issues from all usage related tables
