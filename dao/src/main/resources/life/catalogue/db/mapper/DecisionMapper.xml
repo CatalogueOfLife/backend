@@ -43,26 +43,33 @@
     dataset_key,
     <include refid="COLS_NO_DATASETKEY"/>
   </sql>
+
   <sql id="COLS_NO_DATASETKEY">
-    subject_dataset_key,
-    subject_id,
-    subject_name,
-    subject_authorship,
-    subject_rank,
-    subject_code,
-    subject_status,
-    subject_parent,
-    note,
-    modified,
-    modified_by,
-    mode,
-    name,
-    status,
-    extinct,
-    keep_original_name,
-    temporal_range_start,
-    temporal_range_end,
-    environments
+    <include refid="COLS_NO_DATASETKEY_PREFIX">
+      <property name="alias" value=""/>
+    </include>
+  </sql>
+
+  <sql id="COLS_NO_DATASETKEY_PREFIX">
+    ${alias}subject_dataset_key,
+    ${alias}subject_id,
+    ${alias}subject_name,
+    ${alias}subject_authorship,
+    ${alias}subject_rank,
+    ${alias}subject_code,
+    ${alias}subject_status,
+    ${alias}subject_parent,
+    ${alias}note,
+    ${alias}modified,
+    ${alias}modified_by,
+    ${alias}mode,
+    ${alias}name,
+    ${alias}status,
+    ${alias}extinct,
+    ${alias}keep_original_name,
+    ${alias}temporal_range_start,
+    ${alias}temporal_range_end,
+    ${alias}environments
   </sql>
 
   <sql id="PROPS">
@@ -280,6 +287,16 @@
     SELECT id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by
     FROM decision
     WHERE dataset_key=#{datasetKey}
+  </insert>
+
+
+  <insert id="mergeDataset" parameterType="map">
+    MERGE INTO decision dr
+    USING (SELECT * FROM decision WHERE dataset_key=#{datasetKey}) dp
+    ON dr.id = dp.id AND dr.dataset_key=#{newDatasetKey}
+    WHEN NOT MATCHED THEN
+        INSERT (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
+        VALUES (dp.id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY_PREFIX"><property name="alias" value="dp."/></include>, dp.original_subject_id, dp.created, dp.created_by)
   </insert>
 
 </mapper>

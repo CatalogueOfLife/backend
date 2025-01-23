@@ -260,7 +260,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     diDao.update(metrics);
   }
 
-  private void copyData() throws InterruptedException {
+  protected void copyData() throws InterruptedException {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
     try (SqlSession session = factory.openSession(true)) {
