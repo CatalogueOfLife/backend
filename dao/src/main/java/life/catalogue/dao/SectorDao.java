@@ -154,7 +154,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (origin == null) {
         throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " does not exist");
       } else if (origin != DatasetOrigin.PROJECT) {
-        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not managed but of origin " + origin);
+        throw new IllegalArgumentException("dataset " + s.getDatasetKey() + " is not a project but of origin " + origin);
       }
 
       // check if source is a placeholder node
@@ -164,7 +164,20 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       var subject = reloadTaxon(s, "subject", s::getSubjectAsDSID, s::setSubject, tm);
       var target = reloadTaxon(s, "target", s::getTargetAsDSID, s::setTarget, tm);
 
-      // make sure the priority is not take, otherwise make room
+      // ensure sector without subject is the only one
+      if (subject == null) {
+        if (s.getMode() == Sector.Mode.MERGE) {
+          // ensure there is only 1 merge sector without a subject
+          var other = mapper.listByDataset(s.getDatasetKey(), s.getSubjectDatasetKey(), Sector.Mode.MERGE);
+          if (other != null && !other.isEmpty()) {
+            throw new IllegalArgumentException("A merge sector in project " + s.getDatasetKey() + " without subject exists already");
+          }
+        } else {
+          throw new IllegalArgumentException(s.getMode() + " sector in project " + s.getDatasetKey() + " does not have a subject");
+        }
+      }
+
+      // make sure the priority is not taken, otherwise make room
       updatePriorities(s, mapper);
 
       // creates sector key
@@ -360,13 +373,11 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         for (int dk : datasetExclusion) {
           datasetKeys.remove(dk);
           // remove any potentially existing merge sectors
-          var existing = sm.listByDataset(projectKey, dk);
+          var existing = sm.listByDataset(projectKey, dk, Sector.Mode.MERGE);
           if (existing != null && !existing.isEmpty()) {
             for (var s : existing) {
-              if (s.getMode() == Sector.Mode.MERGE) {
-                LOG.info("Delete existing merge sector {} for excluded source {} from publisher {}", s, dk, publisherKey);
-                sm.delete(s);
-              }
+              LOG.info("Delete existing merge sector {} for excluded source {} from publisher {}", s, dk, publisherKey);
+              sm.delete(s);
             }
           }
         }
@@ -374,7 +385,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (datasetKeys != null) {
         final License projectLicense = dm.get(projectKey).getLicense();
         for (int sourceDatasetKey : datasetKeys) {
-          var existing = sm.listByDataset(projectKey, sourceDatasetKey);
+          var existing = sm.listByDataset(projectKey, sourceDatasetKey, null);
           if (existing == null || existing.isEmpty()) {
             // not yet existing - create a new merge sector!
             // first check if licenses are compatible

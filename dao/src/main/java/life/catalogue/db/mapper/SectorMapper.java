@@ -22,7 +22,8 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
   List<Sector> listByTarget(@Param("key") DSID<String> key);
 
   List<Sector> listByDataset(@Param("datasetKey") @Nullable Integer datasetKey,
-                             @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey);
+                             @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
+                             @Param("mode") @Nullable Sector.Mode mode);
 
   /**
    * List all sectors in a project published by a given publisher

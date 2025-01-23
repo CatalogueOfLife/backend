@@ -217,7 +217,7 @@ public class DatasetSourceDao {
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
       Integer projectKey = info.sourceKey;
-      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, null)){
+      for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, null, null)){
         if (s.getSyncAttempt() != null) {
           if (publisher != null) {
             var src = DatasetInfoCache.CACHE.info(s.getSubjectDatasetKey());
@@ -261,7 +261,7 @@ public class DatasetSourceDao {
       // a release? use mother project in that case
       if (info.origin.isRelease()) {
         Integer projectKey = info.sourceKey;
-        for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey)){
+        for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey, null)){
           if (s.getSyncAttempt() != null) {
             SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
             add(metrics, m);
