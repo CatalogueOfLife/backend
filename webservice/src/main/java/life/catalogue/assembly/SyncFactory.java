@@ -1,7 +1,8 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -54,7 +55,7 @@ public class SyncFactory {
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
-  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg,
+  public SectorSync release(Sector sectorKey, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg,
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),

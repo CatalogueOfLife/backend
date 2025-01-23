@@ -11,7 +11,6 @@ import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.date.DateUtils;
-import life.catalogue.common.text.CitationUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
@@ -51,6 +50,7 @@ public class XRelease extends ProjectRelease {
   private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);
   private final int baseReleaseKey;
   private final SectorImportDao siDao;
+  // sectors as in the release with target pointing to the release usage identifiers
   private List<Sector> sectors;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
@@ -139,30 +139,16 @@ public class XRelease extends ProjectRelease {
       var iter = sectors.iterator();
       while(iter.hasNext()){
         var s = iter.next();
-        if (s.getMode() == Sector.Mode.MERGE) {
-          var src = DatasetInfoCache.CACHE.info(s.getSubjectDatasetKey(), true);
-          if (src.deleted) {
-            // remove sector
-            LOG.warn("Removed merge sector {} as underlying dataset {} was deleted", s, src.key);
-            sm.delete(s);
-            iter.remove();
-          }
+        var src = DatasetInfoCache.CACHE.info(s.getSubjectDatasetKey(), true);
+        if (src.deleted) {
+          // remove sector
+          LOG.warn("Removed merge sector {} as underlying dataset {} was deleted", s, src.key);
+          sm.delete(s);
+          iter.remove();
         }
-      }
-      // match targets to base release
-      for (var s : sectors) {
-        if (s.getTarget() != null){
-          s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
-          NameUsageBase nu = new Taxon(s.getTarget());
-          var m = matcher.match(baseReleaseKey, nu, null, true, false);
-          if (m.isMatch()) {
-            s.getTarget().setBroken(false);
-            s.getTarget().setId(m.getId());
-          } else {
-            LOG.warn("Failed to match target {} of sector {}[{}] to base release {}. Ignoring sector target in release {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), baseReleaseKey, newDatasetKey);
-            s.setTarget(null);
-          }
-        }
+        // move sector to release and rematch targets to base release
+        rematchTarget(s, baseReleaseKey, matcher);
+        s.setDatasetKey(newDatasetKey);
       }
     }
     createReleaseDOI();
@@ -172,6 +158,22 @@ public class XRelease extends ProjectRelease {
 
     // make sure the missing matching is completed before we deal with the real data
     thread.join();
+  }
+
+  public static void rematchTarget(Sector s, int targetDatasetKey, UsageMatcherGlobal matcher) {
+    if (s.getTarget() != null && targetDatasetKey != s.getDatasetKey()) {
+      LOG.info("Rematch sector target {} to dataset {}", s.getTarget(), targetDatasetKey);
+      s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
+      NameUsageBase nu = new Taxon(s.getTarget());
+      var m = matcher.match(targetDatasetKey, nu, null, true, false);
+      if (m.isMatch()) {
+        s.getTarget().setBroken(false);
+        s.getTarget().setId(m.getId());
+      } else {
+        LOG.warn("Failed to match target {} of sector {}[{}] to dataset {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), targetDatasetKey);
+        s.setTarget(null);
+      }
+    }
   }
 
   @Override
@@ -351,25 +353,6 @@ public class XRelease extends ProjectRelease {
       // copy all data from the base release
       int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
       LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
-
-      // for editorial decisions and sectors we want all from the base release AND new ones for the merge sectors only from the project!!!
-      if (entity.equals(Sector.class)) {
-        session.commit();
-        var sm = session.getMapper(SectorMapper.class);
-        for (var s : sectors) {
-          s.setDatasetKey(newDatasetKey);
-          if (sm.exists(s)) {
-            sm.update(s); // target is matched now and has changed
-          } else {
-            sm.createWithID(s);
-          }
-          // revert sectors as we might use the sectors as project sectors later on again, better don't alter them
-          s.setDatasetKey(projectKey);
-        }
-        session.commit();
-      } else if (entity.equals(EditorialDecision.class)) {
-        //TODO: copy merge decisions only...
-      }
     }
   }
 
@@ -423,11 +406,8 @@ public class XRelease extends ProjectRelease {
       // create only if missing
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
-        Sector sRel = sm.get(DSID.of(newDatasetKey, s.getId()));
-        if (sRel == null) {
-          sRel = new Sector(s);
-          sRel.setDatasetKey(newDatasetKey);
-          sm.createWithID(sRel);
+        if (!sm.exists(s)) {
+          sm.createWithID(s);
         }
       }
       checkIfCancelled();

@@ -7,14 +7,13 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.UsageMatcherGlobal;
-
-import org.apache.poi.ss.formula.functions.T;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -31,10 +30,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
-
-import scala.annotation.meta.setter;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
@@ -67,7 +63,7 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean validateLicenses, boolean clearMatcherCache, SqlSessionFactory factory,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean clearMatcherCache, SqlSessionFactory factory,
                  UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
@@ -94,26 +90,36 @@ abstract class SectorRunnable implements Runnable {
 
     // check for existence and datasetKey - we will load the real thing for processing only when we get executed!
     sector = loadSectorAndUpdateDatasetImport(false);
-    this.subjectDatasetKey = sector.getSubjectDatasetKey();
+    subjectDatasetKey = sector.getSubjectDatasetKey();
     try (SqlSession session = factory.openSession(true)) {
-      // make sure the target dataset is a PROJECT
-      Dataset target = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
-      if (target.getOrigin() != DatasetOrigin.PROJECT) {
-        throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + target.getOrigin() + " dataset");
-      }
-      if (validateLicenses) {
-        // we throw exceptions when people try to combine incompatible data
+      // make sure we can execute this runnable of the given sector, e.g. block accidental changes to immutable releases
+      Dataset targetDS = session.getMapper(DatasetMapper.class).get(sectorKey.getDatasetKey());
+      allowedToRun(targetDS, session) ;
+
+      if (validateSector) {
+        // we throw exceptions early when people try to combine incompatible data
         Dataset source = session.getMapper(DatasetMapper.class).get(subjectDatasetKey);
-        if (!License.isCompatible(source.getLicense(), target.getLicense())) {
-          LOG.warn("Source license {} of {} is not compatible with license {} of project {}", source.getLicense(), sector, target.getLicense(), sectorKey.getDatasetKey());
-          throw new IllegalArgumentException("Source license " +source.getLicense()+ " of " + sector + " is not compatible with license " +target.getLicense()+ " of project " + sectorKey.getDatasetKey());
+        if (!License.isCompatible(source.getLicense(), targetDS.getLicense())) {
+          LOG.warn("Source license {} of {} is not compatible with license {} of project {}", source.getLicense(), sector, targetDS.getLicense(), sectorKey.getDatasetKey());
+          throw new IllegalArgumentException("Source license " +source.getLicense()+ " of " + sector + " is not compatible with license " +targetDS.getLicense()+ " of project " + sectorKey.getDatasetKey());
         }
       }
       // finally create the sync metrics record with a new attempt
       session.getMapper(SectorImportMapper.class).create(state);
     }
   }
-  
+
+  /**
+   * Make sure this sector is ok to be executed on the given dataset
+   * @throws IllegalArgumentException if this is not the case
+   */
+  protected void allowedToRun(Dataset targetDS, SqlSession session) throws IllegalArgumentException {
+    // make sure the target dataset is a PROJECT or XRELEASE
+    if (targetDS.getOrigin() != DatasetOrigin.PROJECT && targetDS.getOrigin() != DatasetOrigin.XRELEASE) {
+      throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + targetDS.getOrigin() + " dataset");
+    }
+  }
+
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
@@ -199,6 +205,10 @@ abstract class SectorRunnable implements Runnable {
       if (s == null) {
         throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
+      var dsInfo = DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey());
+      if (dsInfo.origin != DatasetOrigin.PROJECT && dsInfo.origin != DatasetOrigin.XRELEASE) {
+        throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + dsInfo.origin + " dataset");
+      }
       // apply dataset defaults if needed
       if (s.getEntities() == null || s.getEntities().isEmpty()
           || s.getRanks() == null || s.getRanks().isEmpty()
@@ -206,7 +216,7 @@ abstract class SectorRunnable implements Runnable {
           || s.getNameStatusExclusion() == null || s.getNameStatusExclusion().isEmpty()
       ) {
         DatasetSettings ds = ObjectUtils.coalesce(
-          session.getMapper(DatasetMapper.class).getSettings(sectorKey.getDatasetKey()),
+          session.getMapper(DatasetMapper.class).getSettings(dsInfo.keyOrProjectKey()),
           new DatasetSettings()
         );
 

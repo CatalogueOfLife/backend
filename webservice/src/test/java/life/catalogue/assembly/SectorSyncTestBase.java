@@ -235,7 +235,7 @@ public abstract class SectorSyncTestBase {
 
 
   void assertTree(String filename) throws IOException {
-    assertTree(Datasets.COL, openResourceStream(filename));
+    assertTree(filename, Datasets.COL, openResourceStream(filename));
   }
 
   public static void assertSameTree(int datasetKey1, int datasetKey2) throws IOException {
@@ -251,17 +251,17 @@ public abstract class SectorSyncTestBase {
     assertEquals("Tree not as expected for datasets " + datasetKey1 + " and "+datasetKey2, tree1, tree2);
   }
 
-  public static void assertTree(int datasetKey, InputStream expectedTree) throws IOException {
-    assertTree(datasetKey, null, expectedTree);
+  public static void assertTree(String project, int datasetKey, InputStream expectedTree) throws IOException {
+    assertTree(project, datasetKey, null, expectedTree);
   }
-  public static void assertTree(int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
+  public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
     String tree = readTree(datasetKey, rootID);
 
     // compare trees
     System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
     System.out.println(tree);
-    assertEquals("Tree not as expected for dataset " + datasetKey, expected, tree);
+    assertEquals("Tree from project " + project + " not as expected for dataset " + datasetKey, expected, tree);
   }
 
   public static String readTree(int datasetKey,@Nullable String rootID) throws IOException {
