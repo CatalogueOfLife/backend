@@ -30,6 +30,8 @@ import javax.annotation.Nullable;
 
 import life.catalogue.release.UsageIdGen;
 
+import life.catalogue.release.XRelease;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -68,7 +70,7 @@ public class SectorSync extends SectorRunnable {
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              int user) throws IllegalArgumentException {
-    super(sectorKey, true, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.project = project;
     this.sid = sid;
     this.estimateDao = estimateDao;
@@ -148,6 +150,9 @@ public class SectorSync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init(true);
+    // rematch target to xrelease usage ids
+    XRelease.rematchTarget(sector, targetDatasetKey, matcher);
+
     loadForeignChildren();
     if (!disableAutoBlocking) {
       // also load all sector subjects of non merge sources to auto block them

@@ -116,7 +116,7 @@ public class XReleaseBasicIT {
 
     // assert tree
     InputStream tree = getClass().getResourceAsStream("/assembly-trees/xrelease-expected.tree");
-    SectorSyncIT.assertTree(xrel.newDatasetKey, tree);
+    SectorSyncIT.assertTree("xrelease", xrel.newDatasetKey, tree);
 
     // verify secondary sources
     try(SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {

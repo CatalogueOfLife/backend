@@ -229,7 +229,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     for (var s : info.sectors) {
       sync(s, mcfg);
     }
-    assertTree(Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
+    assertTree(project, Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
 
     // do once more with decisions?
     var decRes = getClass().getResourceAsStream("/txtree/" + project + "/decisions.yaml");
@@ -273,7 +273,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
 
       // sync and verify
       syncAll(null, mcfg);
-      assertTree(Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected-with-decisions.txtree"));
+      assertTree(project, Datasets.COL, getClass().getResourceAsStream("/txtree/" + project + "/expected-with-decisions.txtree"));
     }
 
     switch (project) {

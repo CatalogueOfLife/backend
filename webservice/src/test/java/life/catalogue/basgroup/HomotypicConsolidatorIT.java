@@ -43,7 +43,7 @@ public class HomotypicConsolidatorIT {
     );
     hc.consolidate();
     assertNoLoop(datasetKey);
-    SectorSyncIT.assertTree(datasetKey, null, getClass().getResourceAsStream("/txtree/homconsolidation-expected.txtree"));
+    SectorSyncIT.assertTree("homconsolidation-expected.txtree", datasetKey, null, getClass().getResourceAsStream("/txtree/homconsolidation-expected.txtree"));
   }
 
   public static void assertNoLoop(int datasetKey) {

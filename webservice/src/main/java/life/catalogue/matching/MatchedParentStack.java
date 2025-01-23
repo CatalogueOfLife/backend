@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 public class MatchedParentStack {
   private static final Logger LOG = LoggerFactory.getLogger(MatchedParentStack.class);
   private SimpleNameWithNidx root;
+  private MatchedUsage rootMU;
   private final LinkedList<MatchedUsage> parents = new LinkedList<>();
   private String doubtfulUsageID = null;
   private boolean first = true;
@@ -30,7 +31,7 @@ public class MatchedParentStack {
    */
   public MatchedParentStack(SimpleNameWithNidx rootTarget) {
     LOG.info("Create parent stack with root {}", rootTarget);
-    this.root = rootTarget;
+    setRootInternal(rootTarget);
   }
 
   /**
@@ -38,7 +39,17 @@ public class MatchedParentStack {
    */
   public void setRoot(SimpleNameWithNidx root) {
     LOG.info("Change root of parent stack to {}", root);
+    setRootInternal(root);
+  }
+
+  private void setRootInternal(SimpleNameWithNidx root) {
     this.root = root;
+    if (root != null) {
+      rootMU = new MatchedUsage(new SimpleNameCached(root), null);
+      rootMU.match = root;
+    } else {
+      rootMU = null;
+    }
   }
 
   public boolean containsMatch(String id) {
@@ -81,16 +92,29 @@ public class MatchedParentStack {
   }
 
   /**
-   * List the current classification
+   * List the current classification starting with the root
    */
   public List<MatchedUsage> classification() {
-    return parents;
+    var cl = new ArrayList<MatchedUsage>();
+    if (hasRoot()) {
+      cl.add(rootMU);
+    }
+    cl.addAll(parents);
+    return cl;
   }
 
+  /**
+   * List the current classification starting with the root as simple names
+   */
   public List<SimpleNameCached> classificationSN() {
-    return parents.stream()
+    var cl = new ArrayList<SimpleNameCached>();
+    if (hasRoot()) {
+      cl.add(rootMU.usage);
+    }
+    parents.stream()
       .map(u -> u.usage)
-      .collect(Collectors.toList());
+      .forEach(cl::add);
+    return cl;
   }
 
   public String classificationToString() {
@@ -163,11 +187,19 @@ public class MatchedParentStack {
     return parents.stream().filter(u -> u.match != null && !exclusion.contains(u.match.getId())).collect(Collectors.toCollection(LinkedList::new));
   }
 
+  /**
+   * Includes the root
+   */
   public List<SimpleNameCached> matchedParentsOnlySN() {
-    return parents.stream()
+    List<SimpleNameCached> matched = new ArrayList<>();
+    if (hasRoot()) {
+      matched.add(rootMU.usage);
+    }
+    parents.stream()
       .filter(u -> u.match != null)
       .map(u -> u.usage)
-      .collect(Collectors.toList());
+      .forEach(matched::add);
+    return matched;
   }
 
   public MatchedUsage secondLast() {

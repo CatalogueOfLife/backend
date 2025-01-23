@@ -95,6 +95,9 @@ public class XReleaseIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"target", List.of(
+        "lpsn"
+      )},
       {"dupe-genera", List.of(
         "src1",
         "src2"
@@ -164,6 +167,15 @@ public class XReleaseIT extends SectorSyncTestBase {
       SqlSessionFactoryRule.getSqlSessionFactory(), validator, cfg
     );
 
+    // set project default settings
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var settings = dm.getSettings(Datasets.COL);
+      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
+      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
+      dm.updateSettings(Datasets.COL, settings, Users.TESTER);
+    }
+
     // load text trees & create sectors
     info = SectorSyncMergeIT.setupProject(project, sources);
   }
@@ -175,15 +187,6 @@ public class XReleaseIT extends SectorSyncTestBase {
 
     // rematch
     matchingRule.rematchAll();
-
-    // set project default settings
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var dm = session.getMapper(DatasetMapper.class);
-      var settings = dm.getSettings(Datasets.COL);
-      settings.put(Setting.SECTOR_NAME_TYPES, List.of(NameType.SCIENTIFIC, NameType.VIRUS, NameType.HYBRID_FORMULA));
-      settings.put(Setting.SECTOR_ENTITIES, List.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.REFERENCE));
-      dm.updateSettings(Datasets.COL, settings, Users.TESTER);
-    }
 
     // regular release
     var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
@@ -210,7 +213,7 @@ public class XReleaseIT extends SectorSyncTestBase {
 
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree
-    assertTree(xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
+    assertTree(project, xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
 
     conditionalChecks(project, xrel);
   }
