@@ -75,17 +75,18 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   @DELETE
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void deleteByDataset(@PathParam("key") int catalogueKey,
+  public void deleteByDataset(@PathParam("key") int projectKey,
                               @QueryParam("datasetKey") int datasetKey,
+                              @QueryParam("mode") Sector.Mode mode,
                               @DefaultValue("false") @QueryParam(PARTIAL_PARAMETER) boolean partial,
                               @Context SqlSession session, @Auth User user) {
     SectorMapper sm = session.getMapper(SectorMapper.class);
     int counter = 0;
-    for (Sector s : sm.listByDataset(catalogueKey, datasetKey)) {
+    for (Sector s : sm.listByDataset(projectKey, datasetKey, mode)) {
       assembly.deleteSector(s, !partial, user.getKey());
       counter++;
     }
-    LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, catalogueKey);
+    LOG.info("Scheduled deletion of all {} sectors for dataset {} in catalogue {}", counter, datasetKey, projectKey);
   }
 
   @GET
