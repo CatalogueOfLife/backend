@@ -186,6 +186,17 @@ public class XRelease extends ProjectRelease {
   }
 
   @Override
+  protected void copyData() throws InterruptedException {
+    super.copyData();
+    // add missing (merge) decisions from the project
+    try (SqlSession session = factory.openSession(true)) {
+      // find previous public release needed for DOI management
+      var count = session.getMapper(DecisionMapper.class).mergeDataset(projectKey, newDatasetKey);
+      LOG.info("Merged {} new decisions from project {} to release {}", count, projectKey, newDatasetKey);
+    }
+  }
+
+  @Override
   void finalWork() throws Exception {
     usageIdGen.removeIdsFromDataset(newDatasetKey);
 
