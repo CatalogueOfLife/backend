@@ -321,7 +321,7 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
-  <select id="suggest" resultMap="datasetSimpleResultMap">
+  <select id="suggestInternal" resultMap="datasetSimpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM dataset d
     WHERE d.deleted IS NULL
@@ -334,12 +334,16 @@
         </if>
         )
       </if>
+
+      <if test="key != null">
+        AND key = #{key}
+      </if>
       <if test="q != null">
         <!-- we use dollar quoted strings with a token ($gbif$) to avoid escaping quotes -->
         AND (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$) OR f_unaccent(title) ILIKE f_unaccent($gbif$%${q}%$gbif$))
       </if>
-    ORDER BY alias NULLS LAST, title
-    LIMIT 25
+    ORDER BY (f_unaccent(alias) ILIKE f_unaccent($gbif$%${q}%$gbif$)) DESC, alias NULLS LAST, title
+    LIMIT #{limit}
   </select>
 
   <select id="searchKeys" resultType="integer">

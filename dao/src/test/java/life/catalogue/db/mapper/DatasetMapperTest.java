@@ -528,23 +528,30 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     createSector(Datasets.COL, d6);
     commit();
 
+    int limit = 25;
     for (boolean b : List.of(true, false)) {
-      assertTrue(mapper().suggest("qwertz", Datasets.COL, b).isEmpty());
-      assertTrue(mapper().suggest("gbif", Datasets.COL, b).isEmpty());
-      assertEquals(d1, mapper().suggest("ITI", Datasets.COL, b).get(0).getKey());
-      assertEquals(d1, mapper().suggest("itis", Datasets.COL, b).get(0).getKey());
+      for (Integer k : List.of(d1, d2, d3, d4, d6)) {
+        assertEquals(k, mapper().suggest(k.toString(), Datasets.COL, b, limit).get(0).getKey());
+      }
+      // no sector!
+      assertTrue(mapper().suggest(d5.toString(), Datasets.COL, b, limit).isEmpty());
 
-      assertEquals(2, mapper().suggest("worm", null, b).size());
-      assertEquals(d3, mapper().suggest("worm", Datasets.COL, b).get(0).getKey());
-      assertEquals(d6, mapper().suggest("Lista taxonómica de las especies de equinodermos de México", Datasets.COL, b).get(0).getKey());
-      assertEquals(d6, mapper().suggest("Lista taxonomica de las especies de equinodermos de Mexico", Datasets.COL, b).get(0).getKey());
-      assertEquals(d6, mapper().suggest("especies de equinodermos de Mexico", Datasets.COL, b).get(0).getKey());
+      assertTrue(mapper().suggest("qwertz", Datasets.COL, b, limit).isEmpty());
+      assertTrue(mapper().suggest("gbif", Datasets.COL, b, limit).isEmpty());
+      assertEquals(d1, mapper().suggest("ITI", Datasets.COL, b, limit).get(0).getKey());
+      assertEquals(d1, mapper().suggest("itis", Datasets.COL, b, limit).get(0).getKey());
+
+      assertEquals(2, mapper().suggest("worm", null, b, limit).size());
+      assertEquals(d3, mapper().suggest("worm", Datasets.COL, b, limit).get(0).getKey());
+      assertEquals(d6, mapper().suggest("Lista taxonómica de las especies de equinodermos de México", Datasets.COL, b, limit).get(0).getKey());
+      assertEquals(d6, mapper().suggest("Lista taxonomica de las especies de equinodermos de Mexico", Datasets.COL, b, limit).get(0).getKey());
+      assertEquals(d6, mapper().suggest("especies de equinodermos de Mexico", Datasets.COL, b, limit).get(0).getKey());
     }
 
     mapper().delete(d5);
     commit();
-    assertEquals(1, mapper().suggest("worm", null, true).size());
-    assertEquals(d3, mapper().suggest("worm", Datasets.COL, true).get(0).getKey());
+    assertEquals(1, mapper().suggest("worm", null, true, limit).size());
+    assertEquals(d3, mapper().suggest("worm", Datasets.COL, true, limit).get(0).getKey());
   }
 
   @Test

@@ -99,15 +99,33 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param userKey optional user key so that private datasets for that user will be included in the results.
    *                Use -42 for admins and other roles that should always see all private datasets
    */
-  List<Dataset> search(@Param("req") DatasetSearchRequest request, @Param("userKey") Integer userKey, @Param("page") Page page);
+  List<Dataset> search(@Param("req") DatasetSearchRequest request,
+                       @Param("userKey") Integer userKey,
+                       @Param("page") Page page
+  );
+
+  default List<DatasetSimple> suggest(@Param("q") String query,
+                              @Param("contributesTo") Integer contributesTo,
+                              @Param("inclMerge") boolean inclMergeSources,
+                              @Param("limit") int limit) {
+    try {
+      var key = Integer.parseInt(query);
+      return suggestInternal(null, key, contributesTo, inclMergeSources, limit);
+    } catch (NumberFormatException e) {
+      return suggestInternal(query, null, contributesTo, inclMergeSources, limit);
+    }
+  }
 
   /**
    * Filters datasets to only list those that contribute as a source dataset with at least one sector to a given project.
    * @param contributesTo project or release to contribute to, i.e. be a source. If null all datasets are candidates
+   * @param datasetKey the exact dataset key of the source to suggest. When known can be used to force the correct lookup
    */
-  List<DatasetSimple> suggest(@Param("q") String query,
+  List<DatasetSimple> suggestInternal(@Param("q") String query,
+                              @Param("key") Integer datasetKey,
                               @Param("contributesTo") Integer contributesTo,
-                              @Param("inclMerge") boolean inclMergeSources
+                              @Param("inclMerge") boolean inclMergeSources,
+                              @Param("limit") int limit
   );
 
   /**
