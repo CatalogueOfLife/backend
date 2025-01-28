@@ -48,13 +48,4 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
                                                   @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey,
                                                   @Param("limit") int limit);
 
-  /**
-   * Merges missing decisions from a dataset into another one.
-   * E.g. to add missing decisions to a release for merge sources
-   * @param datasetKey
-   * @param newDatasetKey
-   * @return number of created, missing decisions
-   */
-  int mergeDataset(@Param("datasetKey") int datasetKey, @Param("newDatasetKey") int newDatasetKey);
-
 }

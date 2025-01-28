@@ -289,14 +289,4 @@
     WHERE dataset_key=#{datasetKey}
   </insert>
 
-
-  <insert id="mergeDataset" parameterType="map">
-    MERGE INTO decision dr
-    USING (SELECT * FROM decision WHERE dataset_key=#{datasetKey}) dp
-    ON dr.id = dp.id AND dr.dataset_key=#{newDatasetKey}
-    WHEN NOT MATCHED THEN
-        INSERT (id, dataset_key, <include refid="COLS_NO_DATASETKEY"/>, original_subject_id, created, created_by )
-        VALUES (dp.id, #{newDatasetKey}, <include refid="COLS_NO_DATASETKEY_PREFIX"><property name="alias" value="dp."/></include>, dp.original_subject_id, dp.created, dp.created_by)
-  </insert>
-
 </mapper>

@@ -164,33 +164,4 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     }
   }
 
-  @Test
-  public void mergeDataset(){
-    // create 4 in catalogue, copy them, create 2 more and merge them
-    final int subjKey = 12;
-    final int rkey = 11;
-    for (int i = 0; i < 4; i++) {
-      var d = create(subjKey);
-      mapper().create(d);
-    }
-
-    assertEquals(0, mapper().count(rkey));
-    assertEquals(4, mapper().count(catalogeKey));
-
-    mapper().copyDataset(catalogeKey, rkey, false);
-    assertEquals(4, mapper().count(rkey));
-    assertEquals(4, mapper().count(catalogeKey));
-
-    for (int i = 0; i < 2; i++) {
-      var d = create(subjKey);
-      mapper().create(d);
-    }
-    assertEquals(4, mapper().count(rkey));
-    assertEquals(6, mapper().count(catalogeKey));
-
-    mapper().mergeDataset(catalogeKey, rkey);
-    assertEquals(6, mapper().count(rkey));
-    assertEquals(6, mapper().count(catalogeKey));
-  }
-  
 }

@@ -5,16 +5,15 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.NameDao;
-import life.catalogue.dao.SectorDao;
-import life.catalogue.dao.TaxonDao;
+import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.*;
+import life.catalogue.matching.decision.DecisionRematchRequest;
+import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.SectorRematchRequest;
 import life.catalogue.matching.decision.SectorRematcher;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -52,6 +51,7 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Parameterized.class)
 public class SectorSyncMergeIT extends SectorSyncTestBase {
   private static final Logger LOG = LoggerFactory.getLogger(SectorSyncMergeIT.class);
+  private static final TypeReference<List<EditorialDecision>> decisionListTypeRef = new TypeReference<>() {};
 
   final static SqlSessionFactoryRule pg = new PgSetupRule(); //PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -124,6 +124,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     public final String project;
     public final List<String> sources;
     public final List<Sector> sectors = new ArrayList<>();
+    public final List<EditorialDecision> decisions = new ArrayList<>();
     public final List<TxtTreeDataRule.TreeDataset> rules = new ArrayList<>();
     public boolean rematchSectors = false; // do we need to rematch sectors?
     public XReleaseConfig cfg;
@@ -167,6 +168,19 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setPriority(dkey-99);
       s.setNote(tree);
       info.sectors.add(s);
+
+      // do we have a decisions file?
+      try {
+        var decisions = YamlUtils.read(decisionListTypeRef, Resources.getResourceAsStream(resource + "-decisions.yaml"));
+        for (var d : decisions) {
+          d.setDatasetKey(Datasets.COL);
+          d.setSubjectDatasetKey(dkey);
+          info.decisions.add(d);
+        }
+      } catch (IOException e) {
+        // swallow
+      }
+
       dkey++;
     }
 
@@ -180,6 +194,11 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
         s.applyUser(Users.TESTER);
         sm.create(s);
       }
+      var dm = session.getMapper(DecisionMapper.class);
+      for (var d : info.decisions) {
+        d.applyUser(Users.TESTER);
+        dm.create(d);
+      }
     }
 
     // do we have a merge handler config file?
@@ -190,17 +209,25 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
 
     //dumpNidx();
-    if (info.rematchSectors) {
+    if (info.rematchSectors || !info.decisions.isEmpty()) {
       // rematch sector subject/target
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-      var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
-      SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
-      SectorRematchRequest req = new SectorRematchRequest();
-      req.setTarget(true);
-      req.setSubject(true);
-      req.setDatasetKey(Datasets.COL);
-      SectorRematcher.match(dao, req, Users.TESTER);
+      if (info.rematchSectors) {
+        var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
+        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+        SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
+        var req = new SectorRematchRequest();
+        req.setTarget(true);
+        req.setSubject(true);
+        req.setDatasetKey(Datasets.COL);
+        SectorRematcher.match(dao, req, Users.TESTER);
+      }
+      if (!info.decisions.isEmpty()) {
+        var dao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
+        var req = new DecisionRematchRequest();
+        req.setDatasetKey(Datasets.COL);
+        DecisionRematcher.match(dao, req, Users.TESTER);
+      }
     }
     return info;
   }

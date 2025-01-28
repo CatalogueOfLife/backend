@@ -52,7 +52,7 @@ public class SectorSync extends SectorRunnable {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
   private final UsageMatcherGlobal matcher;
-  private final boolean project;
+  private final boolean projectTarget;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
   private @Nullable TreeMergeHandlerConfig mergeCfg;
@@ -64,14 +64,14 @@ public class SectorSync extends SectorRunnable {
   private final Supplier<String> typeMaterialIdGen;
   private Throwable exception;
 
-  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean project, @Nullable TreeMergeHandlerConfig mergeCfg,
+  SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
              SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              int user) throws IllegalArgumentException {
-    super(sectorKey, true, project, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
-    this.project = project;
+    super(sectorKey, true, projectTarget, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    this.projectTarget = projectTarget;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
@@ -93,12 +93,12 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void doWork() throws Exception {
-    if (project) {
+    if (projectTarget) {
       state.setState( ImportState.DELETING);
       relinkForeignChildren();
     }
     try {
-      if (project) {
+      if (projectTarget) {
         deleteOld();
         checkIfCancelled();
       }
@@ -111,7 +111,7 @@ public class SectorSync extends SectorRunnable {
       checkIfCancelled();
 
     } finally {
-      if (project) {
+      if (projectTarget) {
         // run these even if we get errors in the main tree copying
         state.setState( ImportState.MATCHING);
         rematchForeignChildren();
@@ -129,7 +129,7 @@ public class SectorSync extends SectorRunnable {
 
   @Override
   void updateSearchIndex() throws Exception {
-    if (project) {
+    if (projectTarget) {
       indexService.indexSector(sector);
       LOG.info("Reindexed sector {} from search index", sectorKey);
 

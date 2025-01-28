@@ -29,6 +29,7 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,6 +53,7 @@ public class XRelease extends ProjectRelease {
   private final SectorImportDao siDao;
   // sectors as in the release with target pointing to the release usage identifiers
   private List<Sector> sectors;
+  private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
@@ -72,6 +74,7 @@ public class XRelease extends ProjectRelease {
     this.ni = matcher.getNameIndex();
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
+    sectorProjectKey = DSID.root(projectKey);
     LOG.info("Build extended release for project {} from public release {}", projectKey, baseReleaseKey);
   }
 
@@ -182,17 +185,6 @@ public class XRelease extends ProjectRelease {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
       return createReleaseDOI(prevReleaseKey);
-    }
-  }
-
-  @Override
-  protected void copyData() throws InterruptedException {
-    super.copyData();
-    // add missing (merge) decisions from the project
-    try (SqlSession session = factory.openSession(true)) {
-      // find previous public release needed for DOI management
-      var count = session.getMapper(DecisionMapper.class).mergeDataset(projectKey, newDatasetKey);
-      LOG.info("Merged {} new decisions from project {} to release {}", count, projectKey, newDatasetKey);
     }
   }
 
@@ -356,7 +348,7 @@ public class XRelease extends ProjectRelease {
    */
   @Override
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) {
-    // we copy some entities from the project, not the base release though
+    // we copy publisher entities from the project, all the rest from the base release with the new ids already
     if (entity.equals(Publisher.class)) {
       super.copyTable(entity, mapperClass, session);
 
@@ -376,7 +368,7 @@ public class XRelease extends ProjectRelease {
     // sector metrics
     for (Sector s : sectors) {
       if (s.getSyncAttempt() != null) {
-        var sim = siDao.getAttempt(s, s.getSyncAttempt());
+        var sim = siDao.getAttempt(sectorProjectKey.id(s.getId()), s.getSyncAttempt());
         LOG.info("Build metrics for sector {}", s);
         siDao.updateMetrics(sim, newDatasetKey);
       }
@@ -424,6 +416,7 @@ public class XRelease extends ProjectRelease {
       checkIfCancelled();
       SectorSync ss;
       try {
+        // this loads decisions from the main project, even though the sector dataset key is the xrelease
         ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
@@ -433,6 +426,8 @@ public class XRelease extends ProjectRelease {
           }
           LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError(), ss.lastException());
         } else {
+          // copy remaining merge decisions
+          copyMergeDecisions(ss.getDecisions().values());
           // copy attempts to local instances as it finished successfully
           s.setSyncAttempt(ss.getState().getAttempt());
           // and also update our release copy!
@@ -454,6 +449,21 @@ public class XRelease extends ProjectRelease {
 
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, "Merging sectors", start);
+  }
+
+  private void copyMergeDecisions(Collection<EditorialDecision> decisions) {
+    try (SqlSession session = factory.openSession(true)) {
+      DecisionMapper dm = session.getMapper(DecisionMapper.class);
+      for (var d : decisions) {
+        d.setDatasetKey(newDatasetKey);
+        try {
+          dm.createWithID(d);
+        } catch (PersistenceException e) {
+          // swallow, expected for some cases
+          LOG.info("Failed to create decision {}: {}", d, e.getMessage());
+        }
+      }
+    }
   }
 
   public int getFailedSyncs() {
