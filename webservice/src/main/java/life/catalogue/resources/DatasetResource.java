@@ -275,8 +275,8 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   @GET
   @Path("/{key}/source/suggest")
   public List<DatasetSimple> projectOrReleaseSourceSuggest(@PathParam("key") int datasetKey,
-                                                     @QueryParam("merge") boolean inclMerge,
-                                                     @QueryParam("q") String query
+                                                           @QueryParam("merge") boolean inclMerge,
+                                                           @QueryParam("q") String query
   ) {
     return sourceDao.suggest(datasetKey, query, inclMerge);
   }

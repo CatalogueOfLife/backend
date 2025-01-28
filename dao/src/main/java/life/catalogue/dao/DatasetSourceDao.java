@@ -113,7 +113,7 @@ public class DatasetSourceDao {
     DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
-      return dm.suggest(query, datasetKey, inclMergeSources);
+      return dm.suggest(query, datasetKey, inclMergeSources, 50);
     }
   }
 
