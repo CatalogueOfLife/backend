@@ -42,7 +42,7 @@ public class TreeMergeHandlerConfig {
     // upper case blocked names
     if (xCfg.blockedNames != null) {
       for (var bn : xCfg.blockedNames) {
-        blockedNames.add(bn.trim().toUpperCase());
+        blockedNames.add(norm(bn));
       }
     }
     if (xCfg.blockedNamePatterns != null) {
@@ -57,6 +57,10 @@ public class TreeMergeHandlerConfig {
         }
       }
     }
+  }
+
+  private static String norm(String x) {
+    return x == null ? null : x.trim().toUpperCase();
   }
 
   private Taxon createIncertaeSedisRoot() {
@@ -116,8 +120,8 @@ public class TreeMergeHandlerConfig {
    * @param n name to test for. Case insensitive!
    */
   public boolean isBlocked(FormattableName n) {
-    var blocked = blockedNames.contains(n.getLabel().trim().toUpperCase())
-           || blockedNames.contains(n.getScientificName().trim().toUpperCase());
+    var blocked = blockedNames.contains(norm(n.getLabel()))
+           || blockedNames.contains(norm(n.getScientificName()));
     if (!blocked && !blockedNamePatterns.isEmpty()) {
       for (var p : blockedNamePatterns) {
         var m = p.matcher(n.getLabel());

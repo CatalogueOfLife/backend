@@ -120,6 +120,10 @@ abstract class SectorRunnable implements Runnable {
     }
   }
 
+  public Map<String, EditorialDecision> getDecisions() {
+    return decisions;
+  }
+
   @Override
   public void run() {
     LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
