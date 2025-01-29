@@ -53,17 +53,26 @@ public class MapDbObjectSerializerTest {
         .keySerializer(Serializer.LONG)
         .valueSerializer(new MapDbObjectSerializer(VerbatimRecord.class, pool, 128))
         .create();
-  
+
+    final int repeat = 100;
     StopWatch watch = new StopWatch();
     verbatim.put(0l, gen(0));
     watch.start();
-    System.out.println(watch.getNanoTime());
-    for (long x=1; x<1000; x++) {
+    for (long x=1; x<repeat; x++) {
       verbatim.put(x, gen(x));
     }
-    watch.suspend();
-    System.out.println(watch.getNanoTime());
-  
+    watch.stop();
+    System.out.println(watch);
+
+    watch.reset();
+    watch.start();
+    System.out.println("Reading...");
+    for (long x=1; x<repeat; x++) {
+      var obj = verbatim.get(x);
+    }
+    watch.stop();
+    System.out.println(watch);
+
     mapDb.close();
   }
   
