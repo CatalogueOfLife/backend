@@ -66,7 +66,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * Neo4j does not perform well storing large propLabel in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
- * We use the Kryo library for a very performant binary
+ * We use the Fury library for a very performant binary
  * serialisation with the data keyed under the neo4j node value.
  */
 public class NeoDb {
