@@ -452,7 +452,7 @@ public class XRelease extends ProjectRelease {
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(false)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
       for (var d : decisions) {
         d.setDatasetKey(newDatasetKey);
@@ -463,6 +463,7 @@ public class XRelease extends ProjectRelease {
           LOG.info("Failed to create decision {}: {}", d, e.getMessage());
         }
       }
+      session.commit();
     }
   }
 
