@@ -1,6 +1,7 @@
 package life.catalogue.common.csl;
 
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
+import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLType;
 
 import life.catalogue.api.model.CslData;
@@ -69,5 +70,38 @@ public class CslDataConverterTest {
     Assert.assertEquals(csl.getURL(), conv.getURL());
     Assert.assertEquals(csl.getISSN(), conv.getISSN());
   }
-  
+
+
+  private CSLItemDataBuilder testCslBuilder() {
+    return new CSLItemDataBuilder()
+      .abstrct("bcgenwgz ew hcehnuew")
+      .title("my Title")
+      .accessed(1999)
+      .issued(2011)
+      .author("Markus", "Döring")
+      .DOI("10.1093/database/baw125")
+      .URL("gbif.org")
+      .ISSN("1758-0463")
+      .originalTitle("my orig tittel");
+  }
+
+  @Test
+  public void toBibTex() {
+    CSLItemData csl = testCslBuilder().build();
+    var bib = CslDataConverter.toBibTex(csl);
+    assertNotNull(bib);
+
+    // test with unusual null date arrays
+    testCSLDate( null );
+    testCSLDate( new CSLDate() );
+    testCSLDate( new CSLDate(new int[][]{}, null, null, null, null) );
+  }
+
+  private void testCSLDate(CSLDate d) {
+    var csl = testCslBuilder()
+      .issued(d)
+      .build();
+    assertNotNull(CslDataConverter.toBibTex(csl));
+  }
+
 }
