@@ -5,7 +5,7 @@ import java.util.UUID;
 public class DatasetBlockedException extends BlockedException {
   public final int datasetKey;
 
-  DatasetBlockedException(UUID blockedBy, int datasetKey) {
+  public DatasetBlockedException(UUID blockedBy, int datasetKey) {
     super(blockedBy);
     this.datasetKey = datasetKey;
   }

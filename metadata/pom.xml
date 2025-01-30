@@ -9,7 +9,7 @@
 
   <artifactId>metadata</artifactId>
 
-  <name>COL metadata</name>
+  <name>CLB metadata</name>
   <description>Metadata module mapping various formats like ColDP and EML to the COL API</description>
 
   <dependencies>

@@ -10,7 +10,7 @@
 
 	<artifactId>dao</artifactId>
 
-	<name>COL DAO</name>
+	<name>CLB DAO</name>
 
 	<build>
 		<resources>

@@ -9,7 +9,7 @@
 
   <artifactId>parser</artifactId>
 
-  <name>COL parsers</name>
+  <name>CLB parsers</name>
   <description>Parsers for enumerations and other controlled vocabularies</description>
 
     <dependencies>

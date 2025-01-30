@@ -9,7 +9,7 @@
 
   <artifactId>reader</artifactId>
 
-  <name>COL reader</name>
+  <name>CLB reader</name>
   <description>Various CSV readers for DwC, ColDP and ACEF</description>
 
   <dependencies>

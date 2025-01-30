@@ -8,6 +8,7 @@ public enum Component {
   UsageCache,
   LegacyIdMap,
   JobExecutor,
+  CronExecutor,
   DatasetImporter,
   SectorSynchronizer,
   ImportScheduler,
