@@ -235,11 +235,13 @@ public class CslDataConverter {
       }
     }
 
-    if (data.getIssued() != null) {
+    if (data.getIssued() != null && data.getIssued().getDateParts() != null && data.getIssued().getDateParts().length>0) {
       int[] date = data.getIssued().getDateParts()[0];
-      addField(entry, "year", date[0]);
-      if (date.length>1) {
-        addField(entry, "month", date[1]);
+      if (date.length>0) {
+        addField(entry, "year", date[0]);
+        if (date.length>1) {
+          addField(entry, "month", date[1]);
+        }
       }
     }
 
