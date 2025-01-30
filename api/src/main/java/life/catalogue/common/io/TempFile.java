@@ -20,6 +20,12 @@ public class TempFile implements AutoCloseable {
     return new File("/tmp/col/" + UUID.randomUUID());
   }
 
+  public static TempFile file() throws IOException {
+    TempFile tf = new TempFile(directoryFile());
+    tf.file.getParentFile().mkdirs();
+    return tf;
+  }
+
   public static TempFile directory() throws IOException {
     TempFile tf = new TempFile(directoryFile());
     tf.file.mkdirs();

@@ -1,15 +1,14 @@
 package life.catalogue.common.kryo.map;
 
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.common.io.TempFile;
 import life.catalogue.common.kryo.ApiKryoPool;
 
 import org.gbif.dwc.terms.DwcTerm;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.After;
 import org.junit.Before;
@@ -22,30 +21,26 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 
 public class MapDbObjectSerializerTest {
-  File dbf;
+  TempFile tf;
+
   Pool<Kryo> pool;
-  
+
   @Before
   public void init() throws IOException {
-    dbf = new File("/tmp/mapdb-test");
-    // make sure mapdb parent dirs exist
-    if (!dbf.getParentFile().exists()) {
-      dbf.getParentFile().mkdirs();
-    }
-  
+    tf = TempFile.file();
     pool = new ApiKryoPool(8);
   }
   
   @After
   public void shutdown() {
-    FileUtils.deleteQuietly(dbf);
+    tf.close();
   }
   
   @Test
   public void serde() {
   
     DB mapDb = DBMaker
-        .fileDB(dbf)
+        .fileDB(tf.file)
         .fileMmapEnableIfSupported()
         .make();
     
