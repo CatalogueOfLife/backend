@@ -2,6 +2,8 @@ package life.catalogue.common.fury;
 
 import life.catalogue.api.model.VerbatimRecord;
 
+import life.catalogue.common.io.TempFile;
+
 import org.gbif.dwc.terms.DwcTerm;
 
 import java.io.File;
@@ -18,27 +20,24 @@ import org.mapdb.DBMaker;
 import org.mapdb.Serializer;
 
 public class MapDbSerializerTest {
-  File dbf;
+
+  TempFile tf;
 
   @Before
   public void init() throws IOException {
-    dbf = new File("/tmp/mapdb-test");
-    // make sure mapdb parent dirs exist
-    if (!dbf.getParentFile().exists()) {
-      dbf.getParentFile().mkdirs();
-    }
+    tf = TempFile.file();
   }
 
   @After
   public void shutdown() {
-    FileUtils.deleteQuietly(dbf);
+    tf.close();
   }
 
   @Test
   public void serde() {
 
     DB mapDb = DBMaker
-      .fileDB(dbf)
+      .fileDB(tf.file)
       .fileMmapEnableIfSupported()
       .make();
 
