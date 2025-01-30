@@ -10,7 +10,7 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>COL motherpom</name>
+  <name>CLB motherpom</name>
   <url>https://github.org/Sp2000/${project.artifactId}</url>
 
   <scm>
@@ -174,8 +174,10 @@
   <modules>
     <module>api</module>
     <module>coldp</module>
+    <module>core</module>
     <module>dao</module>
     <module>doi</module>
+    <module>importer</module>
     <module>metadata</module>
     <module>matching-ws</module>
     <module>parser</module>
@@ -200,6 +202,16 @@
   <dependencyManagement>
     <dependencies>
       <!-- COL -->
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>importer</artifactId>
+        <version>${project.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
         <artifactId>coldp</artifactId>
@@ -263,6 +275,20 @@
         <groupId>org.catalogueoflife</groupId>
         <artifactId>newick-io</artifactId>
         <version>${newick-io.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>core</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.catalogueoflife</groupId>
+        <artifactId>importer</artifactId>
+        <version>${project.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.catalogueoflife</groupId>
@@ -335,7 +361,7 @@
         <scope>import</scope>
       </dependency>
       <dependency>
-        <!-- https://github.com/dropwizard/dropwizard/blob/v2.0.2/dropwizard-dependencies/pom.xml -->
+        <!-- https://github.com/dropwizard/dropwizard/blob/v4.0.8/dropwizard-dependencies/pom.xml -->
         <groupId>io.dropwizard</groupId>
         <artifactId>dropwizard-dependencies</artifactId>
         <version>${dropwizard.version}</version>

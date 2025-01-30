@@ -10,9 +10,12 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Issue;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -89,7 +92,8 @@ public class ReferenceMapperTest extends CRUDDatasetScopedStringTestBase<Referen
 
   @Test
   public void listOrphans() throws Exception {
-    LocalDateTime bFirst = LocalDateTime.now();
+    LocalDateTime bFirst = LocalDateTime.now().minus(1, ChronoUnit.MILLIS);
+
     Reference r = newReference();
     mapper().create(r);
     mapper().create(newReference());

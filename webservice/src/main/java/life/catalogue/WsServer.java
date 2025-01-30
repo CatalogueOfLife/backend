@@ -1,8 +1,5 @@
 package life.catalogue;
 
-import life.catalogue.admin.jobs.cron.CronExecutor;
-import life.catalogue.admin.jobs.cron.ProjectCounterUpdate;
-import life.catalogue.admin.jobs.cron.TempDatasetCleanup;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
@@ -47,6 +44,9 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.jobs.cron.CronExecutor;
+import life.catalogue.jobs.cron.ProjectCounterUpdate;
+import life.catalogue.jobs.cron.TempDatasetCleanup;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -254,7 +254,7 @@ public class WsServer extends Application<WsServerConfig> {
       new TempDatasetCleanup(),
       new ProjectCounterUpdate(getSqlSessionFactory())
     );
-    env.lifecycle().manage(cron);
+    managedService.manage(Component.CronExecutor, cron);
 
     // name parser
     NameParser.PARSER.register(env.metrics());
@@ -370,10 +370,13 @@ public class WsServer extends Application<WsServerConfig> {
 
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, bus);
-    final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao, exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator, cfg);
+    final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
+      exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
+      cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
+    );
 
     // importer
-    importManager = new ImportManager(cfg,
+    importManager = new ImportManager(cfg.importer, cfg.normalizer,
       env.metrics(),
       httpClient,
       bus,
@@ -401,7 +404,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // link assembly and import manager so they are aware of each other
     importManager.setAssemblyCoordinator(syncManager);
-    syncManager.setImportManager(importManager);
 
     // legacy ID map
     IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
@@ -473,7 +475,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       bus.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    bus.register(new PublicReleaseListener(cfg, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
+    bus.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     bus.register(doiUpdater);
     bus.register(uCache);
     bus.register(exportManager);

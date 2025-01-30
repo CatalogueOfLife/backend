@@ -8,10 +8,9 @@ import life.catalogue.common.util.RegexUtils;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.importer.NameInterpreter;
-import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.NidxExportJob;
-
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexStore;
 
 import org.gbif.nameparser.api.NomCode;
@@ -21,12 +20,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -34,6 +27,11 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/nidx")
 @Produces(MediaType.APPLICATION_JSON)
@@ -126,7 +124,7 @@ public class NamesIndexResource {
   @POST
   @Path("export")
   public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @QueryParam("min") int minDatasets, @Auth User user) {
-    NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg);
+    NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg.normalizer);
     exec.submit(job);
     return job;
   }

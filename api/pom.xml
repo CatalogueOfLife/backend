@@ -13,7 +13,7 @@
 
   <artifactId>api</artifactId>
   <packaging>jar</packaging>
-  <name>COL API</name>
+  <name>CLB API</name>
 
   <properties>
     <jena.version>4.10.0</jena.version>
