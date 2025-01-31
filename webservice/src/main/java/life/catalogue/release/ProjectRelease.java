@@ -15,6 +15,7 @@ import life.catalogue.api.vocab.Setting;
 import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
@@ -161,11 +162,11 @@ public class ProjectRelease extends AbstractProjectCopy {
       }
 
     } else {
-      try (InputStream in = url.toURL().openStream()) {
-        // odd workaround to use the stream directly - which breaks the yaml parsing for some reason
-        String yaml = InputStreamUtils.readEntireStream(in);
+      try {
+        var http = new HttpUtils();
+        String yaml = http.get(url);
         return YamlUtils.readString(configClass, yaml);
-      } catch (IOException e) {
+      } catch (IOException | InterruptedException e) {
         throw new IllegalArgumentException("Invalid release configuration at "+ url, e);
       }
     }
