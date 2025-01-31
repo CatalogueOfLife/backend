@@ -180,6 +180,7 @@
     <module>importer</module>
     <module>metadata</module>
     <module>matching-ws</module>
+    <module>matching-quark</module>
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>
