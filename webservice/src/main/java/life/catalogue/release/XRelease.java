@@ -317,6 +317,7 @@ public class XRelease extends ProjectRelease {
 
     } catch (PersistenceException e) {
       // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
+      //TODO: rewrite to test all in memory, using the int values of the stable ids or create negative ones for non stable ids and store a mapping on disk mapdb
       LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
     }
 
@@ -455,12 +456,15 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(false)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
       for (var d : decisions) {
-        d.setDatasetKey(newDatasetKey);
-        try {
-          dm.createWithID(d);
-        } catch (PersistenceException e) {
-          // swallow, expected for some cases
-          LOG.info("Failed to create decision {}: {}", d, e.getMessage());
+        // we create decisions on the fly to auto block - ignore those
+        if (d.getId() != null) {
+          d.setDatasetKey(newDatasetKey);
+          try {
+            dm.createWithID(d);
+          } catch (PersistenceException e) {
+            // swallow, expected for some cases
+            LOG.info("Failed to create decision {}: {}", d, PgUtils.toMessage(e));
+          }
         }
       }
       session.commit();

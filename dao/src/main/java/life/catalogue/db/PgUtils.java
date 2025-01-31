@@ -41,6 +41,16 @@ public class PgUtils {
     }
   }
 
+  /**
+   * Tries to return only the main underlying PSQLException message without its stacktrace
+   */
+  public static String toMessage(PersistenceException e) {
+    if (e.getCause() instanceof PSQLException) {
+      return e.getCause().getMessage();
+    }
+    return e.getMessage();
+  }
+
   public static boolean isUniqueConstraint(PersistenceException e) {
     if (e.getCause() instanceof PSQLException) {
       PSQLException pe = (PSQLException) e.getCause();

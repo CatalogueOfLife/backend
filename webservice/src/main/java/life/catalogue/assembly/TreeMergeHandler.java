@@ -220,7 +220,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     } catch (Exception e) {
       exception = e;
-      LOG.error("Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
+      LOG.error("Fatal. Unable to process {} with parent {}. {}:{}", nu, nu.getParentId(), e.getClass().getSimpleName(), e.getMessage(), e);
       thrown++;
       throw new RuntimeException(e);
     }

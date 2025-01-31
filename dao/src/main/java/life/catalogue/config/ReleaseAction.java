@@ -10,6 +10,9 @@ import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * Action to be called after a release with the URL being a templated allowed to contain
  * certain variables which will be replaced before the actual call:
@@ -52,11 +55,16 @@ public class ReleaseAction {
       return 0;
     }
 
-    String uri = null;
+    URI uri = null;
+    String x = null;
     try {
-      uri = CitationUtils.fromTemplate(release, url);
+      x = CitationUtils.fromTemplate(release, url);
+      uri = new URI(x);
     } catch (IllegalArgumentException e) {
       LOG.warn("Bad URL template for action {} {}: {}", method, uri, e.getMessage());
+      return -1;
+    } catch (URISyntaxException e) {
+      LOG.error("Failed to call release action with invalid URI: {}", x);
       return -1;
     }
 
