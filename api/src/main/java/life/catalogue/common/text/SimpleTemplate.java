@@ -5,6 +5,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormatSymbols;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -24,14 +26,19 @@ import com.google.common.base.Preconditions;
  * If provided, the format should follow the property name and be separated by a comma.
  * The current time is available in a special "date" property.
  *
+ * Variable values can be URL encoded to be suitable for URLs
+ * by putting % right after the opening curly bracket before the actual var name.
+ * For example: "?alias={%alias}"
+ *
  * We extend the regular date formatting patterns {@link DateFormatSymbols.patternChars} with
  * a custom entry "ddd" to format the day of the month with an english suffix, e.g. 1st, 2nd, 3rd, 4th.
  *
  * Examples: "Hello {name}! Today is {date,EEE}"
  * produces "Hello Jim! Today is Tuesday"
+ *
  */
 public class SimpleTemplate {
-  private final static Pattern ARG_PATTERN = Pattern.compile("\\{([a-zA-Z_0-9]+(?:\\.[a-zA-Z_0-9]+)*)(?:,([^}]+))?}");
+  private final static Pattern ARG_PATTERN = Pattern.compile("\\{(%)?([a-zA-Z_0-9]+(?:\\.[a-zA-Z_0-9]+)*)(?:,([^}]+))?}");
 
   /**
    *
@@ -54,10 +61,14 @@ public class SimpleTemplate {
       Matcher matcher = ARG_PATTERN.matcher(template);
       StringBuffer buffer = new StringBuffer();
       while (matcher.find()) {
-        matcher.appendReplacement(buffer, isMap ?
-          mapValue(matcher.group(1), matcher.group(2), map) :
-          propertyValue(matcher.group(1), matcher.group(2), info, arg)
-        );
+        String value = isMap ?
+          mapValue(matcher.group(2), matcher.group(3), map) :
+          propertyValue(matcher.group(2), matcher.group(3), info, arg);
+        // url encode?
+        if (matcher.group(1) != null && value != null) {
+          value = URLEncoder.encode(value, StandardCharsets.UTF_8);
+        }
+        matcher.appendReplacement(buffer, value);
       }
       matcher.appendTail(buffer);
       return buffer.toString();

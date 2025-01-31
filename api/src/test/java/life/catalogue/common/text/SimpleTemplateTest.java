@@ -36,6 +36,9 @@ public class SimpleTemplateTest {
     sdf = new SimpleDateFormat("yy.M");
     assertEquals("20.5", sdf.format(new Date(2020, 04, 21)));
     assertEquals(sdf.format(new Date()), SimpleTemplate.render("{date,yy.M}", d));
+
+    // url encode
+    assertEquals("title=Catalogue+of+Life", SimpleTemplate.render("title={%title}", d));
   }
 
   @Test
