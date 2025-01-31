@@ -19,6 +19,7 @@ public class XReleaseConfigTest {
     assertTrue(cfg.enforceUnique.containsKey(Rank.GENUS));
     assertTrue(cfg.homotypicConsolidation);
     assertTrue(cfg.sourceDatasetExclusion.contains(6675));
+    assertEquals("COL-{date,yyyy-MM-dd}", cfg.metadata.alias);
 
   }
 }
