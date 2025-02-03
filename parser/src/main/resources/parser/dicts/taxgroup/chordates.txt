@@ -1,2 +1,10 @@
+Acraniata
+Amniota
 Chordata
+Eupelycosauria
+Metopophora
+Osteichthyes
+Sphenacomorpha
+Synapsida
+Tetrapoda
 Vertebrata

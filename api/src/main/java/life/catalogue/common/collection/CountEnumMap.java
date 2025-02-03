@@ -1,7 +1,7 @@
 package life.catalogue.common.collection;
 
-import java.util.EnumMap;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {
 
@@ -52,4 +52,20 @@ public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {
     return values().stream().max(Integer::compareTo);
   }
 
+  /**
+   * Similar to collection method, it will remove all entries from the map that pass the given filter
+   */
+  public boolean removeIf(Predicate<K> filter) {
+    Objects.requireNonNull(filter);
+    boolean removed = false;
+
+    final Iterator<K> each = keySet().iterator();
+    while (each.hasNext()) {
+      if (filter.test(each.next())) {
+        each.remove();
+        removed = true;
+      }
+    }
+    return removed;
+  }
 }

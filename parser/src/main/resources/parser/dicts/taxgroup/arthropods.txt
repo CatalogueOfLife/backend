@@ -13,6 +13,7 @@ Isoxyida
 Mandibulata
 Megacheira
 Melaphini
+Nektaspida
 Radiodonta
 Sphaeridiini
 Tamisiocarididae

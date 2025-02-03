@@ -21,6 +21,7 @@ Holozoa
 Irenidae
 Leptosomatidae
 Leuconidae
+Loricata
 Macroglossinae
 Metazoa
 Nephrozoa
@@ -28,7 +29,6 @@ Pentacerotidae
 Personidae
 Phyllophoridae
 Phyllophorinae
-Polyodontidae
 Protostomia
 Reticulariidae
 Serendipidae

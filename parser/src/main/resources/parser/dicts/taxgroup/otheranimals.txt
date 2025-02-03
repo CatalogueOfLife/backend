@@ -1,3 +1,4 @@
+
 Aberrantospermata
 Aberrapecidae
 Abertellidae
@@ -12,6 +13,7 @@ Acanthascinae
 Acanthasteridae
 Acanthasterinae
 Acanthatiinae
+Acanthinocyathida
 Acanthoaxiidae
 Acanthobasiliolinae
 Acanthobdellida
@@ -112,6 +114,7 @@ Actinopygidae
 Actinoscyphiidae
 Actinostolidae
 Actinostoloidea
+Actinostromatida
 Actinota
 Actinotrypidae
 Actinulida
@@ -527,6 +530,7 @@ Araxoporidae
 Arbaciidae
 Arbacioida
 Archaeocidaridae
+Archaeocyatha
 Archaeorthidae
 Archaeosmiliidae
 Archasteridae
@@ -1417,6 +1421,7 @@ Clathriidae
 Clathrinida
 Clathrinidae
 Clathrithyrididae
+Clathrodictyida
 Clathrolunulidae
 Clathrolunulinae
 Clathrozoellidae
@@ -3008,9 +3013,11 @@ Hesperomenidae
 Hesperonomiidae
 Hesperorthidae
 Hesperorthinae
+Hetairacyathida
 Heteracanthocephalidae
 Heteracanthocephalinae
 Heteractidae
+Heteractinida
 Heterakidae
 Heterakoidea
 Heteramorphida
@@ -3418,6 +3425,7 @@ Kyrshabaktellidae
 Kytorhynchidae
 Labaiidae
 Laballidae
+Labechiida
 Labicolidae
 Labidiasteridae
 Labidiasterinae
@@ -3684,6 +3692,7 @@ Loofilaimidae
 Lopadorhynchidae
 Lopadorrhynchidae
 Lopadorrhynchinae
+Lophiostromatida
 Lophocotylinae
 Lophopodidae
 Lordellonematinae
@@ -6148,6 +6157,7 @@ Spathiporidae
 Spengelidae
 Spengeliidae
 Sperosomatinae
+Sphaeractinoidea
 Sphaerasteridae
 Sphaerechinorhynchinae
 Sphaeridiotrematinae
@@ -6335,6 +6345,9 @@ Strigirhynchiinae
 Stringocephalidae
 Stringocephalinae
 Stringocephaloidea
+Stromatoporellida
+Stromatoporida
+Stromatoporoidea
 Strongylida
 Strongylidae
 Strongylocentrotidae
@@ -6446,6 +6459,7 @@ Syntrophiidae
 Syntrophiidina
 Syntrophioidea
 Syphaciinae
+Syringostromatida
 Syringothyrididae
 Syringothyridinae
 Syringothyridoidea
@@ -7081,5 +7095,3 @@ Zygocotylidae
 Zygometridae
 Zygonemertidae
 Zygophylacidae
-armata
-pedinopsids
