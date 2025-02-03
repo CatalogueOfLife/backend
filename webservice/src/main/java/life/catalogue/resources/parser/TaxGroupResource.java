@@ -17,6 +17,9 @@ import jakarta.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Path("/parser/taxgroup")
 @Produces(MediaType.APPLICATION_JSON)
 public class TaxGroupResource {
@@ -44,12 +47,18 @@ public class TaxGroupResource {
                             @QueryParam("authorship") String authorship,
                             @QueryParam("code") NomCode code,
                             @QueryParam("rank") Rank rank,
-                            @BeanParam Classification classification
+                            @QueryParam("classification") List<String> classification,
+                            @BeanParam Classification classification2
   ) {
     SimpleNameClassified<SimpleName> orig = SimpleNameClassified.snc(id, rank, code, TaxonomicStatus.ACCEPTED, ObjectUtils.coalesce(sciname, name, q), authorship);
+    var cl = new ArrayList<SimpleName>();
     if (classification != null) {
-      orig.setClassification(classification.asSimpleNames());
+      classification.forEach(n -> cl.add(new SimpleName(n, n, Rank.UNRANKED)));
     }
+    if (classification2 != null) {
+      cl.addAll(classification2.asSimpleNames());
+    }
+    orig.setClassification(cl);
     var group = groupAnalyzer.analyze(orig, orig.getClassification());
     return new GroupResult(orig, group);
   }
