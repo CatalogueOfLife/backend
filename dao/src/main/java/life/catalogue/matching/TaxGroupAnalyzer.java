@@ -88,13 +88,13 @@ public class TaxGroupAnalyzer {
    * If nothing can be found, null is returned for unknown.
    */
   public TaxGroup analyze(SimpleName name, Collection<? extends SimpleName> classification) {
-    Set<TaxGroup> groups = new HashSet<>();
+    CountEnumMap<TaxGroup> groups = new CountEnumMap<>(TaxGroup.class);
     try {
       var pg = parser.parse(name.getName());
-      pg.ifPresent(groups::add);
+      pg.ifPresent(groups::inc);
       for (var sn : classification) {
         pg = parser.parse(sn.getName());
-        pg.ifPresent(groups::add);
+        pg.ifPresent(groups::inc);
       }
     } catch (UnparsableException e) {
       LOG.error("Error analyzing taxonomic group", e);
@@ -106,17 +106,17 @@ public class TaxGroupAnalyzer {
     if (code != null && groups.isEmpty()) {
       switch (code) {
         case BACTERIAL:
-          groups.add(Prokaryotes);
+          groups.inc(Prokaryotes);
           break;
         case ZOOLOGICAL:
         case BOTANICAL:
-          groups.add(Eukaryotes);
+          groups.inc(Eukaryotes);
           break;
         case VIRUS:
-          groups.add(TaxGroup.Viruses);
+          groups.inc(TaxGroup.Viruses);
           break;
         case CULTIVARS:
-          groups.add(TaxGroup.Angiosperms);
+          groups.inc(TaxGroup.Angiosperms);
           break;
       }
     }
@@ -126,21 +126,22 @@ public class TaxGroupAnalyzer {
       if (result != null) {
         return result;
       }
-      // remove lowest count and try again
-      CountEnumMap<TaxGroup> cnt = new CountEnumMap<>(TaxGroup.class);
-      for (var g : groups) {
-        for (var g2 : groups) {
+      // compare all groups with each other
+      // and remove the group which contradicts most
+      CountEnumMap<TaxGroup> grpMatches = new CountEnumMap<>(TaxGroup.class);
+      for (var g : groups.keySet()) {
+        for (var g2 : groups.keySet()) {
           if (!g.isDisparateTo(g2)) {
-            cnt.inc(g);
+            grpMatches.inc(g);
           }
         }
       }
-      final int highest = cnt.highestCount().get();
-      if (!groups.removeIf(g -> cnt.get(g) < highest)) {
+      final int highest = grpMatches.highestCount().get();
+      if (!groups.removeIf(g -> grpMatches.get(g) < highest)) {
         // we could not reduce the groups any more, pick root
         // if we have more than 1 group still we have a contradiction... count by root group and select the lowest group of the largest set
         CountEnumMap<TaxGroup> counts = new CountEnumMap<>(TaxGroup.class);
-        for (var g : groups) {
+        for (var g : groups.keySet()) {
           counts.inc(g);
           for (var p : g.classification()) {
             counts.inc(p);
@@ -152,12 +153,12 @@ public class TaxGroupAnalyzer {
     return null;
   }
 
-  private TaxGroup filterCandidates(Set<TaxGroup> groups) {
+  private TaxGroup filterCandidates(CountEnumMap<TaxGroup> groups) {
     if (!groups.isEmpty()) {
       // keep lowest groups only. Exclude groups which are implicit in parents
-      Set<TaxGroup> distinctRoots = new HashSet<>(groups);
+      Set<TaxGroup> distinctRoots = new HashSet<>(groups.keySet());
       distinctRoots.removeIf(g -> {
-        for (var other : groups) {
+        for (var other : groups.keySet()) {
           if (g==other) continue;
           if (g.contains(other)) {
             return true;

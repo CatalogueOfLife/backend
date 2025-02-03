@@ -91,4 +91,16 @@ public class TaxGroupAnalyzerTest {
     );
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/913
+   */
+  @Test
+  public void dino() {
+    assertEquals(TaxGroup.Reptiles, analyzer.analyze(sn("Acherontisuchus guajiraensis"),
+      List.of(
+        sn("Life"), sn("Eucarya"), sn("Opisthokonta"), sn("Animalia"), sn("Bilateria"), sn("Eubilateria"), sn("Deuterostomia"), sn("Chordata"), sn("Vertebrata"), sn("Gnathostomata"), sn("Osteichthyes"), sn("Sarcopterygii"), sn("Dipnotetrapodomorpha"), sn("Tetrapodomorpha"), sn("Tetrapoda"), sn("Reptiliomorpha"), sn("Anthracosauria"), sn("Amphibiosauria"), sn("Cotylosauria"), sn("Amniota"), sn("Sauropsida"), sn("Reptilia"), sn("Eureptilia"), sn("Romeriida"), sn("Diapsida"), sn("Archosauromorpha"), sn("Crocopoda"), sn("Archosauriformes"), sn("Eucrocopoda"), sn("Archosauria"), sn("Pseudosuchia"), sn("Suchia"), sn("Paracrocodylomorpha"), sn("Loricata"), sn("Crocodylomorpha"), sn("Solidocrania"), sn("Crocodyliformes"), sn("Mesoeucrocodylia"), sn("Neosuchia"), sn("Coelognathosuchia"), sn("Tethysuchia"), sn("Dyrosauroidea"), sn("Dyrosauridae"), sn("Hyposaurinae"), sn("Acherontisuchus")
+      )
+    ));
+  }
+
 }

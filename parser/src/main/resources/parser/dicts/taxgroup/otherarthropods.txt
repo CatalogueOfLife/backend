@@ -1393,6 +1393,7 @@ Trigoniulidae
 Trigoniulidea
 Trigoniulinae
 Trilobita
+Trilobitomorpha
 Trimerophorinae
 Trimerophorini
 Trinucleidae
@@ -1431,10 +1432,12 @@ Verhoeffiinae
 Verhoeffioidea
 Verrucoentominae
 Vesicephalini
+Vicissicaudata
 Weymouthiidae
 Willowsiinae
 Willowsiini
 Wuaniidae
+Xandarellida
 Xanthodesmini
 Xarifiidae
 Xenocoelomatidae

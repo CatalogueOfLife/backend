@@ -19,6 +19,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
+  Set<String> badNames = Set.of(
+    "unamed",
+    "unnamed",
+    "incertae",
+    "incertae sedis"
+  );
 
   public TaxGroupParserTest() {
     super(TaxGroupParser.PARSER);
@@ -63,6 +69,9 @@ public class TaxGroupParserTest extends ParserTestBase<TaxGroup> {
       try (BufferedReader br = UTF8IoUtils.readerFromStream(res)) {
         br.lines().forEach( name -> {
           if (!StringUtils.isBlank(name)) {
+            if (badNames.contains(name.toLowerCase().trim())) {
+              throw new IllegalStateException(tg + ": bad name " + name);
+            }
             assertTrue(tg + ": " + name, entries.add(name));
           }
         });
