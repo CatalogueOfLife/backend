@@ -173,6 +173,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
         } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
                    !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
                    !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
+                   !Objects.equals(gbif.getGbifPublisherKey(), curr.getGbifPublisherKey()) ||
                    !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
                    !Objects.equals(gbif.getDoi(), curr.getDoi())
         ) {
@@ -181,11 +182,13 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // - dwca access url
           // - license
           // - publisher (publishOrgKey)
+          // - gbif publisher key
           // - homepage
           // - doi
           curr.setDataAccess(gbif.getDataAccess());
           curr.setLicense(gbif.getLicense());
           curr.setPublisher(gbif.getPublisher());
+          curr.setGbifPublisherKey(gbif.getGbifPublisherKey());
           curr.setUrl(gbif.getUrl());
           curr.setDoi(gbif.getDoi());
           try {
