@@ -242,7 +242,12 @@ public abstract class NameUsageRequest {
     } else if (param.type() == String.class) {
       addFilterValue(param, value);
     } else if (param.type() == UUID.class) {
-      addFilterValue(param, value);
+      try {
+        var uuid = UUID.fromString(value);
+        addFilterValue(param, uuid);
+      } catch (IllegalArgumentException e) {
+        throw illegalValueForParameter(param, value);
+      }
     } else if (param.type() == Integer.class) {
       try {
         Integer i = Integer.valueOf(value);
