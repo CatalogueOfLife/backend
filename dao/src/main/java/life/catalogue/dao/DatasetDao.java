@@ -528,7 +528,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     // update alias for publisher based datasets - we need the generated key for it
     if (obj.getAlias() == null && obj.getGbifPublisherKey() != null && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
-      obj.setAlias(iCfg.publisherAlias.get(obj.getGbifPublisherKey()) + obj.getKey());
+      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
       mapper.update(obj);
     }
 
@@ -573,6 +573,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
+    // update alias for publisher based datasets ONLY in case the publisher key has changed
+    if (obj.getGbifPublisherKey() != null && !obj.getGbifPublisherKey().equals(old.getGbifPublisherKey()) && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
+      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
+      mapper.update(obj);
+    }
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
     if (obj.getOrigin() == DatasetOrigin.PROJECT && CollectionUtils.size(obj.getCreator()) != CollectionUtils.size(old.getCreator())) {
@@ -581,6 +586,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       putSettings(obj.getKey(), ds, user);
     }
     super.updateBefore(obj, old, user, mapper, session);
+  }
+
+  private String publisherAlias(UUID publisher, Integer key) {
+    return iCfg.publisherAlias.get(publisher) + key;
   }
 
   @Override

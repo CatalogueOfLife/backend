@@ -210,7 +210,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           curr.setDataAccess(gbif.getDataAccess());
           curr.setLicense(gbif.dataset.getLicense());
           curr.setPublisher(gbif.dataset.getPublisher());
-          curr.setGbifPublisherKey(gbif.getGbifPublisherKey());
+          curr.setGbifPublisherKey(gbif.dataset.getGbifPublisherKey());
           curr.setUrl(gbif.dataset.getUrl());
           curr.setDoi(gbif.dataset.getDoi());
           try {
