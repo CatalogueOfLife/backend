@@ -49,7 +49,7 @@
 
     <antlr.version>4.7.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
-    <batik.version>1.17</batik.version>
+    <batik.version>1.18</batik.version>
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
     <citeproc-styles.version>2.0.0</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
@@ -90,7 +90,7 @@
     <testcontainers.version>1.20.2</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.5.0</text-tree.version>
     <tika.version>2.9.2</tika.version>
-    <twelvemonkeys.version>3.11.0</twelvemonkeys.version>
+    <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
     <woodstox.version>6.6.2</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
     <univocity-parsers.version>2.9.1</univocity-parsers.version>

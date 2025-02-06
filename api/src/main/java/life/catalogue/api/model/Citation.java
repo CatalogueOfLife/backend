@@ -153,6 +153,7 @@ public class Citation {
     this._citationText = other._citationText;
   }
 
+  @JsonIgnore
   public boolean isUnparsed() {
     return (type==null || type==CSLType.BOOK)
            // && only title doesn't matter

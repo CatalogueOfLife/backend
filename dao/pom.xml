@@ -186,12 +186,10 @@
           <groupId>com.twelvemonkeys.imageio</groupId>
           <artifactId>imageio-icns</artifactId>
         </dependency>
-      <dependency>
-        <groupId>org.apache.xmlgraphics</groupId>
-        <artifactId>batik-transcoder</artifactId>
-        <version>1.15</version>
-      </dependency>
-
+        <dependency>
+          <groupId>org.apache.xmlgraphics</groupId>
+          <artifactId>batik-transcoder</artifactId>
+        </dependency>
         <dependency>
           <groupId>jakarta.validation</groupId>
           <artifactId>jakarta.validation-api</artifactId>
