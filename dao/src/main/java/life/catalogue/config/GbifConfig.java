@@ -16,6 +16,18 @@ public class GbifConfig {
   public String api = "https://api.gbif.org/v1/";
 
   /**
+   * Registry sync user that needs registry_admin rights to write back to the registry
+   */
+  public String username;
+  public String password;
+
+  /**
+   * If true the registry sync will also write back dataset keys to the GBIF registry
+   * and add missing datasets.
+   */
+  public boolean bidirectional = false;
+
+  /**
    * Incremental GBIF registry sync frequency in minutes.
    * Incremental syncs only look at changes for the day and cannot spot deleted datasets in GBIF.
    * If zero or negative GBIF sync is off.

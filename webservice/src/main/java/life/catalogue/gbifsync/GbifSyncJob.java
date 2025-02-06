@@ -1,9 +1,16 @@
 package life.catalogue.gbifsync;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
+
 import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
@@ -21,6 +28,8 @@ import java.util.*;
 
 import jakarta.ws.rs.client.Client;
 
+import life.catalogue.doi.service.BasicAuthenticator;
+
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -32,7 +41,11 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class GbifSyncJob extends GlobalBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncJob.class);
+  static final String CLB_DATASET_KEY = "CLB_DATASET_KEY";
+
   private final Client client;
+  private final String auth;
+  private final WebTarget datasetTarget;
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao dao;
   private final GbifConfig cfg;
@@ -58,6 +71,15 @@ public class GbifSyncJob extends GlobalBlockingJob {
     this.sessionFactory = sessionFactory;
     this.keys = keys == null ? new HashSet<>() : keys;
     this.incremental = incremental;
+    this.datasetTarget = client.target(UriBuilder
+      .fromUri(cfg.api)
+      .path("/dataset")
+    );
+    if (cfg.username != null && cfg.password != null) {
+      auth = BasicAuthenticator.basicAuthentication(cfg.username, cfg.password);
+    } else {
+      auth = null;
+    }
   }
 
   @Override
@@ -84,7 +106,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
 
   private void syncSelected() throws Exception {
     for (UUID key : keys) {
-      DatasetWithSettings gbif = pager.get(key);
+      var gbif = pager.get(key);
       if (gbif != null) {
         DatasetWithSettings curr = dao.getWithSettings(gbif.getGbifKey());
         sync(gbif, curr);
@@ -97,9 +119,9 @@ public class GbifSyncJob extends GlobalBlockingJob {
     int count = pager.count();
     LOG.info("Start {} sync of {} datasets from GBIF registry {}", incremental ? "incremental" : "full", count, cfg.api);
     while (pager.hasNext()) {
-      List<DatasetWithSettings> page = pager.next();
+      List<DatasetPager.GbifDataset> page = pager.next();
       LOG.debug("Received page {} with {} datasets from GBIF", pager.currPageNumber(), page.size());
-      for (DatasetWithSettings gbif : page) {
+      for (DatasetPager.GbifDataset gbif : page) {
         DatasetWithSettings curr = dao.getWithSettings(gbif.getGbifKey());
         Integer datasetKey = sync(gbif, curr);
         if (datasetKey != null) {
@@ -134,30 +156,30 @@ public class GbifSyncJob extends GlobalBlockingJob {
   /**
    * @return the dataset key in CLB even if locked or null if it never was synced
    */
-  private Integer sync(DatasetWithSettings gbif, DatasetWithSettings curr) throws InterruptedException {
+  private Integer sync(DatasetPager.GbifDataset gbif, DatasetWithSettings curr) throws InterruptedException {
     Exceptions.interruptIfCancelled("GBIF sync interrupted");
     // start out with the existing key if there is one
     Integer key = curr == null ? null : curr.getKey();
     try {
       // a GBIF license is required
-      if (gbif.getDataset().getLicense() == null || !gbif.getDataset().getLicense().isCreativeCommons()) {
-        LOG.warn("GBIF dataset {} without a creative commons license: {}", gbif.getGbifKey(), gbif.getTitle());
+      if (gbif.dataset.getLicense() == null || !gbif.dataset.getLicense().isCreativeCommons()) {
+        LOG.warn("GBIF dataset {} without a creative commons license: {}", gbif.getGbifKey(), gbif.dataset.getTitle());
 
       } else {
 
         if (curr == null) {
           // create new dataset
-          gbif.setCreatedBy(Users.GBIF_SYNC);
-          gbif.setModifiedBy(Users.GBIF_SYNC);
+          gbif.dataset.setCreatedBy(Users.GBIF_SYNC);
+          gbif.dataset.setModifiedBy(Users.GBIF_SYNC);
           try {
-            dao.create(gbif, Users.GBIF_SYNC);
+            dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
           } catch (NotUniqueException e) {
             // catch DOI unique constraint errors and try again without the DOI
             // in the GBIF registry, especially with Plazi datasets, it happens that multiple datasets have the same DOI!
-            DOI doi = gbif.getDoi();
+            DOI doi = gbif.dataset.getDoi();
             if (doi != null) {
-              gbif.setDoi(null);
-              dao.create(gbif, Users.GBIF_SYNC);
+              gbif.dataset.setDoi(null);
+              dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
               LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
             } else {
               throw e;
@@ -171,11 +193,11 @@ public class GbifSyncJob extends GlobalBlockingJob {
           LOG.info("Dataset {} is locked for GBIF updates: {}", gbif.getKey(), gbif.getTitle());
 
         } else if (!Objects.equals(gbif.getDataAccess(), curr.getDataAccess()) ||
-                   !Objects.equals(gbif.getLicense(), curr.getLicense()) ||
-                   !Objects.equals(gbif.getPublisher(), curr.getPublisher()) ||
-                   !Objects.equals(gbif.getGbifPublisherKey(), curr.getGbifPublisherKey()) ||
-                   !Objects.equals(gbif.getUrl(), curr.getUrl()) ||
-                   !Objects.equals(gbif.getDoi(), curr.getDoi())
+                   !Objects.equals(gbif.dataset.getLicense(), curr.getLicense()) ||
+                   !Objects.equals(gbif.dataset.getPublisher(), curr.getPublisher()) ||
+                   !Objects.equals(gbif.dataset.getGbifPublisherKey(), curr.getGbifPublisherKey()) ||
+                   !Objects.equals(gbif.dataset.getUrl(), curr.getUrl()) ||
+                   !Objects.equals(gbif.dataset.getDoi(), curr.getDoi())
         ) {
           // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
           //gbif syncs only change one of the following
@@ -186,11 +208,11 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // - homepage
           // - doi
           curr.setDataAccess(gbif.getDataAccess());
-          curr.setLicense(gbif.getLicense());
-          curr.setPublisher(gbif.getPublisher());
+          curr.setLicense(gbif.dataset.getLicense());
+          curr.setPublisher(gbif.dataset.getPublisher());
           curr.setGbifPublisherKey(gbif.getGbifPublisherKey());
-          curr.setUrl(gbif.getUrl());
-          curr.setDoi(gbif.getDoi());
+          curr.setUrl(gbif.dataset.getUrl());
+          curr.setDoi(gbif.dataset.getDoi());
           try {
             dao.update(curr, Users.GBIF_SYNC);
           } catch (NotUniqueException e) {
@@ -207,11 +229,51 @@ public class GbifSyncJob extends GlobalBlockingJob {
           }
           updated++;
         }
+        // let the registry track CLB dataset keys
+        if (cfg.bidirectional) {
+          if (gbif.clbDatasetKey == null) {
+            addDatasetKey(gbif.getGbifKey(), key);
+          } else if (!gbif.clbDatasetKey.equals(key)) {
+            LOG.info("Update changed dataset key in registry for {} to {}", gbif.getGbifKey(), key);
+            delDatasetKeys(gbif.getGbifKey(), gbif.identifierKeys);
+            addDatasetKey(gbif.getGbifKey(), key);
+          }
+        }
       }
     } catch (Exception e) {
       LOG.error("Failed to sync GBIF dataset {} >{}<", gbif.getGbifKey(), gbif.getTitle(), e);
     }
     return key;
+  }
+
+  private void addDatasetKey(UUID key, Integer datasetKey) {
+    if (key != null && datasetKey != null && auth != null) {
+      DatasetPager.GIdentifier gIdentifier = new DatasetPager.GIdentifier();
+      gIdentifier.type = CLB_DATASET_KEY;
+      gIdentifier.identifier = datasetKey.toString();
+
+      LOG.info("Add CLB dataset key {} to GBIF checklist {} in registry", datasetKey, key);
+      var target = datasetTarget.path(key + "/identifier");
+      try (var resp = target.request()
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .header(HttpHeaders.AUTHORIZATION, auth)
+        .post(Entity.json(gIdentifier))) {
+      }
+    }
+  }
+
+  private void delDatasetKeys(UUID datasetKey, List<Integer> identifierKeys) {
+    if (identifierKeys != null) {
+      for (Integer idKey : identifierKeys) {
+        LOG.info("Delete existing CLB_DATASET_KEY identifier {} in GBIF for checklist {}", idKey, datasetKey);
+        var target = datasetTarget.path(datasetKey + "/identifier/" + idKey);
+        try (var resp = target.request()
+          .accept(MediaType.APPLICATION_JSON_TYPE)
+          .header(HttpHeaders.AUTHORIZATION, auth)
+          .delete()) {
+        }
+      }
+    }
   }
 
 }

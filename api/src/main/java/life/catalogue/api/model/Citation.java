@@ -122,6 +122,37 @@ public class Citation {
     return c;
   }
 
+  public Citation() {
+  }
+
+  public Citation(Citation other) {
+    this.id = other.id;
+    this.type = other.type;
+    this.doi = other.doi;
+    this.author = other.author;
+    this.editor = other.editor;
+    this.title = other.title;
+    this.containerAuthor = other.containerAuthor;
+    this.containerTitle = other.containerTitle;
+    this.issued = other.issued;
+    this.accessed = other.accessed;
+    this.collectionTitle = other.collectionTitle;
+    this.collectionEditor = other.collectionEditor;
+    this.volume = other.volume;
+    this.issue = other.issue;
+    this.edition = other.edition;
+    this.page = other.page;
+    this.publisher = other.publisher;
+    this.publisherPlace = other.publisherPlace;
+    this.version = other.version;
+    this.isbn = other.isbn;
+    this.issn = other.issn;
+    this.url = other.url;
+    this.note = other.note;
+    this._citation = other._citation;
+    this._citationText = other._citationText;
+  }
+
   public boolean isUnparsed() {
     return (type==null || type==CSLType.BOOK)
            // && only title doesn't matter
