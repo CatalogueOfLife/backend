@@ -39,6 +39,7 @@ import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -68,6 +69,9 @@ public class DatasetIndex {
 
   @Value("${working.dir:/tmp/}")
   String workingDir;
+
+  @Autowired
+  IOUtil ioUtil;
 
   private boolean isInitialised = false;
 
@@ -769,7 +773,7 @@ public class DatasetIndex {
             // Deserialize the byte array using Avro
             ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
               bytesRef.offset, bytesRef.length);
-            StoredClassification storedClassification = IOUtil.getInstance().deserializeStoredClassification(inputStream);
+            StoredClassification storedClassification = ioUtil.deserializeStoredClassification(inputStream);
 
             classification = storedClassification.getNames().stream()
               .map(r -> NameUsageMatch.RankedName.builder()
@@ -827,7 +831,7 @@ public class DatasetIndex {
     return u;
   }
 
-  private static NameUsageMatch.Usage constructUsage(Document doc) {
+  private NameUsageMatch.Usage constructUsage(Document doc) {
     StoredParsedName pn = null;
     BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME_AVRO);
 
@@ -839,7 +843,7 @@ public class DatasetIndex {
           // Deserialize the byte array using Avro
           ByteArrayInputStream inputStream = new ByteArrayInputStream(avroData,
             bytesRef.offset, bytesRef.length);
-          pn = IOUtil.getInstance().deserializeStoredParsedName(inputStream);
+          pn = ioUtil.deserializeStoredParsedName(inputStream);
 
         } catch (Exception e) {
           log.error("Cannot parse parsed name json", e);

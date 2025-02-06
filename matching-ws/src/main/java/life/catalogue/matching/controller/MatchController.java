@@ -460,7 +460,7 @@ public class MatchController implements ErrorController {
       if (optionalNameUsageMatchV1.isPresent()) {
         return optionalNameUsageMatchV1.get();
       } else {
-        return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+        return Map.of("message", "Unable to support API v1 for this checklist. Please use v2 instead.");
       }
     } catch (Exception e){
       log.error(e.getMessage(), e);
@@ -632,7 +632,7 @@ public class MatchController implements ErrorController {
       optionalNameUsageMatchV1.get().getDiagnostics().setTimeTaken(watch.getTime(TimeUnit.MILLISECONDS));
       return optionalNameUsageMatchV1.get();
     } else {
-      return Map.of("message", "Unable to support API v1  for this checklist. Please use v2 instead.");
+      return Map.of("message", "Unable to support API v1 for this checklist. Please use v2 instead.");
     }
   }
 
