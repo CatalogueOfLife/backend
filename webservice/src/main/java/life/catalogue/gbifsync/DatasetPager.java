@@ -2,10 +2,7 @@ package life.catalogue.gbifsync;
 
 import life.catalogue.api.jackson.UUIDSerde;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.metadata.eml.EmlParser;
@@ -115,7 +112,7 @@ public class DatasetPager {
     return 1 + page.getOffset() / page.getLimit();
   }
   
-  public DatasetWithSettings get(UUID gbifKey) {
+  public GbifDataset get(UUID gbifKey) {
     LOG.debug("retrieve {}", gbifKey);
     return dataset.path(gbifKey.toString())
         .request()
@@ -142,7 +139,7 @@ public class DatasetPager {
       .count;
   }
 
-  public List<DatasetWithSettings> next() {
+  public List<GbifDataset> next() {
     LOG.debug("retrieve {}", page);
     try {
       return datasetPage()
@@ -170,11 +167,38 @@ public class DatasetPager {
       page.next();
     }
   }
-  
+
+  protected static class GbifDataset {
+    final Dataset dataset = new Dataset();
+    final DatasetSettings settings = new DatasetSettings();
+    Integer clbDatasetKey;
+    // identifier s keys for just the CLB_DATASET_KEY entries
+    final List<Integer> identifierKeys = new ArrayList<>();
+
+    public Integer getKey() {
+      return dataset.getKey();
+    }
+
+    public UUID getGbifKey() {
+      return dataset.getGbifKey();
+    }
+
+    public UUID getGbifPublisherKey() {
+      return dataset.getGbifPublisherKey();
+    }
+
+    public String getTitle() {
+      return dataset.getTitle();
+    }
+    public URI getDataAccess() {
+      return settings.getURI(Setting.DATA_ACCESS);
+    }
+  }
+
   /**
    * @return converted dataset or NULL if illegitimate
    */
-  private DatasetWithSettings convert(GDataset g) {
+  private GbifDataset convert(GDataset g) {
     if (g.parentDatasetKey != null) {
       LOG.debug("Skip constituent dataset: {} - {}", g.key, g.title);
       return null;
@@ -183,66 +207,66 @@ public class DatasetPager {
       return null;
     }
 
-    DatasetWithSettings d = new DatasetWithSettings();
-    d.setPrivat(false);
-    d.setGbifKey(g.key);
-    d.setGbifPublisherKey(g.publishingOrganizationKey);
-    d.setPublisher(publisherCache.get(g.publishingOrganizationKey));
-    d.getDataset().addContributor(hostCache.get(g.installationKey));
-    d.setTitle(g.title);
-    d.setDescription(g.description);
-    DOI.parse(g.doi).ifPresent(d::setDoi);
+    GbifDataset d = new GbifDataset();
+    d.dataset.setPrivat(false);
+    d.dataset.setGbifKey(g.key);
+    d.dataset.setGbifPublisherKey(g.publishingOrganizationKey);
+    d.dataset.setPublisher(publisherCache.get(g.publishingOrganizationKey));
+    d.dataset.addContributor(hostCache.get(g.installationKey));
+    d.dataset.setTitle(g.title);
+    d.dataset.setDescription(g.description);
+    DOI.parse(g.doi).ifPresent(d.dataset::setDoi);
     Optional<GEndpoint> coldp = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("COLDP")).findFirst();
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
     if (coldp.isPresent() || dwca.isPresent()) {
-      d.setOrigin(DatasetOrigin.EXTERNAL);
+      d.dataset.setOrigin(DatasetOrigin.EXTERNAL);
       if (coldp.isPresent()) {
-        d.setDataFormat(DataFormat.COLDP);
-        d.setDataAccess(uri(coldp.get().url));
+        d.settings.put(Setting.DATA_FORMAT, DataFormat.COLDP);
+        d.settings.put(Setting.DATA_ACCESS, uri(coldp.get().url));
       } else {
-        d.setDataFormat(DataFormat.DWCA);
-        d.setDataAccess(uri(dwca.get().url));
+        d.settings.put(Setting.DATA_FORMAT, DataFormat.DWCA);
+        d.settings.put(Setting.DATA_ACCESS, uri(dwca.get().url));
       }
     } else {
-      LOG.info("Skip dataset without DWCA or COLDP access: {} - {}", d.getGbifKey(), d.getTitle());
+      LOG.info("Skip dataset without DWCA or COLDP access: {} - {}", d.dataset.getGbifKey(), d.dataset.getTitle());
       return null;
     }
     // type
-    if (d.getGbifPublisherKey() != null && articlePublishers.contains(d.getGbifPublisherKey())) {
-      d.setType(DatasetType.ARTICLE);
+    if (d.dataset.getGbifPublisherKey() != null && articlePublishers.contains(d.dataset.getGbifPublisherKey())) {
+      d.dataset.setType(DatasetType.ARTICLE);
 
     } else if (g.subtype != null) {
-      d.setType(EmlParser.parseType(g.subtype));
+      d.dataset.setType(EmlParser.parseType(g.subtype));
     } else {
-      d.setType(DatasetType.OTHER);
+      d.dataset.setType(DatasetType.OTHER);
     }
-    d.setUrl(uri(g.homepage));
-    d.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
-    d.setGeographicScope(coverage(g.geographicCoverages));
-    d.setTaxonomicScope(coverage(g.taxonomicCoverages));
-    d.setTemporalScope(coverage(g.temporalCoverages));
+    d.dataset.setUrl(uri(g.homepage));
+    d.dataset.setLicense(SafeParser.parse(LicenseParser.PARSER, g.license).orElse(License.UNSPECIFIED, License.OTHER));
+    d.dataset.setGeographicScope(coverage(g.geographicCoverages));
+    d.dataset.setTaxonomicScope(coverage(g.taxonomicCoverages));
+    d.dataset.setTemporalScope(coverage(g.temporalCoverages));
     // convert contact and authors based on contact type: https://github.com/gbif/gbif-api/blob/master/src/main/java/org/gbif/api/vocabulary/ContactType.java
     // Not mapped: PUBLISHER,DISTRIBUTOR,METADATA_AUTHOR,TECHNICAL_POINT_OF_CONTACT,OWNER,PROCESSOR,USER,PROGRAMMER,DATA_ADMINISTRATOR,SYSTEM_ADMINISTRATOR,HEAD_OF_DELEGATION,TEMPORARY_HEAD_OF_DELEGATION,ADDITIONAL_DELEGATE,TEMPORARY_DELEGATE,REGIONAL_NODE_REPRESENTATIVE,NODE_MANAGER,NODE_STAFF
     var contacts = byType(g.contacts, "POINT_OF_CONTACT", "ADMINISTRATIVE_POINT_OF_CONTACT");
     if (!contacts.isEmpty()) {
-      d.setContact(contacts.get(0));
+      d.dataset.setContact(contacts.get(0));
     }
-    d.setCreator(byType(g.contacts, "ORIGINATOR", "PRINCIPAL_INVESTIGATOR", "AUTHOR", "CONTENT_PROVIDER"));
-    d.setEditor(byType(g.contacts, "EDITOR", "CURATOR", "CUSTODIAN_STEWARD"));
+    d.dataset.setCreator(byType(g.contacts, "ORIGINATOR", "PRINCIPAL_INVESTIGATOR", "AUTHOR", "CONTENT_PROVIDER"));
+    d.dataset.setEditor(byType(g.contacts, "EDITOR", "CURATOR", "CUSTODIAN_STEWARD"));
     List<Agent> contributors = g.contacts.stream()
                                          .map(GAgent::toAgent)
                                          .filter(a -> a != null
-                                                      && !d.getCreator().contains(a)
-                                                      && !d.getEditor().contains(a)
-                                                      && !Objects.equals(d.getContact(), a)
-                                                      && !Objects.equals(d.getPublisher(), a))
+                                                      && !d.dataset.getCreator().contains(a)
+                                                      && !d.dataset.getEditor().contains(a)
+                                                      && !Objects.equals(d.dataset.getContact(), a)
+                                                      && !Objects.equals(d.dataset.getPublisher(), a))
                                          .collect(Collectors.toList());
-    d.setContributor(contributors);
-    d.setIdentifier(toIdentifier(g.key, g.identifiers));
-    d.setSource(toSource(g.bibliographicCitations));
+    d.dataset.setContributor(contributors);
+    addIdentifiers(d, g.key, g.identifiers);
+    d.dataset.setSource(toSource(g.bibliographicCitations));
     //d.setNotes(toNotes(g.comments));
-    d.setIssued(g.pubDate);
-    d.setCreated(LocalDateTime.now());
+    d.dataset.setIssued(g.pubDate);
+    d.dataset.setCreated(LocalDateTime.now());
     LOG.debug("Dataset {} converted: {}", g.key, g.title);
     return d;
   }
@@ -269,79 +293,95 @@ public class DatasetPager {
     return citations;
   }
 
-  static Map<String, String> toIdentifier(UUID uuid, List<GIdentifier> ids) {
-    if (ids == null || ids.isEmpty()) {
-      return null;
-    }
-    // we enforce unique identifiers - there are often duplicates in GBIF
-    final Set<String> values = new HashSet<>();
-    final Map<String, String> map = new HashMap<>();
-    final Map<String, Integer> suffices = new HashMap<>();
-    for (GIdentifier id : ids) {
-      if (StringUtils.isBlank(id.type) || StringUtils.isBlank(id.identifier)) continue;
+  private void addIdentifiers(GbifDataset d, UUID uuid, List<GIdentifier> ids) {
+    if (ids != null && !ids.isEmpty()) {
+      // we enforce unique identifiers - there are often duplicates in GBIF
+      final Set<String> values = new HashSet<>();
+      final Map<String, String> map = new HashMap<>();
+      final Map<String, Integer> suffices = new HashMap<>();
+      for (GIdentifier id : ids) {
+        if (StringUtils.isBlank(id.type) || StringUtils.isBlank(id.identifier)) continue;
 
-      String key = null;
-      switch (id.type) {
-        case "DOI":
-          // normalize DOIs
-          Optional<DOI> doi = DOI.parse(id.identifier);
-          if (doi.isPresent()) {
-            id.identifier = doi.get().toString();
-            key = uniqueKey("DOI", map, suffices);
+        String key = null;
+        switch (id.type) {
+          case "DOI":
+            // normalize DOIs
+            Optional<DOI> doi = DOI.parse(id.identifier);
+            if (doi.isPresent()) {
+              id.identifier = doi.get().toString();
+              key = uniqueKey("DOI", map, suffices);
+            } else {
+              LOG.warn("Ignore bad DOI GBIF identifier {} found in dataset {}", id.identifier, uuid);
+            }
+            break;
+
+          case "URL":
+            // make sure we have some http(s)
+            if(!id.identifier.startsWith("http") && !id.identifier.startsWith("https")){
+              id.identifier = "http://" + id.identifier;
+            }
+            key = uniqueKey(extractDomain(id.identifier), map, suffices);
+            break;
+
+          case "UUID":
+            try {
+              // normalize UUIDs
+              UUID uid = UUIDSerde.from(id.identifier);
+              id.identifier = uid.toString();
+              key = uniqueKey("GBIF", map, suffices);
+
+            } catch (IllegalArgumentException e) {
+              LOG.warn("Ignore bad UUID GBIF identifier {} found in dataset {}", id.identifier, uuid);
+            }
+            break;
+
+          case "LSID":
+            // urn:lsid:zoobank.org:pub:392603E1-AC9A-4A4D-923D-307216718171
+            key = uniqueKey("LSID", map, suffices);
+            break;
+
+          case GbifSyncJob.CLB_DATASET_KEY:
+            // track all keys for existing clb dataset key identifiers, but do not add them as real identifiers
+            if (id.key != null) {
+              d.identifierKeys.add(id.key);
+            }
+            try {
+              Integer clbKey = Integer.parseInt(id.identifier);
+              if (d.clbDatasetKey == null) {
+                d.clbDatasetKey = clbKey;
+              } else if (!clbKey.equals( d.clbDatasetKey) ) {
+                LOG.warn("Multiple ChecklistBank identifiers for dataset {} in GBIF", uuid);
+              }
+            } catch (NumberFormatException e) {
+              LOG.warn("ChecklistBank identifier for dataset {} in GBIF is not an integer: {}", uuid, id.identifier);
+            }
+            continue;
+
+          case "GBIF_PORTAL":
+            // we dont need those - they are prehistoric
+            continue;
+
+          default:
+            LOG.warn("Unknown GBIF identifier type {} found in dataset {}", id.type, uuid);
+        }
+
+        if (key != null) {
+          if (values.contains(id.identifier.toUpperCase())) {
+            LOG.debug("Ignore duplicate identifier {} of type {} found in dataset {}", id.identifier, id.type, uuid);
+            // reduce suffix if it was such a key
+            var m = SUFFIX_KEY.matcher(key);
+            if (m.find()) {
+              var origKey = m.group(1);
+              suffices.put(origKey, suffices.get(origKey)-1);
+            }
           } else {
-            LOG.warn("Ignore bad DOI GBIF identifier {} found in dataset {}", id.identifier, uuid);
+            values.add(id.identifier.toUpperCase());
+            map.put(key, id.identifier);
           }
-          break;
-
-        case "URL":
-          // make sure we have some http(s)
-          if(!id.identifier.startsWith("http") && !id.identifier.startsWith("https")){
-            id.identifier = "http://" + id.identifier;
-          }
-          key = uniqueKey(extractDomain(id.identifier), map, suffices);
-          break;
-
-        case "UUID":
-          try {
-            // normalize UUIDs
-            UUID uid = UUIDSerde.from(id.identifier);
-            id.identifier = uid.toString();
-            key = uniqueKey("GBIF", map, suffices);
-
-          } catch (IllegalArgumentException e) {
-            LOG.warn("Ignore bad UUID GBIF identifier {} found in dataset {}", id.identifier, uuid);
-          }
-          break;
-
-        case "LSID":
-          // urn:lsid:zoobank.org:pub:392603E1-AC9A-4A4D-923D-307216718171
-          key = uniqueKey("LSID", map, suffices);
-          break;
-
-        case "GBIF_PORTAL":
-          // we dont need those - they are prehistoric
-          continue;
-
-        default:
-          LOG.warn("Unknown GBIF identifier type {} found in dataset {}", id.type, uuid);
-      }
-
-      if (key != null) {
-        if (values.contains(id.identifier.toUpperCase())) {
-          LOG.debug("Ignore duplicate identifier {} of type {} found in dataset {}", id.identifier, id.type, uuid);
-          // reduce suffix if it was such a key
-          var m = SUFFIX_KEY.matcher(key);
-          if (m.find()) {
-            var origKey = m.group(1);
-            suffices.put(origKey, suffices.get(origKey)-1);
-          }
-        } else {
-          values.add(id.identifier.toUpperCase());
-          map.put(key, id.identifier);
         }
       }
+      d.dataset.setIdentifier(map);
     }
-    return map;
   }
 
   static String uniqueKey(final String key, Map<String, String> map, Map<String, Integer> suffices) {
@@ -442,6 +482,7 @@ public class DatasetPager {
   }
 
   static class GIdentifier {
+    public Integer key;
     public String type;
     public String identifier;
   }

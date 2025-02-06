@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A simple wrapper to hold homotypic & heterotypic synonyms separately.
+ * heterotypic names are presented twice - once as a complete list in heterotypic
+ * and once in a list of lists that group homotypic names in heterotypicGroups
  */
 public class Synonymy implements Iterable<Synonym> {
   private final List<Synonym> homotypic = new ArrayList<>();

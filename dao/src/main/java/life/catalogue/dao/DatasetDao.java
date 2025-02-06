@@ -489,11 +489,15 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   public Integer create(DatasetWithSettings obj, int user) {
-    var key = create(obj.getDataset(), user);
-    if (obj.getSettings() != null) {
+    return create(obj.getDataset(), obj.getSettings(), user);
+  }
+
+  public Integer create(Dataset d, DatasetSettings settings, int user) {
+    var key = create(d, user);
+    if (settings != null) {
       try (SqlSession session = factory.openSession(true)) {
         var dm = session.getMapper(mapperClass);
-        dm.updateSettings(key, obj.getSettings(), user);
+        dm.updateSettings(key, settings, user);
       }
     }
     return key;
