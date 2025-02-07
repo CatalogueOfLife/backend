@@ -108,6 +108,7 @@ public class NomenOntology {
     // relations
     apply("NOMEN_0000270", NomRelType.REPLACEMENT_NAME);
     apply("NOMEN_0000275", NomRelType.SPELLING_CORRECTION);
+    apply("NOMEN_0000277", NomRelType.HOMOTYPIC);
     apply("NOMEN_0000289", NomRelType.LATER_HOMONYM);
     apply("NOMEN_0000290", NomRelType.LATER_HOMONYM);
     apply("NOMEN_0000291", NomRelType.LATER_HOMONYM);
