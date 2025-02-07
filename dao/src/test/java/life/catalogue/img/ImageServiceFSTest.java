@@ -39,7 +39,6 @@ public class ImageServiceFSTest {
   @Test
   public void svg() throws IOException {
     var img = ImageServiceFS.read(logo("unite-logo-web.svg"));
-    img = ImageServiceFS.read(FileUtils.openInputStream(new File("/Users/markus/Downloads/lpsn_logo2.svg")));
     assertNotNull(img);
   }
 
