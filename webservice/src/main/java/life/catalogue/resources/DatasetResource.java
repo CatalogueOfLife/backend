@@ -1,6 +1,6 @@
 package life.catalogue.resources;
 
-import life.catalogue.admin.jobs.ValidationJob;
+import life.catalogue.jobs.ValidationJob;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;

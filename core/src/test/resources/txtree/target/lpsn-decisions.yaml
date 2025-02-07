@@ -1,0 +1,16 @@
+ -
+   mode: UPDATE
+   subject:
+     rank: species
+     name: Acidobacterium capsulatum
+   name:
+     rank: species
+     name: Acidobacterium capsulatum
+     authorship: Kishimoto et al., 1991
+
+ -
+   mode: REVIEWED
+   subject:
+     rank: species
+     name: Acidobacterium ailaaui
+     authorship: Myers & King, 2016

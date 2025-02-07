@@ -15,6 +15,7 @@ import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
+import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.img.ImgConfig;
 
 import java.io.File;
@@ -39,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.client.JerseyClientConfiguration;
 
 
-public class WsServerConfig extends Configuration implements CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
+public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -261,4 +262,23 @@ public class WsServerConfig extends Configuration implements CorsBundleConfigura
     return null;
   }
 
+  @Override
+  public URI getApiUri() {
+    return apiURI;
+  }
+
+  @Override
+  public JobConfig getJob() {
+    return job;
+  }
+
+  @Override
+  public ImgConfig getImgConfig() {
+    return img;
+  }
+
+  @Override
+  public NormalizerConfig getNormalizerConfig() {
+    return normalizer;
+  }
 }

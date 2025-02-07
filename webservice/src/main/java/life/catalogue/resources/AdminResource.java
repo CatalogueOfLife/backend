@@ -1,9 +1,7 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.admin.jobs.*;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DatasetGBIF;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
@@ -29,18 +27,19 @@ import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
-import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.RematchJob;
-import life.catalogue.printer.PrinterFactory;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -53,6 +52,7 @@ import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Validator;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -326,13 +326,13 @@ public class AdminResource {
   @POST
   @Path("/reimport")
   public BackgroundJob reimport(@Auth User user) {
-    return runJob(new ReimportJob(user, factory, importManager, cfg));
+    return runJob(new ReimportJob(user, factory, importManager, cfg.importer, cfg.normalizer));
   }
 
   @POST
   @Path("/importArticles")
   public BackgroundJob scheduleArticleImports(@Auth User user) {
-    return runJob(new ImportArticleJob(user, factory, importManager, cfg));
+    return runJob(new ImportArticleJob(user, factory, importManager, cfg.importer));
   }
 
   @POST

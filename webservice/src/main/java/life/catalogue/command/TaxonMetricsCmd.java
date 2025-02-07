@@ -1,12 +1,12 @@
 package life.catalogue.command;
 
-import life.catalogue.admin.jobs.RebuildMetricsJob;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.jobs.RebuildMetricsJob;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;

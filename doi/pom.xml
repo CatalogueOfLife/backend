@@ -9,7 +9,7 @@
 
   <artifactId>doi</artifactId>
 
-  <name>COL DOI</name>
+  <name>CLB DOI</name>
   <description>This module provides DOI services for COL wrapping DataCite</description>
 
   <dependencies>

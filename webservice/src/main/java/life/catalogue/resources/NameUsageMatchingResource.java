@@ -8,9 +8,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.importer.NameInterpreter;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.*;
-
 import life.catalogue.parser.*;
 
 import org.gbif.nameparser.api.NomCode;
@@ -22,18 +21,17 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/match/nameusage")
 @Produces(MediaType.APPLICATION_JSON)
@@ -134,7 +132,7 @@ public class NameUsageMatchingResource {
   }
 
   private MatchingJob submit(MatchingRequest req, User user) {
-    MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcher, cfg);
+    MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcher, cfg.getNormalizerConfig());
     exec.submit(job);
     return job;
   }

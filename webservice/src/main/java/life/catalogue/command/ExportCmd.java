@@ -27,13 +27,12 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-
 import org.apache.ibatis.session.SqlSession;
 
 import com.google.common.eventbus.EventBus;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
@@ -121,7 +120,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    copy = new PublicReleaseListener(cfg, factory, httpClient, exportDao, doiService, converter);
+    copy = new PublicReleaseListener(cfg.release, cfg.job, factory, httpClient, exportDao, doiService, converter);
   }
 
   @Override

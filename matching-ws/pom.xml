@@ -7,10 +7,9 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>matching-ws</artifactId>
-  <name>Matching index generation and web services</name>
-  <description>
-    Matching index generation and web services for datasets stored in ChecklistBank.
-  </description>
+  <name>GBIF matching-ws</name>
+  <description>GBIF occurrence matching index generation and web services for datasets stored in ChecklistBank.</description>
+
   <properties>
     <java.version>11</java.version>
     <lucene.version>9.10.0</lucene.version>

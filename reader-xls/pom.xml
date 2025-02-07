@@ -9,7 +9,7 @@
 
   <artifactId>reader-xls</artifactId>
 
-  <name>COL reader Excel extension</name>
+  <name>CLB reader Excel extension</name>
   <description>Support for Excel DwCA/ColDP/ACEF spreadsheets</description>
 
   <dependencies>

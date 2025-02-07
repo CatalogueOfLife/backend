@@ -18,9 +18,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import jakarta.ws.rs.client.Client;
-
 import org.junit.*;
+
+import jakarta.ws.rs.client.Client;
 
 import static org.junit.Assert.*;
 
