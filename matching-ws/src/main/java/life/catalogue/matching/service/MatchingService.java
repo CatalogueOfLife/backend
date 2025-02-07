@@ -96,8 +96,6 @@ public class MatchingService {
 
   private final AuthorComparator authComp;
 
-  private final static Pattern TAB_PAT = Pattern.compile("\t");
-
 
   /**
    * The matching mode to use.
@@ -308,9 +306,8 @@ public class MatchingService {
         query.taxonID,
         MatchingIssue.TAXON_ID_NOT_FOUND,
         MatchingIssue.TAXON_MATCH_TAXON_ID_IGNORED
-        );
-      log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
+      );
+      log.debug("{} Match of taxonID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonID, watch);
 
       if (isMatch(idMatch)) {
           checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
@@ -326,9 +323,9 @@ public class MatchingService {
     // Match with taxonConceptID
     if (StringUtils.isNotBlank(query.taxonConceptID)) {
       NameUsageMatch idMatch = datasetIndex.matchByExternalKey(
-        query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED);
-      log.debug(
-        "{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
+        query.taxonConceptID, MatchingIssue.TAXON_CONCEPT_ID_NOT_FOUND, MatchingIssue.TAXON_MATCH_TAXON_CONCEPT_ID_IGNORED
+      );
+      log.debug("{} Match of taxonConceptID[{}] in {}", idMatch.getDiagnostics().getMatchType(), query.taxonConceptID, watch);
       if (isMatch(idMatch)){
         checkScientificNameAndIDConsistency(idMatch, query.scientificName, query.rank);
         checkConsistencyWithClassificationMatch(idMatch, sciNameMatch);
