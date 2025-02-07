@@ -42,7 +42,7 @@ public class NomStatusParser extends EnumParser<NomStatus> {
 
     // read NOMEN ontology, see https://github.com/CatalogueOfLife/backend/issues/716
     NomenOntology nomen = new NomenOntology();
-    Pattern NomenInt = Pattern.compile("NOMEN_0+([0-9]+)$");
+    Pattern NomenInt = nomenIntPattern();
     for (NomenOntology.Nomen n : nomen.list()) {
       if (n.status != null) {
         add(n.name, n.status);
@@ -60,5 +60,8 @@ public class NomStatusParser extends EnumParser<NomStatus> {
       add(st.getAbbreviatedLabel(), st);
     }
   }
-  
+
+  static Pattern nomenIntPattern() {
+    return Pattern.compile("NOMEN_0+([0-9]+)$");
+  }
 }

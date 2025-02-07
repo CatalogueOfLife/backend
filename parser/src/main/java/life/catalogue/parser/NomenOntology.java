@@ -1,5 +1,6 @@
 package life.catalogue.parser;
 
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.common.io.Resources;
 
@@ -30,13 +31,14 @@ public class NomenOntology {
   public static final URI NAMESPACE = URI.create("http://purl.obolibrary.org/obo/");
   private static final String ROOT = NAMESPACE.resolve("NOMEN").toString();
 
-  private Map<String, Nomen> classes;
+  private Map<String, Nomen> entries;
 
   public static class Nomen {
     public final String name;
-    public Nomen subClassOf;
+    public Nomen parent;
     public NomCode code;
     public NomStatus status;
+    public NomRelType nomRelType;
 
     Nomen(String about) {
       this.name = norm(about);
@@ -61,13 +63,13 @@ public class NomenOntology {
       .collect(Collectors.toMap(n -> n.name, n -> n));
     // link parents
     map.values().forEach(n -> {
-      if (n.subClassOf != null) {
-        n.subClassOf = map.get(n.subClassOf.name);
+      if (n.parent != null) {
+        n.parent = map.get(n.parent.name);
       }
     });
-    classes = Map.copyOf(map);
-    LOG.info("Loaded {} NOMEN classes", classes.size());
-    // lookup status & code
+    entries = Map.copyOf(map);
+    LOG.info("Loaded {} NOMEN classes", entries.size());
+    // lookup status, reltype & code
     mapNomen();
   }
 
@@ -103,22 +105,34 @@ public class NomenOntology {
     apply("NOMEN_0000224", NomStatus.ACCEPTABLE);
     apply("NOMEN_0000225", NomStatus.DOUBTFUL);
     apply("NOMEN_0000129", NomStatus.DOUBTFUL);
+    // relations
+    apply("NOMEN_0000270", NomRelType.REPLACEMENT_NAME);
+    apply("NOMEN_0000275", NomRelType.SPELLING_CORRECTION);
+    apply("NOMEN_0000289", NomRelType.LATER_HOMONYM);
+    apply("NOMEN_0000290", NomRelType.LATER_HOMONYM);
+    apply("NOMEN_0000291", NomRelType.LATER_HOMONYM);
   }
 
   private void apply(String name, NomCode code){
-    apply(classes.get(norm(name)), n -> n.code=code);
+    apply(entries.get(norm(name)), n -> n.code=code);
+  }
+
+  private void apply(String name, NomRelType relType){
+    apply(entries.get(norm(name)), n -> {
+      n.nomRelType = relType;
+    });
   }
 
   private void apply(String name, NomStatus status){
-    apply(classes.get(norm(name)), n -> n.status=status);
+    apply(entries.get(norm(name)), n -> n.status=status);
   }
 
   private void apply(Nomen n, Consumer<Nomen> func){
     Preconditions.checkNotNull(n, "NOMEN concept missing");
     func.accept(n);
     // apply to children
-    for (Nomen c : classes.values()) {
-      if (c.subClassOf != null && c.subClassOf.equals(n)) {
+    for (Nomen c : entries.values()) {
+      if (c.parent != null && c.parent.equals(n)) {
         apply(c, func);
       }
     }
@@ -141,6 +155,7 @@ public class NomenOntology {
           case XMLStreamConstants.START_ELEMENT:
             switch (parser.getLocalName()) {
               case "Class":
+              case "ObjectProperty":
                 if (n != null) {
                   // we are already inside a class - ignore!
                   break;
@@ -153,11 +168,12 @@ public class NomenOntology {
                 }
                 break;
               case "subClassOf":
+              case "subPropertyOf":
                 if (n != null) {
                   String sub = parser.getAttributeValue(NS_RDF, "resource");
                   //printAttrs(parser);
                   if (sub != null && sub.startsWith(ROOT)) {
-                    n.subClassOf = new Nomen(sub);
+                    n.parent = new Nomen(sub);
                   }
                 }
                 break;
@@ -167,6 +183,7 @@ public class NomenOntology {
           case XMLStreamConstants.END_ELEMENT:
             switch (parser.getLocalName()) {
               case "Class":
+              case "ObjectProperty":
                 if (n != null) {
                   nomen.add(n);
                   n = null;
@@ -192,23 +209,23 @@ public class NomenOntology {
   }
 
   public int size() {
-    return classes.size();
+    return entries.size();
   }
 
   public Collection<Nomen> list() {
-    return classes.values();
+    return entries.values();
   }
 
   public NomCode code(String name) {
-    if (classes.containsKey(norm(name))) {
-      return classes.get(norm(name)).code;
+    if (entries.containsKey(norm(name))) {
+      return entries.get(norm(name)).code;
     }
     return null;
   }
 
   public NomStatus status(String name) {
-    if (classes.containsKey(norm(name))) {
-      return classes.get(norm(name)).status;
+    if (entries.containsKey(norm(name))) {
+      return entries.get(norm(name)).status;
     }
     return null;
   }
