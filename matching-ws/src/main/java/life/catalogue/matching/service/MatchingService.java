@@ -112,7 +112,7 @@ public class MatchingService {
   DatasetIndex datasetIndex;
   Dictionaries dictionaries;
 
-  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp, Dictionaries dictionaries, StartupTimeMetricsListener startupTimeMetrics) {
+  public MatchingService(DatasetIndex datasetIndex, HigherTaxaComparator htComp, Dictionaries dictionaries) {
     this.datasetIndex = datasetIndex;
     this.htComp = htComp;
     this.dictionaries = dictionaries;
