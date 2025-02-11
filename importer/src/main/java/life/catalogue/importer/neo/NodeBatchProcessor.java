@@ -69,7 +69,7 @@ public interface NodeBatchProcessor {
               callback.process(n);
               recordCounter++;
             }
-            tx.success();
+            tx.commit();
             callback.commitBatch(recordCounter);
           }
           

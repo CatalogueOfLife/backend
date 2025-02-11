@@ -529,7 +529,7 @@ public class PgImport implements Callable<Boolean> {
 
       // index bare names
       try (Transaction tx = store.getNeo().beginTx()) {
-        ResourceIterator<Node> iter = store.bareNames();
+        ResourceIterator<Node> iter = store.bareNames(tx);
         while (iter.hasNext()) {
           Set<Integer> vKeys = new HashSet<>();
           NeoName nn = updateNeoName(iter.next(), vKeys);
@@ -581,9 +581,9 @@ public class PgImport implements Callable<Boolean> {
       if (parent != null) {
         nub.setParentId(parent.getId());
       } else if (u.isSynonym()) {
-        throw new IllegalStateException("Synonym node " + n.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
+        throw new IllegalStateException("Synonym node " + n.getElementId() + " without accepted taxon found: " + nn.getName().getScientificName());
       } else if (!n.hasLabel(Labels.ROOT)) {
-        throw new IllegalStateException("Non root node " + n.getId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
+        throw new IllegalStateException("Non root node " + n.getElementId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
       }
     }
     return u;
@@ -625,7 +625,7 @@ public class PgImport implements Callable<Boolean> {
       try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
         final Create<T> relMapper = session.getMapper(relMapperClass);
         try (Transaction tx = store.getNeo().beginTx()) {
-          store.iterRelations(rt).stream().forEach(rel -> {
+          store.iterRelations(tx, rt).stream().forEach(rel -> {
             T nr = creator.apply(rel);
             updateReferenceKey(nr);
             relMapper.create(updateUser(nr));

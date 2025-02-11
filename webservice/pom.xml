@@ -159,29 +159,6 @@
       <artifactId>HikariCP</artifactId>
     </dependency>
 
-    <!-- neo4j -->
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-kernel</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-cypher</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-graph-algo</artifactId>
-    </dependency>
-    <!-- somehow missing from neo4j deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-    </dependency>
-
     <!-- mapdb & kryo -->
     <!-- we use kryo to serialize data into binary which is > 10 times faster than jackson even with smile -->
     <dependency>

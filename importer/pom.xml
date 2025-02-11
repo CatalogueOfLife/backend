@@ -81,19 +81,6 @@
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-cypher</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-slf4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>graph-algorithms-algo</artifactId>
-    </dependency>
-    <!-- somehow missing from neo4j deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-    </dependency>
 
     <!-- DB -->
     <dependency>

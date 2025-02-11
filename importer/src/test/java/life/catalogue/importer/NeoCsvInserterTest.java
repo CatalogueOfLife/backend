@@ -27,8 +27,9 @@ public class NeoCsvInserterTest {
     NormalizerConfig cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-
-    NeoDb db = NeoDbFactory.create(datasetKey, 1, cfg);
+    NeoDbFactory factory = new NeoDbFactory(cfg);
+    factory.start();
+    NeoDb db = factory.create(datasetKey, 1);
 
     URL url = getClass().getResource("/coldp/20");
     Path src = Paths.get(url.toURI());
@@ -54,9 +55,10 @@ public class NeoCsvInserterTest {
     } catch (InterruptedException e) {
       // good!
     } finally {
-      db.closeAndDelete();
+      db.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
+      factory.stop();
     }
   }
 }

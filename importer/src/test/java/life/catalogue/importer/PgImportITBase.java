@@ -54,6 +54,7 @@ public class PgImportITBase {
   NeoDb store;
   NormalizerConfig cfg;
   ImporterConfig icfg = new ImporterConfig();
+  NeoDbFactory neoDbFactory;
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
   boolean fullInit = true;
@@ -76,10 +77,12 @@ public class PgImportITBase {
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
   
   @Before
-  public void initCfg() {
+  public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
     dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.EXTERNAL);
@@ -94,14 +97,15 @@ public class PgImportITBase {
   }
   
   @After
-  public void cleanup() {
+  public void cleanup() throws Exception {
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
+    neoDbFactory.stop();
   }
-  
+
   void normalizeAndImport(DataFormat format, int key) throws Exception {
     URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
     dataset.setDataFormat(format);
@@ -127,14 +131,13 @@ public class PgImportITBase {
       }
 
       // normalize
-      store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+      store = neoDbFactory.create(dataset.getKey(), 1);
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);
       norm.call();
       
       // import into postgres
-      store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
       PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       

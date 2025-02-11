@@ -62,6 +62,7 @@ public class PgImportRule extends ExternalResource {
   }
 
   private final Validator validator;
+  private NeoDbFactory neoDbFactory;
   private DatasetDao ddao;
 
   private NeoDb store;
@@ -162,6 +163,8 @@ public class PgImportRule extends ExternalResource {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }
@@ -180,7 +183,7 @@ public class PgImportRule extends ExternalResource {
   public void after() {
     super.after();
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
@@ -236,12 +239,11 @@ public class PgImportRule extends ExternalResource {
 
   private void normalizeAndImportDataset(Path source) throws Exception {
     // normalize
-    store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+    store = neoDbFactory.create(dataset.getKey(), 1);
     Normalizer norm = new Normalizer(dataset, store, source, nidx, ImageService.passThru(), validator, null);
     norm.call();
 
     // import into postgres
-    store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
     PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }

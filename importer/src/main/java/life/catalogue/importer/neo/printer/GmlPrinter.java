@@ -105,12 +105,12 @@ public class GmlPrinter extends BasePrinter {
       // for a strict tree we only use parent and synonym of relations
       // synonym_of relations are inversed so the tree strictly points into one direction
       if (strictTree) {
-        for (Relationship rel : u.usageNode.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
+        for (Relationship rel : u.usageNode.getRelationships(Direction.OUTGOING, RelType.PARENT_OF)) {
           if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
             edges.add(Edge.create(rel));
           }
         }
-        for (Relationship rel : u.usageNode.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
+        for (Relationship rel : u.usageNode.getRelationships(Direction.OUTGOING, RelType.SYNONYM_OF)) {
           if (rankEvaluator.evaluateNode(rel.getOtherNode(u.usageNode))) {
             edges.add(Edge.inverse(rel));
           }

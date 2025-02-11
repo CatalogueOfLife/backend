@@ -16,7 +16,7 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.traversal.Evaluators;
 import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.graphdb.traversal.Uniqueness;
-import org.neo4j.helpers.collection.Iterators;
+import org.neo4j.internal.helpers.collection.Iterators;
 import org.neo4j.kernel.impl.traversal.MonoDirectionalTraversalDescription;
 
 /**
@@ -141,9 +141,8 @@ public class Traversals {
    * @param syn synonym node to look for accepted nodes
    */
   public static Set<Node> acceptedOf(Node syn) {
-    try (ResourceIterator<Node> accepted = Traversals.ACCEPTED.traverse(syn).nodes().iterator()) {
-      return Iterators.asSet(accepted);
-    }
+    var accepted = Traversals.ACCEPTED.traverse(syn).nodes().iterator();
+    return Iterators.asSet(accepted);
   }
   
   /**
@@ -164,16 +163,15 @@ public class Traversals {
    * @return the parent node with requested rank or null
    */
   public static Node parentWithRankOf(Node start, Rank rank) {
-    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
-      while (parents.hasNext()) {
-        Node p = parents.next();
-        int rankOrd = (int) NeoProperties.getNameNode(p).getProperty(NeoProperties.RANK, -1);
-        if (rankOrd == rank.ordinal()) {
-          return p;
-        } else if (!rank.isUncomparable() && rankOrd > 0 && rankOrd < rank.ordinal()) {
-          // we are already passed the requested rank
-          break;
-        }
+    var parents = Traversals.PARENTS.traverse(start).nodes().iterator();
+    while (parents.hasNext()) {
+      Node p = parents.next();
+      int rankOrd = (int) NeoProperties.getNameNode(p).getProperty(NeoProperties.RANK, Integer.valueOf(-1));
+      if (rankOrd == rank.ordinal()) {
+        return p;
+      } else if (!rank.isUncomparable() && rankOrd > 0 && rankOrd < rank.ordinal()) {
+        // we are already passed the requested rank
+        break;
       }
     }
     return null;
@@ -187,13 +185,12 @@ public class Traversals {
    * @return the parent node with requested rank or null
    */
   public static Node parentWithConcreteRank(Node start) {
-    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
-      while (parents.hasNext()) {
-        Node p = parents.next();
-        Rank r = NeoProperties.getRank(NeoProperties.getNameNode(p), Rank.UNRANKED);
-        if (r.notOtherOrUnranked()) {
-          return p;
-        }
+    var parents = Traversals.PARENTS.traverse(start).nodes().iterator();
+    while (parents.hasNext()) {
+      Node p = parents.next();
+      Rank r = NeoProperties.getRank(NeoProperties.getNameNode(p), Rank.UNRANKED);
+      if (r.notOtherOrUnranked()) {
+        return p;
       }
     }
     return null;
@@ -204,14 +201,13 @@ public class Traversals {
    */
   public static List<Node> parentsUntil(Node start, Node end) {
     List<Node> nodes = new ArrayList<>();
-    try (ResourceIterator<Node> parents = Traversals.PARENTS.traverse(start).nodes().iterator()) {
-      while (parents.hasNext()) {
-        Node p = parents.next();
-        if (p.equals(end)) {
-          break;
-        }
-        nodes.add(p);
+    var parents = Traversals.PARENTS.traverse(start).nodes().iterator();
+    while (parents.hasNext()) {
+      Node p = parents.next();
+      if (p.equals(end)) {
+        break;
       }
+      nodes.add(p);
     }
     return nodes;
   }

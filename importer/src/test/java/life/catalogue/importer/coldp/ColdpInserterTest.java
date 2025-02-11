@@ -134,7 +134,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     for (RelType rt : RelType.values()) {
       if (rt.isSpeciesInteraction()) {
         try (Transaction tx = store.getNeo().beginTx()) {
-          store.iterRelations(rt).stream().forEach(rel -> {
+          store.iterRelations(tx, rt).stream().forEach(rel -> {
             var si = store.toSpeciesInteraction(rel);
             assertNotNull(si.getTaxonId());
             assertNotNull(si.getRelatedTaxonScientificName());

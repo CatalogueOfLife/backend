@@ -127,14 +127,9 @@ public class TxtTreeInserter implements NeoInserter {
   }
 
   private void addVerbatim(TreeLine tl){
-    VerbatimRecord v = new VerbatimRecord(datasetKey, tl.line, treeFileName, Tree);
+    VerbatimRecord v = new VerbatimRecord((Integer)datasetKey, tl.line, treeFileName, Tree);
     v.getTerms().put(indent, String.valueOf(tl.level));
     v.getTerms().put(content, tl.content);
-    if (tl.infos != null) {
-      for (var entry : tl.infos.entrySet()) {
-
-      }
-    }
     store.put(v);
     line2verbatimKey.put(tl.line, (int) v.getId());
   }
@@ -148,14 +143,14 @@ public class TxtTreeInserter implements NeoInserter {
       }
       LOG.info("Read tree and insert verbatim records from {}", treeFile);
       tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
-      LOG.info("Read tree with {} nodes from {}", tree.size(), treeFile);
+      LOG.info("Read tree with {} nodes from {}", String.valueOf(tree.size()), treeFile);
       // insert names and taxa in depth first order
       int ordinal = 1;
       NomCode code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
       for (SimpleTreeNode t : tree.getRoot()) {
         try (Transaction tx = store.getNeo().beginTx()) {
           recursiveNodeInsert(null, t, ordinal++, code);
-          tx.success();
+          tx.commit();
         }
       }
     } catch (Exception e) {

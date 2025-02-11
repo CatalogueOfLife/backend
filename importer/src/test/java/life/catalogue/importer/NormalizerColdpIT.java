@@ -32,9 +32,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.collection.Iterators;
 
 import de.undercouch.citeproc.csl.CSLType;
+
+import org.neo4j.internal.helpers.collection.Iterators;
 
 import static org.junit.Assert.*;
 
@@ -621,7 +622,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     String resourceDir = resourceDir(1, DataFormat.COLDP);
     URL url = getClass().getResource(resourceDir);
 
-    store = NeoDbFactory.create(1, 1, cfg);
+    store = neoDbFactory.create(1, 1);
     dws = new DatasetWithSettings();
     dws.setKey(store.getDatasetKey());
     dws.setDataFormat(DataFormat.COLDP);

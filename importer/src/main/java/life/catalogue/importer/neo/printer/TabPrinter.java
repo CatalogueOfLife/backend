@@ -39,16 +39,16 @@ public class TabPrinter extends BasePrinter {
       if (u.isSynonym()) {
         // we can have multiple accepted parents for pro parte synonyms
         Set<Long> parentKeys = Sets.newHashSet();
-        for (Relationship synRel : u.usageNode.getRelationships(RelType.SYNONYM_OF, Direction.OUTGOING)) {
+        for (Relationship synRel : u.usageNode.getRelationships(Direction.OUTGOING, RelType.SYNONYM_OF)) {
           parentKeys.add(synRel.getOtherNode(u.usageNode).getId());
         }
         row[1] = ID_CONCAT.join(parentKeys);
       } else {
-        if (u.usageNode.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+        if (u.usageNode.hasRelationship(Direction.INCOMING, RelType.PARENT_OF)) {
           row[1] = String.valueOf(u.usageNode.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING).getOtherNode(u.usageNode).getId());
         }
       }
-      if (u.nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING)) {
+      if (u.nameNode.hasRelationship(Direction.OUTGOING, RelType.HAS_BASIONYM)) {
         row[2] = String.valueOf(u.nameNode.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(u.nameNode).getId());
       }
       if (u.rank != null) {

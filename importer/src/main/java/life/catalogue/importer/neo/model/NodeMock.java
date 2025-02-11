@@ -21,14 +21,19 @@ public class NodeMock implements Node {
   public long getId() {
     return id;
   }
-  
+
+  @Override
+  public String getElementId() {
+    return ""+id;
+  }
+
   @Override
   public void delete() {
     throw new UnsupportedOperationException();
   }
   
   @Override
-  public Iterable<Relationship> getRelationships() {
+  public ResourceIterable<Relationship> getRelationships() {
     throw new UnsupportedOperationException();
   }
   
@@ -38,12 +43,12 @@ public class NodeMock implements Node {
   }
   
   @Override
-  public Iterable<Relationship> getRelationships(RelationshipType... types) {
+  public ResourceIterable<Relationship> getRelationships(RelationshipType... types) {
     throw new UnsupportedOperationException();
   }
   
   @Override
-  public Iterable<Relationship> getRelationships(Direction direction, RelationshipType... types) {
+  public ResourceIterable<Relationship> getRelationships(Direction direction, RelationshipType... types) {
     throw new UnsupportedOperationException();
   }
   
@@ -58,7 +63,7 @@ public class NodeMock implements Node {
   }
   
   @Override
-  public Iterable<Relationship> getRelationships(Direction dir) {
+  public ResourceIterable<Relationship> getRelationships(Direction dir) {
     throw new UnsupportedOperationException();
   }
   
@@ -66,17 +71,7 @@ public class NodeMock implements Node {
   public boolean hasRelationship(Direction dir) {
     throw new UnsupportedOperationException();
   }
-  
-  @Override
-  public Iterable<Relationship> getRelationships(RelationshipType type, Direction dir) {
-    throw new UnsupportedOperationException();
-  }
-  
-  @Override
-  public boolean hasRelationship(RelationshipType type, Direction dir) {
-    throw new UnsupportedOperationException();
-  }
-  
+
   @Override
   public Relationship getSingleRelationship(RelationshipType type, Direction dir) {
     throw new UnsupportedOperationException();
@@ -131,12 +126,7 @@ public class NodeMock implements Node {
   public Iterable<Label> getLabels() {
     throw new UnsupportedOperationException();
   }
-  
-  @Override
-  public GraphDatabaseService getGraphDatabase() {
-    throw new UnsupportedOperationException();
-  }
-  
+
   @Override
   public boolean hasProperty(String key) {
     throw new UnsupportedOperationException();

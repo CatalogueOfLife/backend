@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.*;
 
 import org.gbif.nameparser.api.Authorship;
@@ -20,7 +21,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.Schema;
-import org.neo4j.helpers.collection.Iterators;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -251,16 +251,16 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     
     // no indices!
     try (Transaction tx = store.getNeo().beginTx()) {
-      Schema schema = store.getNeo().schema();
+      Schema schema = tx.schema();
       assertFalse(schema.getIndexes().iterator().hasNext());
 
       // 1001, Crepis bakeri Greene
-      assertNotNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")
+      assertNotNull(NeoDbUtils.singleOrNull(
+          tx.findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")
       ));
   
-      assertNull(Iterators.singleOrNull(
-          store.getNeo().findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")
+      assertNull(NeoDbUtils.singleOrNull(
+          tx.findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")
       ));
     }
   }
@@ -356,7 +356,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(34);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u;
-      for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
+      for (Node n : NeoDbUtils.loop(tx.findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
           System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());

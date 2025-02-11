@@ -49,7 +49,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   }
   
   public T objByNode(Node n) {
-    T t = n == null ? null : objects.get(n.getId());
+    T t = n == null ? null : objects.get((Long) n.getId());
     if (t != null) {
       t.setNode(n);
     }
@@ -129,8 +129,8 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
       neoDb.updateNode(obj.getNode().getId(), props);
     }
     
-    objects.put(obj.getNode().getId(), obj);
-    ids.put(obj.getId(), obj.getNode().getId());
+    objects.put((Long) obj.getNode().getId(), obj);
+    ids.put(obj.getId(), (Long) obj.getNode().getId());
     
     return obj.getNode();
   }
@@ -162,14 +162,14 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
         NeoDbUtils.addProperties(obj.getNode(), props);
       }
     }
-    objects.put(obj.getNode().getId(), obj);
+    objects.put((Long) obj.getNode().getId(), obj);
   }
   
   /**
    * Removes the neo4j node with all its relations and all entities stored under this node like NeoTaxon.
    */
   T remove(Node n) {
-    T obj = objects.remove(n.getId());
+    T obj = objects.remove((Long) n.getId());
     if (obj != null) {
       ids.remove(obj.getId());
     }

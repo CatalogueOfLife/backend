@@ -511,7 +511,7 @@ public class PgImportIT extends PgImportITBase {
     }
 
     // now try to import again to make sure deletions of previous data work
-    store.closeAndDelete();
+    store.close();
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
     normalizeAndImport(COLDP, 0);

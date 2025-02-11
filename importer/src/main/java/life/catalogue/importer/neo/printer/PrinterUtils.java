@@ -91,7 +91,7 @@ public class PrinterUtils {
     try (DotProcessor dot = new DotProcessor(writer);
          Transaction tx = neo.beginTx()
     ) {
-      for (Node n : neo.getAllNodes()) {
+      for (Node n : tx.getAllNodes()) {
         dot.accept(n);
       }
     }

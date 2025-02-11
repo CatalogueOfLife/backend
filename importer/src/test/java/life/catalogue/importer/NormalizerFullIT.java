@@ -50,7 +50,7 @@ public class NormalizerFullIT extends NormalizerITBase {
     }
   
     // run again to get proper matches!
-    store.closeAndDelete();
+    store.close();
     normalize(0);
     try (Transaction tx = store.getNeo().beginTx()) {
       store.names().all().forEach(n -> {

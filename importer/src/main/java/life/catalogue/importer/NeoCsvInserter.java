@@ -111,7 +111,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
   public final void insertAll() throws NormalizationFailedException, InterruptedException {
     try {
       interruptIfCancelled(INTERRUPT_MESSAGE);
-      store.startBatchMode();
+      store.startBatchTx();
       batchInsert();
       LOG.info("Batch insert completed, {} verbatim records processed, {} nodes created", vcounter, store.size());
 
@@ -122,9 +122,7 @@ public abstract class NeoCsvInserter implements NeoInserter {
       throw new NormalizationFailedException("Failed to batch insert csv data", e);
 
     } finally {
-      if (store.isBatchMode()) {
-        store.endBatchMode();
-      }
+      store.endBatchTx();
     }
 
     final int batchV = vcounter;

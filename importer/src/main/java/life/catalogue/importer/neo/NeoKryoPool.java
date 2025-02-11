@@ -7,8 +7,6 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.NodeMock;
 import life.catalogue.importer.neo.model.RankedName;
 
-import org.neo4j.kernel.impl.core.NodeProxy;
-
 import com.esotericsoftware.kryo.Kryo;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -38,7 +36,6 @@ public class NeoKryoPool extends ApiKryoPool {
     kryo.register(IntArrayList.class);
     
     // ignore normalizer node proxies and set them to null upon read:
-    kryo.register(NodeProxy.class, new NullSerializer());
     kryo.register(NodeMock.class, new NullSerializer());
 
     return kryo;

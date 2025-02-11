@@ -80,7 +80,7 @@
     <mockito.version>3.3.3</mockito.version>
     <mybatis.version>3.5.16</mybatis.version>
     <name-parser.version>4.0.0-SNAPSHOT</name-parser.version>
-    <neo4j.version>5.18.1</neo4j.version>
+    <neo4j.version>5.26.2</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
     <postgresql.version>42.7.4</postgresql.version>
@@ -178,7 +178,9 @@
     <module>doi</module>
     <module>importer</module>
     <module>metadata</module>
+    <!--
     <module>matching-ws</module>
+    -->
     <module>parser</module>
     <module>pgcopy</module>
     <module>reader</module>
@@ -513,12 +515,6 @@
         <artifactId>neo4j-kernel</artifactId>
         <version>${neo4j.version}</version>
       </dependency>
-      <!-- somehow missing from neo4j-kernel deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
-      <dependency>
-        <groupId>org.bouncycastle</groupId>
-        <artifactId>bcprov-jdk15on</artifactId>
-        <version>1.64</version>
-      </dependency>
       <dependency>
         <groupId>org.neo4j</groupId>
         <artifactId>neo4j-cypher</artifactId>
@@ -530,11 +526,6 @@
             <artifactId>neo4j-codegen</artifactId>
           </exclusion>
         </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.neo4j</groupId>
-        <artifactId>neo4j-graph-algo</artifactId>
-        <version>${neo4j.version}</version>
       </dependency>
 
       <!-- mapdb & kryo -->

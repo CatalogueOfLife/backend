@@ -12,6 +12,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
+import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -61,12 +62,15 @@ public class ImportJobIT {
   private SectorDao sDao;
   private DecisionDao dDao;
   private DatasetDao datasetDao;
+  private NeoDbFactory neoDbFactory;
 
 
   @Before
   public void init() throws Exception {
     cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
+    neoDbFactory = new NeoDbFactory(cfg.normalizer);
+    neoDbFactory.start();
     diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
@@ -81,6 +85,7 @@ public class ImportJobIT {
   public void shutdown() throws Exception {
     LOG.warn("Shutting down test");
     hc.close();
+    neoDbFactory.stop();
   }
 
   void start(){
@@ -112,7 +117,7 @@ public class ImportJobIT {
     }
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
-    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
+    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), neoDbFactory, NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, new EventBus("test-bus"), this::start, this::success, this::error);
 
   }

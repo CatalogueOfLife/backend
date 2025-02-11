@@ -1,5 +1,6 @@
 package life.catalogue.importer.neo;
 
+import life.catalogue.common.Managed;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
@@ -7,50 +8,78 @@ import life.catalogue.config.NormalizerConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DBMaker;
 import org.neo4j.configuration.GraphDatabaseSettings;
+import org.neo4j.dbms.api.DatabaseExistsException;
 import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
+import org.neo4j.dbms.api.DatabaseNotFoundException;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A factory for persistent & temporary, volatile neodb instances.
+ * The factory runs a dedicated DatabaseManagementService and should be a singleton.
  */
-public class NeoDbFactory {
+public class NeoDbFactory implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDbFactory.class);
-  
-  /**
-   * A backend that is stored in files inside the configured normalizer directory.
-   *
-   * @param eraseExisting if true erases any previous data files
-   */
-  private static NeoDb persistentDb(NormalizerConfig cfg, int datasetKey, int attempt, boolean eraseExisting) throws IOException {
-    final File storeDir = cfg.neoDir(datasetKey);
-    LOG.info("{} persistent NormalizerStore at {}", eraseExisting ? "Create" : "Open", storeDir);
-    final File mapDbFile = mapDbFile(storeDir);
-    DBMaker.Maker dbMaker = DBMaker
-        .fileDB(mapDbFile)
-        .fileMmapEnableIfSupported();
-    return create(datasetKey, attempt, cfg, storeDir, eraseExisting, dbMaker);
+
+  private final NormalizerConfig cfg;
+  private final Path dir;
+  private DatabaseManagementService service;
+
+
+  public NeoDbFactory(NormalizerConfig cfg) {
+    this.cfg = cfg;
+    this.dir = cfg.neoDir().toPath();
+  }
+
+  private String dbName(int datasetKey) {
+    return "db-"+datasetKey;
+  }
+
+  private File dbDir(int datasetKey) {
+    return dir.resolve(dbName(datasetKey)).toFile();
   }
   
   /**
    * A backend that is stored in files inside the configured normalizer directory.
    *
-   * @param eraseExisting if true erases any previous data files
+   * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
-  private static NeoDb create(int datasetKey, int attempt, NormalizerConfig cfg, File storeDir, boolean eraseExisting, DBMaker.Maker dbMaker) {
+  public NeoDb create(int datasetKey, int attempt) {
+    final var name = dbName(datasetKey);
+    final File storeDir = dbDir(datasetKey); // only used for mapdb, not neo!
     try {
-      DatabaseManagementService dbService = newEmbeddedDb(cfg, storeDir, eraseExisting);
-      
+      LOG.info("Create neodb {} with storage at {}", name, storeDir);
+
+      if (storeDir.exists()) {
+        FileUtils.deleteQuietly(storeDir);
+      }
       // make sure mapdb parent dirs exist
       if (!storeDir.exists()) {
         storeDir.mkdirs();
       }
-      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, dbService, cfg.batchSize, cfg.batchTimeout);
+
+      final File mapDbFile = mapDbFile(storeDir);
+      DBMaker.Maker dbMaker = DBMaker
+        .fileDB(mapDbFile)
+        .fileMmapEnableIfSupported();
+
+      GraphDatabaseService graphDb;
+      try {
+        service.createDatabase( name );
+      } catch (DatabaseExistsException e) {
+        LOG.debug("Removing previous neo4j database {} from {}", name, storeDir.getAbsolutePath());
+        service.dropDatabase(name);
+        service.createDatabase( name );
+      }
+      graphDb = service.database( name );
+      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, graphDb, this::delete, cfg.batchSize, cfg.batchTimeout);
 
     } catch (RuntimeException e) {
       // can be caused by interruption in mapdb
@@ -62,36 +91,27 @@ public class NeoDbFactory {
     }
   }
 
+  private void delete(int datasetKey) {
+    final var name = dbName(datasetKey);
+    try {
+      LOG.info("Remove neo4j database {}", name);
+      service.dropDatabase(name);
+    } catch (DatabaseNotFoundException e) {
+      LOG.info("Cannot remove not existing neo4j database {}", name);
+    }
+  }
 
   /**
-   * Creates a new embedded db in the directory folder.
-   *
-   * @param eraseExisting if true deletes previously existing db
+   * Creates a new embedded db service in the configured directory folder.
    */
-  private static DatabaseManagementService newEmbeddedDb(NormalizerConfig cfg, File storeDir, boolean eraseExisting) {
-    if (eraseExisting && storeDir.exists()) {
-      // erase previous db
-      LOG.debug("Removing previous neo4j database from {}", storeDir.getAbsolutePath());
-      if (!FileUtils.deleteQuietly(storeDir)) {
-        LOG.warn("Unable to remove previous neo4j database from {}", storeDir.getAbsolutePath());
-      }
-    }
-
-    var dbService = new DatabaseManagementServiceBuilder( storeDir.toPath() )
-      //.setUserLogProvider(new Slf4jLogProvider())
-      //.newEmbeddedDatabaseBuilder(storeDir)
+  private DatabaseManagementService newEmbeddedService() {
+    var dbService = new DatabaseManagementServiceBuilder( dir )
       .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
       .setConfig(GraphDatabaseSettings.pagecache_memory, (long) cfg.mappedMemory * 1024 * 1024)
       .build();
 
-    registerShutdownHook( dbService );
-    return dbService;
-  }
-
-  private static void registerShutdownHook( final DatabaseManagementService dbService ) {
     // Registers a shutdown hook for the Neo4j instance so that it
-    // shuts down nicely when the VM exits (even if you "Ctrl-C" the
-    // running application).
+    // shuts down nicely when the VM exits.
     Runtime.getRuntime().addShutdownHook( new Thread() {
       @Override
       public void run()
@@ -99,24 +119,33 @@ public class NeoDbFactory {
         dbService.shutdown();
       }
     } );
+    return dbService;
   }
 
-  /**
-   * @return the neodb for an existing, persistent db
-   */
-  public static NeoDb open(int datasetKey, int attempt, NormalizerConfig cfg) throws IOException {
-    return persistentDb(cfg, datasetKey, attempt, false);
-  }
-  
-  /**
-   * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
-   */
-  public static NeoDb create(int datasetKey, int attempt, NormalizerConfig cfg) throws IOException {
-    return persistentDb(cfg, datasetKey, attempt, true);
-  }
-  
   private static File mapDbFile(File neoDir) {
     return new File(neoDir, "mapdb.bin");
+  }
+
+  @Override
+  public void start() throws Exception {
+    if (service == null) {
+      LOG.info("Starting neodb factory service in {}", dir);
+      service = newEmbeddedService();
+    }
+  }
+
+  @Override
+  public void stop() throws Exception {
+    if (service != null) {
+      LOG.info("Stopping neodb factory service in {}", dir);
+      service.shutdown();
+      service = null;
+    }
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return service != null;
   }
 }
 

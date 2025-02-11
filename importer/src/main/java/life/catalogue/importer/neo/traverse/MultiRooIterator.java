@@ -20,7 +20,7 @@ public abstract class MultiRooIterator<T> implements AutoCloseable, ResourceIter
   private static final Logger LOG = LoggerFactory.getLogger(MultiRooIterator.class);
   
   private final Iterator<Node> roots;
-  private ResourceIterator<T> rootPaths;
+  private Iterator<T> rootPaths;
   private T next;
   
   MultiRooIterator(List<Node> roots) {
@@ -40,14 +40,10 @@ public abstract class MultiRooIterator<T> implements AutoCloseable, ResourceIter
     return p;
   }
   
-  abstract ResourceIterator<T> iterateRoot(Node root);
+  abstract Iterator<T> iterateRoot(Node root);
   
   public void prefetch() {
     while ((rootPaths == null || !rootPaths.hasNext()) && roots.hasNext()) {
-      // close as quickly as we can
-      if (rootPaths != null) {
-        rootPaths.close();
-      }
       Node root = roots.next();
       LOG.debug("Traverse a new root taxon: {}", NeoProperties.getScientificName(root));
       rootPaths = iterateRoot(root);
@@ -63,12 +59,5 @@ public abstract class MultiRooIterator<T> implements AutoCloseable, ResourceIter
   public void remove() {
     throw new UnsupportedOperationException();
   }
-  
-  @Override
-  public void close() {
-    if (rootPaths != null) {
-      rootPaths.close();
-    }
-  }
-  
+
 }

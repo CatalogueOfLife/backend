@@ -15,6 +15,7 @@ import life.catalogue.importer.acef.AcefInserter;
 import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
 import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.NotUniqueRuntimeException;
 import life.catalogue.importer.neo.model.*;
@@ -44,8 +45,7 @@ import javax.annotation.Nullable;
 import jakarta.validation.Validator;
 
 import org.neo4j.graphdb.*;
-import org.neo4j.helpers.collection.Iterables;
-import org.neo4j.helpers.collection.Iterators;
+import org.neo4j.internal.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,30 +99,25 @@ public class Normalizer implements Callable<Boolean> {
   @Override
   public Boolean call() throws NormalizationFailedException, InterruptedException {
     LOG.info("Start normalization of {}", store);
-    try {
-      // batch import verbatim records
-      insertData();
-      checkIfCancelled();
-      // make id generator aware of existing ids we inserted up to now
-      store.updateIdGenerators();
-      checkIfCancelled();
-      // insert normalizer db relations, create implicit nodes if needed and parse names
-      normalize();
-      checkIfCancelled();
-      // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
-      store.sync();
-      checkIfCancelled();
-      // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
-      validateAndDefaults();
-      checkIfCancelled();
-      // matches names and taxon concepts and builds metrics per name/taxon
-      matchAndCount();
-      LOG.info("Normalization succeeded");
+    // batch import verbatim records
+    insertData();
+    checkIfCancelled();
+    // make id generator aware of existing ids we inserted up to now
+    store.updateIdGenerators();
+    checkIfCancelled();
+    // insert normalizer db relations, create implicit nodes if needed and parse names
+    normalize();
+    checkIfCancelled();
+    // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
+    store.sync();
+    checkIfCancelled();
+    // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
+    validateAndDefaults();
+    checkIfCancelled();
+    // matches names and taxon concepts and builds metrics per name/taxon
+    matchAndCount();
+    LOG.info("Normalization succeeded");
 
-    } finally {
-      store.close();
-      LOG.info("Normalizer store shut down");
-    }
     return true;
   }
 
@@ -405,7 +400,7 @@ public class Normalizer implements Callable<Boolean> {
                                      + " FOREACH (x in coll | delete x)"
                                      + " RETURN sum(size(coll)) AS cnt", rt);
     try (Transaction tx = store.getNeo().beginTx()) {
-      try (Result result = store.getNeo().execute(query)) {
+      try (Result result = tx.execute(query)) {
         if (result.hasNext()) {
           var row = result.next();
           var cnt = (Long) row.get("cnt");
@@ -414,7 +409,7 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
       }
-      tx.success();
+      tx.commit();
     }
   }
 
@@ -422,7 +417,7 @@ public class Normalizer implements Callable<Boolean> {
     final String query = "MATCH (s:SYNONYM) WHERE NOT (s)-[:SYNONYM_OF]->() RETURN s";
     try (Transaction tx = store.getNeo().beginTx()) {
       int counter = 0;
-      Result result = store.getNeo().execute(query);
+      Result result = tx.execute(query);
       try (ResourceIterator<Node> nodes = result.columnAs("s")) {
         while (nodes.hasNext()) {
           Node syn = nodes.next();
@@ -431,7 +426,7 @@ public class Normalizer implements Callable<Boolean> {
           counter++;
         }
       }
-      tx.success();
+      tx.commit();
       LOG.info("{} orphan synonyms removed", counter);
     }
   }
@@ -449,7 +444,7 @@ public class Normalizer implements Callable<Boolean> {
         if (u.isSynonym()) {
           Synonym syn = u.asSynonym();
           // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
-          Node n = store.getNeo().getNodeById(u.node.getId());
+          Node n = tx.getNodeById(u.node.getId());
           Name name = store.names().objByNode(NeoProperties.getNameNode(n)).getName();
           boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
           boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(name, false, syn.getAccordingToId(), null));
@@ -501,7 +496,7 @@ public class Normalizer implements Callable<Boolean> {
               !u.vernacularNames.isEmpty()
           ) {
             // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
-            Node n = store.getNeo().getNodeById(u.node.getId());
+            Node n = tx.getNodeById(u.node.getId());
             hasAccepted.set(false);
             Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
               NeoUsage acc = store.usages().objByNode(accNode);
@@ -553,7 +548,7 @@ public class Normalizer implements Callable<Boolean> {
     int counter = 0;
     LongSet visited = new LongOpenHashSet();
     try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query);
+      Result result = tx.execute(query);
       while (result.hasNext()) {
         Map<String, Object> row = result.next();
         Node x = (Node) row.get("x");
@@ -592,7 +587,7 @@ public class Normalizer implements Callable<Boolean> {
         bad.delete();
         counter++;
       }
-      tx.success();
+      tx.commit();
     }
     return counter;
   }
@@ -638,7 +633,7 @@ public class Normalizer implements Callable<Boolean> {
     RankedUsage highest = null;
     if (meta.isParentNameMapped()) {
       // verify if we already have a classification, that it ends with a known rank
-      Node p = Iterables.lastOrNull(Traversals.PARENTS.traverse(n).nodes());
+      Node p = NeoDbUtils.lastOrNull(Traversals.PARENTS.traverse(n).nodes());
       highest = p == null ? null : NeoProperties.getRankedUsage(p);
       if (highest != null
           && !highest.usageNode.equals(n)
@@ -701,7 +696,7 @@ public class Normalizer implements Callable<Boolean> {
           if (n.hasLabel(Labels.SYNONYM)) continue;
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
-            Node p = Iterables.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
+            Node p = NeoDbUtils.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
             if (p == null) {
               // aligns!
               found = true;
@@ -774,7 +769,7 @@ public class Normalizer implements Callable<Boolean> {
 
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query);
+      Result result = tx.execute(query);
       ;
       while (result.hasNext()) {
         Relationship sr = (Relationship) result.next().get("sr");
@@ -786,10 +781,10 @@ public class Normalizer implements Callable<Boolean> {
         if (counter++ % 100 == 0) {
           LOG.debug("Synonym cycles cut so far: {}", counter);
         }
-        result = store.getNeo().execute(query);
+        result = tx.execute(query);
         ;
       }
-      tx.success();
+      tx.commit();
     }
     LOG.info("{} synonym cycles resolved", counter);
   }
@@ -835,7 +830,7 @@ public class Normalizer implements Callable<Boolean> {
         "RETURN DISTINCT sr, t";
     int counter = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query);
+      Result result = tx.execute(query);
       while (result.hasNext()) {
         Map<String, Object> row = result.next();
         Node acc = (Node) row.get("t");
@@ -846,7 +841,7 @@ public class Normalizer implements Callable<Boolean> {
         sr.delete();
         counter++;
       }
-      tx.success();
+      tx.commit();
     }
     LOG.info("{} synonym chains to a taxon resolved", counter);
 
@@ -857,14 +852,14 @@ public class Normalizer implements Callable<Boolean> {
         "RETURN DISTINCT sr";
     AtomicInteger cnt = new AtomicInteger(0);
     try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = store.getNeo().execute(query2);
+      Result result = tx.execute(query2);
       result.<Relationship>columnAs("sr").forEachRemaining( sr -> {
         Node syn = sr.getStartNode();
         addUsageIssue(syn, Issue.CHAINED_SYNONYM);
         sr.delete();
         cnt.incrementAndGet();
       });
-      tx.success();
+      tx.commit();
     }
     LOG.info("{} synonym chains to a taxon resolved", counter);
   }
@@ -885,10 +880,10 @@ public class Normalizer implements Callable<Boolean> {
     int parentOfRelRelinked = 0;
     int childOfRelDeleted = 0;
     try (Transaction tx = store.getNeo().beginTx()) {
-      for (Node syn : Iterators.loop(store.getNeo().findNodes(Labels.SYNONYM))) {
+      for (Node syn : Iterators.loop(tx.findNodes(Labels.SYNONYM))) {
         // if the synonym is a parent of another child taxon - relink accepted as parent of child
         Set<Node> accepted = Traversals.acceptedOf(syn);
-        for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.OUTGOING)) {
+        for (Relationship pRel : syn.getRelationships(Direction.OUTGOING, RelType.PARENT_OF)) {
           Node child = pRel.getOtherNode(syn);
           pRel.delete();
           addUsageIssue(syn, Issue.SYNONYM_PARENT);
@@ -910,12 +905,12 @@ public class Normalizer implements Callable<Boolean> {
           }
         }
         // remove parent rel for synonyms
-        for (Relationship pRel : syn.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
+        for (Relationship pRel : syn.getRelationships(Direction.INCOMING, RelType.PARENT_OF)) {
           pRel.delete();
           childOfRelDeleted++;
         }
       }
-      tx.success();
+      tx.commit();
     }
     LOG.info("Synonym relations cleaned up. "
             + "{} hasParent relations deleted,"

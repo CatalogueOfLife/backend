@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.ParserConfigDao;
+import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -26,7 +27,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.helpers.collection.Iterators;
 
 import com.google.common.collect.Sets;
 
@@ -191,7 +191,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     normalize(8);
     try (Transaction tx = store.getNeo().beginTx()) {
       NeoUsage u;
-      for (Node n : Iterators.loop(store.getNeo().findNodes(Labels.USAGE))) {
+      for (Node n : NeoDbUtils.loop(tx.findNodes(Labels.USAGE))) {
         u = store.usageWithName(n);
         if (u.usage.getName().getOrigin() == Origin.SOURCE) {
           System.out.println(u.getId() + ": " + u.usage.getLabel());

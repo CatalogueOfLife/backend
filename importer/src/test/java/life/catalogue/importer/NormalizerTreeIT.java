@@ -59,9 +59,9 @@ public class NormalizerTreeIT {
   final static int MAX_COLDP_ID = 0;
 
   private static NormalizerConfig cfg;
+  private static NeoDbFactory neoDbFactory;
   private NeoDb store;
   private Path source;
-  
   // TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
   Set<Integer> ignoreAcef = Sets.newHashSet(3);
   Set<Integer> ignoreDwca = Sets.newHashSet(21);
@@ -106,6 +106,8 @@ public class NormalizerTreeIT {
     // make sure its empty
     FileUtils.cleanDirectory(cfg.archiveDir);
     FileUtils.cleanDirectory(cfg.scratchDir);
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
   }
   
   @AfterClass
@@ -113,12 +115,13 @@ public class NormalizerTreeIT {
     System.out.println("Removing temp test repo");
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
+    neoDbFactory.stop();
   }
   
   @After
   public void cleanup() throws Exception {
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
     }
   }
 
@@ -142,7 +145,7 @@ public class NormalizerTreeIT {
       source = Paths.get(dwcaUrl.toURI());
       System.out.println("TEST " + format + " " + sourceKey);
       
-      store = NeoDbFactory.create(datasetKey, 1, cfg);
+      store = neoDbFactory.create(datasetKey, 1);
 
       DatasetWithSettings d = new DatasetWithSettings();
       d.setKey(datasetKey);
@@ -153,8 +156,6 @@ public class NormalizerTreeIT {
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       Normalizer norm = new Normalizer(d, store, source, NameIndexFactory.passThru(), ImageService.passThru(), validator, null);
       norm.call();
-      // reopen the neo db
-      store = NeoDbFactory.open(datasetKey, 1, cfg);
       //debug();
       
       // assert tree
@@ -186,9 +187,10 @@ public class NormalizerTreeIT {
       // queue non tree nodes
       String bareNames;
       try (Transaction tx = store.getNeo().beginTx()) {
-        bareNames = store.bareNameNodes()
+        bareNames = store.bareNames(tx)
             .map(NeoProperties::getRankedName)
             .map(RankedName::toString)
+            .stream()
             .sorted()
             .collect(Collectors.joining("\n"));
       }

@@ -1,5 +1,6 @@
 package life.catalogue.importer.neo.traverse;
 
+import java.util.Iterator;
 import java.util.List;
 
 import org.neo4j.graphdb.Node;
@@ -22,17 +23,28 @@ public class MultiRootPathIterator extends MultiRooIterator<Path> {
   }
   
   public static ResourceIterable<Path> create(final List<Node> roots, final TraversalDescription td) {
-    return new ResourceIterable<Path>() {
+    return new ResourceIterable<>() {
+      MultiRootPathIterator iter;
+      @Override
+      public void close() {
+        iter.close();
+      }
+
       @Override
       public ResourceIterator<Path> iterator() {
-        return new MultiRootPathIterator(roots, td);
+        iter = new MultiRootPathIterator(roots, td);
+        return iter;
       }
     };
   }
-  
+
   @Override
-  ResourceIterator<Path> iterateRoot(Node root) {
+  Iterator<Path> iterateRoot(Node root) {
     return td.traverse(root).iterator();
   }
-  
+
+  @Override
+  public void close() {
+    // nothing.
+  }
 }

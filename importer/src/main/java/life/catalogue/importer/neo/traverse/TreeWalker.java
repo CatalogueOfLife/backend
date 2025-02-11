@@ -125,7 +125,9 @@ public class TreeWalker {
     if (root != null) {
       return Lists.newArrayList(root);
     }
-    return org.neo4j.helpers.collection.Iterators.asList(db.findNodes(Labels.ROOT));
+    try (Transaction tx = db.beginTx()) {
+      return tx.findNodes(Labels.ROOT).stream().toList();
+    }
   }
   
   private static TraversalDescription filterRank(TraversalDescription td, @Nullable Rank lowestRank) {

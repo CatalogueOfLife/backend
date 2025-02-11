@@ -67,17 +67,19 @@ public class TaxonomicOrderExpander implements PathExpander {
   }
   
   @Override
-  public Iterable<Relationship> expand(Path path, BranchState state) {
-    List<Relationship> children = CHILDREN_ORDER.sortedCopy(path.endNode().getRelationships(RelType.PARENT_OF, Direction.OUTGOING));
+  public ResourceIterable<Relationship> expand(Path path, BranchState state) {
+    Iterable<Relationship> result;
+    List<Relationship> children = CHILDREN_ORDER.sortedCopy(path.endNode().getRelationships(Direction.OUTGOING, RelType.PARENT_OF));
     if (includeSynonyms) {
-      Iterable<Relationship> synResults = path.endNode().getRelationships(RelType.SYNONYM_OF, Direction.INCOMING);
-      return Iterables.concat(
+      ResourceIterable<Relationship> synResults = path.endNode().getRelationships(Direction.INCOMING, RelType.SYNONYM_OF);
+      result = Iterables.concat(
           SYNONYM_ORDER.sortedCopy(synResults),
           children
       );
     } else {
-      return children;
+      result = children;
     }
+    return NeoDbUtils.resourceIterable(result);
   }
   
   @Override

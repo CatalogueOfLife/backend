@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import life.catalogue.common.lang.Exceptions;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
@@ -19,13 +18,13 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,22 +32,11 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
-import org.neo4j.dbms.api.DatabaseManagementService;
-import org.neo4j.exceptions.KernelException;
-import org.neo4j.graphalgo.LabelPropagationProc;
-import org.neo4j.graphalgo.UnionFindProc;
 import org.neo4j.graphdb.*;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
-import org.neo4j.helpers.collection.Iterables;
-import org.neo4j.helpers.collection.Iterators;
-import org.neo4j.internal.kernel.api.exceptions.KernelException;
-import org.neo4j.kernel.impl.proc.Procedures;
-import org.neo4j.kernel.internal.GraphDatabaseAPI;
-import org.neo4j.unsafe.batchinsert.BatchInserter;
-import org.neo4j.unsafe.batchinsert.BatchInserters;
+import org.neo4j.internal.helpers.collection.Iterables;
+import org.neo4j.internal.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,20 +54,20 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  * Neo4j does not perform well storing large propLabel in its node and it is recommended to keep
  * large BLOBs or strings externally: https://neo4j.com/blog/dark-side-neo4j-worst-practices/
  * <p>
- * We use the Fury library for a very performant binary
+ * We use the Kryo library for a very performant binary
  * serialisation with the data keyed under the neo4j node value.
  */
-public class NeoDb {
+public class NeoDb implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
 
   private final int datasetKey;
   private final int attempt;
   private final String dbname;
-  private final DatabaseManagementService dbService;
   private final DB mapDb;
-  private final File neoDir;
+  private final File storeDir;
   private final Pool<Kryo> pool;
-  private BatchInserter inserter;
+  private final GraphDatabaseService neo;
+  private final Consumer<Integer> deleteFunc;
   public final int batchSize;
   public final int batchTimeout;
 
@@ -93,24 +81,26 @@ public class NeoDb {
 
   private final IdGenerator idGen = new IdGenerator("~");
 
-  private GraphDatabaseService neo;
   private final AtomicInteger neoCounter = new AtomicInteger(0);
   private Node devNullNode;
+  // only set during batch inserts
+  private Transaction batchTx;
 
 
   /**
    * @param mapDb
-   * @param neoDir
-   * @param dbService
+   * @param storeDir
+   * @param graphDB
    * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, int attempt, DB mapDb, File neoDir, DatabaseManagementService dbService, int batchSize, int batchTimeout) {
+  NeoDb(int datasetKey, int attempt, DB mapDb, File storeDir, GraphDatabaseService graphDB, Consumer<Integer> deleteFunc, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
     this.attempt = attempt;
-    this.dbname = "CLB" + datasetKey;
-    this.dbService = dbService;
-    this.neoDir = neoDir;
+    this.dbname = graphDB.databaseName();
+    this.neo = graphDB;
+    this.storeDir = storeDir;
     this.mapDb = mapDb;
+    this.deleteFunc = deleteFunc;
     this.batchSize = batchSize;
     this.batchTimeout = batchTimeout;
     
@@ -123,7 +113,7 @@ public class NeoDb {
       references = new ReferenceMapStore(mapDb, pool, this::addIssues);
       typeMaterial = new MapStore<>(TypeMaterial.class, "tm", mapDb, pool, this::addIssues);
 
-      openNeo();
+      initNeo4j();
 
       usages = new NeoUsageStore(mapDb, "usages", pool, idGen, this);
       
@@ -137,73 +127,64 @@ public class NeoDb {
   }
   
   /**
-   * Fully closes the dao leaving any potentially existing persistence files untouched.
+   * Fully closes the db and removes all its persistence files, leaving any potentially existing persistence files untouched.
    */
   public void close() {
+    LOG.info("Closing and deleting NeoDB {}", dbname);
+    if (batchTx !=null) {
+      batchTx.close();
+    }
     try {
       if (mapDb != null && !mapDb.isClosed()) {
         mapDb.close();
       }
     } catch (Exception e) {
-      LOG.error("Failed to close mapDb for directory {}", neoDir.getAbsolutePath(), e);
+      LOG.info("Failed to close mapDb for directory {}", storeDir.getAbsolutePath(), e);
     }
-    closeNeoQuietly();
-    // make sure we don't leave any batch inserter alive.
-    // Should have been closed, but we don't want to take the risk-
-    if (inserter != null) {
-      try {
-        inserter.shutdown();
-        LOG.warn("Batch inserter was not closed properly at {}. Closed now.", neoDir.getAbsolutePath());
-      } catch (IllegalStateException e) {
-        // it was closed already but somehow the instance was not removed;)
-      } finally {
-        inserter = null;
+
+    // remove neo4j from db server
+    deleteFunc.accept(datasetKey);
+
+    if (storeDir != null && storeDir.exists()) {
+      LOG.debug("Deleting storeDir {}", storeDir.getAbsolutePath());
+      FileUtils.deleteQuietly(storeDir);
+    }
+  }
+
+  public void startBatchTx() {
+    batchTx = neo.beginTx();
+  }
+  public void endBatchTx() {
+    batchTx.commit();
+    batchTx.close();
+  }
+
+  /**
+   * @return a node which is a dummy proxy only with just an id while we are in batch mode.
+   */
+  Node nodeById(long nodeId) {
+    if (batchTx !=null) {
+      return batchTx.getNodeById(nodeId);
+
+    } else {
+      try (var tx = neo.beginTx()) {
+        return tx.getNodeById(nodeId);
       }
     }
   }
-  
-  public void closeAndDelete() {
-    close();
-    if (neoDir != null && neoDir.exists()) {
-      LOG.debug("Deleting neo4j & mapDB directory {}", neoDir.getAbsolutePath());
-      FileUtils.deleteQuietly(neoDir);
-    }
-  }
-  
-  private void openNeo() {
-    LOG.debug("Starting embedded neo4j database from {}", neoDir.getAbsolutePath());
-    neo = dbService.database(dbname);
-    try {
-      GraphDatabaseAPI gdb = (GraphDatabaseAPI) neo;
-      gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(UnionFindProc.class);
-      gdb.getDependencyResolver().resolveDependency(Procedures.class).registerProcedure(LabelPropagationProc.class);
-      
-    } catch (KernelException e) {
-      LOG.warn("Unable to register neo4j algorithms", e);
-    }
 
+
+  private void initNeo4j() {
+    LOG.debug("Initialising neo4j database {}", dbname);
     // make sure we have a working devNull node
     try (Transaction tx = neo.beginTx()) {
-      ResourceIterator<Node> iter = neo.findNodes(Labels.DEV_NULL);
+      ResourceIterator<Node> iter = tx.findNodes(Labels.DEV_NULL);
       if (iter.hasNext()) {
         devNullNode = iter.next();
       } else {
-        devNullNode = neo.createNode(Labels.DEV_NULL);
+        devNullNode = tx.createNode(Labels.DEV_NULL);
       }
       tx.commit();
-    }
-  }
-
-  private void closeNeoQuietly() {
-    try {
-      if (dbService != null) {
-        dbService.shutdownDatabase(neo.databaseName());
-        dbService.shutdown();
-        LOG.debug("Closed NormalizerStore for directory {}", neoDir.getAbsolutePath());
-        neo = null;
-      }
-    } catch (Exception e) {
-      LOG.error("Failed to close neo4j {}", neoDir.getAbsolutePath(), e);
     }
   }
 
@@ -307,9 +288,9 @@ public class NeoDb {
    * Returns an iterator over all bare name nodes.
    * As we return a resource iterator make sure that there is an open neo transaction when you call this method.
    */
-  public ResourceIterator<Node> bareNames() {
+  public ResourceIterator<Node> bareNames(Transaction tx) {
     final String query = "MATCH (n:NAME) WHERE NOT (n)<-[:HAS_NAME]-() RETURN DISTINCT n";
-    Result result = neo.execute(query);
+    Result result = tx.execute(query);
     return result.columnAs("n");
   }
 
@@ -367,7 +348,7 @@ public class NeoDb {
 
     try (Transaction tx = neo.beginTx()){
       consThread.start();
-      final ResourceIterator<Node> iter = label == null ? neo.getAllNodes().iterator() : neo.findNodes(label);
+      final ResourceIterator<Node> iter = label == null ? tx.getAllNodes().iterator() : tx.findNodes(label);
       UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(iter, batchSize);
 
       while (batchIter.hasNext() && consThread.isAlive()) {
@@ -388,7 +369,7 @@ public class NeoDb {
       consThread.join();
       
       // mark good for commit
-      tx.success();
+      tx.commit();
       LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.getBatchCounter(), consumer.getRecordCounter());
       
     } catch (InterruptedException e) {
@@ -411,55 +392,7 @@ public class NeoDb {
       throw new InterruptedException("Neo thread was cancelled/interrupted");
     }
   }
-  
-  /**
-   * Shuts down the regular neo4j db and opens up neo4j in batch mode.
-   * While batch mode is active only writes will be accepted and reads from the store
-   * will throw exceptions.
-   */
-  public void startBatchMode() {
-    try {
-      closeNeoQuietly();
-      LOG.info("Open batch inserter for {}", neoDir);
-      inserter = BatchInserters.inserter(neoDir);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-  
-  public boolean isBatchMode() {
-    return inserter != null;
-  }
-  
-  public void endBatchMode() throws NotUniqueRuntimeException, InterruptedException {
-    LOG.info("Shutting down batch inserter for {} ...", neoDir);
-    try {
-      inserter.shutdown();
-    } catch (Exception e) {
-      // the BatchInserter shutdown flushes data to disk, so this involves blocking IO operations which can
-      // a) throw an interrupted exception during shutdown and
-      // b) throw some IOException, e.g. UnderlyingStorageException "No space left on device"
-      // We'll have to make sure the inserter is properly closed and all resources are free'd up.
-      // see https://github.com/CatalogueOfLife/backend/issues/1147 and https://github.com/CatalogueOfLife/backend/issues/1132
-      if (Exceptions.containsInstanceOf( e, InterruptedException.class)) {
-        LOG.warn("Shutdown of batch inserter was interrupted. Trying again", e);
-        try {
-          inserter.shutdown();
-        } catch (IllegalStateException ex) {
-          // Batch inserter already has shutdown - we are good, ignore
-        }
-        throw new InterruptedException("Shutdown of batch inserter was interrupted");
-      }
-      LOG.error("Shutdown of batch inserter failed", e);
-      throw e;
 
-    } finally {
-      inserter = null;
-    }
-    LOG.info("Neo batch inserter closed, data flushed to disk");
-    openNeo();
-  }
-  
   /**
    * Creates both a name and a usage neo4j node.
    * The name node is returned while the usage node is set on the NeoUsage object.
@@ -533,17 +466,20 @@ public class NeoDb {
   }
 
   Node createNode(PropLabel data) {
+    // create neo4j node and update its propLabel
     Node n;
-    if (isBatchMode()) {
-      // batch insert normalizer propLabel used during normalization
-      long nodeId = inserter.createNode(data, data.getLabels());
-      n = new NodeMock(nodeId);
+    if (batchTx == null) {
+      n = batchTx.createNode(data.getLabels());
+
     } else {
-      // create neo4j node and update its propLabel
-      n = neo.createNode(data.getLabels());
-      NeoDbUtils.addProperties(n, data);
+      try (var tx = neo.beginTx()) {
+        n = tx.createNode(data.getLabels());
+      }
     }
-    neoCounter.incrementAndGet();
+    NeoDbUtils.addProperties(n, data);
+    if (batchTx != null && neoCounter.incrementAndGet() % batchSize == 0) {
+      batchTx.commit();
+    }
     return n;
   }
   
@@ -552,22 +488,9 @@ public class NeoDb {
    */
   void updateNode(long nodeId, PropLabel data) {
     if (!data.isEmpty()) {
-      if (isBatchMode()) {
-        if (data.getLabels() != null) {
-          Label[] all = ArrayUtils.addAll(data.getLabels(),
-              com.google.common.collect.Iterables.toArray(inserter.getNodeLabels(nodeId), Label.class)
-          );
-          inserter.setNodeLabels(nodeId, all);
-        }
-        if (data.size()>0) {
-          data.putAll(inserter.getNodeProperties(nodeId));
-          inserter.setNodeProperties(nodeId, data);
-        }
-      } else {
-        Node n = neo.getNodeById(nodeId);
-        NeoDbUtils.addProperties(n, data);
-        NeoDbUtils.addLabels(n, data.getLabels());
-      }
+      Node n = nodeById(nodeId);
+      NeoDbUtils.addProperties(n, data);
+      NeoDbUtils.addLabels(n, data.getLabels());
     }
   }
   
@@ -575,20 +498,9 @@ public class NeoDb {
    * Updates a node by adding properties and/or labels
    */
   void createRel(Node node1, Node node2, RelationshipType type) {
-      if (isBatchMode()) {
-        inserter.createRelationship(node1.getId(), node2.getId(), type, null);
-      } else {
-        node1.createRelationshipTo(node2, type);
-      }
+      node1.createRelationshipTo(node2, type);
   }
-  
-  /**
-   * @return a node which is a dummy proxy only with just an id while we are in batch mode.
-   */
-  Node nodeById(long nodeId) {
-    return isBatchMode() ? new NodeMock(nodeId) : neo.getNodeById(nodeId);
-  }
-  
+
   /**
    * Creates or updates a verbatim record.
    * If created a new key is issued.
@@ -609,12 +521,8 @@ public class NeoDb {
    */
   public void createNeoRel(Node n1, Node n2, NeoRel rel) {
     Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
-    if (isBatchMode()) {
-      inserter.createRelationship(n1.getId(), n2.getId(), rel.getType(), props);
-    } else {
-      Relationship r = n1.createRelationshipTo(n2, rel.getType());
-      NeoDbUtils.addProperties(r, props);
-    }
+    Relationship r = n1.createRelationshipTo(n2, rel.getType());
+    NeoDbUtils.addProperties(r, props);
   }
 
   /**
@@ -679,22 +587,13 @@ public class NeoDb {
   public Stream<VerbatimRecord> verbatimList(Term rowType) {
     return verbatim.values().stream().filter(v -> v.getType().equals(rowType));
   }
-
-  /**
-   * @return a stream of name nodes which have no has_name relation to any usage
-   */
-  public Stream<Node> bareNameNodes() {
-    final String query = "MATCH (n:NAME) WHERE NOT (n)<-[:HAS_NAME]-() RETURN n";
-    Result result = neo.execute(query);
-    return result.<Node>columnAs("n").stream();
-  }
   
   /**
    * overlay neo4j relations to NeoTaxon instances
    */
   private void updateTaxonStoreWithRelations() {
     try (Transaction tx = getNeo().beginTx()) {
-      for (Node n : Iterators.loop(getNeo().findNodes(Labels.TAXON))) {
+      for (Node n : Iterators.loop(tx.findNodes(Labels.TAXON))) {
         NeoUsage u = usages().objByNode(n);
         if (!u.node.hasLabel(Labels.ROOT)){
           // parent
@@ -705,9 +604,9 @@ public class NeoDb {
         // store the updated object
         usages().update(u);
       }
-      tx.success();
+      tx.commit();
   
-      for (Node n : Iterators.loop(getNeo().findNodes(Labels.SYNONYM))) {
+      for (Node n : Iterators.loop(tx.findNodes(Labels.SYNONYM))) {
         NeoUsage u = usages().objByNode(n);
         if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
           LOG.error("Taxon to Synonym conversion in neo4j needed for {}", u.usage);
@@ -716,7 +615,7 @@ public class NeoDb {
         // store the updated object
         usages().update(u);
       }
-      tx.success();
+      tx.commit();
     }
   }
   
@@ -730,7 +629,7 @@ public class NeoDb {
     } catch (NotFoundException e) {
       // thrown in case of multiple relations, debug
       LOG.debug("Multiple {} {} relations found for {}: {}", dir, type, n, NeoProperties.getScientificNameWithAuthor(n));
-      for (Relationship rel : n.getRelationships(type, dir)) {
+      for (Relationship rel : n.getRelationships(dir, type)) {
         Node other = rel.getOtherNode(n);
         LOG.debug("  {} {}/{}",
             dir == Direction.INCOMING ? "<-- "+type.abbrev+" --" : "-- "+type.abbrev+" -->",
@@ -822,8 +721,8 @@ public class NeoDb {
   
   private long updateLabel(String query) {
     try (Transaction tx = neo.beginTx()) {
-      Result result = neo.execute(query);
-      tx.success();
+      Result result = tx.execute(query);
+      tx.commit();
       if (result.hasNext()) {
         return (Long) result.next().values().iterator().next();
       } else {
@@ -836,21 +735,21 @@ public class NeoDb {
    * Returns an iterator over all relations of a given type.
    * Requires a valid neo transaction to exist outside of this method call.
    */
-  public ResourceIterator<Relationship> iterRelations(RelType type) {
+  public ResourceIterator<Relationship> iterRelations(Transaction tx, RelType type) {
     String query = "MATCH ()-[rel:" + type.name() + "]->() RETURN rel";
-    Result result = neo.execute(query);
+    Result result = tx.execute(query);
     return result.columnAs("rel");
   }
   
   public void assignParent(Node parent, Node child) {
     // avoid self referencing loops
     if (parent != null && !parent.equals(child)) {
-      if (child.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+      if (child.hasRelationship(Direction.INCOMING, RelType.PARENT_OF)) {
         // override existing parent!
         Node oldParent = null;
-        for (Relationship r : child.getRelationships(RelType.PARENT_OF, Direction.INCOMING)) {
+        for (Relationship r : child.getRelationships(Direction.INCOMING, RelType.PARENT_OF)) {
           Node p = r.getOtherNode(child);
-          if (p.getId() != parent.getId()) {
+          if (!p.getElementId().equals(parent.getElementId())) {
             if (oldParent != null) {
               throw new IllegalStateException(NeoProperties.getScientificNameWithAuthorFromUsage(child) +
                   " has multiple parents including " +
@@ -897,18 +796,18 @@ public class NeoDb {
     synonym.addLabel(Labels.SYNONYM);
     synonym.removeLabel(Labels.TAXON);
     // potentially move the parent relationship of the synonym
-    if (synonym.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+    if (synonym.hasRelationship(Direction.INCOMING, RelType.PARENT_OF)) {
       try {
         Relationship rel = synonym.getSingleRelationship(RelType.PARENT_OF, Direction.INCOMING);
         if (rel != null) {
           // check if accepted has a parent relation already
-          if (!accepted.hasRelationship(RelType.PARENT_OF, Direction.INCOMING)) {
+          if (!accepted.hasRelationship(Direction.INCOMING, RelType.PARENT_OF)) {
             assignParent(rel.getStartNode(), accepted);
           }
         }
       } catch (RuntimeException e) {
         // more than one parent relationship exists, should never be the case, sth wrong!
-        LOG.error("Synonym {} has multiple parent relationships!", synonym.getId());
+        LOG.error("Synonym {} has multiple parent relationships!", synonym.getElementId());
         //for (Relationship r : synonym.getRelationships(RelType.PARENT_OF)) {
         //  r.delete();
         //}
@@ -932,7 +831,7 @@ public class NeoDb {
    * Get the name object for a usage via its HasName relation.
    */
   public List<NeoUsage> usagesByName(final Node nameNode) {
-    return Iterables.stream(nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING))
+    return Iterables.stream(nameNode.getRelationships(Direction.INCOMING, RelType.HAS_NAME))
         .map(rel -> usages().objByNode(rel.getOtherNode(nameNode)))
         .collect(Collectors.toList());
   }
@@ -942,7 +841,7 @@ public class NeoDb {
    */
   public List<Node> usageNodesByName(final Node nameNode) {
     List<Node> usages = new ArrayList<>();
-    nameNode.getRelationships(RelType.HAS_NAME, Direction.INCOMING).forEach(
+    nameNode.getRelationships(Direction.INCOMING, RelType.HAS_NAME).forEach(
         un -> usages.add(un.getOtherNode(nameNode))
     );
     return usages;
@@ -952,7 +851,7 @@ public class NeoDb {
    * List all accepted taxa of a potentially prop parte synonym
    */
   public List<RankedUsage> accepted(Node synonym) {
-    return Traversals.ACCEPTED.traverse(synonym).nodes().stream()
+    return Iterables.stream(Traversals.ACCEPTED.traverse(synonym).nodes())
         .map(NeoProperties::getRankedUsage)
         .collect(Collectors.toList());
   }
@@ -961,7 +860,7 @@ public class NeoDb {
    * List all accepted taxa of a potentially prop parte synonym
    */
   public List<RankedUsage> parents(Node child) {
-    return Traversals.PARENTS.traverse(child).nodes().stream()
+    return Iterables.stream(Traversals.PARENTS.traverse(child).nodes())
         .map(NeoProperties::getRankedUsage)
         .collect(Collectors.toList());
   }
@@ -1024,6 +923,9 @@ public class NeoDb {
       LOG.warn("The inserted dataset contains {} duplicate taxonIds! Only the first record will be used", usages().getDuplicateCounter());
     }
   }
-  
+
+  public boolean isBatchMode() {
+    return batchTx != null;
+  }
 }
 

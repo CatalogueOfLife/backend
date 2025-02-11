@@ -3,6 +3,8 @@ package life.catalogue.importer.neo.printer;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.txtree.Tree;
 
 import java.io.IOException;
@@ -10,7 +12,6 @@ import java.io.Writer;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.parboiled.common.StringUtils;
 
 /**
  * A handler that can be used with the TaxonWalker to print a neo4j taxonomy in a simple nested text structure.
@@ -65,7 +66,7 @@ public class TxtPrinter extends BasePrinter {
           //writer.write(Tree.SYNONYM_SYMBOL);
         }
       }
-      if (u.nameNode.hasRelationship(RelType.HAS_BASIONYM, Direction.INCOMING)) {
+      if (u.nameNode.hasRelationship(Direction.INCOMING, RelType.HAS_BASIONYM)) {
         writer.write(Tree.BASIONYM_SYMBOL);
       }
       writer.write(u.name);

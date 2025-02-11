@@ -52,6 +52,7 @@ abstract class NormalizerITBase {
   protected NeoDb store;
   private int attempt;
   protected NormalizerConfig cfg;
+  protected NeoDbFactory neoDbFactory;
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
   protected DatasetWithSettings dws;
@@ -73,15 +74,18 @@ abstract class NormalizerITBase {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     attempt = 1;
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
   }
 
   @After
   public void cleanup() throws Exception {
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
     }
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
+    neoDbFactory.stop();
   }
 
   public void normalizeExcel(String filename, NomCode code) throws Exception {
@@ -110,9 +114,10 @@ abstract class NormalizerITBase {
 
       String bareNames;
       try (Transaction tx = store.getNeo().beginTx()) {
-        bareNames = store.bareNameNodes()
+        bareNames = store.bareNames(tx)
                          .map(NeoProperties::getRankedName)
                          .map(RankedName::toString)
+                         .stream()
                          .sorted()
                          .collect(Collectors.joining("\n"));
       }
@@ -182,7 +187,7 @@ abstract class NormalizerITBase {
   
   protected void normalize(Path arch, @Nullable DatasetSettings settings) {
     try {
-      store = NeoDbFactory.create(1, attempt, cfg);
+      store = neoDbFactory.create(1, attempt);
       dws = new DatasetWithSettings();
       dws.setKey(store.getDatasetKey());
       if (settings != null) {
@@ -193,11 +198,8 @@ abstract class NormalizerITBase {
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       Normalizer norm = new Normalizer(dws, store, arch, nameIndexSupplier.get(), ImageService.passThru(), validator, null);
       norm.call();
-    
-      // reopen
-      store = NeoDbFactory.open(1, attempt,  cfg);
-    
-    } catch (IOException | InterruptedException e) {
+
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
 
     } finally {

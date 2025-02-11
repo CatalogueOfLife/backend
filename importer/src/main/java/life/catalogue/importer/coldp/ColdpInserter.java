@@ -157,7 +157,7 @@ public class ColdpInserter extends NeoCsvInserter {
       if (rt.isSpeciesInteraction()) {
         int counter = 0;
         try (Transaction tx = store.getNeo().beginTx();
-             var iter = store.iterRelations(rt)
+             var iter = store.iterRelations(tx, rt)
         ) {
           while (iter.hasNext()) {
             var rel = iter.next();
@@ -179,7 +179,7 @@ public class ColdpInserter extends NeoCsvInserter {
               store.addIssues(vkey, Issue.RELATED_NAME_MISSING);
             }
           }
-          tx.success();
+          tx.commit();
         }
         if (counter > 0) {
           LOG.info("Added related names for {} {} interactions", counter, rt.specInterType);

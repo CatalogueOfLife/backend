@@ -146,7 +146,7 @@ public class AcefInserter extends NeoCsvInserter {
   protected void postBatchInsert() throws NormalizationFailedException, InterruptedException {
     try (Transaction tx = store.getNeo().beginTx()){
       reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
-      tx.success();
+      tx.commit();
 
     } catch (InterruptedRuntimeException e) {
       throw new InterruptedException(e.getMessage());
@@ -173,7 +173,7 @@ public class AcefInserter extends NeoCsvInserter {
           }
         }
       }
-      tx.success();
+      tx.commit();
 
     } catch (InterruptedRuntimeException e) {
       throw new InterruptedException(e.getMessage());

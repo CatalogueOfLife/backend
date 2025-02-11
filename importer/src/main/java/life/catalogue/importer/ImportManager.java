@@ -25,6 +25,7 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
@@ -80,6 +81,7 @@ public class ImportManager implements Managed, Idle {
   private final SqlSessionFactory factory;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
+  private final NeoDbFactory neoDbFactory;
 
   private final JobExecutor jobExecutor;
   private final EventBus bus;
@@ -103,6 +105,7 @@ public class ImportManager implements Managed, Idle {
     this.validator = validator;
     this.resolver = resolver;
     this.jobExecutor = jobExecutor;
+    this.neoDbFactory = new NeoDbFactory(nCfg);
     this.downloader = new DownloadUtil(client, iCfg.githubToken, iCfg.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
@@ -437,10 +440,9 @@ public class ImportManager implements Managed, Idle {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, downloader, factory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
-        () -> req.start(),
-          this::successCallBack,
-          this::errorCallBack);
+      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, downloader, factory, neoDbFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
+        req::start, this::successCallBack, this::errorCallBack
+      );
     }
   }
 
@@ -473,11 +475,12 @@ public class ImportManager implements Managed, Idle {
   }
 
   @Override
-  public void start() {
+  public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         iCfg.threads,
         iCfg.maxQueue);
 
+    neoDbFactory.start();
     exec = new PBQThreadPoolExecutor<>(iCfg.threads,
         60L,
         TimeUnit.SECONDS,
@@ -493,7 +496,7 @@ public class ImportManager implements Managed, Idle {
   }
 
   @Override
-  public void stop() {
+  public void stop() throws Exception {
     // orderly shutdown running imports
     for (Future f : futures.values()) {
       f.cancel(true);
@@ -503,6 +506,8 @@ public class ImportManager implements Managed, Idle {
       exec.stop();
       exec = null;
     }
+    // finally shutdown neo server
+    neoDbFactory.stop();
   }
 
   @Override

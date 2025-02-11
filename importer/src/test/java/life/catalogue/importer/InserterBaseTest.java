@@ -24,6 +24,7 @@ public abstract class InserterBaseTest {
   protected NeoDb store;
   protected ReferenceFactory refFactory;
   protected NormalizerConfig cfg;
+  private NeoDbFactory neoDbFactory;
 
   
   @Before
@@ -31,15 +32,18 @@ public abstract class InserterBaseTest {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
   }
   
   @After
   public void cleanup() throws Exception {
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
     }
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
+    neoDbFactory.stop();
   }
 
   protected NeoInserter setup(String resource) {
@@ -54,7 +58,7 @@ public abstract class InserterBaseTest {
     try {
       d = new DatasetWithSettings();
       d.setKey(1);
-      store = NeoDbFactory.create(d.getKey(), 1, cfg);
+      store = neoDbFactory.create(d.getKey(), 1);
       refFactory = new ReferenceFactory(d.getKey(), store.references(), null);
 
       return newInserter(path, d.getSettings());

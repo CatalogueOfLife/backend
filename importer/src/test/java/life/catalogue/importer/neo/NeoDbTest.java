@@ -32,31 +32,35 @@ import static org.junit.Assert.assertNull;
 public class NeoDbTest {
   private final int datasetKey = RandomUtils.randomInt();
   private final static NormalizerConfig cfg = new NormalizerConfig();
-  
+  private static NeoDbFactory neoDbFactory;
+
   NeoDb db;
   
   @BeforeClass
-  public static void initRepo() {
+  public static void initRepo() throws Exception {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    neoDbFactory = new NeoDbFactory(cfg);
+    neoDbFactory.start();
   }
   
   @Before
   synchronized
   public void init() throws IOException {
     System.out.println("Use datasetKey "+datasetKey);
-    db = NeoDbFactory.create(datasetKey, 1, cfg);
+    db = neoDbFactory.create(datasetKey, 1);
   }
   
   @After
   public void destroy() {
     if (db != null) {
-      db.closeAndDelete();
+      db.close();
     }
   }
   
   @AfterClass
-  public static void destroyRepo() {
+  public static void destroyRepo() throws Exception {
+    neoDbFactory.stop();
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
@@ -95,17 +99,19 @@ public class NeoDbTest {
             "  (nH)-[:TYPE]->(nI)";
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      db.getNeo().execute(createGraph).close();
-      tx.success();
+      tx.execute(createGraph).close();
+      tx.commit();
     }
     
     // graphImpl: Heavy, Light, Huge, Kernel
     String graphImpl = "Heavy";
-    db.getNeo().execute("CALL algo.unionFind('', '',{graph:'" + graphImpl + "'}) YIELD setCount")
-        .accept((Result.ResultVisitor<Exception>) row -> {
-          assertEquals(4L, row.getNumber("setCount"));
-          return true;
-        });
+    try (Transaction tx = db.getNeo().beginTx()) {
+      tx.execute("CALL algo.unionFind('', '',{graph:'" + graphImpl + "'}) YIELD setCount")
+          .accept((Result.ResultVisitor<Exception>) row -> {
+            assertEquals(4L, row.getNumber("setCount"));
+            return true;
+          });
+    }
   }
   
   @Test
@@ -127,7 +133,7 @@ public class NeoDbTest {
       u1.node.createRelationshipTo(u2.node, RelType.PARENT_OF);
       u2.nameNode.createRelationshipTo(u1.nameNode, RelType.HAS_BASIONYM);
 
-      tx.success();
+      tx.commit();
     }
     db.sync();
     
@@ -165,7 +171,7 @@ public class NeoDbTest {
           p2.node.createRelationshipTo(u.node, RelType.PARENT_OF);
         }
       }
-      tx.success();
+      tx.commit();
     }
     db.sync();
 
@@ -203,7 +209,7 @@ public class NeoDbTest {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoUsage u = taxon("id1");
       db.createNameAndUsage(u);
-      tx.success();
+      tx.commit();
     }
     db.sync();
     
@@ -240,7 +246,7 @@ public class NeoDbTest {
       r.setCitation("Mandarin:哦诶艾诶艾哦屁杰诶  Japanese:ｪｺｻｪ ｷｼｪｩｪ ｺｪｹ ｻｼ ｴｮｨｱ  Other: ወለi էዠለi   mබƖ tƕබƖ   ꀪꋬꊛ ꓄ꈚꋬꊛ");
       db.references().create(r);
 
-      tx.success();
+      tx.commit();
     }
   }
 

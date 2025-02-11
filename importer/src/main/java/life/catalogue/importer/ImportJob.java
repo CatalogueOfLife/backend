@@ -85,6 +85,7 @@ public class ImportJob implements Runnable {
   private final SectorDao sDao;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
+  private final NeoDbFactory neoDbFactory;
   private final ImageService imgService;
   private final Validator validator;
   private final DoiResolver resolver;
@@ -96,7 +97,7 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
+            DownloadUtil downloader, SqlSessionFactory factory, NeoDbFactory neoDbFactory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBus bus,
             StartNotifier notifier,
@@ -112,6 +113,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.resolver = resolver;
     this.distributedArchiveService = new DistributedArchiveService(downloader.getClient());
+    this.neoDbFactory = neoDbFactory;
     this.factory = factory;
     this.index = index;
     this.indexService = indexService;
@@ -321,51 +323,50 @@ public class ImportJob implements Runnable {
     LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
 
     final Path sourceDir = nCfg.sourceDir(datasetKey).toPath();
-    NeoDb store = null;
-
     try {
       final boolean doImport = prepareSourceData(sourceDir);
       if (doImport) {
-        LOG.info("Normalizing {}", datasetKey);
-        updateState(ImportState.PROCESSING);
-        store = NeoDbFactory.create(datasetKey, getAttempt(), nCfg);
-        new Normalizer(dataset, store, sourceDir, index, imgService, validator, resolver).call();
-  
-        LOG.info("Fetching logo for {}", datasetKey);
-        LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, nCfg::scratchFile, imgService, req.createdBy);
-        
-        LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
-        updateState(ImportState.INSERTING);
-        store = NeoDbFactory.open(datasetKey, getAttempt(), nCfg);
-        // this does write to both pg and elastic!
-        var pgImport = new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
-        pgImport.call();
+        try (NeoDb store = neoDbFactory.create(datasetKey, getAttempt())) {
+          LOG.info("Normalizing {}", datasetKey);
+          updateState(ImportState.PROCESSING);
 
-        LOG.info("Build import metrics for dataset {}", datasetKey);
-        updateState(ImportState.ANALYZING);
-        di.setMaxClassificationDepth(pgImport.getMaxDepth());
-        dao.updateMetrics(di, datasetKey);
+          new Normalizer(dataset, store, sourceDir, index, imgService, validator, resolver).call();
 
-        bus.post(new DatasetDataChanged(datasetKey));
+          LOG.info("Fetching logo for {}", datasetKey);
+          LogoUpdateJob.updateDatasetAsync(dataset.getDataset(), factory, downloader, nCfg::scratchFile, imgService, req.createdBy);
 
-        if (rematchDecisions()) {
-          updateState(ImportState.MATCHING);
-          LOG.info("Rematching all decisions from any project for subject dataset {}", datasetKey);
-          for (Integer projectKey : decisionDao.listProjects(datasetKey)) {
-            DecisionRematcher.match(decisionDao, new DecisionRematchRequest(projectKey, datasetKey, false), req.createdBy);
+          LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
+          updateState(ImportState.INSERTING);
+          // this does write to both pg and elastic!
+          var pgImport = new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
+          pgImport.call();
+
+          LOG.info("Build import metrics for dataset {}", datasetKey);
+          updateState(ImportState.ANALYZING);
+          di.setMaxClassificationDepth(pgImport.getMaxDepth());
+          dao.updateMetrics(di, datasetKey);
+
+          bus.post(new DatasetDataChanged(datasetKey));
+
+          if (rematchDecisions()) {
+            updateState(ImportState.MATCHING);
+            LOG.info("Rematching all decisions from any project for subject dataset {}", datasetKey);
+            for (Integer projectKey : decisionDao.listProjects(datasetKey)) {
+              DecisionRematcher.match(decisionDao, new DecisionRematchRequest(projectKey, datasetKey, false), req.createdBy);
+            }
+            LOG.info("Rematching all sectors from any project for subject dataset {}", datasetKey);
+            for (Integer projectKey : sDao.listProjects(datasetKey)) {
+              SectorRematcher.match(sDao, new SectorRematchRequest(projectKey, datasetKey), req.createdBy);
+            }
           }
-          LOG.info("Rematching all sectors from any project for subject dataset {}", datasetKey);
-          for (Integer projectKey : sDao.listProjects(datasetKey)) {
-            SectorRematcher.match(sDao, new SectorRematchRequest(projectKey, datasetKey), req.createdBy);
-          }
+
+          LOG.info("Dataset import {} completed in {}", datasetKey,
+              DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
+          di.setFinished(LocalDateTime.now());
+          di.setError(null);
+          updateState(ImportState.FINISHED);
         }
 
-        LOG.info("Dataset import {} completed in {}", datasetKey,
-            DurationFormatUtils.formatDurationHMS(Duration.between(di.getStarted(), LocalDateTime.now()).toMillis()));
-        di.setFinished(LocalDateTime.now());
-        di.setError(null);
-        updateState(ImportState.FINISHED);
-  
       } else {
         LOG.info("Dataset {} sources unchanged. Stop import", datasetKey);
         dao.delete(datasetKey, di.getAttempt());
@@ -394,10 +395,6 @@ public class ImportJob implements Runnable {
       throw e;
       
     } finally {
-      // close neo store if open
-      if (store != null) {
-        store.close();
-      }
       // remove source scratch folder with neo4j and decompressed dwca folders
       final File scratchDir = nCfg.scratchDir(datasetKey);
       LOG.debug("Remove scratch dir {}", scratchDir.getAbsolutePath());

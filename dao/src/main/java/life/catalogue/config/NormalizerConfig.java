@@ -113,10 +113,10 @@ public class NormalizerConfig {
     return new File(scratchDir, "job/" + jobKey.toString());
   }
 
-  public File neoDir(int datasetKey) {
-    return new File(scratchDir(datasetKey), "normalizer");
+  public File neoDir() {
+    return scratchDir("neo4j");
   }
-  
+
   /**
    * Directory with all decompressed source files
    */
