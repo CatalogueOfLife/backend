@@ -14,6 +14,18 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-02-12 add missing export fields
+```
+CREATE TYPE TABFORMAT AS ENUM (
+  'CSV',
+  'TSV'
+);
+
+ALTER TABLE dataset_export ADD COLUMN add_classification BOOLEAN NOT NULL; 
+ALTER TABLE dataset_export ADD COLUMN tab_format TABFORMAT;
+UPDATE dataset_export SET add_classification=false; 
+```
+
 #### 2025-01-20 move release settings to file
 ```
 UPDATE dataset SET settings = ((((((((((settings - 'release alias template') 

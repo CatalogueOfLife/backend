@@ -33,9 +33,9 @@ public class DwcTreePrinter extends AbstractTreePrinter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcTreePrinter.class);
   private static final Term T_GROUP = UnknownTerm.build("https://terms.checklistbank.org/taxGroupFromName", false);
   private static final Term T_GROUP_ANALYZED = UnknownTerm.build("https://terms.checklistbank.org/taxGroup", false);
-  protected TermWriter tw;
-  protected boolean showTaxGroups;
+  private boolean showTaxGroups = false;
   private static final TaxGroupAnalyzer tgAnalyzer = new TaxGroupAnalyzer();
+  private TermWriter tw;
 
   public DwcTreePrinter(TreeTraversalParameter params, @Nullable  Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
@@ -43,19 +43,26 @@ public class DwcTreePrinter extends AbstractTreePrinter {
     super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
   }
 
+  public void showTaxGroups() throws IOException {
+    this.showTaxGroups = true;
+  }
+
   /**
-   * MUST be called before the printer accepted usages
-   * @param showTaxGroups
+   * We postpone initialising the writer so we can add columns still once the constructor was called.
    */
-  public void initWriter(boolean showTaxGroups) throws IOException {
-    this.showTaxGroups = showTaxGroups;
+  private void initWriter() throws IOException {
     tw = new TermWriter(new TabWriter(writer), DwcTerm.Taxon,
-      ListUtils.union(DwcaPrinter.COLUMNS, showTaxGroups ? List.of(DwcTerm.higherClassification, T_GROUP, T_GROUP_ANALYZED) : List.of(DwcTerm.higherClassification))
+      ListUtils.union(DwcaPrinter.COLUMNS, showTaxGroups ?
+        List.of(DwcTerm.higherClassification, T_GROUP, T_GROUP_ANALYZED) :
+        List.of(DwcTerm.higherClassification))
     );
   }
 
   @Override
   protected void start(SimpleName sn) throws IOException {
+    if (tw == null) {
+      initWriter();
+    }
     DwcaPrinter.writeSimpleColumns(sn, tw);
     List<SimpleName> cl = parents.stream().map(s -> s.sn).collect(Collectors.toList());
     tw.set(DwcTerm.higherClassification, cl.stream().map(SimpleName::getName).collect(Collectors.joining(";")));
@@ -77,4 +84,11 @@ public class DwcTreePrinter extends AbstractTreePrinter {
     // nada
   }
 
+  @Override
+  public void close() throws IOException {
+    if (tw == null) {
+      initWriter();
+    }
+    super.close();
+  }
 }

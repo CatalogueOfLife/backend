@@ -34,7 +34,7 @@ public class DwcTreePrinterTest {
   public void print() throws IOException {
     Writer writer = new StringWriter();
     DwcTreePrinter printer = PrinterFactory.dataset(DwcTreePrinter.class, testDataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
-    printer.initWriter(true);
+    printer.showTaxGroups();
     int count = printer.print();
     assertEquals(34, count);
     String expected = UTF8IoUtils.readString(Resources.stream("trees/dwc-tg-tree.tsv"));

@@ -4,6 +4,8 @@ import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
 
+import life.catalogue.api.vocab.TabularFormat;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
@@ -29,6 +31,9 @@ public class ExportSearchRequest {
   @QueryParam("format")
   private DataFormat format;
 
+  @QueryParam("tabFormat")
+  private TabularFormat tabFormat;
+
   @QueryParam("taxonID")
   private String taxonID; // NULL requires taxonID to be null in the export
 
@@ -49,6 +54,9 @@ public class ExportSearchRequest {
 
   @QueryParam("extinct")
   private Boolean extinct;// NULL requires extinct to be null in the export
+
+  @QueryParam("addClassification")
+  private Boolean addClassification;
 
   /**
    * Matches complete exports of a dataset not in Excel which have finished successfully and regardless of their format
@@ -75,6 +83,7 @@ public class ExportSearchRequest {
   public ExportSearchRequest(ExportRequest req) {
     datasetKey = req.getDatasetKey();
     format = req.getFormat();
+    tabFormat = req.getTabFormat();
     if (req.getRoot() != null) {
       taxonID = req.getRoot().getId();
     }
@@ -84,6 +93,7 @@ public class ExportSearchRequest {
     extended = req.isExtended();
     synonyms = req.isSynonyms();
     extinct = req.getExtinct();
+    addClassification = req.isAddClassification();
   }
 
   public Integer getDatasetKey() {
@@ -122,6 +132,14 @@ public class ExportSearchRequest {
     this.format = format;
   }
 
+  public TabularFormat getTabFormat() {
+    return tabFormat;
+  }
+
+  public void setTabFormat(TabularFormat tabFormat) {
+    this.tabFormat = tabFormat;
+  }
+
   public String getTaxonID() {
     return taxonID;
   }
@@ -152,6 +170,14 @@ public class ExportSearchRequest {
 
   public void setExtended(Boolean extended) {
     this.extended = extended;
+  }
+
+  public Boolean getAddClassification() {
+    return addClassification;
+  }
+
+  public void setAddClassification(Boolean addClassification) {
+    this.addClassification = addClassification;
   }
 
   public Boolean getExcel() {

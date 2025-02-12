@@ -632,6 +632,10 @@ CREATE TYPE USER_ROLE AS ENUM (
   'ADMIN'
 );
 
+CREATE TYPE TABFORMAT AS ENUM (
+  'CSV',
+  'TSV'
+);
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
@@ -934,12 +938,14 @@ CREATE TABLE dataset_export (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
+  tab_format TABFORMAT,
   root SIMPLE_NAME,
   min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
   excel BOOLEAN NOT NULL,
   extended BOOLEAN NOT NULL,
+  add_classification BOOLEAN NOT NULL,
   extinct BOOLEAN,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 
