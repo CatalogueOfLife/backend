@@ -15,6 +15,8 @@ import life.catalogue.img.ImageService;
 
 import java.util.UUID;
 
+import life.catalogue.printer.DwcTreePrinter;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -83,7 +85,9 @@ public class ExportManager {
         break;
       case DWCA:
         job = req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
-                                DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
+                    req.isAddClassification() ?
+                      new DwcTreeExport(req, userKey, factory, cfg, imageService) :
+                      DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
         job = new AcefExport(req, userKey, factory, cfg, imageService);

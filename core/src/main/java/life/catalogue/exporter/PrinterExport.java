@@ -45,7 +45,7 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
 
   abstract protected String filename();
 
-  void modifyPrinter(T printer) {
+  void modifyPrinter(T printer) throws Exception {
     // nothing by default
   }
 
