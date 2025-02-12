@@ -21,6 +21,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.neo4j.configuration.GraphDatabaseSettings.DEFAULT_DATABASE_NAME;
+
 /**
  * A factory for persistent & temporary, volatile neodb instances.
  * The factory runs a dedicated DatabaseManagementService and should be a singleton.
@@ -43,7 +45,7 @@ public class NeoDbFactory implements Managed {
   }
 
   private File dbDir(int datasetKey) {
-    return dir.resolve(dbName(datasetKey)).toFile();
+    return dir.resolve(String.valueOf(datasetKey)).toFile();
   }
   
   /**
@@ -52,10 +54,9 @@ public class NeoDbFactory implements Managed {
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
   public NeoDb create(int datasetKey, int attempt) {
-    final var name = dbName(datasetKey);
     final File storeDir = dbDir(datasetKey); // only used for mapdb, not neo!
     try {
-      LOG.info("Create neodb {} with storage at {}", name, storeDir);
+      LOG.info("Create new neodb {} with storage at {}", datasetKey, storeDir);
 
       if (storeDir.exists()) {
         FileUtils.deleteQuietly(storeDir);
@@ -70,16 +71,8 @@ public class NeoDbFactory implements Managed {
         .fileDB(mapDbFile)
         .fileMmapEnableIfSupported();
 
-      GraphDatabaseService graphDb;
-      try {
-        service.createDatabase( name );
-      } catch (DatabaseExistsException e) {
-        LOG.debug("Removing previous neo4j database {} from {}", name, storeDir.getAbsolutePath());
-        service.dropDatabase(name);
-        service.createDatabase( name );
-      }
-      graphDb = service.database( name );
-      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, graphDb, this::delete, cfg.batchSize, cfg.batchTimeout);
+      GraphDatabaseService graphDb = service.database( DEFAULT_DATABASE_NAME );
+      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, graphDb, cfg.batchSize, cfg.batchTimeout);
 
     } catch (RuntimeException e) {
       // can be caused by interruption in mapdb
@@ -88,16 +81,6 @@ public class NeoDbFactory implements Managed {
         throw new InterruptedRuntimeException("Failed to create NeoDB, thread was interrupted", e);
       }
       throw new IllegalStateException(String.format("Failed to init NormalizerStore at %s. Cause: %s", storeDir, root), e);
-    }
-  }
-
-  private void delete(int datasetKey) {
-    final var name = dbName(datasetKey);
-    try {
-      LOG.info("Remove neo4j database {}", name);
-      service.dropDatabase(name);
-    } catch (DatabaseNotFoundException e) {
-      LOG.info("Cannot remove not existing neo4j database {}", name);
     }
   }
 

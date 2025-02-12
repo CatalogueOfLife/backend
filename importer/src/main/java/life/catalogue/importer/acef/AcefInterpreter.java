@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class AcefInterpreter extends InterpreterBase {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  Optional<Reference> interpretReference(VerbatimRecord rec) {
+  Optional<Reference> interpretReference(VerbatimRecord rec, Transaction tx) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
         rec.get(AcefTerm.Author),

@@ -11,6 +11,11 @@ import com.esotericsoftware.kryo.Kryo;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.internal.kernel.api.helpers.RelationshipFactory;
+import org.neo4j.kernel.impl.core.AbstractNodeEntity;
+import org.neo4j.kernel.impl.core.NodeEntity;
+
 
 /**
  * Creates a kryo factory usable for thread safe kryo pools that can deal with clb api classes.
@@ -34,9 +39,10 @@ public class NeoKryoPool extends ApiKryoPool {
 
     // fastutil
     kryo.register(IntArrayList.class);
-    
-    // ignore normalizer node proxies and set them to null upon read:
+
+    // ignore normalizer node proxies and neo4j nodes and set them to null upon read:
     kryo.register(NodeMock.class, new NullSerializer());
+    kryo.register(NodeEntity.class, new NullSerializer());
 
     return kryo;
   }

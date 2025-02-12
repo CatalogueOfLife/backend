@@ -29,6 +29,8 @@ import com.google.common.collect.Lists;
 
 import org.gbif.nameparser.api.Rank;
 
+import org.neo4j.graphdb.Transaction;
+
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -74,8 +76,8 @@ public class ColdpInterpreter extends InterpreterBase {
     });
   }
 
-  Optional<NeoUsage> interpretTaxon(VerbatimRecord v) {
-    return findName(v, ColdpTerm.nameID).map(n -> {
+  Optional<NeoUsage> interpretTaxon(VerbatimRecord v, Transaction tx) {
+    return findName(v, ColdpTerm.nameID, tx).map(n -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
@@ -117,8 +119,8 @@ public class ColdpInterpreter extends InterpreterBase {
     u.classification = interpretClassification(v);
   }
 
-  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
-    return findName(v, ColdpTerm.nameID).map(n -> {
+  Optional<NeoUsage> interpretSynonym(VerbatimRecord v, Transaction tx) {
+    return findName(v, ColdpTerm.nameID, tx).map(n -> {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
       if (!status.isSynonym()) {
         v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
@@ -135,8 +137,8 @@ public class ColdpInterpreter extends InterpreterBase {
     });
   }
 
-  private Optional<NeoName> findName(VerbatimRecord v, Term nameId) {
-    NeoName n = store.names().objByID(v.getRaw(nameId));
+  private Optional<NeoName> findName(VerbatimRecord v, Term nameId, Transaction tx) {
+    NeoName n = store.names().objByID(v.getRaw(nameId), tx);
     if (n == null) {
       v.addIssue(Issue.NAME_ID_INVALID);
       v.addIssue(Issue.NOT_INTERPRETED);

@@ -56,7 +56,7 @@ public class DwcaInserter extends NeoCsvInserter {
     // taxon core only, extensions are interpreted later
     insertEntities(reader, DwcTerm.Taxon,
         inter::interpretUsage,
-        u -> store.createNameAndUsage(u) != null
+        store::createNameAndUsaged
     );
 
     insertRelations(reader, ColdpTerm.NameRelation,
@@ -112,21 +112,23 @@ public class DwcaInserter extends NeoCsvInserter {
     );
     // extract etymology from descriptions
     AtomicInteger cnt = new AtomicInteger();
-    reader.stream(GbifTerm.Description).forEach(rec -> {
-      runtimeInterruptIfCancelled(NeoCsvInserter.INTERRUPT_MESSAGE);
-      if (rec.getOrDefault(DcTerm.type, "").equalsIgnoreCase("etymology")) {
-        String id = inter.taxonID(rec);
-        if (id != null) {
-          String description = rec.get(DcTerm.description);
-          var nn = store.names().objByID(id);
-          if (nn != null && nn.getName().getEtymology() == null && description != null) {
-            nn.getName().setEtymology(description);
-            store.names().update(nn);
-            cnt.incrementAndGet();
+    try (var tx = store.beginTx()) {
+      reader.stream(GbifTerm.Description).forEach(rec -> {
+        runtimeInterruptIfCancelled(NeoCsvInserter.INTERRUPT_MESSAGE);
+        if (rec.getOrDefault(DcTerm.type, "").equalsIgnoreCase("etymology")) {
+          String id = inter.taxonID(rec);
+          if (id != null) {
+            String description = rec.get(DcTerm.description);
+            var nn = store.names().objByID(id, tx);
+            if (nn != null && nn.getName().getEtymology() == null && description != null) {
+              nn.getName().setEtymology(description);
+              store.names().update(nn, tx);
+              cnt.incrementAndGet();
+            }
           }
         }
-      }
-    });
+      });
+    }
     LOG.info("Update {} names with etymology from descriptions", cnt.get());
 
     insertTaxonEntities(reader, GbifTerm.Reference,

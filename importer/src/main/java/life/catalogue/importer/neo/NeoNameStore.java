@@ -17,6 +17,8 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 
+import org.neo4j.graphdb.Transaction;
+
 public class NeoNameStore extends NeoCRUDStore<NeoName> {
   
   // scientificName to nodeId
@@ -35,16 +37,18 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
    */
   public HashSet<Node> nodesByName(String scientificName) {
     if (names.containsKey(scientificName)) {
-      return Arrays.stream(names.get(scientificName))
-          .mapToObj(neoDb::nodeById)
-          .collect(Collectors.toCollection(HashSet::new));
+      try (Transaction tx = neoDb.beginTx()) {
+        return Arrays.stream(names.get(scientificName))
+            .mapToObj(id -> neoDb.nodeById(id, tx))
+            .collect(Collectors.toCollection(HashSet::new));
+      }
     }
     return new HashSet<>();
   }
   
   @Override
-  public Node create(NeoName obj) {
-    Node n = super.create(obj);
+  public Node create(NeoName obj, Transaction tx) {
+    Node n = super.create(obj, tx);
     if (n != null) {
       add(obj, n.getId());
     }
@@ -52,10 +56,10 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   }
   
   @Override
-  public void update(NeoName obj) {
+  public void update(NeoName obj, Transaction tx) {
     Preconditions.checkNotNull(obj.node);
     remove(obj);
-    super.update(obj);
+    super.update(obj, tx);
     add(obj, obj.node.getId());
   }
   

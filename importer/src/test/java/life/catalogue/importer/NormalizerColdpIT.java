@@ -635,8 +635,6 @@ public class NormalizerColdpIT extends NormalizerITBase {
     TimeUnit.MILLISECONDS.sleep(100);
     t.interrupt();
     TimeUnit.MILLISECONDS.sleep(500);
-
-    assertFalse(store.isBatchMode());
     System.out.println("Test FINISHED");
   }
 

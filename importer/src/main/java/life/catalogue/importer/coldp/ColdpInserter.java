@@ -55,7 +55,7 @@ public class ColdpInserter extends NeoCsvInserter {
     // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
     insertEntities(reader, ColdpTerm.Reference,
         inter::interpretReference,
-        store.references()::create
+      (r,tx) -> store.references().create(r)
     );
 
     // insert CSL-JSON references
@@ -65,19 +65,19 @@ public class ColdpInserter extends NeoCsvInserter {
     // name_usage combination
     insertEntities(reader, ColdpTerm.NameUsage,
       inter::interpretNameUsage,
-      u -> store.createNameAndUsage(u) != null
+      (u,tx) -> store.createNameAndUsage(u, tx) != null
     );
 
     // TODO: authors
     insertEntities(reader, ColdpTerm.Author,
       inter::interpretAuthor,
-      a -> false
+      (a,tx) -> false
     );
 
     // name & relations
     insertEntities(reader, ColdpTerm.Name,
         inter::interpretName,
-        n -> store.names().create(n) != null
+      (n,tx) -> store.names().create(n, tx) != null
     );
     insertRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
@@ -94,7 +94,7 @@ public class ColdpInserter extends NeoCsvInserter {
     // taxa
     insertEntities(reader, ColdpTerm.Taxon,
         inter::interpretTaxon,
-        t -> store.usages().create(t) != null
+        store.usages()::created
     );
     // taxon concept relations
     insertRelations(reader, ColdpTerm.TaxonConceptRelation,
@@ -116,9 +116,9 @@ public class ColdpInserter extends NeoCsvInserter {
     );
 
     // synonyms
-    insertEntities(reader, ColdpTerm.Synonym,
+     insertEntities(reader, ColdpTerm.Synonym,
         inter::interpretSynonym,
-        s -> store.usages().create(s) != null
+        store.usages()::created
     );
 
     // supplementary
@@ -193,9 +193,11 @@ public class ColdpInserter extends NeoCsvInserter {
     if (coldp.hasTreatments()) {
       try {
         final int datasetKey = store.getDatasetKey();
-        for (Path tp : coldp.getTreatments()) {
-          interruptIfCancelled("NeoInserter interrupted, exit early");
-          insertTreatment(datasetKey, tp);
+        try(Transaction tx = store.getNeo().beginTx()) {
+          for (Path tp : coldp.getTreatments()) {
+            interruptIfCancelled("NeoInserter interrupted, exit early");
+            insertTreatment(datasetKey, tp, tx);
+          }
         }
       } catch (IOException e) {
         LOG.error("Failed to read treatments", e);
@@ -203,7 +205,7 @@ public class ColdpInserter extends NeoCsvInserter {
     }
   }
 
-  private void insertTreatment(int datasetKey, Path tp) {
+  private void insertTreatment(int datasetKey, Path tp, Transaction tx) {
     VerbatimRecord v = new VerbatimRecord();
     v.setType(ColdpTerm.Treatment);
     v.setDatasetKey(datasetKey);
@@ -228,10 +230,10 @@ public class ColdpInserter extends NeoCsvInserter {
       t.setDocument(InputStreamUtils.readEntireStream(Files.newInputStream(tp)));
 
       if (t.getFormat() != null && t.getDocument() != null && t.getId() != null) {
-        NeoUsage nu = store.usages().objByID(t.getId());
+        NeoUsage nu = store.usages().objByID(t.getId(), tx);
         if (nu != null) {
           nu.treatment = t;
-          store.usages().update(nu);
+          store.usages().update(nu, tx);
         } else {
           v.addIssue(Issue.TAXON_ID_INVALID);
         }

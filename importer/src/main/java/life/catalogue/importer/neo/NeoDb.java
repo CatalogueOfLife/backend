@@ -67,7 +67,6 @@ public class NeoDb implements AutoCloseable {
   private final File storeDir;
   private final Pool<Kryo> pool;
   private final GraphDatabaseService neo;
-  private final Consumer<Integer> deleteFunc;
   public final int batchSize;
   public final int batchTimeout;
 
@@ -83,8 +82,6 @@ public class NeoDb implements AutoCloseable {
 
   private final AtomicInteger neoCounter = new AtomicInteger(0);
   private Node devNullNode;
-  // only set during batch inserts
-  private Transaction batchTx;
 
 
   /**
@@ -93,14 +90,13 @@ public class NeoDb implements AutoCloseable {
    * @param graphDB
    * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, int attempt, DB mapDb, File storeDir, GraphDatabaseService graphDB, Consumer<Integer> deleteFunc, int batchSize, int batchTimeout) {
+  NeoDb(int datasetKey, int attempt, DB mapDb, File storeDir, GraphDatabaseService graphDB, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
     this.attempt = attempt;
     this.dbname = graphDB.databaseName();
     this.neo = graphDB;
     this.storeDir = storeDir;
     this.mapDb = mapDb;
-    this.deleteFunc = deleteFunc;
     this.batchSize = batchSize;
     this.batchTimeout = batchTimeout;
     
@@ -131,9 +127,6 @@ public class NeoDb implements AutoCloseable {
    */
   public void close() {
     LOG.info("Closing and deleting NeoDB {}", dbname);
-    if (batchTx !=null) {
-      batchTx.close();
-    }
     try {
       if (mapDb != null && !mapDb.isClosed()) {
         mapDb.close();
@@ -142,35 +135,21 @@ public class NeoDb implements AutoCloseable {
       LOG.info("Failed to close mapDb for directory {}", storeDir.getAbsolutePath(), e);
     }
 
-    // remove neo4j from db server
-    deleteFunc.accept(datasetKey);
-
     if (storeDir != null && storeDir.exists()) {
       LOG.debug("Deleting storeDir {}", storeDir.getAbsolutePath());
       FileUtils.deleteQuietly(storeDir);
     }
   }
 
-  public void startBatchTx() {
-    batchTx = neo.beginTx();
-  }
-  public void endBatchTx() {
-    batchTx.commit();
-    batchTx.close();
+  public Transaction beginTx() {
+    return getNeo().beginTx();
   }
 
   /**
    * @return a node which is a dummy proxy only with just an id while we are in batch mode.
    */
-  Node nodeById(long nodeId) {
-    if (batchTx !=null) {
-      return batchTx.getNodeById(nodeId);
-
-    } else {
-      try (var tx = neo.beginTx()) {
-        return tx.getNodeById(nodeId);
-      }
-    }
+  Node nodeById(long nodeId, Transaction tx) {
+    return tx.getNodeById(nodeId);
   }
 
 
@@ -212,8 +191,8 @@ public class NeoDb implements AutoCloseable {
     return typeMaterial;
   }
 
-  public NeoUsage usageWithName(String usageID) {
-    return usageWithName(usages().nodeByID(usageID));
+  public NeoUsage usageWithName(String usageID, Transaction tx) {
+    return usageWithName(usages().nodeByID(usageID, tx));
   }
 
   public Node getDevNullNode() {
@@ -393,16 +372,20 @@ public class NeoDb implements AutoCloseable {
     }
   }
 
-  /**
-   * Creates both a name and a usage neo4j node.
-   * The name node is returned while the usage node is set on the NeoUsage object.
-   * The name instance is taken from the usage object which is removed from the usage.
-   *
-   * If the usage ID is not unique a name will be created, but not a usage. In this case the usage id is reset to null.
-   *
-   * @return the created name node or null if it could not be created
-   */
-  public Node createNameAndUsage(NeoUsage u) {
+  public boolean createNameAndUsaged(NeoUsage u, Transaction tx) {
+    return createNameAndUsage(u, tx) != null;
+  }
+
+    /**
+     * Creates both a name and a usage neo4j node.
+     * The name node is returned while the usage node is set on the NeoUsage object.
+     * The name instance is taken from the usage object which is removed from the usage.
+     *
+     * If the usage ID is not unique a name will be created, but not a usage. In this case the usage id is reset to null.
+     *
+     * @return the created name node or null if it could not be created
+     */
+  public Node createNameAndUsage(NeoUsage u, Transaction tx) {
     Preconditions.checkArgument(u.getNode() == null, "NeoUsage already has a neo4j node");
     Preconditions.checkArgument(u.nameNode == null, "NeoUsage already has a neo4j name node");
     Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
@@ -425,13 +408,13 @@ public class NeoDb implements AutoCloseable {
       nn.getName().setOrigin(u.asNameUsageBase().getOrigin());
     }
     nn.homotypic = u.homotypic;
-    u.nameNode = names.create(nn);
+    u.nameNode = names.create(nn, tx);
   
     if (u.nameNode != null) {
       // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
       if (!u.usage.isBareName()) {
-        var unode = usages.create(u);
+        var unode = usages.create(u, tx);
         if (unode == null) {
           u.setId(null); // non unique id
         }
@@ -446,7 +429,7 @@ public class NeoDb implements AutoCloseable {
    * Removes the neo4j node with all its relations and all entities stored under this node
    * i.e. NeoUsage and NeoName.
    */
-  public void remove(Node n) {
+  public void remove(Node n, Transaction tx) {
     // first remove mapdb entries
     if (n.hasLabel(Labels.NAME)) {
       names().remove(n);
@@ -465,40 +448,23 @@ public class NeoDb implements AutoCloseable {
     LOG.debug("Deleted {}{} from store with {} relations", labels, n, counter);
   }
 
-  Node createNode(PropLabel data) {
+  Node createNode(PropLabel data, Transaction tx) {
     // create neo4j node and update its propLabel
-    Node n;
-    if (batchTx == null) {
-      n = batchTx.createNode(data.getLabels());
-
-    } else {
-      try (var tx = neo.beginTx()) {
-        n = tx.createNode(data.getLabels());
-      }
-    }
+    Node n = tx.createNode(data.getLabels());
     NeoDbUtils.addProperties(n, data);
-    if (batchTx != null && neoCounter.incrementAndGet() % batchSize == 0) {
-      batchTx.commit();
-    }
+    neoCounter.incrementAndGet();
     return n;
   }
   
   /**
    * Updates a node by adding properties and/or labels
    */
-  void updateNode(long nodeId, PropLabel data) {
+  void updateNode(long nodeId, PropLabel data, Transaction tx) {
     if (!data.isEmpty()) {
-      Node n = nodeById(nodeId);
+      Node n = nodeById(nodeId, tx);
       NeoDbUtils.addProperties(n, data);
       NeoDbUtils.addLabels(n, data.getLabels());
     }
-  }
-  
-  /**
-   * Updates a node by adding properties and/or labels
-   */
-  void createRel(Node node1, Node node2, RelationshipType type) {
-      node1.createRelationshipTo(node2, type);
   }
 
   /**
@@ -602,7 +568,7 @@ public class NeoDb implements AutoCloseable {
           u.asTaxon().setParentId(pt.getId());
         }
         // store the updated object
-        usages().update(u);
+        usages().update(u, tx);
       }
       tx.commit();
   
@@ -613,7 +579,7 @@ public class NeoDb implements AutoCloseable {
           u.convertToSynonym(TaxonomicStatus.SYNONYM);
         }
         // store the updated object
-        usages().update(u);
+        usages().update(u, tx);
       }
       tx.commit();
     }
@@ -878,7 +844,8 @@ public class NeoDb implements AutoCloseable {
   public RankedUsage createProvisionalUsageFromSource(Origin origin,
                                                       Name name,
                                                       @Nullable NeoUsage source,
-                                                      Rank excludeRankAndBelow) {
+                                                      Rank excludeRankAndBelow,
+                                                      Transaction tx) {
     NeoUsage u = NeoUsage.createTaxon(origin, name, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     // copyTaxon verbatim classification from source
     if (source != null) {
@@ -899,7 +866,7 @@ public class NeoDb implements AutoCloseable {
     }
     
     // store, which creates a new neo node
-    Node nameNode = createNameAndUsage(u);
+    Node nameNode = createNameAndUsage(u, tx);
 
     return new RankedUsage(u.node, nameNode, name.getScientificName(), name.getAuthorship(), name.getRank());
   }
@@ -924,8 +891,5 @@ public class NeoDb implements AutoCloseable {
     }
   }
 
-  public boolean isBatchMode() {
-    return batchTx != null;
-  }
 }
 

@@ -47,7 +47,7 @@
     -->
     <dropwizard.version>4.0.8</dropwizard.version>
 
-    <antlr.version>4.7.2</antlr.version>
+    <antlr.version>4.13.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
     <batik.version>1.18</batik.version>
     <citeproc.version>3.0.0-alpha.6</citeproc.version>
@@ -526,6 +526,18 @@
             <artifactId>neo4j-codegen</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+
+      <!-- eclipse collections is used by both neo4j and mapdb with different versions -->
+      <dependency>
+        <groupId>org.eclipse.collections</groupId>
+        <artifactId>eclipse-collections</artifactId>
+        <version>11.1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.eclipse.collections</groupId>
+        <artifactId>eclipse-collections-api</artifactId>
+        <version>11.1.0</version>
       </dependency>
 
       <!-- mapdb & kryo -->

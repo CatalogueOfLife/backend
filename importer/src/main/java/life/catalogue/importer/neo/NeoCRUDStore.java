@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,9 +57,9 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     return t;
   }
   
-  public T objByID(String id) {
+  public T objByID(String id, Transaction tx) {
     if (id != null) {
-      Node n = nodeByID(id);
+      Node n = nodeByID(id, tx);
       if (n != null) {
         return objByNode(n);
       }
@@ -66,11 +67,11 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     return null;
   }
 
-  public Node nodeByID(String id) {
+  public Node nodeByID(String id, Transaction tx) {
     if (id != null) {
       Long nodeId = ids.getOrDefault(id, null);
       if (nodeId != null) {
-        return neoDb.nodeById(nodeId);
+        return neoDb.nodeById(nodeId, tx);
       }
     }
     return null;
@@ -100,11 +101,18 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   }
 
   /**
+   * Creates a new object and returns true if a new node was created
+   */
+  public boolean created(T obj, Transaction tx) {
+    return create(obj, tx) != null;
+  }
+
+  /**
    * Creates a new neo4j node and adds the object to the internal lookups.
    * Properties and labels are added, the ID is checked and the object registered in this CRUD store
    * @return the created node id or null if it could not be created (currently only with duplicate IDs).
    */
-  public Node create(T obj) {
+  public Node create(T obj, Transaction tx) {
     Preconditions.checkArgument(obj.getNode() == null, "Object already has a neo4j node");
     // create missing ids, sharing the same id between name & taxon
     if (obj.getId() == null) {
@@ -113,7 +121,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     }
   
     // assert ID is unique
-    if (duplicateID(obj)) {
+    if (idExistsAlready(obj, tx)) {
       return null;
     }
     
@@ -122,11 +130,11 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     // create a new neo4j node if not yet existing
     if (obj.getNode() == null) {
       // update neo4j propLabel either via batch mode or classic
-      obj.setNode( neoDb.createNode(props) );
+      obj.setNode( neoDb.createNode(props, tx) );
     
     } else {
       // update existing node labels and props with object data
-      neoDb.updateNode(obj.getNode().getId(), props);
+      neoDb.updateNode(obj.getNode().getId(), props, tx);
     }
     
     objects.put((Long) obj.getNode().getId(), obj);
@@ -138,12 +146,12 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   /**
    * @return true if the objects ID already exists
    */
-  private boolean duplicateID(T obj) {
+  private boolean idExistsAlready(T obj, Transaction tx) {
     if (ids.containsKey(obj.getId())) {
       LOG.warn("Duplicate {}ID {}", objName, obj.getId());
       duplicateCounter++;
       neoDb.addIssues(obj, Issue.ID_NOT_UNIQUE);
-      T obj2 = objByNode(nodeByID(obj.getId()));
+      T obj2 = objByNode(nodeByID(obj.getId(), tx));
       neoDb.addIssues(obj2, Issue.ID_NOT_UNIQUE);
       return true;
     }
@@ -154,7 +162,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
    * Updates the object in the  KVP store, keeping ID index as they are.
    * Throws NPE if taxon node did not exist before.
    */
-  public void update(T obj) {
+  public void update(T obj, Transaction tx) {
     Preconditions.checkNotNull(obj.getNode());
     if (!(obj.getNode() instanceof NodeMock)) {
       PropLabel props = obj.propLabel();
