@@ -43,6 +43,8 @@ public class PrinterFactory {
                                                       @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
                                                       SqlSessionFactory factory, Writer writer) {
     try {
+      var c = clazz.getConstructor(TreeTraversalParameter.class, Set.class, Boolean.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class);
+      var t = c.newInstance(params, ranks, extinct, countRank, taxonCounter, factory, writer);
       return clazz.getConstructor(TreeTraversalParameter.class, Set.class, Boolean.class, Rank.class, TaxonCounter.class, SqlSessionFactory.class, Writer.class)
                   .newInstance(params, ranks, extinct, countRank, taxonCounter, factory, writer);
     } catch (Exception e) {

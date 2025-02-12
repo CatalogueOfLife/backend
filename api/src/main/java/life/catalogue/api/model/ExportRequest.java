@@ -23,6 +23,8 @@ public class ExportRequest {
   private boolean excel;
   private boolean extended;
   private boolean force; // this makes sure we run a new export
+  private boolean addClassification; // non public option to trigger a simple dwc tree download
+  private boolean addTaxGroups; // non public option for simple downloads
 
   public ExportRequest() {
   }
@@ -62,6 +64,24 @@ public class ExportRequest {
 
   public void setExtended(boolean extended) {
     this.extended = extended;
+  }
+
+  @JsonIgnore
+  public boolean isAddClassification() {
+    return addClassification;
+  }
+
+  public void setAddClassification(boolean addClassification) {
+    this.addClassification = addClassification;
+  }
+
+  @JsonIgnore
+  public boolean isAddTaxGroups() {
+    return addTaxGroups;
+  }
+
+  public void setAddTaxGroups(boolean addTaxGroups) {
+    this.addTaxGroups = addTaxGroups;
   }
 
   public boolean isExcel() {
