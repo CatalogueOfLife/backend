@@ -154,25 +154,14 @@ public class ExportRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof ExportRequest)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     ExportRequest that = (ExportRequest) o;
-    return excel == that.excel
-           && extended == that.extended
-           && synonyms == that.synonyms
-           && bareNames == that.bareNames
-           && force == that.force
-           && Objects.equals(datasetKey, that.datasetKey)
-           && format == that.format
-           && tabFormat == that.tabFormat
-           && Objects.equals(root, that.root)
-           && Objects.equals(extinct, that.extinct)
-           && minRank == that.minRank;
+    return synonyms == that.synonyms && bareNames == that.bareNames && excel == that.excel && extended == that.extended && force == that.force && addClassification == that.addClassification && addTaxGroups == that.addTaxGroups && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(root, that.root) && Objects.equals(extinct, that.extinct) && minRank == that.minRank && format == that.format && tabFormat == that.tabFormat;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, tabFormat, excel, root, extended, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, excel, extended, force, addClassification, addTaxGroups);
   }
 
   @Override
