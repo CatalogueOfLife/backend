@@ -18,7 +18,9 @@ Acinonychinae
 Acipenseridae
 Acipenseriformes
 Acomyinae
+Acontidae
 Acontinae
+Acontoidea
 Acraniata
 Acrobatidae
 Acrocephalidae
@@ -116,6 +118,7 @@ Anhingidae
 Aniliidae
 Ankylosauria
 Ankylosauridae
+Anniellidae
 Anniellinae
 Anomalepididae
 Anomaloglossinae
@@ -327,6 +330,7 @@ Caeciliidae
 Caeciliinae
 Caenolestidae
 Caesionidae
+Calabariidae
 Calabariinae
 Calamariinae
 Calcariidae
@@ -477,7 +481,6 @@ Chelydroidea
 Chiasmodontidae
 Chigutisauridae
 Chikilidae
-Chilodontidae
 Chimaeridae
 Chimaeriformes
 Chinchillidae
@@ -787,6 +790,7 @@ Echinosoricinae
 Echymiperinae
 Ectophyllini
 Edentata
+Egerniidae
 Egerniinae
 Eidolinae
 Elachuridae
@@ -854,6 +858,7 @@ Euchoreutinae
 Euclichthyidae
 Eucrocopoda
 Eugeneodontiformes
+Eugongylidae
 Eugongylinae
 Euhelopodidae
 Euherdmaniidae
@@ -1168,6 +1173,7 @@ Lampridae
 Lampridiformes
 Lampriformes
 Lamprophiidae
+Lamprophilidae
 Laniidae
 Lankanectinae
 Lanthanotidae
@@ -1256,7 +1262,10 @@ Lutrinae
 Luvaridae
 Lybiidae
 Lybiinae
+Lygosomidae
 Lygosominae
+Lygosomoidea
+Mabuyidae
 Mabuyinae
 Macacidae
 Machaerirhynchidae
@@ -1616,6 +1625,7 @@ Paratelmatobiinae
 Paraulopidae
 Parazenidae
 Pardalotidae
+Pareatidae
 Pareiasauridae
 Pareidae
 Paridae
@@ -1964,6 +1974,7 @@ Regulidae
 Reithrodontini
 Reithrodontomyini
 Remizidae
+Reptilia
 Retropinnidae
 Rhabdornithidae
 Rhachianectidae
@@ -2002,6 +2013,7 @@ Rhomaleosauridae
 Rhombomyinae
 Rhyacichthyidae
 Rhyacotritonidae
+Rhynchocephalia
 Rhynchomyinae
 Rhynchosauridae
 Rhynchotinae
@@ -2061,7 +2073,9 @@ Schindleriidae
 Sciaenidae
 Scinaxinae
 Scincidae
+Scinciformata
 Scincinae
+Scincoidea
 Scincomorpha
 Sciuravida
 Sciuridae
@@ -2145,6 +2159,7 @@ Sphenisciformes
 Sphenodontia
 Sphenodontida
 Sphenodontidae
+Sphenomorphidae
 Sphenomorphinae
 Sphenosuchidae
 Sphyraenidae
@@ -2158,6 +2173,7 @@ Squamata
 Squatinidae
 Squatiniformes
 Stagonolepididae
+Staurotypidae
 Steatornithes
 Steatornithidae
 Steatornithiformes
@@ -2251,6 +2267,7 @@ Tenrecinae
 Tenrecomorpha
 Tephrodornithidae
 Terapontidae
+Testudinata
 Testudines
 Testudinidae
 Testudinoidea
@@ -2332,6 +2349,7 @@ Troglodytidae
 Trogonidae
 Trogoniformes
 Trogonophidae
+Trogonophiidae
 Troodontidae
 Tropidophiidae
 Tropiduridae
@@ -2406,6 +2424,7 @@ Xenacanthiformes
 Xenarthra
 Xenicidae
 Xenisthmidae
+Xenodermatidae
 Xenodermidae
 Xenopeltidae
 Xenophidiidae

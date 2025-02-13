@@ -1,4 +1,3 @@
-
 Acrostichaceae
 Actiniopteridaceae
 Adiantaceae
@@ -61,6 +60,7 @@ Dryopteridales
 Elaphoglossaceae
 Equisetaceae
 Equisetales
+Equisetidae
 Equisetophyta
 Filicaceae
 Filicales
@@ -105,10 +105,12 @@ Loxsomatales
 Lycopodiaceae
 Lycopodiales
 Lycopodiellaceae
+Lycopodiidae
 Lycopodiopsida
 Lygodiaceae
 Marattiaceae
 Marattiales
+Marattiidae
 Marsileaceae
 Marsileales
 Marsileopsida
@@ -129,6 +131,7 @@ Onocleaceae
 Ophioglossaceae
 Ophioglossales
 Ophioglosseae
+Ophioglossidae
 Ophioglossopsida
 Osmundaceae
 Osmundales
@@ -148,6 +151,7 @@ Platyzomatales
 Pleurosoriopsidaceae
 Polypodiaceae
 Polypodiales
+Polypodiidae
 Polypodiopsida
 Protowoodsioideae
 Psilotaceae

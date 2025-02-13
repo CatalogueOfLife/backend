@@ -16,6 +16,7 @@ Ampulicidae
 Ampulicinae
 Ampulicini
 Anaxyelidae
+Anaxyeloidea
 Ancylaini
 Andrenidae
 Andreninae
@@ -32,6 +33,7 @@ Aphilanthopini
 Apidae
 Apinae
 Apini
+Apocrita
 Apoidea
 Apomyrminae
 Argidae
@@ -41,7 +43,9 @@ Astatinae
 Attini
 Augochlorini
 Aulacidae
+Austrocynipidae
 Austroniidae
+Azotidae
 Basicerotini
 Bembicinae
 Bembicini
@@ -87,6 +91,7 @@ Crabronini
 Crematogastrini
 Ctenoplectrini
 Cylindromyrmecini
+Cynipencyrtidae
 Cynipidae
 Cynipoidea
 Dacetonini
@@ -117,6 +122,7 @@ Eoichneumonidae
 Epeolini
 Eremiaspheciinae
 Eremiaspheciini
+Eriaporidae
 Ericrocidini
 Eucerini
 Eucharitidae
@@ -165,6 +171,7 @@ Leptanillinae
 Leptanillini
 Leptanilloidinae
 Leucospidae
+Liopteridae
 Lithurginae
 Lithurgini
 Loboscelidiinae
@@ -200,6 +207,7 @@ Monomachidae
 Mutillidae
 Mymaridae
 Mymarommatidae
+Mymarommatoidea
 Myrmeciinae
 Myrmeciini
 Myrmecinini
@@ -258,6 +266,7 @@ Platygastridae
 Platygastrinae
 Platygastroidea
 Platythyreini
+Plumariidae
 Podiini
 Pompilidae
 Ponerinae
@@ -293,6 +302,7 @@ Sceliotrachelinae
 Sceliphrinae
 Sceliphrini
 Sclerogibbidae
+Scolebythidae
 Scoliidae
 Serphitoidea
 Sicilomyrmecini
@@ -313,6 +323,7 @@ Stenotritidae
 Stephanidae
 Stephanoidea
 Stigmaphronidae
+Symphyta
 Tanaostigmatidae
 Tapinotaspidini
 Tarsaliini
@@ -321,6 +332,7 @@ Telenominae
 Tenthredinidae
 Tenthredinoidea
 Teratognathini
+Terebrantes
 Tetracampidae
 Tetramoriini
 Tetrapediini
