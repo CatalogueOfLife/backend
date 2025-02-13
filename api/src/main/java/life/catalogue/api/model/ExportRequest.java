@@ -66,7 +66,6 @@ public class ExportRequest {
     this.extended = extended;
   }
 
-  @JsonIgnore
   public boolean isAddClassification() {
     return addClassification;
   }
@@ -75,7 +74,6 @@ public class ExportRequest {
     this.addClassification = addClassification;
   }
 
-  @JsonIgnore
   public boolean isAddTaxGroups() {
     return addTaxGroups;
   }
