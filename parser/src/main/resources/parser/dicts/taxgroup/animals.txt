@@ -1,5 +1,4 @@
 Acridinae
-Acrocephalidae
 Anaplectidae
 Anaplectinae
 Ancylini
@@ -8,17 +7,14 @@ Animal
 Animalia
 Bdelloidea
 Bilateria
-Bufonidae
 Cepolidae
 Corystidae
 Ctenodesmini
-Dermoptera
 Ellobiinae
 Eumetazoa
 Geryonidae
 Heterocheilidae
 Holozoa
-Irenidae
 Leptosomatidae
 Leuconidae
 Loricata

@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Informal and common broad grouping of large taxonomic groups.
+ * Informal and common broad grouping of large taxonomic groups (usually > 50.000 species).
  * These groups often are paraphyletic, but are convenient for broad classifications
  * and match better the application of the nomenclatural codes, e.g. Algae, Fungi & Plants for the "botanical" code.
  * Links to https://www.phylopic.org
@@ -63,13 +63,7 @@ public enum TaxGroup {
         Gastropods("9da7781e-48eb-407d-a13f-d6de8954dde2", Molluscs),
         Bivalves("70d345ec-c53a-45b9-a4af-93cf6f3e2125", Molluscs),
         OtherMolluscs("", Molluscs),
-      Chordates("aba20543-fb51-42d1-a03b-a9f9d25d526b", Animals),
-        Amphibians("40b1198a-ec00-4dff-ab82-c79817244485", Chordates),
-        Birds("ca1082e0-718c-48dc-a011-995511e48180", Chordates),
-        Mammals("f4b6df56-f216-4a4c-9940-4105da8b462e", Chordates),
-        Reptiles("aefc9af2-1f5d-4e16-94c4-da3436b8e92d", Chordates),
-        Fish("23a7d09d-4a4d-4ad5-ad07-49a6b59a7fba", Chordates),
-        OtherChordates("", Chordates),
+      Chordates("23a7d09d-4a4d-4ad5-ad07-49a6b59a7fba", Animals),
       OtherAnimals("", Animals);
 
   public enum SIZE {
