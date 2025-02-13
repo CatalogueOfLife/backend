@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CitationUtils {
 
   public static class DatasetWrapper {
-    final Dataset d;
+    protected final Dataset d;
 
     public DatasetWrapper(Dataset dataset) {
       d = dataset;
@@ -244,6 +244,12 @@ public class CitationUtils {
   public static class ReleaseWrapper extends DatasetWrapper {
     final DatasetWrapper base;
     final DatasetWrapper proj;
+
+    public ReleaseWrapper(ReleaseWrapper other) {
+      super(other.d);
+      this.base = other.base;
+      this.proj = other.proj;
+    }
 
     public ReleaseWrapper(Dataset dataset, Dataset base, Dataset project) {
       super(dataset);

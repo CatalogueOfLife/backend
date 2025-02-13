@@ -6,6 +6,7 @@
 
 dao/127.0.0.1/
 dao/dataset/
+core/dataset/
 webservice/dataset/
 webservice/graphs/
 webservice/localhost/
