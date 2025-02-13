@@ -1,6 +1,7 @@
 Ablaberini
 Abraeinae
 Abraeini
+Acanthocnemidae
 Acidocerinae
 Aciliini
 Aclopinae
@@ -12,6 +13,7 @@ Acrotrichini
 Actidiini
 Actocharini
 Acupalpini
+Adephaga
 Aderidae
 Adoretini
 Adoxini
@@ -99,6 +101,7 @@ Apatini
 Aphaenostemmini
 Aphodiinae
 Aphodiini
+Apionidae
 Aploderini
 Apocellini
 Apoderigerini
@@ -175,6 +178,7 @@ Borborophorini
 Boreocyphini
 Boridae
 Bostrichidae
+Bostrichiformia
 Bostrichinae
 Bostrichini
 Bostrichoidea
@@ -187,6 +191,7 @@ Brachyderini
 Brachyglutini
 Brachygnathini
 Brachypsectridae
+Brachypteridae
 Bradycelli
 Bradycellini
 Brathinidae
@@ -256,6 +261,7 @@ Chaetocanthinae
 Chaetocanthini
 Chaetodactylini
 Chaetogenyini
+Chaetosomatidae
 Chalcodryidae
 Chalepini
 Chalteniini
@@ -300,6 +306,7 @@ Clivinini
 Clytrini
 Cnemacanthini
 Cnemalobini
+Cneoglossidae
 Cneorhinini
 Coccinellidae
 Coccinelloidea
@@ -352,6 +359,7 @@ Criocerini
 Crowsoniellidae
 Cryptocephalinae
 Cryptocephalini
+Cryptolaryngidae
 Cryptonotopsisini
 Cryptonychini
 Cryptophagidae
@@ -360,6 +368,7 @@ Ctenodactylinae
 Ctenodactylini
 Ctenostomatini
 Cucujidae
+Cucujiformia
 Cucujoidea
 Cupedidae
 Cupesidae
@@ -438,6 +447,7 @@ Dorylogastrini
 Dorylomimini
 Dorynotini
 Drepanoxenini
+Drilidae
 Dryophthoridae
 Dryopidae
 Dryptinae
@@ -451,6 +461,7 @@ Dytiscidae
 Dytiscinae
 Dytiscini
 Dytiscoidea
+Eccoptarthridae
 Ecitocharini
 Ecitoclimacini
 Ecitogastrini
@@ -458,6 +469,7 @@ Ectemnorhinini
 Elachistarthronini
 Elaphrinae
 Elateridae
+Elateriformia
 Elateroidea
 Electrorubesopsinae
 Eleusinini
@@ -491,6 +503,7 @@ Epirinini
 Episomini
 Eremazinae
 Eretini
+Erirhinidae
 Erotylidae
 Estadiini
 Euaesthetinae
@@ -759,6 +772,7 @@ Lomechusaeidae
 Lomechusida
 Lomechusini
 Lophioderini
+Lophocateridae
 Lordopini
 Loricerinae
 Loxomerini
@@ -800,6 +814,7 @@ Mastinocerini
 Masuriini
 Matinae
 Matini
+Mauroniscidae
 Mayetiini
 Mayetinae
 Mayetini
@@ -863,7 +878,9 @@ Myllaenini
 Myloechina
 Myorhinini
 Myraboliidae
+Myxophaga
 Namaini
+Nanophyidae
 Nanosellini
 Nastini
 Naupactini
@@ -927,6 +944,7 @@ Olisthaerinae
 Omalides
 Omaliinae
 Omaliini
+Omalisidae
 Omalodini
 Omethidae
 Omicrini
@@ -1015,10 +1033,12 @@ Pediculotini
 Peleciini
 Pelmatellini
 Pelophilini
+Peltidae
 Penichrolucanini
 Penicillophorini
 Pentodontini
 Perigonini
+Perimylopidae
 Peritelini
 Phaedimini
 Phaenognathini
@@ -1041,12 +1061,14 @@ Phloeocharinae
 Phloeocharini
 Phloeonomini
 Phloeostichidae
+Phloiophilidae
 Phobetusini
 Pholidiens
 Pholidini
 Photinini
 Photurinae
 Photurini
+Phycosecidae
 Phyllobiini
 Phyllodinardini
 Phyllotocidiini
@@ -1060,6 +1082,7 @@ Pinodytini
 Pinophilini
 Placusini
 Planeustomini
+Plastoceridae
 Plateumarini
 Platycerini
 Platyceroidini
@@ -1079,6 +1102,7 @@ Plegaderini
 Pleocomidae
 Pleocominae
 Pleotomini
+Podabrocephalidae
 Podolasiinae
 Pogonini
 Pogonopseini
@@ -1088,9 +1112,11 @@ Polycaoninae
 Polycatini
 Polydrusini
 Polyhirmini
+Polyphaga
 Porphyraspidini
 Premnotrypini
 Priasilphidae
+Prionoceridae
 Priopterini
 Pristolycini
 Pristorhynchini
@@ -1116,6 +1142,7 @@ Protocucujidae
 Protolucaninae
 Protopassalini
 Protopaussini
+Protopeltidae
 Protopselaphinae
 Protorabinae
 Protosternini
@@ -1168,9 +1195,14 @@ Pygoxyini
 Pyrochroidae
 Pythidae
 Radamini
+Raymondionymidae
+Rentoniidae
+Rhadalidae
 Rhagocrepini
 Rhagophthalmidae
+Rhinorhipidae
 Rhipiceridae
+Rhipiphoridae
 Rhizotrogini
 Rhyncogonini
 Rhyparini
@@ -1199,6 +1231,7 @@ Scarabaeinae
 Scarabaeini
 Scarabaeoidea
 Scarabatermitini
+Scarabeiformia
 Scaritinae
 Scaritini
 Sceloenoplini
@@ -1218,6 +1251,7 @@ Scolytinae
 Scotocryptini
 Scotodytidae
 Scraptiidae
+Scydmaenidae
 Scydmaeninae
 Scydmaenini
 Scydmaenitae
@@ -1263,6 +1297,7 @@ Sphodrini
 Spilophorini
 Stagobiinae
 Staphylinidae
+Staphyliniformia
 Staphylininae
 Staphylinini
 Staphylinoidea
@@ -1336,6 +1371,7 @@ Thinodromini
 Thinorycterini
 Thoracophorini
 Throscidae
+Thymalidae
 Thysdariini
 Timarchini
 Tiracerini

@@ -75,6 +75,7 @@ Cypricardiniidae
 Cyrenidae
 Cyrenoidea
 Cyrenoididae
+Cyrenoidoidea
 Cyrtodontida
 Cyrtodontoida
 Desmodonta
@@ -92,6 +93,7 @@ Entoliidae
 Eodonidae
 Eoschizodidae
 Epidiceratidae
+Erodonidae
 Etheriidae
 Etherioidea
 Euciroidae
@@ -139,6 +141,7 @@ Iotrigoniidae
 Iridinidae
 Isocyprinidae
 Isodonta
+Isognomonidae
 Jilinoconchidae
 Kalenteridae
 Kalenteroidea
@@ -150,6 +153,7 @@ Laternulidae
 Liaoningiidae
 Limida
 Limidae
+Limnopsoidea
 Limoida
 Limoidea
 Limopsidae
@@ -290,6 +294,7 @@ Pterioida
 Pterioidea
 Pteriomorphia
 Pterocardiidae
+Pteroidea
 Pulvinitidae
 Quenstedtiidae
 Radiolitidae
@@ -344,6 +349,7 @@ Trapezidae
 Trechmannellidae
 Trigoniida
 Trigoniidae
+Trigoniodea
 Trigonioida
 Trigonioidea
 Trigonioididae

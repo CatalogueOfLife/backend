@@ -52,6 +52,7 @@ Apolcleini
 Apolysini
 Apsilocephalidae
 Apystomyiidae
+Apystomyioidea
 Arachnocampinae
 Archinemestriinae
 Archinycteribiini
@@ -60,11 +61,13 @@ Archisargidae
 Archisarginae
 Archizelmiridae
 Arthrocerinae
+Aschiza
 Ascodipterini
 Asiconopini
 Asilidae
 Asilinae
 Asilini
+Asiloidea
 Asiochaoboridae
 Asphondyliini
 Aspistinae
@@ -95,6 +98,7 @@ Belobackenbardiinae
 Bengaliinae
 Beridinae
 Bibionidae
+Bibionomorpha
 Biblionidae
 Bicellariini
 Bittacomorphinae
@@ -118,11 +122,13 @@ Boreoheptagyini
 Botanobiini
 Bouvieromyiini
 Brachineurini
+Brachycera
 Brachyceraeini
 Brachyhiopalinae
 Brachymerini
 Brachyopini
 Brachyrhopalinae
+Brachystomatidae
 Brachystomatinae
 Brachystomatini
 Braulidae
@@ -149,6 +155,7 @@ Canacinae
 Canacini
 Canthyloscelididae
 Carnidae
+Carnoidea
 Carpomyini
 Catharosiini
 Catochini
@@ -243,6 +250,7 @@ Culicidae
 Culicinae
 Culicini
 Culicoidini
+Culicomorpha
 Culisetini
 Cuphocerini
 Curtonotidae
@@ -318,6 +326,7 @@ Elliidae
 Empididae
 Empidinae
 Empidini
+Empidoidea
 Enigmomorphini
 Enliniinae
 Eoditomyiidae
@@ -331,6 +340,7 @@ Epacrocerini
 Ephydridae
 Ephydrinae
 Ephydrini
+Ephydroidea
 Epigrimyiini
 Epiplateinae
 Eremochaetidae
@@ -402,6 +412,7 @@ Hermetiinae
 Hermyiini
 Hesperinidae
 Heteromyiini
+Heteromyzidae
 Heteropezini
 Heterorhyphidae
 Heterostomidae
@@ -416,11 +427,13 @@ Hilarini
 Hippelatini
 Hippoboscidae
 Hippoboscini
+Hippoboscoidea
 Hodgesiini
 Hoffeinsmyiidae
 Holomeurini
 Holoneurini
 Homalocnemidae
+Homalocnemiidae
 Homalomitrinae
 Hongocaloneuridae
 Horaiellinae
@@ -464,6 +477,7 @@ Lasiopterini
 Lasiosinini
 Lauxaniidae
 Lauxaniinae
+Lauxanioidea
 Ledomyiini
 Leeinae
 Leiinae
@@ -506,6 +520,7 @@ Luanpingitidae
 Luciliinae
 Lygisitorrhinae
 Lygistorrhinae
+Lygistorrhinidae
 Lygistorrhininae
 Macquartiini
 Macquartini
@@ -568,6 +583,7 @@ Mormotomyiidae
 Muscidae
 Muscinae
 Muscini
+Muscoidea
 Mycetobiinae
 Mycetophilidae
 Mycetophilinae
@@ -596,6 +612,7 @@ Nannotayderinae
 Natalimyzidae
 Natarsiini
 Neaerini
+Nematocera
 Nemedininae
 Nemestrinidae
 Neminidae
@@ -604,6 +621,7 @@ Nemotelinae
 Neocuterebrini
 Nephrocerinae
 Neriidae
+Nerioidea
 Neurigoninae
 Neurigonini
 Neurochaetidae
@@ -618,6 +636,7 @@ Nycteribiini
 Nycteriboscini
 Nycterophilini
 Nymphomyiidae
+Nymphomyiomorpha
 Occisorini
 Ochotonini
 Ocydromiinae
@@ -628,6 +647,7 @@ Oedeleinae
 Oedoparenini
 Oestridae
 Oestrinae
+Oestroidea
 Ohakuneinae
 Olbiogastrinae
 Oligodraninae
@@ -636,6 +656,7 @@ Ommatiinae
 Oniromyiinae
 Opetiidae
 Opomyzidae
+Opomyzoidea
 Orbelliini
 Oreogetonidae
 Oreoleptidae
@@ -668,6 +689,7 @@ Palpostomatini
 Pangoniinae
 Pangoniini
 Panopinae
+Panthophthalmidae
 Pantophthalmidae
 Paragini
 Paraleucopidae
@@ -682,6 +704,7 @@ Parhadrestiinae
 Pediciidae
 Pediciinae
 Pelatachinini
+Pelecorhynchidae
 Pelecorhynchinae
 Peloropeodinae
 Pentaneurini
@@ -690,6 +713,7 @@ Peringueyimyiini
 Periscelididae
 Periscelidinae
 Perissommatidae
+Perissommatomorpha
 Perissordinae
 Peromyiini
 Phaeomyiidae
@@ -703,6 +727,7 @@ Philopotinae
 Phlebotominae
 Phoridae
 Phorinae
+Phoroidea
 Phthiraxiinae
 Phthiriinae
 Phthiriini
@@ -775,9 +800,11 @@ Psiloderoidinae
 Psychodidae
 Psychodinae
 Psychodini
+Psychodomorpha
 Pteridomyiini
 Ptychopteridae
 Ptychopterinae
+Ptychopteromorpha
 Pyrgotidae
 Quadridiplosiina
 Quadridiplosini
@@ -797,6 +824,7 @@ Rhagionempididae
 Rhagionidae
 Rhagioniinae
 Rhagioninae
+Rhagionoidea
 Rhaphiinae
 Rhaphiomidinae
 Rhegmoclematini
@@ -830,6 +858,7 @@ Scenopinidae
 Scenopininae
 Scepsidini
 Schistopterini
+Schizophora
 Sciadocerinae
 Sciapinae
 Sciapodinae
@@ -839,6 +868,7 @@ Sciarotrichinae
 Sciomyzidae
 Sciomyzinae
 Sciomyzini
+Sciomyzoidea
 Scionini
 Sciop
 Sciophilinae
@@ -865,6 +895,7 @@ Spaniinae
 Spaninae
 Sphaeroceridae
 Sphaerocerinae
+Sphaeroceroidea
 Sphaeromiini
 Sphaeromyiini
 Spheginobacchini
@@ -885,6 +916,7 @@ Stratiomyidae
 Stratiomyiinae
 Stratiomyinae
 Stratiomyini
+Stratiomyoidea
 Streblinae
 Streblini
 Strobliellini
@@ -902,10 +934,12 @@ Syringogastridae
 Syrphidae
 Syrphinae
 Syrphini
+Syrphoidea
 Systropodini
 Tabanidae
 Tabaninae
 Tabanini
+Tabanoidea
 Tachininae
 Tachinindae
 Tachiniscidae
@@ -920,6 +954,7 @@ Tanyderophrynidae
 Tanyopinae
 Tanypezidae
 Tanypezinae
+Tanypezoidea
 Tanypodinae
 Tanypodini
 Tanytarsinae
@@ -932,6 +967,7 @@ Tephrellini
 Tephritidae
 Tephritinae
 Tephritini
+Tephritoidea
 Teratomyzidae
 Terelliini
 Termitoxeniinae
@@ -951,6 +987,7 @@ Tillyardipteridae
 Tipulidae
 Tipulinae
 Tipulodictyidae
+Tipulomorpha
 Tipulopleciidae
 Tomomyzinae
 Tomosvaryellini
@@ -1008,6 +1045,7 @@ Xeramoebini
 Xestomyzinae
 Xylomyidae
 Xylophagidae
+Xylophagoidea
 Xyphosiini
 Xyphosini
 Yantaromyiidae
