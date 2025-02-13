@@ -1,11 +1,13 @@
 package life.catalogue.exporter;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.common.io.PathUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -48,16 +50,20 @@ public class ExportTest {
     FileUtils.deleteQuietly(cfg.getJob().downloadDir);
   }
 
-  static void assertExportExists(File file) {
-    if (!Files.exists(file.toPath())) {
+  void assertExportExists(File file) {
+    final Path path = file.toPath();
+    PathUtils.printDir(cfg.getJob().downloadDir.toPath());
+    if (!Files.exists(path)) {
       // we sometimes see result files not found on jenkins sometimes. give the FS a bit more time
       try {
-        TimeUnit.MILLISECONDS.sleep(500);
+        TimeUnit.MILLISECONDS.sleep(250);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      assertTrue("Export file missing: " + file, Files.exists(file.toPath()));
+      System.out.println("After waiting for 250ms...");
+      PathUtils.printDir(cfg.getJob().downloadDir.toPath());
+      assertTrue("Export file missing: " + file, Files.exists(path));
     }
   }
-
+  
 }
