@@ -60,13 +60,13 @@ public class TaxGroupAnalyzerTest {
   public void analyze() {
     assertEquals(TaxGroup.Animals, analyzer.analyze(sn("Animalia")));
 
-    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Felidae"))));
-    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn(Rank.FAMILY, "Felidae"))));
-    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn("Mammalia")));
-    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn(Rank.CLASS, "Mammalia")));
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Felidae"))));
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn(Rank.FAMILY, "Felidae"))));
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn("Mammalia")));
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn(Rank.CLASS, "Mammalia")));
 
     // conflicting classifications, but resolvable
-    assertEquals(TaxGroup.Mammals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Plantae"), sn("Felidae"))));
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Plantae"), sn("Felidae"))));
     assertEquals(TaxGroup.Animals, analyzer.analyze(sn("Puma"), List.of(sn("Animalia"), sn("Vertebrata"), sn("Felidae"), sn("Coleoptera"))));
 
     // conflicting classifications, unresolvable
@@ -96,7 +96,7 @@ public class TaxGroupAnalyzerTest {
    */
   @Test
   public void dino() {
-    assertEquals(TaxGroup.Reptiles, analyzer.analyze(sn("Acherontisuchus guajiraensis"),
+    assertEquals(TaxGroup.Chordates, analyzer.analyze(sn("Acherontisuchus guajiraensis"),
       List.of(
         sn("Life"), sn("Eucarya"), sn("Opisthokonta"), sn("Animalia"), sn("Bilateria"), sn("Eubilateria"), sn("Deuterostomia"), sn("Chordata"), sn("Vertebrata"), sn("Gnathostomata"), sn("Osteichthyes"), sn("Sarcopterygii"), sn("Dipnotetrapodomorpha"), sn("Tetrapodomorpha"), sn("Tetrapoda"), sn("Reptiliomorpha"), sn("Anthracosauria"), sn("Amphibiosauria"), sn("Cotylosauria"), sn("Amniota"), sn("Sauropsida"), sn("Reptilia"), sn("Eureptilia"), sn("Romeriida"), sn("Diapsida"), sn("Archosauromorpha"), sn("Crocopoda"), sn("Archosauriformes"), sn("Eucrocopoda"), sn("Archosauria"), sn("Pseudosuchia"), sn("Suchia"), sn("Paracrocodylomorpha"), sn("Loricata"), sn("Crocodylomorpha"), sn("Solidocrania"), sn("Crocodyliformes"), sn("Mesoeucrocodylia"), sn("Neosuchia"), sn("Coelognathosuchia"), sn("Tethysuchia"), sn("Dyrosauroidea"), sn("Dyrosauridae"), sn("Hyposaurinae"), sn("Acherontisuchus")
       )
