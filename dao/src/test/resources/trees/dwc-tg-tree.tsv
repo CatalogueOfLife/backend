@@ -2,28 +2,28 @@ dwc:taxonID	dwc:parentNameUsageID	dwc:acceptedNameUsageID	dwc:taxonomicStatus	dw
 t0			provisionally accepted	unranked	Biota				
 t1	t0		accepted	kingdom	Animalia		Biota	animals	animals
 t2	t1		accepted	phylum	Chordata		Biota;Animalia	chordates	chordates
-t3	t2		accepted	class	Mammalia		Biota;Animalia;Chordata	mammals	mammals
-t4	t3		accepted	order	Carnivora		Biota;Animalia;Chordata;Mammalia	mammals	mammals
-t5	t4		accepted	family	Canidae		Biota;Animalia;Chordata;Mammalia;Carnivora	mammals	mammals
-t20	t5		accepted	genus	Canis		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae		mammals
-s21		t20	synonym	genus	Alopsis		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		mammals
-s22		t20	synonym	genus	Lupulus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		mammals
-t23	t20		accepted	species	Canis adustus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		mammals
-t24	t20		accepted	species	Canis argentinus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		mammals
-t25	t20		accepted	species	Canis aureus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		mammals
-t6	t4		accepted	family	Felidae		Biota;Animalia;Chordata;Mammalia;Carnivora	mammals	mammals
-t10	t6		accepted	genus	Lynx		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae		mammals
-s11		t10	synonym	genus	Pardina		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		mammals
-t12	t10		accepted	species	Lynx lynx		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		mammals
-t13	t10		accepted	species	Lynx rufus		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		mammals
-s14		t13	synonym	species	Felis rufus		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		mammals
-t15	t13		accepted	subspecies	Lynx rufus baileyi		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		mammals
-t16	t13		accepted	subspecies	Lynx rufus gigas		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		mammals
-t30	t4		accepted	genus	×Urocyon		Biota;Animalia;Chordata;Mammalia;Carnivora		mammals
-t31	t30		accepted	species	Urocyon citrinus		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		mammals
-t34	t30		accepted	species	Urocyon webbi		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		mammals
-t32	t30		accepted	species	Urocyon ×littoralis		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		mammals
-t33	t30		accepted	species	Urocyon ×minicephalus		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		mammals
+t3	t2		accepted	class	Mammalia		Biota;Animalia;Chordata	chordates	chordates
+t4	t3		accepted	order	Carnivora		Biota;Animalia;Chordata;Mammalia	chordates	chordates
+t5	t4		accepted	family	Canidae		Biota;Animalia;Chordata;Mammalia;Carnivora	chordates	chordates
+t20	t5		accepted	genus	Canis		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae		chordates
+s21		t20	synonym	genus	Alopsis		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		chordates
+s22		t20	synonym	genus	Lupulus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		chordates
+t23	t20		accepted	species	Canis adustus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		chordates
+t24	t20		accepted	species	Canis argentinus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		chordates
+t25	t20		accepted	species	Canis aureus		Biota;Animalia;Chordata;Mammalia;Carnivora;Canidae;Canis		chordates
+t6	t4		accepted	family	Felidae		Biota;Animalia;Chordata;Mammalia;Carnivora	chordates	chordates
+t10	t6		accepted	genus	Lynx		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae		chordates
+s11		t10	synonym	genus	Pardina		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		chordates
+t12	t10		accepted	species	Lynx lynx		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		chordates
+t13	t10		accepted	species	Lynx rufus		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx		chordates
+s14		t13	synonym	species	Felis rufus		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		chordates
+t15	t13		accepted	subspecies	Lynx rufus baileyi		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		chordates
+t16	t13		accepted	subspecies	Lynx rufus gigas		Biota;Animalia;Chordata;Mammalia;Carnivora;Felidae;Lynx;Lynx rufus		chordates
+t30	t4		accepted	genus	×Urocyon		Biota;Animalia;Chordata;Mammalia;Carnivora		chordates
+t31	t30		accepted	species	Urocyon citrinus		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		chordates
+t34	t30		accepted	species	Urocyon webbi		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		chordates
+t32	t30		accepted	species	Urocyon ×littoralis		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		chordates
+t33	t30		accepted	species	Urocyon ×minicephalus		Biota;Animalia;Chordata;Mammalia;Carnivora;×Urocyon		chordates
 ttl3	t1		accepted	class	Trilobita		Biota;Animalia	otherarthropods	otherarthropods
 ttl4	ttl3		accepted	order	Asaphida		Biota;Animalia;Trilobita	otherarthropods	otherarthropods
 ttl5	ttl4		accepted	family	Asaphidae		Biota;Animalia;Trilobita;Asaphida	otherarthropods	otherarthropods
