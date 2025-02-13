@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSync;
 import life.catalogue.assembly.SycnException;
@@ -10,6 +11,7 @@ import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
 import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.common.date.DateUtils;
+import life.catalogue.common.text.CitationUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
@@ -29,6 +31,7 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -48,6 +51,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import jakarta.validation.Validator;
+
+import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class XRelease extends ProjectRelease {
   private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);
@@ -96,6 +101,25 @@ public class XRelease extends ProjectRelease {
   protected void modifyDataset(Dataset d) {
     super.modifyDataset(d);
     d.setOrigin(DatasetOrigin.XRELEASE);
+  }
+
+  public static class XReleaseWrapper extends CitationUtils.ReleaseWrapper {
+    final int baseSources;
+    final int mergeSources;
+
+    public XReleaseWrapper(CitationUtils.ReleaseWrapper data, int baseSources, int mergeSources) {
+      super(data);
+      this.baseSources = baseSources;
+      this.mergeSources = mergeSources;
+    }
+
+    public int getBaseSources() {
+      return baseSources;
+    }
+
+    public int getMergeSources() {
+      return mergeSources;
+    }
   }
 
   @Override
@@ -156,6 +180,25 @@ public class XRelease extends ProjectRelease {
         s.setDatasetKey(newDatasetKey);
       }
     }
+
+    // update description
+    if (prCfg.metadata.description != null) {
+      final Set<Integer> baseSources = new HashSet<>();
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        SectorSearchRequest req = new SectorSearchRequest();
+        req.setMode(Set.of(Sector.Mode.ATTACH, Sector.Mode.UNION));
+        req.setDatasetKey(baseReleaseKey);
+        PgUtils.consume(()->sm.processSearch(req), s -> {
+          baseSources.add(s.getSubjectDatasetKey());
+        });
+      }
+      int numMerge = (int) sectors.stream().map(Sector::getSubjectDatasetKey).distinct().count();
+      var data = new XReleaseWrapper(new CitationUtils.ReleaseWrapper(newDataset, base, dataset), baseSources.size(), numMerge);
+      newDataset.setDescription( CitationUtils.fromTemplate(data, prCfg.metadata.description) );
+    }
+
+    // DOI
     createReleaseDOI();
 
     // setup id generator
