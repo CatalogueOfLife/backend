@@ -21,9 +21,8 @@ CREATE TYPE TABFORMAT AS ENUM (
   'TSV'
 );
 
-ALTER TABLE dataset_export ADD COLUMN add_classification BOOLEAN NOT NULL; 
-ALTER TABLE dataset_export ADD COLUMN tab_format TABFORMAT;
-UPDATE dataset_export SET add_classification=false; 
+ALTER TABLE dataset_export ADD COLUMN add_classification BOOLEAN NOT NULL DEFAULT false; 
+ALTER TABLE dataset_export ADD COLUMN tab_format TABFORMAT; 
 ```
 
 #### 2025-01-20 move release settings to file
