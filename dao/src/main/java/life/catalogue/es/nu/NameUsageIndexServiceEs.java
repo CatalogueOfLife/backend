@@ -66,7 +66,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   /**
-   * Parallelize indexing, not wiping any existing information.
+   * Parallelize indexing of several datasets.
    */
   @Override
   public Stats indexDatasets(List<Integer> keys) {
@@ -76,7 +76,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, false), exec)
+      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, true), exec)
         .exceptionally(ex -> {
           counter.incrementAndGet();
           LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
