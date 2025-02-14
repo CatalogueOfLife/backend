@@ -28,6 +28,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
   private static final String ARG_KEY_IGNORE = "ignore";
+  private static final String ARG_CREATE = "create";
   private static final String ARG_THREADS = "t";
 
   public IndexCmd() {
@@ -40,23 +41,29 @@ public class IndexCmd extends AbstractMybatisCmd {
     super.configure(subparser);
     // Adds indexing options
     subparser.addArgument("--"+ ARG_KEY, "-k")
-            .dest(ARG_KEY)
-            .nargs("*")
-            .type(Integer.class)
-            .required(false)
-            .help("Dataset key to index in situ");
+      .dest(ARG_KEY)
+      .nargs("*")
+      .type(Integer.class)
+      .required(false)
+      .help("Dataset key to index in situ");
     subparser.addArgument("--"+ ARG_ALL)
-            .dest(ARG_ALL)
-            .type(boolean.class)
-            .required(false)
-            .setDefault(false)
-            .help("index all datasets into a new index by date");
+      .dest(ARG_ALL)
+      .type(boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("index all datasets into a new index by date");
     subparser.addArgument("--"+ ARG_KEY_IGNORE, "-i")
-             .dest(ARG_KEY_IGNORE)
-             .nargs("*")
-             .type(Integer.class)
-             .required(false)
-             .help("Dataset key to be excluded from full indexing");
+       .dest(ARG_KEY_IGNORE)
+       .nargs("*")
+       .type(Integer.class)
+       .required(false)
+       .help("Dataset key to be excluded from full indexing");
+    subparser.addArgument("--"+ ARG_CREATE)
+      .dest(ARG_CREATE)
+      .type(boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("create a new index by date");
     subparser.addArgument("-"+ ARG_THREADS)
       .dest(ARG_THREADS)
       .type(Integer.class)
@@ -65,7 +72,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   }
 
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
-    if (namespace.getBoolean(ARG_ALL)) {
+    if (namespace.getBoolean(ARG_ALL) || namespace.getBoolean(ARG_CREATE)) {
       // change index name, use current date
       cfg.es.nameUsage.name = indexNameToday();
       System.out.println("Creating new index " + cfg.es.nameUsage.name);
@@ -80,8 +87,9 @@ public class IndexCmd extends AbstractMybatisCmd {
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
-    String index = namespace.getBoolean(ARG_ALL) ? indexNameToday() : cfg.es.nameUsage.name;
-    return String.format("Indexing DB %s on %s into new ES index %s on %s.\n", cfg.db.database, cfg.db.host, index, cfg.es.hosts);
+    boolean create = namespace.getBoolean(ARG_CREATE) || namespace.getBoolean(ARG_ALL);
+    String index =  create ? indexNameToday() : cfg.es.nameUsage.name;
+    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", index, cfg.es.hosts);
   }
 
   @Override
