@@ -120,6 +120,10 @@ public class XRelease extends ProjectRelease {
     public int getMergeSources() {
       return mergeSources;
     }
+
+    public int getAllSources() {
+      return baseSources + mergeSources;
+    }
   }
 
   @Override

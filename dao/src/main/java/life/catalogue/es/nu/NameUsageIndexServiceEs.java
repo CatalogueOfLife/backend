@@ -65,6 +65,34 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     return indexDatasetInternal(datasetKey, true);
   }
 
+  /**
+   * Parallelize indexing, not wiping any existing information.
+   */
+  @Override
+  public Stats indexDatasets(List<Integer> keys) {
+    LOG.info("Index {} datasets", keys.size());
+    final Stats total = new Stats();
+
+    final AtomicInteger counter = new AtomicInteger(0);
+    ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
+    for (Integer datasetKey : keys) {
+      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, false), exec)
+        .exceptionally(ex -> {
+          counter.incrementAndGet();
+          LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
+          return null;
+        }).thenAccept(st -> {
+          total.add(st);
+          LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
+        });
+    }
+    ExecutorUtils.shutdown(exec);
+
+    LOG.info("Successfully indexed {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+      counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
+    return total;
+  }
+
   @Override
   public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
     LOG.info("Start indexing dataset {}", datasetKey);
@@ -269,7 +297,6 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public Stats indexAll(int ... excludedDatasetKeys) {
     createEmptyIndex();
 
-    final Stats total = new Stats();
     final List<Integer> keys;
     try (SqlSession session = factory.openSession(true)) {
       keys = session.getMapper(DatasetMapper.class).keys();
@@ -281,25 +308,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       }
       LOG.info("Index {} datasets out of all {} datasets", keys.size(), allDatasets);
     }
-
-    final AtomicInteger counter = new AtomicInteger(0);
-    ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
-    for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, false), exec)
-          .exceptionally(ex -> {
-            counter.incrementAndGet();
-            LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
-            return null;
-          }).thenAccept(st -> {
-            total.add(st);
-            LOG.info("Indexed {}/{} dataset {}. Total usages {}", counter.incrementAndGet(), keys.size(), datasetKey, total.usages);
-          });
-    }
-    ExecutorUtils.shutdown(exec);
-
-    LOG.info("Successfully indexed all {} datasets. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-      counter, esConfig.nameUsage.name, total.usages, total.names, total.total());
-    return total;
+    return indexDatasets(keys);
   }
 
   private void createOrEmptyIndex(int datasetKey) throws IOException {

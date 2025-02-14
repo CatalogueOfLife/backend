@@ -1,17 +1,23 @@
 package life.catalogue.command;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +31,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class IndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);
 
+  private static final String ARG_FILE = "file";
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
   private static final String ARG_KEY_IGNORE = "ignore";
@@ -40,12 +47,17 @@ public class IndexCmd extends AbstractMybatisCmd {
   public void configure(Subparser subparser) {
     super.configure(subparser);
     // Adds indexing options
+    subparser.addArgument("--"+ ARG_FILE)
+      .dest(ARG_FILE)
+      .type(File.class)
+      .required(false)
+      .help("File with dataset keys to index");
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
       .nargs("*")
       .type(Integer.class)
       .required(false)
-      .help("Dataset key to index in situ");
+      .help("Dataset key to index");
     subparser.addArgument("--"+ ARG_ALL)
       .dest(ARG_ALL)
       .type(boolean.class)
@@ -108,24 +120,25 @@ public class IndexCmd extends AbstractMybatisCmd {
           svc.indexAll();
         }
 
+      } else if (ns.get(ARG_FILE) != null) {
+        File file = ns.get(ARG_FILE);
+        List<Integer> keys;
+        try (BufferedReader br = UTF8IoUtils.readerFromFile(file)) {
+          keys = br.lines()
+            .filter(line -> !StringUtils.isBlank(line))
+            .map(line -> Integer.valueOf(line.trim()))
+            .collect(Collectors.toUnmodifiableList());
+        }
+        LOG.info("Found {} datasets for indexing listed in {}", keys.size(), file.getAbsolutePath());
+        svc.indexDatasets(keys);
+
       } else if (ns.getList(ARG_KEY) != null) {
         List<Integer> keys = ns.getList(ARG_KEY);
-        LOG.info("Start sequential indexing of {} datasets", keys.size());
-        Set<String> failed = new HashSet<>();
-        for (Integer key : keys) {
-          try {
-            svc.indexDataset(key);
-          } catch (RuntimeException e) {
-            failed.add(key.toString());
-            LOG.error("Failed to index dataset {}", key, e);
-          }
-        }
-        LOG.info("Finished indexing {} datasets. Failed: {}", keys.size(), String.join(", ", failed));
+        svc.indexDatasets(keys);
 
       } else {
         System.out.println("No indexing argument given. See help for options");
       }
     }
   }
-
 }
