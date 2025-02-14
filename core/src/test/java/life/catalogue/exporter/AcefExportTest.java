@@ -46,22 +46,10 @@ public class AcefExportTest extends ExportTest {
   @Rule
   public TestDataRule testDataRule = TestDataRule.draftWithSectors();
 
-  @Before
-  @Override
-  public void initCfg()  {
-    super.initCfg();
-    cfg.db = PgSetupRule.getCfg();
-    cfg.job.downloadDir = Files.createTempDir();
-    cfg.normalizer.scratchDir  = Files.createTempDir();
-    cfg.img.repo = cfg.normalizer.scratchDir.toPath();
-  }
-  
   @After
-  public void cleanup()  {
-    FileUtils.deleteQuietly(cfg.job.downloadDir);
-    FileUtils.deleteQuietly(cfg.normalizer.scratchDir);
+  public void cleanup2()  {
     if (arch != null) {
-      System.out.println(arch.getAbsolutePath());
+      System.out.println("Remove " + arch.getAbsolutePath());
       FileUtils.deleteQuietly(arch);
     }
   }

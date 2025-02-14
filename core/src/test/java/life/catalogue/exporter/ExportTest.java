@@ -11,10 +11,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class ExportTest {
   private static final Logger LOG = LoggerFactory.getLogger(ExportTest.class);
 
-  TestConfigs cfg;
+  static TestConfigs cfg;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -39,30 +36,20 @@ public class ExportTest {
     this.testDataRule = new TestDataRule(testData);
   }
 
-  @Before
-  public void initCfg()  {
+  @BeforeClass
+  public static void initCfg()  {
     cfg = TestConfigs.build();
+    cfg.db = PgSetupRule.getCfg();
   }
 
-  @After
-  public void cleanup()  {
-    LOG.info("Cleaning up download directory {}", cfg.job.downloadDir);
-    FileUtils.deleteQuietly(cfg.getJob().downloadDir);
+  @AfterClass
+  public static void cleanup()  {
+    LOG.info("Cleaning up test directories");
+    cfg.removeCfgDirs();
   }
 
   void assertExportExists(File file) {
     final Path path = file.toPath();
-    PathUtils.printDir(cfg.getJob().downloadDir.toPath());
-    if (!Files.exists(path)) {
-      // we sometimes see result files not found on jenkins sometimes. give the FS a bit more time
-      try {
-        TimeUnit.MILLISECONDS.sleep(250);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-      System.out.println("After waiting for 250ms...");
-      PathUtils.printDir(cfg.getJob().downloadDir.toPath());
-      assertTrue("Export file missing: " + file, Files.exists(path));
-    }
+    assertTrue("Export file missing: " + file, Files.exists(path));
   }
 }
