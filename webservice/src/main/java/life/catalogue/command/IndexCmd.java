@@ -31,7 +31,7 @@ import net.sourceforge.argparse4j.inf.Subparser;
 public class IndexCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(IndexCmd.class);
 
-  private static final String ARG_FILE = "file";
+  private static final String ARG_FILE = "keys-file";
   private static final String ARG_KEY = "key";
   private static final String ARG_ALL = "all";
   private static final String ARG_KEY_IGNORE = "ignore";
@@ -49,7 +49,7 @@ public class IndexCmd extends AbstractMybatisCmd {
     // Adds indexing options
     subparser.addArgument("--"+ ARG_FILE)
       .dest(ARG_FILE)
-      .type(File.class)
+      .type(String.class)
       .required(false)
       .help("File with dataset keys to index");
     subparser.addArgument("--"+ ARG_KEY, "-k")
@@ -126,6 +126,7 @@ public class IndexCmd extends AbstractMybatisCmd {
         if (!file.exists()){
           throw new IllegalArgumentException("File " + file.getAbsolutePath() + " does not exist");
         }
+        LOG.info("Reading dataset keys from file {}", file.getAbsolutePath());
         List<Integer> keys;
         try (BufferedReader br = UTF8IoUtils.readerFromFile(file)) {
           keys = br.lines()
