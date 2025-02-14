@@ -12,6 +12,8 @@ import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.img.ImgConfig;
 
+import org.apache.commons.io.FileUtils;
+
 import java.net.URI;
 
 public class TestConfigs implements ExporterConfig {
@@ -41,8 +43,16 @@ public class TestConfigs implements ExporterConfig {
 
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
+    cfg.img.repo = cfg.normalizer.scratchDir.toPath();
+    cfg.job.downloadDir = Files.createTempDir();
 
     return cfg;
+  }
+
+  public void removeCfgDirs() {
+    FileUtils.deleteQuietly(job.downloadDir);
+    FileUtils.deleteQuietly(normalizer.scratchDir);
+    FileUtils.deleteQuietly(normalizer.archiveDir);
   }
 
   @Override
