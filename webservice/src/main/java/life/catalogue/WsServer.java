@@ -146,6 +146,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addCommand(new DockerCmd());
     bootstrap.addCommand(new ExecSqlCmd());
     bootstrap.addCommand(new IndexCmd());
+    bootstrap.addCommand(new InfoCmd());
     bootstrap.addCommand(new InitCmd());
     bootstrap.addCommand(new NamesIndexCmd());
     bootstrap.addCommand(new UpdMetricCmd());

@@ -3,6 +3,8 @@ package life.catalogue.config;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.common.base.MoreObjects;
+
 import jakarta.validation.constraints.NotNull;
 
 import life.catalogue.api.vocab.Publishers;
@@ -49,4 +51,13 @@ public class GbifConfig {
   @NotNull
   public Set<UUID> articlePublishers = Set.of(Publishers.PLAZI);
 
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+      .add("api", api)
+      .add("user", username)
+      .add("bidirectional", bidirectional)
+      .add("syncFrequency", syncFrequency)
+      .toString();
+  }
 }
