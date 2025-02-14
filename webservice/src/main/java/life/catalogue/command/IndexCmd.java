@@ -121,7 +121,11 @@ public class IndexCmd extends AbstractMybatisCmd {
         }
 
       } else if (ns.get(ARG_FILE) != null) {
-        File file = ns.get(ARG_FILE);
+        String fn = ns.getString(ARG_FILE);
+        File file = new File(fn);
+        if (!file.exists()){
+          throw new IllegalArgumentException("File " + file.getAbsolutePath() + " does not exist");
+        }
         List<Integer> keys;
         try (BufferedReader br = UTF8IoUtils.readerFromFile(file)) {
           keys = br.lines()
