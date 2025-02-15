@@ -124,6 +124,11 @@ public class ProjectRelease extends AbstractProjectCopy {
     verifyConfigTemplates();
   }
 
+  @VisibleForTesting
+  public void setPrCfg(ProjectReleaseConfig prCfg) {
+    this.prCfg = prCfg;
+  }
+
   /**
    * Verifies settings values, in particular the freemarker citation templates
    */
@@ -140,12 +145,22 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setModified(LocalDateTime.now());
     d.setImported(LocalDateTime.now());
 
-    CitationUtils.ReleaseWrapper dw = new CitationUtils.ReleaseWrapper(d,d,d);
+    var dw = metadataTemplateData(new CitationUtils.ReleaseWrapper(d,d,d));
+
     // verify all templates and throw early otherwise
     verifyTemplate("alias", prCfg.metadata.alias, dw);
     verifyTemplate("title", prCfg.metadata.title, dw);
     verifyTemplate("version", prCfg.metadata.version, dw);
     verifyTemplate("description", prCfg.metadata.description, dw);
+  }
+
+  /**
+   * Override to allow more complex data wrappers in subclasses to be used in metadata templates
+   * @param data template data as created from the regular ProjectRelease
+   * @return the same or new instance to be used in generating metadata
+   */
+  protected CitationUtils.ReleaseWrapper metadataTemplateData(CitationUtils.ReleaseWrapper data) {
+    return data;
   }
 
   private void verifyTemplate(String field, String template, CitationUtils.ReleaseWrapper d) throws IllegalArgumentException {
@@ -196,7 +211,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     final FuzzyDate today = FuzzyDate.now();
     d.setIssued(today);
 
-    var data = new CitationUtils.ReleaseWrapper(d, base, dataset);
+    var data = metadataTemplateData(new CitationUtils.ReleaseWrapper(d, base, dataset));
     d.setAlias( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.alias, DEFAULT_ALIAS_TEMPLATE)) );
     d.setTitle( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.title, d.getTitle())) );
     d.setVersion( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.version, DEFAULT_VERSION_TEMPLATE)) );
