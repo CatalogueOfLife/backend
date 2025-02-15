@@ -9,6 +9,7 @@ import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.dao.*;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.doi.DoiUpdater;
@@ -105,6 +106,10 @@ public class XReleaseBasicIT {
   @Test
   public void release() throws Exception {
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
+    var cfg = new ProjectReleaseConfig();
+    cfg.metadata.alias = "COL{date,yy}";
+    cfg.metadata.description = "The XR addresses {mergeSources} gaps of the base release.";
+    xrel.setPrCfg(cfg);
     xrel.run();
     assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
 
@@ -135,6 +140,12 @@ public class XReleaseBasicIT {
       assertEquals(1, src.getSecondarySources().size());
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
+
+      // assert metadata
+      var dm = session.getMapper(DatasetMapper.class);
+      var d = dm.get(xrel.newDatasetKey);
+      assertEquals("COL25", d.getAlias());
+      assertEquals("The XR addresses 3 gaps of the base release.", d.getDescription());
     }
 
     // test email templates

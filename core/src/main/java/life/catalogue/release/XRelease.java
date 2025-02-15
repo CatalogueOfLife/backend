@@ -127,6 +127,13 @@ public class XRelease extends ProjectRelease {
   }
 
   @Override
+  protected CitationUtils.ReleaseWrapper metadataTemplateData(CitationUtils.ReleaseWrapper data) {
+    // we can only calculate the real numbers later, when we know about all sectors
+    // we will update the description at that point - the rest of the metadata should not use the source number variables !!!
+    return new XReleaseWrapper(data, 1, 1);
+  }
+
+  @Override
   void prepWork() throws Exception {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
