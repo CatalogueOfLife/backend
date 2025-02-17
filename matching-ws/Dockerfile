@@ -77,7 +77,7 @@ FROM openjdk:11-jdk-slim-sid
 ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
 ENV SERVER_ADMIN_PORT=8081
-ENV RPC_PORT=9090
+
 ENV JVM_OPTIONS="-Xms1g -Xmx4g"
 ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
@@ -100,8 +100,11 @@ ENV SPRING_BOOT_DISCOVERY_METADATA_PATH=""
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
-    groupadd -r $USER -g 1000 && useradd -r -g $USER -u 1000 -m $USER && \
-    chown -R $USER:$USER /data/$APP_ARTIFACT
+    mkdir -p /opt/gbif/$APP_ARTIFACT && \
+    groupadd -r $USER -g 1000 && \
+    useradd -r -g $USER -u 1000 -m $USER && \
+    chown -R $USER:$USER /data/$APP_ARTIFACT && \
+    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 
 # Set the working directory in the container
 WORKDIR /opt/gbif/$APP_ARTIFACT
@@ -114,7 +117,7 @@ COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.js
 COPY --from=builder /data/$APP_ARTIFACT /data/$APP_ARTIFACT
 COPY --from=builder /tmp/timestamp.properties /tmp/timestamp.properties
 
-EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT $RPC_PORT
+EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
 
 USER $USER
 
@@ -146,4 +149,3 @@ CMD java $JVM_OPTIONS \
     --spring.boot.admin.client.instance.metadata.management.port=$SERVER_ADMIN_PORT \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --mode=RUN
-
