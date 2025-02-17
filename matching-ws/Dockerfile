@@ -126,14 +126,13 @@ CMD java $JVM_OPTIONS \
     --working.dir=/opt/gbif/$APP_ARTIFACT/ \
     --spring.application.name=$APP_NAME \
     --spring.cloud.zookeeper.enabled=$ZK_ENABLED \
+    --spring.cloud.zookeeper.discovery.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.config.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.connect-string=$ZK_CONNECT_STRING \
-    --spring.cloud.zookeeper.discovery.enabled=$ZK_ENABLED \
     --spring.cloud.zookeeper.discovery.root=$ZK_DISCOVERY_ROOT \
-    --spring.cloud.zookeeper.discovery.metadata.version=1.0-SNAPSHOT \
     --spring.cloud.zookeeper.discovery.metadata.groupId=org.catalogueoflife \
-    --spring.cloud.zookeeper.discovery.metadata.stopSecret=stop  \
     --spring.cloud.zookeeper.discovery.metadata.artifactId=$ZK_ARTIFACT_ID \
+    --spring.cloud.zookeeper.discovery.metadata.version=1.0-SNAPSHOT \
     --spring.cloud.zookeeper.discovery.metadata.host=$SPRING_BOOT_DISCOVERY_METADATA_HOST \
     --spring.cloud.zookeeper.discovery.metadata.path=$SPRING_BOOT_DISCOVERY_METADATA_PATH \
     --spring.cloud.zookeeper.discovery.metadata.httpPort=$SERVER_PORT \
