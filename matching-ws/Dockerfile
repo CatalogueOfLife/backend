@@ -10,6 +10,7 @@ ARG CLB_USER=""
 ARG CLB_PASSWORD=""
 ENV CLB_API_URL="https://api.checklistbank.org"
 ARG GIT_BRANCH=""
+ENV APP_ARTIFACT=matching-ws
 
 # Local builds - run from root of backend
 #COPY .. /app/backend
