@@ -761,7 +761,7 @@ public class MatchController implements ErrorController {
   }
 
   private static void addIfNotNull(StringJoiner joiner, Object value) {
-    if (Objects.nonNull(value)) {
+    if (Objects.nonNull(value) && !value.toString().isEmpty()) {
       joiner.add(value.toString());
     }
   }
