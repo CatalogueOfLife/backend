@@ -3,6 +3,7 @@ package life.catalogue.release;
 import java.io.File;
 import java.net.URI;
 
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.util.YamlUtils;
 
 import org.gbif.nameparser.api.Rank;
@@ -26,8 +27,12 @@ public class XReleaseConfigTest {
     assertTrue(cfg.enforceUnique.containsKey(Rank.GENUS));
     assertTrue(cfg.homotypicConsolidation);
     assertTrue(cfg.sourceDatasetExclusion.contains(6675));
-    assertEquals("COL-{date,yyyy-MM-dd}", cfg.metadata.alias);
+    assertEquals("COL{date,yy.M} XR", cfg.metadata.alias);
+    assertNotNull(cfg.metadata.title);
+    assertNotNull(cfg.metadata.description);
+    assertTrue(cfg.metadata.addSourceAuthors);
+    assertTrue(cfg.metadata.addContributors);
+    assertTrue(cfg.metadata.authorSourceExclusion.contains(DatasetType.ARTICLE));
     assertEquals(1, cfg.decisions.size());
-
   }
 }
