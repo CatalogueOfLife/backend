@@ -292,6 +292,8 @@ public class NameUsageMatch implements LinneanClassification {
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @Data
   @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level", title = "Diagnostics", type = "object")
   public static class Diagnostics {
     @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
@@ -310,20 +312,7 @@ public class NameUsageMatch implements LinneanClassification {
     long timeTaken;
     @Schema(description = "A list of similar matches with lower confidence scores ")
     List<NameUsageMatch> alternatives;
-
-    public Diagnostics() {
-    }
-
-    public Diagnostics(MatchType matchType, List<MatchingIssue> issues, List<ProcessFlag> processingFlags, Integer confidence, TaxonomicStatus status, String note, long timeTaken, List<NameUsageMatch> alternatives) {
-      this.matchType = matchType;
-      this.issues = issues;
-      this.processingFlags = processingFlags;
-      this.confidence = confidence;
-      this.status = status;
-      this.note = note;
-      this.timeTaken = timeTaken;
-      this.alternatives = alternatives;
-    }
+    Map<String, Long> timings;
 
     public MatchType getMatchType() {
       return matchType;
@@ -387,6 +376,10 @@ public class NameUsageMatch implements LinneanClassification {
 
     public void setAlternatives(List<NameUsageMatch> alternatives) {
       this.alternatives = alternatives;
+    }
+
+    public Map<String, Long> getTimings() {
+      return timings;
     }
   }
 

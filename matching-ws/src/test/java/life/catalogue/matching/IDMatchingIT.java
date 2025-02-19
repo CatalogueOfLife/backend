@@ -53,7 +53,8 @@ public class IDMatchingIT {
       joinIndex,
       false,
       false,
-      1
+      1,
+      100
     );
 
     Dataset dataset = Dataset.builder().build();

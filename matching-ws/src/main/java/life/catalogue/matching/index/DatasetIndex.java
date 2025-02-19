@@ -6,10 +6,8 @@ import static life.catalogue.matching.util.IndexConstants.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,6 +22,7 @@ import java.util.stream.Collectors;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
 import life.catalogue.matching.util.IUCNUtils;
 import life.catalogue.matching.util.LuceneUtils;
 import life.catalogue.matching.Main;
@@ -40,6 +39,7 @@ import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +70,9 @@ public class DatasetIndex {
   @Value("${working.dir:/tmp/}")
   String workingDir;
 
+  @Autowired
+  IOUtil ioUtil;
+
   private boolean isInitialised = false;
 
   public boolean getIsInitialised() {
@@ -95,7 +98,9 @@ public class DatasetIndex {
     if (new File(mainIndexPath).exists()) {
       log.info("Loading lucene index from {}", mainIndexPath);
       try {
-        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+        MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
+        mMapDirectory.setPreload(true);
+        initWithDir(mMapDirectory);
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
@@ -423,6 +428,7 @@ public class DatasetIndex {
   public static DatasetIndex newDatasetIndex(Directory mainIndexDir)  {
     DatasetIndex datasetIndex = new DatasetIndex();
     datasetIndex.initWithDir(mainIndexDir);
+    datasetIndex.ioUtil = new IOUtil();
     return datasetIndex;
   }
 
@@ -470,7 +476,6 @@ public class DatasetIndex {
       return NO_MATCH;
     }
   }
-
 
   /**
    * Matches an external ID. Intended for debug purposes only, to quickly
@@ -628,7 +633,7 @@ public class DatasetIndex {
 
   /**
    * Matches an external ID
-   * @param key the external ID to match
+   * @param suppliedKey the external ID to match
    * @param notFoundIssue the issue to add if the identifier is not found
    * @param ignoredIssue the issue to add if the identifier is ignored
    * @return NameUsageMatch
@@ -731,49 +736,6 @@ public class DatasetIndex {
   }
 
   /**
-   * Loads the higher classification of a taxon starting from the given parentID. The parentID is
-   * not included in the result.
-   * This might be the naive approach. Need to check performance vs MapDB or denormalise
-   * during index generation.
-   *
-   * @param parentID the parentID to start from
-   * @return List of RankedName
-   */
-  private List<NameUsageMatch.RankedName> loadHigherTaxa(String parentID) {
-
-    if (parentID == null) {
-      return new ArrayList<>();
-    }
-
-    List<NameUsageMatch.RankedName> higherTaxa = new ArrayList<>();
-    String currentParentID = parentID;
-    while (currentParentID != null) {
-      NameUsageMatch.RankedName cachedName = null; // higherTaxonomyCache.get(currentParentID);
-      if (cachedName != null) {
-        higherTaxa.add(0, cachedName);
-        currentParentID = cachedName.getParentID();
-      } else {
-        Optional<Document> docOpt = getByUsageKey(currentParentID);
-        if (docOpt.isPresent()) {
-          Document doc = docOpt.get();
-          NameUsageMatch.RankedName higherTaxon = new NameUsageMatch.RankedName();
-          higherTaxon.setKey(doc.get(FIELD_ID));
-          higherTaxon.setName(doc.get(FIELD_CANONICAL_NAME));
-          higherTaxon.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
-          higherTaxon.setParentID(doc.get(FIELD_PARENT_ID));
-          higherTaxa.add(0, higherTaxon);
-          // get next parent
-          currentParentID = doc.get(FIELD_PARENT_ID);
-        } else {
-          currentParentID = null;
-        }
-      }
-    }
-
-    return higherTaxa;
-  }
-
-  /**
    * Converts a lucene document into a NameUsageMatch object.
    *
    * @param doc the lucene document to convert to a NameUsageMatch
@@ -787,48 +749,29 @@ public class DatasetIndex {
 
     u.setUsage(constructUsage(doc));
 
-    String acceptedParentID = null;
-
     if (doc.get(FIELD_ACCEPTED_ID) != null) {
       synonym = true;
       Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
         u.setAcceptedUsage(constructUsage(accDoc));
-        acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
 
-    // set the higher classification
-    String parentID = doc.get(FIELD_PARENT_ID);
-    List<NameUsageMatch.RankedName> classification = null;
-    if (acceptedParentID != null) {
-      classification = loadHigherTaxa(acceptedParentID);
-    } else {
-      classification = loadHigherTaxa(parentID);
-    }
+    ioUtil.deserialiseField(doc, FIELD_CLASSIFICATION, StoredClassification.class)
+      .map(StoredClassification::getNames)
+      .ifPresent(names -> u.setClassification(
+        names.stream()
+          .map(r -> NameUsageMatch.RankedName.builder()
+            .key(r.getKey())
+            .rank(Rank.valueOf(r.getRank()))
+            .canonicalName(r.getName())
+            .name(r.getName())
+            .build()
+          )
+          .collect(Collectors.toList())
+      ));
 
-    u.setClassification(classification);
-
-    // add leaf
-    if (u.getAcceptedUsage() != null) {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key( u.getAcceptedUsage().getKey())
-          .name(u.getAcceptedUsage().getCanonicalName())
-          .rank(u.getAcceptedUsage().getRank())
-          .canonicalName(u.getAcceptedUsage().getCanonicalName())
-          .build());
-    } else {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key(doc.get(FIELD_ID))
-          .name(doc.get(FIELD_CANONICAL_NAME))
-          .rank(Rank.valueOf(doc.get(FIELD_RANK)))
-          .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-          .build()
-        );
-    }
     u.setSynonym(synonym);
 
     // if ancillary join indexes are present, add them to the match
@@ -866,16 +809,9 @@ public class DatasetIndex {
     return u;
   }
 
-  private static NameUsageMatch.Usage constructUsage(Document doc) {
-    StoredParsedName pn = null;
-    String parsedNameJson = doc.get(FIELD_PARSED_NAME_JSON);
-    if (parsedNameJson != null) {
-      try {
-        pn = MAPPER.readValue(parsedNameJson, StoredParsedName.class);
-      } catch (Exception e) {
-        log.error("Cannot parse parsed name json", e);
-      }
-    }
+  private NameUsageMatch.Usage constructUsage(Document doc) {
+
+    Optional<StoredParsedName> storedParsedName = ioUtil.deserialiseField(doc, FIELD_PARSED_NAME, StoredParsedName.class);
 
     // set the usage
     NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
@@ -886,7 +822,7 @@ public class DatasetIndex {
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
         .code(getCode(doc));
 
-    if (pn != null) {
+    storedParsedName.ifPresent(pn -> {
       b.genus(pn.getGenus())
         .infragenericEpithet(pn.getInfragenericEpithet())
         .specificEpithet(pn.getSpecificEpithet())
@@ -910,7 +846,7 @@ public class DatasetIndex {
         .doubtful(pn.isDoubtful())
         .manuscript(pn.isManuscript())
         .state(pn.getState())
-        .warnings(pn.getWarnings());
+        .warnings(pn.getWarnings().stream().collect(Collectors.toSet()));
 
         if (pn.getCombinationAuthorship() != null
           && pn.getCombinationAuthorship().getAuthors() != null
@@ -933,7 +869,7 @@ public class DatasetIndex {
               .year(pn.getBasionymAuthorship().getYear())
               .build());
         }
-    }
+    });
 
     return  b.build();
   }
