@@ -380,6 +380,11 @@ public class ProjectRelease extends AbstractProjectCopy {
     var authGen = new AuthorlistGenerator(validator, srcDao);
     if (authGen.appendSourceAuthors(newDataset, prCfg.metadata)) {
       dDao.update(newDataset, user);
+      if (newDataset.getDoi() != null) {
+        var attr = doiUpdater.buildReleaseMetadata(projectKey, false, newDataset, prevReleaseKey);
+        LOG.info("Updating DOI release metadata {}", newDataset.getDoi());
+        doiService.update(attr);
+      }
     }
 
     // update both the projects and release datasets import attempt pointer
