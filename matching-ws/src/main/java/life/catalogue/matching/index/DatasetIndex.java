@@ -749,49 +749,28 @@ public class DatasetIndex {
 
     u.setUsage(constructUsage(doc));
 
-    String acceptedParentID = null;
-
     if (doc.get(FIELD_ACCEPTED_ID) != null) {
       synonym = true;
       Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
         u.setAcceptedUsage(constructUsage(accDoc));
-        acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
 
-    BytesRef bytesRef = doc.getBinaryValue(FIELD_CLASSIFICATION);
-    List<NameUsageMatch.RankedName> classification = new ArrayList<>();
-    if (bytesRef != null) {
-      try {
-
-        byte[] kryoData = bytesRef.bytes;
-        if (kryoData != null) {
-          try {
-            // Deserialize the byte array using kryo
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(kryoData,
-              bytesRef.offset, bytesRef.length);
-            StoredClassification storedClassification = ioUtil.deserializeStoredClassification(inputStream);
-
-            classification = storedClassification.getNames().stream()
-              .map(r -> NameUsageMatch.RankedName.builder()
-                .key(r.getKey())
-                .rank(Rank.valueOf(r.getRank()))
-                .canonicalName(r.getName())
-                .name(r.getName())
-                .build())
-              .collect(Collectors.toList());
-            u.setClassification(classification);
-
-          } catch (Exception e) {
-            log.error("Cannot parse parsed name json", e);
-          }
-        }
-      } catch (Exception e) {
-        log.error("Cannot parse parsed name json", e);
-      }
-    }
+    ioUtil.deserialiseField(doc, FIELD_CLASSIFICATION, StoredClassification.class)
+      .map(StoredClassification::getNames)
+      .ifPresent(names -> u.setClassification(
+        names.stream()
+          .map(r -> NameUsageMatch.RankedName.builder()
+            .key(r.getKey())
+            .rank(Rank.valueOf(r.getRank()))
+            .canonicalName(r.getName())
+            .name(r.getName())
+            .build()
+          )
+          .collect(Collectors.toList())
+      ));
 
     u.setSynonym(synonym);
 
@@ -831,24 +810,8 @@ public class DatasetIndex {
   }
 
   private NameUsageMatch.Usage constructUsage(Document doc) {
-    StoredParsedName pn = null;
-    BytesRef bytesRef = doc.getBinaryValue(FIELD_PARSED_NAME);
 
-    if (bytesRef != null) {
-      byte[] kyroData = bytesRef.bytes;
-
-      if (kyroData != null) {
-        try {
-          // Deserialize the byte array using kyro
-          ByteArrayInputStream inputStream = new ByteArrayInputStream(kyroData,
-            bytesRef.offset, bytesRef.length);
-          pn = ioUtil.deserializeStoredParsedName(inputStream);
-
-        } catch (Exception e) {
-          log.error("Cannot parse parsed name json", e);
-        }
-      }
-    }
+    Optional<StoredParsedName> storedParsedName = ioUtil.deserialiseField(doc, FIELD_PARSED_NAME, StoredParsedName.class);
 
     // set the usage
     NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
@@ -859,7 +822,7 @@ public class DatasetIndex {
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
         .code(getCode(doc));
 
-    if (pn != null) {
+    storedParsedName.ifPresent(pn -> {
       b.genus(pn.getGenus())
         .infragenericEpithet(pn.getInfragenericEpithet())
         .specificEpithet(pn.getSpecificEpithet())
@@ -906,7 +869,7 @@ public class DatasetIndex {
               .year(pn.getBasionymAuthorship().getYear())
               .build());
         }
-    }
+    });
 
     return  b.build();
   }

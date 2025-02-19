@@ -12,15 +12,20 @@ import life.catalogue.matching.model.StoredName;
 import life.catalogue.matching.model.StoredParsedName;
 
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.util.BytesRef;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Optional;
 
 @Component
+@Slf4j
 public class IOUtil {
 
   @Value("${kryo.input.buffer.size: 1024}")
@@ -34,7 +39,7 @@ public class IOUtil {
   @Value("${kryo.input.pool.size: 16}")
   protected Integer inputPoolSize = 32;
   @Value("${kryo.pool.size: 16}")
-  protected Integer kyroPoolSize = 32;
+  protected Integer kryoPoolSize = 32;
 
   public IOUtil() {}
 
@@ -46,7 +51,7 @@ public class IOUtil {
     this.inputPoolSize = inputPoolSize;
   }
 
-  Pool<Kryo> kryoPool = new Pool<Kryo>(true, false, kyroPoolSize) {
+  private final Pool<Kryo> kryoPool = new Pool<Kryo>(true, false, kryoPoolSize) {
     protected Kryo create () {
       Kryo kryo = new Kryo();
       kryo.register(StoredClassification.class);
@@ -58,57 +63,66 @@ public class IOUtil {
     }
   };
 
-  Pool<Output> outputPool = new Pool<Output>(true, false, outputPoolSize) {
+  private final Pool<Output> outputPool = new Pool<Output>(true, false, outputPoolSize) {
     protected Output create () {
       return new Output(outputBufferSize, maxOutputBufferSize);
     }
   };
 
-  Pool<Input> inputPool = new Pool<Input>(true, false, inputPoolSize) {
+  private final Pool<Input> inputPool = new Pool<Input>(true, false, inputPoolSize) {
     protected Input create () {
       return new Input(inputBufferSize);
     }
   };
 
-  public void serialize(StoredClassification sc, OutputStream outputStream)  {
-    final Kryo kryo = kryoPool.obtain();
-    Output output = outputPool.obtain();
-    output.setOutputStream(outputStream);
-    kryo.writeObject(output, sc);
-    output.flush();
-    output.close();
-    outputPool.free(output);
-    kryoPool.free(kryo);
+  public <T> Optional<T> deserialiseField(org.apache.lucene.document.Document doc, String fieldName, Class<T> clazz)  {
+    BytesRef bytesRef = doc.getBinaryValue(fieldName);
+    if (bytesRef != null) {
+      byte[] kryoData = bytesRef.bytes;
+      if (kryoData != null) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(kryoData,
+          bytesRef.offset, bytesRef.length)) {
+          T deserializedObject = deserializeObject(inputStream, clazz);
+          return Optional.of(deserializedObject);
+        } catch (IOException e) {
+          log.error("Error deserializing field " + fieldName, e);
+        }
+      }
+    }
+    return Optional.empty();
   }
 
-  public StoredClassification deserializeStoredClassification(InputStream inputStream)  {
+  public <T> void serialiseField(org.apache.lucene.document.Document doc, String fieldName, T theObject) throws IOException {
+
+    // Serialize the User object to a byte array
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    serializeObject(theObject, outputStream);
+    outputStream.close();
+
+    byte[] kryoBytes = outputStream.toByteArray();
+    doc.add(new StoredField(
+      fieldName,
+      kryoBytes));
+  }
+
+  private <T> T deserializeObject(InputStream inputStream, Class<T> clazz) {
     final Kryo kryo = kryoPool.obtain();
     Input input = inputPool.obtain();
     input.setInputStream(inputStream);
-    StoredClassification sc = kryo.readObject(input, StoredClassification.class);
+    T sc = kryo.readObject(input, clazz);
     kryoPool.free(kryo);
     inputPool.free(input);
     return sc;
   }
 
-  public void serialize(StoredParsedName sc, OutputStream outputStream)  {
+  private <T> void serializeObject(T object, OutputStream outputStream) {
     final Kryo kryo = kryoPool.obtain();
     Output output = outputPool.obtain();
     output.setOutputStream(outputStream);
-    kryo.writeObject(output, sc);
+    kryo.writeObject(output, object);
     output.flush();
     output.close();
     outputPool.free(output);
     kryoPool.free(kryo);
-  }
-
-  public StoredParsedName deserializeStoredParsedName(InputStream inputStream){
-    final Kryo kryo = kryoPool.obtain();
-    Input input = inputPool.obtain();
-    input.setInputStream(inputStream);
-    StoredParsedName spn = kryo.readObject(new Input(inputStream), StoredParsedName.class);
-    kryoPool.free(kryo);
-    inputPool.free(input);
-    return spn;
   }
 }

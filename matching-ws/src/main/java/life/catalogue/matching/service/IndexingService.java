@@ -644,19 +644,9 @@ public class IndexingService {
     public void run() {
       try {
         for (Document doc : docs) {
-
           // set the higher classification
           StoredClassification storedClassification = loadHierarchyWithIDs(searcher, doc);
-
-          // Serialize the User object to a byte array
-          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          ioUtil.serialize(storedClassification, outputStream);
-          outputStream.close();
-
-          byte[] kryoBytes = outputStream.toByteArray();
-          doc.add(new StoredField(
-            FIELD_CLASSIFICATION,
-            kryoBytes));
+          ioUtil.serialiseField(doc, FIELD_CLASSIFICATION, storedClassification);
           writer.addDocument(doc);
         }
         writer.flush();
@@ -1064,23 +1054,9 @@ public class IndexingService {
         // if there an authorship, reparse with it to get the component authorship parts
         StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
           getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
-
         // Serialize the User object to a byte array
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ioUtil.serialize(storedParsedName, outputStream);
-        outputStream.close();
+        ioUtil.serialiseField(doc, FIELD_PARSED_NAME,  storedParsedName);
 
-        byte[] avroBytes = outputStream.toByteArray();
-
-        // store the parsed name components in JSON
-        doc.add(new StoredField(
-          FIELD_PARSED_NAME,
-            avroBytes
-          )
-        );
-      } catch (UnparsableNameException e) {
-        // do nothing
-        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
       } catch (Exception e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
