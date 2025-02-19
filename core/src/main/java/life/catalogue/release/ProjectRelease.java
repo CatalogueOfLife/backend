@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +52,7 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.core.UriBuilder;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
+import static life.catalogue.api.util.ObjectUtils.firstNonEmptyList;
 
 public class ProjectRelease extends AbstractProjectCopy {
   private static final Logger LOG = LoggerFactory.getLogger(ProjectRelease.class);
@@ -216,6 +218,14 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setTitle( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.title, d.getTitle())) );
     d.setVersion( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.version, DEFAULT_VERSION_TEMPLATE)) );
     d.setDescription( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.description, d.getDescription())) );
+
+    d.setKeyword( firstNonEmptyList(prCfg.metadata.keyword, d.getKeyword()) );
+    d.setConversion( coalesce(prCfg.metadata.conversion, d.getConversion()) );
+    d.setConfidence( coalesce(prCfg.metadata.confidence, d.getConfidence()) );
+    d.setConfidence( coalesce(prCfg.metadata.completeness, d.getCompleteness()) );
+    d.setGeographicScope( coalesce(prCfg.metadata.geographicScope, d.getGeographicScope()) );
+    d.setTaxonomicScope( coalesce(prCfg.metadata.taxonomicScope, d.getTaxonomicScope()) );
+    d.setTemporalScope( coalesce(prCfg.metadata.temporalScope, d.getTemporalScope()) );
 
     // all releases are private candidate releases first
     d.setPrivat(true);
