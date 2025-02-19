@@ -194,6 +194,15 @@
     )
   </select>
 
+  <select id="existsWithKeyOrSubject" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE
+      FROM decision ed
+      WHERE ed.dataset_key=#{d.datasetKey} AND
+            (ed.id = #{d.id} OR (ed.subject_dataset_key = #{d.subjectDatasetKey} AND ed.subject_id = #{d.subject.id}))
+    )
+  </select>
+
   <select id="getBySubject" resultMap="decisionResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

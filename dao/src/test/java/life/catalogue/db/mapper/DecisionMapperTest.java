@@ -18,6 +18,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import life.catalogue.junit.PgSetupRule;
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -74,7 +79,57 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     req.setMode(EditorialDecision.Mode.REVIEWED);
     assertEquals(0, mapper().search(req,null).size());
   }
-  
+
+  @Test
+  public void testTransactionPerformance() {
+    EditorialDecision d = createTestEntity(catalogeKey);
+    commit();
+
+    StopWatch watch = StopWatch.createStarted();
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+      var dm = session.getMapper(DecisionMapper.class);
+      for (int i = 0; i < 1000; i++) {
+        d.getSubject().setId(String.valueOf(i*2));
+        dm.create(d);
+      }
+      session.commit();
+    }
+    watch.stop();
+    System.out.println("CREATED !!!");
+    System.out.println(watch);
+
+    int success = 0;
+    int existed = 0;
+    int failed = 0;
+    watch = StopWatch.createStarted();
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+      var dm = session.getMapper(DecisionMapper.class);
+      for (int i = 0; i < 2000; i++) {
+        d.getSubject().setId(String.valueOf(i));
+        d.setId(i);
+        try {
+          if (dm.existsWithKeyOrSubject(d)) {
+            existed++;
+
+          } else {
+            dm.createWithID(d);
+            success++;
+          }
+        } catch (PersistenceException e) {
+          failed++;
+          System.out.println(e);
+        }
+      }
+      session.commit();
+    }
+    watch.stop();
+    System.out.println("CREATED AGAIN !!!");
+    System.out.println(watch);
+    System.out.println("Success: "+success);
+    System.out.println("Existed: "+existed);
+    System.out.println("Failed: "+failed);
+  }
+
   @Override
   void updateTestObj(EditorialDecision ed) {
     ed.setNote("My next note");

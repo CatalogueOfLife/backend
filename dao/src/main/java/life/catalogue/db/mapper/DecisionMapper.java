@@ -13,6 +13,8 @@ import org.apache.ibatis.cursor.Cursor;
 
 public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, DecisionSearchRequest> {
 
+  boolean existsWithKeyOrSubject(@Param("d") EditorialDecision decision);
+
   EditorialDecision getBySubject(@Param("datasetKey") int datasetKey,
                       @Param("subjectDatasetKey") int subjectDatasetKey,
                       @Param("id") String id);

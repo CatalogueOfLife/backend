@@ -509,19 +509,24 @@ public class XRelease extends ProjectRelease {
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {
-    try (SqlSession session = factory.openSession(true)) {
+    int counter = 0;
+    int existed = 0;
+    try (SqlSession session = factory.openSession(false)) {
       DecisionMapper dm = session.getMapper(DecisionMapper.class);
       for (var d : decisions) {
         // we create decisions on the fly to auto block - ignore those
         if (d.getId() != null) {
           d.setDatasetKey(newDatasetKey);
-          try {
+          if (!dm.existsWithKeyOrSubject(d)) {
             dm.createWithID(d);
-          } catch (PersistenceException e) {
-            // swallow, expected for some cases
+            counter++;
+          } else {
+            existed++;
           }
         }
       }
+      session.commit();
+      LOG.info("Copied {} new merge decisions to {}. {} already existed", counter, newDatasetKey, existed);
     }
   }
 
