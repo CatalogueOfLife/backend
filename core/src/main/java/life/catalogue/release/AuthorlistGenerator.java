@@ -22,14 +22,14 @@ public class AuthorlistGenerator {
   }
 
   /**
-   * Appends a list of unique and sorted source authors to the creator list of a given release dataset.
+   * Appends a list of unique and sorted source authors, i.e. creators or editors, to the creator list of a given release dataset.
    * Sources are taken from the project.
    * @param d dataset to append authors to and to take contributors from
    * @param cfg metadata configs from the release
    * @return true if source authors were added
    */
   public boolean appendSourceAuthors(Dataset d, ProjectReleaseConfig.MetadataConfig cfg) {
-    if (!cfg.addSourceAuthors && !cfg.addContributors) {
+    if (!cfg.addSourceAuthors && !cfg.addSourceContributors) {
       return false;
     }
     var exclusion = new HashSet<>();
@@ -37,28 +37,25 @@ public class AuthorlistGenerator {
       exclusion.addAll(cfg.authorSourceExclusion);
     }
     var sources = dao.listSimple(d.getKey(), true);
-    // append authors for release?
-    final List<Agent> authors = new ArrayList<>();
-    if (cfg.addSourceAuthors) {
-      sources.stream()
-        .filter(src -> !exclusion.contains(src.getType()))
-        .forEach(src -> {
-        if (src.getCreator() != null) {
-          authors.addAll(addSourceNote(src, src.getCreator()));
-        }
-        if (src.getEditor() != null) {
-          authors.addAll(addSourceNote(src, src.getEditor()));
-        }
-      });
+    // prepare unique agents for appending to release
+    final List<Agent> agents = new ArrayList<>();
+    // add some configured authors in alphabetical order
+    if (cfg.additionalCreators != null) {
+      agents.addAll(cfg.additionalCreators);
     }
-    if (cfg.addContributors && d.getContributor() != null) {
-      authors.addAll(d.getContributor());
-      // remove contributors from release now that they are part of the creators
-      d.setContributor(Collections.EMPTY_LIST);
-    }
+    sources.stream()
+      .filter(src -> !exclusion.contains(src.getType()))
+      .forEach(src -> {
+      if (src.getCreator() != null) {
+        agents.addAll(addSourceNote(src, src.getCreator()));
+      }
+      if (src.getEditor() != null) {
+        agents.addAll(addSourceNote(src, src.getEditor()));
+      }
+    });
     // remove same authors and merge information
     LinkedList<Agent> uniq = new LinkedList<>();
-    for (Agent a : authors) {
+    for (Agent a : agents) {
       if (a != null) {
         boolean add = true;
         for (Agent old : uniq) {
@@ -79,25 +76,35 @@ public class AuthorlistGenerator {
       // verify emails as they can break validation on insert
       uniq.forEach(a -> a.validateAndNullify(validator));
       // now append them to already existing creators
-      if (d.getCreator() != null) {
-        // merge notes from existing agents before appending
-        for (Agent c : d.getCreator()) {
-          var iter = uniq.iterator();
-          while (iter.hasNext()) {
-            Agent a = iter.next();
-            if (c.sameAs(a)) {
-              c.addNote(a.getNote());
-              iter.remove(); // remove duplicate
-              break;
-            }
-          }
-        }
-        uniq.addAll(0, d.getCreator());
+      if (cfg.addSourceAuthors) {
+        d.setCreator(append(d.getCreator(), uniq));
       }
-      d.setCreator(uniq);
+      if (cfg.addSourceContributors) {
+        d.setContributor(append(d.getContributor(), uniq));
+      }
       return true;
     }
     return false;
+  }
+
+  private static List<Agent> append(List<Agent> existing, List<Agent> toAppend) {
+    List<Agent> result = new ArrayList<>(toAppend);
+    if (existing != null) {
+      // merge notes from existing agents before appending
+      for (Agent c : existing) {
+        var iter = result.iterator();
+        while (iter.hasNext()) {
+          Agent a = iter.next();
+          if (c.sameAs(a)) {
+            c.addNote(a.getNote());
+            iter.remove(); // remove duplicate
+            break;
+          }
+        }
+      }
+      result.addAll(0, existing);
+    }
+    return result;
   }
 
   private static List<Agent> addSourceNote(Dataset d, List<Agent> agents) {

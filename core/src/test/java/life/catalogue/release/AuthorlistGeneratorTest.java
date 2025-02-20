@@ -57,20 +57,24 @@ public class AuthorlistGeneratorTest {
 
     Dataset d = new Dataset(proj);
     d.setKey(projectKey+1);
+    assertEquals(1, d.getCreator().size());
+    assertEquals(2, d.getContributor().size());
 
     var cfg = new ProjectReleaseConfig.MetadataConfig();
     cfg.addSourceAuthors = true;
-    cfg.addContributors = true;
+    cfg.additionalCreators = List.of(
+      person("Berit", "Schneider"),
+      person("Anna", "Bella")
+    );
     gen.appendSourceAuthors(d, cfg);
-    assertEquals(7, d.getCreator().size());
+    assertEquals(8, d.getCreator().size());
     assertEquals(markus, d.getCreator().get(0));
-    assertEquals(0, d.getContributor().size());
+    assertEquals(2, d.getContributor().size());
 
     d = new Dataset(proj);
     d.setKey(projectKey+2);
-    cfg.addContributors = false;
     gen.appendSourceAuthors(d, cfg);
-    assertEquals(6, d.getCreator().size());
+    assertEquals(8, d.getCreator().size());
     assertEquals(proj.getContributor().size(), d.getContributor().size());
 
     var s3 = new Dataset();
@@ -81,9 +85,11 @@ public class AuthorlistGeneratorTest {
     d = new Dataset(proj);
     d.setKey(projectKey+4);
     gen.appendSourceAuthors(d, cfg);
-    assertEquals(6, d.getCreator().size());
+    assertEquals(8, d.getCreator().size());
 
     assertEquals("Drummer; Vegan", d.getCreator().get(0).getNote());
+    // sorted
+    assertEquals("Bella", d.getCreator().get(1).getFamily());
   }
 
 }

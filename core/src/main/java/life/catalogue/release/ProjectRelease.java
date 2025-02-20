@@ -218,8 +218,14 @@ public class ProjectRelease extends AbstractProjectCopy {
     d.setTitle( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.title, d.getTitle())) );
     d.setVersion( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.version, DEFAULT_VERSION_TEMPLATE)) );
     d.setDescription( CitationUtils.fromTemplate(data, coalesce(prCfg.metadata.description, d.getDescription())) );
-
     d.setKeyword( firstNonEmptyList(prCfg.metadata.keyword, d.getKeyword()) );
+
+    d.setContact( coalesce(prCfg.metadata.contact, d.getContact()) );
+    d.setPublisher( coalesce(prCfg.metadata.publisher, d.getPublisher()) );
+    d.setCreator( firstNonEmptyList(prCfg.metadata.creator, d.getCreator()) );
+    d.setEditor( firstNonEmptyList(prCfg.metadata.editor, d.getEditor()) );
+    d.setContributor( firstNonEmptyList(prCfg.metadata.contributor, d.getContributor()) );
+
     d.setConversion( coalesce(prCfg.metadata.conversion, d.getConversion()) );
     d.setConfidence( coalesce(prCfg.metadata.confidence, d.getConfidence()) );
     d.setConfidence( coalesce(prCfg.metadata.completeness, d.getCompleteness()) );

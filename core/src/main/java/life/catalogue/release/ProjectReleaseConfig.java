@@ -1,5 +1,8 @@
 package life.catalogue.release;
 
+import jakarta.validation.Valid;
+
+import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetType;
 
@@ -29,7 +32,16 @@ public class ProjectReleaseConfig {
      * Template used to build a new release description.
      */
     public String description;
+
+    // the following cannot use template vars, just fixed configs
     public List<String> keyword;
+    public Agent contact;
+    public List<Agent> creator;
+    public List<Agent> additionalCreators; // to be used with source authors and resorted in alphabetical order
+    public List<Agent> editor;
+    public Agent publisher;
+    public List<Agent> contributor;
+
     public Dataset.UrlDescription conversion = new Dataset.UrlDescription();
     public Integer confidence;
     public Integer completeness;
@@ -38,20 +50,20 @@ public class ProjectReleaseConfig {
     public String temporalScope;
 
     /**
-     * If true a release will include as its authors all authors of all it's sources.
+     * If true a release will append to its authors all authors (creators & editors) of all it's sources.
      */
     public boolean addSourceAuthors;
+
+    /**
+     * If true a release will append to its contributors all authors (creators & editors) of all it's sources.
+     */
+    public boolean addSourceContributors;
 
     /**
      * Optional list of dataset types to exclude from sources to generate the release authors from.
      * E.g. ARTICLE to exclude all authors from Plazi and BDJ sources.
      */
     public List<DatasetType> authorSourceExclusion;
-
-    /**
-     * If true a release will include as its authors all contributors of the project (not source contributors).
-     */
-    public boolean addContributors;
   }
 
   public MetadataConfig metadata = new MetadataConfig();

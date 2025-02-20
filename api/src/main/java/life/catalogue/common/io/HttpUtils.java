@@ -30,6 +30,7 @@ public class HttpUtils {
   public String get(URI url) throws IOException, InterruptedException {
     var req = HttpRequest.newBuilder(url);
     req.header("User-Agent", "ChecklistBank/1.0");
+    req.header("Cache-Control", "no-cache");
     var resp = client.send(req.build(), HttpResponse.BodyHandlers.ofString());
     LOG.info("Response {} for GET {}", resp.statusCode(), url);
     if (resp.statusCode() / 100 == 2) {
