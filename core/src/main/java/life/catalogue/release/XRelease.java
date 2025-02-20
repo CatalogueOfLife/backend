@@ -92,7 +92,7 @@ public class XRelease extends ProjectRelease {
 
   @Override
   protected void loadConfigs() {
-    prCfg = loadConfig(XReleaseConfig.class, settings.getURI(Setting.XRELEASE_CONFIG));
+    prCfg = loadConfig(XReleaseConfig.class, settings.getURI(Setting.XRELEASE_CONFIG), true);
     verifyConfigTemplates();
     xCfg = (XReleaseConfig) prCfg;
   }

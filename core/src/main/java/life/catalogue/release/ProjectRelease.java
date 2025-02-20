@@ -122,7 +122,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   protected void loadConfigs() {
-    prCfg = loadConfig(ProjectReleaseConfig.class, settings.getURI(Setting.RELEASE_CONFIG));
+    prCfg = loadConfig(ProjectReleaseConfig.class, settings.getURI(Setting.RELEASE_CONFIG), true);
     verifyConfigTemplates();
   }
 
@@ -176,7 +176,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   }
 
   @VisibleForTesting
-  public static <T> T loadConfig(Class<T> configClass, URI url) {
+  public static <T> T loadConfig(Class<T> configClass, URI url, boolean logContent) {
     if (url == null) {
       LOG.warn("No {} config supplied, use defaults", configClass.getSimpleName());
       try {
@@ -189,6 +189,12 @@ public class ProjectRelease extends AbstractProjectCopy {
       try {
         var http = new HttpUtils();
         String yaml = http.get(url);
+        if (logContent) {
+          System.out.println("yaml content found under " + url);
+          System.out.println("----------");
+          System.out.println(yaml);
+          System.out.println("----------");
+        }
         return YamlUtils.readString(configClass, yaml);
       } catch (IOException | InterruptedException e) {
         throw new IllegalArgumentException("Invalid release configuration at "+ url, e);

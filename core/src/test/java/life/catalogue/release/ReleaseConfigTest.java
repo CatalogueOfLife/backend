@@ -16,7 +16,7 @@ public class ReleaseConfigTest {
 
   @Test
   public void testCfgBase() throws Exception {
-    var cfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/refs/heads/master/release-config.yaml"));
+    var cfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/refs/heads/master/release-config.yaml"), true);
 
     assertNotNull(cfg);
     assertEquals("COL{date,yy.M}", cfg.metadata.alias);
@@ -32,7 +32,7 @@ public class ReleaseConfigTest {
 
   @Test
   public void testCfgXR() throws Exception {
-    var cfg = ProjectRelease.loadConfig(XReleaseConfig.class, URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/refs/heads/master/xrelease/xrelease-config.yaml"));
+    var cfg = ProjectRelease.loadConfig(XReleaseConfig.class, URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/refs/heads/master/xrelease/xrelease-config.yaml"), true);
 
     //File cfgFile = new File("/Users/markus/code/data/data/xrelease/xrelease-config.yaml");
     //cfg = YamlUtils.read(XReleaseConfig.class, cfgFile);
