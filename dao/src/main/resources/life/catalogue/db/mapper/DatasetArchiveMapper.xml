@@ -77,7 +77,7 @@
 
   <insert id="create" parameterType="map">
     INSERT INTO dataset_archive (key, attempt, <include refid="COLS"/>, source_key, origin, created_by, created, modified)
-    SELECT key, attempt, <include refid="COLS"/>, source_key, origin, #{createdBy}, now(), now()
+    SELECT key, attempt, <include refid="COLS"/>, source_key, origin, created_by, now(), now()
     FROM dataset d
     WHERE d.key = #{key}
   </insert>
