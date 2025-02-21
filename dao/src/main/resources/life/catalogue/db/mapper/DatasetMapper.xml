@@ -528,14 +528,14 @@
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(), <include refid="aclEditor"/>)
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created_by, created, modified, acl_editor)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, #{createdBy}, now(), now(), <include refid="aclEditor"/>)
   </insert>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="createWithID" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (#{key}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(), <include refid="aclEditor"/>)
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created_by, created, modified, acl_editor)
+    VALUES (#{key}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, #{createdBy}, now(), now(), <include refid="aclEditor"/>)
   </insert>
 
   <sql id="aclEditor">

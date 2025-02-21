@@ -56,7 +56,6 @@
     #{conversion.description},
     #{conversion.url},
     #{notes},
-    #{createdBy},
     #{modifiedBy}
   </sql>
 
@@ -77,8 +76,8 @@
   </select>
 
   <insert id="create" parameterType="map">
-    INSERT INTO dataset_archive (key, attempt, <include refid="COLS"/>, source_key, origin, created, modified)
-    SELECT key, attempt, <include refid="COLS"/>, source_key, origin, now(), now()
+    INSERT INTO dataset_archive (key, attempt, <include refid="COLS"/>, source_key, origin, created_by, created, modified)
+    SELECT key, attempt, <include refid="COLS"/>, source_key, origin, #{createdBy}, now(), now()
     FROM dataset d
     WHERE d.key = #{key}
   </insert>
