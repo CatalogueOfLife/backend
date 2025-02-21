@@ -6,6 +6,7 @@ import life.catalogue.common.Managed;
 import life.catalogue.concurrent.NamedThreadFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -18,29 +19,32 @@ import org.slf4j.LoggerFactory;
 public class CronExecutor implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(CronExecutor.class);
   private final String THREAD_NAME = "cron-executor";
+  private final CronJob[] jobs;
   private ScheduledExecutorService scheduler;
   private List<ScheduledFuture<?>> futures = new ArrayList<>();
 
   public static CronExecutor startWith(CronJob... jobs) {
     Preconditions.checkNotNull(jobs, "At least one cron job must be specified");
-    CronExecutor cron = new CronExecutor();
-    for (CronJob job : jobs) {
-      LOG.info("Schedule cron job {} every {} {}", job.getClass().getSimpleName(), job.getFrequency(), job.getFrequencyUnit());
-      var f = cron.scheduler.scheduleAtFixedRate(job, job.getDelay(), job.getFrequency(), job.getFrequencyUnit());
-      cron.futures.add(f);
-    }
-    return cron;
+    return new CronExecutor(jobs);
   }
 
-  private CronExecutor() {
-    scheduler = Executors.newScheduledThreadPool(1,
-      new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
-    );
+  private CronExecutor(CronJob[] jobs) {
+    this.jobs = jobs;
   }
 
   @Override
   public void start() throws Exception {
-
+    if (scheduler == null && jobs.length > 0) {
+      LOG.info("Start cron executor with {} jobs", jobs.length);
+      scheduler = Executors.newScheduledThreadPool(1,
+        new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
+      );
+      for (CronJob job : jobs) {
+        LOG.info("Schedule cron job {} every {} {}", job.getClass().getSimpleName(), job.getFrequency(), job.getFrequencyUnit());
+        var f = scheduler.scheduleAtFixedRate(job, job.getDelay(), job.getFrequency(), job.getFrequencyUnit());
+        futures.add(f);
+      }
+    }
   }
 
   @Override
@@ -51,10 +55,11 @@ public class CronExecutor implements Managed {
     }
     scheduler.shutdown();
     LOG.info("Cron executor stopped");
+    scheduler = null;
   }
 
   @Override
   public boolean hasStarted() {
-    return scheduler.isShutdown();
+    return scheduler != null;
   }
 }
