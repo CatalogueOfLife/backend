@@ -759,7 +759,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * @param vn1 required to have a name & language!
    */
   private static boolean sameVName(VernacularName vn1, VernacularName vn2) {
-    return rmWS(vn1.getName()).equalsIgnoreCase(rmWS(vn2.getName())) ||
+    return Objects.equals( rmWS(vn1.getName()), rmWS(vn2.getName()) ) ||
       ( vn1.getLatin() != null && rmWS(vn1.getLatin()).equalsIgnoreCase(rmWS(vn2.getLatin())) );
   }
 
@@ -773,8 +773,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // only keep one lectotype
         mt1.getStatus() == TypeStatus.LECTOTYPE && tm2.getStatus() == TypeStatus.LECTOTYPE
       ) || (
-        rmWS(mt1.getInstitutionCode()).equalsIgnoreCase(rmWS(tm2.getInstitutionCode())) &&
-        rmWS(mt1.getCatalogNumber()).equalsIgnoreCase(rmWS(tm2.getCatalogNumber()))
+        Objects.equals( rmWS(mt1.getInstitutionCode()), rmWS(tm2.getInstitutionCode()) ) &&
+        Objects.equals( rmWS(mt1.getCatalogNumber()), rmWS(tm2.getCatalogNumber()) )
       );
   }
 
