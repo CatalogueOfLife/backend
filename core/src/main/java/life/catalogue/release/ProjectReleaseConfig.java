@@ -1,12 +1,9 @@
 package life.catalogue.release;
 
-import jakarta.validation.Valid;
-
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetType;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectReleaseConfig {
@@ -43,7 +40,7 @@ public class ProjectReleaseConfig {
     public List<Agent> contributor;
 
     public Dataset.UrlDescription conversion = new Dataset.UrlDescription();
-    public Integer confidence;
+    public Integer confidence; // 1-5 max
     public Integer completeness;
     public String geographicScope;
     public String taxonomicScope;

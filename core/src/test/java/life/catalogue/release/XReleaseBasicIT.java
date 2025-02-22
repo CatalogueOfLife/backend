@@ -109,6 +109,7 @@ public class XReleaseBasicIT {
     var cfg = new ProjectReleaseConfig();
     cfg.metadata.alias = "COL{date,yy}";
     cfg.metadata.description = "The XR addresses {mergeSources} gaps of the base release.";
+    cfg.metadata.confidence=5;
     xrel.setPrCfg(cfg);
     xrel.run();
     assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
@@ -146,6 +147,7 @@ public class XReleaseBasicIT {
       var d = dm.get(xrel.newDatasetKey);
       assertEquals("COL25", d.getAlias());
       assertEquals("The XR addresses 3 gaps of the base release.", d.getDescription());
+      assertEquals((Integer)5, d.getConfidence());
     }
 
     // test email templates

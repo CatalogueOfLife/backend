@@ -234,7 +234,7 @@ public class ProjectRelease extends AbstractProjectCopy {
 
     d.setConversion( coalesce(prCfg.metadata.conversion, d.getConversion()) );
     d.setConfidence( coalesce(prCfg.metadata.confidence, d.getConfidence()) );
-    d.setConfidence( coalesce(prCfg.metadata.completeness, d.getCompleteness()) );
+    d.setCompleteness( coalesce(prCfg.metadata.completeness, d.getCompleteness()) );
     d.setGeographicScope( coalesce(prCfg.metadata.geographicScope, d.getGeographicScope()) );
     d.setTaxonomicScope( coalesce(prCfg.metadata.taxonomicScope, d.getTaxonomicScope()) );
     d.setTemporalScope( coalesce(prCfg.metadata.temporalScope, d.getTemporalScope()) );
