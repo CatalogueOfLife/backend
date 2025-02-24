@@ -43,7 +43,7 @@ public enum TaxGroup {
       Basidiomycetes("237a0fb1-7b73-43ec-b0a5-eff95e7237df", "Basidiomycota", Fungi),
       Pseudofungi("53b543aa-2a5e-4407-88cd-6acbb0b5c3f9",
         "traditionally follows fungal nomenclature therefore placed here. Includes Oomycetes and Hyphochytriomycetes. Phylogenetically related to Algae and protists", Fungi, Algae),
-      OtherFungi("", "All other basal fungi not being asco- or basidiomycetes",Fungi),
+      OtherFungi("44c27c08-400f-4304-92b4-997fdd85ec4b", "All other basal fungi not being asco- or basidiomycetes",Fungi),
 
     Animals("a3dd3044-648c-4e45-93f0-21a156247132", "Animalia",NomCode.ZOOLOGICAL, Eukaryotes),
       Arthropods("83c995d5-0936-441b-8a27-089005086c61", "",Animals),
@@ -55,16 +55,16 @@ public enum TaxGroup {
           Hemiptera("61e306a9-9b19-4c9a-ba10-7856bd096356", "",Insects),
           Orthoptera("e7ba011c-6172-47ca-84bf-0dfc87b47a32", "",Insects),
           Trichoptera("e1307c88-3e8f-4ba8-9f93-751df3deb739", "",Insects),
-          OtherInsects("", "",Insects),
+          OtherInsects("2894776f-a2cf-4475-b13d-6d8ea1607ea4", "",Insects),
         Arachnids("95908e68-8d10-4f48-91a2-b0d7d85c4c2d", "",Arthropods),
         Crustacean("a8dc4f0a-5b17-4ed4-bc4a-8af69db73c16", Arthropods),
-        OtherArthropods("", Arthropods),
+        OtherArthropods("1d2c7cb7-4a62-4f4a-96ff-b62e225d6f91", Arthropods),
       Molluscs("e9ca8d1d-36cd-48bc-aa6e-8303be2b78f6", Animals),
         Gastropods("9da7781e-48eb-407d-a13f-d6de8954dde2", Molluscs),
         Bivalves("70d345ec-c53a-45b9-a4af-93cf6f3e2125", Molluscs),
-        OtherMolluscs("", Molluscs),
+        OtherMolluscs("f060bcc7-5725-46f7-8276-14553af3707f", Molluscs),
       Chordates("23a7d09d-4a4d-4ad5-ad07-49a6b59a7fba", Animals),
-      OtherAnimals("", Animals);
+      OtherAnimals("1e5bf32d-3f47-42ee-98e4-ddbd11e0f7be", Animals);
 
   public enum SIZE {
     PX64(64), PX128(128), PX192(192);
