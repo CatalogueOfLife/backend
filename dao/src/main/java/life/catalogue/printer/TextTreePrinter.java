@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -48,6 +49,8 @@ import javax.annotation.Nullable;
  */
 public class TextTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
+  private static final Pattern SPACE = Pattern.compile("[\n\r\t]+");
+  private static final Pattern COMMA = Pattern.compile(",");
   private boolean showIDs;
   private boolean extended;
   private final DSID<String> key;
@@ -91,12 +94,14 @@ public class TextTreePrinter extends AbstractTreePrinter {
     writer.write("]");
 
     var infos = infos(u);
-    if (!infos.isEmpty()) {
+    if (!infos.props.isEmpty()) {
       writer.write(" {");
-      writer.write(String.join(" ", infos));
+      writer.write(String.join(" ", infos.props));
       writer.write("}");
     }
-
+    if (infos.remarks != null) {
+      writer.write(" # " + noLineBreak(infos.remarks) );
+    }
     writer.write('\n');
   }
 
@@ -111,39 +116,45 @@ public class TextTreePrinter extends AbstractTreePrinter {
     return sb;
   }
 
+  private static class MappedInfos {
+    final List<String> props = new ArrayList<>();
+    String remarks;
+  }
+
   /**
    * @return list of infos to be appended in brackets after the name
    * @param u
    */
-  private List<String> infos(SimpleName u){
-    List<String> infos = new ArrayList<>();
+  private MappedInfos infos(SimpleName u){
+    var infos = new MappedInfos();
     if (showIDs) {
-      infos.add("ID=" + u.getId());
+      infos.props.add("ID=" + u.getId());
     }
     if (extended) {
       key.id(u.getId());
-      addInfos(TxtTreeTerm.CODE, u.getCode(), infos);
+      addInfos(TxtTreeTerm.CODE, u.getCode(), infos.props);
       var nu = session.getMapper(NameUsageMapper.class).get(key);
       if (nu != null) {
-        addInfos(TxtTreeTerm.PUB, escape(nu.getName().getPublishedInId()), infos);
+        addInfos(TxtTreeTerm.PUB, escape(nu.getName().getPublishedInId()), infos.props);
         if (nu.isTaxon()) {
           Taxon t = nu.asTaxon();
-          addInfos(TxtTreeTerm.REF, joinStr(t.getReferenceIds()), infos);
-          addInfos(TxtTreeTerm.ENV, joinEnum(t.getEnvironments()), infos);
+          addInfos(TxtTreeTerm.REF, joinStr(t.getReferenceIds()), infos.props);
+          addInfos(TxtTreeTerm.ENV, joinEnum(t.getEnvironments()), infos.props);
           if (t.getTemporalRangeStart() != null || t.getTemporalRangeEnd() != null) {
-            addInfos(TxtTreeTerm.CHRONO, str(t.getTemporalRangeStart()) + "-" + str(t.getTemporalRangeEnd()), infos);
+            addInfos(TxtTreeTerm.CHRONO, str(t.getTemporalRangeStart()) + "-" + str(t.getTemporalRangeEnd()), infos.props);
           }
         }
-        addInfos(TxtTreeTerm.LINK, nu.getLink(), infos);
-        addInfos(TxtTreeTerm.REMARKS, escape(nu.getRemarks()), infos);
+        addInfos(TxtTreeTerm.LINK, nu.getLink(), infos.props);
+        infos.remarks = nu.getRemarks();
       }
-      addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos);
+      addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos.props);
     }
     if (countRank != null) {
-      infos.add("NUM_"+countRank.name() + "=" + taxonCount);
+      infos.props.add("NUM_"+countRank.name() + "=" + taxonCount);
     }
     return infos;
   }
+
   private static String str(String x) {
     return x == null ? "" : escape(x);
   }
@@ -154,8 +165,12 @@ public class TextTreePrinter extends AbstractTreePrinter {
    * @return
    */
   private static String escape(String x) {
-    return x == null ? null : x.replaceAll(",", ",,");
+    return x == null ? null : COMMA.matcher( noLineBreak(x) ).replaceAll(",,");
   }
+  private static String noLineBreak(String x) {
+    return x == null ? null : SPACE.matcher(x).replaceAll(" ");
+  }
+
   private String encode(VernacularName vn) {
     if (vn != null && vn.getName() != null) {
       if (vn.getLanguage() != null) {

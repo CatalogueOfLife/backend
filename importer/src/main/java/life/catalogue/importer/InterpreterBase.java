@@ -492,17 +492,4 @@ public class InterpreterBase {
       t.setEnvironments(Set.of(settings.getEnum(Setting.ENVIRONMENT)));
     }
   }
-
-  public static String normGeoTime(String gt, IssueContainer issues){
-    if (gt != null) {
-      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
-      if (pr.isPresent()) {
-        return pr.get().getName();
-      } else {
-        issues.addIssue(Issue.GEOTIME_INVALID);
-      }
-      return StringUtils.trimToNull(gt.replaceAll("_", " "));
-    }
-    return null;
-  }
 }

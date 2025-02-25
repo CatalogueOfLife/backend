@@ -44,6 +44,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
+import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
@@ -343,7 +344,7 @@ public class WsServer extends Application<WsServerConfig> {
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
-    TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService);
+    TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
     // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);

@@ -265,4 +265,10 @@
     WHERE r.dataset_key=#{datasetKey}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT id FROM reference
+      WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+    )
+  </select>
 </mapper>

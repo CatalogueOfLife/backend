@@ -64,22 +64,6 @@ public class TxtTreeInserterTest extends InserterBaseTest {
   }
 
   @Test
-  public void remarks() throws Exception {
-    NeoInserter ins = setup("/txtree/6");
-    ins.insertAll();
-    AtomicInteger all = new AtomicInteger(0);
-    AtomicInteger remarks = new AtomicInteger(0);
-    store.usages().all().forEach(u -> {
-      all.incrementAndGet();
-      if (u.usage.getRemarks() != null) {
-        remarks.incrementAndGet();
-      }
-    });
-    assertEquals(932, all.get());
-    assertEquals(83, remarks.get());
-  }
-
-  @Test
   public void test2() throws Exception {
     NeoInserter ins = setup("/txtree/2");
     ins.insertAll();

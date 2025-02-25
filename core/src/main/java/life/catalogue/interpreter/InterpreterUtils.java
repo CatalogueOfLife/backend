@@ -5,6 +5,9 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 
+import life.catalogue.parser.GeoTimeParser;
+import life.catalogue.parser.SafeParser;
+
 import org.gbif.dwc.terms.Term;
 
 import java.util.ArrayList;
@@ -95,5 +98,18 @@ public class InterpreterUtils {
       return ids;
     }
     return Collections.emptyList();
+  }
+
+  public static String normGeoTime(String gt, IssueContainer issues){
+    if (gt != null) {
+      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
+      if (pr.isPresent()) {
+        return pr.get().getName();
+      } else {
+        issues.addIssue(Issue.GEOTIME_INVALID);
+      }
+      return StringUtils.trimToNull(gt.replaceAll("_", " "));
+    }
+    return null;
   }
 }

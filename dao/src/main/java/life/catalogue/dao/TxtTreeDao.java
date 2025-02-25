@@ -8,26 +8,31 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.parser.RankParser;
-import life.catalogue.parser.UnparsableException;
-import life.catalogue.printer.PrinterFactory;
-import life.catalogue.printer.TextTreePrinter;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameValidator;
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.Tree;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class TxtTreeDao {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeDao.class);
@@ -36,12 +41,14 @@ public class TxtTreeDao {
   private final NameUsageIndexService indexService;
   private final TaxonDao tdao;
   private final SynonymDao sdao;
+  private final TxTreeNodeInterpreter interpreter;
 
-  public TxtTreeDao(SqlSessionFactory factory, TaxonDao tdao, SynonymDao sdao, NameUsageIndexService indexService) {
+  public TxtTreeDao(SqlSessionFactory factory, TaxonDao tdao, SynonymDao sdao, NameUsageIndexService indexService, TxTreeNodeInterpreter interpreter) {
     this.factory = factory;
     this.indexService = indexService;
     this.tdao = tdao;
     this.sdao = sdao;
+    this.interpreter = interpreter;
   }
 
   public void readTxtree(int datasetKey, String id, Set<Rank> ranks, OutputStream os) throws IOException {
@@ -61,7 +68,7 @@ public class TxtTreeDao {
     return u == null ? null : (u.getName() == null ? null : u.getName().getCode());
   }
 
-  public int insertTxtree(int datasetKey, String id, User user, InputStream txtree, boolean replace) throws IOException {
+  public int insertTxtree(int datasetKey, String id, User user, InputStream txtree, boolean replace) throws IOException, InterruptedException {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin != DatasetOrigin.PROJECT) {
       throw new IllegalArgumentException("Text trees can only be inserted into projects.");
@@ -102,7 +109,7 @@ public class TxtTreeDao {
     int counter = 0;
     var docs = new ArrayList<NameUsageWrapper>();
     for (SimpleTreeNode t : tree.getRoot()) {
-      counter = counter + insertTaxon(parent, t, classification, code, user, docs);
+      counter += insertTaxon(parent, t, 0, classification, code, user, docs);
     }
     // push remaining docs to ES
     if (docs.size() >= INDEX_BATCH_SIZE) {
@@ -112,13 +119,12 @@ public class TxtTreeDao {
     return counter;
   }
 
-  private void addDoc(List<NameUsageWrapper> docs, NameUsageBase nu, LinkedList<SimpleName> classification) {
+  private void addDoc(List<NameUsageWrapper> docs, NameUsageBase nu, LinkedList<SimpleName> classification, IssueContainer issues) {
     var nuw = new NameUsageWrapper(nu);
 
     classification.addLast(new SimpleName(nu));
     nuw.setClassification(List.copyOf(classification));
 
-    IssueContainer issues = IssueContainer.simple();
     NameValidator.flagIssues(nu.getName(), issues);
     nuw.setIssues(issues.getIssues());
 
@@ -129,19 +135,54 @@ public class TxtTreeDao {
     }
   }
 
-  private int insertTaxon(Taxon parent, SimpleTreeNode t, LinkedList<SimpleName> classification, NomCode code, User user, List<NameUsageWrapper> docs) {
+  private boolean referenceExists(DSID<String> rid) {
+    try (SqlSession session = factory.openSession(true)) {
+      return session.getMapper(ReferenceMapper.class).exists(rid);
+    }
+  }
+  private Predicate<String> refExistsFunc(int datasetKey) {
+    return new Predicate<>() {
+      @Override
+      public boolean test(String s) {
+        return referenceExists(DSID.of(datasetKey, s));
+      }
+    };
+  }
+
+  private static TxtUsage prep(int datasetKey, String parentID, TxtUsage nu) {
+    nu.usage.setParentId(parentID);
+    // dont reuse any ids but force inserts!
+    nu.usage.setId(null);
+    nu.usage.getName().setId(null);
+    nu.usage.setDatasetKey(datasetKey);
+    nu.usage.getName().setDatasetKey(datasetKey);
+    return nu;
+  }
+
+  /**
+   * Recursive insert of a txt tree node, inserting the taxon itself and then all synonyms and children
+   * @param parent
+   * @param t
+   * @param classification
+   * @param code
+   * @param user
+   * @param docs
+   * @return number of total inserts done
+   */
+  private int insertTaxon(Taxon parent, SimpleTreeNode t, int ordinal, LinkedList<SimpleName> classification, NomCode code, User user, List<NameUsageWrapper> docs) throws InterruptedException {
     int counter = 0;
-    final Name n = treeNode2name(parent.getDatasetKey(), t, code);
-    final Taxon tax = new Taxon(n);
-    tax.setParentId(parent.getId());
+    int datasetKey = parent.getDatasetKey();
+    var refExists = refExistsFunc(datasetKey);
+    var tu = prep(datasetKey, parent.getId(), interpreter.interpret(t, false, ordinal, code, refExists));
+    final Taxon tax = tu.usage.asTaxon();
     tdao.create(tax, user.getKey(), false); // this also does name matching
-    addDoc(docs, tax, classification);
+    addDoc(docs, tax, classification, tu.issues);
     counter++;
 
     // synonyms
     for (SimpleTreeNode st : t.synonyms){
-      final Name sn = treeNode2name(parent.getDatasetKey(), st, code);
-      final Synonym syn = new Synonym(sn);
+      var su = prep(datasetKey, parent.getId(), interpreter.interpret(st, true, 0, code, refExists));
+      var syn = su.usage.asSynonym();
       syn.setAccepted(tax);
       sdao.create(syn, user.getKey());
       if (st.basionym) {
@@ -149,21 +190,22 @@ public class TxtTreeDao {
           var nrm = session.getMapper(NameRelationMapper.class);
           var rel = new NameRelation();
           rel.setDatasetKey(parent.getDatasetKey());
-          rel.setNameId(n.getId());
+          rel.setNameId(tax.getName().getId());
           rel.setType(NomRelType.BASIONYM);
-          rel.setRelatedNameId(sn.getId());
+          rel.setRelatedNameId(syn.getName().getId());
           rel.applyUser(user);
           nrm.create(rel);
         }
       }
-      addDoc(docs, syn, classification);
+      addDoc(docs, syn, classification, su.issues);
       classification.removeLast(); // addDoc adds the synonym to the classification - we dont want this in the other usages
       counter++;
     }
 
     // accepted children
+    int childOrd = 1;
     for (SimpleTreeNode c : t.children){
-      counter = counter + insertTaxon(tax, c, classification, code, user, docs);
+      counter += insertTaxon(tax, c, childOrd++, classification, code, user, docs);
     }
 
     // remove taxon from classification again
@@ -172,22 +214,18 @@ public class TxtTreeDao {
     return counter;
   }
 
-  private static Name treeNode2name(int datasetKey, SimpleTreeNode tn, NomCode code) {
-    Name n = new Name();
-    n.setDatasetKey(datasetKey);
-    n.setScientificName(tn.name);
-    n.setCode(code);
-    Rank rank = Rank.UNRANKED; // default for unknown
-    try {
-      var parsedRank = RankParser.PARSER.parse(code, tn.rank);
-      if (parsedRank.isPresent()) {
-        rank = parsedRank.get();
-      }
-    } catch (UnparsableException e) {
-      rank = Rank.OTHER;
-    }
-    n.setRank(rank);
-    return n;
+  public static class TxtUsage {
+    public NameUsageBase usage;
+    public final IssueContainer issues = new IssueContainer.Simple();
+    public final List<Distribution> distributions = Lists.newArrayList();
+    public final List<Media> media = Lists.newArrayList();
+    public final List<VernacularName> vernacularNames = Lists.newArrayList();
+    public final List<SpeciesEstimate> estimates = Lists.newArrayList();
+    public final List<TaxonProperty> properties = Lists.newArrayList();
+  }
+
+  public interface TxTreeNodeInterpreter {
+    TxtUsage interpret(SimpleTreeNode tn, boolean synonym, int ordinal, NomCode parentCode, Predicate<String> referenceExists) throws InterruptedException;
   }
 
 }

@@ -197,7 +197,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
                           @PathParam("id") String id,
                           @QueryParam("replace") boolean replace,
                           @Auth User user,
-                          InputStream txtree) throws IOException {
+                          InputStream txtree) throws Exception {
     return txtTreeDao.insertTxtree(datasetKey, id, user, txtree, replace);
   }
 }

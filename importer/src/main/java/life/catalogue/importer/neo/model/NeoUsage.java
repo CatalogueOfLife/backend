@@ -7,6 +7,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import java.util.List;
 import java.util.Objects;
 
+import life.catalogue.dao.TxtTreeDao;
+
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 
@@ -44,7 +46,20 @@ public class NeoUsage implements NeoNode, DSID<String>, VerbatimEntity {
   // extra stuff not covered by above for normalizer only
   public Classification classification;
   public List<String> remarks = Lists.newArrayList();
-  
+
+  public NeoUsage() {
+  }
+
+  public NeoUsage(TxtTreeDao.TxtUsage tu) {
+    this.usage = tu.usage;
+    this.distributions = tu.distributions;
+    this.media = tu.media;
+    this.vernacularNames = tu.vernacularNames;
+    this.estimates = tu.estimates;
+    this.properties = tu.properties;
+  }
+
+
   private static NeoUsage create(NameUsage nu, Origin origin, Name name, TaxonomicStatus status) {
     NeoUsage u = new NeoUsage();
     u.usage = nu;

@@ -3,6 +3,7 @@
 **/.idea
 **/java-xjc/
 **/.surefire-*
+**/neodb.dot
 
 dao/127.0.0.1/
 dao/dataset/
