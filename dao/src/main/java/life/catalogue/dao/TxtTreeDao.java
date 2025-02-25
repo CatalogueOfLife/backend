@@ -7,9 +7,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.ReferenceMapper;
-import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.printer.PrinterFactory;
@@ -178,6 +176,27 @@ public class TxtTreeDao {
     tdao.create(tax, user.getKey(), false); // this also does name matching
     addDoc(docs, tax, classification, tu.issues);
     counter++;
+    // vernacular?
+    if (!tu.vernacularNames.isEmpty() || !tu.distributions.isEmpty() || !tu.properties.isEmpty()) {
+      try (SqlSession session = factory.openSession(false)) {
+        var vm = session.getMapper(VernacularNameMapper.class);
+        var dm = session.getMapper(DistributionMapper.class);
+        var pm = session.getMapper(TaxonPropertyMapper.class);
+        for (var v : tu.vernacularNames) {
+          v.setDatasetKey(datasetKey);
+          vm.create(v, tax.getId());
+        }
+        for (var d : tu.distributions) {
+          d.setDatasetKey(datasetKey);
+          dm.create(d, tax.getId());
+        }
+        for (var p : tu.properties) {
+          p.setDatasetKey(datasetKey);
+          pm.create(p, tax.getId());
+        }
+         session.commit();
+      }
+    }
 
     // synonyms
     for (SimpleTreeNode st : t.synonyms){
