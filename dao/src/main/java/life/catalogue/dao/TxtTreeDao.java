@@ -49,7 +49,7 @@ public class TxtTreeDao {
     this.interpreter = interpreter;
   }
 
-  public void readTxtree(int datasetKey, String id, Set<Rank> ranks, OutputStream os) throws IOException {
+  public void readTxtree(int datasetKey, String id, boolean extended, Set<Rank> ranks, OutputStream os) throws IOException {
     var ttp = TreeTraversalParameter.dataset(datasetKey);
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
@@ -57,6 +57,9 @@ public class TxtTreeDao {
     try (Writer writer = UTF8IoUtils.writerFromStream(os);
          TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, factory, writer)
     ) {
+      if (extended) {
+        printer.showExtendedInfos();
+      }
       printer.print();
       writer.flush();
     }

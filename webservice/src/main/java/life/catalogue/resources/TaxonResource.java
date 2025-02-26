@@ -183,8 +183,8 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Path("{id}/tree")
   @Produces(MediaType.TEXT_PLAIN)
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR, Roles.REVIEWER})
-  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("rank") Set<Rank> ranks) {
-    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, ranks, os);
+  public Response txtree(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("extended") boolean extended, @QueryParam("rank") Set<Rank> ranks) {
+    StreamingOutput stream = os -> txtTreeDao.readTxtree(datasetKey, id, extended, ranks, os);
     return Response.ok(stream).build();
   }
 
