@@ -3,26 +3,21 @@ package life.catalogue.resources;
 import life.catalogue.api.datapackage.PackageDescriptor;
 import life.catalogue.common.datapackage.DataPackage;
 import life.catalogue.common.datapackage.DataPackageBuilder;
+import life.catalogue.common.io.HttpUtils;
+import life.catalogue.common.io.Resources;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.ws.rs.BeanParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-
-import life.catalogue.common.io.HttpUtils;
-
-import life.catalogue.common.io.Resources;
-
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.swagger.v3.oas.annotations.Hidden;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
 
 @Hidden
 @Path("/datapackage")

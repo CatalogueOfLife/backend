@@ -39,6 +39,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
+import life.catalogue.feedback.GithubFeedback;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -400,6 +401,9 @@ public class WsServer extends Application<WsServerConfig> {
     GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, ddao, getSqlSessionFactory(), jerseyClient);
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
+    //github feedback
+    var feedback = new GithubFeedback(cfg.github, jerseyClient, getSqlSessionFactory());
+
     // assembly
     SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, env.metrics());
     managedService.manage(Component.SectorSynchronizer, syncManager);
@@ -438,7 +442,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao));
+    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedback));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new PublisherResource(pdao));

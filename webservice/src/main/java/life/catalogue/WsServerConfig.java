@@ -16,6 +16,7 @@ import life.catalogue.dw.metrics.GangliaBundleConfiguration;
 import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
 import life.catalogue.exporter.ExporterConfig;
+import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
 
 import java.io.File;
@@ -125,6 +126,9 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   public JobConfig job = new JobConfig();
+
+  @Valid
+  public GithubConfig github;
 
   /**
    * The name parser timeout in milliseconds

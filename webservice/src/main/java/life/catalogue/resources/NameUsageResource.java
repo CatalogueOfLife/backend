@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.dropwizard.auth.Auth;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
@@ -18,10 +20,14 @@ import life.catalogue.es.*;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
+import life.catalogue.feedback.FeedbackService;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -54,14 +60,16 @@ public class NameUsageResource {
   private final NameUsageSuggestionService suggestService;
   private final LatestDatasetKeyCache datasetKeyCache;
   private final TaxonDao dao;
+  private final FeedbackService feedbackService;
 
   public NameUsageResource(NameUsageSearchService search, NameUsageSuggestionService suggest, NameUsageIndexService indexService,
-                           LatestDatasetKeyCache datasetKeyCache, TaxonDao dao) {
+                           LatestDatasetKeyCache datasetKeyCache, TaxonDao dao, FeedbackService feedbackService) {
     this.searchService = search;
     this.suggestService = suggest;
     this.indexService = indexService;
     this.datasetKeyCache = datasetKeyCache;
     this.dao = dao;
+    this.feedbackService = feedbackService;
   }
 
   @GET
@@ -178,8 +186,15 @@ public class NameUsageResource {
     return info;
   }
 
+  @POST
+  @Hidden
+  @Path("{id}/feedback")
+  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, String message, @Auth Optional<User> user) throws IOException {
+    return feedbackService.create(user, DSID.of(datasetKey, id), message);
+  }
+
   @GET
-  @Timed
+  @Hidden
   @Path("pattern")
   public List<SimpleNameWithDecision> searchDatasetByRegex(@PathParam("key") int datasetKey,
                                                @QueryParam("projectKey") Integer projectKey,
