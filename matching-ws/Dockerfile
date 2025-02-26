@@ -11,6 +11,8 @@ ARG CLB_PASSWORD=""
 ENV CLB_API_URL="https://api.checklistbank.org"
 ARG GIT_BRANCH=""
 ENV APP_ARTIFACT=matching-ws
+ARG CLB_IDENTIFIER_DATASET_IDS=""
+ARG CLB_IUCN_DATASET_ID=""
 
 # Local builds - run from root of backend
 #COPY .. /app/backend
