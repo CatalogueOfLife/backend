@@ -186,15 +186,15 @@ public class TxtTreeDao {
         var dm = session.getMapper(DistributionMapper.class);
         var pm = session.getMapper(TaxonPropertyMapper.class);
         for (var v : tu.vernacularNames) {
-          v.setDatasetKey(datasetKey);
+          fill(v, datasetKey, user);
           vm.create(v, tax.getId());
         }
         for (var d : tu.distributions) {
-          d.setDatasetKey(datasetKey);
+          fill(d, datasetKey, user);
           dm.create(d, tax.getId());
         }
         for (var p : tu.properties) {
-          p.setDatasetKey(datasetKey);
+          fill(p, datasetKey, user);
           pm.create(p, tax.getId());
         }
          session.commit();
@@ -234,6 +234,13 @@ public class TxtTreeDao {
     classification.removeLast();
 
     return counter;
+  }
+
+  private <T extends DatasetScopedEntity<Integer>> T fill(T obj, int datasetKey, User user) {
+    obj.setDatasetKey(datasetKey);
+    obj.setModifiedBy(user.getKey());
+    obj.setCreatedBy(user.getKey());
+    return obj;
   }
 
   public static class TxtUsage {
