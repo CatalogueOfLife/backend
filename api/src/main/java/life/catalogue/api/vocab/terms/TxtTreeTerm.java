@@ -18,6 +18,7 @@ public enum TxtTreeTerm implements Term, AlternativeNames {
   REF,
   ENV,
   VERN,
+  DIST,
   SRC,
   CHRONO, // temporal range
   LINK,

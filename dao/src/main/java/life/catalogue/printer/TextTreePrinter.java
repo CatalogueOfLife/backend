@@ -2,10 +2,12 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
 
+import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
@@ -148,6 +150,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
         infos.remarks = nu.getRemarks();
       }
       addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos.props);
+      addInfos(TxtTreeTerm.DIST, DistributionMapper.class, this::encode, infos.props);
     }
     if (countRank != null) {
       infos.props.add("NUM_"+countRank.name() + "=" + taxonCount);
@@ -177,6 +180,24 @@ public class TextTreePrinter extends AbstractTreePrinter {
         return vn.getLanguage() + ":" + escape(vn.getName().trim());
       }
       return escape(vn.getName().trim());
+    }
+    return null;
+  }
+
+  /**
+   * Serializes all structured distributions, but skips pure text ones
+   */
+  private String encode(Distribution d) {
+    if (d != null && d.getArea() != null && d.getArea().getGazetteer() != null && d.getArea().getGazetteer() != Gazetteer.TEXT) {
+      if (d.getArea().getId() != null) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(d.getArea().getGlobalId());
+        if (d.getStatus() != null) {
+          // iso:de:native
+          sb.append(':').append(d.getStatus().name().toLowerCase());
+        }
+        return sb.toString();
+      }
     }
     return null;
   }

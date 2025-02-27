@@ -2,13 +2,13 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Environment;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.common.kryo.AreaSerializer;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.parser.*;
+
+import org.checkerframework.checker.units.qual.A;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -24,6 +24,7 @@ import static life.catalogue.parser.SafeParser.parse;
 
 public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
   private static final Pattern VERNACULAR = Pattern.compile("([a-z]{2,3}):(.+)");
+  private static final Pattern DISTRIBUTION = Pattern.compile("^([a-z]{3,9}:[^:\\s,]+)(?::([a-z]+))?$"); // LONGHURST = max 9 length
 
   @Override
   public TxtTreeDao.TxtUsage interpret(SimpleTreeNode tn, boolean synonym, int ordinal, NomCode parentCode, Predicate<String> referenceExists) throws InterruptedException {
@@ -131,6 +132,28 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
           }
         }
       }
+      // Distribution - iso:de:native
+      if (hasDataItem(DIST, tn)) {
+        String[] vals = rmDataItem(DIST, tn);
+        for (String val : vals) {
+          var m = DISTRIBUTION.matcher(val);
+          if (m.find()) {
+            var d = new Distribution();
+            var area = SafeParser.parse(AreaParser.PARSER, m.group(1)).orNull(Issue.DISTRIBUTION_AREA_INVALID, u.issues);
+            if (area != null) {
+              d.setArea(area);
+              var dstat = SafeParser.parse(DistributionStatusParser.PARSER, m.group(2)).orNull(Issue.DISTRIBUTION_STATUS_INVALID, u.issues);
+              d.setStatus(dstat);
+              u.distributions.add(d);
+            } else {
+              u.issues.addIssue(Issue.DISTRIBUTION_INVALID);
+            }
+          } else {
+            u.issues.addIssue(Issue.DISTRIBUTION_INVALID);
+          }
+        }
+      }
+
       // ALL OTHER
       for (var entry : tn.infos.entrySet()) {
         // ignore the PUB entry which we handle below

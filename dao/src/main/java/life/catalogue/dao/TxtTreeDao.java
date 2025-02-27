@@ -180,11 +180,12 @@ public class TxtTreeDao {
     addDoc(docs, tax, classification, tu.issues);
     counter++;
     // vernacular?
-    if (!tu.vernacularNames.isEmpty() || !tu.distributions.isEmpty() || !tu.properties.isEmpty()) {
+    if (!tu.vernacularNames.isEmpty() || !tu.distributions.isEmpty() || !tu.properties.isEmpty() || !tu.media.isEmpty()) {
       try (SqlSession session = factory.openSession(false)) {
         var vm = session.getMapper(VernacularNameMapper.class);
         var dm = session.getMapper(DistributionMapper.class);
         var pm = session.getMapper(TaxonPropertyMapper.class);
+        var mm = session.getMapper(MediaMapper.class);
         for (var v : tu.vernacularNames) {
           fill(v, datasetKey, user);
           vm.create(v, tax.getId());
@@ -197,7 +198,11 @@ public class TxtTreeDao {
           fill(p, datasetKey, user);
           pm.create(p, tax.getId());
         }
-         session.commit();
+        for (var m : tu.media) {
+          fill(m, datasetKey, user);
+          mm.create(m, tax.getId());
+        }
+        session.commit();
       }
     }
 
