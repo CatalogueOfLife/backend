@@ -16,8 +16,9 @@ class GithubFeedbackTest {
   @Test
   void buildMessage() {
     var feedback = new GithubFeedback(new GithubConfig(), URI.create("https://www.checklistbank.org"), null, null);
-    var msg = feedback.buildMessage(Optional.empty(), DSID.of(321, "ABCD"), "I cannot find what I am looking for.");
+    var msg = feedback.buildMessage(Optional.empty(), DSID.of(321, "ABCD"), "I cannot find what I am looking for.", null);
     assertEquals("I cannot find what I am looking for.\n" +
+      "\n" +
       "---\n" +
       "https://www.checklistbank.org/dataset/321/nameusage/ABCD", msg);
 
@@ -26,8 +27,11 @@ class GithubFeedbackTest {
     user.setUsername("streber");
     user.setFirstname("Frank");
     user.setLastname("Streber");
-    msg = feedback.buildMessage(Optional.of(user), DSID.of(321, "ABCD"), "I cannot find what I am looking for.");
-    assertEquals("I cannot find what I am looking for.\n" +
+    msg = feedback.buildMessage(Optional.of(user), DSID.of(321, "ABCD"), "I cannot find what I am looking for.", "Puma concolor L.");
+    assertEquals("Puma concolor L.\n" +
+      "\n" +
+      "I cannot find what I am looking for.\n" +
+      "\n" +
       "---\n" +
       "https://www.checklistbank.org/dataset/321/nameusage/ABCD\n" +
       "Submitted by: 100", msg);

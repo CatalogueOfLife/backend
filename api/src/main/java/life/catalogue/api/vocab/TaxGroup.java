@@ -64,7 +64,7 @@ public enum TaxGroup {
         Bivalves("70d345ec-c53a-45b9-a4af-93cf6f3e2125", Molluscs),
         OtherMolluscs("f060bcc7-5725-46f7-8276-14553af3707f", Molluscs),
       Chordates("23a7d09d-4a4d-4ad5-ad07-49a6b59a7fba", Animals),
-      OtherAnimals("1e5bf32d-3f47-42ee-98e4-ddbd11e0f7be", Animals);
+      OtherAnimals("f0d839a1-5a3e-42b2-828a-c5e536f0f7b7", Animals);
 
   public enum SIZE {
     PX64(64), PX128(128), PX192(192);

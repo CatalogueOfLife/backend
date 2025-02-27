@@ -27,6 +27,8 @@ import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
+import javax.annotation.Nullable;
+
 /**
  * https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#create-an-issue
  */
@@ -48,9 +50,14 @@ public class GithubFeedback implements FeedbackService {
   }
 
   @VisibleForTesting
-  protected String buildMessage(Optional<User> user, DSID<String> usageKey, String message) {
-    StringBuilder msg = new StringBuilder(message);
-    msg.append("\n---\n");
+  protected String buildMessage(Optional<User> user, DSID<String> usageKey, String message, @Nullable String name) {
+    StringBuilder msg = new StringBuilder();
+    if (name != null) {
+      msg.append(name)
+         .append("\n\n");
+    }
+    msg.append(message);
+    msg.append("\n\n---\n");
     msg.append(clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
     if (user.isPresent()) {
       msg.append("\nSubmitted by: "+user.get().getKey());
@@ -67,6 +74,7 @@ public class GithubFeedback implements FeedbackService {
       throw new IllegalArgumentException("Invalid message");
     }
 
+    String name = null;
     StringBuilder title = new StringBuilder("Feedback on ");
     if (factory != null) {
       try (SqlSession session = factory.openSession()) {
@@ -75,10 +83,11 @@ public class GithubFeedback implements FeedbackService {
         if (tax == null) {
           throw NotFoundException.notFound(NameUsage.class, usageKey);
         }
-        title.append(tax.getName());
+        name = tax.getLabel();
+        title.append(name);
       }
     }
-    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, message), cfg.assignee, cfg.labels);
+    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, message, name), cfg.assignee, cfg.labels);
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")
