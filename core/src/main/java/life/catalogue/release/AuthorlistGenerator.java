@@ -5,6 +5,7 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.dao.DatasetSourceDao;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -74,7 +75,13 @@ public class AuthorlistGenerator {
     if (!uniq.isEmpty()) {
       Collections.sort(uniq);
       // verify emails as they can break validation on insert
-      uniq.forEach(a -> a.validateAndNullify(validator));
+      uniq.forEach(a -> {
+        // move sources to unique notes
+        if (a instanceof SrcAgent) {
+          ((SrcAgent) a).addSourcesToNptes();
+        }
+        a.validateAndNullify(validator);
+      });
       // now append them to already existing creators
       if (cfg.addSourceAuthors) {
         d.setCreator(append(d.getCreator(), uniq));
@@ -107,9 +114,35 @@ public class AuthorlistGenerator {
     return result;
   }
 
-  private static List<Agent> addSourceNote(Dataset d, List<Agent> agents) {
-    agents.forEach(a -> a.addNote(d.getAliasOrTitle()));
-    return agents;
+  private static List<SrcAgent> addSourceNote(Dataset d, List<Agent> agents) {
+    return agents.stream()
+      .map(a -> new SrcAgent(a, d.getAliasOrTitle()))
+      .collect(Collectors.toUnmodifiableList());
+  }
+
+  private static class SrcAgent extends Agent {
+    Set<String> sources = new HashSet<>();
+
+    public SrcAgent(Agent other, String source) {
+      super(other);
+      if (source != null) {
+        this.sources.add(source);
+      }
+    }
+
+    @Override
+    public void merge(Agent addition) {
+      super.merge(addition);
+      if (addition instanceof SrcAgent) {
+        sources.addAll(((SrcAgent) addition).sources);
+      }
+    }
+
+    public void addSourcesToNptes() {
+      List<String> srcs = new ArrayList<>(sources);
+      Collections.sort(srcs);
+      addNote(String.join(", ", srcs));
+    }
   }
 
 }

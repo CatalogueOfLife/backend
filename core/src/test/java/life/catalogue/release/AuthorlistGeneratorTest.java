@@ -28,6 +28,7 @@ public class AuthorlistGeneratorTest {
     final List<Dataset> sources = new ArrayList<>();
     final var frankOrcid = "1234-5678-9999-0000";
     var s1 = new Dataset();
+    s1.setAlias("DS1");
     s1.setCreator(List.of(
       person("F", "Berril", null, frankOrcid),
       person("Arri", "Rønsen"), organisation("FAO")
@@ -35,6 +36,7 @@ public class AuthorlistGeneratorTest {
     sources.add(s1);
 
     var s2 = new Dataset();
+    s2.setAlias("ALIAS");
     s2.setCreator(List.of(
       person("Gerry", "Newman"),
       person("Arri", "Rønsen"),
@@ -79,6 +81,7 @@ public class AuthorlistGeneratorTest {
 
     var s3 = new Dataset();
     s3.setKey(projectKey+3);
+    s3.setAlias("ALIAS");
     s3.setCreator(List.of(person("Markus", "Döring", "markus@vegan.pork", null, "Vegan")));
     sources.add(s3);
 
@@ -87,7 +90,8 @@ public class AuthorlistGeneratorTest {
     gen.appendSourceAuthors(d, cfg);
     assertEquals(8, d.getCreator().size());
 
-    assertEquals("Drummer; Vegan", d.getCreator().get(0).getNote());
+    assertEquals("Drummer; Vegan; ALIAS", d.getCreator().get(0).getNote());
+    assertEquals("ALIAS, DS1", d.getCreator().get(4).getNote());
     // sorted
     assertEquals("Bella", d.getCreator().get(1).getFamily());
   }

@@ -437,10 +437,12 @@ public class Agent implements Comparable<Agent> {
 
   public void addNote(String note) {
     // merge notes if both exist
-    if (this.note != null && note != null) {
-      setNote(this.note + "; " + note);
-    } else if (note != null){
-      setNote(note);
+    if (!StringUtils.isBlank(note)) {
+      if (!StringUtils.isBlank(this.note)) {
+        setNote(this.note + "; " + note.trim());
+      } else {
+        setNote(note);
+      }
     }
   }
 
