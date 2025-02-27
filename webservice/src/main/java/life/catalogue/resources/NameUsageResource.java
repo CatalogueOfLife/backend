@@ -20,6 +20,7 @@ import life.catalogue.es.*;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
+import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 
 import org.gbif.nameparser.api.Rank;
@@ -189,16 +190,8 @@ public class NameUsageResource {
   @POST
   @Hidden
   @Path("{id}/feedback")
-  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, String message,
-                      @Auth Optional<User> user, @Context ContainerRequestContext ctxt) throws IOException {
-    URI issue = feedbackService.create(user, DSID.of(datasetKey, id), message);
-    if (user.isEmpty()) {
-      String referrer = ctxt.getHeaderString("referer");
-      if (referrer == null) {
-        LOG.warn("No referer given or user authenticated! Created issue: {}", issue);
-      }
-    }
-    return issue;
+  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, Feedback msg, @Auth Optional<User> user) throws IOException {
+    return feedbackService.create(user, DSID.of(datasetKey, id), msg);
   }
 
   @GET

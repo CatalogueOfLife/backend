@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public interface FeedbackService extends Managed {
 
-  URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException, IOException;
+  URI create(Optional<User> user, DSID<String> usageKey, Feedback message) throws NotFoundException, IOException;
 
   /**
    * @return a pass through feedback service that does nothing. Good for tests
@@ -36,7 +36,7 @@ public interface FeedbackService extends Managed {
       }
 
       @Override
-      public URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException {
+      public URI create(Optional<User> user, DSID<String> usageKey, Feedback message) throws NotFoundException {
         return null;
       }
     };

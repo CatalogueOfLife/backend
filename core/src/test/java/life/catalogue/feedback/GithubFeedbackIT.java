@@ -51,7 +51,7 @@ public class GithubFeedbackIT {
     cfg.labels = List.of("testing");
 
     var gh = new GithubFeedback(cfg, URI.create("http://test.org"), client, null);
-    var issue = gh.create(Optional.empty(), DSID.of(3,"ASDFG"), "Foo bar");
+    var issue = gh.create(Optional.empty(), DSID.of(3,"ASDFG"), GithubFeedbackTest.fb("Foo bar"));
     System.out.println(issue);
   }
 

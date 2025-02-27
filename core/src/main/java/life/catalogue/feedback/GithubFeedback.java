@@ -50,27 +50,30 @@ public class GithubFeedback implements FeedbackService {
   }
 
   @VisibleForTesting
-  protected String buildMessage(Optional<User> user, DSID<String> usageKey, String message, @Nullable String name) {
+  protected String buildMessage(Optional<User> user, DSID<String> usageKey, Feedback feedback, @Nullable String name) {
     StringBuilder msg = new StringBuilder();
     if (name != null) {
       msg.append(name)
          .append("\n\n");
     }
-    msg.append(message);
+    msg.append(feedback.message);
     msg.append("\n\n---\n");
     msg.append(clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
     if (user.isPresent()) {
       msg.append("\nSubmitted by: "+user.get().getKey());
     }
+    if (feedback.email != null) {
+      msg.append("\nEmail: ").append(feedback.email);
+    }
     return msg.toString();
   }
 
   @Override
-  public URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException, IOException {
+  public URI create(Optional<User> user, DSID<String> usageKey, Feedback feedback) throws NotFoundException, IOException {
     if (!active) {
       throw UnavailableException.unavailable("feedback service");
     }
-    if (spamDetector.isSpam(message)) {
+    if (spamDetector.isSpam(feedback.message)) {
       throw new IllegalArgumentException("Invalid message");
     }
 
@@ -87,7 +90,7 @@ public class GithubFeedback implements FeedbackService {
         title.append(name);
       }
     }
-    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, message, name), cfg.assignee, cfg.labels);
+    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name), cfg.assignee, cfg.labels);
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")
