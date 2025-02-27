@@ -189,8 +189,16 @@ public class NameUsageResource {
   @POST
   @Hidden
   @Path("{id}/feedback")
-  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, String message, @Auth Optional<User> user) throws IOException {
-    return feedbackService.create(user, DSID.of(datasetKey, id), message);
+  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, String message,
+                      @Auth Optional<User> user, @Context ContainerRequestContext ctxt) throws IOException {
+    URI issue = feedbackService.create(user, DSID.of(datasetKey, id), message);
+    if (user.isEmpty()) {
+      String referrer = ctxt.getHeaderString("referer");
+      if (referrer == null) {
+        LOG.warn("No referer given or user authenticated! Created issue: {}", issue);
+      }
+    }
+    return issue;
   }
 
   @GET

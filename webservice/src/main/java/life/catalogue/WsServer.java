@@ -403,6 +403,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     //github feedback
     var feedback = new GithubFeedback(cfg.github, jerseyClient, getSqlSessionFactory());
+    managedService.manage(Component.Feedback, feedback);
 
     // assembly
     SyncManager syncManager = new SyncManager(cfg.syncs, getSqlSessionFactory(), ni, syncFactory, env.metrics());

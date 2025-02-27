@@ -1,12 +1,14 @@
 package life.catalogue.feedback;
 
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.io.IOException;
+import java.io.NotActiveException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +32,25 @@ public class GithubFeedback implements FeedbackService {
   private final GithubConfig cfg;
   private final WebTarget issue;
   private final SqlSessionFactory factory;
+  private final SpamDetector spamDetector;
+  private boolean active;
 
   public GithubFeedback(GithubConfig cfg, Client client, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
     this.issue = client.target(cfg.issueURI());
+    spamDetector = new SpamDetector();
   }
 
   @Override
   public URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException, IOException {
+    if (!active) {
+      throw UnavailableException.unavailable("feedback service");
+    }
+    if (spamDetector.isSpam(message)) {
+      throw new IllegalArgumentException("Invalid message");
+    }
+
     StringBuilder title = new StringBuilder("Feedback on ");
     if (factory != null) {
       try (SqlSession session = factory.openSession()) {
@@ -76,6 +88,21 @@ public class GithubFeedback implements FeedbackService {
       LOG.info("GitHub issue created for taxon {}: {}", usageKey, ghResp.html_url);
       return URI.create(ghResp.html_url);
     }
+  }
+
+  @Override
+  public void start() throws Exception {
+    active = true;
+  }
+
+  @Override
+  public void stop() throws Exception {
+    active = false;
+  }
+
+  @Override
+  public boolean hasStarted() {
+    return active;
   }
 
   private static class GHIssue {
