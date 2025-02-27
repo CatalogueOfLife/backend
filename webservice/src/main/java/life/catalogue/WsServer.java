@@ -39,6 +39,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
+import life.catalogue.feedback.FeedbackService;
 import life.catalogue.feedback.GithubFeedback;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
@@ -402,7 +403,12 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     //github feedback
-    var feedback = new GithubFeedback(cfg.github, jerseyClient, getSqlSessionFactory());
+    FeedbackService feedback;
+    if (cfg.github == null) {
+      feedback = FeedbackService.passThru();
+    } else {
+      feedback = new GithubFeedback(cfg.github, cfg.clbURI, jerseyClient, getSqlSessionFactory());
+    }
     managedService.manage(Component.Feedback, feedback);
 
     // assembly

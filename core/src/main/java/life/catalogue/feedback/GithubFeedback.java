@@ -1,5 +1,9 @@
 package life.catalogue.feedback;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import jakarta.ws.rs.core.UriBuilder;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
@@ -8,7 +12,6 @@ import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.io.IOException;
-import java.io.NotActiveException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -33,13 +36,26 @@ public class GithubFeedback implements FeedbackService {
   private final WebTarget issue;
   private final SqlSessionFactory factory;
   private final SpamDetector spamDetector;
+  private final UriBuilder clbTaxonURI;
   private boolean active;
 
-  public GithubFeedback(GithubConfig cfg, Client client, SqlSessionFactory factory) {
+  public GithubFeedback(GithubConfig cfg, URI clbURI, Client client, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
-    this.issue = client.target(cfg.issueURI());
+    this.issue = client == null ? null : client.target(cfg.issueURI()); // null for tests only!
+    this.clbTaxonURI = UriBuilder.fromUri(clbURI).path("dataset/{arg1}/nameusage/{arg2}");
     spamDetector = new SpamDetector();
+  }
+
+  @VisibleForTesting
+  protected String buildMessage(Optional<User> user, DSID<String> usageKey, String message) {
+    StringBuilder msg = new StringBuilder(message);
+    msg.append("\n---\n");
+    msg.append(clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
+    if (user.isPresent()) {
+      msg.append("\nSubmitted by: "+user.get().getKey());
+    }
+    return msg.toString();
   }
 
   @Override
@@ -62,13 +78,7 @@ public class GithubFeedback implements FeedbackService {
         title.append(tax.getName());
       }
     }
-    StringBuilder msg = new StringBuilder(message);
-    if (user.isPresent()) {
-      msg.append("\n---\n")
-         .append("Submitted by: "+user.get().getKey());
-    }
-    var iss = new GHIssue(title.toString(), msg.toString(), cfg.assignee, cfg.labels);
-
+    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, message), cfg.assignee, cfg.labels);
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")

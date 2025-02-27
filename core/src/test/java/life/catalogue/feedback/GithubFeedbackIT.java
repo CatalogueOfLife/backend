@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.doi.service.UserAgentFilter;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +50,7 @@ public class GithubFeedbackIT {
     cfg.token = "xxx";
     cfg.labels = List.of("testing");
 
-    var gh = new GithubFeedback(cfg, client, null);
+    var gh = new GithubFeedback(cfg, URI.create("http://test.org"), client, null);
     var issue = gh.create(Optional.empty(), DSID.of(3,"ASDFG"), "Foo bar");
     System.out.println(issue);
   }

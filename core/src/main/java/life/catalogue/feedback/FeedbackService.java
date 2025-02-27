@@ -16,4 +16,29 @@ public interface FeedbackService extends Managed {
 
   URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException, IOException;
 
+  /**
+   * @return a pass through feedback service that does nothing. Good for tests
+   */
+  static FeedbackService passThru() {
+    return new FeedbackService() {
+
+      @Override
+      public void start() throws Exception {
+      }
+
+      @Override
+      public void stop() throws Exception {
+      }
+
+      @Override
+      public boolean hasStarted() {
+        return false;
+      }
+
+      @Override
+      public URI create(Optional<User> user, DSID<String> usageKey, String message) throws NotFoundException {
+        return null;
+      }
+    };
+  }
 }
