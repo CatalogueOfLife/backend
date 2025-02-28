@@ -25,6 +25,10 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                              @Param("mode") @Nullable Sector.Mode mode);
 
+  boolean hasSector(@Param("datasetKey") int datasetKey,
+                    @Param("subjectDatasetKey") int subjectDatasetKey,
+                    @Param("mode") @Nullable Sector.Mode mode);
+
   /**
    * List all sectors in a project published by a given publisher
    */

@@ -2,19 +2,26 @@ package life.catalogue.feedback;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriBuilder;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
+
+import life.catalogue.db.mapper.SectorMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -50,15 +57,16 @@ public class GithubFeedback implements FeedbackService {
   }
 
   @VisibleForTesting
-  protected String buildMessage(Optional<User> user, DSID<String> usageKey, Feedback feedback, @Nullable String name) {
+  protected String buildMessage(Optional<User> user, DSID<String> usageKey, Feedback feedback, @Nullable String name, Dataset source) {
     StringBuilder msg = new StringBuilder();
     if (name != null) {
       msg.append(name)
          .append("\n\n");
     }
     msg.append(feedback.message);
-    msg.append("\n\n---\n");
-    msg.append(clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
+    msg.append("\n\n---");
+    msg.append("\nSource: " + source.getAliasOrTitle());
+    msg.append("\nTaxon: " + clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
     if (user.isPresent()) {
       msg.append("\nSubmitted by: "+user.get().getKey());
     }
@@ -80,20 +88,40 @@ public class GithubFeedback implements FeedbackService {
       throw new IllegalArgumentException("Invalid message");
     }
 
-    String name = null;
-    StringBuilder title = new StringBuilder("Feedback on ");
-    if (factory != null) {
-      try (SqlSession session = factory.openSession()) {
-        var num = session.getMapper(NameUsageMapper.class);
-        var tax = num.getSimple(usageKey);
-        if (tax == null) {
-          throw NotFoundException.notFound(NameUsage.class, usageKey);
+    // only allow COL and COL sources to be commented on
+    final var forbiddenExcpt = new ForbiddenException("Feedback is only allowed on the Catalogue of Life and it's sources");
+    final var info = DatasetInfoCache.CACHE.info(usageKey.getDatasetKey()); // this already throws 404 if not existing
+    Dataset dataset;
+    try (SqlSession session = factory.openSession()) {
+      if (info.origin.isProjectOrRelease()) {
+        if (info.keyOrProjectKey() != Datasets.COL) {
+          throw forbiddenExcpt;
         }
-        name = tax.getLabel();
-        title.append(name);
+      } else {
+        // for external datasets check if this is a source of the current project
+        var sm = session.getMapper(SectorMapper.class);
+        if (!sm.hasSector(Datasets.COL, usageKey.getDatasetKey(), null)) {
+          throw forbiddenExcpt;
+        }
       }
+      // good to comment, load dataset
+      var dm = session.getMapper(DatasetMapper.class);
+      dataset = dm.get(usageKey.getDatasetKey());
     }
-    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name), cfg.assignee, cfg.labels);
+
+    // create a new github issue
+    String name;
+    StringBuilder title = new StringBuilder("Feedback on ");
+    try (SqlSession session = factory.openSession()) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var tax = num.getSimple(usageKey);
+      if (tax == null) {
+        throw NotFoundException.notFound(NameUsage.class, usageKey);
+      }
+      name = tax.getLabel();
+      title.append(name);
+    }
+    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name, dataset), cfg.assignee, cfg.labels);
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")

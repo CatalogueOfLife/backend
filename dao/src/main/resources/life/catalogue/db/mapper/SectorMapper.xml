@@ -228,6 +228,17 @@
     </where>
   </select>
 
+  <select id="hasSector" resultType="boolean">
+    SELECT exists(
+      SELECT id FROM sector
+      WHERE dataset_key=#{datasetKey} AND subject_dataset_key = #{subjectDatasetKey}
+      <if test="mode != null">
+        AND mode = #{mode}::SECTOR_MODE
+      </if>
+      LIMIT 1
+    )
+  </select>
+
   <select id="listByDatasetPublisher" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
