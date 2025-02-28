@@ -23,6 +23,10 @@ public class GithubConfig {
 
   public List<String> labels;
 
+  public String encryptPassword;
+
+  public String encryptSalt;
+
   public URI issueURI() {
     return api.resolve("/repos/"+organisation+"/"+repository+"/issues");
   }

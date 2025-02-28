@@ -46,14 +46,25 @@ public class GithubFeedback implements FeedbackService {
   private final SqlSessionFactory factory;
   private final SpamDetector spamDetector;
   private final UriBuilder clbTaxonURI;
+  private final UriBuilder emailUriBuilder;
+  private final EmailEncryption encryption;
   private boolean active;
 
-  public GithubFeedback(GithubConfig cfg, URI clbURI, Client client, SqlSessionFactory factory) {
+  public GithubFeedback(GithubConfig cfg, URI clbURI, URI apiURI, Client client, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
     this.issue = client == null ? null : client.target(cfg.issueURI()); // null for tests only!
-    this.clbTaxonURI = UriBuilder.fromUri(clbURI).path("dataset/{arg1}/nameusage/{arg2}");
+    this.clbTaxonURI = UriBuilder.fromUri(clbURI)
+      .path("dataset/{arg1}/nameusage/{arg2}");
+    this.emailUriBuilder = UriBuilder.fromUri(apiURI)
+      .path("admin/email")
+      .queryParam("address", "{arg1}");
     spamDetector = new SpamDetector();
+    if (cfg.encryptPassword != null) {
+      encryption = new EmailEncryption(cfg.encryptPassword, cfg.encryptSalt);
+    } else {
+      encryption = null;
+    }
   }
 
   @VisibleForTesting
@@ -71,7 +82,13 @@ public class GithubFeedback implements FeedbackService {
       msg.append("\nSubmitted by: "+user.get().getKey());
     }
     if (feedback.email != null) {
-      msg.append("\nEmail: ").append(feedback.email);
+      String mailText;
+      if (encryption == null) {
+        mailText = feedback.email;
+      } else {
+        mailText = emailUriBuilder.build(encryption.encrypt(feedback.email)).toString();
+      }
+      msg.append("\nEmail: ").append(mailText);
     }
     return msg.toString();
   }

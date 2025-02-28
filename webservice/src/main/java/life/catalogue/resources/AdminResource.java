@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import jakarta.validation.Valid;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RequestScope;
@@ -22,6 +24,7 @@ import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.feedback.Feedback;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
@@ -34,10 +37,8 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.net.URI;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -362,6 +363,17 @@ public class AdminResource {
   public BackgroundJob rebuildMetricsMissing(@Auth User user, @QueryParam("threshold") @DefaultValue("0") double threshold) {
     return runJob(new MetricsSchedulerJob(user.getKey(), factory, threshold, exec));
   }
+
+  @GET
+  @Path("/email")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public Response decryptMail(@QueryParam("address") String encrypted) throws IOException {
+    return Response
+      .status(Response.Status.TEMPORARY_REDIRECT)
+      .header("Location", "mailto:"+encrypted)
+      .build();
+  }
+
 
   private BackgroundJob runJob(BackgroundJob job){
     exec.submit(job);

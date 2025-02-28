@@ -25,9 +25,14 @@ class GithubFeedbackTest {
   }
   @Test
   void buildMessage() {
+    var cfg = new GithubConfig();
+    cfg.encryptPassword="tVmJMgv8ZiCNrHDGCYdg9gt6K8MFNYB4";
+    cfg.encryptSalt="ff0cdb935375091f";
+    final var feedback = new GithubFeedback(cfg, URI.create("https://www.checklistbank.org"), URI.create("https://api.checklistbank.org"), null, null);
+
     Dataset d = new Dataset();
     d.setAlias("COL22");
-    var feedback = new GithubFeedback(new GithubConfig(), URI.create("https://www.checklistbank.org"), null, null);
+
     var msg = feedback.buildMessage(Optional.empty(), DSID.of(321, "ABCD"), fb("I cannot find what I am looking for."), null, d);
     assertEquals("I cannot find what I am looking for.\n" +
       "\n" +
@@ -41,7 +46,7 @@ class GithubFeedbackTest {
     user.setFirstname("Frank");
     user.setLastname("Streber");
     msg = feedback.buildMessage(Optional.of(user), DSID.of(321, "ABCD"), fb("I cannot find what I am looking for.", "peter@nope.com"), "Puma concolor L.", d);
-    assertEquals("Puma concolor L.\n" +
+    assertTrue(msg.startsWith("Puma concolor L.\n" +
       "\n" +
       "I cannot find what I am looking for.\n" +
       "\n" +
@@ -49,6 +54,6 @@ class GithubFeedbackTest {
       "Source: COL22\n" +
       "Taxon: https://www.checklistbank.org/dataset/321/nameusage/ABCD\n" +
       "Submitted by: 100\n" +
-      "Email: peter@nope.com", msg);
+      "Email: https://api.checklistbank.org/admin/email?address="));
   }
 }
