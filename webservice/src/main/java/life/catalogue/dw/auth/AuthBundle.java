@@ -35,7 +35,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   
   @Override
   public void run(WsServerConfig cfg, Environment environment) {
-    environment.jersey().register(RolesAllowedDynamicFeature.class);
+    environment.jersey().register(RolesAllowedDynamicFeature2.class);
     
     jwtCodec = new JwtCodec(cfg.jwtKey);
     idService = new IdentityService(cfg.auth.createAuthenticationProvider());
@@ -48,7 +48,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     // require authenticated user for methods with @Auth
     environment.jersey().register(RequireAuthDynamicFeature.class);
     // require specific roles annotation
-    environment.jersey().register(RolesAllowedDynamicFeature.class);
+    environment.jersey().register(RolesAllowedDynamicFeature2.class);
     // check access to private datasets based on URI
     environment.jersey().register(privateFilter);
   }

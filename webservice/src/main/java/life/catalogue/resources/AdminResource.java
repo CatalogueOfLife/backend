@@ -367,7 +367,7 @@ public class AdminResource {
   @GET
   @Path("/email")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public Response decryptMail(@QueryParam("address") String encrypted) throws IOException {
+  public Response decryptMail(@QueryParam("address") String encrypted) {
     return Response
       .status(Response.Status.TEMPORARY_REDIRECT)
       .header("Location", "mailto:"+encrypted)
