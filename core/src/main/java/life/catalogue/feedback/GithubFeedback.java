@@ -50,7 +50,7 @@ public class GithubFeedback implements FeedbackService {
   private final EmailEncryption encryption;
   private boolean active;
 
-  public GithubFeedback(GithubConfig cfg, URI clbURI, URI apiURI, Client client, SqlSessionFactory factory) {
+  public GithubFeedback(GithubConfig cfg, URI clbURI, URI apiURI, Client client, @Nullable EmailEncryption encryption, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.factory = factory;
     this.issue = client == null ? null : client.target(cfg.issueURI()); // null for tests only!
@@ -60,11 +60,7 @@ public class GithubFeedback implements FeedbackService {
       .path("admin/email")
       .queryParam("address", "{arg1}");
     spamDetector = new SpamDetector();
-    if (cfg.encryptPassword != null) {
-      encryption = new EmailEncryption(cfg.encryptPassword, cfg.encryptSalt);
-    } else {
-      encryption = null;
-    }
+    this.encryption = encryption;
   }
 
   @VisibleForTesting

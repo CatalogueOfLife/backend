@@ -39,6 +39,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
 import life.catalogue.exporter.ExportManager;
+import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.feedback.GithubFeedback;
 import life.catalogue.gbifsync.GbifSyncManager;
@@ -403,11 +404,16 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     //github feedback
+    EmailEncryption encryption = null;
+    if (cfg.github.encryptPassword != null) {
+      encryption = new EmailEncryption(cfg.github.encryptPassword, cfg.github.encryptSalt);
+    }
+
     FeedbackService feedback;
     if (cfg.github == null) {
       feedback = FeedbackService.passThru();
     } else {
-      feedback = new GithubFeedback(cfg.github, cfg.clbURI, cfg.apiURI, jerseyClient, getSqlSessionFactory());
+      feedback = new GithubFeedback(cfg.github, cfg.clbURI, cfg.apiURI, jerseyClient, encryption, getSqlSessionFactory());
     }
     managedService.manage(Component.Feedback, feedback);
 
@@ -425,7 +431,7 @@ public class WsServer extends Application<WsServerConfig> {
     // resources
     j.register(new AdminResource(
       getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
-      importManager, ddao, gbifSync, executor, idMap, validator, bus)
+      importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
     j.register(new DataPackageResource());
     j.register(new DatasetArchiveResource(cfg));

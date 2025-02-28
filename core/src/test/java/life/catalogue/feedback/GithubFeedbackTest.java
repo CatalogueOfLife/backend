@@ -25,10 +25,8 @@ class GithubFeedbackTest {
   }
   @Test
   void buildMessage() {
-    var cfg = new GithubConfig();
-    cfg.encryptPassword="tVmJMgv8ZiCNrHDGCYdg9gt6K8MFNYB4";
-    cfg.encryptSalt="ff0cdb935375091f";
-    final var feedback = new GithubFeedback(cfg, URI.create("https://www.checklistbank.org"), URI.create("https://api.checklistbank.org"), null, null);
+    var encryption = new EmailEncryption("tVmJMgv8ZiCNrHDGCYdg9gt6K8MFNYB4", "ff0cdb935375091f");
+    final var feedback = new GithubFeedback(new GithubConfig(), URI.create("https://www.checklistbank.org"), URI.create("https://api.checklistbank.org"), null, encryption, null);
 
     Dataset d = new Dataset();
     d.setAlias("COL22");

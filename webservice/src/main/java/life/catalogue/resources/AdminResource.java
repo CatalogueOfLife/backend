@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import jakarta.validation.Valid;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RequestScope;
@@ -24,7 +22,7 @@ import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
-import life.catalogue.feedback.Feedback;
+import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
@@ -37,8 +35,10 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
-import java.net.URI;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,12 +88,14 @@ public class AdminResource {
   private final ManagedService componedService;
   private final EventBus bus;
   private final LatestDatasetKeyCache lrCache;
+  private final EmailEncryption encryption;
 
   public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, Validator validator, EventBus bus) {
+                       JobExecutor executor, IdMap idMap, Validator validator, EventBus bus, EmailEncryption encryption) {
     this.factory = factory;
+    this.encryption = encryption;
     this.bus = bus;
     this.componedService = managedService;
     this.ddao = ddao;
@@ -370,7 +372,7 @@ public class AdminResource {
   public Response decryptMail(@QueryParam("address") String encrypted) {
     return Response
       .status(Response.Status.TEMPORARY_REDIRECT)
-      .header("Location", "mailto:"+encrypted)
+      .header("Location", "mailto:"+encryption.decrypt(encrypted))
       .build();
   }
 
