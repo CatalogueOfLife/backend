@@ -190,7 +190,7 @@ public class NameUsageResource {
   @POST
   @Hidden
   @Path("{id}/feedback")
-  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, Feedback msg, @Auth Optional<User> user) throws IOException {
+  public URI feedback(@PathParam("key") int datasetKey, @PathParam("id") String id, @Valid Feedback msg, @Auth Optional<User> user) throws IOException {
     return feedbackService.create(user, DSID.of(datasetKey, id), msg);
   }
 

@@ -70,6 +70,9 @@ public class GithubFeedback implements FeedbackService {
 
   @Override
   public URI create(Optional<User> user, DSID<String> usageKey, Feedback feedback) throws NotFoundException, IOException {
+    if (feedback == null) {
+      throw new IllegalArgumentException("No feedback provided");
+    }
     if (!active) {
       throw UnavailableException.unavailable("feedback service");
     }
