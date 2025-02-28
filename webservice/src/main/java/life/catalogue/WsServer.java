@@ -407,7 +407,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.github == null) {
       feedback = FeedbackService.passThru();
     } else {
-      feedback = new GithubFeedback(cfg.github, cfg.clbURI, jerseyClient, getSqlSessionFactory());
+      feedback = new GithubFeedback(cfg.github, cfg.clbURI, cfg.apiURI, jerseyClient, getSqlSessionFactory());
     }
     managedService.manage(Component.Feedback, feedback);
 
