@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriterBuilder;
@@ -49,6 +50,7 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.BytesRef;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
@@ -119,7 +121,10 @@ public class IndexingService {
     analyzerPerField.put(FIELD_SCIENTIFIC_NAME, new StandardAnalyzer());
     analyzerPerField.put(FIELD_CANONICAL_NAME, scientificNameAnalyzer);
     PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper( new KeywordAnalyzer(), analyzerPerField);
-    return new IndexWriterConfig(aWrapper);
+    IndexWriterConfig config = new IndexWriterConfig(aWrapper);
+    config.setMaxBufferedDocs(IndexWriterConfig.DISABLE_AUTO_FLUSH);
+    config.setRAMBufferSizeMB(256.0);
+    return config;
   }
 
   /**
@@ -463,6 +468,10 @@ public class IndexingService {
     log.info("Start building a new RAM index");
     Directory tempDir = new ByteBuffersDirectory();
     IndexWriter writer = getIndexWriter(tempDir);
+
+    Directory tempNestedDir = new ByteBuffersDirectory();
+    IndexWriter nestedWriter = getIndexWriter(tempNestedDir);
+
     IOUtil ioUtil = new IOUtil();
 
     // creates initial index segments
@@ -475,9 +484,11 @@ public class IndexingService {
       }
     }
     writer.close();
+    nestedWriter.close();
 
     // de-normalise
     IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(tempDir));
+    IndexSearcher nestedSearcher = new IndexSearcher(DirectoryReader.open(tempNestedDir));
     TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
     ScoreDoc[] hits = results.scoreDocs;
 
@@ -488,7 +499,7 @@ public class IndexingService {
     for (ScoreDoc hit : hits) {
       batch.add(searcher.storedFields().document(hit.doc));
     }
-    new DenormIndexTask(searcher, denormedWriter, ioUtil, batch).run();
+    new DenormIndexTask(searcher, nestedSearcher, denormedWriter, ioUtil, batch).run();
 
     // optimize the index
     denormedWriter.flush();
@@ -632,10 +643,12 @@ public class IndexingService {
     private final IndexWriter writer;
     private final List<Document> docs;
     private final IndexSearcher searcher;
+    private final IndexSearcher nestedSearcher;
     private final IOUtil ioUtil;
 
-    public DenormIndexTask(IndexSearcher searcher, IndexWriter writer, IOUtil ioUtil, List<Document> docs) {
+    public DenormIndexTask(IndexSearcher searcher, IndexSearcher nestedSearcher, IndexWriter writer, IOUtil ioUtil, List<Document> docs) {
       this.searcher = searcher;
+      this.nestedSearcher = nestedSearcher;
       this.writer = writer;
       this.ioUtil = ioUtil;
       this.docs = docs;
@@ -647,12 +660,43 @@ public class IndexingService {
         for (Document doc : docs) {
           // set the higher classification
           StoredClassification storedClassification = loadHierarchyWithIDs(searcher, doc);
+
+          addNestedSetIDs(nestedSearcher, doc);
+
           ioUtil.serialiseField(doc, FIELD_CLASSIFICATION, storedClassification);
           writer.addDocument(doc);
         }
         writer.flush();
       } catch (Exception e) {
         log.error("Error writing documents to " + ANCILLARY_DIR + " index: {}", e.getMessage(), e);
+      }
+    }
+
+    private void addNestedSetIDs(IndexSearcher nestedSearcher, Document doc) {
+      try {
+
+        String id = doc.get(FIELD_ID);
+        String parentID = doc.get(FIELD_PARENT_ID);
+        String status = doc.get(FIELD_STATUS);
+        String idToUse = id;
+
+        // if the status is not accepted, use the parent ID (which is the accepted ID)
+        if (status != null && !status.equals(TaxonomicStatus.ACCEPTED.name()) ) {
+          idToUse = parentID;
+        }
+
+        if (idToUse != null) {
+          TopDocs topDocs = nestedSearcher.search(new TermQuery(new Term(FIELD_ID, idToUse)), 1);
+          if (topDocs.totalHits.value > 0) {
+            Document nestedDoc = nestedSearcher.doc(topDocs.scoreDocs[0].doc);
+            doc.add(new LongField(FIELD_LEFT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_LEFT_NESTED_SET_ID)), Field.Store.YES));
+            doc.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_RIGHT_NESTED_SET_ID)), Field.Store.YES));
+          }
+        } else {
+          log.error("Taxon ID {} has status {}, with parentID {}", id, status, parentID);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
   }
@@ -794,12 +838,14 @@ public class IndexingService {
     }
 
     // add the leaf node
-    classification.addLast(StoredName.builder()
-      .key(leafDoc.get(FIELD_ID))
-      .rank(leafDoc.get(FIELD_RANK))
-      .name(leafDoc.get(FIELD_CANONICAL_NAME))
-      .build()
-    );
+    if (TaxonomicStatus.ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))) {
+      classification.addLast(StoredName.builder()
+        .key(leafDoc.get(FIELD_ID))
+        .rank(leafDoc.get(FIELD_RANK))
+        .name(leafDoc.get(FIELD_CANONICAL_NAME))
+        .build()
+      );
+    }
 
     return builder.names(new ArrayList<>(classification)).build();
   }
@@ -812,12 +858,112 @@ public class IndexingService {
       log.info("Main index already exists at path {}", mainIndexPath);
       return;
     }
+    log.info("Generating index for path {}", mainIndexPath);
     writeCLBToFile(datasetKey);
     indexFile(exportPath + "/" + datasetKey, mainIndexPath);
     denormalizeMainIndex(mainIndexPath, tempDenormedPath);
   }
 
+  private void nestedSetMainIndex(String mainIndexPath, String nestedTempPath) throws IOException {
+
+    StopWatch watch = new StopWatch();
+    watch.start();
+    log.info("Generating nested set index for main index...");
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+    Directory mainDirectory = FSDirectory.open(Paths.get(mainIndexPath));
+    IndexReader tempReader = DirectoryReader.open(mainDirectory);
+    IndexWriter nestedIndexWriter = new IndexWriter(FSDirectory.open(Paths.get(nestedTempPath)), getIndexWriterConfig());
+
+    IndexSearcher searcher = new IndexSearcher(tempReader);
+    Query query = new BooleanQuery.Builder()
+      .add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST)
+      .add(new FieldExistsQuery(FIELD_PARENT_ID), BooleanClause.Occur.MUST_NOT).build();
+
+    // Execute search
+    TopDocs topDocs = searcher.search(query, 100);
+    long currentIdx = 1;
+    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+      long left = currentIdx;
+      Document rootTaxon = searcher.doc(scoreDoc.doc);
+      if (!rootTaxon.get(FIELD_CANONICAL_NAME).equalsIgnoreCase("incertae sedis")
+        && rootTaxon.get(FIELD_STATUS).equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
+        log.info("[Nested set] Starting Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME));
+        currentIdx = nestedSetTaxon(rootTaxon, searcher, nestedIndexWriter, currentIdx, new ArrayList<>(), 0);
+        log.info("[Nested set] Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME) + " left: " + left + " right: " + currentIdx);
+      }
+    }
+
+    // optimize the index
+    finishIndex(nestedIndexWriter);
+    nestedIndexWriter.commit();
+    nestedIndexWriter.close();
+    log.info("Nested set index generated.");
+  }
+
+  private long nestedSetTaxon(Document doc, IndexSearcher searcher, IndexWriter indexWriter, long currentIndex, List<String> idTracking, int currentDepth) throws IOException {
+
+    String id = doc.get(FIELD_ID);
+
+    if (currentDepth >= 50){
+      log.error("Depth {} to great for taxon {}", currentDepth, id);
+      return currentIndex;
+    }
+
+    String status = doc.get(FIELD_STATUS);
+
+    // if it is a synonym, we avoid recursively looking at child nodes
+    if (!status.equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
+      currentIndex ++;
+      Document nestedSet = new Document();
+      nestedSet.add(new StringField(FIELD_ID, id, Field.Store.YES));
+      nestedSet.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, currentIndex, Field.Store.YES));
+      nestedSet.add(new LongField(FIELD_LEFT_NESTED_SET_ID, currentIndex, Field.Store.YES));
+      indexWriter.addDocument(nestedSet);
+      return currentIndex;
+    }
+
+    // find children
+    Query query = new BooleanQuery.Builder()
+      .add(new TermQuery(new Term(FIELD_PARENT_ID, id)), BooleanClause.Occur.MUST).build();
+
+    TopDocs topDocs = searcher.search(query, 5000);
+
+    // store the left index
+    long left = currentIndex;
+
+    List<Document> children = new ArrayList<>();
+
+    // for each child, increment the index and recurse
+    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+      Document childDoc = searcher.storedFields().document(scoreDoc.doc);
+      if (!childDoc.get(FIELD_CANONICAL_NAME).equalsIgnoreCase("incertae sedis")
+        && childDoc.get(FIELD_STATUS).equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())
+      ) {
+        currentIndex++;
+        children.add(childDoc);
+      }
+    }
+
+    // sort before minting ids
+    for (Document child : children.stream().sorted(Comparator.comparing(d -> d.get(FIELD_CANONICAL_NAME))).collect(Collectors.toList())) {
+      currentIndex = nestedSetTaxon(child, searcher, indexWriter, currentIndex, idTracking, currentDepth + 1);
+    }
+
+    long right = currentIndex;
+
+    // add this node to the index
+    Document nestedSet = new Document();
+    nestedSet.add(new StringField(FIELD_ID, id, Field.Store.YES));
+    nestedSet.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, right, Field.Store.YES));
+    nestedSet.add(new LongField(FIELD_LEFT_NESTED_SET_ID, left, Field.Store.YES));
+    indexWriter.addDocument(nestedSet);
+    return right;
+  }
+
   private void denormalizeMainIndex(String mainIndexPath, String denormedTempPath) throws IOException {
+    //generate nested set index
+    nestedSetMainIndex(indexPath + "/" + MAIN_INDEX_DIR, indexPath + "/nested");
 
     StopWatch watch = new StopWatch();
     watch.start();
@@ -826,11 +972,13 @@ public class IndexingService {
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
     Directory mainDirectory = FSDirectory.open(Paths.get(mainIndexPath));
     IndexReader tempReader = DirectoryReader.open(mainDirectory);
+    IndexReader nestedSetReader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath + "/nested")));
 
     IndexWriter denormIndexWriter = new IndexWriter(FSDirectory.open(
       Paths.get(denormedTempPath)), getIndexWriterConfig());
 
     IndexSearcher searcher = new IndexSearcher(tempReader);
+    IndexSearcher nestedSearcher = new IndexSearcher(nestedSetReader);
     TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
     ScoreDoc[] hits = results.scoreDocs;
 
@@ -850,15 +998,15 @@ public class IndexingService {
       batch.add(doc);
 
       if (batch.size() >= 10000) {
-        log.info("Denormalisation - starting batch: {} taxa", counter.get());
+        log.info("De-normalisation - starting batch: {} taxa", counter.get());
         List<Document> finalBatch = batch;
-        exec.submit(new DenormIndexTask(searcher, denormIndexWriter, ioUtil, finalBatch));
+        exec.submit(new DenormIndexTask(searcher, nestedSearcher, denormIndexWriter, ioUtil, finalBatch));
         batch = new ArrayList<>();
       }
     }
 
     //final batch
-    exec.submit(new DenormIndexTask(searcher, denormIndexWriter, ioUtil, batch));
+    exec.submit(new DenormIndexTask(searcher, nestedSearcher, denormIndexWriter, ioUtil, batch));
 
     log.info("Finished reading main index file. Finishing denormalisation of index...");
 
@@ -888,9 +1036,10 @@ public class IndexingService {
     FileUtils.copyFile(new File(mainIndexPath + "/" + METADATA_JSON), new File(denormedTempPath + "/" + METADATA_JSON));
     FileUtils.deleteDirectory(new File(mainIndexPath));
     FileUtils.moveDirectory(new File(denormedTempPath), new File(mainIndexPath));
+    FileUtils.deleteDirectory(new File(indexPath + "/nested"));
 
     watch.stop();
-    log.info("Denormalisation complete: {} documents written, time taken {} mins", counter.get(), watch.getTime(TimeUnit.MINUTES));
+    log.info("De-normalisation complete: {} documents written, time taken {} mins", counter.get(), watch.getTime(TimeUnit.MINUTES));
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {
@@ -992,7 +1141,7 @@ public class IndexingService {
         }
         writer.flush();
         nameUsages.clear();
-      } catch (IOException e) {
+      } catch (Exception e) {
         log.error("Problem writing document to index: {}", e.getMessage(), e);
       }
     }
@@ -1036,7 +1185,7 @@ public class IndexingService {
      cultivar or strain information. Infrageneric names are represented without a
      leading genus. Unicode characters are replaced by their matching ASCII characters.
     */
-    Rank rank = Rank.valueOf(nameUsage.getRank());
+    Rank rank = Rank.valueOf(nameUsage.getRank().toUpperCase());
 
     Optional<String> optCanonical = Optional.empty();
     ParsedName pn = null;
@@ -1085,6 +1234,7 @@ public class IndexingService {
 
     // analyzed name field - this is what we search upon
     doc.add(new TextField(FIELD_CANONICAL_NAME, canonical, Field.Store.YES));
+    doc.add(new SortedDocValuesField(FIELD_CANONICAL_NAME, new BytesRef(canonical)));
 
     // store full name and classification only to return a full match object for hits
     String nameComplete = nameUsage.getScientificName();
@@ -1100,6 +1250,7 @@ public class IndexingService {
 
     if (StringUtils.isNotBlank(nameUsage.getParentId()) && !nameUsage.getParentId().equals(nameUsage.getId())) {
       doc.add(new StringField(FIELD_PARENT_ID, nameUsage.getParentId(), Field.Store.YES));
+      doc.add(new SortedDocValuesField(FIELD_PARENT_ID, new BytesRef(nameUsage.getParentId())));
     }
 
     if (StringUtils.isNotBlank(nameUsage.getNomenclaturalCode())) {

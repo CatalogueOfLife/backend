@@ -13,6 +13,7 @@ ARG GIT_BRANCH=""
 ENV APP_ARTIFACT=matching-ws
 ARG CLB_IDENTIFIER_DATASET_IDS=""
 ARG CLB_IUCN_DATASET_ID=""
+ENV EXTRA_RUN_ARGS=""
 
 # Local builds - run from root of backend
 #COPY .. /app/backend
@@ -58,6 +59,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         java $JVM_OPTIONS -jar /app/backend/matching-ws/target/matching-ws-1.0-SNAPSHOT-exec.jar  \
         --spring.cloud.bootstrap.location=/app/backend/matching-ws/src/main/resources/bootstrap.yaml \
         --mode=INDEX \
+        --server.port=0 \
         --index.path=/data/$APP_ARTIFACT/index \
         --export.path=/data/$APP_ARTIFACT/exports \
         --clb.dataset.id=$CLB_DATASET_ID \
@@ -65,7 +67,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         --clb.iucn.dataset.id=$CLB_IUCN_DATASET_ID \
         --clb.url=$CLB_URL \
         --clb.user=$CLB_USER \
-        --clb.password=$CLB_PASSWORD && \
+        --clb.password=$CLB_PASSWORD $EXTRA_RUN_ARGS && \
         tar zcvf /data/$APP_ARTIFACT/exports.tgz /data/$APP_ARTIFACT/exports && \
         rm -Rf /data/$APP_ARTIFACT/exports; \
     fi
@@ -99,6 +101,7 @@ ENV SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION="true"
 ENV SPRING_BOOT_ADMIN_TAG_ENV=""
 ENV SPRING_BOOT_DISCOVERY_METADATA_HOST=""
 ENV SPRING_BOOT_DISCOVERY_METADATA_PATH=""
+ENV EXTRA_RUN_ARGS=""
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -150,4 +153,4 @@ CMD java $JVM_OPTIONS \
     --spring.boot.admin.client.instance.metadata.tags.env=$SPRING_BOOT_ADMIN_TAG_ENV \
     --spring.boot.admin.client.instance.metadata.management.port=$SERVER_ADMIN_PORT \
     --spring.config.additional-location=/tmp/timestamp.properties \
-    --mode=RUN
+    --mode=RUN $EXTRA_RUN_ARGS
