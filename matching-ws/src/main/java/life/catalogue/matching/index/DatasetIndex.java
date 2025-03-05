@@ -322,7 +322,7 @@ public class DatasetIndex {
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
-      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a).ordinal() - Rank.valueOf(b).ordinal()
+      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a.toUpperCase()).ordinal() - Rank.valueOf(b.toUpperCase()).ordinal()
       ).forEach(rank -> {
         try {
           rankCounts.put(rank, getCountForRank(searcher, rank));
@@ -758,13 +758,18 @@ public class DatasetIndex {
       }
     }
 
+    if (doc.get(FIELD_LEFT_NESTED_SET_ID) != null) {
+      u.setLeft(Long.parseLong(doc.get(FIELD_LEFT_NESTED_SET_ID)));
+      u.setRight(Long.parseLong(doc.get(FIELD_RIGHT_NESTED_SET_ID)));
+    }
+
     ioUtil.deserialiseField(doc, FIELD_CLASSIFICATION, StoredClassification.class)
       .map(StoredClassification::getNames)
       .ifPresent(names -> u.setClassification(
         names.stream()
           .map(r -> NameUsageMatch.RankedName.builder()
             .key(r.getKey())
-            .rank(Rank.valueOf(r.getRank()))
+            .rank(Rank.valueOf(r.getRank().toUpperCase()))
             .canonicalName(r.getName())
             .name(r.getName())
             .build()
@@ -804,7 +809,9 @@ public class DatasetIndex {
     }
 
     String status = doc.get(FIELD_STATUS);
-    u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
+    if (status != null && !status.isEmpty()) {
+      u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status.toUpperCase()));
+    }
 
     return u;
   }
@@ -818,7 +825,7 @@ public class DatasetIndex {
         .key(doc.get(FIELD_ID))
         .name(doc.get(FIELD_SCIENTIFIC_NAME))
         .authorship(doc.get(FIELD_AUTHORSHIP))
-        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
+        .rank(Rank.valueOf(doc.get(FIELD_RANK).toUpperCase()))
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
         .code(getCode(doc));
 

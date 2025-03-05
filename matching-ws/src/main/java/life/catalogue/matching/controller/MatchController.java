@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.gbif.nameparser.api.Rank;
+import org.slf4j.MDC;
 import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
@@ -735,7 +736,10 @@ public class MatchController implements ErrorController {
   }
 
   private static void log(String requestPath, String query, StopWatch watch) {
-    log.info("[{}ms] {}: {}", String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)), requestPath, query);
+    MDC.put("executionTime",  watch.getTime(TimeUnit.MILLISECONDS)+ "ms");
+    MDC.put("requestPath", requestPath);
+    log.info("{}: {}", requestPath, query);
+    MDC.clear();
   }
 
   private static void log(String requestPath, NameUsageQuery query, StopWatch watch) {
@@ -752,11 +756,10 @@ public class MatchController implements ErrorController {
       addIfNotNull(joiner, query.genericName);
       addIfNotNull(joiner, query.specificEpithet);
 
-      log.info("[{}ms] [{}] {}",
-        String.format("%4d", watch.getTime(TimeUnit.MILLISECONDS)),
-        requestPath,
-        joiner.toString()
-      );
+      MDC.put("executionTime",  watch.getTime(TimeUnit.MILLISECONDS)+ "ms");
+      MDC.put("requestPath", requestPath);
+      log.info(joiner.toString());
+      MDC.clear();
     }
   }
 
