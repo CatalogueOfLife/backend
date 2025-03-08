@@ -1,5 +1,7 @@
 package life.catalogue.resources;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ExportRequest;
@@ -150,6 +152,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Produces(MediaType.TEXT_PLAIN)
   public Response textTree(@PathParam("key") int key,
@@ -161,6 +164,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
   public Response simpleName(@PathParam("key") int key,
@@ -171,6 +175,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Produces(MoreMediaTypes.TEXT_TSV)
   public Response exportTsv(@PathParam("key") int key,
@@ -180,6 +185,7 @@ public class DatasetExportResource {
   }
 
   @GET
+  @Hidden
   @VaryAccept
   @Produces({MoreMediaTypes.TEXT_CSV})
   public Response exportCsv(@PathParam("key") int key,

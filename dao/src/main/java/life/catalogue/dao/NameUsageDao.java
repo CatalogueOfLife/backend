@@ -1,14 +1,6 @@
 package life.catalogue.dao;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
-import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
@@ -23,16 +15,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NameType;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import jakarta.validation.Validator;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends SectorEntityDao<T, M> {
   protected final NameUsageIndexService indexService;
@@ -56,6 +41,16 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
       u.getName().setSectorMode(sectorModes.get(u.getName().getSectorDSID()));
     }
     return u;
+  }
+
+  public SimpleName getSimpleOr404(DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var sn = session.getMapper(NameUsageMapper.class).getSimple(key);
+      if (sn == null) {
+        throw NotFoundException.notFound(SimpleName.class, key);
+      }
+      return sn;
+    }
   }
 
   public VerbatimSource getSource(final DSID<String> key) {
