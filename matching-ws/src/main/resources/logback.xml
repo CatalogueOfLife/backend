@@ -28,9 +28,9 @@
   </root>
 
   <logger name="life.catalogue" level="INFO"/>
-  <logger name="life.catalogue.matching.index" level="ERROR"/>
-  <logger name="life.catalogue.matching.service" level="ERROR"/>
-  <logger name="life.catalogue.matching.Main" level="ERROR"/>
+<!--  <logger name="life.catalogue.matching.index" level="ERROR"/>-->
+<!--  <logger name="life.catalogue.matching.service" level="ERROR"/>-->
+<!--  <logger name="life.catalogue.matching.Main" level="ERROR"/>-->
   <logger name="life.catalogue.common.tax" level="ERROR"/>
   <logger name="org.springframework.web" level="ERROR"/>
   <logger name="org.apache.catalina.core" level="ERROR"/>
