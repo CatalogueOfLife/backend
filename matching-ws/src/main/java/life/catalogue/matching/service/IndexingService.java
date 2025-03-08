@@ -680,15 +680,19 @@ public class IndexingService {
         String idToUse = id;
 
         // if the status is not accepted, use the parent ID (which is the accepted ID)
-        if (status != null && !status.equals(TaxonomicStatus.ACCEPTED.name())) {
+        if (status != null && !status.equals(TaxonomicStatus.ACCEPTED.name()) ) {
           idToUse = parentID;
         }
 
-        TopDocs topDocs = nestedSearcher.search(new TermQuery(new Term(FIELD_ID, idToUse)), 1);
-        if (topDocs.totalHits.value > 0) {
-          Document nestedDoc = nestedSearcher.doc(topDocs.scoreDocs[0].doc);
-          doc.add(new LongField(FIELD_LEFT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_LEFT_NESTED_SET_ID)), Field.Store.YES));
-          doc.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_RIGHT_NESTED_SET_ID)), Field.Store.YES));
+        if (idToUse != null) {
+          TopDocs topDocs = nestedSearcher.search(new TermQuery(new Term(FIELD_ID, idToUse)), 1);
+          if (topDocs.totalHits.value > 0) {
+            Document nestedDoc = nestedSearcher.doc(topDocs.scoreDocs[0].doc);
+            doc.add(new LongField(FIELD_LEFT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_LEFT_NESTED_SET_ID)), Field.Store.YES));
+            doc.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_RIGHT_NESTED_SET_ID)), Field.Store.YES));
+          }
+        } else {
+          log.error("Taxon ID {} has status {}, with parentID {}", id, status, parentID);
         }
       } catch (IOException e) {
         throw new RuntimeException(e);
