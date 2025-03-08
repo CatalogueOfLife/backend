@@ -464,7 +464,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, tdao, fmsDao, siDao, syncManager));
     j.register(new SynonymResource(sdao));
-    j.register(new TaxonResource(tdao, txtTreeDao));
+    j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtTreeDao, mdao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
