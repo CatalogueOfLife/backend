@@ -99,6 +99,7 @@ ENV SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION="true"
 ENV SPRING_BOOT_ADMIN_TAG_ENV=""
 ENV SPRING_BOOT_DISCOVERY_METADATA_HOST=""
 ENV SPRING_BOOT_DISCOVERY_METADATA_PATH=""
+ENV EXTRA_RUN_ARGS=""
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -150,4 +151,4 @@ CMD java $JVM_OPTIONS \
     --spring.boot.admin.client.instance.metadata.tags.env=$SPRING_BOOT_ADMIN_TAG_ENV \
     --spring.boot.admin.client.instance.metadata.management.port=$SERVER_ADMIN_PORT \
     --spring.config.additional-location=/tmp/timestamp.properties \
-    --mode=RUN
+    --mode=RUN $EXTRA_RUN_ARGS
