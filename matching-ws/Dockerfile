@@ -13,6 +13,7 @@ ARG GIT_BRANCH=""
 ENV APP_ARTIFACT=matching-ws
 ARG CLB_IDENTIFIER_DATASET_IDS=""
 ARG CLB_IUCN_DATASET_ID=""
+ENV EXTRA_RUN_ARGS=""
 
 # Local builds - run from root of backend
 #COPY .. /app/backend
@@ -66,7 +67,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         --clb.iucn.dataset.id=$CLB_IUCN_DATASET_ID \
         --clb.url=$CLB_URL \
         --clb.user=$CLB_USER \
-        --clb.password=$CLB_PASSWORD && \
+        --clb.password=$CLB_PASSWORD $EXTRA_RUN_ARGS && \
         tar zcvf /data/$APP_ARTIFACT/exports.tgz /data/$APP_ARTIFACT/exports && \
         rm -Rf /data/$APP_ARTIFACT/exports; \
     fi
