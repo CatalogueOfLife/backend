@@ -29,7 +29,7 @@
 
   <logger name="life.catalogue" level="INFO"/>
   <logger name="life.catalogue.matching.index" level="INFO"/>
-  <logger name="life.catalogue.matching.service" level="WARN"/>
+  <logger name="life.catalogue.matching.service" level="INFO"/>
   <logger name="life.catalogue.matching.Main" level="INFO"/>
   <logger name="life.catalogue.common.tax" level="ERROR"/>
   <logger name="org.springframework.web" level="ERROR"/>

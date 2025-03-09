@@ -851,6 +851,7 @@ public class IndexingService {
       log.info("Main index already exists at path {}", mainIndexPath);
       return;
     }
+    log.info("Generating index for path {}", mainIndexPath);
     writeCLBToFile(datasetKey);
     indexFile(exportPath + "/" + datasetKey, mainIndexPath);
     denormalizeMainIndex(mainIndexPath, tempDenormedPath);

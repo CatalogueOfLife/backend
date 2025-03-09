@@ -59,7 +59,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         java $JVM_OPTIONS -jar /app/backend/matching-ws/target/matching-ws-1.0-SNAPSHOT-exec.jar  \
         --spring.cloud.bootstrap.location=/app/backend/matching-ws/src/main/resources/bootstrap.yaml \
         --mode=INDEX \
-        --server.port=8$((RANDOM % 999 + 1)) \
+        --server.port=$((RANDOM % 4999 + 4000)) \
         --index.path=/data/$APP_ARTIFACT/index \
         --export.path=/data/$APP_ARTIFACT/exports \
         --clb.dataset.id=$CLB_DATASET_ID \
