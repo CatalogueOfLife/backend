@@ -96,7 +96,7 @@ public class DatasetIndex {
     final Map<Integer, Dataset> prefixMapping = loadPrefixMapping();
 
     if (new File(mainIndexPath).exists()) {
-      log.info("Loading lucene index from {}", mainIndexPath);
+      log.info("Loading lucene index from {} ....", mainIndexPath);
       try {
         MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
         mMapDirectory.setPreload(true);
@@ -104,14 +104,18 @@ public class DatasetIndex {
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
+      log.info("Loaded lucene index from {}", mainIndexPath);
 
       // load identifier indexes
+      log.debug("Loading identifier indexes from {}", IDENTIFIERS_DIR);
       this.identifierSearchers = initialiseAdditionalIndexes(IDENTIFIERS_DIR, prefixMapping);
 
       // load ancillary indexes
+      log.debug("Loading ancillary indexes from {}", IDENTIFIERS_DIR);
       this.ancillarySearchers = initialiseAdditionalIndexes(ANCILLARY_DIR, prefixMapping);
 
       this.isInitialised = true;
+      log.debug("All indexes initialised");
     } else {
       log.warn("Main lucene index not found at {}", mainIndexPath);
     }
