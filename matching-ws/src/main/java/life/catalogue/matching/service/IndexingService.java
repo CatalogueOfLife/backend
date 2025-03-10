@@ -26,6 +26,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ReleaseAttempt;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.db.DatasetMapper;
@@ -679,7 +680,9 @@ public class IndexingService {
       try {
         for (Document doc : docs) {
 
-          Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
+          String id = doc.get(FIELD_ID);
+          var rank = Rank.valueOf(doc.get(FIELD_RANK));
+          Map<String, String> hierarchy = loadHierarchy(searcher, id);
           String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
           String status = doc.get(FIELD_STATUS);
           if (acceptedOnly && !isAccepted(status)) {
@@ -699,8 +702,10 @@ public class IndexingService {
           // match to main dataset
           try {
             // use strict matching for classification to classification matching
-            NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
-            if (nameUsageMatch.getUsage() != null) {
+            NameUsageMatch nameUsageMatch = matchingService.match(scientificName, rank, classification, true);
+            if (nameUsageMatch.getUsage() != null && nameUsageMatch.getDiagnostics().getMatchType() == MatchType.HIGHERRANK) {
+              log.info("Ignore higher match for {} {} # {}", rank, scientificName, id);
+            } else if (nameUsageMatch.getUsage() != null) {
               doc.add(new StringField(FIELD_JOIN_ID,
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
                   nameUsageMatch.getUsage().getKey(), Field.Store.YES)
@@ -712,7 +717,7 @@ public class IndexingService {
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
             } else {
-              log.debug("No match for {}", scientificName);
+              log.info("No match for {} {} # {}", rank, scientificName, id);
             }
           } catch (Exception e) {
             log.error("Problem matching name from " + ANCILLARY_DIR + " index " + scientificName, e.getMessage(), e);
