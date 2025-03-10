@@ -2,7 +2,7 @@
 FROM openjdk:11-jdk-slim-sid
 
 # this directory should contain a pre-built jar + config, and the generated lucene index
-ENV INDEX_BUILD_PATH=./index-build
+ARG INDEX_BUILD_PATH=./index-build
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
