@@ -46,6 +46,9 @@ COPY $INDEX_BUILD_PATH/opt/ /opt/
 COPY $INDEX_BUILD_PATH/data/ /data/
 COPY $INDEX_BUILD_PATH/timestamp.properties /tmp/timestamp.properties
 
+RUN chown -R $USER:$USER /data/$APP_ARTIFACT && \
+    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+
 EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
 
 USER $USER
