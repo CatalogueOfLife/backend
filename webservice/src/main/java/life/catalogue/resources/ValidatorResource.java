@@ -1,47 +1,30 @@
 package life.catalogue.resources;
 
-import life.catalogue.WsServerConfig;
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.search.JobSearchRequest;
-import life.catalogue.api.vocab.*;
-import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.User;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.api.vocab.License;
 import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.importer.ImportManager;
-import life.catalogue.importer.ImportRequest;
 
-import java.io.File;
+import org.gbif.txtree.Tree;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URI;
-import java.util.List;
-import java.util.Set;
-
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-
-import org.apache.commons.codec.digest.HmacAlgorithms;
-import org.apache.commons.codec.digest.HmacUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.txtree.Tree;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Strings;
-
 import io.dropwizard.auth.Auth;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/validator")
 @Produces(MediaType.APPLICATION_JSON)
