@@ -5,6 +5,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
@@ -16,6 +18,8 @@ import life.catalogue.importer.ImportRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +33,9 @@ import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.txtree.Tree;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,10 +51,12 @@ public class ValidatorResource {
   private static final Logger LOG = LoggerFactory.getLogger(ValidatorResource.class);
   private final ImportManager importManager;
   private final DatasetDao ddao;
+  private final HttpUtils http;
 
-  public ValidatorResource(ImportManager importManager, DatasetDao ddao) {
+  public ValidatorResource(ImportManager importManager, DatasetDao ddao, HttpUtils http) {
     this.importManager = importManager;
     this.ddao = ddao;
+    this.http = http;
   }
 
 
@@ -74,5 +83,21 @@ public class ValidatorResource {
     // validate uploaded archive
     importManager.upload(key, archive, false, fn, null, user);
     return d;
+  }
+
+  @GET
+  @Path("/txtree")
+  public Tree.VerificationResult validateTxtTree(@QueryParam("url") URI url) throws IOException, InterruptedException {
+    if (url == null) throw new IllegalArgumentException("URL of text tree document required");
+
+    String content = http.get(url);
+    return Tree.verify(new StringReader(content));
+  }
+
+  @POST
+  @Path("/txtree")
+  //@Consumes(MediaType.TEXT_PLAIN)
+  public Tree.VerificationResult validateTxtTreeDoc(String content) throws IOException {
+    return Tree.verify(new StringReader(content));
   }
 }

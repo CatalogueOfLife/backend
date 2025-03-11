@@ -27,11 +27,10 @@ public class DataPackageResource {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DataPackageResource.class);
-  private final HttpUtils http;
   private final DataPackageBuilder builder = new DataPackageBuilder();
   private final String html;
-  public DataPackageResource() {
-    this.http = new HttpUtils();
+
+  public DataPackageResource(HttpUtils http) {
     String doc;
     try {
       doc = http.get(URI.create("https://github.com/CatalogueOfLife/coldp/blob/master/README.md"));

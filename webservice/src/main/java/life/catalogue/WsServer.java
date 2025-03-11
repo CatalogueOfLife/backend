@@ -10,6 +10,7 @@ import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
@@ -245,6 +246,8 @@ public class WsServer extends Application<WsServerConfig> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
+    HttpUtils http = new HttpUtils();
+
     // validation
     var validator = env.getValidator();
 
@@ -404,15 +407,14 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     //github feedback
-    EmailEncryption encryption = null;
-    if (cfg.github.encryptPassword != null) {
-      encryption = new EmailEncryption(cfg.github.encryptPassword, cfg.github.encryptSalt);
-    }
-
     FeedbackService feedback;
+    EmailEncryption encryption = null;
     if (cfg.github == null) {
       feedback = FeedbackService.passThru();
     } else {
+      if (cfg.github.encryptPassword != null) {
+        encryption = new EmailEncryption(cfg.github.encryptPassword, cfg.github.encryptSalt);
+      }
       feedback = new GithubFeedback(cfg.github, cfg.clbURI, cfg.apiURI, jerseyClient, encryption, getSqlSessionFactory());
     }
     managedService.manage(Component.Feedback, feedback);
@@ -433,7 +435,7 @@ public class WsServer extends Application<WsServerConfig> {
       getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
-    j.register(new DataPackageResource());
+    j.register(new DataPackageResource(http));
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
@@ -468,7 +470,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
-    j.register(new ValidatorResource(importManager, ddao));
+    j.register(new ValidatorResource(importManager, ddao, http));
     j.register(new VerbatimResource());
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());

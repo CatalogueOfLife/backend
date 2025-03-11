@@ -14,9 +14,14 @@ public class HttpUtils {
   private final HttpClient client;
 
   public HttpUtils() {
-    this.client = HttpClient.newBuilder()
+    this(HttpClient.newBuilder()
       .followRedirects(HttpClient.Redirect.ALWAYS)
-      .build();
+      .build()
+    );
+  }
+
+  public HttpUtils(HttpClient client) {
+    this.client = client;
   }
 
   /**
