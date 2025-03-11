@@ -11,7 +11,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -37,10 +37,10 @@ public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Rank cutoffRank = Rank.GENUS;
 
-  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
+  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
                Consumer<SectorRunnable> successCallback,
                BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    super(sectorKey, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
+    super(sectorKey, false, true, factory, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
   }
 
   @Override

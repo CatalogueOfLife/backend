@@ -18,7 +18,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
+import life.catalogue.matching.MatchingStorageGlobalCache;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
@@ -140,8 +141,10 @@ public class XReleaseIT extends SectorSyncTestBase {
     var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    var matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
+    var ucache = UsageCache.hashMap();
+    var mstore = new MatchingStorageGlobalCache(SqlSessionFactoryRule.getSqlSessionFactory(), ucache);
+    var matcher = new MatchingService(NameMatchingRule.getIndex(), mstore);
+    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, ucache, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
     var cfg = TestConfigs.build();
 
     hc = HttpClientBuilder.create().build();

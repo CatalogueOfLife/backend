@@ -1,23 +1,15 @@
 package life.catalogue.matching;
 
-import io.dropwizard.auth.Auth;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.UsageCache;
-import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
-import life.catalogue.resources.ImporterResource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -28,12 +20,6 @@ import org.gbif.nameparser.api.Rank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-
 @Path("/dataset/{key}/match/nameusage")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -43,11 +29,11 @@ public class MatchingResource {
 
   private final MatchingConfig cfg;
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final UsageCache uCache;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public MatchingResource(MatchingConfig cfg, UsageMatcherGlobal matcher) {
+  public MatchingResource(MatchingConfig cfg, MatchingService matcher) {
     this.cfg = cfg;
     this.factory = factory;
     this.matcher = matcher;

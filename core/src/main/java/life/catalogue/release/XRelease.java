@@ -24,14 +24,13 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
+import life.catalogue.matching.MatchingService;
 import life.catalogue.matching.RematchMissing;
-import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -63,14 +62,14 @@ public class XRelease extends ProjectRelease {
   private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
   private int failedSyncs;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, MatchingService matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
@@ -219,7 +218,7 @@ public class XRelease extends ProjectRelease {
     thread.join();
   }
 
-  public static void rematchTarget(Sector s, int targetDatasetKey, UsageMatcherGlobal matcher) {
+  public static void rematchTarget(Sector s, int targetDatasetKey, MatchingService matcher) {
     if (s.getTarget() != null && targetDatasetKey != s.getDatasetKey()) {
       LOG.info("Rematch sector target {} to dataset {}", s.getTarget(), targetDatasetKey);
       s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);

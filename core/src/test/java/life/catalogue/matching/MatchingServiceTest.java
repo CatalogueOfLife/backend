@@ -30,7 +30,7 @@ import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class UsageMatcherGlobalTest {
+public class MatchingServiceTest {
 
   public final static PgSetupRule pg = new PgSetupRule();
   public final static TestDataRule dataRule = TestDataRules.matching();
@@ -44,11 +44,14 @@ public class UsageMatcherGlobalTest {
     .around(matchingRule);
 
   final DSID<String> dsid = DSID.root(datasetKey);
-  UsageMatcherGlobal matcher;
+  MatchingService matcher;
+  UsageCache ucache;
 
   @Before
   public void before() {
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
+    ucache = UsageCache.hashMap();
+    var mstore = new MatchingStorageGlobalCache(SqlSessionFactoryRule.getSqlSessionFactory(), ucache);
+    matcher = new MatchingService(NameMatchingRule.getIndex(), mstore);
   }
 
   @Test
@@ -62,7 +65,7 @@ public class UsageMatcherGlobalTest {
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
 
-      matcher.clear();
+      ucache.clear();
       match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }

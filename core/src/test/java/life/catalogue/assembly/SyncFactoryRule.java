@@ -6,8 +6,9 @@ import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.MatchingService;
+import life.catalogue.matching.MatchingStorageGlobalCache;
 import life.catalogue.matching.nidx.NameIndexFactory;
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -27,7 +28,7 @@ public class SyncFactoryRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactoryRule.class);
 
   private static SyncFactory syncFactory;
-  private UsageMatcherGlobal matcher;
+  private MatchingService matcher;
   private TaxonDao tdao;
   private SectorDao sdao;
   private NameDao nDao;
@@ -47,15 +48,17 @@ public class SyncFactoryRule extends ExternalResource {
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
+    var ucache = UsageCache.hashMap();
+    var mstore = new MatchingStorageGlobalCache(SqlSessionFactoryRule.getSqlSessionFactory(), ucache);
+    matcher = new MatchingService(NameMatchingRule.getIndex(), mstore);
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, ucache, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
   }
 
   public static SyncFactory getFactory() {
     return syncFactory;
   }
 
-  public UsageMatcherGlobal getMatcher() {
+  public MatchingService getMatcher() {
     return matcher;
   }
 

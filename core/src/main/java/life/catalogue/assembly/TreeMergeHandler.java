@@ -38,7 +38,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final UsageCache uCache;
   private final CacheLoader loader;
@@ -53,7 +53,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final Identifier.Scope nameIdScope;
   private final Identifier.Scope usageIdScope;
 
-  TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+  TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
+                   MatchingService matcher, UsageCache cache,
                    int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
@@ -62,7 +63,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     this.cfg = cfg;
     this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcher;
-    uCache = matcher.getUCache();
+    uCache = cache;
     groupAnalyzer = new TaxGroupAnalyzer();
 
     // figure out the lowest insertion point in the project/release
@@ -98,7 +99,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
     }
     this.loader = new CacheLoader.Mybatis(batchSession, true);
-    matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
+    //matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
 
     // check if requested entities are supported in the source at all
     try (SqlSession session = factory.openSession()) {
@@ -620,7 +621,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // track source
         vsm.insertSources(existingUsageKey, nu, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
-        matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
+        //matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
 
     } else {
@@ -790,7 +791,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   public void close() {
-    matcher.removeLoader(targetDatasetKey);
+    //matcher.removeLoader(targetDatasetKey);
     session.commit();
     session.close();
     batchSession.commit();

@@ -71,7 +71,7 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final NormalizerConfig cfg;
   // job specifics
@@ -80,7 +80,7 @@ public class MatchingJob extends DatasetBlockingJob {
   private final UsageCounter counter = new UsageCounter();
   private List<SimpleName> rootClassification;
 
-  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NormalizerConfig cfg) {
+  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, MatchingService matcher, NormalizerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;

@@ -13,6 +13,7 @@
 
   <logger name="ch.qos.logback" level="WARN" />
   <logger name="org.gbif.dwc.terms.TermFactory" level="WARN" />
+  <logger name="org.apache.http" level="WARN" />
 
   <root level="INFO">
     <appender-ref ref="CONSOLE"/>

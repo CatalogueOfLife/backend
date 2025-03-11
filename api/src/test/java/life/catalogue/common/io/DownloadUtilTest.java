@@ -18,14 +18,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DownloadUtilTest {
+  static final Logger LOG = LoggerFactory.getLogger(DownloadUtilTest.class);
   CloseableHttpClient hc;
   File f;
 
   @Before
   public void start() throws IOException {
-    hc = HttpClientBuilder.create().build();
+    hc = HttpClientBuilder.create()
+      .setUserAgent("ChecklistBank/aa181af")
+      .build();
     f = File.createTempFile("download", ".zip");
     System.out.println(f);
   }
@@ -70,6 +75,14 @@ public class DownloadUtilTest {
   public void plazi() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);
     d.download(URI.create("https://tb.plazi.org/GgServer/dwca/1C5A0163FFCBF3266052EB7D4D70FFF7.zip"), f);
+  }
+
+  @Test
+  @Ignore("manual debugging")
+  public void github() throws IOException {
+    LOG.info("Starting Github");
+    DownloadUtil d = new DownloadUtil(hc, null, null);
+    d.download(URI.create("https://github.com/CatalogueOfLife/data-paleo-tree/archive/refs/heads/main.zip"), f);
   }
 
   boolean download(DownloadUtil d, URI uri, File down) {

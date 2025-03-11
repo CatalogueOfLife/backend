@@ -43,11 +43,11 @@ public class NameUsageMatchingResource {
   private final WsServerConfig cfg;
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final UsageCache uCache;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
+  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, MatchingService matcher) {
     this.cfg = cfg;
     this.exec = exec;
     this.factory = factory;

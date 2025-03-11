@@ -621,12 +621,13 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
+    //normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/master/ACEF/113.tar.gz"), ACEF);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
     //normalizeAndImportArchive(new File("/Users/markus/Downloads/export.zip"), COLDP);
+    normalizeAndImport(URI.create("https://github.com/CatalogueOfLife/data-paleo-tree/archive/refs/heads/main.zip"), COLDP);
 
     //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
     //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);

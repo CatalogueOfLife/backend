@@ -7,15 +7,13 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.DatasetBlockedException;
-import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -53,7 +51,6 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  private final UsageMatcherGlobal matcher;
   private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
@@ -67,12 +64,11 @@ abstract class SectorRunnable implements Runnable {
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean clearMatcherCache, SqlSessionFactory factory,
-                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
+                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
     this.bus = bus;
-    this.matcher = matcher;
     this.clearMatcherCache = clearMatcherCache;
     this.validateSector = validateSector;
     this.factory = factory;
@@ -137,7 +133,6 @@ abstract class SectorRunnable implements Runnable {
 
       // clear matcher cache?
       if (clearMatcherCache) {
-        matcher.clear(sectorKey.getDatasetKey());
         bus.post(new DatasetDataChanged(sectorKey.getDatasetKey()));
       }
 

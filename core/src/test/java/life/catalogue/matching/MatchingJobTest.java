@@ -30,12 +30,12 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   @Rule
   public final TestDataRule dataRule = TestDataRule.apple();
 
-  UsageMatcherGlobal matcher;
+  MatchingService matcher;
   TestConfigs cfg;
 
   @Before
   public void setUp() throws Exception {
-    matcher = mock(UsageMatcherGlobal.class);
+    matcher = mock(MatchingService.class);
     int dkey = dataRule.testData.key;
     when(matcher.match(anyInt(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
     this.cfg = TestConfigs.build();

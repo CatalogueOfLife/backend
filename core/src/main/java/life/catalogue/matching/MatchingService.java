@@ -45,42 +45,21 @@ import com.google.common.base.Preconditions;
  *
  * Matches are retrieved from the database and are cached in particular for uninomials / higher taxa.
  */
-public class UsageMatcherGlobal {
-  private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
+public class MatchingService {
+  private final static Logger LOG = LoggerFactory.getLogger(MatchingService.class);
   private final NameIndex nameIndex;
   private final AuthorComparator authComp;
-  private final UsageCache uCache;
-  private final CacheLoader defaultLoader;
-  private final Map<Integer, CacheLoader> loaders = new HashMap<>();
-  private final SqlSessionFactory factory;
   private final TaxGroupAnalyzer groupAnalyzer;
-  // key = datasetKey + canonical nidx
-  private final LoadingCache<DSID<Integer>, List<SimpleNameCached>> usages = Caffeine.newBuilder()
-                                                                                     .maximumSize(100_000)
-                                                                                     .build(this::loadUsagesByNidx);
+  private final MatchingStorage storage;
 
-  /**
-   * @param nidx a names index id wrapped by a datasetKey
-   * @return list of matching usages for the requested dataset only
-   */
-  private List<SimpleNameCached> loadUsagesByNidx(@NonNull DSID<Integer> nidx) {
-    try (SqlSession session = factory.openSession(true)) {
-      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(nidx.getDatasetKey(), nidx.getId());
-      // avoid empty lists which get cached
-      return result == null || result.isEmpty() ? null : result;
-    }
-  }
-
-  public UsageMatcherGlobal(NameIndex nameIndex, UsageCache uCache, SqlSessionFactory factory) {
+  public MatchingService(NameIndex nameIndex, MatchingStorage storage) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     if (nameIndex instanceof NameIndexImpl) {
       this.authComp = ((NameIndexImpl)nameIndex).getAuthComp();
     } else {
       this.authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     }
-    this.factory = Preconditions.checkNotNull(factory);
-    this.uCache = uCache;
-    this.defaultLoader = new CacheLoader.MybatisLoader(factory);
+    this.storage = Preconditions.checkNotNull(storage);
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
@@ -91,34 +70,11 @@ public class UsageMatcherGlobal {
    **/
   public void assertComponentsOnline() throws UnavailableException {
     nameIndex.assertOnline();
-    uCache.assertOnline();
-  }
-
-  public UsageCache getUCache() {
-    return uCache;
-  }
-
-  public LoadingCache<DSID<Integer>, List<SimpleNameCached>> getUsageCache() {
-    return usages;
+    storage.assertOnline();
   }
 
   public NameIndex getNameIndex() {
     return nameIndex;
-  }
-
-  /**
-   * Registers a usage loader for the specific dataset to be used instead of the default one which opens a new database session each time
-   * @param datasetKey
-   * @param loader
-   */
-  public void registerLoader(int datasetKey, CacheLoader loader) {
-    LOG.info("Registering new usage loader for dataset {}: {}", datasetKey, loader.getClass());
-    loaders.put(datasetKey, loader);
-  }
-
-  public void removeLoader(int datasetKey) {
-    LOG.info("Remove usage loader for dataset {}", datasetKey);
-    loaders.remove(datasetKey);
   }
 
   /**
@@ -129,10 +85,8 @@ public class UsageMatcherGlobal {
   public UsageMatch map(DSID<String> src, int targetDatasetKey, boolean verbose) {
     NameUsageBase nu;
     List<SimpleNameCached> classification;
-    try (SqlSession session = factory.openSession()) {
-      nu = session.getMapper(NameUsageMapper.class).get(src);
-      classification = uCache.getClassification(src, loaders.getOrDefault(src.getDatasetKey(), defaultLoader));
-    }
+    nu = storage.getUsage(src);
+    classification = storage.getClassification(src);
     return match(targetDatasetKey, nu, classification, false, verbose);
   }
 
@@ -174,7 +128,7 @@ public class UsageMatcherGlobal {
     if (!canonNidx.hasNidx()) {
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, canonNidx.matchType);
     }
-    var existing = usages.get(canonNidx);
+    var existing = storage.get(canonNidx);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
@@ -205,11 +159,7 @@ public class UsageMatcherGlobal {
     return null;
   }
 
-  public void invalidate(int targetDatasetKey, Integer canonicalId) {
-    usages.invalidate(new CanonNidxMatch(targetDatasetKey, canonicalId, MatchType.EXACT));
-  }
-
-  private static class CanonNidxMatch extends DSIDValue<Integer> {
+  public static class CanonNidxMatch extends DSIDValue<Integer> {
     public MatchType matchType;
 
     public CanonNidxMatch(int datasetKey, Integer id, MatchType matchType) {
@@ -273,10 +223,6 @@ public class UsageMatcherGlobal {
       }
     }
     return eq == Equality.DIFFERENT;
-  }
-
-  private static boolean supraGenericOrUnranked(Rank r) {
-    return r == Rank.UNRANKED || r.isSuprageneric();
   }
 
   private static List<SimpleNameClassified<SimpleNameCached>> buildAlternatives(List<SimpleNameCached> alt) {
@@ -344,9 +290,8 @@ public class UsageMatcherGlobal {
     }
 
     // from here on we need the classification of all candidates
-    var loader = loaders.getOrDefault(datasetKey, defaultLoader);
     final var existingWithCl = existing.stream()
-                                 .map(ex -> uCache.withClassification(datasetKey, ex, loader))
+                                 .map(ex -> storage.withClassification(datasetKey, ex))
                                  .collect(Collectors.toList());
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
@@ -565,8 +510,7 @@ public class UsageMatcherGlobal {
   }
 
   private Optional<Rank> concreteParentRank(int datasetKey, SimpleNameCached u) {
-    var loader = loaders.getOrDefault(datasetKey, defaultLoader);
-    SimpleNameClassified<SimpleNameCached> cl = uCache.withClassification(datasetKey, u, loader);
+    SimpleNameClassified<SimpleNameCached> cl = storage.withClassification(datasetKey, u);
     return cl.getClassification() == null ? Optional.empty() : cl.getClassification().stream()
       .map(SimpleName::getRank)
       .filter(r -> !r.isUncomparable())
@@ -671,11 +615,11 @@ public class UsageMatcherGlobal {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
     if (canonNidx.hasNidx()) {
-      var before = usages.get(canonNidx);
+      var before = storage.get(canonNidx);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list
         before = new ArrayList<>();
-        usages.put(canonNidx, before);
+        storage.put(canonNidx, before);
       }
       var sn = new SimpleNameCached(nu, canonNidx.getId());
       before.add(sn);
@@ -687,41 +631,4 @@ public class UsageMatcherGlobal {
     return null;
   }
 
-  /**
-   * Removes a single entry from the matcher cache.
-   * If it is not cached yet, nothing will happen.
-   * @param nidx any names index id
-   */
-  public void clear(int datasetKey, int nidx) {
-    var n = nameIndex.get(nidx);
-    if (n != null) {
-      if (n.getCanonicalId() != null && !n.isCanonical()) {
-        nidx = n.getCanonicalId();
-      }
-      usages.invalidate(DSID.of(datasetKey, nidx));
-    }
-  }
-
-  /**
-   * Removes all usages from the given dataset from the matcher cache.
-   */
-  public void clear(int datasetKey) {
-    int count = 0;
-    for (var k : usages.asMap().keySet()) {
-      if (datasetKey == k.getDatasetKey()) {
-        usages.invalidate(k);
-        count++;
-      }
-    }
-    LOG.info("Cleared all {} usages for datasetKey {} from the cache", count, datasetKey);
-  }
-
-  /**
-   * Wipes the entire cache.
-   */
-  public void clear() {
-    usages.invalidateAll();
-    uCache.clear();
-    LOG.warn("Cleared entire cache");
-  }
 }

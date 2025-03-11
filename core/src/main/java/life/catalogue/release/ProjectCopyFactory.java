@@ -9,7 +9,7 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
 
 import java.net.URI;
 
@@ -35,13 +35,13 @@ public class ProjectCopyFactory {
   private final ImageService imageService;
   private final CloseableHttpClient client;
   private final Validator validator;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingService matcher;
   private final ReleaseConfig cfg;
   private final DoiConfig doiCfg;
   private final URI apiURI;
   private final URI clbURI;
 
-  public ProjectCopyFactory(CloseableHttpClient client, UsageMatcherGlobal matcher, SyncFactory syncFactory,
+  public ProjectCopyFactory(CloseableHttpClient client, MatchingService matcher, SyncFactory syncFactory,
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator,

@@ -68,7 +68,7 @@ import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
@@ -355,7 +355,7 @@ public class MatchingServer extends Application<WsServerConfig> {
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher
-    final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
+    final var matcher = new MatchingService(ni, uCache, getSqlSessionFactory());
 
     // DOI
     DoiService doiService;

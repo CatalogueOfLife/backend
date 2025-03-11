@@ -8,7 +8,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.MatchingService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -30,10 +30,10 @@ public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private final Set<Integer> visitedSectors = new HashSet<>();
   
-  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, EventBus bus,
+  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, EventBus bus,
                    SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                    BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    super(sectorKey, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
+    super(sectorKey, false, true, factory, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
   }
 
   @Override
