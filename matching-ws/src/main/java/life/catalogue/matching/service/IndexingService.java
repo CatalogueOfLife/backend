@@ -833,12 +833,14 @@ public class IndexingService {
     }
 
     // add the leaf node
-    classification.addLast(StoredName.builder()
-      .key(leafDoc.get(FIELD_ID))
-      .rank(leafDoc.get(FIELD_RANK))
-      .name(leafDoc.get(FIELD_CANONICAL_NAME))
-      .build()
-    );
+    if (TaxonomicStatus.ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))) {
+      classification.addLast(StoredName.builder()
+        .key(leafDoc.get(FIELD_ID))
+        .rank(leafDoc.get(FIELD_RANK))
+        .name(leafDoc.get(FIELD_CANONICAL_NAME))
+        .build()
+      );
+    }
 
     return builder.names(new ArrayList<>(classification)).build();
   }
