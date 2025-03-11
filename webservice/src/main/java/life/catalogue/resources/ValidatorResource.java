@@ -96,7 +96,6 @@ public class ValidatorResource {
 
   @POST
   @Path("/txtree")
-  //@Consumes(MediaType.TEXT_PLAIN)
   public Tree.VerificationResult validateTxtTreeDoc(String content) throws IOException {
     return Tree.verify(new StringReader(content));
   }
