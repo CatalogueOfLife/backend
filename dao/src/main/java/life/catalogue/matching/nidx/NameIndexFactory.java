@@ -67,16 +67,7 @@ public class NameIndexFactory {
       }
 
       @Override
-      public List<IndexName> delete(int key, boolean rematch) {
-        return Collections.emptyList();
-      }
-
-      @Override
       public void add(IndexName name) {
-      }
-
-      @Override
-      public void reset() {
       }
 
       @Override
@@ -141,16 +132,7 @@ public class NameIndexFactory {
       }
 
       @Override
-      public List<IndexName> delete(int key, boolean rematch) {
-        return Collections.emptyList();
-      }
-
-      @Override
       public void add(IndexName name) { }
-
-      @Override
-      public void reset() {
-      }
 
       @Override
       public NameIndexStore store() {
@@ -168,9 +150,17 @@ public class NameIndexFactory {
   /**
    * Returns a persistent index if location is given, otherwise an in memory one
    */
-  public static NameIndexImpl build(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) {
+  public static NameIndexImplPg buildPg(NamesIndexConfig cfg, SqlSessionFactory sqlFactory, AuthorshipNormalizer aNormalizer) {
     NameIndexStore store = buildStore(cfg);
-    return new NameIndexImpl(store, aNormalizer, sqlFactory, cfg.verification);
+    return new NameIndexImplPg(store, aNormalizer, sqlFactory, cfg.verification);
+  }
+
+  /**
+   * Returns a persistent index if location is given, otherwise an in memory one
+   */
+  public static NameIndexImpl build(NamesIndexConfig cfg, AuthorshipNormalizer aNormalizer) {
+    NameIndexStore store = buildStore(cfg);
+    return new NameIndexImpl(store, aNormalizer);
   }
 
   private static NameIndexStore buildStore(NamesIndexConfig cfg) {

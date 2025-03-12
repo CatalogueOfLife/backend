@@ -282,14 +282,6 @@ public class NameIndexChronicleStore implements NameIndexStore {
   }
 
   @Override
-  public void compact() {
-    for (var entry : canonical.entrySet()) {
-      IntSet set = new IntOpenHashSet(entry.getValue());
-      canonical.put(entry.getKey(), set.toIntArray());
-    }
-  }
-
-  @Override
   public LocalDateTime created() {
     return LocalDateTime.ofEpochSecond(created, 0, ZoneOffset.UTC);
   }

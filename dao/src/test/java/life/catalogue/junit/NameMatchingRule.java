@@ -49,7 +49,7 @@ public class NameMatchingRule extends ExternalResource {
     SqlSessionFactory factory = factorySupplier.get();
     LOG.info("Setup in-memory names index");
     if (nidx == null || !reuseNidx) {
-      nidx = NameIndexFactory.build(NamesIndexConfig.memory(1024), factory, AuthorshipNormalizer.INSTANCE);
+      nidx = NameIndexFactory.buildPg(NamesIndexConfig.memory(1024), factory, AuthorshipNormalizer.INSTANCE);
       nidx.start();
     }
     if (matchAll) {

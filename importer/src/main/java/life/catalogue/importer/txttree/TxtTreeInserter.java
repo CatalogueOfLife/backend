@@ -21,6 +21,7 @@ import life.catalogue.metadata.MetadataFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
+import org.gbif.txtree.Tree;
 import org.gbif.txtree.TreeLine;
 
 import java.io.FileNotFoundException;
@@ -91,7 +92,7 @@ public class TxtTreeInserter implements NeoInserter {
   public static Optional<Path> findReadable(Path folder) {
     try {
       for (Path f : PathUtils.listFiles(folder, Set.of("txtree", "tree", "txt", "text", "archive"))) {
-        if (!f.getFileName().toString().startsWith("expected") && org.gbif.txtree.Tree.verify(Files.newInputStream(f))) {
+        if (!f.getFileName().toString().startsWith("expected") && org.gbif.txtree.Tree.verify(Files.newInputStream(f)).valid) {
           LOG.info("Found readable tree file {}", f);
           return Optional.of(f);
         }

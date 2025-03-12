@@ -38,7 +38,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
-  private final MatchingService matcher;
+  private final MatchingService<SimpleNameCached> matcher;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final UsageCache uCache;
   private final CacheLoader loader;
@@ -54,7 +54,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final Identifier.Scope usageIdScope;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
-                   MatchingService matcher, UsageCache cache,
+                   MatchingService<SimpleNameCached> matcher, UsageCache cache,
                    int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
@@ -254,7 +254,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
+    UsageMatch<SimpleNameCached> match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
     LOG.debug("{} matches {}", nu.getLabel(), match);
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
@@ -547,7 +547,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
-  private void update(NameUsageBase nu, UsageMatch existing) {
+  private void update(NameUsageBase nu, UsageMatch<SimpleNameCached> existing) {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 

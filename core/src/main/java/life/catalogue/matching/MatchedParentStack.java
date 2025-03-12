@@ -4,6 +4,8 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
+import life.catalogue.common.collection.CollectionUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -104,16 +106,22 @@ public class MatchedParentStack {
   }
 
   /**
-   * List the current classification starting with the root as simple names
+   * List the current classification starting with the root as simple names.
+   * If a parent is marked, this part of the classification will be ignored
    */
   public List<SimpleNameCached> classificationSN() {
-    var cl = new ArrayList<SimpleNameCached>();
+    List<SimpleNameCached> cl = new ArrayList<>();
     if (hasRoot()) {
       cl.add(rootMU.usage);
     }
     parents.stream()
       .map(u -> u.usage)
       .forEach(cl::add);
+    // trim parents when a marker exists
+    var markerIdx = CollectionUtils.lastIndexOf(cl, sn -> sn.marked);
+    if (markerIdx >= 0) {
+      cl = cl.subList(markerIdx, cl.size());
+    }
     return cl;
   }
 

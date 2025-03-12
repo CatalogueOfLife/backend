@@ -35,7 +35,7 @@ public class NormalizerFullIT extends NormalizerITBase {
   }
   
   static NameIndex newIndex() {
-    return NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
+    return NameIndexFactory.buildPg(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started();
   }
   
   @Test

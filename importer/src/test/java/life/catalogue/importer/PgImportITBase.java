@@ -21,7 +21,6 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -129,7 +128,7 @@ public class PgImportITBase {
       // normalize
       store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
       Normalizer norm = new Normalizer(dataset, store, source,
-        NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
+        NameIndexFactory.buildPg(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);
       norm.call();
       

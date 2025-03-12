@@ -133,25 +133,6 @@ abstract class NameIndexStoreTest {
     assertNull(db.get(13));
   }
 
-  @Test
-  public void compact() throws Exception {
-    addNameList("a", 4);
-
-    addName("b", 10, 10); // the canonical itself
-    addName("b", 12, 10);
-    addName("b", 13, 10);
-    addName("b", 12, 10);
-    assertEquals(7, db.count());
-    //assertArrayEquals(new int[]{12,13}, db.debugCanonical(10));
-
-    db.compact();
-    assertEquals(7, db.count());
-    //assertArrayEquals(new int[]{12,13}, db.debugCanonical(10));
-
-    var res = db.byCanonical(10);
-    assertEquals(2, res.size());
-  }
-
   private void addName(String key, int id) {
     addName(key, id, id);
   }

@@ -826,6 +826,27 @@
     </if>
   </select>
 
+  <select id="classificationNxIds" parameterType="map" resultMap="simpleNidxResultMap">
+    WITH RECURSIVE cl AS (
+      SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type
+      FROM name_usage u
+        JOIN name n ON n.dataset_key=#{key.datasetKey} AND n.id=u.name_id
+        LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
+        LEFT JOIN names_index ni ON ni.id=nm.index_id
+      WHERE u.dataset_key=#{key.datasetKey} AND u.id = #{key.id}
+    UNION
+      SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type
+      FROM cl, name_usage u
+        JOIN name n ON n.dataset_key=#{key.datasetKey} AND n.id=u.name_id
+        LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{key.datasetKey}
+        LEFT JOIN names_index ni ON ni.id=nm.index_id
+      WHERE u.dataset_key=#{key.datasetKey} AND u.id = cl.parent_id
+    )
+    SELECT *
+    FROM cl
+    WHERE cl.id != #{key.id}
+  </select>
+
   <delete id="delete" parameterType="map">
     DELETE FROM name_usage
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}

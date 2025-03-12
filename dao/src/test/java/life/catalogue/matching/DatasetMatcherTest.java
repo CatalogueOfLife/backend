@@ -23,7 +23,7 @@ public class DatasetMatcherTest {
 
   @Test
   public void rematchApple() throws Exception {
-    NameIndex nidx = NameIndexFactory.build(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
+    NameIndex nidx = NameIndexFactory.buildPg(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
     // we only have one verbatim record. If we dont insert into the names index this will be a no match with an issue
     DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
     m.match(11, false, false);

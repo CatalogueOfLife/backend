@@ -9,12 +9,8 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.CacheLoader;
-import life.catalogue.cache.UsageCache;
-import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
-import life.catalogue.db.mapper.NameUsageMapper;
 
 import life.catalogue.matching.authorship.AuthorComparator;
 
@@ -29,14 +25,9 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
 
 /**
@@ -45,14 +36,14 @@ import com.google.common.base.Preconditions;
  *
  * Matches are retrieved from the database and are cached in particular for uninomials / higher taxa.
  */
-public class MatchingService {
+public class MatchingService<T extends SimpleNameWithNidx> {
   private final static Logger LOG = LoggerFactory.getLogger(MatchingService.class);
   private final NameIndex nameIndex;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
-  private final MatchingStorage storage;
+  private final MatchingStorage<T> storage;
 
-  public MatchingService(NameIndex nameIndex, MatchingStorage storage) {
+  public MatchingService(NameIndex nameIndex, MatchingStorage<T> storage) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     if (nameIndex instanceof NameIndexImpl) {
       this.authComp = ((NameIndexImpl)nameIndex).getAuthComp();
@@ -78,29 +69,16 @@ public class MatchingService {
   }
 
   /**
-   * Maps a single usage from a given source to another dataset
-   * @param src usage to map
-   * @param targetDatasetKey dataset to map to
-   */
-  public UsageMatch map(DSID<String> src, int targetDatasetKey, boolean verbose) {
-    NameUsageBase nu;
-    List<SimpleNameCached> classification;
-    nu = storage.getUsage(src);
-    classification = storage.getClassification(src);
-    return match(targetDatasetKey, nu, classification, false, verbose);
-  }
-
-  /**
    * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
    */
-  public UsageMatch match(int datasetKey, NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
+  public UsageMatch<T> match(int datasetKey, NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
     classification = ObjectUtils.coalesce(classification, List.of()); // no nulls
     // match classification to names index
-    List<SimpleNameCached> parents = new ArrayList<>();
+    List<T> parents = new ArrayList<>();
     for (var sn : classification) {
-      if (sn.getRank() == Rank.SPECIES) continue; // ignore binomials for now
+      if (sn.getRank().isSpeciesOrBelow()) continue; // ignore binomials for now
       Name n = Name.newBuilder()
                    .datasetKey(datasetKey)
                    .rank(sn.getRank())
@@ -121,7 +99,7 @@ public class MatchingService {
    * @param parents classification of the usage to be matched
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<SimpleNameCached> parents,
+  public UsageMatch<T> matchWithParents(int datasetKey, NameUsageBase nu, List<T> parents,
                                      boolean allowInserts, boolean verbose
   ) throws NotFoundException {
     var canonNidx = canonNidxAndMatchIfNeeded(datasetKey, nu, allowInserts);
@@ -151,10 +129,10 @@ public class MatchingService {
     return UsageMatch.empty(datasetKey);
   }
 
-  public SimpleNameCached toMatchedSimpleName(NameUsageBase nu) {
+  public T toMatchedSimpleName(NameUsageBase nu) {
     if (nu != null) {
       var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
-      return new SimpleNameCached(nu, canonNidx.getId());
+      return storage.convert(nu, canonNidx);
     }
     return null;
   }
@@ -204,7 +182,7 @@ public class MatchingService {
     }
   }
 
-  private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<SimpleNameCached> r2parents) {
+  private static boolean ranksDiffer(Rank r1, Supplier<Optional<Rank>> r1pSupplier, Rank r2, List<? extends SimpleNameWithNidx> r2parents) {
     var eq = RankComparator.compare(r1, r2);
     if (eq == Equality.UNKNOWN) {
       if (r1 == Rank.UNRANKED || r2 == Rank.UNRANKED) {
@@ -225,15 +203,15 @@ public class MatchingService {
     return eq == Equality.DIFFERENT;
   }
 
-  private static List<SimpleNameClassified<SimpleNameCached>> buildAlternatives(List<SimpleNameCached> alt) {
+  private List<SimpleNameClassified<T>> buildAlternatives(List<T> alt) {
     return alt == null ? null : alt.stream()
-                                     .map(sn -> new SimpleNameClassified<SimpleNameCached>(sn))
+                                     .map(sn -> new SimpleNameClassified<T>(sn))
                                      .collect(Collectors.toList());
   }
 
-  private static void updateAlt(List<SimpleNameClassified<SimpleNameCached>> alt, List<SimpleNameClassified<SimpleNameCached>> existingWithCl) {
+  private void updateAlt(List<SimpleNameClassified<T>> alt, List<SimpleNameClassified<T>> existingWithCl) {
     if (alt != null && existingWithCl != null) {
-      Map<String, SimpleNameClassified<SimpleNameCached>> exByKey = new HashMap<>();
+      Map<String, SimpleNameClassified<T>> exByKey = new HashMap<>();
       for (var snc : existingWithCl) {
         exByKey.put(snc.getId(), snc);
       }
@@ -254,14 +232,14 @@ public class MatchingService {
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch filterCandidates(int datasetKey, NameUsageBase nu, List<SimpleNameCached> existing, List<SimpleNameCached> parents, boolean verbose) throws NotFoundException {
+  private UsageMatch<T> filterCandidates(int datasetKey, NameUsageBase nu, List<T> existing, List<T> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match
     boolean snap = false;
 
     // if we need to set alternatives keep them before we modify the candidates list
-    final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? buildAlternatives(existing) : null;
+    final List<SimpleNameClassified<T>> alt = verbose ? buildAlternatives(existing) : null;
 
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());
@@ -320,13 +298,7 @@ public class MatchingService {
       updateAlt(alt, existingWithCl);
       // check classification for all others
       if (parents != null && !existingWithCl.isEmpty()) {
-        // trim parents when a marker exists
-        var parentsCopy = parents;
-        var markerIdx = CollectionUtils.lastIndexOf(parents, sn -> sn.marked);
-        if (markerIdx >= 0) {
-          parentsCopy = parents.subList(markerIdx, parents.size());
-        }
-        var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parentsCopy);
+        var group = groupAnalyzer.analyze(nu.toSimpleNameLink(), parents);
         if (existingWithCl.removeIf(rn -> !classificationMatches(group, rn))) {
           LOG.debug("Removed matches for usage {} with classifications not in {} group", nu.getName().getLabelWithRank(), group);
         }
@@ -349,7 +321,7 @@ public class MatchingService {
     if (qualifiedName) {
       boolean matchExact = false;
       boolean onlyUseIfExact = false;
-      SimpleNameClassified<SimpleNameCached> match = null;
+      SimpleNameClassified<T> match = null;
       for (var u : existingWithCl) {
         if (u.getNamesIndexId().equals(nu.getName().getNamesIndexId())) {
           boolean exact = u.getLabel().equalsIgnoreCase(nu.getLabel());
@@ -425,7 +397,7 @@ public class MatchingService {
     }
 
     // all synonyms pointing to the same accepted? then it won't matter much for snapping
-    SimpleNameClassified<SimpleNameCached> synonym = null;
+    SimpleNameClassified<T> synonym = null;
     String parentID = null;
     for (var u : existingWithCl) {
       if (u.getStatus().isTaxon()) {
@@ -464,7 +436,7 @@ public class MatchingService {
     } else {
       // match to best=lowest rank possible
       Rank lowest = null;
-      SimpleNameClassified<SimpleNameCached> best = null;
+      SimpleNameClassified<T> best = null;
       for (var ex : existingWithCl) {
         var lowestMatch = findLowestMatch(ex, parents);
         if (lowestMatch != null) {
@@ -509,8 +481,8 @@ public class MatchingService {
     }
   }
 
-  private Optional<Rank> concreteParentRank(int datasetKey, SimpleNameCached u) {
-    SimpleNameClassified<SimpleNameCached> cl = storage.withClassification(datasetKey, u);
+  private Optional<Rank> concreteParentRank(int datasetKey, T u) {
+    SimpleNameClassified<T> cl = storage.withClassification(datasetKey, u);
     return cl.getClassification() == null ? Optional.empty() : cl.getClassification().stream()
       .map(SimpleName::getRank)
       .filter(r -> !r.isUncomparable())
@@ -521,20 +493,20 @@ public class MatchingService {
    * Rematches with the same rank to see if nidx still differ
    * @return true if the names, applied with the same rank, match to the same nidx
    */
-  private boolean sameNidxWithoutRank(SimpleNameCached u, Name name) {
+  private boolean sameNidxWithoutRank(SimpleNameWithNidx u, Name name) {
     var volName = new Name(name); // we copy the instance to not change the original
     volName.setRank(u.getRank());
     var match = nameIndex.match(volName, false, false);
     return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
 
-  private boolean sameFamily(SimpleNameClassified<SimpleNameCached> u, List<SimpleNameCached> parents) {
+  private boolean sameFamily(SimpleNameClassified<T> u, List<T> parents) {
     var fam1 = u.getClassification().stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
     var fam2 = parents.stream().filter(n -> n.getRank()==Rank.FAMILY).findFirst();
     return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().getName());
   }
 
-  private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
+  private Rank findLowestMatch(SimpleNameClassified<T> candidate, List<T> parents) {
     if (parents != null) {
       //TODO: find other solution without matched parents !!!
       //for (var cp : candidate.getClassification()) {
@@ -561,7 +533,7 @@ public class MatchingService {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameCached> candidate) {
+  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<T> candidate) {
     if (group == null) {
       return true;
     }
@@ -573,9 +545,9 @@ public class MatchingService {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms,
-                                        List<SimpleNameCached> parents,
-                                        List<SimpleNameClassified<SimpleNameCached>> alt
+  private UsageMatch<T> matchSupragenerics(int datasetKey, List<SimpleNameClassified<T>> homonyms,
+                                        List<T> parents,
+                                        List<SimpleNameClassified<T>> alt
   ) {
     if (parents == null || parents.isEmpty()) {
       // pick first
@@ -591,7 +563,7 @@ public class MatchingService {
                                       .map(SimpleNameWithNidx::getCanonicalId)
                                       .filter(Objects::nonNull)
                                       .collect(Collectors.toSet());
-    SimpleNameClassified<SimpleNameCached> best = homonyms.get(0);
+    SimpleNameClassified<T> best = homonyms.get(0);
     int max = 0;
     for (var hom : homonyms) {
       Set<Integer> cNidx = hom.getClassification().stream()
@@ -611,7 +583,7 @@ public class MatchingService {
    * Manually adds a name usage to the cache. Requires the datasetKey to be set correctly.
    * The name will be matched to the names index if it does not have a names index id yet.
    */
-  public SimpleNameCached add(NameUsageBase nu) {
+  public T add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
     if (canonNidx.hasNidx()) {
@@ -621,7 +593,7 @@ public class MatchingService {
         before = new ArrayList<>();
         storage.put(canonNidx, before);
       }
-      var sn = new SimpleNameCached(nu, canonNidx.getId());
+      var sn = storage.convert(nu, canonNidx);
       before.add(sn);
       return sn;
 

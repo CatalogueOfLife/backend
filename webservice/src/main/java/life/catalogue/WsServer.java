@@ -29,7 +29,6 @@ import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
-import life.catalogue.dw.metrics.GangliaBundle;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
@@ -52,6 +51,7 @@ import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
 import life.catalogue.matching.MatchingService;
+import life.catalogue.matching.MatchingStorageGlobalCache;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
@@ -135,7 +135,6 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(mail);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
-    bootstrap.addBundle(new GangliaBundle());
 
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
@@ -303,7 +302,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name index
     if (cfg.namesIndex.file != null) {
-      ni = NameIndexFactory.build(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
+      ni = NameIndexFactory.buildPg(cfg.namesIndex, getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE);
       // we do not start up the index automatically, we need to run 2 apps in parallel during deploys!
       managedService.manage(Component.NamesIndex, ni);
       env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
@@ -354,7 +353,8 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher
-    final var matcher = new MatchingService(ni, uCache, getSqlSessionFactory());
+    final var matchingStorage = new MatchingStorageGlobalCache(getSqlSessionFactory(), uCache);
+    final var matcher = new MatchingService<>(ni, matchingStorage);
 
     // DOI
     DoiService doiService;
@@ -374,7 +374,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, bus);
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, uCache, secdao, siDao, edao, indexService, bus);
     final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
@@ -453,7 +453,8 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
-    j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
+    j.register(new NamesIndexResource(ni));
+    j.register(new NamesIndexExportResource(getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedback));
     j.register(new NameUsageSearchResource(searchService));

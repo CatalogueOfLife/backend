@@ -62,14 +62,14 @@ public class XRelease extends ProjectRelease {
   private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final MatchingService matcher;
+  private final MatchingService<SimpleNameCached> matcher;
   private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
   private int failedSyncs;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, MatchingService matcher, NameUsageIndexService indexService, ImageService imageService,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, MatchingService<SimpleNameCached> matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {

@@ -1,29 +1,22 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
-import life.catalogue.dao.DaoUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
-
-import life.catalogue.junit.TxtTreeDataRule;
 
 import org.apache.commons.io.FileUtils;
 
@@ -92,7 +85,7 @@ public class NameIndexImplIT {
     }
     cfg = NamesIndexConfig.memory(512);
     cfg.type = this.type;
-    ni = NameIndexFactory.build(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.buildPg(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
     if (erase) {
       assertEquals(0, ni.size());
     } else {
@@ -107,7 +100,7 @@ public class NameIndexImplIT {
     }
     cfg = NamesIndexConfig.file(fIdx, 512);
     cfg.type = this.type;
-    ni = NameIndexFactory.build(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
+    ni = NameIndexFactory.buildPg(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), aNormalizer).started();
   }
 
   @Test
@@ -327,72 +320,6 @@ public class NameIndexImplIT {
     assertMatch(3, "Larus fuscus", Rank.SPECIES);
   }
 
-  @Test
-  public void delete() throws Throwable {
-    setupMemory(false);
-    assertEquals("Apia apis", ni.get(1).getLabel());
-    assertEquals("Malus sylvestris", ni.get(2).getLabel());
-    assertEquals(4, ni.size());
-
-    ni.delete(1, false);
-    assertEquals(3, ni.size());
-    assertNull(ni.get(1));
-    assertEquals("Malus sylvestris", ni.get(2).getLabel());
-
-    ni.delete(2, true);
-    assertNull(ni.get(1));
-    assertNull(ni.get(2));
-    assertEquals(4, ni.size());
-
-    List<TxtTreeDataRule.TreeDataset> data = new ArrayList<>();
-    data.add(new TxtTreeDataRule.TreeDataset(101, "trees/nidx1.tree"));
-    data.add(new TxtTreeDataRule.TreeDataset(102, "trees/nidx2.tree"));
-    data.add(new TxtTreeDataRule.TreeDataset(103, "trees/nidx3.tree"));
-    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(data)) {
-      treeRule.before();
-    }
-    rematchAll();
-    //dumpIndex();
-
-    int nidxSize = 25;
-    assertEquals(nidxSize, ni.size());
-    var m = ni.match(Name.build("Abbella zabinskii", "Novicki, 1936", Rank.SPECIES), false, false);
-    var group = ni.byCanonical(m.getCanonicalNameKey());
-    ni.delete(m.getCanonicalNameKey(), false);
-    assertNull(ni.get(m.getNameKey()));
-    assertNull(ni.get(m.getCanonicalNameKey()));
-    for (var n : group) {
-      assertNull(ni.get(n.getKey()));
-    }
-    assertEquals(nidxSize-group.size()-1, ni.size());
-
-    // once more with rematching
-    rematchAll();
-    assertEquals(nidxSize, ni.size());
-    m = ni.match(Name.build("Abbella zabinskii", "Novicki, 1936", Rank.SPECIES), false, false);
-    group = ni.byCanonical(m.getCanonicalNameKey());
-    ni.delete(m.getCanonicalNameKey(), true);
-    // same index size, but new keys!
-    assertEquals(nidxSize, ni.size());
-    assertNull(ni.get(m.getNameKey()));
-    assertNull(ni.get(m.getCanonicalNameKey()));
-    for (var n : group) {
-      assertNull(ni.get(n.getKey()));
-    }
-  }
-
-  void rematchAll() {
-    IntSet keys;
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      keys = DaoUtils.listDatasetWithNames(session);
-      keys.addAll(
-        session.getMapper(ArchivedNameUsageMapper.class).listProjects()
-      );
-    }
-    System.out.println("Rematch all "+keys.size()+" datasets with data using a names index of size " + ni.size());
-    RematchJob.some(Users.MATCHER, SqlSessionFactoryRule.getSqlSessionFactory(), ni, null, false, keys.toIntArray()).run();
-    System.out.println("Rematch done. New names index size = " + ni.size());
-  }
   public static List<Name> prepareTestNames() {
     Name n1 = new Name();
     n1.setScientificName("Abies alba");
@@ -551,14 +478,6 @@ public class NameIndexImplIT {
       epi = StringUtils.increase(epi);
       ni.add(create("Abies", epi, ""+(1800+i)%200, "Döring"));
     }
-
-    ni.reset();
-    assertEquals(0, ni.size());
-
-    ni.add(create("Abies", "alba", null, "Miller"));
-    ni.add(create("Abies", "alba", null, "Duller"));
-    n = ni.get(2);
-    assertEquals(3, ni.size());
   }
 
   private static IndexName create(String genus, String species, String year, String... authors){

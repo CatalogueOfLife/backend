@@ -1,15 +1,11 @@
 package life.catalogue.resources;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.common.util.RegexUtils;
-import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.interpreter.NameInterpreter;
-import life.catalogue.matching.NidxExportJob;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexStore;
 
@@ -21,13 +17,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
@@ -41,15 +33,9 @@ public class NamesIndexResource {
   private static final Logger LOG = LoggerFactory.getLogger(NamesIndexResource.class);
   private final NameIndex ni;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
-  private final SqlSessionFactory factory;
-  private final WsServerConfig cfg;
-  private final JobExecutor exec;
 
-  public NamesIndexResource(NameIndex ni, SqlSessionFactory factory, WsServerConfig cfg,JobExecutor exec) {
+  public NamesIndexResource(NameIndex ni) {
     this.ni = ni;
-    this.factory = factory;
-    this.cfg = cfg;
-    this.exec = exec;
   }
 
   @GET
@@ -78,14 +64,6 @@ public class NamesIndexResource {
   @Path("{key}")
   public IndexName get(@PathParam("key") int key) {
     return ni.get(key);
-  }
-
-  @DELETE
-  @Path("{key}")
-  public List<IndexName> delete(@PathParam("key") int key, @QueryParam("rematch") boolean rematch) {
-    var n = ni.get(key);
-    if (n == null) throw NotFoundException.notFound(IndexName.class, key);
-    return ni.delete(key, rematch);
   }
 
   @GET
@@ -119,22 +97,6 @@ public class NamesIndexResource {
     RegexUtils.validatePattern(regex);
     Page p = page == null ? new Page() : page;
     return session.getMapper(NamesIndexMapper.class).listByRegex(regex, canonical, rank, p);
-  }
-
-  @POST
-  @Path("export")
-  public NidxExportJob export(@QueryParam("datasetKey") List<Integer> keys, @QueryParam("min") int minDatasets, @Auth User user) {
-    NidxExportJob job = new NidxExportJob(keys, minDatasets, user.getKey(), factory, cfg.normalizer);
-    exec.submit(job);
-    return job;
-  }
-
-  @POST
-  @Hidden
-  @Path("compact")
-  @RolesAllowed({Roles.ADMIN})
-  public void compact() {
-    ni.store().compact();
   }
 
 }

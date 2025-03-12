@@ -12,7 +12,6 @@ import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.pgcopy.PgBinaryReader;
 import life.catalogue.pgcopy.PgBinarySplitter;
 import life.catalogue.pgcopy.PgBinaryWriter;
@@ -167,7 +166,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
   private void rebuildFileOnly() throws Exception {
     LOG.info("Rebuild index file at {}", cfg.namesIndex.file);
-    NameIndex ni = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
+    NameIndex ni = NameIndexFactory.buildPg(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
     LOG.info("Done rebuilding {} index file at {}", cfg.namesIndex.type, cfg.namesIndex.file);
   }
@@ -191,7 +190,7 @@ public class NamesIndexCmd extends AbstractMybatisCmd {
 
     // setup new nidx using the session factory with the nidx schema - which has no names yet
     cfg.namesIndex.verification = false;
-    ni = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
+    ni = NameIndexFactory.buildPg(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
     ni.start();
 
     String limit = "";

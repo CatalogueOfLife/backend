@@ -9,8 +9,6 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.NameFormatter;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
 import life.catalogue.matching.Equality;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.authorship.AuthorComparator;
@@ -21,14 +19,12 @@ import org.gbif.nameparser.util.UnicodeUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -44,51 +40,16 @@ public class NameIndexImpl implements NameIndex {
       NameType.SCIENTIFIC, NameType.HYBRID_FORMULA, NameType.VIRUS, NameType.OTU, NameType.INFORMAL
   );
 
-  private final boolean verifyIndex; // if true compares counts from index with postgres counts and reloads if wrong
-  private final NameIndexStore store;
+  protected final NameIndexStore store;
   private final AuthorComparator authComp;
-  private final SqlSessionFactory sqlFactory;
+  private final AtomicInteger idSeq = new AtomicInteger(0);
 
   /**
-   * @param sqlFactory sql session factory to talk to the data store backend if needed for inserts or initial loading
    * @throws IllegalStateException when db is in a bad state
    */
-  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer, SqlSessionFactory sqlFactory, boolean verifyIndex) {
+  public NameIndexImpl(NameIndexStore store, AuthorshipNormalizer normalizer) {
     this.store = store;
     this.authComp = new AuthorComparator(normalizer);
-    this.sqlFactory = Preconditions.checkNotNull(sqlFactory);
-    this.verifyIndex = verifyIndex;
-  }
-  
-  private int countPg() {
-    try (SqlSession s = sqlFactory.openSession()) {
-      return s.getMapper(NamesIndexMapper.class).count();
-    }
-  }
-
-  public void printIndex() {
-    System.out.println("\nNames Index from postgres:");
-    try (SqlSession session = sqlFactory.openSession(true)) {
-      session.getMapper(NamesIndexMapper.class).processAll().forEach(System.out::println);
-    }
-  }
-
-  private void loadFromPg() {
-    store.clear();
-    LOG.info("Loading names from postgres into names index");
-    try (SqlSession s = sqlFactory.openSession()) {
-      NamesIndexMapper mapper = s.getMapper(NamesIndexMapper.class);
-      PgUtils.consume(
-        () -> mapper.processAll(),
-        this::addFromPg
-      );
-      LOG.info("Loaded {} names from postgres into names index", store.count());
-    }
-  }
-
-  private void addFromPg(IndexName name) {
-    final String key = key(name);
-    store.add(key, name);
   }
 
   public AuthorComparator getAuthComp() {
@@ -334,18 +295,6 @@ public class NameIndexImpl implements NameIndex {
   }
 
   @Override
-  public void reset() {
-    LOG.warn("Removing all entries from the names index store");
-    store.clear();
-    try (SqlSession session = sqlFactory.openSession(true)) {
-      LOG.info("Truncating all name matches");
-      session.getMapper(NameMatchMapper.class).truncate();
-      LOG.warn("Truncating the names index postgres table");
-      session.getMapper(NamesIndexMapper.class).truncate();
-    }
-  }
-
-  @Override
   public int size() {
     return store.count();
   }
@@ -388,174 +337,63 @@ public class NameIndexImpl implements NameIndex {
     return match2;
   }
 
-  @Override
-  public List<IndexName> delete(int key, boolean rematch){
-    var removed = store.delete(key, NameIndexImpl::key);
-    // order the canonical last to not break foreign key constraints
-    removed.sort(Comparator.comparing(IndexName::isCanonical));
-    // remove from db
-    var names = new ArrayList<DSID<String>>();
-    var archivedNames = new ArrayList<DSID<String>>();
-    try (SqlSession s = sqlFactory.openSession(false)) {
-      var nim = s.getMapper(NamesIndexMapper.class);
-      var nm = s.getMapper(NameMapper.class);
-      var nmm = s.getMapper(NameMatchMapper.class);
-
-      var anum = s.getMapper(ArchivedNameUsageMapper.class);
-      var anm = s.getMapper(ArchivedNameUsageMatchMapper.class);
-
-      for (var n : removed) {
-        // remove matches
-        var matches = nm.indexGroupIds(n.getKey());
-        names.addAll(matches);
-        for (var m : matches) {
-          nmm.delete(m);
-        }
-        // archived matches
-        matches = anum.indexGroupIds(n.getKey());
-        archivedNames.addAll(matches);
-        for (var m : matches) {
-          anm.delete(m);
-        }
-        // remove index name
-        nim.delete(n.getKey());
-      }
-      s.commit();
-      LOG.info("Removed index {} and {} more names from names index", key, removed.size()-1);
-
-      // rematch
-      if (rematch) {
-        LOG.debug("Rematch {} names", names.size());
-        for (var n : names) {
-          match(nm.get(n), true, false);
-        }
-        LOG.debug("Rematch {} archived name usages", archivedNames.size());
-        for (var n : archivedNames) {
-          match(anum.get(n).getName(), true, false);
-        }
-        LOG.info("Rematched {} names and {} archived usages that had been linked to the removed index name {}", names.size(), archivedNames.size(), key);
-      }
-    }
-    return removed;
-  }
-
   /**
    * Adds a new IndexName to the index, even if it exists already.
    * This method is not thread safe!
    */
   @Override
   public void add(IndexName n) {
-    //// make sure this is the same as what the key method is based on !!!
-    //n.setScientificName(NameFormatter.canonicalName(n));
-    //// rebuild authorship if only existing as parsed version
-    //if (n.getAuthorship() == null && n.hasAuthorship()) {
-    //  n.setAuthorship(NameFormatter.authorship(n, false));
-    //}
-
     final String key = key(n);
-    try (SqlSession s = sqlFactory.openSession()) {
-      NamesIndexMapper nim = s.getMapper(NamesIndexMapper.class);
+    n.setCreatedBy(Users.MATCHER);
+    n.setCreated(LocalDateTime.now());
+    n.setModifiedBy(Users.MATCHER);
+    n.setModified(LocalDateTime.now());
 
-      n.setCreatedBy(Users.MATCHER);
-      n.setCreated(LocalDateTime.now());
-      n.setModifiedBy(Users.MATCHER);
-      n.setModified(LocalDateTime.now());
+    if (n.qualifiesAsCanonical()) {
+      prepareCanonical(key, n);
+      store.add(key, n);
 
-      if (n.qualifiesAsCanonical()) {
-        createCanonical(nim, key, n);
-
-      } else {
-        // make sure there exists a canonical name without authorship and strongly normalised rank already
-        IndexName cn = getCanonical(key);
-        if (cn == null) {
-          // insert new canonical
-          cn = IndexName.newCanonical(n);
-          createCanonical(nim, key, cn);
-        }
-        n.setCanonicalId(cn.getKey());
-        nim.create(n);
-        store.add(key, n);
+    } else {
+      // make sure there exists a canonical name without authorship and strongly normalised rank already
+      IndexName cn = getCanonical(key);
+      if (cn == null) {
+        // insert new canonical
+        cn = IndexName.newCanonical(n);
+        prepareCanonical(key, cn);
+        store.add(key, cn);
       }
-      s.commit();
+      n.setCanonicalId(cn.getKey());
+      prepareQualified(key, n);
+      store.add(key, n);
     }
   }
 
-  private void createCanonical(NamesIndexMapper nim, String key, IndexName cn){
-    // mybatis defaults canonicalID to the newly created key in the database...
-    nim.create(cn);
-    // ... but the instance is not updated automatically
+  protected void prepareQualified(String key, IndexName n){
+    n.setKey(idSeq.incrementAndGet());
+  }
+  protected void prepareCanonical(String key, IndexName cn){
+    cn.setKey(idSeq.incrementAndGet());
     cn.setCanonicalId(cn.getKey());
-    store.add(key, cn);
   }
 
   /**
    * @return A pure ASCII key based on the newly formatted canonical name or scientific name as the fallback
    */
-  private static String key(FormattableName n) {
+  protected static String key(FormattableName n) {
     String origName = NameFormatter.canonicalName(n);
     return UnicodeUtils.replaceNonAscii(SciNameNormalizer.normalize(UnicodeUtils.decompose(origName)).toLowerCase(), '*');
   }
-  
-  /**
-   * @return true if the ranks given are indicating matching names and do not contradict each other
-   */
-  private static boolean match(Rank r1, Rank r2) {
-    if (r1 == null || r1 == Rank.UNRANKED ||
-        r2 == null || r2 == Rank.UNRANKED) return true;
-    
-    // for suprageneric names compare their base rank only
-    if (r1.isSuprageneric() && r1.getMajorRank() == r2.getMajorRank()) {
-      return true;
-    }
-    Boolean infraTest = matchInfraName1(r1, r2);
-    if (infraTest == null) {
-      infraTest = matchInfraName1(r2, r1);
-    }
-    if (infraTest != null) {
-      return infraTest;
-    } else {
-      return r1 == r2;
-    }
-  }
-  
-  /**
-   * @return true or false if clearly matches or doesnt. Null if we dont know yet
-   */
-  private static Boolean matchInfraName1(Rank r1, Rank r2) {
-    if (r1 == Rank.SPECIES_AGGREGATE) {
-      return r2 == Rank.SPECIES || r2 == Rank.SPECIES_AGGREGATE;
-      
-    } else if (r1 == Rank.INFRASPECIFIC_NAME) {
-      return r2.isInfraspecific();
-      
-    } else if (r1 == Rank.INFRASUBSPECIFIC_NAME) {
-      return r2.isInfraspecific() && r2 != Rank.SUBSPECIES;
-      
-    } else if (r1 == Rank.INFRAGENERIC_NAME) {
-      return r2.isInfragenericStrictly();
-    }
-    
-    return null;
-  }
-  
+
   @Override
   public void start() throws Exception {
     LOG.info("Start names index ...");
     store.start();
-    int storeSize = store.count();
-    if (storeSize == 0) {
-      loadFromPg();
-    } else {
-      // verify postgres and store match up - otherwise trust postgres
-      int pgCount = countPg();
-      if (pgCount != storeSize) {
-        LOG.warn("Existing name index contains {} names, but postgres has {}.", storeSize, pgCount);
-        if (verifyIndex) {
-          loadFromPg();
-        }
-      }
+    int max = 0;
+    for (var n : store.all()) {
+      max = Math.max(max, n.getKey());
     }
-    LOG.info("Started name index with {} names", store.count());
+    idSeq.set(max);
+    LOG.info("Started name index with {} names and a maximum key of {}", store.count(), max);
   }
 
   @Override

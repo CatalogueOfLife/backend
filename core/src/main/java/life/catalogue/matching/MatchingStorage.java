@@ -2,55 +2,40 @@ package life.catalogue.matching;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
-import life.catalogue.cache.CacheLoader;
 import life.catalogue.common.Managed;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public interface MatchingStorage extends Managed {
+public interface MatchingStorage<T extends SimpleNameWithNidx> extends Managed {
 
-  NameUsageBase getUsage(DSID<String> src);
+  List<T> get(DSID<Integer> canonNidx);
 
-  List<SimpleNameCached> get(DSID<Integer> canonNidx);
+  void put(DSID<Integer> canonNidx, List<T> usages);
 
-  void put(DSID<Integer> canonNidx, List<SimpleNameCached> before);
-
-  List<SimpleNameCached> getClassification(DSID<String> src);
-
-  void invalidate(int datasetKey, int canonicalId);
-
-  void invalidate(DSID<Integer> key);
+  List<T> getClassification(DSID<String> usage);
 
   /**
-   * Removes a single entry from the matcher cache.
-   * If it is not cached yet, nothing will happen.
-   * @param nidx any names index id
+   * Creates a new simple name instance, but does not store it yet.
+   * @param nu the source usage to convert
+   * @param canonNidx the canonical names index match to include with the usage instance
    */
-  void clear(int datasetKey, int nidx);
+  T convert(NameUsageBase nu, DSID<Integer> canonNidx);
+
+  void clear(DSID<Integer> canonNidx);
 
   /**
-   * Removes all usages from the given dataset from the matcher cache.
+   * Removes all usages from the given dataset.
    */
   void clear(int datasetKey);
 
   /**
-   * Wipes the entire cache.
+   * Wipes the entire storage.
    */
   void clear();
 
-  /**
-   * @param datasetKey
-   * @param usage with parent property being the ID !!!
-   * @param loader
-   * @return
-   */
-  default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage) throws NotFoundException {
-    SimpleNameClassified<SimpleNameCached> sncl = new SimpleNameClassified<>(usage);
-    sncl.setClassification(new ArrayList<>());
-    //if (usage.getParent() != null) {
-    //  addParents(sncl.getClassification(), DSID.of(datasetKey, usage.getParent()), loader);
-    //}
+  default SimpleNameClassified<T> withClassification(int datasetKey, T usage) throws NotFoundException {
+    SimpleNameClassified<T> sncl = new SimpleNameClassified<>(usage);
+    sncl.setClassification(getClassification(DSID.of(datasetKey, usage.getId())));
     return sncl;
   }
 

@@ -12,8 +12,6 @@ import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
-import life.catalogue.dw.metrics.GangliaBundleConfiguration;
-import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
@@ -41,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.client.JerseyClientConfiguration;
 
 
-public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
+public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -102,10 +100,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();
-
-  @Valid
-  @NotNull
-  public GangliaConfiguration ganglia = new GangliaConfiguration();
 
   @Valid
   @NotNull
@@ -212,12 +206,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
-  }
-
-  @Override
-  @JsonIgnore
-  public GangliaConfiguration getGangliaConfiguration() {
-    return ganglia;
   }
 
   @Override

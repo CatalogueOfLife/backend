@@ -84,6 +84,16 @@ public class NameUsageMapperTreeTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void classification() throws Exception {
+    var nu = mapper().get(DSID.of(DATASET11.getKey(), "t15"));
+    assertEquals("Lynx rufus baileyi", nu.getLabel());
+    var cl = mapper().classificationNxIds(nu);
+    assertEquals(7, cl.size());
+    assertEquals("Lynx rufus", cl.get(0).getName());
+    assertEquals("Animalia", cl.get(6).getName());
+  }
+
+  @Test
   public void processTreeOrder() throws Exception {
     TxtTreeDataRule.printTree(DATASET11.getKey());
     CollectIdHandler<NameUsageBase> h = new CollectIdHandler<>();

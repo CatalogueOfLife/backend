@@ -3,10 +3,7 @@ package life.catalogue.matching;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
-import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
@@ -22,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MatchingStorageGlobalCache implements MatchingStorage {
+public class MatchingStorageGlobalCache implements MatchingStorage<SimpleNameCached> {
   private final static Logger LOG = LoggerFactory.getLogger(MatchingStorageGlobalCache.class);
 
   private final SqlSessionFactory factory;
@@ -84,21 +81,15 @@ public class MatchingStorageGlobalCache implements MatchingStorage {
     return false;
   }
 
-  @Override
-  public void invalidate(int datasetKey, int canonicalId) {
-    usages.invalidate(new MatchingService.CanonNidxMatch(datasetKey, canonicalId, MatchType.EXACT));
-  }
 
   @Override
-  public void invalidate(DSID<Integer> key) {
+  public void clear(DSID<Integer> key) {
 
   }
 
   @Override
-  public NameUsageBase getUsage(DSID<String> src) {
-    try (SqlSession session = factory.openSession()) {
-      return session.getMapper(NameUsageMapper.class).get(src);
-    }
+  public SimpleNameCached convert(NameUsageBase nu, DSID<Integer> canonNidx) {
+    return new SimpleNameCached(nu, canonNidx.getId());
   }
 
   @Override
@@ -114,21 +105,6 @@ public class MatchingStorageGlobalCache implements MatchingStorage {
   @Override
   public List<SimpleNameCached> getClassification(DSID<String> src) {
     return uCache.getClassification(src, loaders.getOrDefault(src.getDatasetKey(), defaultLoader));
-  }
-
-  /**
-   * Removes a single entry from the matcher cache.
-   * If it is not cached yet, nothing will happen.
-   * @param nidx any names index id
-   */
-  public void clear(int datasetKey, int nidx) {
-//    var n = nameIndex.get(nidx);
-//    if (n != null) {
-//      if (n.getCanonicalId() != null && !n.isCanonical()) {
-//        nidx = n.getCanonicalId();
-//      }
-//      storage.invalidate(DSID.of(datasetKey, nidx));
-//    }
   }
 
   /**

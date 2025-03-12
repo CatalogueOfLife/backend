@@ -9,6 +9,7 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.junit.*;
 import life.catalogue.matching.nidx.NameIndexImpl;
+import life.catalogue.matching.nidx.NameIndexImplPg;
 import life.catalogue.release.XReleaseConfig;
 
 import java.io.IOException;
@@ -64,7 +65,7 @@ public class SectorSyncNameUpdIT extends SectorSyncTestBase {
   }
 
   private void dumpNidx() {
-    ((NameIndexImpl) NameMatchingRule.getIndex()).printIndex();
+    ((NameIndexImplPg) NameMatchingRule.getIndex()).printIndex();
   }
 
   @Test

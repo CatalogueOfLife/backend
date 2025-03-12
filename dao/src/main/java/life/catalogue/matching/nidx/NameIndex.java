@@ -58,15 +58,6 @@ public interface NameIndex extends Managed, AutoCloseable {
   int size();
 
   /**
-   * Deletes a name from the index and all name and archived usage matches that link to that index name.
-   * If the index name key points to a canonical name, the entire name group will be removed with the canonical.
-   * @param key names index key
-   * @param rematch if true the names and archived name usages that were linked to the index name will be rematched again
-   * @return list of all index names that were removed
-   */
-  List<IndexName> delete(int key, boolean rematch);
-
-  /**
    * Adds a new name to the index, generating a new key and potentially inserting a canonical name record too.
    * It will add a new IndexName even if it exists already.
    * In most cases the {@link #match(Name, boolean, boolean)}match method should be the preferred way to include only new names
@@ -84,12 +75,6 @@ public interface NameIndex extends Managed, AutoCloseable {
       add(n);
     }
   }
-
-  /**
-   * Resets the names index, removing all entries and setting back the id sequence to 1.
-   * This does truncate both the file based index as well as the underlying postgres data.
-   */
-  void reset();
 
   /**
    * Makes sure the names index has started and throws an UnavailableException otherwise

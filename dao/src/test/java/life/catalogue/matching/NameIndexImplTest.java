@@ -45,26 +45,10 @@ public class NameIndexImplTest {
   static final AuthorshipNormalizer aNormalizer = AuthorshipNormalizer.INSTANCE;
 
   NameIndex ni;
-  AtomicInteger keyGen = new AtomicInteger(1);
 
   @Before
   public void setup() throws Exception {
-    SqlSessionFactory factory = mock(SqlSessionFactory.class);
-    SqlSession session = mock(SqlSession.class);
-    NamesIndexMapper mapper = mock(NamesIndexMapper.class);
-
-    when(factory.openSession()).thenReturn(session);
-    when(session.getMapper(any())).thenReturn(mapper);
-    when(mapper.processAll()).thenReturn(new EmptyListCursor<>());
-    doAnswer(new Answer<IndexName>() {
-      public IndexName answer(InvocationOnMock invocation) {
-        IndexName param = invocation.getArgument(0, IndexName.class);
-        param.setKey(keyGen.getAndIncrement());
-        return param;
-      }}
-    ).when(mapper).create(any());
-
-    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), factory, aNormalizer).started();
+    ni = NameIndexFactory.build(NamesIndexConfig.memory(512), aNormalizer).started();
     assertEquals(0, ni.size());
   }
 
@@ -475,9 +459,9 @@ public class NameIndexImplTest {
     ni.add(create("Abies", "alba", null, "Miller"));
     assertEquals(2, ni.size());
     //
-    IndexName n1 = ni.get(keyGen.get()-2);
+    IndexName n1 = ni.get(1);
     assertTrue(n1.isCanonical());
-    IndexName n2 = ni.get(keyGen.get()-1);
+    IndexName n2 = ni.get(2);
     assertNotEquals(n1, n2);
     assertEquals(n1.getCanonicalId(), n2.getCanonicalId());
     assertEquals(n1.getKey(), n2.getCanonicalId());

@@ -50,11 +50,6 @@ public interface NameIndexStore extends Managed {
   void add(String key, IndexName name);
 
   /**
-   * Tries to compact the store, but retaining all identifiers.
-   */
-  void compact();
-
-  /**
    * DateTime the store was first created or entirely cleared.
    */
   LocalDateTime created();

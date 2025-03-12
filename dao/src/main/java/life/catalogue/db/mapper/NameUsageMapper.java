@@ -50,6 +50,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   /**
+   * simple classification with names index values, excluding the given usage with the key
+   */
+  List<SimpleNameWithNidx> classificationNxIds(@Param("key") DSID<String> key);
+
+
+  /**
    * SimpleName.parent=parent.id
    * @param key
    */

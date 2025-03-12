@@ -28,16 +28,12 @@ public class MatchingResource {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
 
   private final MatchingConfig cfg;
-  private final SqlSessionFactory factory;
-  private final MatchingService matcher;
-  private final UsageCache uCache;
+  private final MatchingService<?> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public MatchingResource(MatchingConfig cfg, MatchingService matcher) {
+  public MatchingResource(MatchingConfig cfg, MatchingService<?> matcher) {
     this.cfg = cfg;
-    this.factory = factory;
     this.matcher = matcher;
-    this.uCache = matcher.getUCache();
   }
 
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {

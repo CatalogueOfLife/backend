@@ -8,9 +8,12 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.*;
 import life.catalogue.parser.*;
+
+import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -20,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -43,20 +47,18 @@ public class NameUsageMatchingResource {
   private final WsServerConfig cfg;
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
-  private final MatchingService matcher;
-  private final UsageCache uCache;
+  private final MatchingService<SimpleNameCached> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, MatchingService matcher) {
+  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, MatchingService<SimpleNameCached> matcher) {
     this.cfg = cfg;
     this.exec = exec;
     this.factory = factory;
     this.matcher = matcher;
-    this.uCache = matcher.getUCache();
   }
 
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
-    UsageMatch match;
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<? extends SimpleName> sn, IssueContainer issues, boolean verbose) {
+    UsageMatch<SimpleNameCached> match;
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
@@ -102,14 +104,29 @@ public class NameUsageMatchingResource {
     return sn;
   }
 
+  /**
+   * Maps a single usage from a given source to another dataset
+   * @param targetDatasetKey dataset to map to
+   */
   @GET
   @Path("{id}")
   public UsageMatch map(@PathParam("key") int datasetKey,
-                                    @PathParam("id") String id,
-                                    @QueryParam("datasetKey") int targetDatasetKey,
-                                    @QueryParam("verbose") boolean verbose
+                        @PathParam("id") String id,
+                        @QueryParam("datasetKey") int targetDatasetKey,
+                        @QueryParam("verbose") boolean verbose
   ) throws InterruptedException {
-    return matcher.map(DSID.of(datasetKey, id), targetDatasetKey, verbose);
+    NameUsageBase nu;
+    List<SimpleNameWithNidx> classification;
+    try (SqlSession session = factory.openSession()) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var key = DSID.of(datasetKey, id);
+      nu = num.get(key);
+      if (nu == null) {
+        throw life.catalogue.api.exception.NotFoundException.notFound(NameUsage.class, key);
+      }
+      classification = num.classificationNxIds(nu);
+    }
+    return matcher.match(targetDatasetKey, nu, classification, false, verbose);
   }
 
 

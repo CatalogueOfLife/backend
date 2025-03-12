@@ -34,6 +34,9 @@ public class NameUsageMapperNidxTest extends MapperTestBase<NameUsageMapper> {
 
     // none
     assertEquals(0, mapper().listByNamesIndexIDGlobal( 1, new Page()).size());
+
+    var cl = mapper().classificationNxIds(DSID.of(100, "u1"));
+    assertEquals(0, cl.size());
   }
 
   @Test
