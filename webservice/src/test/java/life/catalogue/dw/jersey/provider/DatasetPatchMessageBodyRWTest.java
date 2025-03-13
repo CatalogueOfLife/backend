@@ -1,23 +1,22 @@
 package life.catalogue.dw.jersey.provider;
 
-import com.google.common.base.Charsets;
-
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.io.CsvWriter;
 import life.catalogue.common.io.Resources;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.List;
 
 import org.junit.Test;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
+import com.google.common.base.Charsets;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DatasetPatchMessageBodyRWTest {
 

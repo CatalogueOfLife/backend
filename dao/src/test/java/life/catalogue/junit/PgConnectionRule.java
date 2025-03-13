@@ -12,10 +12,6 @@ import com.zaxxer.hikari.HikariDataSource;
  * It does not alter the database in any way, just sets up the connection and mybatis and makes sure to close it at the end.
  */
 public class PgConnectionRule extends SqlSessionFactoryRule {
-  private static final Logger LOG = LoggerFactory.getLogger(PgConnectionRule.class);
-
-  private final boolean initDB = true;
-  private final PgConfig adminCfg;
 
   public PgConnectionRule(String database, String user, String password) {
     this("localhost", database, user, password);
@@ -23,22 +19,11 @@ public class PgConnectionRule extends SqlSessionFactoryRule {
 
   public PgConnectionRule(String host, String database, String user, String password) {
     cfg = new PgConfig(host, database, user, password);
-    adminCfg = new PgConfig(host, "postgres", "postgres", "postgres");
   }
 
   @Override
   public void before() throws Throwable {
-    if (initDB) {
-      try {
-        PgSetupRule.initDb(adminCfg::connect, cfg);
-      } catch (Exception e) {
-        LOG.error("Pg setup error: {}", e.getMessage(), e);
-        after();
-        throw new RuntimeException(e);
-      }
-    } else {
-      setupMybatis(cfg);
-    }
+    setupMybatis(cfg);
   }
 
   @Override
