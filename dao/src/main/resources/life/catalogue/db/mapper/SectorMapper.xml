@@ -228,6 +228,16 @@
     </where>
   </select>
 
+  <select id="listWrongSubject" resultMap="sectorResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      LEFT JOIN name ns on ns.dataset_key=ts.dataset_key and ns.id=ts.name_id
+    WHERE s.dataset_key = #{datasetKey}
+     AND s.subject_id IS NOT NULL
+     AND s.subject_name IS NOT NULL
+     AND ns.scientific_name != s.subject_name
+  </select>
+
   <select id="hasSector" resultType="boolean">
     SELECT exists(
       SELECT id FROM sector

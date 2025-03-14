@@ -25,6 +25,11 @@ public interface SectorMapper extends BaseDecisionMapper<Sector, SectorSearchReq
                              @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                              @Param("mode") @Nullable Sector.Mode mode);
 
+  /**
+   * List all sectors that have a subject id which points to a different name in the source than what is configured in the subject_name of the sector.
+   */
+  List<Sector> listWrongSubject(@Param("datasetKey") @Nullable Integer datasetKey);
+
   boolean hasSector(@Param("datasetKey") int datasetKey,
                     @Param("subjectDatasetKey") int subjectDatasetKey,
                     @Param("mode") @Nullable Sector.Mode mode);

@@ -422,7 +422,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // use accepted instead
       var p = numRO.getSimpleParent(targetKey.id(parent.id));
       // make sure rank hierarchy makes sense - can be distorted by synonyms
-      if (p == null || (nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank()))) {
+      if (p == null || (nu.isTaxon() && nu.getRank().notOtherOrUnranked() && p.getRank().lowerOrEqualsTo(nu.getRank()))) {
         while (p != null && p.getRank().lowerOrEqualsTo(nu.getRank())) {
           p = numRO.getSimpleParent(targetKey.id(p.getId()));
         }

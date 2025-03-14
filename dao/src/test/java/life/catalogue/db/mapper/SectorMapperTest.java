@@ -107,6 +107,14 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
   }
 
   @Test
+  public void listWrongSubject() {
+    add2Sectors();
+    var res = mapper().listWrongSubject(targetDatasetKey);
+    assertEquals(1, res.size());
+    assertEquals(TestEntityGenerator.TAXON1.getId(), res.get(0).getSubjectID());
+  }
+
+  @Test
   public void list() {
     add2Sectors();
     assertEquals(2, mapper().listByDataset(targetDatasetKey,subjectDatasetKey, null).size());

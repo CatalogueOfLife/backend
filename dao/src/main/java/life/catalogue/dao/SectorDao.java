@@ -9,6 +9,8 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
+import org.apache.ibatis.annotations.Param;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -102,6 +104,16 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
         }
       }
       return new ResultPage<>(p, result, () -> sm.countSearch(request));
+    }
+  }
+
+  /**
+   * List all sectors that have a subject id which points to a different name in the source than what is configured in the subject_name of the sector.
+   */
+  public List<Sector> listWrongSubject(Integer datasetKey) {
+    try (SqlSession session = factory.openSession()) {
+      SectorMapper sm = session.getMapper(SectorMapper.class);
+      return sm.listWrongSubject(datasetKey);
     }
   }
 
