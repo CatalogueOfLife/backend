@@ -61,7 +61,12 @@ public class MatchingStoragePgCache implements MatchingStorage<SimpleNameCached>
   }
 
   @Override
-  public SimpleNameCached convert(NameUsageBase nu, int canonNidx) {
+  public void clear(String usageKey) {
+    clCache.clear(usageKey);
+  }
+
+  @Override
+  public SimpleNameCached convert(NameUsageBase nu, Integer canonNidx) {
     return new SimpleNameCached(nu, canonNidx);
   }
 

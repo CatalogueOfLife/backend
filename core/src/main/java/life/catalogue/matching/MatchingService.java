@@ -594,14 +594,16 @@ public class MatchingService<T extends SimpleNameWithNidx> {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
     var canonNidx = canonNidxAndMatchIfNeeded(nu, true);
     if (canonNidx.hasNidx()) {
+      var sn = storage.convert(nu, canonNidx.id);
       var before = storage.get(canonNidx.id);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list
         before = new ArrayList<>();
+      }
+      if (before.stream().noneMatch(b -> b.getId().equals(sn.getId()))) {
+        before.add(sn);
         storage.put(canonNidx.id, before);
       }
-      var sn = storage.convert(nu, canonNidx.id);
-      before.add(sn);
       return sn;
 
     } else {

@@ -33,17 +33,29 @@ public interface MatchingStorage<T extends SimpleNameWithNidx> {
   List<T> getClassification(String usageKey);
 
   /**
+   * Removes the usage with the given key from the storage
+   * @param usageKey
+   */
+  void clear(String usageKey);
+
+  /**
    * Creates a new simple name instance, but does not store it yet.
    * @param nu the source usage to convert
    * @param canonNidx the canonical names index match to include with the usage instance
    */
-  T convert(NameUsageBase nu, int canonNidx);
+  T convert(NameUsageBase nu, Integer canonNidx);
 
   void clear(int canonNidx);
 
+
   default SimpleNameClassified<T> withClassification(T usage) throws NotFoundException {
     SimpleNameClassified<T> sncl = new SimpleNameClassified<>(usage);
-    sncl.setClassification(getClassification(usage.getId()));
+    if (usage instanceof SimpleNameCached) {
+      sncl = new SimpleNameClassified<>((SimpleNameCached)usage);
+    } else {
+      sncl = new SimpleNameClassified<>(usage);
+    }
+    sncl.setClassification(getClassification(usage.getParentId()));
     return sncl;
   }
 }

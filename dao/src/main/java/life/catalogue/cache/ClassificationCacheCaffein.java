@@ -43,5 +43,10 @@ public class ClassificationCacheCaffein implements ClassificationCache {
   }
 
   @Override
+  public void clear(String key) {
+    usages.invalidate(key);;
+  }
+
+  @Override
   public void close() {  }
 }

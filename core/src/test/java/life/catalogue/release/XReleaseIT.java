@@ -169,6 +169,7 @@ public class XReleaseIT extends SectorSyncTestBase {
 
   @Test
   public void syncAndCompare() throws Throwable {
+    System.out.println("\nProject "+ project+"\n");
     LOG.info("Project {}. Trees: {}", project, sources);
     testNum++;
 

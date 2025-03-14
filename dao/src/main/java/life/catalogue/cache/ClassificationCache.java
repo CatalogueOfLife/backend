@@ -23,6 +23,11 @@ public interface ClassificationCache extends AutoCloseable {
 
   void put(SimpleNameCached usage);
 
+  /**
+   * Removes the usage with the given key from the storage
+   */
+  void clear(String key);
+
   @Override
   void close();
 

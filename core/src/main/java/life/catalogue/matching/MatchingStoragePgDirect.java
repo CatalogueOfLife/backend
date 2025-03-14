@@ -31,12 +31,14 @@ public class MatchingStoragePgDirect implements MatchingStorage<SimpleNameCached
   }
 
   @Override
-  public SimpleNameCached convert(NameUsageBase nu, int canonNidx) {
+  public SimpleNameCached convert(NameUsageBase nu, Integer canonNidx) {
     return new SimpleNameCached(nu, canonNidx);
   }
 
   @Override
-  public void clear(int canonNidx) {  }
+  public void clear(int canonNidx) {
+    // we don't cache anything
+  }
 
   @Override
   public List<SimpleNameCached> get(int canonNidx) {
@@ -48,7 +50,9 @@ public class MatchingStoragePgDirect implements MatchingStorage<SimpleNameCached
   }
 
   @Override
-  public void put(int canonNidx, List<SimpleNameCached> before) {  }
+  public void put(int canonNidx, List<SimpleNameCached> before) {
+    // we don't cache anything
+  }
 
   @Override
   public List<SimpleNameCached> getClassification(String key) {
@@ -58,6 +62,11 @@ public class MatchingStoragePgDirect implements MatchingStorage<SimpleNameCached
         .map(SimpleNameCached::new)
         .collect(Collectors.toList());
     }
+  }
+
+  @Override
+  public void clear(String usageKey) {
+    // we don't cache anything
   }
 
 }

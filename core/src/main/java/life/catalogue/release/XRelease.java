@@ -59,7 +59,7 @@ public class XRelease extends ProjectRelease {
   private final SectorImportDao siDao;
   // sectors as in the release with target pointing to the release usage identifiers
   private List<Sector> sectors;
-  private DSID<Integer> sectorProjectKey;
+  private final DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final NameIndex ni;
