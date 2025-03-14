@@ -18,6 +18,9 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -43,6 +46,15 @@ public class MatchingService<T extends SimpleNameWithNidx> {
   private final TaxGroupAnalyzer groupAnalyzer;
   private final MatchingStorage<T> storage;
 
+  public static MatchingService<SimpleNameCached> buildPg(NameIndex nidx, SqlSessionFactory factory, int datasetKey) {
+    MatchingStoragePgDirect storage = new MatchingStoragePgDirect(factory, datasetKey);
+    return new MatchingService<>(nidx, storage);
+  }
+  public static MatchingService<SimpleNameCached> buildCached(NameIndex nidx, SqlSession session, int datasetKey, int maxSize) {
+    MatchingStorage<SimpleNameCached> storage = new MatchingStoragePgCache(session, datasetKey, maxSize);
+    return new MatchingService<>(nidx, storage);
+  }
+
   public MatchingService(NameIndex nameIndex, MatchingStorage<T> storage) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     if (nameIndex instanceof NameIndexImpl) {
@@ -61,7 +73,6 @@ public class MatchingService<T extends SimpleNameWithNidx> {
    **/
   public void assertComponentsOnline() throws UnavailableException {
     nameIndex.assertOnline();
-    storage.assertOnline();
   }
 
   public NameIndex getNameIndex() {
@@ -69,18 +80,16 @@ public class MatchingService<T extends SimpleNameWithNidx> {
   }
 
   /**
-   * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
    */
-  public UsageMatch<T> match(int datasetKey, NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
+  public UsageMatch<T> match(NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
     classification = ObjectUtils.coalesce(classification, List.of()); // no nulls
     // match classification to names index
     List<T> parents = new ArrayList<>();
     for (var sn : classification) {
       if (sn.getRank().isSpeciesOrBelow()) continue; // ignore binomials for now
       Name n = Name.newBuilder()
-                   .datasetKey(datasetKey)
                    .rank(sn.getRank())
                    .scientificName(sn.getName())
                    .uninomial(sn.getName())
@@ -88,28 +97,27 @@ public class MatchingService<T extends SimpleNameWithNidx> {
                    .build();
       parents.add(toMatchedSimpleName(new Taxon(n)));
     }
-    return matchWithParents(datasetKey, nu, parents, allowInserts, verbose);
+    return matchWithParents(nu, parents, allowInserts, verbose);
   }
 
   /**
    * Matches the given usage by looking up candidates by their canonical names index id
    * and then filtering them by various properties and the parent classification.
-   * @param datasetKey the target dataset to match against
    * @param nu usage to match. Requires a name instance to exist
    * @param parents classification of the usage to be matched
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch<T> matchWithParents(int datasetKey, NameUsageBase nu, List<T> parents,
+  public UsageMatch<T> matchWithParents(NameUsageBase nu, List<T> parents,
                                      boolean allowInserts, boolean verbose
   ) throws NotFoundException {
-    var canonNidx = canonNidxAndMatchIfNeeded(datasetKey, nu, allowInserts);
+    var canonNidx = canonNidxAndMatchIfNeeded(nu, allowInserts);
     if (!canonNidx.hasNidx()) {
-      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, canonNidx.matchType);
+      return allowInserts ? UsageMatch.unsupported() : UsageMatch.empty(canonNidx.matchType);
     }
-    var existing = storage.get(canonNidx);
+    var existing = storage.get(canonNidx.id);
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      var match = filterCandidates(datasetKey, nu, new ArrayList<>(existing), parents, verbose);
+      var match = filterCandidates(nu, new ArrayList<>(existing), parents, verbose);
       if (match.isMatch()) {
         // decide about usage match type - the match type we have so far is from names index matching only!
         if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
@@ -126,35 +134,35 @@ public class MatchingService<T extends SimpleNameWithNidx> {
       }
       return match;
     }
-    return UsageMatch.empty(datasetKey);
+    return UsageMatch.empty();
   }
 
   public T toMatchedSimpleName(NameUsageBase nu) {
     if (nu != null) {
-      var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
-      return storage.convert(nu, canonNidx);
+      var canonNidx = canonNidxAndMatchIfNeeded(nu, true);
+      return storage.convert(nu, canonNidx.id);
     }
     return null;
   }
 
-  public static class CanonNidxMatch extends DSIDValue<Integer> {
+  public static class CanonNidxMatch {
+    public Integer id;
     public MatchType matchType;
 
-    public CanonNidxMatch(int datasetKey, Integer id, MatchType matchType) {
-      super(datasetKey, id);
+    public CanonNidxMatch(Integer id, MatchType matchType) {
+      this.id = id;
       this.matchType = matchType;
     }
 
     public boolean hasNidx() {
-      return getId() != null;
+      return id != null;
     }
   }
 
   /**
-   * @param datasetKey the dataset key of the DSID to be returned
    * @return a wrapper class that is never null. It holds the canonical names index id or null if it cant be matched
    */
-  private CanonNidxMatch canonNidxAndMatchIfNeeded(int datasetKey, NameUsageBase nu, boolean allowInserts) {
+  private CanonNidxMatch canonNidxAndMatchIfNeeded(NameUsageBase nu, boolean allowInserts) {
     // we check for match type not id because we might have matched to None or ambiguous before already
     if (nu.getName().getNamesIndexType() == null) {
       // try to match
@@ -163,10 +171,10 @@ public class MatchingService<T extends SimpleNameWithNidx> {
         nu.getName().setNamesIndexId(match.getName().getKey());
         nu.getName().setNamesIndexType(match.getType());
       }
-      return new CanonNidxMatch(datasetKey, match.hasMatch() ? match.getName().getCanonicalId() : null, match.getType());
+      return new CanonNidxMatch(match.hasMatch() ? match.getName().getCanonicalId() : null, match.getType());
 
     } else if (nu.getName().getNamesIndexType() == MatchType.NONE) {
-      return new CanonNidxMatch(datasetKey, null, nu.getName().getNamesIndexType());
+      return new CanonNidxMatch(null, nu.getName().getNamesIndexType());
 
     } else if (nu.getName().getNamesIndexId() == null) {
       throw new IllegalStateException("Name without names index key but with match type " + nu.getName().getNamesIndexType() + ": " + nu.getName());
@@ -177,7 +185,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
       if (xn == null) { // this is impossible unless data is out of sync
         throw new IllegalStateException("Missing names index entry " + nu.getName().getNamesIndexId());
       }
-      return new CanonNidxMatch(datasetKey, xn.getCanonicalId(), nu.getName().getNamesIndexType());
+      return new CanonNidxMatch(xn.getCanonicalId(), nu.getName().getNamesIndexType());
 
     }
   }
@@ -225,14 +233,13 @@ public class MatchingService<T extends SimpleNameWithNidx> {
   }
 
   /**
-   * @param datasetKey the target dataset to match against
    * @param nu         usage to be match
    * @param existing   candidates with the same names index id to be matched against
    * @param parents    classification of the usage to be matched
    * @return single match
    * @throws NotFoundException if parent classifications do not resolve
    */
-  private UsageMatch<T> filterCandidates(int datasetKey, NameUsageBase nu, List<T> existing, List<T> parents, boolean verbose) throws NotFoundException {
+  private UsageMatch<T> filterCandidates(NameUsageBase nu, List<T> existing, List<T> parents, boolean verbose) throws NotFoundException {
     final boolean qualifiedName = nu.getName().hasAuthorship() && nu.getRank() != null && nu.getRank() != Rank.UNRANKED;
 
     // if set to true during filtering the final match will be a snap, not a true match
@@ -248,7 +255,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
     // name match requests from outside often come with no rank
     // we dont want them to be filtered by rank, so we allow unranked
     if (nu.getRank() != null && nu.getRank() != Rank.UNRANKED) {
-      existing.removeIf(u -> ranksDiffer(u.getRank(), () -> concreteParentRank(datasetKey, u), nu.getRank(), parents));
+      existing.removeIf(u -> ranksDiffer(u.getRank(), () -> concreteParentRank(u), nu.getRank(), parents));
       // require strict rank match in case it exists at least once
       if (existing.size() > 1 && contains(existing, nu.getRank())) {
         existing.removeIf(u -> u.getRank() != nu.getRank());
@@ -269,7 +276,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
 
     // from here on we need the classification of all candidates
     final var existingWithCl = existing.stream()
-                                 .map(ex -> storage.withClassification(datasetKey, ex))
+                                 .map(storage::withClassification)
                                  .collect(Collectors.toList());
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
@@ -282,7 +289,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
 
     // shortcut if no candidates are left
     if (existingWithCl.isEmpty()) {
-      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+      return UsageMatch.empty(MatchType.NONE, alt);
     }
 
     // tax group matching based on classification for all but Supragenerics
@@ -291,7 +298,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
       // snap to that single higher taxon right away!
 
     } else if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
-      return matchSupragenerics(datasetKey, existingWithCl, parents, alt);
+      return matchSupragenerics(existingWithCl, parents, alt);
 
     } else {
       // replace alternatives with instances that have a classification
@@ -331,7 +338,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
           } else {
             // there are multiple matches. Maybe just one matches the exact same name string?
             if (exact && matchExact) {
-              LOG.info("Exact homonyms existing in dataset {} for {}", datasetKey, nu.getName().getLabelWithRank());
+              LOG.info("Exact homonyms existing for {}", nu.getName().getLabelWithRank());
               match = null;
               break;
             } else if (exact){
@@ -352,7 +359,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
         match = null;
       }
       if (match != null) {
-        return UsageMatch.match(match, datasetKey, alt);
+        return UsageMatch.match(match, alt);
       }
     }
 
@@ -380,9 +387,9 @@ public class MatchingService<T extends SimpleNameWithNidx> {
 
     if (existingWithCl.size() == 1) {
       if (snap) {
-        return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
+        return UsageMatch.snap(existingWithCl.get(0), alt);
       }
-      return UsageMatch.match(existingWithCl.get(0), datasetKey, alt);
+      return UsageMatch.match(existingWithCl.get(0), alt);
     }
 
     // we have at least 2 match candidates here, maybe more
@@ -391,7 +398,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
     if (qualifiedName && existingWithCl.size() - canonMatches == 1) {
       for (var u : existingWithCl) {
         if (u.hasAuthorship()) {
-          return UsageMatch.match(u, datasetKey, alt);
+          return UsageMatch.match(u, alt);
         }
       }
     }
@@ -413,25 +420,25 @@ public class MatchingService<T extends SimpleNameWithNidx> {
       }
     }
     if (synonym != null) {
-      return UsageMatch.snap(synonym, datasetKey, alt);
+      return UsageMatch.snap(synonym, alt);
     }
 
     // remove provisional usages
     existingWithCl.removeIf(u -> u.getStatus() == TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     if (existingWithCl.size() == 1) {
-      return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
+      return UsageMatch.snap(existingWithCl.get(0), alt);
     }
 
     // prefer accepted over synonyms
     long accMatches = existingWithCl.stream().filter(u -> u.getStatus().isTaxon()).count();
     if (accMatches == 1) {
       existingWithCl.removeIf(u -> !u.getStatus().isTaxon());
-      LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
+      LOG.debug("{} ambiguous homonyms encountered for {}, picking single accepted name", existingWithCl.size(), nu.getLabel());
+      return UsageMatch.snap(existingWithCl.get(0), alt);
     }
 
     if (existingWithCl.isEmpty()) {
-      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+      return UsageMatch.empty(MatchType.NONE, alt);
 
     } else {
       // match to best=lowest rank possible
@@ -450,8 +457,8 @@ public class MatchingService<T extends SimpleNameWithNidx> {
         }
       }
       if (best != null) {
-        LOG.debug("{} ambiguous matches encountered for {} in source {}, picking closest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), datasetKey, lowest);
-        return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+        LOG.debug("{} ambiguous matches encountered for {}, picking closest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), lowest);
+        return UsageMatch.match(MatchType.AMBIGUOUS, best, alt);
       }
 
       // now look for the candidate with the lowest classification - no matter if it matches
@@ -472,17 +479,17 @@ public class MatchingService<T extends SimpleNameWithNidx> {
         }
       }
       if (best != null) {
-        LOG.debug("{} ambiguous matches encountered for {} in source {}, picking lowest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), datasetKey, lowest);
-        return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+        LOG.debug("{} ambiguous matches encountered for {}, picking lowest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), lowest);
+        return UsageMatch.match(MatchType.AMBIGUOUS, best, alt);
       }
 
-      LOG.debug("{} ambiguous names matched for {} in source {}. Pick randomly", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.match(MatchType.AMBIGUOUS, existingWithCl.get(0), datasetKey, alt);
+      LOG.debug("{} ambiguous names matched for {}. Pick randomly", existingWithCl.size(), nu.getLabel());
+      return UsageMatch.match(MatchType.AMBIGUOUS, existingWithCl.get(0), alt);
     }
   }
 
-  private Optional<Rank> concreteParentRank(int datasetKey, T u) {
-    SimpleNameClassified<T> cl = storage.withClassification(datasetKey, u);
+  private Optional<Rank> concreteParentRank(T u) {
+    SimpleNameClassified<T> cl = storage.withClassification(u);
     return cl.getClassification() == null ? Optional.empty() : cl.getClassification().stream()
       .map(SimpleName::getRank)
       .filter(r -> !r.isUncomparable())
@@ -545,7 +552,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
    * The classification comparison below is rather strict
    * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
    */
-  private UsageMatch<T> matchSupragenerics(int datasetKey, List<SimpleNameClassified<T>> homonyms,
+  private UsageMatch<T> matchSupragenerics(List<SimpleNameClassified<T>> homonyms,
                                         List<T> parents,
                                         List<SimpleNameClassified<T>> alt
   ) {
@@ -553,7 +560,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
       // pick first
       var first = homonyms.get(0);
       LOG.debug("No parent given for homomym match {}. Pick first", first);
-      return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey, alt);
+      return UsageMatch.match(MatchType.AMBIGUOUS, first, alt);
     }
 
     // TODO: use tax group comparison !!!
@@ -576,7 +583,7 @@ public class MatchingService<T extends SimpleNameWithNidx> {
         max = cNidx.size();
       }
     }
-    return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+    return UsageMatch.match(MatchType.AMBIGUOUS, best, alt);
   }
 
   /**
@@ -585,15 +592,15 @@ public class MatchingService<T extends SimpleNameWithNidx> {
    */
   public T add(NameUsageBase nu) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
-    var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
+    var canonNidx = canonNidxAndMatchIfNeeded(nu, true);
     if (canonNidx.hasNidx()) {
-      var before = storage.get(canonNidx);
+      var before = storage.get(canonNidx.id);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list
         before = new ArrayList<>();
-        storage.put(canonNidx, before);
+        storage.put(canonNidx.id, before);
       }
-      var sn = storage.convert(nu, canonNidx);
+      var sn = storage.convert(nu, canonNidx.id);
       before.add(sn);
       return sn;
 

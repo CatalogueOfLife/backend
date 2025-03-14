@@ -2,7 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.EstimateDao;
@@ -10,15 +9,13 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.MatchingService;
+import life.catalogue.release.UsageIdGen;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.release.UsageIdGen;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -33,31 +30,31 @@ public class SyncFactory {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
   private final EstimateDao estimateDao;
-  private final MatchingService matcher;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
-  private final UsageCache usageCache;
   private final EventBus bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, MatchingService matcher, UsageCache usageCache,
+  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
                      NameUsageIndexService indexService, EventBus bus) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;
-    this.usageCache = usageCache;
     this.nameIndex = nameIndex;
     this.estimateDao = estimateDao;
-    this.matcher = matcher;
     this.factory = factory;
     this.indexService = indexService;
+  }
+
+  public NameIndex getNameIndex() {
+    return nameIndex;
   }
 
   /**
    * Creates a new sync into a project dataset
    */
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, usageCache, bus, indexService, sd, sid, estimateDao,
+    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, bus, indexService, sd, sid, estimateDao,
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
@@ -68,7 +65,7 @@ public class SyncFactory {
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
     // make sure the sector is a project sector, not from a release
     var skey = DSID.of(DatasetInfoCache.CACHE.keyOrProjectKey(sector.getDatasetKey()), sector.getId());
-    return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, usageCache, bus, indexService, sd, sid, estimateDao,
+    return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sector, releaseDatasetKey, e.getMessage(), e),
       nameIdGen, typeMaterialIdGen, usageIdGen, user);
   }
@@ -82,6 +79,6 @@ public class SyncFactory {
   }
 
   public void assertComponentsOnline() {
-    matcher.assertComponentsOnline();
+    nameIndex.assertOnline();
   }
 }

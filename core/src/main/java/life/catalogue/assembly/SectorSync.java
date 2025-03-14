@@ -2,7 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.ImportState;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
@@ -12,9 +11,12 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.decision.*;
+import life.catalogue.matching.decision.EstimateRematcher;
+import life.catalogue.matching.decision.MatchingDao;
+import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.MatchingService;
+import life.catalogue.release.UsageIdGen;
+import life.catalogue.release.XRelease;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,10 +30,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.release.UsageIdGen;
-
-import life.catalogue.release.XRelease;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
@@ -51,9 +49,7 @@ public class SectorSync extends SectorRunnable {
 
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
-  private final NameIndex nameIndex;
-  private final MatchingService matcher;
-  private final UsageCache usageCache;
+  private final NameIndex nidx;
   private final boolean projectTarget;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
@@ -67,7 +63,7 @@ public class SectorSync extends SectorRunnable {
   private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
-             SqlSessionFactory factory, NameIndex nameIndex, MatchingService matcher, UsageCache usageCache, EventBus bus,
+             SqlSessionFactory factory, NameIndex nidx, EventBus bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
@@ -76,9 +72,7 @@ public class SectorSync extends SectorRunnable {
     this.projectTarget = projectTarget;
     this.sid = sid;
     this.estimateDao = estimateDao;
-    this.nameIndex = nameIndex;
-    this.matcher = matcher;
-    this.usageCache = usageCache;
+    this.nidx = nidx;
     this.targetDatasetKey = targetDatasetKey;
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
       LOG.info("Syncing sector {} into release {}", sectorKey, targetDatasetKey);
@@ -154,7 +148,7 @@ public class SectorSync extends SectorRunnable {
   void init() throws Exception {
     super.init(true);
     // rematch target to xrelease usage ids
-    XRelease.rematchTarget(sector, targetDatasetKey, matcher);
+    XRelease.rematchTarget(sector, targetDatasetKey, nidx, factory);
 
     loadForeignChildren();
     if (!disableAutoBlocking) {
@@ -307,9 +301,9 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, usageCache, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nidx, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
     }
-    return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
+    return new TreeCopyHandler(targetDatasetKey, decisions, factory, nidx, user, sector, state);
   }
 
   /**

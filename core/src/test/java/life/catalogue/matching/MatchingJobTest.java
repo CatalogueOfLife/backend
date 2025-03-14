@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TempFile;
 import life.catalogue.concurrent.BackgroundJob;
@@ -8,6 +9,8 @@ import life.catalogue.concurrent.EmailNotificationTemplateTest;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+
+import life.catalogue.matching.nidx.NameIndex;
 
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -30,14 +33,13 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   @Rule
   public final TestDataRule dataRule = TestDataRule.apple();
 
-  MatchingService matcher;
+  NameIndex nidx;
   TestConfigs cfg;
 
   @Before
-  public void setUp() throws Exception {
-    matcher = mock(MatchingService.class);
-    int dkey = dataRule.testData.key;
-    when(matcher.match(anyInt(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
+  public void setUp() {
+    nidx = mock(NameIndex.class);
+    when(nidx.match(any(), anyBoolean(), anyBoolean())).thenReturn(NameMatch.noMatch());
     this.cfg = TestConfigs.build();
   }
 
@@ -47,7 +49,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
       MatchingRequest req = new MatchingRequest();
       req.setDatasetKey(dataRule.testData.key);
       req.setUpload(tmp.file);
-      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcher, cfg.normalizer);
+      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), nidx, cfg.normalizer);
     }
   }
 
@@ -56,7 +58,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
     MatchingRequest req = new MatchingRequest();
     req.setDatasetKey(dataRule.testData.key);
     req.setSourceDatasetKey(dataRule.testData.key);
-    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcher, cfg.normalizer);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), nidx, cfg.normalizer);
     job.run();
     assertTrue(job.isFinished());
   }

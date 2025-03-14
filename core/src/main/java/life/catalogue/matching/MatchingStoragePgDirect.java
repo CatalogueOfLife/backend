@@ -18,48 +18,46 @@ import org.apache.ibatis.session.SqlSessionFactory;
 public class MatchingStoragePgDirect implements MatchingStorage<SimpleNameCached> {
 
   private final SqlSessionFactory factory;
+  private final int datasetKey;
 
-  public MatchingStoragePgDirect(SqlSessionFactory factory) {
+  public MatchingStoragePgDirect(SqlSessionFactory factory, int datasetKey) {
     this.factory = factory;
+    this.datasetKey = datasetKey;
   }
 
   @Override
-  public void clear(DSID<Integer> key) {  }
-
-  @Override
-  public SimpleNameCached convert(NameUsageBase nu, DSID<Integer> canonNidx) {
-    return new SimpleNameCached(nu, canonNidx.getId());
+  public int datasetKey() {
+    return datasetKey;
   }
 
   @Override
-  public List<SimpleNameCached> get(DSID<Integer> canonNidx) {
+  public SimpleNameCached convert(NameUsageBase nu, int canonNidx) {
+    return new SimpleNameCached(nu, canonNidx);
+  }
+
+  @Override
+  public void clear(int canonNidx) {  }
+
+  @Override
+  public List<SimpleNameCached> get(int canonNidx) {
     try (SqlSession session = factory.openSession(true)) {
-      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(canonNidx.getDatasetKey(), canonNidx.getId());
+      var result = session.getMapper(NameUsageMapper.class).listByCanonNIDX(datasetKey, canonNidx);
       // avoid empty lists which get cached
       return result == null || result.isEmpty() ? null : result;
     }
   }
 
   @Override
-  public void put(DSID<Integer> canonNidx, List<SimpleNameCached> before) {  }
+  public void put(int canonNidx, List<SimpleNameCached> before) {  }
 
   @Override
-  public List<SimpleNameCached> getClassification(DSID<String> key) {
+  public List<SimpleNameCached> getClassification(String key) {
     try (SqlSession session = factory.openSession(true)) {
-      List<SimpleNameWithNidx> result = session.getMapper(NameUsageMapper.class).classificationNxIds(key);
+      List<SimpleNameWithNidx> result = session.getMapper(NameUsageMapper.class).classificationNxIds(DSID.of(datasetKey, key));
       return result.stream()
         .map(SimpleNameCached::new)
         .collect(Collectors.toList());
     }
   }
 
-  /**
-   * Removes all usages from the given dataset from the matcher cache.
-   */
-  public void clear(int datasetKey) {  }
-
-  /**
-   * Wipes the entire cache.
-   */
-  public void clear() {  }
 }

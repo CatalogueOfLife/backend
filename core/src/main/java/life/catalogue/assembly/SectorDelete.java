@@ -1,6 +1,9 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -11,7 +14,6 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.MatchingService;
 
 import org.gbif.nameparser.api.Rank;
 

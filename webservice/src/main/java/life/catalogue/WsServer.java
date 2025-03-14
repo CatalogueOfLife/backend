@@ -6,7 +6,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.cache.CacheFlush;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
@@ -50,8 +49,7 @@ import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
-import life.catalogue.matching.MatchingService;
-import life.catalogue.matching.MatchingStorageGlobalCache;
+import life.catalogue.matching.MatchingServiceGlobal;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
@@ -348,13 +346,8 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
-    // usage cache
-    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
-    managedService.manage(Component.UsageCache, uCache);
-
     // matcher
-    final var matchingStorage = new MatchingStorageGlobalCache(getSqlSessionFactory(), uCache);
-    final var matcher = new MatchingService<>(ni, matchingStorage);
+    final var matcher = new MatchingServiceGlobal();
 
     // DOI
     DoiService doiService;
@@ -374,8 +367,8 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, uCache, secdao, siDao, edao, indexService, bus);
-    final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, secdao, siDao, edao, indexService, bus);
+    final var copyFactory = new ProjectCopyFactory(httpClient, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
     );
@@ -468,7 +461,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new TaxonResource(tdao, txtTreeDao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
-    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
+    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), ni, matcher));
     j.register(new ValidatorResource(importManager, ddao));
     j.register(new VerbatimResource());
     j.register(new VernacularGlobalResource());
@@ -497,7 +490,6 @@ public class WsServer extends Application<WsServerConfig> {
     }
     bus.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     bus.register(doiUpdater);
-    bus.register(uCache);
     bus.register(exportManager);
     bus.register(syncManager);
     bus.register(importManager);

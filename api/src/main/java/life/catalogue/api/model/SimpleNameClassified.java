@@ -30,6 +30,10 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other);
   }
 
+  public SimpleNameClassified(SimpleNameWithNidx other) {
+    super(other);
+  }
+
   public SimpleNameClassified(SimpleNameCached other) {
     super(other);
   }

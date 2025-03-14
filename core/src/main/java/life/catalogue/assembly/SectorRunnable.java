@@ -13,7 +13,6 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.MatchingService;
 
 import org.gbif.nameparser.api.Rank;
 

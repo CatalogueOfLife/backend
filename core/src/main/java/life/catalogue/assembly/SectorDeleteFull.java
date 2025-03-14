@@ -8,7 +8,6 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.MatchingService;
 
 import java.util.HashSet;
 import java.util.Set;

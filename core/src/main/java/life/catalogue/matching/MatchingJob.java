@@ -22,6 +22,7 @@ import life.catalogue.dao.TreeStreams;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.interpreter.NameInterpreter;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DwcTerm;
@@ -60,7 +61,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 /**
- * Matching job for users that does not the power to insert names into the names index.
+ * Matching job for users that does not have the power to insert names into the names index.
  * Rematching of datasets is done by the DatasetMatcher instead.
  */
 public class MatchingJob extends DatasetBlockingJob {
@@ -70,21 +71,22 @@ public class MatchingJob extends DatasetBlockingJob {
     CSV.setQuotationTriggers('"', ',');
   }
 
+  private final NameIndex nidx;
   private final SqlSessionFactory factory;
-  private final MatchingService<SimpleNameCached> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final NormalizerConfig cfg;
+  private MatchingService<SimpleNameCached> matcher;
   // job specifics
   private final MatchingRequest req;
   private final JobResult result;
   private final UsageCounter counter = new UsageCounter();
   private List<SimpleName> rootClassification;
 
-  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, MatchingService<SimpleNameCached> matcher, NormalizerConfig cfg) {
+  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, NameIndex nidx, NormalizerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
+    this.nidx = nidx;
     this.logToFile = true;
     this.cfg = cfg;
-    this.matcher = matcher;
     this.factory = factory;
     this.req = Preconditions.checkNotNull(req);
     this.result = new JobResult(getKey());
@@ -137,7 +139,10 @@ public class MatchingJob extends DatasetBlockingJob {
 
   @Override
   public final void runWithLock() throws Exception {
-    try (TempFile tmp = TempFile.created(matchResultFile())) {
+    try (SqlSession session = factory.openSession();
+         TempFile tmp = TempFile.created(matchResultFile())
+    ) {
+      this.matcher = MatchingService.buildCached(nidx, session, req.getDatasetKey(), 50_000);
       try (ZipOutputStream zos = UTF8IoUtils.zipStreamFromFile(tmp.file)) {
 
         LOG.info("Write matches for job {} to temp file {}", getKey(), tmp.file.getAbsolutePath());
@@ -155,19 +160,17 @@ public class MatchingJob extends DatasetBlockingJob {
           FileUtils.deleteQuietly(req.getUpload());
 
         } else if (req.getSourceDatasetKey() != null) {
-          try (SqlSession session = factory.openSession()) {
-            // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
-            final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
-            ttp.setDatasetKey(req.getSourceDatasetKey());
-            writeMatches(writer, null, TreeStreams.dataset(session, ttp)
-                                            .map(sn -> {
-                                              if (rootClassification != null) {
-                                                sn.getClassification().addAll(rootClassification);
-                                              }
-                                              return new IssueName(sn, new IssueContainer.Simple(), null);
-                                            })
-            );
-          }
+          // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
+          final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
+          ttp.setDatasetKey(req.getSourceDatasetKey());
+          writeMatches(writer, null, TreeStreams.dataset(session, ttp)
+                                          .map(sn -> {
+                                            if (rootClassification != null) {
+                                              sn.getClassification().addAll(rootClassification);
+                                            }
+                                            return new IssueName(sn, new IssueContainer.Simple(), null);
+                                          })
+          );
 
         } else {
           throw new IllegalArgumentException("Upload or sourceDatasetKey required");
@@ -277,9 +280,9 @@ public class MatchingJob extends DatasetBlockingJob {
     var opt = interpreter.interpret(n.name, n.issues);
     if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(n.name.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, n.name.getClassification(), false, false);
+      match = matcher.match(nu, n.name.getClassification(), false, false);
     } else {
-      match = UsageMatch.empty(0);
+      match = UsageMatch.empty();
       n.issues.addIssue(Issue.UNPARSABLE_NAME);
     }
     return new UsageMatchWithOriginal(match, n.issues, n.name);

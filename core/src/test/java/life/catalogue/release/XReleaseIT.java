@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncMergeIT;
 import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.assembly.SyncFactory;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -18,8 +17,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
-import life.catalogue.matching.MatchingService;
-import life.catalogue.matching.MatchingStorageGlobalCache;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.NameType;
@@ -141,10 +138,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    var ucache = UsageCache.hashMap();
-    var mstore = new MatchingStorageGlobalCache(SqlSessionFactoryRule.getSqlSessionFactory(), ucache);
-    var matcher = new MatchingService(NameMatchingRule.getIndex(), mstore);
-    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, ucache, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
+    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
     var cfg = TestConfigs.build();
 
     hc = HttpClientBuilder.create().build();
@@ -154,7 +148,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var exportManager = mock(ExportManager.class);
     var doiService = mock(DoiService.class);
     var doiUpdater = mock(DoiUpdater.class);
-    projectCopyFactory = new ProjectCopyFactory(hc, matcher, syncFactory, diDao, dDao, siDao, rDao, nDao, sdao,
+    projectCopyFactory = new ProjectCopyFactory(hc, syncFactory, diDao, dDao, siDao, rDao, nDao, sdao,
       exportManager, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater,
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

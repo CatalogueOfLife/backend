@@ -1,26 +1,23 @@
 package life.catalogue.matching;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/dataset/{key}/match/nameusage")
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+
+@Path("/match")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
@@ -28,15 +25,15 @@ public class MatchingResource {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
 
   private final MatchingConfig cfg;
-  private final MatchingService<?> matcher;
+  private final MatchingService<SimpleNameCached> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public MatchingResource(MatchingConfig cfg, MatchingService<?> matcher) {
+  public MatchingResource(MatchingConfig cfg, MatchingService<SimpleNameCached> matcher) {
     this.cfg = cfg;
     this.matcher = matcher;
   }
 
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
+  private UsageMatchWithOriginal match(SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
     UsageMatch match;
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
@@ -45,9 +42,9 @@ public class MatchingResource {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
+      match = matcher.match(nu, sn.getClassification(), false, verbose);
     } else {
-      match = UsageMatch.empty(0);
+      match = UsageMatch.empty();
       issues.addIssue(Issue.UNPARSABLE_NAME);
     }
     return new UsageMatchWithOriginal(match, issues, sn);
@@ -84,8 +81,7 @@ public class MatchingResource {
   }
 
   @GET
-  public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
-                                      @QueryParam("id") String id,
+  public UsageMatchWithOriginal match(@QueryParam("id") String id,
                                       @QueryParam("q") String q,
                                       @QueryParam("name") String name,
                                       @QueryParam("scientificName") String sciname,
@@ -98,7 +94,7 @@ public class MatchingResource {
   ) throws InterruptedException {
     IssueContainer issues = new IssueContainer.Simple();
     SimpleNameClassified<SimpleName> orig = interpret(id, q, name, sciname, authorship, code, rank, status, classification, issues);
-    return match(datasetKey, orig, issues, verbose);
+    return match(orig, issues, verbose);
   }
 
 

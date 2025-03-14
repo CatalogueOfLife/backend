@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 
 import org.gbif.nameparser.api.Rank;
@@ -20,8 +21,8 @@ public class UsageMatchWithOriginalTest extends SerdeTestBase<UsageMatchWithOrig
   }
 
   @Override
-  public UsageMatchWithOriginal genTestValue() throws Exception {
-    UsageMatch m = UsageMatchWithOriginal.empty(9923);
+  public UsageMatchWithOriginal genTestValue() {
+    UsageMatch<SimpleNameCached> m = UsageMatchWithOriginal.empty();
     SimpleNameClassified<SimpleName> orig = new SimpleNameClassified<>(SimpleName.sn(Rank.SPECIES, "Calonarius splendens", "(Rob. Henry) Niskanen"));
     UsageMatchWithOriginal nu = new UsageMatchWithOriginal(m, IssueContainer.simple(), orig);
 

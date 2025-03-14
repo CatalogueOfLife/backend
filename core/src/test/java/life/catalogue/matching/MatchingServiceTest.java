@@ -6,7 +6,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -44,14 +43,12 @@ public class MatchingServiceTest {
     .around(matchingRule);
 
   final DSID<String> dsid = DSID.root(datasetKey);
-  MatchingService matcher;
-  UsageCache ucache;
+  MatchingService<SimpleNameCached> matcher;
 
   @Before
   public void before() {
-    ucache = UsageCache.hashMap();
-    var mstore = new MatchingStorageGlobalCache(SqlSessionFactoryRule.getSqlSessionFactory(), ucache);
-    matcher = new MatchingService(NameMatchingRule.getIndex(), mstore);
+    var mstore = new MatchingStoragePgDirect(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey);
+    matcher = new MatchingService<>(NameMatchingRule.getIndex(), mstore);
   }
 
   @Test
@@ -61,12 +58,11 @@ public class MatchingServiceTest {
       var origNU = num.get(dsid.id("oen3"));
       ((Synonym)origNU).setAccepted(null); // is purposely not populated in matches - parentID is enough
 
-      var match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
+      var match = matcher.matchWithParents(num.get(dsid), List.of(), false, false);
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
 
-      ucache.clear();
-      match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
+      match = matcher.matchWithParents(num.get(dsid), List.of(), false, false);
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }
   }
@@ -83,7 +79,7 @@ public class MatchingServiceTest {
          .kingdom("Plantae")
          .build();
 
-      var match = matcher.match(datasetKey, num.get(dsid), cl.asSimpleNames(), false, false);
+      var match = matcher.match(num.get(dsid), cl.asSimpleNames(), false, false);
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }
@@ -187,7 +183,7 @@ public class MatchingServiceTest {
     assertEquals("sg3", match.usage.getId());
   }
 
-  UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
+  UsageMatch<SimpleNameCached> match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
     var opt = NameParser.PARSER.parse(name, authors, rank, code, VerbatimRecord.VOID);
     Name n = opt.get().getName();
     n.setDatasetKey(Datasets.COL);
@@ -203,7 +199,7 @@ public class MatchingServiceTest {
     u.setStatus(status);
     u.setNamePhrase(opt.get().getTaxonomicNote());
 
-    var result = matcher.match(datasetKey, u, List.of(parents), false, true);
+    var result = matcher.match(u, List.of(parents), false, true);
     return result;
   }
 }

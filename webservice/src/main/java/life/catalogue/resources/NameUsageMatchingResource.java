@@ -5,15 +5,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.*;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.*;
-
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -26,6 +24,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,14 +46,16 @@ public class NameUsageMatchingResource {
   private final WsServerConfig cfg;
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
-  private final MatchingService<SimpleNameCached> matcher;
+  private final NameIndex nidx;
+  private final MatchingServiceGlobal globalMatcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, MatchingService<SimpleNameCached> matcher) {
+  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, NameIndex nidx, MatchingServiceGlobal globalMatcher) {
     this.cfg = cfg;
+    this.nidx = nidx;
     this.exec = exec;
     this.factory = factory;
-    this.matcher = matcher;
+    this.globalMatcher = globalMatcher;
   }
 
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<? extends SimpleName> sn, IssueContainer issues, boolean verbose) {
@@ -66,9 +67,10 @@ public class NameUsageMatchingResource {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
+      var matcher = globalMatcher.getService(datasetKey);
+      match = matcher.match(nu, sn.getClassification(), false, verbose);
     } else {
-      match = UsageMatch.empty(0);
+      match = UsageMatch.empty();
       issues.addIssue(Issue.UNPARSABLE_NAME);
     }
     return new UsageMatchWithOriginal(match, issues, sn);
@@ -110,7 +112,7 @@ public class NameUsageMatchingResource {
    */
   @GET
   @Path("{id}")
-  public UsageMatch map(@PathParam("key") int datasetKey,
+  public UsageMatch<SimpleNameCached> map(@PathParam("key") int datasetKey,
                         @PathParam("id") String id,
                         @QueryParam("datasetKey") int targetDatasetKey,
                         @QueryParam("verbose") boolean verbose
@@ -126,7 +128,8 @@ public class NameUsageMatchingResource {
       }
       classification = num.classificationNxIds(nu);
     }
-    return matcher.match(targetDatasetKey, nu, classification, false, verbose);
+    var matcher = globalMatcher.getService(targetDatasetKey);
+    return matcher.match(nu, classification, false, verbose);
   }
 
 
@@ -149,7 +152,7 @@ public class NameUsageMatchingResource {
   }
 
   private MatchingJob submit(MatchingRequest req, User user) {
-    MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcher, cfg.getNormalizerConfig());
+    MatchingJob job = new MatchingJob(req, user.getKey(), factory, nidx, cfg.getNormalizerConfig());
     exec.submit(job);
     return job;
   }

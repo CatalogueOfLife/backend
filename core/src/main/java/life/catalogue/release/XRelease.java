@@ -62,22 +62,20 @@ public class XRelease extends ProjectRelease {
   private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final MatchingService<SimpleNameCached> matcher;
   private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
   private int failedSyncs;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, MatchingService<SimpleNameCached> matcher, NameUsageIndexService indexService, ImageService imageService,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameIndex ni, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
-    this.matcher = matcher;
-    this.ni = matcher.getNameIndex();
+    this.ni = ni;
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     sectorProjectKey = DSID.root(projectKey);
@@ -186,7 +184,7 @@ public class XRelease extends ProjectRelease {
           iter.remove();
         }
         // move sector to release and rematch targets to base release
-        rematchTarget(s, baseReleaseKey, matcher);
+        rematchTarget(s, baseReleaseKey, ni, factory);
         s.setDatasetKey(newDatasetKey);
       }
     }
@@ -218,12 +216,13 @@ public class XRelease extends ProjectRelease {
     thread.join();
   }
 
-  public static void rematchTarget(Sector s, int targetDatasetKey, MatchingService matcher) {
+  public static void rematchTarget(Sector s, int targetDatasetKey, NameIndex nidx, SqlSessionFactory factory) {
     if (s.getTarget() != null && targetDatasetKey != s.getDatasetKey()) {
       LOG.info("Rematch sector target {} to dataset {}", s.getTarget(), targetDatasetKey);
       s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
+      MatchingService<SimpleNameCached> matcher = MatchingService.buildPg(nidx, factory, targetDatasetKey);
       NameUsageBase nu = new Taxon(s.getTarget());
-      var m = matcher.match(targetDatasetKey, nu, null, true, false);
+      var m = matcher.match(nu, null, true, false);
       if (m.isMatch()) {
         s.getTarget().setBroken(false);
         s.getTarget().setId(m.getId());

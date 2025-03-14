@@ -1,35 +1,73 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.DSID;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.cache.ClassificationCacheCaffein;
+
+import life.catalogue.db.mapper.NameUsageMapper;
+
+import org.apache.ibatis.session.SqlSession;
 
 import java.util.List;
 
-public class MatchingStorageDisk implements MatchingStorage<SimpleNameWithNidx> {
-  @Override
-  public List<SimpleNameWithNidx> get(int canonNidx) {
-    return List.of();
+public class MatchingStoragePgCache implements MatchingStorage<SimpleNameCached> {
+  private final int datasetKey;
+  private final SqlSession session;
+  private final NameUsageMapper num;
+  private final ClassificationCacheCaffein clCache;
+  private final LoadingCache<Integer, List<SimpleNameCached>> byCanonNidx;
+
+  public MatchingStoragePgCache(SqlSession session, int datasetKey, int maxSize) {
+    this.session = session;
+    this.num = session.getMapper(NameUsageMapper.class);
+    this.datasetKey = datasetKey;
+    this.clCache = new ClassificationCacheCaffein(datasetKey, session, maxSize);
+    this.byCanonNidx = Caffeine.newBuilder()
+      .maximumSize(maxSize)
+      .build(this::loadUsagesByCanonNidx);
+  }
+
+  /**
+   * @param canonNidx a names index id wrapped by a datasetKey
+   * @return list of matching usages for the requested dataset only
+   */
+  private List<SimpleNameCached> loadUsagesByCanonNidx(Integer canonNidx) {
+    var result = num.listByCanonNIDX(datasetKey, canonNidx);
+    // avoid empty lists which get cached
+    return result == null || result.isEmpty() ? null : result;
   }
 
   @Override
-  public void put(int canonNidx, List<SimpleNameWithNidx> usages) {
-
+  public int datasetKey() {
+    return datasetKey;
   }
 
   @Override
-  public List<SimpleNameWithNidx> getClassification(String usage) {
-    return List.of();
+  public List<SimpleNameCached> get(int canonNidx) {
+    return byCanonNidx.get(canonNidx);
   }
 
   @Override
-  public SimpleNameWithNidx convert(NameUsageBase nu, int canonNidx) {
-    return null;
+  public void put(int canonNidx, List<SimpleNameCached> usages) {
+    byCanonNidx.put(canonNidx, usages);
+  }
+
+  @Override
+  public List<SimpleNameCached> getClassification(String usage) {
+    return clCache.getClassification(usage);
+  }
+
+  @Override
+  public SimpleNameCached convert(NameUsageBase nu, int canonNidx) {
+    return new SimpleNameCached(nu, canonNidx);
   }
 
   @Override
   public void clear(int canonNidx) {
-
+    byCanonNidx.refresh(canonNidx);
   }
 
 }

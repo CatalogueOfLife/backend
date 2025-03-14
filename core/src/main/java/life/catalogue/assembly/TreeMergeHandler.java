@@ -2,8 +2,6 @@ package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.cache.CacheLoader;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -11,7 +9,6 @@ import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
-
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -38,10 +35,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
+  private final MatchingStorage<SimpleNameCached> storage;
   private final MatchingService<SimpleNameCached> matcher;
   private final TaxGroupAnalyzer groupAnalyzer;
-  private final UsageCache uCache;
-  private final CacheLoader loader;
   private int counter = 0;  // all source usages
   private int ignored = 0;
   private int thrown = 0;
@@ -54,7 +50,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final Identifier.Scope usageIdScope;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
-                   MatchingService<SimpleNameCached> matcher, UsageCache cache,
                    int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
@@ -62,8 +57,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
     this.cfg = cfg;
     this.vKey = DSID.root(sourceDatasetKey);
-    this.matcher = matcher;
-    uCache = cache;
+    // this loads classifications from PG using the batch session and caches often used usages
+    // make sure to refresh or remove usages when they change!
+    storage = new MatchingStoragePgCache(batchSession, targetDatasetKey, 25_000);
+    matcher = new MatchingService<>(nameIndex, storage);
     groupAnalyzer = new TaxGroupAnalyzer();
 
     // figure out the lowest insertion point in the project/release
@@ -85,7 +82,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         for (var p : num.getClassification(sector.getSubjectAsDSID())) {
           var nusn = matcher.toMatchedSimpleName(p);
           parents.push(nusn, null);
-          UsageMatch match = matcher.matchWithParents(targetDatasetKey, p, parents.classificationSN(), false, false);
+          UsageMatch<SimpleNameCached> match = matcher.matchWithParents(p, parents.classificationSN(), false, false);
           if (match.isMatch()) {
             parents.setMatch(match.usage);
           }
@@ -98,9 +95,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
       }
     }
-    this.loader = new CacheLoader.Mybatis(batchSession, true);
-    //matcher.registerLoader(targetDatasetKey, loader); // we need to make sure we remove it at the end no matter what!
-
     // check if requested entities are supported in the source at all
     try (SqlSession session = factory.openSession()) {
       if (entities.contains(EntityType.VERNACULAR)) {
@@ -254,13 +248,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // find out matching - even if we ignore the name in the merge we want the parents matched for classification comparisons
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
-    UsageMatch<SimpleNameCached> match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
+    UsageMatch<SimpleNameCached> match = matcher.matchWithParents(nu, parents.classificationSN(), true, unique);
     LOG.debug("{} matches {}", nu.getLabel(), match);
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
         if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
           markMatch = true;
-          match = UsageMatch.snap(alt, targetDatasetKey, null);
+          match = UsageMatch.snap(alt, null);
           LOG.debug("Enforce unique name and match {} to {}", nu.getLabel(), match);
           //TODO: enforce the use of this genus for all child species
         }
@@ -270,7 +264,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var nCanon = Name.copyCanonical(nu.getName());
       var tCanon = new Taxon(nu);
       tCanon.setName(nCanon);
-      match = matcher.matchWithParents(targetDatasetKey, tCanon, parents.classificationSN(), false, false);
+      match = matcher.matchWithParents(tCanon, parents.classificationSN(), false, false);
       if (match.isMatch() && sameLowClassification(match.usage.getClassification(), parents.classification())) {
         // make sure the species is in the same genus or family
         LOG.debug("Accepted {} {} has canonical match within the same family subtree: {}", nu.getRank(), nu.getLabel(), match.usage);
@@ -301,7 +295,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           (!parent.id.equals(match.usage.getParent()) && !parent.id.equals(match.usage.getId()))
       ) {
         LOG.debug("Ignore match to potential pro parte synonym complex from the same source: {}", match.usage.getLabel());
-        match = UsageMatch.empty(targetDatasetKey);
+        match = UsageMatch.empty();
         //TODO: reuse existing name instance for pro parte usages when they are created below
       }
     }
@@ -455,7 +449,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     Issue[] issues;
     if (target != null && parent != null
       && !Objects.equals(parent.id, target.getId())
-      && !containsID(uCache.getClassification(targetKey.id(parent.id), loader), target.getId())
+      && !containsID(storage.getClassification(parent.id), target.getId())
     ) {
       issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
     } else {
@@ -508,7 +502,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   @Override
   protected Usage findExisting(Name n, Usage parent) {
     Taxon t = new Taxon(n);
-    var m = matcher.matchWithParents(targetDatasetKey, t, parents.classificationSN(), true, false);
+    var m = matcher.matchWithParents(t, parents.classificationSN(), true, false);
     // make sure rank is correct - canonical matches are across ranks
     if (m.usage != null && m.usage.getRank() == n.getRank()) {
       return usage(m.usage);
@@ -533,7 +527,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
       // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
-      var proposedClassification = uCache.getClassification(proposedParent.toDSID(targetDatasetKey), loader);
+      var proposedClassification = storage.getClassification(proposedParent.getId());
       for (var propHigherTaxon : proposedClassification) {
         if (propHigherTaxon.getId().equals(existing.getId())) {
           LOG.debug("Avoid circular classifications by updating the parent of {} {} to {} {}", existing.getRank(), existing.getLabel(), proposedParent.getRank(), proposedParent.getLabel());
@@ -553,7 +547,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
       // set targetKey to the existing usage
-      final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
+      final var existingUsageKey = existing.toDSID(targetDatasetKey);
       if (existing.usage.getStatus().isTaxon()) {
         // patch classification of accepted names if direct parent adds to it
         if (syncTaxa) {
@@ -588,7 +582,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             // does it exist already?
             if (existingVNames == null) {
               // lazily query existing vnames
-              existingVNames = mapper.listByTaxon(existing);
+              existingVNames = mapper.listByTaxon(existing.toDSID(targetDatasetKey));
             }
             for (var evn : existingVNames) {
               if (sameVName(vn, evn)) {
@@ -630,7 +624,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     // add well know name and usage ids
     if (usageIdScope != null) {
-      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+      num.addIdentifier(existing.toDSID(targetDatasetKey), List.of(new Identifier(usageIdScope, nu.getId())));
     }
   }
 
@@ -650,7 +644,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
    *                 Not needed for bare name merging
    * @return
    */
-  private Name updateName(@Nullable Name n, Name src, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
+  private Name updateName(@Nullable Name n, Name src, Set<InfoGroup> upd, @Nullable UsageMatch<SimpleNameCached> existingUsage) {
     if (n == null && existingUsage == null) return null;
 
     if (syncNames) {
@@ -749,8 +743,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // TODO: implement basionym/name rel updates
     }
     // well known name identifier
-    if (nameIdScope != null) {
-      var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
+    if (nameIdScope != null && existingUsage.isMatch()) {
+      var nid = DSID.of(targetDatasetKey, nm.getNameIdByUsage(targetDatasetKey, existingUsage.usage.getId()));
       nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, src.getId())));
     }
     return n;

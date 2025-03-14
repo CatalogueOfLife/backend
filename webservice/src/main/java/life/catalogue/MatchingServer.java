@@ -12,7 +12,7 @@ import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.matching.MatchingCmd;
 import life.catalogue.matching.MatchingResource;
 import life.catalogue.matching.MatchingService;
-import life.catalogue.matching.MatchingStorageDisk;
+import life.catalogue.matching.MatchingStoragePgCache;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.parser.NameParser;
@@ -97,7 +97,7 @@ public class MatchingServer extends Application<MatchingServerConfig> {
     env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
 
     // matcher
-    final var storage = new MatchingStorageDisk();
+    final var storage = new MatchingStoragePgCache(null, 11111, 100000);
     final var matcher = new MatchingService<>(ni, storage);
 
     // resources
