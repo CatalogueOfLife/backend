@@ -1,13 +1,12 @@
 package life.catalogue.matching.decision;
 
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.Sector;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameLink;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.dao.SectorDao;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
+import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +34,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
   void match(Sector obj) {
     final Sector old = new Sector(obj);
     // subject
-    if (needsRematching(req.isSubject(), obj.getSubject())) {
+    if (needsRematching(obj.getSubjectDatasetKey(), req.isSubject(), obj.getSubject())) {
       LOG.debug("Match subject {} of sector {} in project {}", obj.getSubject(), obj.getId(), projectKey);
       // we dont want to let the parent break a subject - thats mostly useful for editorial decision
       obj.getSubject().setParent(null);
@@ -52,7 +51,7 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
       }
     }
     // target can have multiple sectors
-    if (needsRematching(req.isTarget(), obj.getTarget())) {
+    if (needsRematching(req.getDatasetKey(), req.isTarget(), obj.getTarget())) {
       LOG.debug("Match target {} of sector {} in project {}", obj.getTarget(), obj.getId(), projectKey);
       // we dont want to let the parent break a target - thats mostly useful for editorial decision
       obj.getTarget().setParent(null);
@@ -70,10 +69,21 @@ public class SectorRematcher extends RematcherBase<Sector, SectorRematchRequest,
     }
   }
 
-  private static boolean needsRematching(Boolean flag, SimpleNameLink sn){
+  private boolean needsRematching(int datasetKey, Boolean flag, SimpleNameLink sn){
     if (sn == null) return false;
     if (flag != null) return flag;
-    return sn.isBroken() || sn.getId() == null;
+    return sn.isBroken() || sn.getId() == null || linkedNameDiffers(datasetKey, sn);
+  }
+
+  private boolean linkedNameDiffers(int datasetKey, SimpleName sn){
+    if (sn != null && sn.getName() != null) {
+      try (SqlSession session = dao.getFactory().openSession()) {
+        var num = session.getMapper(NameUsageMapper.class);
+        var nu = num.getSimple(DSID.of(datasetKey, sn.getId()));
+        return nu == null || !nu.getName().equals(sn.getName());
+      }
+    }
+    return false;
   }
   
 }
