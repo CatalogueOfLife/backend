@@ -2,13 +2,14 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.cache.CacheLoader;
+import life.catalogue.cache.ClassificationCache;
+import life.catalogue.cache.ClassificationCacheCaffein;
 import life.catalogue.cache.ObjectCache;
 import life.catalogue.cache.ObjectCacheMapDB;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -107,7 +106,6 @@ public class NameUsageProcessor {
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
       final var dm = session.getMapper(DatasetMapper.class);
-      final CacheLoader loader = new CacheLoader.Mybatis(session, false);
 
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.of(datasetKey, null);
@@ -129,7 +127,7 @@ public class NameUsageProcessor {
       vm.createTmpVSourcesTable(datasetKey, sectorKey);
 
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
-           UsageCache usageCache = buildUsageCache()
+           ClassificationCache clCache = buildUsageCache(datasetKey, session)
       ) {
         final AtomicInteger counter = new AtomicInteger(0);
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
@@ -176,7 +174,7 @@ public class NameUsageProcessor {
                 acc = taxa.get(syn.getParentId()).getUsage();
               }
               syn.setAccepted((Taxon)acc);
-              addClassification(nuw, taxa, usageCache, loader);
+              addClassification(nuw, taxa, clCache);
             }
             nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
             consumer.accept(nuw);
@@ -189,7 +187,7 @@ public class NameUsageProcessor {
         // now lets do the cached taxa
         LOG.info("Process {} taxa of dataset {}; loaded taxa={}", taxa.size(), datasetKey, loadCounter);
         for (var nuw : taxa) {
-          addClassification(nuw, taxa, usageCache, loader);
+          addClassification(nuw, taxa, clCache);
           nuw.setGroup(groupAnalyzer.analyze(nuw.getUsage().toSimpleNameLink(), nuw.getClassification()));
           consumer.accept(nuw);
           if (counter.incrementAndGet() % LOG_INTERVAL == 0) {
@@ -202,9 +200,8 @@ public class NameUsageProcessor {
     }
   }
 
-  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, CacheLoader loader) {
+  private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, ClassificationCache clCache) {
     List<SimpleName> classification = new ArrayList<>();
-    DSID<String> uKey = null;
     if (!nuw.getUsage().isBareName()) {
       SimpleName curr = new SimpleName((NameUsageBase) nuw.getUsage());
       classification.add(curr);
@@ -213,10 +210,7 @@ public class NameUsageProcessor {
           curr = new SimpleName((NameUsageBase) taxa.get(curr.getParent()).getUsage());
         } else {
           // need to fetch usage which lies outside the scope of this processor, e.g. a merge sector with parents outside of the sector
-          if (uKey == null) {
-            uKey = DSID.root(nuw.getUsage().getDatasetKey());
-          }
-          curr = usageCache.getOrLoad(uKey.id(curr.getParent()), loader);
+          curr = clCache.get(curr.getParent());
           loadCounter++;
         }
         if (curr != null) {
@@ -231,9 +225,7 @@ public class NameUsageProcessor {
   private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
     return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
   }
-  private UsageCache buildUsageCache() throws Exception {
-    var cache = UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), true, 8);
-    cache.start();
-    return cache;
+  private ClassificationCache buildUsageCache(int datasetKey, SqlSession session) throws Exception {
+    return new ClassificationCacheCaffein(datasetKey, session, 10_000);
   }
 }
