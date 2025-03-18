@@ -319,6 +319,12 @@ public class EmlParser {
                 case "bibliography":
                   isBibliography = false;
                   break;
+                case "dateStamp":
+                  FuzzyDate fuzzy = date(text);
+                  if (fuzzy != null && d.getIssued() == null) {
+                    d.setIssued(fuzzy);
+                  }
+                  break;
                 }
               }
             }

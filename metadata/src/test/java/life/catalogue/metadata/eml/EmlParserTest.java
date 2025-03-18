@@ -7,9 +7,11 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.License;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +35,14 @@ public class EmlParserTest {
     Dataset d = m.get().getDataset();
     assertEquals("Waarnemingen.be / observations.be - List of species observed in Belgium", d.getTitle());
     assertTrue(d.getDescription().startsWith("Waarnemingen.be / observations.be - List of species observed in Belgium is a species checklist dataset published by Natuurpunt"));
+  }
+
+  @Test
+  public void backbone() throws Exception {
+    Optional<DatasetWithSettings> m = EmlParser.parse(Resources.stream("metadata/backbone.xml"));
+    Dataset d = m.get().getDataset();
+
+    assertEquals(FuzzyDate.of(2023,8,28), d.getIssued());
   }
 
   @Test
