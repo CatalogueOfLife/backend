@@ -233,9 +233,11 @@ public class MatchingJob extends DatasetBlockingJob {
       names.forEach(n -> {
           var m = match(n);
           var row = new String[size];
-          row[0] = m.original.getId();
-          row[1] = str(m.original.getRank());
-          row[2] = m.original.getLabel();
+          if (m.original != null) {
+            row[0] = m.original.getId();
+            row[1] = str(m.original.getRank());
+            row[2] = m.original.getLabel();
+          }
           row[3] = str(m.type);
           if (m.usage != null) {
               row[4] = m.usage.getId();
@@ -250,10 +252,10 @@ public class MatchingJob extends DatasetBlockingJob {
                   row[10] = null;
               }
               row[11] = str(m.usage.getClassification());
-              row[12] = concat(m.issues);
           } else {
               none.incrementAndGet();
           }
+          row[12] = concat(m.issues);
           // also add all original input columns if provided (only works with file uploads)
           if (srcHeader != null && n.row != null) {
               int idx = 0;
@@ -344,14 +346,17 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   static String concat(IssueContainer issues) {
-    StringBuilder sb = new StringBuilder();
-    for (var iss : issues.getIssues()) {
-      if (sb.length()>1) {
-        sb.append(";");
+    if (issues != null) {
+      StringBuilder sb = new StringBuilder();
+      for (var iss : issues.getIssues()) {
+        if (sb.length()>1) {
+          sb.append(";");
+        }
+        sb.append(iss);
       }
-      sb.append(iss);
+      return sb.toString();
     }
-    return sb.toString();
+    return null;
   }
 
   static class RowMapper {
