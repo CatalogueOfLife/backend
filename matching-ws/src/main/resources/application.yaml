@@ -34,3 +34,5 @@ management.endpoint.loggers.enabled: true
 spring:
   banner:
     location: classpath:banner.txt
+  main:
+    allow-circular-references: true

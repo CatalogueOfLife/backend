@@ -137,7 +137,7 @@ public class MatchingApplication implements ApplicationRunner {
     }
 
     matchingService.getAPIMetadata(true);
-    log.info("Indexing ready");
+    log.info("Index ready for search");
   }
 
   private ExecutionMode getMode(ApplicationArguments args) {

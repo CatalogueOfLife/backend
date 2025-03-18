@@ -41,6 +41,8 @@ public class NameUsageMatch implements LinneanClassification {
   Diagnostics diagnostics;
   @Schema(description = "Status information from external sources such as IUCN Red List")
   List<Status> additionalStatus;
+  Long left;
+  Long right;
 
   private String nameFor(Rank rank) {
     if (classification == null)
