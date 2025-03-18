@@ -56,7 +56,7 @@
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
-    <chronicle.version>2.26ea47</chronicle.version>
+    <chronicle.version>2.27ea26</chronicle.version>
     <docker-client.version>3.4.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>1.49</dwc-api.version>
     <dwca-io.version>2.16</dwca-io.version>

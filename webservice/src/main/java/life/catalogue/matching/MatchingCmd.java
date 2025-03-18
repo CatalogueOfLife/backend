@@ -81,15 +81,16 @@ public class MatchingCmd extends ConfiguredCommand<MatchingServerConfig> {
       }
 
       final MatchingStorageChrononicle storage = MatchingStorageChrononicle.create(cfg.matching.storage, cfg.matching.poolSize, metadata);
-      LOG.info("Copy data");
+      LOG.info("Copy data. Expect {} usages and {} canonical entries", metadata.getNumUsages(), metadata.getNumCanonicals());
+      int usages = 0;
+      IntSet nidxIds = new IntOpenHashSet();
+      IntSet canonIds = new IntOpenHashSet();
       try (SqlSession session = factory.openSession()) {
         var num = session.getMapper(NameUsageMapper.class);
         var nim = session.getMapper(NamesIndexMapper.class);
 
         int lastCanonId = -99999;
         final NameIndexImpl nidx = (NameIndexImpl) storage.getNameIndex();
-        IntSet nidxIds = new IntOpenHashSet();
-        IntSet canonIds = new IntOpenHashSet();
         List<SimpleNameCached> canonGroup = new ArrayList<>();
         try (var cursor = num.processDatasetSimpleNidx(datasetKey)){
           for (var sn : cursor) {
@@ -105,6 +106,7 @@ public class MatchingCmd extends ConfiguredCommand<MatchingServerConfig> {
               nidx.addToStore(idxName);
             }
             // usage
+            usages++;
             storage.put(sn);
             // by canonical
             if (lastCanonId != sn.getCanonicalId()) {
@@ -123,6 +125,7 @@ public class MatchingCmd extends ConfiguredCommand<MatchingServerConfig> {
         }
       }
       storage.close();
+      LOG.info("Copied {} usages, {} index names and {} canonical entries", usages, nidxIds.size(), canonIds.size());
 
     } finally {
       LOG.info("Shutdown matching command");

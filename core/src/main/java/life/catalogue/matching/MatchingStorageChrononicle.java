@@ -39,12 +39,18 @@ import net.openhft.chronicle.hash.serialization.ListMarshaller;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * No cache involved but always queries postgres directly
  */
 public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCached>, Closeable {
+  private static final Logger LOG = LoggerFactory.getLogger(MatchingStorageChrononicle.class);
   private final static int MAP_SPACE = 100;
-  private final SimpleNameCachedBytesMarshaller marshaller;
+  private final SimpleNameCachedKryoPool pool;
+  private final Pool<Output> outputs;
+  private final Pool<Input> inputs;
 
   private final MatchingStorageMetadata metadata;
   private final ChronicleMap<String, SimpleNameCached> usage;
@@ -61,25 +67,40 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
   }
 
   public static MatchingStorageChrononicle create(File dir, int poolSize, MatchingStorageMetadata metadata) throws IOException {
+    if (dir.exists()) {
+      LOG.warn("{} already exists. Wipe it", dir);
+      FileUtils.deleteQuietly(dir);
+    }
+    FileUtils.forceMkdir(dir);
     File mf = metadataFile(dir);
-    FileUtils.createParentDirectories(mf);
     ObjectMapper om = new ObjectMapper();
-    om.writeValue(mf, MatchingStorageMetadata.class);
+    om.writeValue(mf, metadata);
     return new MatchingStorageChrononicle(dir, poolSize, metadata);
   }
 
   public MatchingStorageChrononicle(File dir, int poolSize, MatchingStorageMetadata metadata) throws IOException {
     this.metadata = metadata;
-    marshaller = new SimpleNameCachedBytesMarshaller(poolSize);
+    this.pool = new SimpleNameCachedKryoPool(poolSize);;
+    outputs = new Pool<>(true, false, poolSize) {
+      protected Output create () {
+        return new Output(1024, -1);
+      }
+    };
+    inputs = new Pool<>(true, false, poolSize) {
+      protected Input create () {
+        return new Input(1024);
+      }
+    };
 
-    final var sn = sampleSN();
+    var marshaller = new SimpleNameCachedBytesMarshaller();
 
     var b1 = ChronicleMapBuilder.of(String.class, SimpleNameCached.class)
       .name("usage")
       .entries(metadata.getNumUsages() + MAP_SPACE)
       .averageKey("s34de5fr6")
       .valueMarshaller(marshaller)
-      .averageValue(sn);
+      .averageValueSize(60)
+      ;
     usage = b1.createPersistedTo(new File(dir, "usage"));
 
     pUsage = new HashMap<>();
@@ -87,9 +108,8 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
     var b2 = ChronicleMapBuilder.of(Integer.class, (Class<List<SimpleNameCached>>) (Class) List.class)
       .name("canon")
       .entries(metadata.getNumCanonicals() + MAP_SPACE)
-      .averageKey(1_624_856)
       .valueMarshaller(ListMarshaller.of(marshaller))
-      .averageValue(List.of(sn,sn));
+      .averageValueSize(120);
     byCanonNidx = b2.createPersistedTo(new File(dir, "canon"));
 
     NamesIndexConfig nCfg = new NamesIndexConfig();
@@ -112,22 +132,6 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
 
   public MatchingService<SimpleNameCached> newMatchingService() {
     return new MatchingService<>(nidx, this);
-  }
-
-  private SimpleNameCached sampleSN(){
-    var sn = new SimpleNameCached();
-    sn.setName("Abies alba");
-    sn.setAuthorship("Miller, 1988");
-    sn.setCanonicalId(1345);
-    sn.setRank(Rank.SPECIES);
-    sn.setCanonicalId(1521);
-    sn.setNamesIndexId(31233);
-    sn.setNamesIndexMatchType(MatchType.EXACT);
-    sn.setParent("s3d4e5rftgzh");
-    sn.setStatus(TaxonomicStatus.ACCEPTED);
-    sn.setCode(NomCode.BOTANICAL);
-    sn.setExtinct(false);
-    return sn;
   }
 
   @Override
@@ -163,24 +167,7 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
     }
   }
 
-  private final static class SimpleNameCachedBytesMarshaller implements BytesWriter<SimpleNameCached>, BytesReader<SimpleNameCached> {
-    private final SimpleNameCachedKryoPool pool;
-    private final Pool<Output> outputs;
-    private final Pool<Input> inputs;
-
-    SimpleNameCachedBytesMarshaller(int poolSize) {
-      this.pool = new SimpleNameCachedKryoPool(poolSize);;
-      outputs = new Pool<>(true, false, poolSize) {
-        protected Output create () {
-          return new Output(1024, -1);
-        }
-      };
-      inputs = new Pool<>(true, false, poolSize) {
-        protected Input create () {
-          return new Input(1024);
-        }
-      };
-    }
+  private final class SimpleNameCachedBytesMarshaller implements BytesWriter<SimpleNameCached>, BytesReader<SimpleNameCached> {
 
     @NotNull
     @Override
@@ -212,14 +199,12 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
       Output output = null;
       try {
         kryo = pool.obtain();
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
         output = outputs.obtain();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
         output.setOutputStream(buffer);
         kryo.writeObject(output, value);
         output.close();
-        byte[] bytes = buffer.toByteArray();
-        out.writeInt(bytes.length);
-        out.write(bytes);
+        out.write(buffer.toByteArray());
       } finally {
         if (kryo != null) {
           pool.free(kryo);
