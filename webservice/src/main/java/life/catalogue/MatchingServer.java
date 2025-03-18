@@ -3,18 +3,12 @@ package life.catalogue;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.command.PartitionCmd;
 import life.catalogue.dw.health.NameParserHealthCheck;
-import life.catalogue.dw.health.NamesIndexHealthCheck;
-import life.catalogue.dw.managed.Component;
-import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.matching.MatchingCmd;
 import life.catalogue.matching.MatchingResource;
-import life.catalogue.matching.MatchingService;
-import life.catalogue.matching.MatchingStoragePgCache;
-import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.MatchingStorageChrononicle;
 import life.catalogue.parser.NameParser;
 import life.catalogue.resources.NamesIndexResource;
 
@@ -34,7 +28,6 @@ import io.dropwizard.jersey.setup.JerseyEnvironment;
 
 public class MatchingServer extends Application<MatchingServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingServer.class);
-  private NameIndex ni;
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -61,16 +54,9 @@ public class MatchingServer extends Application<MatchingServerConfig> {
     return getName() + "/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
   }
 
-  public NameIndex getNamesIndex() {
-    return ni;
-  }
-
   @Override
   public void run(MatchingServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
-
-    // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
-    final ManagedService managedService = new ManagedService(env.lifecycle());
 
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
@@ -87,37 +73,13 @@ public class MatchingServer extends Application<MatchingServerConfig> {
       }
     });
 
-    // name index
-    if (cfg.namesIndex.file == null) {
-      throw new IllegalArgumentException("namesIndex.file must be configured");
-    }
-    // we can start up the index automatically
-    ni = NameIndexFactory.build(cfg.namesIndex, AuthorshipNormalizer.INSTANCE).started();
-    managedService.manage(Component.NamesIndex, ni);
-    env.healthChecks().register("names-index", new NamesIndexHealthCheck(ni));
-
-    // matcher
-    final var storage = new MatchingStoragePgCache(null, 11111, 100000);
-    final var matcher = new MatchingService<>(ni, storage);
+    // matcher storage - to be closed when service stops
+    final var storage = MatchingStorageChrononicle.open(cfg.matching.storage, cfg.matching.poolSize);
+    env.lifecycle().manage(ManagedUtils.from(storage));
 
     // resources
-    j.register(new NamesIndexResource(ni));
-    j.register(new MatchingResource(cfg.matching, matcher));
-  }
-
-  @Override
-  protected void onFatalError(Throwable t) {
-    if (ni != null) {
-      try {
-        LOG.error("Fatal startup error, closing names index gracefully", t);
-        ni.close();
-      } catch (Exception e) {
-        LOG.error("Failed to shutdown names index", e);
-      }
-    } else {
-      LOG.error("Fatal startup error", t);
-    }
-    System.exit(1);
+    j.register(new NamesIndexResource(storage.getNameIndex()));
+    j.register(new MatchingResource(storage));
   }
 
 }

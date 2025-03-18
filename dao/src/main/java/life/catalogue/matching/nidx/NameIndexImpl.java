@@ -368,6 +368,14 @@ public class NameIndexImpl implements NameIndex {
     }
   }
 
+  /**
+   * Adds a name to the index, keeping the key and canonical key as it exists on the instance.
+   */
+  public void addToStore(IndexName n) {
+    final String key = key(n);
+    store.add(key, n);
+  }
+
   protected void prepareQualified(String key, IndexName n){
     n.setKey(idSeq.incrementAndGet());
   }

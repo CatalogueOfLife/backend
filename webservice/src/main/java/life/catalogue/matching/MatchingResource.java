@@ -7,6 +7,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -17,20 +19,23 @@ import org.slf4j.LoggerFactory;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
-@Path("/match")
+import java.util.ArrayList;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
 public class MatchingResource {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
 
-  private final MatchingConfig cfg;
+  private final MatchingStorageChrononicle storage;
   private final MatchingService<SimpleNameCached> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public MatchingResource(MatchingConfig cfg, MatchingService<SimpleNameCached> matcher) {
-    this.cfg = cfg;
-    this.matcher = matcher;
+  public MatchingResource(MatchingStorageChrononicle storage) {
+    this.matcher = storage.newMatchingService();
+    this.storage = storage;
   }
 
   private UsageMatchWithOriginal match(SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
@@ -80,7 +85,15 @@ public class MatchingResource {
     return sn;
   }
 
+
   @GET
+  @Path("/metadata")
+  public MatchingStorageMetadata metadata() throws InterruptedException {
+    return storage.metadata();
+  }
+
+  @GET
+  @Path("/match")
   public UsageMatchWithOriginal match(@QueryParam("id") String id,
                                       @QueryParam("q") String q,
                                       @QueryParam("name") String name,
@@ -97,5 +110,82 @@ public class MatchingResource {
     return match(orig, issues, verbose);
   }
 
+  @GET
+  @Path("/v2/species/match/metadata")
+  public MatchingStorageMetadata metadata2() throws InterruptedException {
+    return storage.metadata();
+  }
 
+  @GET
+  @Path("/v2/species/match")
+  public NameUsageMatch match2(@QueryParam("usageKey") String usageKey,
+
+                                       @QueryParam("taxonID") String taxonID,
+                                       @QueryParam("taxonConceptID") String taxonConceptID,
+                                       @QueryParam("scientificNameID") String scientificNameID,
+
+                                       @QueryParam("scientificName") String scientificName,
+                                       @QueryParam("name") String scientificName2,
+
+                                       @QueryParam("scientificNameAuthorship") String authorship,
+                                       @QueryParam("authorship") String authorship2,
+
+                                       @QueryParam("taxonRank") String rank,
+                                       @QueryParam("rank") String rank2,
+
+                                       @QueryParam("code") String code,
+
+                                       @QueryParam("genericName") String genericName,
+                                       @QueryParam("specificEpithet") String specificEpithet,
+                                       @QueryParam("infraspecificEpithet") String infraspecificEpithet,
+
+                                       @BeanParam Classification classification,
+
+                                       @QueryParam("exclude") Set<String> exclude,
+                                       @QueryParam("strict") boolean strict,
+                                       @QueryParam("verbose") boolean verbose
+  ) throws InterruptedException {
+
+    StopWatch watch = new StopWatch();
+    watch.start();
+
+    IssueContainer issues = new IssueContainer.Simple();
+    SimpleNameClassified<SimpleName> orig = interpret(taxonID, scientificName, scientificName2, null,
+      ObjectUtils.coalesce(authorship, authorship2), code, ObjectUtils.coalesce(rank, rank2), null, classification, issues
+    );
+    var m = match(orig, issues, verbose);
+
+    return convert(m);
+  }
+
+  private NameUsageMatch convert(UsageMatchWithOriginal m) {
+    var um = new NameUsageMatch();
+    um.setDiagnostics(new NameUsageMatch.Diagnostics());
+    um.getDiagnostics().setMatchType(m.type);
+    if (m.issues.hasIssues()) {
+      um.getDiagnostics().setIssues(new ArrayList<>(m.issues.getIssues()));
+    }
+    if (m.isMatch()) {
+      um.getDiagnostics().setStatus(m.usage.getStatus());
+      um.setUsage(storage.getParsedUsage(m.getId()));
+      um.setClassification(m.usage.getClassification());
+      if (um.isSynonym()) {
+        um.setAcceptedUsage(storage.getParsedUsage(um.getUsage().getParentKey()));
+      }
+    }
+    if (m.alternatives != null) {
+      um.getDiagnostics().setAlternatives(m.alternatives.stream()
+        .map( alt -> {
+          var am = new NameUsageMatch();
+          am.setUsage(storage.getParsedUsage(alt.getId()));
+          am.setClassification(m.usage.getClassification());
+          if (am.isSynonym()) {
+            am.setAcceptedUsage(storage.getParsedUsage(am.getUsage().getParentKey()));
+          }
+          return am;
+        })
+        .collect(Collectors.toUnmodifiableList()));
+    }
+    return um;
+  }
 }

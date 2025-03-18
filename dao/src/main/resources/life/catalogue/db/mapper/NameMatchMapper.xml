@@ -42,6 +42,18 @@
     </if>
   </select>
 
+  <select id="countCanonIds" resultType="integer">
+    SELECT count(distinct ni.canonical_id)
+    FROM name_match nm JOIN names_index ni ON ni.id=nm.index_id
+    WHERE nm.dataset_key = #{datasetKey}
+  </select>
+
+  <select id="countIndexIds" resultType="integer">
+    SELECT count(distinct index_id)
+    FROM name_match
+    WHERE dataset_key = #{datasetKey}
+  </select>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO name_match (dataset_key,sector_key,type,index_id,name_id)
     SELECT #{newDatasetKey},nm.sector_key,nm.type,nm.index_id,coalesce(<if test="mapIds">m.id2,</if>nm.name_id)

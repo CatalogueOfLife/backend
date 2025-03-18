@@ -587,6 +587,7 @@
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_SIMPLE_CACHED"/>
     WHERE u.dataset_key=#{datasetKey}
+    ORDER BY ni.canonical_id
   </select>
 
   <select id="processDatasetBareNames" parameterType="map" resultMap="bareNameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

@@ -35,10 +35,6 @@ public class MatchingServerConfig extends Configuration {
   @Min(100)
   public long parserTimeout = 5000;
 
-  @Valid
-  @NotNull
-  public NamesIndexConfig namesIndex = new NamesIndexConfig();
-
   public MatchingServerConfig() {
     try {
       version = new Properties();

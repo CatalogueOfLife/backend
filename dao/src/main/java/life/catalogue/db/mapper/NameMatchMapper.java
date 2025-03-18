@@ -33,6 +33,16 @@ public interface NameMatchMapper extends MatchMapper, CopyDataset, NameProcessab
   Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey,
                                   @Param("sectorKey") @Nullable Integer sectorKey);
 
+  /**
+   * Count the number of distinct canonical name index ids for all matches of the given dataset
+   */
+  Integer countCanonIds(@Param("datasetKey") int datasetKey);
+
+  /**
+   * Count the number of distinct name index ids for all matches of the given dataset
+   */
+  Integer countIndexIds(@Param("datasetKey") int datasetKey);
+
   @Override
   default Cursor<Integer> processIndexIds(@Param("datasetKey") int datasetKey) {
     return processIndexIds(datasetKey, null);

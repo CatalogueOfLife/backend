@@ -224,7 +224,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<SimpleName> processDatasetSimple(@Param("datasetKey") int datasetKey);
 
   /**
-   * Iterates over all usages for a given dataset in any order and returns simple names together with their names index match.
+   * Iterates over all usages for a given dataset in canonical nidx order and returns simple names together with their names index match.
    */
   Cursor<SimpleNameCached> processDatasetSimpleNidx(@Param("datasetKey") int datasetKey);
 
