@@ -12,7 +12,7 @@ pipeline {
     }
     parameters {
         string(name: 'GIT_REPO', defaultValue: 'https://github.com/catalogueoflife/backend.git', description: 'GitHub repository URL')
-        string(name: 'GIT_BRANCH', defaultValue: 'feature/nested_sets', description: 'Branch to checkout')
+        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Branch to checkout')
         string(name: 'APP_ARTIFACT', defaultValue: 'matching-ws', description: 'Branch to checkout')
         string(name: 'CLB_DATASET_ID', defaultValue: '127379', description: 'Branch to checkout')
         string(name: 'CLB_API_URL', defaultValue: 'https://api.checklistbank.org', description: 'Branch to checkout')
