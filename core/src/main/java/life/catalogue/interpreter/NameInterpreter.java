@@ -54,6 +54,10 @@ public class NameInterpreter {
   }
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
+    if (sn == null) {
+      issues.addIssue(Issue.NOT_INTERPRETED);
+      return Optional.empty();
+    }
     return interpret(false,
       sn.getId(), sn.getCode(), sn.getRank(), sn.getName(), sn.getAuthorship(), null,
       null, null, null, null, null, null,

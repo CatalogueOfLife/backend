@@ -23,7 +23,7 @@ public class UsageMatchWithOriginalTest extends SerdeTestBase<UsageMatchWithOrig
   public UsageMatchWithOriginal genTestValue() throws Exception {
     UsageMatch m = UsageMatchWithOriginal.empty(9923);
     SimpleNameClassified<SimpleName> orig = new SimpleNameClassified<>(SimpleName.sn(Rank.SPECIES, "Calonarius splendens", "(Rob. Henry) Niskanen"));
-    UsageMatchWithOriginal nu = new UsageMatchWithOriginal(m, IssueContainer.simple(), orig);
+    UsageMatchWithOriginal nu = new UsageMatchWithOriginal(m, IssueContainer.simple(), orig, 91l);
 
     return nu;
   }

@@ -159,12 +159,13 @@ public class MatchingJob extends DatasetBlockingJob {
             // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
             final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
             ttp.setDatasetKey(req.getSourceDatasetKey());
+            final AtomicLong count = new AtomicLong(0);
             writeMatches(writer, null, TreeStreams.dataset(session, ttp)
                                             .map(sn -> {
                                               if (rootClassification != null) {
                                                 sn.getClassification().addAll(rootClassification);
                                               }
-                                              return new IssueName(sn, new IssueContainer.Simple(), null);
+                                              return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
                                             })
             );
           }
@@ -185,11 +186,13 @@ public class MatchingJob extends DatasetBlockingJob {
   static class IssueName {
     final SimpleNameClassified<SimpleName> name;
     final IssueContainer issues;
+    final long line;
     final String[] row;
 
-    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues, String[] row) {
+    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues, String[] row, long line) {
       this.issues = issues;
       this.name = name;
+      this.line = line;
       this.row = row;
     }
   }
@@ -267,6 +270,9 @@ public class MatchingJob extends DatasetBlockingJob {
               LOG.info("Matched {} out of {} names so far", counter.get() - none.get(), counter);
           }
       });
+
+    } catch (Exception e) {
+      LOG.error("Matching failed on line #{}: {}", counter.get()+1, e.getMessage(), e);
     }
     writer.flush();
     LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
@@ -282,7 +288,7 @@ public class MatchingJob extends DatasetBlockingJob {
       match = UsageMatch.empty(0);
       n.issues.addIssue(Issue.UNPARSABLE_NAME);
     }
-    return new UsageMatchWithOriginal(match, n.issues, n.name);
+    return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
   }
 
   private static class MappedStream {
@@ -306,9 +312,17 @@ public class MatchingJob extends DatasetBlockingJob {
     final RowMapper mapper = new RowMapper(iter.next());
 
     Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false);
+
     return new MappedStream(mapper, rowStream.map(row -> {
       final IssueContainer issues = new IssueContainer.Simple();
-      return new IssueName(mapper.build(row, issues), issues, row);
+      long line = iter.getContext().currentLine();
+      try {
+        return new IssueName(mapper.build(row, issues), issues, row, line);
+      } catch (Exception e) {
+        LOG.error("Error parsing line {}", line, e);
+        issues.addIssue(Issue.NOT_INTERPRETED);
+        return new IssueName(null, issues, row, line);
+      }
     }));
   }
 

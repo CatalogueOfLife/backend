@@ -69,7 +69,7 @@ public class NameUsageMatchingResource {
       match = UsageMatch.empty(0);
       issues.addIssue(Issue.UNPARSABLE_NAME);
     }
-    return new UsageMatchWithOriginal(match, issues, sn);
+    return new UsageMatchWithOriginal(match, issues, sn, null);
   }
 
 

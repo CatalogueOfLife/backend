@@ -130,6 +130,8 @@ public class NameInterpreterTest {
     ParsedNameUsage pnu;
     Name n;
 
+    assertFalse(ib.interpret(null, v).isPresent());
+
     pnu = ib.interpret(SimpleName.sn(BACTERIAL, "Bacteroides tectus (corrig.) Love et al. 1986"), v).get();
     assertEquals("Bacteroides tectus", pnu.getName().getScientificName());
     assertFalse(pnu.getName().isOriginalSpelling());
