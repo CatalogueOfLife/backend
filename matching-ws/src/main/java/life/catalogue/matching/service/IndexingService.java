@@ -838,7 +838,9 @@ public class IndexingService {
     }
 
     // add the leaf node
-    if (TaxonomicStatus.ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))) {
+    if (TaxonomicStatus.ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))
+        || TaxonomicStatus.PROVISIONALLY_ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))
+    ) {
       classification.addLast(StoredName.builder()
         .key(leafDoc.get(FIELD_ID))
         .rank(leafDoc.get(FIELD_RANK))
