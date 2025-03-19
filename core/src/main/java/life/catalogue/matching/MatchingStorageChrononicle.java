@@ -1,9 +1,11 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.AuthorshipNormalizer;
+import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
@@ -52,6 +54,8 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
   private static Pool<Output> outputs;
   private static Pool<Input> inputs;
   private final SimpleNameCachedBytesMarshaller marshaller;
+  //TODO. remove once we stored parsed usages !!!
+  private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
   private final MatchingStorageMetadata metadata;
   private final ChronicleMap<String, SimpleNameCached> usage;
@@ -244,6 +248,37 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
     return byCanonNidx.get(canonNidx);
   }
 
+  @Deprecated
+  public ParsedUsage toParsedUsage(SimpleNameCached snc) {
+    var pnu = new ParsedUsage();
+    pnu.setKey(snc.getId());
+    pnu.setParentKey(snc.getParentId());
+    pnu.setAuthorship(snc.getAuthorship());
+    pnu.setCanonicalName(snc.getName());
+    pnu.setStatus(snc.getStatus());
+    pnu.setRank(snc.getRank());
+    pnu.setCode(snc.getCode());
+    pnu.setName(snc.getLabel());
+
+    var opt = interpreter.interpret(snc, IssueContainer.VOID);
+    if (opt.isPresent()) {
+      var n = opt.get().getName();
+      pnu.setBasionymAuthorship(n.getBasionymAuthorship());
+      pnu.setCombinationAuthorship(n.getCombinationAuthorship());
+      pnu.setUninomial(n.getUninomial());
+      pnu.setGenus(n.getGenus());
+      pnu.setInfragenericEpithet(n.getInfragenericEpithet());
+      pnu.setSpecificEpithet(n.getSpecificEpithet());
+      pnu.setInfraspecificEpithet(n.getInfraspecificEpithet());
+      pnu.setCultivarEpithet(n.getCultivarEpithet());
+      pnu.setCandidatus(n.isCandidatus());
+      pnu.setNotho(n.getNotho());
+      pnu.setOriginalSpelling(n.isOriginalSpelling());
+      pnu.setType(n.getType());
+    }
+    return pnu;
+  }
+
   public ParsedUsage getParsedUsage(String key) {
     return pUsage.get(key);
   }
@@ -254,6 +289,9 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
   }
   public void put(SimpleNameCached snc) {
     usage.put(snc.getId(), snc);
+  }
+  public SimpleNameCached getSNC(String key) {
+    return usage.get(key);
   }
 
   @Override

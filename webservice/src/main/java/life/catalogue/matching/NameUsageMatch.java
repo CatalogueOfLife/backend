@@ -23,12 +23,13 @@ public class NameUsageMatch {
 
   private ParsedUsage usage;
   private ParsedUsage acceptedUsage;
+  @JsonIgnoreProperties({ "canonicalId", "namesIndexId", "namesIndexMatchType", "marked", "parent", "parentId", "status", "code", "label", "labelHtml" })
   private List<SimpleNameCached> classification;
   private Diagnostics diagnostics;
   private List<Status> additionalStatus;
 
   public Boolean isSynonym() {
-    return usage == null ? null : usage.getStatus().isSynonym();
+    return usage == null || usage.getStatus() == null ? null : usage.getStatus().isSynonym();
   }
 
   public ParsedUsage getUsage() {

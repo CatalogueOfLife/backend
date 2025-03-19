@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached {
   // classification starting with direct parent
-  @JsonIgnoreProperties({ "canonicalId", "namesIndexId", "namesIndexMatchType", "marked", "parent", "parentId", "status", "code", "label" })
+  @JsonIgnoreProperties({ "canonicalId", "namesIndexId", "namesIndexMatchType", "marked", "parent", "parentId", "status", "code", "label", "labelHtml" })
   private List<T> classification;
 
   public static SimpleNameClassified<SimpleName> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {
