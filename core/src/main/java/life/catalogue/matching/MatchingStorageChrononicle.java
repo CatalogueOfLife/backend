@@ -48,9 +48,10 @@ import org.slf4j.LoggerFactory;
 public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCached>, Closeable {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingStorageChrononicle.class);
   private final static int MAP_SPACE = 100;
-  private final SimpleNameCachedKryoPool pool;
-  private final Pool<Output> outputs;
-  private final Pool<Input> inputs;
+  private static SimpleNameCachedKryoPool pool;
+  private static Pool<Output> outputs;
+  private static Pool<Input> inputs;
+  private final SimpleNameCachedBytesMarshaller marshaller;
 
   private final MatchingStorageMetadata metadata;
   private final ChronicleMap<String, SimpleNameCached> usage;
@@ -80,19 +81,22 @@ public class MatchingStorageChrononicle implements MatchingStorage<SimpleNameCac
 
   public MatchingStorageChrononicle(File dir, int poolSize, MatchingStorageMetadata metadata) throws IOException {
     this.metadata = metadata;
-    this.pool = new SimpleNameCachedKryoPool(poolSize);;
-    outputs = new Pool<>(true, false, poolSize) {
-      protected Output create () {
-        return new Output(1024, -1);
-      }
-    };
-    inputs = new Pool<>(true, false, poolSize) {
-      protected Input create () {
-        return new Input(1024);
-      }
-    };
+    if (pool == null) {
+      //TODO: can't we find a way to place them into the marshaller ???
+      pool = new SimpleNameCachedKryoPool(poolSize);;
+      outputs = new Pool<>(true, false, poolSize) {
+        protected Output create () {
+          return new Output(1024, -1);
+        }
+      };
+      inputs = new Pool<>(true, false, poolSize) {
+        protected Input create () {
+          return new Input(1024);
+        }
+      };
+    }
 
-    var marshaller = new SimpleNameCachedBytesMarshaller();
+    this.marshaller = new SimpleNameCachedBytesMarshaller();
 
     var b1 = ChronicleMapBuilder.of(String.class, SimpleNameCached.class)
       .name("usage")

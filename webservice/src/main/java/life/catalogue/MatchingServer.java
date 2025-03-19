@@ -3,8 +3,10 @@ package life.catalogue;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.command.PartitionCmd;
 import life.catalogue.dw.health.NameParserHealthCheck;
+import life.catalogue.dw.jersey.filter.CharsetResponseFilter;
+import life.catalogue.dw.jersey.filter.TimedResponseFilter;
+import life.catalogue.dw.jersey.provider.EnumParamConverterProvider;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.matching.MatchingCmd;
 import life.catalogue.matching.MatchingResource;
@@ -58,6 +60,13 @@ public class MatchingServer extends Application<MatchingServerConfig> {
   public void run(MatchingServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
 
+    // param converters
+    j.packages(EnumParamConverterProvider.class.getPackage().getName());
+
+    // req & resp filters
+    j.register(new TimedResponseFilter());
+    j.register(new CharsetResponseFilter());
+
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
 
@@ -79,7 +88,7 @@ public class MatchingServer extends Application<MatchingServerConfig> {
 
     // resources
     j.register(new NamesIndexResource(storage.getNameIndex()));
-    j.register(new MatchingResource(storage));
+    j.register(new MatchingResource(storage, cfg));
   }
 
 }

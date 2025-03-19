@@ -68,7 +68,7 @@ public class NameUsageMatchingResource {
         nu.getName().setRank(null);
       }
       var matcher = globalMatcher.getService(datasetKey);
-      match = matcher.match(nu, sn.getClassification(), false, verbose);
+      match = matcher.match(nu, sn.getClassification(), false, true, verbose);
     } else {
       match = UsageMatch.empty();
       issues.addIssue(Issue.UNPARSABLE_NAME);
@@ -129,7 +129,7 @@ public class NameUsageMatchingResource {
       classification = num.classificationNxIds(nu);
     }
     var matcher = globalMatcher.getService(targetDatasetKey);
-    return matcher.match(nu, classification, false, verbose);
+    return matcher.match(nu, classification, false, true, verbose);
   }
 
 

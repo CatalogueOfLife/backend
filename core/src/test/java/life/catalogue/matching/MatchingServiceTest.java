@@ -79,7 +79,7 @@ public class MatchingServiceTest {
          .kingdom("Plantae")
          .build();
 
-      var match = matcher.match(num.get(dsid), cl.asSimpleNames(), false, false);
+      var match = matcher.match(num.get(dsid), cl.asSimpleNames(), false, false, false);
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }
@@ -199,7 +199,7 @@ public class MatchingServiceTest {
     u.setStatus(status);
     u.setNamePhrase(opt.get().getTaxonomicNote());
 
-    var result = matcher.match(u, List.of(parents), false, true);
+    var result = matcher.match(u, List.of(parents), false, false, true);
     return result;
   }
 }

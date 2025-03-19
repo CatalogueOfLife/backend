@@ -8,7 +8,7 @@ import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.MybatisFactory;
 import life.catalogue.db.mapper.UserMapper;
-import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.jersey.ClbJerseyBundle;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,7 +92,7 @@ public abstract class AbstractMybatisCmd extends AbstractPromptCmd {
 
       if (jersey) {
         final String userAgent = "ColCli/" + ObjectUtils.coalesce(cfg.versionString(), "1.0");
-        bootstrap.addBundle(new ColJerseyBundle());
+        bootstrap.addBundle(new ClbJerseyBundle());
         httpClient = new HttpClientBuilder(bootstrap.getMetricRegistry())
           .using(cfg.client)
           .build(userAgent);

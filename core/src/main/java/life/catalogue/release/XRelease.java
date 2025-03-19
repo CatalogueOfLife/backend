@@ -222,7 +222,7 @@ public class XRelease extends ProjectRelease {
       s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
       MatchingService<SimpleNameCached> matcher = MatchingService.buildPg(nidx, factory, targetDatasetKey);
       NameUsageBase nu = new Taxon(s.getTarget());
-      var m = matcher.match(nu, null, true, false);
+      var m = matcher.match(nu, null, true, false, false);
       if (m.isMatch()) {
         s.getTarget().setBroken(false);
         s.getTarget().setId(m.getId());

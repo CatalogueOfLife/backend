@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.MatchingServerConfig;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
@@ -30,13 +31,15 @@ import java.util.stream.Collectors;
 public class MatchingResource {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingResource.class);
 
+  private final MatchingServerConfig cfg;
   private final MatchingStorageChrononicle storage;
   private final MatchingService<SimpleNameCached> matcher;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public MatchingResource(MatchingStorageChrononicle storage) {
+  public MatchingResource(MatchingStorageChrononicle storage, MatchingServerConfig cfg) {
     this.matcher = storage.newMatchingService();
     this.storage = storage;
+    this.cfg = cfg;
   }
 
   private UsageMatchWithOriginal match(SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
@@ -48,7 +51,7 @@ public class MatchingResource {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      match = matcher.match(nu, sn.getClassification(), false, verbose);
+      match = matcher.match(nu, sn.getClassification(), false, true, verbose);
     } else {
       match = UsageMatch.empty();
       issues.addIssue(Issue.UNPARSABLE_NAME);
@@ -86,6 +89,12 @@ public class MatchingResource {
     return sn;
   }
 
+
+  @GET
+  @Path("/version")
+  public String version() throws InterruptedException {
+    return cfg.versionString();
+  }
 
   @GET
   @Path("/metadata")

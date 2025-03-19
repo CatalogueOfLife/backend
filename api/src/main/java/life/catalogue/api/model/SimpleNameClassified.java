@@ -1,5 +1,8 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
+
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NomCode;
@@ -10,6 +13,7 @@ import java.util.Objects;
 
 public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached {
   // classification starting with direct parent
+  @JsonIgnoreProperties({ "canonicalId", "namesIndexId", "namesIndexMatchType", "marked", "parent", "parentId", "status", "code", "label" })
   private List<T> classification;
 
   public static SimpleNameClassified<SimpleName> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {

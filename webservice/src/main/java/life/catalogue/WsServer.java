@@ -23,7 +23,7 @@ import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.*;
-import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.jersey.ClbJerseyBundle;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -107,7 +107,7 @@ import jakarta.ws.rs.client.Client;
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
 
-  private final ColJerseyBundle coljersey = new ColJerseyBundle();
+  private final ClbJerseyBundle clbjersey = new ClbJerseyBundle();
   private final MybatisBundle mybatis = new MybatisBundle();
   private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
@@ -129,7 +129,7 @@ public class WsServer extends Application<WsServerConfig> {
     // our mybatis classes
     bootstrap.addBundle(mybatis);
     // various custom jersey providers
-    bootstrap.addBundle(coljersey);
+    bootstrap.addBundle(clbjersey);
     bootstrap.addBundle(mail);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
@@ -236,7 +236,7 @@ public class WsServer extends Application<WsServerConfig> {
     jerseyClient = builder.build(getUserAgent(cfg));
 
     // finally provide the SqlSessionFactory & http client to the auth and jersey bundle
-    coljersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
+    clbjersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setClient(httpClient);
 
@@ -358,10 +358,10 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
+    DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, clbjersey.getCache(), converter);
 
     // portal html page renderer
-    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, clbjersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
@@ -423,7 +423,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
+      getSqlSessionFactory(), clbjersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
     j.register(new DataPackageResource());
@@ -449,7 +449,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NamesIndexResource(ni));
     j.register(new NamesIndexExportResource(getSqlSessionFactory(), cfg, executor));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedback));
+    j.register(new NameUsageResource(searchService, suggestService, indexService, clbjersey.getCache(), tdao, feedback));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new PublisherResource(pdao));
@@ -467,7 +467,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());
     j.register(new VocabResource());
-    j.register(new XColResource(dsdao, coljersey.getCache(), exportManager, cfg));
+    j.register(new XColResource(dsdao, clbjersey.getCache(), exportManager, cfg));
 
 
     // parsers
@@ -483,7 +483,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // attach listeners to event bus
     bus.register(auth);
-    bus.register(coljersey);
+    bus.register(clbjersey);
     bus.register(DatasetInfoCache.CACHE);
     if (cfg.apiURI != null) {
       bus.register(new CacheFlush(httpClient, cfg.apiURI));

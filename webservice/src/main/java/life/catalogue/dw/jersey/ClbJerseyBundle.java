@@ -1,5 +1,11 @@
 package life.catalogue.dw.jersey;
 
+import com.google.common.eventbus.Subscribe;
+
+import io.dropwizard.core.ConfiguredBundle;
+import io.dropwizard.core.setup.Bootstrap;
+import io.dropwizard.core.setup.Environment;
+
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.cache.LatestDatasetKeyCache;
@@ -11,19 +17,11 @@ import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import com.google.common.eventbus.Subscribe;
-
-import io.dropwizard.core.ConfiguredBundle;
-import io.dropwizard.core.setup.Bootstrap;
-import io.dropwizard.core.setup.Environment;
-
 /**
  * Various custom jersey providers bundled together for CoL.
  */
-public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
+public class ClbJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
-  private DatasetKeyRewriteFilter lrFilter;
-  private CacheControlResponseFilter ccFilter;
   private final LatestDatasetKeyCache cache = new LatestDatasetKeyCacheImpl(null); // we add the factory later - it is not available when we run the bundle!
 
   @Override
@@ -33,17 +31,15 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
-    // param converters
-    env.jersey().packages(EnumParamConverterProvider.class.getPackage().getName());
-    
     // response and request filters
     env.jersey().packages(CreatedResponseFilter.class.getPackage().getName());
-    lrFilter = new DatasetKeyRewriteFilter(cache);
-    env.jersey().register(lrFilter);
-    ccFilter = new CacheControlResponseFilter();
-    env.jersey().register(ccFilter);
+    env.jersey().register(new CacheControlResponseFilter());
+    env.jersey().register(new DatasetKeyRewriteFilter(cache));
     env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
     env.jersey().register(new DelayRequestFilter(cfg.legacyDelay));
+
+    // param converters
+    env.jersey().packages(EnumParamConverterProvider.class.getPackage().getName());
 
     // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());

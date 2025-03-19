@@ -83,10 +83,11 @@ public class MatchingService<T extends SimpleNameWithNidx> {
    * @param nu usage to match. Requires a name instance to exist
    * @param classification of the usage to be matched
    */
-  public UsageMatch<T> match(NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean verbose) {
+  public UsageMatch<T> match(NameUsageBase nu, @Nullable List<? extends SimpleName> classification, boolean allowInserts, boolean allowHigherMatches, boolean verbose) {
     classification = ObjectUtils.coalesce(classification, List.of()); // no nulls
     // match classification to names index
-    List<T> parents = new ArrayList<>();
+    LinkedList<T> parents = new LinkedList<>();
+    LinkedList<NameUsageBase> parentsAsNU = new LinkedList<>();
     for (var sn : classification) {
       if (sn.getRank().isSpeciesOrBelow()) continue; // ignore binomials for now
       Name n = Name.newBuilder()
@@ -95,9 +96,48 @@ public class MatchingService<T extends SimpleNameWithNidx> {
                    .uninomial(sn.getName())
                    .code(nu.getName().getCode())
                    .build();
-      parents.add(toMatchedSimpleName(new Taxon(n)));
+      var p = new Taxon(n);
+      parentsAsNU.add(p);
+      parents.add(toMatchedSimpleName(p));
     }
-    return matchWithParents(nu, parents, allowInserts, verbose);
+    var match = matchWithParents(nu, parents, allowInserts, verbose);
+    // try higher taxa in case we can't match the name
+    if (!match.isMatch() && allowHigherMatches) {
+      // if we have ambiguous matches we can use their lowest shared classification
+      if (match.type == MatchType.AMBIGUOUS) {
+        //TODO: impl, check Oenanthe
+      }
+      // implicit species?
+      if (nu.getName().isTrinomial()) {
+        Name sp = Name.newBuilder()
+          .rank(Rank.SPECIES)
+          .genus(nu.getName().getGenus())
+          .specificEpithet(nu.getName().getSpecificEpithet())
+          .code(nu.getName().getCode())
+          .build();
+        match = matchWithParents(new Taxon(sp), parents, false, verbose);
+      }
+      // implicit genus?
+      if (!match.isMatch() && nu.getName().isBinomial()) {
+        Name gen = Name.newBuilder()
+          .rank(Rank.GENUS)
+          .uninomial(nu.getName().getGenus())
+          .code(nu.getName().getCode())
+          .build();
+        match = matchWithParents(new Taxon(gen), parents, false, verbose);
+      }
+      // or we can go up the provided classification
+      while (!match.isMatch() && !parents.isEmpty()) {
+        parents.removeLast();
+        match = matchWithParents(parentsAsNU.removeLast(), parents, false, verbose);
+      }
+
+      // we need to change the type to a higher match if we hit sth
+      if (match.isMatch()) {
+        match = new UsageMatch<>(match, MatchType.HIGHERRANK);
+      }
+    }
+    return match;
   }
 
   /**
