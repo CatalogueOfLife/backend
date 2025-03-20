@@ -134,7 +134,7 @@ public enum Issue {
   HOMOTYPIC_CONSOLIDATION_UNRESOLVED(NAME, Level.WARNING,
       "There have been more than one accepted name in a homotypic group of names which could not be resolved."),
   
-  CHAINED_BASIONYM(NAME, Level.ERROR,
+  CHAINED_BASIONYM(NAME, Level.WARNING,
       "A basionym that claims itself to have another basionym."),
   
   NAME_NOT_UNIQUE(NAME, Level.ERROR,
@@ -231,7 +231,7 @@ public enum Issue {
   SCRUTINIZER_DATE_INVALID(NAME_USAGE, Level.ERROR,
       "acef:LTSDate cannot be interpreted into a date"),
   
-  CHAINED_SYNONYM(NAME_USAGE, Level.ERROR,
+  CHAINED_SYNONYM(NAME_USAGE, Level.WARNING,
       "If a synonym points to another synonym as its accepted taxon the chain is resolved."),
   
   PARENT_CYCLE(NAME_USAGE, Level.ERROR,
