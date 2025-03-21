@@ -17,6 +17,8 @@ import life.catalogue.matching.TaxGroupAnalyzer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -38,6 +40,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
+  private static final Pattern TAG = Pattern.compile("(?<!<)([ib])>(.+)</\\1(?!>)");
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
 
@@ -485,7 +488,10 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       } else {
         info.setReferences(refCache.getAll(refIds));
       }
-      info.getReferences().values().forEach(r -> addSectorMode(r, sectorModes, sm));
+      info.getReferences().values().forEach(r -> {
+        addSectorMode(r, sectorModes, sm);
+        cleanReference(r);
+      });
     }
 
     if (!nameIds.isEmpty()) {
@@ -503,6 +509,27 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
 
+  private static void cleanReference(Reference r) {
+    // remove broken html tags that can break the UI
+    // https://github.com/CatalogueOfLife/portal/issues/226
+    r.setCitation(removeBrokenTags(r.getCitation()));
+    if (r.getCsl() != null) {
+      var csl = r.getCsl();
+      csl.setContainerTitle(removeBrokenTags(csl.getContainerTitle()));
+    }
+  }
+
+  @VisibleForTesting
+  protected static String removeBrokenTags(String x) {
+    if (x != null) {
+      Matcher m = TAG.matcher(x);
+      if (m.find()) {
+        return m.replaceAll("$2");
+      }
+    }
+    return x;
+  }
+
   @VisibleForTesting
   protected static String typeContent(TypeMaterial tm) {
     return Arrays.stream(new Object[]{tm.getCitation(), tm.getStatus(), tm.getLink(), tm.getInstitutionCode(), tm.getCatalogNumber(),
@@ -515,6 +542,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       .map(StringUtils::trimToEmpty)
       .collect(Collectors.joining("|"));
   }
+
   private void aggregateTypes(UsageInfo info, List<String> homotypicNameIds) {
     if (homotypicNameIds != null && !homotypicNameIds.isEmpty()) {
       List<TypeMaterial> agg = homotypicNameIds.stream()
