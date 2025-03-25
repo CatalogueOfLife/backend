@@ -93,7 +93,7 @@ public class ParserConfigDao {
     }
     // update parser
     ParsedName pn = obj.toParsedName();
-    NameParser.PARSER.configs().add(obj.getScientificName(), obj.getAuthorship(), pn);
+    NameParser.PARSER.configs().setName(obj.getScientificName(), pn);
   }
 
   public void deleteName(String id, int user) {

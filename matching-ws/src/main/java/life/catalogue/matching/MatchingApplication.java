@@ -93,14 +93,14 @@ public class MatchingApplication implements ApplicationRunner {
       return;
     }
 
-    try {
-      log.info("Loading name parser configs from ChecklistBank");
-      NameParsers.INSTANCE.configs().loadFromCLB();
-    } catch (IOException e) {
-      log.error("Failed to load name parser configs from CLB", e);
-    } catch (InterruptedException e) {
-      log.warn("Interrupted. Failed to load name parser configs from CLB.", e);
-    }
+//    try {
+//      log.info("Loading name parser configs from ChecklistBank");
+////      NameParsers.INSTANCE.getConfigs().loadFromCLB();
+//    } catch (IOException e) {
+//      log.error("Failed to load name parser configs from CLB", e);
+//    } catch (InterruptedException e) {
+//      log.warn("Interrupted. Failed to load name parser configs from CLB.", e);
+//    }
 
     metadata.ifPresent(m -> {
       if (m.getBuildInfo() != null) {
