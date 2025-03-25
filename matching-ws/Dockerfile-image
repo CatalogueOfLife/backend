@@ -14,6 +14,7 @@ ENV APP_NAME=matching-ws
 ENV APP_VERSION="1.0-SNAPSHOT"
 ENV EXTRA_RUN_ARGS=""
 ENV CONF_DIR="/usr/local/gbif/conf"
+ENV SERVICE_BASE_URL="http://localhost:8080"
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -43,8 +44,8 @@ CMD java $JVM_OPTIONS \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
     --working.dir=/opt/gbif/$APP_ARTIFACT/ \
-    --spring.application.name=$APP_NAME \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=$CONF_DIR/application.yml \
     --spring.cloud.bootstrap.location=$CONF_DIR/bootstrap.yml \
+    --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
     --mode=RUN $EXTRA_RUN_ARGS
