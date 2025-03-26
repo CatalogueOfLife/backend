@@ -46,8 +46,8 @@ CMD java $JVM_OPTIONS \
     --server.port=$SERVER_PORT \
     --working.dir=/opt/gbif/$APP_ARTIFACT/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
-    --spring.config.location=$CONF_DIR/application.yml \
-    --spring.cloud.bootstrap.location=$CONF_DIR/bootstrap.yml \
+    --spring.config.location=optional:$CONF_DIR/application.yml \
+    --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \
     --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
     --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
     --mode=RUN $EXTRA_RUN_ARGS
