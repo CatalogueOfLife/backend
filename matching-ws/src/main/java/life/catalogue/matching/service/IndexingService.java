@@ -84,13 +84,13 @@ public class IndexingService {
   @Value("${temp.path:/tmp/matching-tmp}")
   String tempIndexPath;
 
-  @Value("${clb.url}")
+  @Value("${clb.url:jdbc:postgresql://localhost:5432/clb}")
   String clbUrl;
 
-  @Value("${clb.user}")
+  @Value("${clb.user:clb}")
   String clbUser;
 
-  @Value("${clb.password}")
+  @Value("${clb.password:not-set}")
   String clPassword;
 
   @Value("${indexing.threads:6}")

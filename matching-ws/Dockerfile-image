@@ -50,4 +50,5 @@ CMD java $JVM_OPTIONS \
     --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \
     --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
     --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
+    --spring.boot.admin.client.instance.metadata.infoUrl=$SERVICE_BASE_URL/v2/species/match/metadata \
     --mode=RUN $EXTRA_RUN_ARGS
