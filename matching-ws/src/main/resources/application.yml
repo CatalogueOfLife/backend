@@ -1,19 +1,6 @@
-#spring.application.name: matching-ws
-#version: @project.version@
-#mybatis:
-#  config-location: mybatis-config.xml
-#clb:
-#  url: jdbc:postgresql://localhost:5432/clb
-#  user:
-#  password:
-#  driver: org.postgresql.Driver
-#index:
-#  path: /data/matching-ws/index
-#export:
-#  path: /data/matching-ws/export
-#
-#springdoc.swagger-ui:
-#  path:
+spring.application.name: matching-ws
+
+springdoc.swagger-ui.path:
 #
 ## dictionary.path=https://rs.gbif.org/dictionaries/
 #dictionary:
