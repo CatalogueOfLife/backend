@@ -12,7 +12,7 @@ pipeline {
     }
     parameters {
         string(name: 'GIT_REPO', defaultValue: 'https://github.com/catalogueoflife/backend.git', description: 'GitHub repository URL')
-        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Branch to checkout')
+        string(name: 'GIT_BRANCH', defaultValue: 'feature/matching-ws-docker-zk', description: 'Branch to checkout')
         string(name: 'APP_ARTIFACT', defaultValue: 'matching-ws', description: 'The app artefact name')
         string(name: 'CLB_DATASET_ID', defaultValue: '', description: 'Checklistbank dataset ID')
         string(name: 'CLB_API_URL', defaultValue: 'https://api.checklistbank.org', description: 'Checklistbank API URL')
@@ -20,13 +20,13 @@ pipeline {
         string(name: 'CLB_IDENTIFIER_DATASET_IDS', defaultValue: '', description: 'Comma separated list of Checklistbank dataset IDs')
         string(name: 'EXTRA_RUN_ARGS', defaultValue: '', description: 'Additional run args for docker')
         string(name: 'JVM_OPTIONS', defaultValue: '-Xmx2g -Xmx1g', description: 'JVM options for docker')
-        string(name: 'DOCKER_TAG', defaultValue: 'afd-latest', description: 'The docker tag to use')
+        string(name: 'DOCKER_TAG', defaultValue: 'worms-latest', description: 'The docker tag to use')
     }
 
     stages {
         stage('Maven build matching-ws)') {
           steps {
-              git branch: 'feature/nested_sets', url: 'https://github.com/catalogueoflife/backend.git'
+              git branch: env.GIT_BRANCH, url: 'https://github.com/catalogueoflife/backend.git'
               sh 'cd matching-ws && mvn clean install -DskipTests'
           }
         }
@@ -58,12 +58,12 @@ pipeline {
 
         stage('Setup index build artefacts') {
           steps {
-            sh "mkdir -p ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/"
-            sh "echo \"spring.cloud.zookeeper.discovery.metadata.timestamp=$(date +%s)\" > ${env.WORKSPACE}/matching-ws/index-build/timestamp.properties"
-            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/dataset.json ${env.CLB_API_URL}/dataset/${env.CLB_DATASET_ID}.json"
-            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/git.json -H 'Accept: application/vnd.github+json' \"https://api.github.com/repos/catalogueoflife/backend/commits/\$(git rev-parse HEAD)\""
-            sh "cp ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/app.jar"
-            sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yaml ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/bootstrap.yaml"
+            sh "mkdir -p ${env.WORKSPACE}/matching-ws/index-build/code/conf"
+            sh "echo \"spring.cloud.zookeeper.discovery.metadata.timestamp=\$(date +%s)\" > ${env.WORKSPACE}/matching-ws/index-build/timestamp.properties"
+            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/code/dataset.json ${env.CLB_API_URL}/dataset/${env.CLB_DATASET_ID}.json"
+            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/code/git.json -H 'Accept: application/vnd.github+json' \"https://api.github.com/repos/catalogueoflife/backend/commits/\$(git rev-parse HEAD)\""
+            sh "cp ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar ${env.WORKSPACE}/matching-ws/index-build/code/app.jar"
+            sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yml ${env.WORKSPACE}/matching-ws/index-build/code/conf/bootstrap.yml"
           }
         }
 
