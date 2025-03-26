@@ -16,6 +16,7 @@ ENV EXTRA_RUN_ARGS=""
 ENV CONF_DIR="/usr/local/gbif/conf"
 ENV SERVICE_BASE_URL="http://localhost:8080"
 ENV ZK_SERVER_PORT=8080
+ENV ZK_TIMESTAMP=12345678
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -51,5 +52,7 @@ CMD java $JVM_OPTIONS \
     --spring.config.location=optional:$CONF_DIR/application.yml \
     --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
     --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
+    --spring.cloud.zookeeper.discovery.metadata.timestamp=$ZK_TIMESTAMP \
     --spring.boot.admin.client.instance.metadata.infoUrl=$SERVICE_BASE_URL/v2/species/match/metadata \
     --mode=RUN $EXTRA_RUN_ARGS
+
