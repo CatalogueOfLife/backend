@@ -45,7 +45,6 @@ CMD java $JVM_OPTIONS \
     -jar app.jar \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
-    --management.server.port=$SERVER_ADMIN_PORT \
     --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=optional:$CONF_DIR/application.yml \
@@ -55,4 +54,3 @@ CMD java $JVM_OPTIONS \
     --spring.cloud.zookeeper.discovery.metadata.timestamp=$ZK_TIMESTAMP \
     --spring.boot.admin.client.instance.metadata.infoUrl=$SERVICE_BASE_URL/v2/species/match/metadata \
     --mode=RUN $EXTRA_RUN_ARGS
-
