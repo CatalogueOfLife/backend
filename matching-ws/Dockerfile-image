@@ -6,7 +6,6 @@ ARG INDEX_BUILD_PATH=./index-build
 # Set environment variables
 ENV SERVER_PORT=8080
 ENV SERVER_ADMIN_PORT=8081
-ENV SERVER_ADMIN_HOST="localhost"
 ENV JVM_OPTIONS="-Xms1g -Xmx4g"
 ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
@@ -18,7 +17,7 @@ ENV CONF_DIR="/usr/local/gbif/conf"
 ENV SERVICE_BASE_URL="http://localhost:8080"
 ENV ZK_SERVER_PORT=8080
 ENV ZK_SERVER_ADMIN_PORT=8081
-ENV ZK_TIMESTAMP=12345678
+ENV ZK_TIMESTAMP=-1
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
@@ -48,7 +47,6 @@ CMD java $JVM_OPTIONS \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
     --management.server.port=$SERVER_ADMIN_PORT \
-    --management.server.address=$SERVER_ADMIN_HOST \
     --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=optional:$CONF_DIR/application.yml \
