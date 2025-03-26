@@ -46,6 +46,7 @@ CMD java $JVM_OPTIONS \
     -jar app.jar \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
+    --management.server.port=$SERVER_ADMIN_PORT \
     --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=optional:$CONF_DIR/application.yml \
