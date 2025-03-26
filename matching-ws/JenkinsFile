@@ -64,6 +64,7 @@ pipeline {
             sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/code/git.json -H 'Accept: application/vnd.github+json' \"https://api.github.com/repos/catalogueoflife/backend/commits/\$(git rev-parse HEAD)\""
             sh "cp ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar ${env.WORKSPACE}/matching-ws/index-build/code/app.jar"
             sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yml ${env.WORKSPACE}/matching-ws/index-build/code/conf/bootstrap.yml"
+            sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/application.yml ${env.WORKSPACE}/matching-ws/index-build/code/conf/application.yml"
           }
         }
 
