@@ -6,6 +6,7 @@ ARG INDEX_BUILD_PATH=./index-build
 # Set environment variables
 ENV SERVER_PORT=8080
 ENV SERVER_ADMIN_PORT=8081
+ENV SERVER_ADMIN_HOST="localhost"
 ENV JVM_OPTIONS="-Xms1g -Xmx4g"
 ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
@@ -47,11 +48,11 @@ CMD java $JVM_OPTIONS \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
     --management.server.port=$SERVER_ADMIN_PORT \
+    --management.server.address=$SERVER_ADMIN_HOST \
     --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=optional:$CONF_DIR/application.yml \
     --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \
-    --spring.config.location=optional:$CONF_DIR/application.yml \
     --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
     --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
     --spring.cloud.zookeeper.discovery.metadata.httpAdminPort=$ZK_SERVER_ADMIN_PORT \
