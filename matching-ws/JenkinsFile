@@ -38,7 +38,7 @@ pipeline {
                         usernamePassword(credentialsId: 'col', usernameVariable: 'CLB_USER', passwordVariable: 'CLB_PASSWORD')]) {
                 sh  "rm -Rf ${env.WORKSPACE}/matching-ws/index-build"
                 sh  "java $JVM_OPTIONS -jar ${env.WORKSPACE}/matching-ws/target/matching-ws-1.0-SNAPSHOT-exec.jar  \
-                     --spring.cloud.bootstrap.location=${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yaml \
+                     --spring.cloud.bootstrap.location=${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yml \
                      --mode=INDEX \
                      --server.port=0 \
                      --index.path=${env.WORKSPACE}/matching-ws/index-build/data/$APP_ARTIFACT/index \
