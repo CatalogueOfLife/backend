@@ -57,7 +57,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 # CSV export from checklistbank and build index
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
         java $JVM_OPTIONS -jar /app/backend/matching-ws/target/matching-ws-1.0-SNAPSHOT-exec.jar  \
-        --spring.cloud.bootstrap.location=/app/backend/matching-ws/src/main/resources/bootstrap.yaml \
+        --spring.cloud.bootstrap.location=/app/backend/matching-ws/src/main/resources/bootstrap.yml \
         --mode=INDEX \
         --server.port=0 \
         --index.path=/data/$APP_ARTIFACT/index \

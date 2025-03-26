@@ -58,12 +58,12 @@ pipeline {
 
         stage('Setup index build artefacts') {
           steps {
-            sh "mkdir -p ${env.WORKSPACE}/matching-ws/index-build/opt/gbif/${env.APP_ARTIFACT}"
-            sh "echo 'spring.cloud.zookeeper.discovery.metadata.timestamp=12345678' > ${env.WORKSPACE}/matching-ws/index-build/timestamp.properties"
-            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/opt/gbif/matching-ws/dataset.json ${env.CLB_API_URL}/dataset/${env.CLB_DATASET_ID}.json"
-            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/opt/gbif/matching-ws/git.json -H 'Accept: application/vnd.github+json' \"https://api.github.com/repos/catalogueoflife/backend/commits/\$(git rev-parse HEAD)\""
-            sh "cp ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar ${env.WORKSPACE}/matching-ws/index-build/opt/gbif/${env.APP_ARTIFACT}/app.jar"
-            sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yaml ${env.WORKSPACE}/matching-ws/index-build/opt/gbif/${env.APP_ARTIFACT}/bootstrap.yaml"
+            sh "mkdir -p ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/"
+            sh "echo \"spring.cloud.zookeeper.discovery.metadata.timestamp=$(date +%s)\" > ${env.WORKSPACE}/matching-ws/index-build/timestamp.properties"
+            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/dataset.json ${env.CLB_API_URL}/dataset/${env.CLB_DATASET_ID}.json"
+            sh "curl -o ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/git.json -H 'Accept: application/vnd.github+json' \"https://api.github.com/repos/catalogueoflife/backend/commits/\$(git rev-parse HEAD)\""
+            sh "cp ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/app.jar"
+            sh "cp ${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yaml ${env.WORKSPACE}/matching-ws/index-build/usr/local/gbif/bootstrap.yaml"
           }
         }
 

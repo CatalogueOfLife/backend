@@ -19,22 +19,22 @@ ENV ZK_SERVER_PORT=8080
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
-    mkdir -p /opt/gbif/$APP_ARTIFACT && \
+    mkdir -p /usr/local/gbif/ && \
     groupadd -r $USER -g 1000 && \
     useradd -r -g $USER -u 1000 -m $USER && \
     chown -R $USER:$USER /data/$APP_ARTIFACT && \
-    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+    chown -R $USER:$USER /usr/local/gbif/
 
 # Set the working directory in the container
-WORKDIR /opt/gbif/$APP_ARTIFACT
+WORKDIR /usr/local/gbif/
 
 # Copy the executable JAR file from the builder image to the new image
-COPY $INDEX_BUILD_PATH/opt/ /opt/
+COPY $INDEX_BUILD_PATH/code /usr/local/gbif
 COPY $INDEX_BUILD_PATH/data/ /data/
 COPY $INDEX_BUILD_PATH/timestamp.properties /tmp/timestamp.properties
 
 RUN chown -R $USER:$USER /data/$APP_ARTIFACT && \
-    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+    chown -R $USER:$USER /usr/local/gbif/
 
 EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
 
@@ -44,7 +44,7 @@ CMD java $JVM_OPTIONS \
     -jar app.jar \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
-    --working.dir=/opt/gbif/$APP_ARTIFACT/ \
+    --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
     --spring.config.location=optional:$CONF_DIR/application.yml \
     --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \

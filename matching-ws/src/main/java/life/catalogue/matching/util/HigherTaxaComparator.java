@@ -151,9 +151,11 @@ public class HigherTaxaComparator {
    * @return a map of synonyms
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
-    URL url = dictionaries.synonymUrl(file);
-    log.debug("Reading synonyms from " + url.toString());
-    try (InputStream synIn = url.openStream()) {
+    try (InputStream synIn = dictionaries.getDictionaryInputStream("synonyms", file)) {
+      if (synIn == null) {
+        log.error("Unable to find synonym file: {}", file);
+        return Map.of();
+      }
       return IOUtils.streamToMap(synIn);
     } catch (IOException e) {
       log.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
@@ -173,10 +175,12 @@ public class HigherTaxaComparator {
 
   /** Reads blacklisted names from rs.gbif.org */
   private void readOnlineBlacklist() {
-    URL url = dictionaries.authorityUrl(Dictionaries.FILENAME_BLACKLIST);
-    try (InputStream in = url.openStream()) {
-      log.debug("Reading {}", url);
-      readBlacklistStream(in);
+    try (InputStream in = dictionaries.getDictionaryInputStream("authority", Dictionaries.FILENAME_BLACKLIST)) {
+      if (in != null) {
+        readBlacklistStream(in);
+      } else {
+        log.error("Unable to find online blacklist file.");
+      }
     } catch (IOException e) {
       log.warn("Cannot read online blacklist.", e);
     }
