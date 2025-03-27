@@ -1,14 +1,21 @@
 package life.catalogue.matching.util;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.io.InputStream;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 /** Utility class knowing the url layout of rs.gbif.org to access authority and dictionary files. */
 @Service
+@Slf4j
 public class Dictionaries {
 
   private static final Logger LOG = LoggerFactory.getLogger(Dictionaries.class);
@@ -16,44 +23,45 @@ public class Dictionaries {
 
   String dictionaryPath;
 
-  public Dictionaries(@Value("${dictionary.path: dictionaries/}") String dictionaryPath) {
+  public Dictionaries(@Value("${dictionary.path:dictionaries}") String dictionaryPath) {
     this.dictionaryPath = dictionaryPath;
   }
 
   public static Dictionaries createDefault() {
-    return new Dictionaries("dictionaries/");
+    return new Dictionaries("dictionaries");
   }
 
   /**
-   * @param path given as array of individual names that will be concatenated
-   * @return url to file inside rs.gbif.org
+   * Retrieves an InputStream for a synonyms dictionary file.
+   *
+   * @param domain   The domain of the requested synonyms file.
+   * @param filename The name of the synonyms file.
+   * @return An InputStream to the file inside the synonyms dictionary folder of rs.gbif.org, or null if not found.
+   * @throws IOException If an I/O error occurs.
    */
-  private static URL url(String domain, String... path) {
-    try {
-      if (!domain.startsWith("http")) {
-        return Dictionaries.class.getClassLoader().getResource(domain + String.join("/", path));
+  public InputStream getDictionaryInputStream(String domain, String filename) throws IOException {
+    String filePath = String.join("/", dictionaryPath, domain, filename);
+
+    if (!dictionaryPath.startsWith("http")) {
+      log.info("Loading dictionary file from resources: {}", filePath);
+      ClassPathResource resource = new ClassPathResource(filePath, getClass().getClassLoader());
+
+      if (resource.exists()) {
+        return resource.getURL().openStream();
       } else {
-        return new URL(domain + String.join("/", path));
+        log.warn("Failed to load as resource stream: {}", filePath);
+        return null;
       }
-    } catch (MalformedURLException e) {
-      LOG.error("Cannot insert " + domain+ " for path " + String.join("/", path), e);
     }
+
+    try {
+      URL url = new URL(filePath);
+      return url.openStream();
+    } catch (MalformedURLException e) {
+      LOG.error("Invalid URL for path: {}", filePath, e);
+    }
+
     return null;
   }
 
-  /**
-   * @param filename of authority dictionary file requested
-   * @return url to file inside to authority folder of rs.gbif.org
-   */
-  public URL authorityUrl( String filename) {
-    return url(dictionaryPath, "authority", filename);
-  }
-
-  /**
-   * @param filename of synonyms file requested
-   * @return url to file inside to synonyms dictionary folder of rs.gbif.org
-   */
-  public URL synonymUrl(String filename) {
-    return url(dictionaryPath, "synonyms", filename);
-  }
 }

@@ -4,49 +4,38 @@ FROM openjdk:11-jdk-slim-sid
 ARG INDEX_BUILD_PATH=./index-build
 
 # Set environment variables
-ARG DEBIAN_FRONTEND=noninteractive
 ENV SERVER_PORT=8080
 ENV SERVER_ADMIN_PORT=8081
-
 ENV JVM_OPTIONS="-Xms1g -Xmx4g"
 ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
 ENV APP_ARTIFACT=matching-ws
-
 ENV APP_NAME=matching-ws
 ENV APP_VERSION="1.0-SNAPSHOT"
-ENV ZK_ENABLED="false"
-ENV ZK_ARTIFACT_ID="matching-ws"
-ENV ZK_GROUP_ID="org.catalogueoflife"
-ENV ZK_STOP_SECRET="stop"
-ENV ZK_CONNECT_STRING=""
-ENV ZK_DISCOVERY_ROOT=""
-ENV SERVICE_URL=""
-ENV SPRING_BOOT_ADMIN_URL=""
-ENV SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION="true"
-ENV SPRING_BOOT_ADMIN_TAG_ENV=""
-ENV SPRING_BOOT_DISCOVERY_METADATA_HOST=""
-ENV SPRING_BOOT_DISCOVERY_METADATA_PATH=""
 ENV EXTRA_RUN_ARGS=""
+ENV CONF_DIR="/usr/local/gbif/conf"
+ENV SERVICE_BASE_URL="http://localhost:8080"
+ENV ZK_SERVER_PORT=8080
+ENV ZK_TIMESTAMP=-1
 
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
-    mkdir -p /opt/gbif/$APP_ARTIFACT && \
+    mkdir -p /usr/local/gbif/ && \
     groupadd -r $USER -g 1000 && \
     useradd -r -g $USER -u 1000 -m $USER && \
     chown -R $USER:$USER /data/$APP_ARTIFACT && \
-    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+    chown -R $USER:$USER /usr/local/gbif/
 
 # Set the working directory in the container
-WORKDIR /opt/gbif/$APP_ARTIFACT
+WORKDIR /usr/local/gbif/
 
 # Copy the executable JAR file from the builder image to the new image
-COPY $INDEX_BUILD_PATH/opt/ /opt/
+COPY $INDEX_BUILD_PATH/code /usr/local/gbif
 COPY $INDEX_BUILD_PATH/data/ /data/
 COPY $INDEX_BUILD_PATH/timestamp.properties /tmp/timestamp.properties
 
 RUN chown -R $USER:$USER /data/$APP_ARTIFACT && \
-    chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
+    chown -R $USER:$USER /usr/local/gbif/
 
 EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
 
@@ -56,27 +45,12 @@ CMD java $JVM_OPTIONS \
     -jar app.jar \
     --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
     --server.port=$SERVER_PORT \
-    --working.dir=/opt/gbif/$APP_ARTIFACT/ \
-    --spring.application.name=$APP_NAME \
-    --spring.cloud.zookeeper.enabled=$ZK_ENABLED \
-    --spring.cloud.zookeeper.config.enabled=$ZK_ENABLED \
-    --spring.cloud.zookeeper.connect-string=$ZK_CONNECT_STRING \
-    --spring.cloud.zookeeper.discovery.enabled=$ZK_ENABLED \
-    --spring.cloud.zookeeper.discovery.root=$ZK_DISCOVERY_ROOT \
-    --spring.cloud.zookeeper.discovery.metadata.version=$APP_VERSION \
-    --spring.cloud.zookeeper.discovery.metadata.groupId=$ZK_GROUP_ID \
-    --spring.cloud.zookeeper.discovery.metadata.stopSecret=$ZK_STOP_SECRET  \
-    --spring.cloud.zookeeper.discovery.metadata.artifactId=$ZK_ARTIFACT_ID \
-    --spring.cloud.zookeeper.discovery.metadata.host=$SPRING_BOOT_DISCOVERY_METADATA_HOST \
-    --spring.cloud.zookeeper.discovery.metadata.path=$SPRING_BOOT_DISCOVERY_METADATA_PATH \
-    --spring.cloud.zookeeper.discovery.metadata.httpPort=$SERVER_PORT \
-    --spring.cloud.zookeeper.discovery.metadata.httpAdminPort=$SERVER_ADMIN_PORT \
-    --spring.cloud.zookeeper.discovery.metadata.zkHost=$ZK_CONNECT_STRING \
-    --spring.cloud.zookeeper.discovery.metadata.zkPath=$ZK_DISCOVERY_ROOT \
-    --spring.boot.admin.client.url=$SPRING_BOOT_ADMIN_URL \
-    --spring.boot.admin.client.instance.service-url=$SERVICE_URL \
-    --spring.boot.admin.client.auto-deregistration=$SPRING_BOOT_ADMIN_AUTO_DEREGISTRATION \
-    --spring.boot.admin.client.instance.metadata.tags.env=$SPRING_BOOT_ADMIN_TAG_ENV \
-    --spring.boot.admin.client.instance.metadata.management.port=$SERVER_ADMIN_PORT \
+    --working.dir=/usr/local/gbif/ \
     --spring.config.additional-location=/tmp/timestamp.properties \
+    --spring.config.location=optional:$CONF_DIR/application.yml \
+    --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \
+    --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
+    --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
+    --spring.cloud.zookeeper.discovery.metadata.timestamp=$ZK_TIMESTAMP \
+    --spring.boot.admin.client.instance.metadata.infoUrl=$SERVICE_BASE_URL/v2/species/match/metadata \
     --mode=RUN $EXTRA_RUN_ARGS

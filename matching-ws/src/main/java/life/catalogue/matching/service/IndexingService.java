@@ -84,19 +84,19 @@ public class IndexingService {
   @Value("${temp.path:/tmp/matching-tmp}")
   String tempIndexPath;
 
-  @Value("${clb.url}")
+  @Value("${clb.url:jdbc:postgresql://localhost:5432/clb}")
   String clbUrl;
 
-  @Value("${clb.user}")
+  @Value("${clb.user:clb}")
   String clbUser;
 
-  @Value("${clb.password}")
+  @Value("${clb.password:not-set}")
   String clPassword;
 
   @Value("${indexing.threads:6}")
   Integer indexingThreads;
 
-  @Value("${indexing.batchsize:100000}")
+  @Value("${indexing.batchsize:10000}")
   Integer indexingBatchSize;
 
   @Value("${indexing.fetchsize:50000}")
@@ -999,7 +999,7 @@ public class IndexingService {
       Document doc = searcher.storedFields().document(hit.doc);
       batch.add(doc);
 
-      if (batch.size() >= 10000) {
+      if (batch.size() >= 1000) {
         log.info("De-normalisation - starting batch: {} taxa", counter.get());
         List<Document> finalBatch = batch;
         exec.submit(new DenormIndexTask(searcher, nestedSearcher, denormIndexWriter, ioUtil, finalBatch));

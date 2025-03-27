@@ -43,9 +43,9 @@ public class MatchingApplication implements ApplicationRunner {
   protected final MatchingService matchingService;
   protected final DatasetIndex datasetIndex;
 
-  @Value("${version}") String version;
-  @Value("${licence.name}") String licence;
-  @Value("${licence.url}") String licenceUrl;
+  @Value("${version:1.0}") String version;
+  @Value("${licence.name: Apache License, Version 2.0}") String licence;
+  @Value("${licence.url: https://github.com/CatalogueOfLife/backend/blob/master/LICENSE}") String licenceUrl;
   @Value("${mode:INDEX_AND_RUN}") String configuredMode;
   @Value("${clb.dataset.id: }") String configuredDatasetId;
   @Value("${clb.identifier.dataset.ids: }") List<String> configuredIdentifierDatasetIds;
