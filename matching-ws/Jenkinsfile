@@ -31,7 +31,7 @@ pipeline {
           }
         }
 
-        stage('Generate lucene index)') {
+        stage('Generate lucene index') {
           steps {
             script {
               withCredentials([
