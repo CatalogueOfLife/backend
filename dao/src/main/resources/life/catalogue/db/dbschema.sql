@@ -1948,6 +1948,11 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
 $$ LANGUAGE SQL;
 
+-- transform a simple name array into an array of just names
+CREATE OR REPLACE FUNCTION sn2text_array(v_classification simple_name[]) RETURNS text[] AS $$
+  SELECT array_agg((n).name) FROM unnest(v_classification) AS n
+$$ LANGUAGE SQL;
+
 -- return simple_name of parent usage with given rank - or null
 CREATE OR REPLACE FUNCTION parent_by_rank(v_dataset_key INTEGER, v_id TEXT, v_rank RANK, v_max_depth INTEGER default 100) RETURNS simple_name AS $$
   WITH RECURSIVE x AS (

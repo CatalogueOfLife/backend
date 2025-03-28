@@ -14,6 +14,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-03-25 classification desimple function
+```
+-- transform a simple name array into an array of just names
+CREATE OR REPLACE FUNCTION sn2text_array(v_classification simple_name[]) RETURNS text[] AS $$
+  SELECT array_agg((n).name) FROM unnest(v_classification) AS n
+$$ LANGUAGE SQL;
+```
+
 #### 2025-02-12 add missing export fields
 ```
 CREATE TYPE TABFORMAT AS ENUM (

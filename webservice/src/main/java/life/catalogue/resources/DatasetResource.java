@@ -74,6 +74,15 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return this.create(obj, user);
   }
 
+  /**
+   * Require only an authenticated user to create new datasets
+   */
+  @POST
+  @Override
+  public Integer create(Dataset obj, @Auth User user) {
+    return super.create(obj, user);
+  }
+
   @GET
   @VaryAccept
   public ResultPage<Dataset> search(@Valid @BeanParam Page page, @BeanParam DatasetSearchRequest req, @Auth Optional<User> user) {
