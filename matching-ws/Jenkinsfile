@@ -24,7 +24,7 @@ pipeline {
     }
 
     stages {
-        stage('Maven build matching-ws)') {
+        stage('Maven build matching-ws') {
           steps {
               git branch: env.GIT_BRANCH, url: 'https://github.com/catalogueoflife/backend.git'
               sh 'cd matching-ws && mvn clean install -DskipTests'
