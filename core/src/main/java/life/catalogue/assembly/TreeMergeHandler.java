@@ -39,7 +39,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
-  private static final Pattern DELIMS = Pattern.compile("[,;|]");
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final TaxGroupAnalyzer groupAnalyzer;
@@ -588,8 +587,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
             if (vn.getName() == null || vn.getLanguage() == null) continue;
 
             // ignore if they have pipes, semicolon or commas as these are nearly always badly concatenated values
-            if (DELIMS.matcher(vn.getName()).find()) continue;
-            
+            if (vn.getName().length() > 100 || vn.getName().contains(",") || vn.getName().contains(";") || vn.getName().contains("|")) continue;
+
             // does it exist already?
             if (existingVNames == null) {
               // lazily query existing vnames
