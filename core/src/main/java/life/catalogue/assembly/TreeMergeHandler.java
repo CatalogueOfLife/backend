@@ -11,7 +11,6 @@ import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
-
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -19,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
+import static life.catalogue.common.text.StringUtils.lc;
 import static life.catalogue.common.text.StringUtils.rmWS;
+
 /**
  * Expects depth first traversal!
  */
@@ -37,6 +39,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeMergeHandler.class);
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
+  private static final Pattern DELIMS = Pattern.compile("[,;|]");
   private final MatchedParentStack parents;
   private final UsageMatcherGlobal matcher;
   private final TaxGroupAnalyzer groupAnalyzer;
@@ -584,6 +587,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
             // we only want to add vernaculars with a name & language
             if (vn.getName() == null || vn.getLanguage() == null) continue;
 
+            // ignore if they have pipes, semicolon or commas as these are nearly always badly concatenated values
+            if (DELIMS.matcher(vn.getName()).find()) continue;
+            
             // does it exist already?
             if (existingVNames == null) {
               // lazily query existing vnames
@@ -759,8 +765,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * @param vn1 required to have a name & language!
    */
   private static boolean sameVName(VernacularName vn1, VernacularName vn2) {
-    return Objects.equals( rmWS(vn1.getName()), rmWS(vn2.getName()) ) ||
-      ( vn1.getLatin() != null && rmWS(vn1.getLatin()).equalsIgnoreCase(rmWS(vn2.getLatin())) );
+    return Objects.equals( lc(rmWS(vn1.getName())), lc(rmWS(vn2.getName())) ) ||
+      ( vn1.getLatin() != null && lc(rmWS(vn1.getLatin())).equalsIgnoreCase(lc(rmWS(vn2.getLatin()))) );
   }
 
   private static boolean sameType(TypeMaterial mt1, TypeMaterial tm2) {

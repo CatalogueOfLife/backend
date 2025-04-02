@@ -404,6 +404,10 @@ public class StringUtils {
     ).replaceAll("");
   }
 
+  public static String lc(String value) {
+    return value == null ? null : value.toUpperCase();
+  }
+
   public static String rmWS(String value) {
     if (value == null)
       return value;
