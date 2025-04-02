@@ -291,7 +291,9 @@ public class VocabResource {
     } catch (IllegalAccessException | InvocationTargetException e) {
       throw new RuntimeException(e);
     }
-    map.put("name", PermissiveEnumSerde.enumValueName(entry));
+    if (!map.containsKey("name")) {
+      map.put("name", PermissiveEnumSerde.enumValueName(entry));
+    }
     return map;
   }
 
