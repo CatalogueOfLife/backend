@@ -2,7 +2,7 @@ pipeline {
     agent any
     tools {
       maven 'Maven 3.8.5'
-      jdk 'OpenJDK11'
+      jdk 'OpenJDK17'
     }
     options {
         ansiColor('xterm')
@@ -20,7 +20,8 @@ pipeline {
         string(name: 'CLB_IDENTIFIER_DATASET_IDS', defaultValue: '', description: 'Comma separated list of Checklistbank dataset IDs')
         string(name: 'EXTRA_RUN_ARGS', defaultValue: '', description: 'Additional run args for docker')
         string(name: 'JVM_OPTIONS', defaultValue: '-Xmx2g -Xmx1g', description: 'JVM options for docker')
-        string(name: 'DOCKER_TAG', defaultValue: 'worms-latest', description: 'The docker tag to use')
+        string(name: 'DOCKER_TAG', defaultValue: 'worms', description: 'The docker tag to use')
+        booleanParam(name: 'DOCKER_TAG_LATEST', defaultValue: true, description: 'Whether to great latest tag')
     }
 
     stages {
@@ -71,12 +72,23 @@ pipeline {
         stage('Build Docker Image for linux/amd64') {
               steps {
                   script {
+                      PLATFORM = "amd64"
+                      TIMESTAMP = new Date().format("yyyyMMdd-HHmmss")
+
                       // Run Docker build with parameters
-                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/amd64 --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-amd64"
-                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-amd64"
-                      sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-amd64 docker.gbif.org/matching-ws:${DOCKER_TAG}"
-                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}"
-                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG} docker.gbif.org/matching-ws:${DOCKER_TAG}-amd64"
+                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+
+                      // Tag and push the latest version if required
+                      if (env.DOCKER_TAG_LATEST) {
+                          sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
+                          sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
+                          sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
+                      }
+
+                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
                   }
               }
         }
@@ -84,10 +96,21 @@ pipeline {
         stage('Build Docker Image for linux/arm64') {
               steps {
                   script {
+                      PLATFORM = "arm64"
+                      TIMESTAMP = new Date().format("yyyyMMdd-HHmmss")
+
                       // Run Docker build with parameters
-                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/arm64 --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-arm64"
-                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-arm64"
-                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-arm64"
+                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+
+                      // Tag and push the latest version if required
+                      if (env.DOCKER_TAG_LATEST) {
+                          sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                      }
+
+                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
                   }
               }
         }
