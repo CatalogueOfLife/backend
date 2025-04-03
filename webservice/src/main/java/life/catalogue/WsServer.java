@@ -30,7 +30,6 @@ import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
-import life.catalogue.dw.metrics.GangliaBundle;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
@@ -136,7 +135,6 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(mail);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
-    bootstrap.addBundle(new GangliaBundle());
 
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);

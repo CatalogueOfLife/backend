@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import io.dropwizard.core.Configuration;
-
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
@@ -12,12 +10,12 @@ import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
-import life.catalogue.dw.metrics.GangliaBundleConfiguration;
-import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.matching.DockerConfig;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
 import java.net.URI;
@@ -25,13 +23,6 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.matching.DockerConfig;
-
-import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +30,13 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Configuration;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 
-public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
+public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -102,10 +97,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   @NotNull
   public CorsConfiguration cors = new CorsConfiguration();
-
-  @Valid
-  @NotNull
-  public GangliaConfiguration ganglia = new GangliaConfiguration();
 
   @Valid
   @NotNull
@@ -212,12 +203,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
-  }
-
-  @Override
-  @JsonIgnore
-  public GangliaConfiguration getGangliaConfiguration() {
-    return ganglia;
   }
 
   @Override
