@@ -27,7 +27,7 @@ pipeline {
     stages {
         stage('Maven build matching-ws') {
           steps {
-              git 'https://github.com/catalogueoflife/backend.git'
+//               git 'https://github.com/catalogueoflife/backend.git'
               sh 'cd matching-ws && mvn clean install -DskipTests'
           }
         }
