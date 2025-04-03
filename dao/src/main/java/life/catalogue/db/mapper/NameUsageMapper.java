@@ -345,11 +345,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst,
-                                    @Param("orderByName") boolean orderByName);
+                                    @Param("ordered") boolean ordered);
 
   default Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params) {
     return processTree(params, false, false);
@@ -371,11 +371,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by their ordinal and name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params,
                                        @Param("depthFirst") boolean depthFirst,
-                                       @Param("orderByName") boolean orderByName);
+                                       @Param("ordered") boolean ordered);
 
   default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
@@ -394,11 +394,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params,
                                                  @Param("depthFirst") boolean depthFirst,
-                                                 @Param("orderByName") boolean orderByName);
+                                                 @Param("ordered") boolean ordered);
 
   default Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params) {
     return processTreeLinneanUsage(params, false, false);
