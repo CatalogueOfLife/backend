@@ -268,7 +268,6 @@ public abstract class SectorSyncTestBase {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
     var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
-    //printer.showIDs();
     printer.print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());

@@ -1,15 +1,10 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.db.mapper.VernacularNameMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.*;
 import life.catalogue.matching.decision.DecisionRematchRequest;
@@ -22,6 +17,7 @@ import life.catalogue.release.XReleaseConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import org.apache.ibatis.io.Resources;
@@ -42,8 +38,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Parameterized SectorSync to test merge sectors with different sources.
@@ -81,6 +76,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"literature", List.of("bionames", "afd-lit")},
       {"carcharhinus", List.of("worms", "itis", "taxref", "iucn", "dutch")},
       {"abas", List.of("worms", "pbdb")},
       {"doryphora", List.of("worms", "wcvp", "3i", "coleo", "pbdb", "zoobank")},
@@ -149,7 +145,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       String resource = "txtree/"+project + "/" + tree.toLowerCase();
       boolean nomenclatural = tree.equalsIgnoreCase("ipni") || tree.equalsIgnoreCase("zoobank");
       info.rules.add(
-        new TxtTreeDataRule.TreeDataset(dkey, resource + ".txtree", tree, DatasetOrigin.EXTERNAL, nomenclatural ? DatasetType.NOMENCLATURAL : DatasetType.TAXONOMIC)
+        new TxtTreeDataRule.TreeDataset(dkey, resource, DatasetOrigin.EXTERNAL, nomenclatural ? DatasetType.NOMENCLATURAL : DatasetType.TAXONOMIC)
       );
       Sector s;
       // do we have a sector file?
@@ -165,9 +161,12 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       s.setDatasetKey(Datasets.COL);
       s.setSubjectDatasetKey(dkey);
       s.setMode(Sector.Mode.MERGE);
-      s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
+      if (s.getEntities() == null) {
+        // default entities
+        s.setEntities(Set.of(EntityType.NAME_USAGE, EntityType.VERNACULAR, EntityType.TYPE_MATERIAL));
+      }
       s.setPriority(dkey-99);
-      s.setNote(tree);
+      s.addNote(tree);
       info.sectors.add(s);
 
       // do we have a decisions file?
@@ -194,6 +193,12 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       for (var s : info.sectors) {
         s.applyUser(Users.TESTER);
         sm.create(s);
+        // bare name hack - if the keyword "bare name" is found in sector notes we will remove all usages!
+        if (s.getNote() != null && s.getNote().contains("bare name")) {
+          LOG.info("Convert all usages from source {} into bare names", s.getSubjectDatasetKey());
+          var num = session.getMapper(NameUsageMapper.class);
+          num.deleteByDataset(s.getSubjectDatasetKey());
+        }
       }
       var dm = session.getMapper(DecisionMapper.class);
       for (var d : info.decisions) {
@@ -251,6 +256,54 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
   }
 
+  public void literatureValidate() {
+    // check if reference were copied - cant be done with text tree easily
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var nm = session.getMapper(NameMapper.class);
+      var rm = session.getMapper(ReferenceMapper.class);
+
+      for (Name n : nm.list(Datasets.COL, new Page(100))) {
+        Reference ref;
+        LOG.debug(n.getScientificName());
+        switch (n.getScientificName()) {
+          case "Aacanthocnema":
+            assertNotNull(n.getPublishedInId());
+            ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
+            assertNotNull(ref);
+            assertEquals("Tuthill, L. D., & Taylor, K. L. (1955). Australian genera of the Family Psyllidae (Hemiptera, Homoptera). Australian Journal of Zoology, 227–257. https://doi.org/10.1071/zo9550227", ref.getCitation());
+            assertEquals("10.1071/zo9550227", ref.getCsl().getDOI());
+            assertEquals("Australian genera of the Family Psyllidae (Hemiptera, Homoptera)", ref.getCsl().getTitle());
+            break;
+
+          case "Aacanthocnema burckhardti":
+            assertNotNull(n.getPublishedInId());
+            ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
+            assertNotNull(ref);
+            assertEquals("A new genus and ten new species of jumping plant lice (Hemiptera: Triozidae) from Allocasuarina (Casuarinaceae) in Australia. (2011). Zootaxa, 3009, 1–45. https://doi.org/10.11646/zootaxa.3009.1.1", ref.getCitation());
+            assertEquals("10.11646/zootaxa.3009.1.1", ref.getCsl().getDOI());
+            assertEquals("https://bionames.org/references/08f3a09b1eb3a4e3c8a83c26b7911de9", ref.getCsl().getURL());
+            assertEquals("A new genus and ten new species of jumping plant lice (Hemiptera: Triozidae) from Allocasuarina (Casuarinaceae) in Australia", ref.getCsl().getTitle());
+            break;
+
+          case "Aacanthocnema dobsoni":
+            assertNotNull(n.getPublishedInId());
+            ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
+            assertNotNull(ref);
+            assertEquals("Froggatt, W. W. (1903). Australian Psyllidae. Part III. Proceedings of the Linnean Society of New South Wales, 315–337 (+ 2). https://biodiversity.org.au/afd/publication/c55e5de7-a0e1-4287-b023-547032310e04", ref.getCitation());
+            assertNull(ref.getCsl().getDOI());
+            assertEquals("https://biodiversity.org.au/afd/publication/c55e5de7-a0e1-4287-b023-547032310e04", ref.getCsl().getURL());
+            assertEquals("Australian Psyllidae. Part III", ref.getCsl().getTitle());
+            break;
+
+          default:
+            assertNull(n.getPublishedInId());
+        }
+        assertNull(n.getPublishedInPage());
+        assertNull(n.getPublishedInPageLink());
+      }
+    }
+  }
+
   @Test
   public void syncAndCompare() throws Throwable {
     var mcfg = info.buildMergeConfig();
@@ -258,6 +311,15 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       sync(s, mcfg);
     }
     assertTree(project, Datasets.COL, null, getClass().getResourceAsStream("/txtree/" + project + "/expected.txtree"));
+
+    try {
+      var method = SectorSyncMergeIT.class.getMethod(project+"Validate");
+      LOG.info("Validate results with specific validation method");
+      method.invoke(this);
+
+    } catch (NoSuchMethodException e) {
+      // fine
+    }
 
     // do once more with decisions?
     var decRes = getClass().getResourceAsStream("/txtree/" + project + "/decisions.yaml");

@@ -282,7 +282,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
       nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
-      this::lookupReference, this::lookupReference
+      this::lookupOrCreateReference, this::lookupOrCreateReference
     );
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
@@ -699,7 +699,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return true;
   }
 
-  protected String lookupReference(String refID) {
+  protected String lookupOrCreateReference(String refID) {
     if (refID != null) {
       if (refIds.containsKey(refID)) {
         // we have seen this ref before
@@ -708,7 +708,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       // not seen before, load full reference
       Reference r = rm.get(new DSIDValue<>(sector.getSubjectDatasetKey(), refID));
       if (r != null) {
-        return lookupReference(r);
+        return lookupOrCreateReference(r);
       } else {
         LOG.warn("Reference {} is missing in source dataset {}", refID, sector.getSubjectDatasetKey());
         refIds.put(refID, null);
@@ -717,7 +717,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return null;
   }
 
-  protected String lookupReference(Reference ref) {
+  protected String lookupOrCreateReference(Reference ref) {
     if (ref != null) {
       if (refIds.containsKey(ref.getId())) {
         // we have seen this ref before

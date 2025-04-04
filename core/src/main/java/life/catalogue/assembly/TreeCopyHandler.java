@@ -109,7 +109,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
     if (obj instanceof Referenced) {
       Referenced r = (Referenced) obj;
-      r.setReferenceId(lookupReference(r.getReferenceId()));
+      r.setReferenceId(lookupOrCreateReference(r.getReferenceId()));
     }
   }
 

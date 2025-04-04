@@ -3,6 +3,8 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.NomStatus;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -146,7 +148,17 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public void setNote(String note) {
     this.note = note;
   }
-  
+
+  public void addNote(String note) {
+    if (!StringUtils.isBlank(note)) {
+      if (this.note == null) {
+        this.note = note.trim();
+      } else {
+        this.note = this.note + "; " + note.trim();
+      }
+    }
+  }
+
   public Mode getMode() {
     return mode;
   }

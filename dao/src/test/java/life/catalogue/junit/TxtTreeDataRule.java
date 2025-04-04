@@ -4,14 +4,15 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.common.csl.CslDataConverter;
+import life.catalogue.common.io.Resources;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
-
 import life.catalogue.parser.NomCodeParser;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
-
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -27,16 +28,17 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.jbibtex.BibTeXDatabase;
+import org.jbibtex.ParseException;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 
-import static org.junit.Assert.assertFalse;
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
 
 /**
  * A junit test rule that loads test data from a text tree file into a given dataset.
@@ -90,29 +92,31 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
 
   public static class TreeDataset {
     public final Integer key;
-    public final String resource;
+    public final String refResource;
+    public final String treeResource;
     public final String title;
     public final DatasetOrigin origin;
     public final DatasetType type;
 
-    public TreeDataset(Integer key, String resource, String title, DatasetOrigin origin, DatasetType type) {
+    public TreeDataset(Integer key, String refResource, String treeResource, String title, DatasetOrigin origin, DatasetType type) {
       this.key = key;
-      this.resource = Preconditions.checkNotNull(resource);
+      this.refResource = refResource;
+      this.treeResource = Preconditions.checkNotNull(treeResource);
       this.title = title;
       this.origin = Preconditions.checkNotNull(origin);
       this.type = Preconditions.checkNotNull(type);
     }
-    public TreeDataset(Integer key, String resource) {
-      this (key, resource, resource, DatasetOrigin.PROJECT, DatasetType.TAXONOMIC);
+    public TreeDataset(Integer key, String treeResource) {
+      this (key, null, treeResource, treeResource, DatasetOrigin.PROJECT, DatasetType.TAXONOMIC);
     }
-    public TreeDataset(Integer key, String resource, String title) {
-      this (key, resource, title, DatasetOrigin.PROJECT, DatasetType.TAXONOMIC);
+    public TreeDataset(Integer key, String treeResource, String title) {
+      this (key, null, treeResource, title, DatasetOrigin.PROJECT, DatasetType.TAXONOMIC);
     }
-    public TreeDataset(Integer key, String resource, String title, DatasetOrigin origin) {
-      this (key, resource, title, origin, DatasetType.TAXONOMIC);
+    public TreeDataset(Integer key, String treeResource, String title, DatasetOrigin origin) {
+      this (key, null, treeResource, title, origin, DatasetType.TAXONOMIC);
     }
-    public TreeDataset(Integer key, String resource, String title, DatasetType type) {
-      this (key, resource, title, DatasetOrigin.PROJECT, type);
+    public TreeDataset(Integer key, String folder, DatasetOrigin origin, DatasetType type) {
+      this (key, folder+".bib", folder+".txtree", folder, origin, type);
     }
   }
 
@@ -135,8 +139,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     refID.set(1);
     initSession();
     for (TreeDataset x : datasets) {
-      LOG.info("Loading dataset {} from tree {}", x.key, x.resource);
+      LOG.info("Loading dataset {} from tree {}", x.key, x.treeResource);
       createDataset(x);
+      loadRefs(x);
       loadTree(x);
       createSequences(x);
       //printTree(x.key);
@@ -158,7 +163,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     Dataset d = dm.get(td.key);
     if (d == null) {
-      d = TestEntityGenerator.newDataset("Tree " + td.resource);
+      d = TestEntityGenerator.newDataset("Tree " + td.treeResource);
       d.setKey(td.key);
       d.applyUser(Users.TESTER);
       d.setOrigin(td.origin);
@@ -175,8 +180,29 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     session.commit();
   }
 
+  private void loadRefs(TreeDataset src) throws IOException, ParseException {
+    if (src.refResource != null) {
+      var stream = Resources.stream(src.refResource);
+      if (stream != null) {
+        LOG.debug("Inserting bibtex references for dataset {}", src.key);
+        final ReferenceFactory refFactory = new ReferenceFactory(src.key);
+        final BibTeXConverter bc = new BibTeXConverter();
+        final BibTeXDatabase db = bc.loadDatabase(stream);
+        bc.toItemData(db).forEach((id, cslItem) -> {
+          CslData csl = CslDataConverter.toCslData(cslItem);
+          csl.setId(id);
+          Reference ref = refFactory.fromCsl(src.key, csl, IssueContainer.VOID);
+          ref.setDatasetKey(src.key);
+          ref.setId(id);
+          ref.applyUser(Users.DB_INIT);
+          rm.create(ref);
+        });
+      }
+    }
+  }
+
   private void loadTree(TreeDataset src) throws IOException, InterruptedException{
-    var stream = Resources.getResourceAsStream(src.resource);
+    var stream = Resources.stream(src.treeResource);
     Tree<SimpleTreeNode> tree = Tree.simple(stream);
     LOG.debug("Inserting {} usages for dataset {}", tree.size(), src.key);
     int ordinal = 1;
@@ -207,6 +233,10 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
     if (code != null) {
       n.setCode(code);
     }
+    if (tn.infos.containsKey(TxtTreeTerm.PUB.name())) {
+      n.setPublishedInId(tn.infos.get(TxtTreeTerm.PUB.name())[0]);
+    }
+
     n.setDatasetKey(src.key);
     n.setId(String.valueOf(tn.id));
     n.setOrigin(Origin.SOURCE);

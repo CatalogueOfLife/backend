@@ -19,7 +19,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -607,7 +606,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             vn.setDatasetKey(targetDatasetKey);
             vn.applyUser(user);
             // check if the entity refers to a reference which we need to lookup / copy
-            String ridCopy = lookupReference(vn.getReferenceId());
+            String ridCopy = lookupOrCreateReference(vn.getReferenceId());
             vn.setReferenceId(ridCopy);
             CopyUtil.transliterateVernacularName(vn, IssueContainer.VOID);
             mapper.create(vn, existingUsageKey.getId());
@@ -692,19 +691,22 @@ public class TreeMergeHandler extends TreeBaseHandler {
         batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
       }
       if (n.getPublishedInId() == null && src.getPublishedInId() != null) {
-        upd.add(InfoGroup.PUBLISHED_IN);
-        Reference ref = rm.get(DSID.of(src.getDatasetKey(), src.getPublishedInId()));
-        n.setPublishedInId(lookupReference(ref));
-        n.setPublishedInPage(src.getPublishedInPage());
-        n.setPublishedInPageLink(src.getPublishedInPageLink());
-        LOG.debug("Updated {} with publishedIn", n);
+        setPubInRef(n, src, upd);
       }
     }
 
     // now try to update the reference itself if it existed already
-    if (syncReferences && !upd.contains(InfoGroup.PUBLISHED_IN) && n.getPublishedInId() != null && src.getPublishedInId() != null) {
-      // TODO: Update reference links & DOI
+    if (syncReferences && !upd.contains(InfoGroup.PUBLISHED_IN) && src.getPublishedInId() != null) {
+      n = lazilyLoad(n, existingUsage);
+      if (n.getPublishedInId() == null) {
+        // just add a reference
+        setPubInRef(n, src, upd);
+      } else {
+        // TODO: merge reference. Update reference links & DOI
+
+      }
     }
+
     // type material
     if (entities.contains(EntityType.TYPE_MATERIAL)) {
       n = lazilyLoad(n, existingUsage);
@@ -733,7 +735,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         tm.setDatasetKey(targetDatasetKey);
         tm.applyUser(user);
         // check if the entity refers to a reference which we need to lookup / copy
-        String ridCopy = lookupReference(tm.getReferenceId());
+        String ridCopy = lookupOrCreateReference(tm.getReferenceId());
         tm.setReferenceId(ridCopy);
         try {
           mapper.create(tm);
@@ -759,6 +761,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
       nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, src.getId())));
     }
     return n;
+  }
+
+  private void setPubInRef(Name n, Name src, Set<InfoGroup> upd) {
+    Reference ref = rm.get(DSID.of(src.getDatasetKey(), src.getPublishedInId()));
+    n.setPublishedInId(lookupOrCreateReference(ref));
+    n.setPublishedInPage(src.getPublishedInPage());
+    n.setPublishedInPageLink(src.getPublishedInPageLink());
+    upd.add(InfoGroup.PUBLISHED_IN);
+    LOG.debug("Updated {} with publishedIn", n);
   }
 
   /**
