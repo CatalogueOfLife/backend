@@ -460,6 +460,10 @@ public enum Issue {
 
   NAME_PHRASE_UNLIKELY(NAME_USAGE, Level.WARNING,
     "The name phrase is unlikely, e.g. is just a number or a boolean value."),
+
+  VERNACULAR_NAME_UNLIKELY(VERNACULAR, Level.WARNING,
+    "A vernacular name which is rather unlikely a true, single vernacular name."),
+
   ;
 
   /**

@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-04-04 new vernacular issue
+```
+ALTER TYPE ISSUE ADD VALUE 'VERNACULAR_NAME_UNLIKELY';
+```
+
 #### 2025-03-25 classification desimple function
 ```
 -- transform a simple name array into an array of just names

@@ -9,6 +9,7 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
+import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
@@ -587,7 +588,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             if (vn.getName() == null || vn.getLanguage() == null) continue;
 
             // ignore if they have pipes, semicolon or commas as these are nearly always badly concatenated values
-            if (vn.getName().length() > 100 || vn.getName().contains(",") || vn.getName().contains(";") || vn.getName().contains("|")) continue;
+            if (InterpreterUtils.unlikelyVernacular(vn.getName())) continue;
 
             // does it exist already?
             if (existingVNames == null) {

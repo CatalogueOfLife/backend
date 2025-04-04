@@ -112,4 +112,15 @@ public class InterpreterUtils {
     }
     return null;
   }
+
+  /**
+   * Looks for unlikely vernacular names:
+   *  - very long strings
+   *  - includes common delimiters
+   */
+  public static boolean unlikelyVernacular(String vname) {
+    return vname != null && (
+      vname.length() > 100 || vname.contains(",") || vname.contains(";") || vname.contains("|")
+    );
+  }
 }

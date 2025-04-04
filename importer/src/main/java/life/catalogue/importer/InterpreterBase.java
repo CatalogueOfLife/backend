@@ -218,7 +218,10 @@ public class InterpreterBase {
       vn.setVerbatimKey(rec.getId());
       vn.setName(vname);
       vn.setRemarks(getFormattedText(rec, remarks));
-      
+
+      if (InterpreterUtils.unlikelyVernacular(vname)) {
+        rec.addIssue(Issue.VERNACULAR_NAME_UNLIKELY);
+      }
       if (translit != null) {
         vn.setLatin(rec.get(translit));
       }
@@ -244,7 +247,7 @@ public class InterpreterBase {
     }
     return Collections.emptyList();
   }
-  
+
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
                                                                 Term tArea, Term tGazetteer, Term tStatus, Term tRemarks) {
     // require location
