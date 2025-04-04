@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -232,10 +233,11 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    */
   private RankedName nameByName(DwcTerm term, VerbatimRecord v, NeoName n, Origin createdOrigin) {
     return byName(term, v, new RankedName(n), false,
-        NeoProperties::getRankedName,
-        name -> {
+      NeoProperties::getRankedName,
+      name -> {
           name.setOrigin(createdOrigin);
           NeoName nn = new NeoName((name));
+          nn.setVerbatimKey(v.getId());
           Node n2 = store.names().create(nn);
           return new RankedName(n2, name.getScientificName(), name.getAuthorship(), name.getRank());
         }
