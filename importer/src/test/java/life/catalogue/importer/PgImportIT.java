@@ -4,15 +4,21 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
+
+import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
@@ -621,18 +627,20 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/CatalogueOfLife/data/master/ACEF/113.tar.gz"), ACEF);
+    //normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/iucn-test.zip"), DWCA);
+
+    //normalizeAndImport(URI.create("https://hosted-datasets.gbif.org/datasets/iucn/iucn-latest.zip"), DWCA);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);
     //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/162.tar.gz"), ACEF);
-    //normalizeAndImportArchive(new File("/Users/markus/Downloads/export.zip"), COLDP);
 
-    //normalizeAndImport(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/higher-classification.dwca.zip"), DWCA);
-    //normalizeAndImportFolder(new File("/Users/markus/code/col+/data-staphbase/coldp"), COLDP);
-    //normalizeAndImport(URI.create("https://plutof.ut.ee/ipt/archive.do?r=unite_sh"), DataFormat.DWCA);
-    //normalizeAndImportArchive(new File("/home/ayco/git-repos/colplus-repo/DWCA/itis_global.zip"), DWCA);
-    //normalizeAndImportArchive(new File("/Users/markus/Downloads/data-ina-master.zip"), COLDP);
+    System.out.println("Print tree to import.txtree");
+    try (Writer writer = UTF8IoUtils.writerFromFile(new File("/Users/markus/Downloads/import.txtree"))) {
+      TreeTraversalParameter ttp = TreeTraversalParameter.dataset(dataset.getKey());
+      var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+      printer.showIDs();
+      printer.print();
+    }
   }
 
 }
