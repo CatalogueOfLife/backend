@@ -56,6 +56,7 @@ public class IOUtil {
       Kryo kryo = new Kryo();
       kryo.register(StoredClassification.class);
       kryo.register(StoredParsedName.class);
+      kryo.register(StoredParsedName.StoredAuthorship.class);
       kryo.register(StoredName.class);
       kryo.register(ArrayList.class);
       kryo.register(HashSet.class);
