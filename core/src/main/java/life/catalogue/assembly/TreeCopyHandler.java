@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.util.*;

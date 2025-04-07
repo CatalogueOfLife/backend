@@ -1,7 +1,11 @@
 package life.catalogue.importer;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.interpreter.RanKnName;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
@@ -73,6 +77,10 @@ public class Normalizer implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Validator validator;
   private MappingInfos meta;
+  // parsing is expensive so we cache the higher taxa names that we need to parse a lot
+  private final LoadingCache<RanKnName, ExtinctName> parseCache = Caffeine.newBuilder()
+    .maximumSize(10000)
+    .build(this::parse);
 
 
   public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {
@@ -698,7 +706,8 @@ public class Normalizer implements Callable<Boolean> {
         boolean found = false;
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
         // to be safe we query for both versions
-        final ExtinctName normedName = parse(cl.getByRankCleaned(hr), hr);
+        var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
+        final ExtinctName normedName = parseCache.get(rnn);
         for (Node n : store.usagesByNames(hr, true, cl.getByRankCleaned(hr), normedName.pname == null ? null : normedName.pname.getScientificName())) {
           // ignore synonyms
           if (n.hasLabel(Labels.SYNONYM)) continue;
@@ -797,16 +806,16 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("{} synonym cycles resolved", counter);
   }
 
-  private ExtinctName parse(String name, Rank rank) throws InterruptedException {
-    var ename = new ExtinctName(name);
+  private ExtinctName parse(RanKnName rnn) throws InterruptedException {
+    var ename = new ExtinctName(rnn.name);
     ename.pname = new Name();
-    ename.pname.setRank(rank);
-    ename.pname.setScientificName(name);
+    ename.pname.setRank(rnn.rank);
+    ename.pname.setScientificName(rnn.name);
     ename.pname.setCode(dataset.getCode());
     // parses the instance and determines the type - can e.g. be placeholders
     NameParser.PARSER.parse(ename.pname, IssueContainer.VOID);
     // reset rank as parser might have infered ranks from the name!
-    ename.pname.setRank(rank);
+    ename.pname.setRank(rnn.rank);
     return ename;
   }
 
@@ -817,6 +826,7 @@ public class Normalizer implements Callable<Boolean> {
   private NeoUsage createHigherTaxon(ExtinctName eName, Rank rank) throws InterruptedException {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
+    eName.pname.setId(null); // we don't want to reuse the name id
     t.usage.setName(eName.pname);
 
     if (eName.extinct || isExtinctBySetting(rank)) {
