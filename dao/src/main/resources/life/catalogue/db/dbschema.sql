@@ -1020,6 +1020,7 @@ CREATE TABLE sector_import (
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
   state IMPORTSTATE NOT NULL,
+  secondary_source_by_info_count HSTORE,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,

@@ -11,6 +11,7 @@
     si.attempt,
     si.dataset_attempt,
     si.warnings,
+    si.secondary_source_by_info_count,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value="si."/>
     </include>
@@ -22,6 +23,7 @@
     sector_key,
     dataset_attempt,
     warnings,
+    secondary_source_by_info_count,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
     </include>
@@ -33,6 +35,7 @@
     #{imp.sectorKey},
     #{imp.datasetAttempt},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
+    #{imp.secondarySourceByInfoCount, typeHandler=life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler}::hstore,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
   </sql>
 
@@ -191,7 +194,13 @@
     GROUP BY iss
   </select>
 
-
+  <select id="countMergeBySecondaryCount" resultType="StringCount">
+    SELECT type AS key, count(*) AS count
+    FROM verbatim_source_secondary x
+           JOIN name_usage u ON u.id=x.id AND u.dataset_key=x.dataset_key
+    WHERE u.dataset_key=#{datasetKey} AND u.sector_key=#{sectorKey}
+    GROUP BY type
+  </select>
   <select id="countDistributionsByGazetteer" resultType="StringCount">
     SELECT gazetteer AS key, count(*) AS count
     FROM distribution x

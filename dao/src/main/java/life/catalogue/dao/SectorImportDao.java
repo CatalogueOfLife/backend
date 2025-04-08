@@ -70,6 +70,7 @@ public class SectorImportDao {
     si.setTypeMaterialCount(mapper.countTypeMaterial(datasetKey, key));
     si.setVernacularCount(mapper.countVernacular(datasetKey, key));
 
+    si.setSecondarySourceByInfoCount(countMap(InfoGroup.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
     si.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
     si.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(datasetKey, key)));
     si.setIssuesCount(countMap(Issue.class, mapper.countIssues(datasetKey, key)));

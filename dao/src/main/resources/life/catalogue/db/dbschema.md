@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-04-08 new sector merge metrics
+```
+ALTER TABLE sector_import ADD COLUMN merge_by_secondary_count HSTORE;
+```
+
 #### 2025-04-08 new gazeteer
 ```
 ALTER TABLE distribution ALTER COLUMN GAZETTEER TYPE TEXT;

@@ -1,9 +1,8 @@
 package life.catalogue.api.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import life.catalogue.api.vocab.InfoGroup;
+
+import java.util.*;
 
 public class SectorImport extends ImportMetrics implements SectorScoped {
   private static final int MAX_WARN_SIZE = 25;
@@ -11,6 +10,7 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer datasetAttempt;
+  private Map<InfoGroup, Integer> secondarySourceByInfoCount = new HashMap<>();
 
   private final List<String> warnings = new ArrayList<>();
 
@@ -59,18 +59,25 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
     this.datasetAttempt = datasetAttempt;
   }
 
+  public Map<InfoGroup, Integer> getSecondarySourceByInfoCount() {
+    return secondarySourceByInfoCount;
+  }
+
+  public void setSecondarySourceByInfoCount(Map<InfoGroup, Integer> secondarySourceByInfoCount) {
+    this.secondarySourceByInfoCount = secondarySourceByInfoCount;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof SectorImport)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(warnings, that.warnings);
+    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(secondarySourceByInfoCount, that.secondarySourceByInfoCount) && Objects.equals(warnings, that.warnings);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, datasetAttempt, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, datasetAttempt, secondarySourceByInfoCount, warnings);
   }
 
   @Override
