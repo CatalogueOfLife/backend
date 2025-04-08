@@ -73,7 +73,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   Integer countTypeMaterial(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   Integer countVernacular(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
 
-  List<StringCount> countMergeBySecondaryCount(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
+  List<StringCount> countSecondarySourceByInfo(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countDistributionsByGazetteer(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countExtinctTaxaByRank(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);
   List<StringCount> countIssues(@Param("datasetKey") int datasetKey, @Param("sectorKey") int sectorKey);

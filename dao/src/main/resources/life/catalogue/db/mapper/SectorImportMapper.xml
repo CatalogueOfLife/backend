@@ -194,7 +194,7 @@
     GROUP BY iss
   </select>
 
-  <select id="countMergeBySecondaryCount" resultType="StringCount">
+  <select id="countSecondarySourceByInfo" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM verbatim_source_secondary x
            JOIN name_usage u ON u.id=x.id AND u.dataset_key=x.dataset_key
