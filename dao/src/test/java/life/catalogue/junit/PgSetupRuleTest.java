@@ -93,6 +93,7 @@ public class PgSetupRuleTest {
       enums.add(User.Role.class);
     }
     // not needed for persistency
+    enums.remove(BioGeoRealm.class);
     enums.remove(Country.class);
     enums.remove(TxtTreeTerm.class);
     enums.remove(Frequency.class);
