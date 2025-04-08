@@ -111,7 +111,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'ISO',
   'FAO',
   'LONGHURST',
-  'TEOW',
+  'REALM',
   'IHO',
   'MRGID',
   'TEXT'

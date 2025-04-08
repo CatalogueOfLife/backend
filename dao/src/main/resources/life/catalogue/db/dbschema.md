@@ -14,6 +14,23 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-04-08 new gazeteer
+```
+ALTER TABLE distribution ALTER COLUMN GAZETTEER TYPE TEXT;
+DROP TYPE GAZETTEER;
+CREATE TYPE GAZETTEER AS ENUM (
+  'TDWG',
+  'ISO',
+  'FAO',
+  'LONGHURST',
+  'REALM',
+  'IHO',
+  'MRGID',
+  'TEXT'
+);
+ALTER TABLE distribution ALTER COLUMN GAZETTEER TYPE GAZETTEER USING GAZETTEER::GAZETTEER;
+```
+
 #### 2025-04-04 new vernacular issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'VERNACULAR_NAME_UNLIKELY';

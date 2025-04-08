@@ -215,6 +215,8 @@ public class VocabResource {
         return TdwgArea.AREAS;
       case LONGHURST:
         return LonghurstArea.AREAS;
+      case REALM:
+        return List.of(BioGeoRealm.values());
       default:
         throw new NotFoundException(gazetteer + " enumeration not available");
     }
