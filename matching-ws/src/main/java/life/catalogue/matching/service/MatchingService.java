@@ -717,7 +717,7 @@ public class MatchingService {
           if (m.getDiagnostics().getMatchType() == MatchType.EXACT
               && rank == Rank.SPECIES_AGGREGATE
               && (m.getUsage().getRank() != Rank.SPECIES_AGGREGATE
-                  ||  m.getAcceptedUsage().getRank() != Rank.SPECIES_AGGREGATE)
+                  ||  (m.getAcceptedUsage() != null && m.getAcceptedUsage().getRank() != Rank.SPECIES_AGGREGATE))
           ) {
             log.info(
                 "Species aggregate match found for {} {}. Ignore and prefer higher matches",
