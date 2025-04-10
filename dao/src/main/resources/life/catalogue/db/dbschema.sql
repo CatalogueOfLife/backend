@@ -791,7 +791,7 @@ CREATE TABLE dataset (
 CREATE INDEX ON dataset (gbif_key);
 CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
-CREATE INDEX ON dataset USING GIN (doc);
+CREATE INDEX ON dataset USING GIN (doc) WITH (fastupdate = off);
 -- used by import scheduler:
 CREATE INDEX ON dataset (key)
  WHERE deleted IS NULL
@@ -1138,14 +1138,6 @@ CREATE INDEX ON names_index (canonical_id);
 CREATE INDEX ON names_index (scientific_name);
 CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
 
-
-CREATE TABLE id_report (
-  id INTEGER NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  type IDREPORTTYPE NOT NULL,
-  PRIMARY KEY (dataset_key, id)
-);
-CREATE INDEX ON id_report (dataset_key);
 
 CREATE TABLE name_usage_archive (
   id TEXT NOT NULL,

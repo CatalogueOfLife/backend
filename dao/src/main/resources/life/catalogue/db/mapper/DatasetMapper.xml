@@ -209,6 +209,7 @@
 
   <resultMap id="releaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetRelease" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private" />
   </resultMap>
 
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
@@ -375,7 +376,7 @@
   </select>
 
   <select id="listReleasesQuick" resultMap="releaseResultMap">
-    SELECT key, source_key AS projectKey, attempt, origin
+    SELECT key, #{projectKey} AS projectKey, attempt, origin, private, deleted IS NOT NULL
     FROM dataset d
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.attempt, d.key

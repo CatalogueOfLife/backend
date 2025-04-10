@@ -379,14 +379,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       session.getMapper(mClass).deleteByDataset(key);
       session.commit();
     }
-    // remove id reports only for private releases - we want to keep public releases forever to track ids!!!
-    if (old != null
-        && old.getOrigin().isRelease()
-        && old.isPrivat()
-    ) {
-      LOG.info("Delete id reports for private release {}", key);
-      session.getMapper(IdReportMapper.class).deleteByDataset(key);
-    }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
     Set<DOI> dois = psm.listReleaseSourcesSimple(key, false).stream()
         .map(Dataset::getDoi)

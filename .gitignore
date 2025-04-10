@@ -5,6 +5,7 @@
 **/.surefire-*
 **/neodb.dot
 
+api/latin29.txt
 dao/127.0.0.1/
 dao/dataset/
 core/dataset/

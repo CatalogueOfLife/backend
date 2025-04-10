@@ -47,16 +47,20 @@ public class ReleasedIds {
     public final String authorship;
     public final String phrase;
     public final TaxonomicStatus status;
-    public final String parent;
+    public final String parent; // this should be the scientific name of the parent, not the ID !!!
 
     /**
+     * @param sn simple name with parent being a scientificName, not ID!
      * @throws IllegalArgumentException if the string id cannot be converted into an int, e.g. if it was a temp UUID
      */
     public static ReleasedId create(SimpleNameWithNidx sn, int attempt, boolean sameOrigin) throws IllegalArgumentException {
       return new ReleasedId(IdConverter.LATIN29.decode(sn.getId()), attempt, sameOrigin, sn);
     }
 
-    public ReleasedId(int id, int attempt, boolean sameOrigin, SimpleNameWithNidx sn) {
+    /**
+     * @param sn simple name with parent being a scientificName, not ID!
+     */
+    protected ReleasedId(int id, int attempt, boolean sameOrigin, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
       this.attempt = attempt;

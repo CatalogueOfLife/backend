@@ -239,11 +239,11 @@ public abstract class SectorSyncTestBase {
   }
 
   public static void assertSameTree(int datasetKey1, int datasetKey2) throws IOException {
-    String tree1 = readTree(datasetKey1, null);
+    String tree1 = readTree(datasetKey1, null, false);
     System.out.println("\n*** DATASET "+datasetKey1+" TREE ***");
     System.out.println(tree1);
 
-    String tree2 = readTree(datasetKey2, null);
+    String tree2 = readTree(datasetKey2, null, false);
     System.out.println("\n*** DATASET "+datasetKey2+" TREE ***");
     System.out.println(tree2);
 
@@ -255,8 +255,11 @@ public abstract class SectorSyncTestBase {
     assertTree(project, datasetKey, null, expectedTree);
   }
   public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
+    assertTree(project, datasetKey, rootID, expectedTree, false);
+  }
+  public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree, boolean showIDs) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
-    String tree = readTree(datasetKey, rootID);
+    String tree = readTree(datasetKey, rootID, showIDs);
 
     // compare trees
     System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
@@ -264,10 +267,13 @@ public abstract class SectorSyncTestBase {
     assertEquals("Tree from project " + project + " not as expected for dataset " + datasetKey, expected, tree);
   }
 
-  public static String readTree(int datasetKey,@Nullable String rootID) throws IOException {
+  public static String readTree(int datasetKey,@Nullable String rootID, boolean showIDs) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
     var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    if (showIDs) {
+      printer.showIDs();
+    }
     printer.print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());

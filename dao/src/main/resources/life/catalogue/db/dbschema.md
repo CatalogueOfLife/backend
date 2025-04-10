@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-04-10 remove id reports
+```
+DROP TABLE id_report;
+```
+Then rebuild all name archives for all projects!
+
 #### 2025-04-08 new sector merge metrics
 ```
 ALTER TABLE sector_import ADD COLUMN secondary_source_by_info_count HSTORE;

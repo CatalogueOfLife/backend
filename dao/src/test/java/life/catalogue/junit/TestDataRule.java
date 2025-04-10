@@ -428,7 +428,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE decision CASCADE");
       st.execute("TRUNCATE name_match");
       st.execute("TRUNCATE names_index RESTART IDENTITY CASCADE");
-      st.execute("TRUNCATE id_report");
       session.getConnection().commit();
     }
   }
@@ -505,7 +504,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
           "n_origin", Origin.SOURCE,
           "n_type", NameType.SCIENTIFIC
       ));
-      copyGlobalTable(pgc, "id_report");
 
       c.commit();
     }
