@@ -1,9 +1,11 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.IdReportType;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.Int2IntBiMap;
@@ -25,7 +27,6 @@ import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -134,6 +135,13 @@ public class IdProvider {
     }
   }
 
+  /**
+   * @return the key that will be issued next
+   */
+  public int previewNextKey() {
+    return keySequence.get();
+  }
+
   public static class InstableName implements DSID<String> {
     public final boolean del;
     public final int datasetKey;
@@ -194,27 +202,7 @@ public class IdProvider {
     return new IdReport(created, deleted, resurrected);
   }
 
-  private void persistReport(IdReportType type, IntSet ids) {
-    try (SqlSession session = factory.openSession(ExecutorType.BATCH, false)) {
-      IdReportMapper rrm = session.getMapper(IdReportMapper.class);
-      AtomicInteger counter = new AtomicInteger();
-      ids.forEach(id -> {
-        rrm.create(new IdReportEntry(releaseDatasetKey, type, id));
-        if (counter.incrementAndGet() % 25000 == 0) {
-          session.commit();
-        }
-      });
-      session.commit();
-    }
-  }
-
   protected void report() {
-    // store reports in postgres
-    LOG.info("Persisting ID reports for project release {}-{}", projectKey, attempt);
-    persistReport(IdReportType.DELETED, deleted.keySet());
-    persistReport(IdReportType.RESURRECTED, resurrected.keySet());
-    persistReport(IdReportType.CREATED, created);
-
     try {
       File dir = cfg.reportDir(projectKey, attempt);
       // read the following IDs from previous releases
@@ -415,13 +403,12 @@ public class IdProvider {
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
     try (SqlSession session = factory.openSession(true)) {
-      final LoadStats stats = new LoadStats();
-
       // load entire last release
       if (lastReleaseKey == null) {
         LOG.info("There has been no previous {}, start without existing ids", origin);
 
       } else {
+        final LoadStats stats = new LoadStats();
         PgUtils.consume(
           () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
           sn -> addReleaseId(lastReleaseKey, origin, sn, stats)
@@ -429,8 +416,9 @@ public class IdProvider {
         LOG.info("Read {} from last {} {}. Total ids={}", stats, origin, lastReleaseKey, ids.size());
       }
 
-      // load additional releases if configured
+      // load additional releases if configured - used to read both regular and extended releases
       for (var rk : additionalReleases) {
+        final LoadStats stats = new LoadStats();
         PgUtils.consume(
           () -> session.getMapper(NameUsageMapper.class).processNxIds(rk),
           sn -> addReleaseId(rk, dataset2release.get(rk).origin, sn, stats)
@@ -440,6 +428,7 @@ public class IdProvider {
 
       // always also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
+      final LoadStats stats = new LoadStats();
       LOG.info("Add archived names");
       PgUtils.consume(
         () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey),
@@ -450,6 +439,9 @@ public class IdProvider {
     }
   }
 
+  /**
+   * @param sn simple name with parent being a scientificName, not ID!
+   */
   @VisibleForTesting
   protected void addReleaseId(int releaseDatasetKey, DatasetOrigin origin, SimpleNameWithNidx sn, LoadStats stats){
     stats.counter.incrementAndGet();
@@ -473,13 +465,14 @@ public class IdProvider {
     return dataset2attempt;
   }
 
+  protected Writer buildNomatchWriter() throws IOException {
+    return UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"));
+  }
+
   protected void mapIds(){
     try (SqlSession readSession = factory.openSession(true)) {
       mapIds(readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey));
     }
-  }
-  protected Writer buildNomatchWriter() throws IOException {
-    return UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"));
   }
 
   @VisibleForTesting

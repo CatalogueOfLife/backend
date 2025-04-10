@@ -91,10 +91,10 @@ public class PublicReleaseListener {
         copyExportsToColDownload(event.obj, true);
       }
 
-      // When a release gets published we need to modify the projects name archive.
-      // For deleted ids a new entry in the names archive needs to be created.
-      // For resurrected ids we need to remove them from the archive.
-      archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
+      // When a release gets published we need to modify the projects name archive:
+      // a) Usages with new ids need to be added
+      // b) For all still existing usages the last_release_key needs to be updated
+      archiver.archiveRelease(event.obj.getKey());
 
       // generic hooks
       if (cfg.actions != null && cfg.actions.containsKey(event.obj.getSourceKey())) {

@@ -1,0 +1,41 @@
+Biota [unranked] {ID=3}
+  Animalia [kingdom] {ID=4}
+    Arthropoda [phylum] {ID=5}
+      Branchiopoda [class] {ID=6}
+        Diplostraca Gerstaecker, 1866 [order] {ID=7}
+          Onychocaudata [suborder] {ID=8}
+            Cladoceromorpha [infraorder] {ID=9}
+              Macrothricidae [family] {ID=B}
+                Cactus [genus] {ID=C}
+                  Cactus cactus (Vávra, 1900) [species] {ID=D}
+  Plantae [kingdom] {ID=32}
+    Tracheophyta [phylum] {ID=33}
+      Magnoliopsida [class] {ID=34}
+        Caryophyllales Juss. ex Bercht. & J.Presl [order] {ID=642}
+          Cactaceae Juss. [family] {ID=643}
+            Cactoideae Eaton [subfamily] {ID=644}
+              Cochemiea (K.Brandegee) Walton [genus] {ID=646}
+                Cochemiea conoidea (DC.) P.B.Breslin & Majure [species] {ID=39}
+                  =Cactus grandiflorus (Link & Otto ex Pfeiff.) Kuntze [species] {ID=3B}
+              Mammillaria Haw. [genus] {ID=647}
+                =Cactus L. [genus] {ID=3D}
+                Mammillaria discolor Haw. [species] {ID=3F}
+                  Mammillaria discolor subsp. discolor [subspecies] {ID=3H}
+                    =Cactus aciculatus Kuntze [species] {ID=3K}
+                Mammillaria rhodantha Link & Otto [species] {ID=4B}
+                  Mammillaria rhodantha subsp. rhodantha [subspecies] {ID=5B}
+                    =Cactus acicularis Kuntze [species] {ID=4D}
+              Selenicereus (Berger) Britton & Rose [genus] {ID=649}
+                Selenicereus grandiflorus (L.) Britton & Rose [species] {ID=5T}
+                  Selenicereus grandiflorus subsp. grandiflorus [subspecies] {ID=5Z}
+                    =Cactus grandiflorus L. [species] {ID=5K}
+            Opuntioideae Burnett [subfamily] {ID=645}
+              Opuntia Mill. [genus] {ID=648}
+                =Ficindica St.-Lag. [unranked] {ID=63F}
+                =Platyopuntia (Engelm.) Fric & Schelle ex Kreuz. [genus] {ID=63G}
+                Opuntia acaulis Ekman & Werderm. [species] {ID=63H}
+                  =Consolea acaulis (Ekman & Werderm.) F.M.Knuth [species] {ID=63J}
+                  =Opulea acaulis (Ekman & Werderm.) Y.Encarn. & Majure [species] {ID=63K}
+                Opuntia aurea E.M.Baxter [species] {ID=63L}
+                  =Opuntia erinacea var. aurea (E.M.Baxter) S.L.Welsh [variety] {ID=63T}
+                  =Opuntia lubrica var. aurea (E.M.Baxter) Backeb. [variety] {ID=63Z}

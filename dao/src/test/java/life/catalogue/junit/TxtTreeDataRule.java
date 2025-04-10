@@ -64,6 +64,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private SectorMapper secm;
   private VernacularNameMapper vm;
   private AtomicInteger refID = new AtomicInteger(0);
+  private Map<Long, String> usageIDs = new HashMap<>();
 
   public enum TreeData {
     ANIMALIA, MAMMALIA, TRILOBITA, AVES;
@@ -292,26 +293,33 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   private void prepUsage(NameUsageBase u, int datasetKey, Integer sectorKey, ParsedNameUsage nat, TaxonomicStatus status, SimpleTreeNode parent, SimpleTreeNode tn) {
-      u.setDatasetKey(datasetKey);
-      u.setSectorKey(sectorKey);
-      u.setId(String.valueOf(nat.getName().getId()));
-      u.setName(nat.getName());
-      u.setOrigin(Origin.SOURCE);
-      u.applyUser(Users.DB_INIT);
-      u.setStatus(status);
-      if (parent != null) {
-        u.setParentId(String.valueOf(parent.id));
-      }
-      if (nat.getTaxonomicNote() != null) {
-        Reference r = new Reference();
-        r.setId(String.valueOf(refID.getAndIncrement()));
-        r.setCitation(nat.getTaxonomicNote());
-        r.setDatasetKey(datasetKey);
-        r.setSectorKey(sectorKey);
-        r.applyUser(Users.DB_INIT);
-        rm.create(r);
-        u.setAccordingToId(r.getId());
-      }
+    // ID given?
+    if (tn.infos.containsKey(TxtTreeTerm.ID.name())) {
+      u.setId( tn.infos.get(TxtTreeTerm.ID.name())[0] );
+    } else {
+      u.setId( String.valueOf(nat.getName().getId()) );
+    }
+    usageIDs.put(tn.id, u.getId());
+
+    u.setDatasetKey(datasetKey);
+    u.setSectorKey(sectorKey);
+    u.setName(nat.getName());
+    u.setOrigin(Origin.SOURCE);
+    u.applyUser(Users.DB_INIT);
+    u.setStatus(status);
+    if (parent != null) {
+      u.setParentId(usageIDs.get(parent.id));
+    }
+    if (nat.getTaxonomicNote() != null) {
+      Reference r = new Reference();
+      r.setId(String.valueOf(refID.getAndIncrement()));
+      r.setCitation(nat.getTaxonomicNote());
+      r.setDatasetKey(datasetKey);
+      r.setSectorKey(sectorKey);
+      r.applyUser(Users.DB_INIT);
+      rm.create(r);
+      u.setAccordingToId(r.getId());
+    }
   }
 
   @Override

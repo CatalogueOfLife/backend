@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.db.CRUD;
+import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 
 import java.util.List;
@@ -17,7 +18,9 @@ import javax.annotation.Nullable;
 /**
  * Mapper for archived name usages of a project. Dataset keys are expected to always be PROJECT, never releases.
  */
-public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
+public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, DatasetProcessable<ArchivedNameUsage> {
+
+  ArchivedNameUsage get(@Param("key") DSID<String> key);
 
   /**
    * @return number of archived usages for a given project.
@@ -42,6 +45,24 @@ public interface ArchivedNameUsageMapper extends CRUD<DSID<String>, ArchivedName
   Cursor<Name> processArchivedNames(@Nullable @Param("datasetKey") Integer datasetKey,
                                     @Param("onlyMissing") boolean onlyMissingMatches
   );
+
+  /**
+   * Sets the last_release_key to the given releaseKey
+   * for all archived usages for a given project that still exist in the given release (based on the usage ID alone)
+   * @param projectKey
+   * @param releaseKey
+   * @return number of updated archive records
+   */
+  int updateLastReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Create new archive records for all usages in the given release
+   * which not yet exist in the archive (based on the usage ID alone)
+   * @param projectKey
+   * @param releaseKey
+   * @return number of new archive records
+   */
+  int createMissingUsages(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
    * Lists all name usage identifiers with the same names index key across all datasets.

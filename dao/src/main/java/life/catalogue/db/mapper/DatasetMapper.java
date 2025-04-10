@@ -155,6 +155,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
     private int projectKey;
     private int attempt;
     private DatasetOrigin origin;
+    private boolean privat;
+    private boolean deleted;
 
     public int getKey() {
       return key;
@@ -178,6 +180,22 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
     public void setAttempt(int attempt) {
       this.attempt = attempt;
+    }
+
+    public boolean isPrivat() {
+      return privat;
+    }
+
+    public void setPrivat(boolean privat) {
+      this.privat = privat;
+    }
+
+    public boolean isDeleted() {
+      return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+      this.deleted = deleted;
     }
 
     public DatasetOrigin getOrigin() {

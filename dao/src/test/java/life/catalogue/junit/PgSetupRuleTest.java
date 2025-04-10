@@ -113,7 +113,6 @@ public class PgSetupRuleTest {
       enums.remove(DatasetOrigin.class);
       enums.remove(DatasetType.class);
       enums.remove(EntityType.class);
-      enums.remove(IdReportType.class);
       enums.remove(ImportState.class);
       enums.remove(InfoGroup.class);
       enums.remove(Issue.class);
