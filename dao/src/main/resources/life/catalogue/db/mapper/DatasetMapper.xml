@@ -376,7 +376,7 @@
   </select>
 
   <select id="listReleasesQuick" resultMap="releaseResultMap">
-    SELECT key, #{projectKey} AS projectKey, attempt, origin, private, deleted IS NOT NULL
+    SELECT key, #{projectKey} AS projectKey, attempt, origin, private, deleted IS NOT NULL AS deleted
     FROM dataset d
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.attempt, d.key

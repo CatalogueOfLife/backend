@@ -56,6 +56,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
       System.out.println("Total number of projects found to rebuild: " + projects.size());
       for (var key : projects) {
+        System.out.println("Rebuild name usage archive for project " + key);
         archiver.rebuildProject(key);
       }
     }

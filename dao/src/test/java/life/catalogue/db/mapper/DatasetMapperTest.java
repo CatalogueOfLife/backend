@@ -295,6 +295,39 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     mapper().delete(d1.getKey());
     d = mapper().get(d1.getKey());
     assertNotNull(d.getDeleted());
+
+    commit();
+
+    // list releases
+    Dataset p = create();
+    p.setOrigin(DatasetOrigin.PROJECT);
+    mapper().create(p);
+
+    Dataset r = create();
+    r.setGbifKey(null);
+    r.setDoi(null);
+
+    r.setOrigin(DatasetOrigin.RELEASE);
+    r.setSourceKey(p.getKey());
+    mapper().create(r);
+    final int r1 = r.getKey();
+
+    r.setKey(null);
+    mapper().create(r);
+    final int r2 = r.getKey();
+
+    r.setKey(null);
+    mapper().create(r);
+    final int r3 = r.getKey();
+
+    var rels = mapper().listReleasesQuick(p.getKey());
+    assertEquals(3, rels.size());
+    assertEquals(0, rels.stream().filter(DatasetMapper.DatasetRelease::isDeleted).count());
+
+    mapper().delete(r2);
+    rels = mapper().listReleasesQuick(p.getKey());
+    assertEquals(3, rels.size());
+    assertEquals(1, rels.stream().filter(DatasetMapper.DatasetRelease::isDeleted).count());
   }
 
   @Test
