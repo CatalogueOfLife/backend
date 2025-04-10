@@ -45,21 +45,18 @@ public class ArchiveCmd extends AbstractMybatisCmd {
       archiver.rebuildProject(projectKey);
 
     } else {
-      List<Dataset> projects;
+      List<Integer> projects;
       try (SqlSession session = factory.openSession()) {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         var req = new DatasetSearchRequest();
         req.setOrigin(List.of(DatasetOrigin.PROJECT));
         req.setSortBy(DatasetSearchRequest.SortBy.KEY);
-        final int limit = 1000;
-        projects = dm.search(req, userKey, new Page(0, limit));
-        if (projects.size()>=limit) {
-          System.out.println("WARNING! There are more than "+limit+" projects. Only the first 1000 will be archived!");
-        }
+        projects = dm.searchKeys(req, userKey);
       }
 
-      for (Dataset d : projects) {
-        archiver.rebuildProject(d.getKey());
+      System.out.println("Total number of projects found to rebuild: " + projects.size());
+      for (var key : projects) {
+        archiver.rebuildProject(key);
       }
     }
     System.out.println("Archive rebuild completed.");
