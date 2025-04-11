@@ -16,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  */
 public class ArchivedNameUsage extends NameUsageBase {
+  private SimpleName accepted;
   private SimpleName basionym;
   private List<SimpleName> classification; // in case of synonyms the first entry is the accepted name
   private String publishedIn; // citation
@@ -32,6 +33,7 @@ public class ArchivedNameUsage extends NameUsageBase {
 
   public ArchivedNameUsage(ArchivedNameUsage other) {
     super(other);
+    this.accepted = other.accepted;
     this.basionym = other.basionym;
     this.classification = other.classification;
     this.publishedIn = other.publishedIn;
@@ -52,14 +54,12 @@ public class ArchivedNameUsage extends NameUsageBase {
     return true;
   }
 
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public SimpleName getAcceptedName() {
-    return getStatus().isSynonym() && !classification.isEmpty() ? classification.get(0) : null;
+  public SimpleName getAccepted() {
+    return accepted;
   }
 
-  @JsonIgnore
-  public SimpleName getParent() {
-    return classification.isEmpty() ? null : classification.get(0);
+  public void setAccepted(SimpleName accepted) {
+    this.accepted = accepted;
   }
 
   public SimpleName getBasionym() {
@@ -116,7 +116,8 @@ public class ArchivedNameUsage extends NameUsageBase {
     if (!(o instanceof ArchivedNameUsage)) return false;
     if (!super.equals(o)) return false;
     ArchivedNameUsage that = (ArchivedNameUsage) o;
-    return Objects.equals(basionym, that.basionym)
+    return Objects.equals(accepted, that.accepted)
+           && Objects.equals(basionym, that.basionym)
            && Objects.equals(classification, that.classification)
            && Objects.equals(publishedIn, that.publishedIn)
            && Objects.equals(extinct, that.extinct)
@@ -126,6 +127,6 @@ public class ArchivedNameUsage extends NameUsageBase {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), basionym, classification, publishedIn, extinct, firstReleaseKey, lastReleaseKey);
+    return Objects.hash(super.hashCode(), accepted, basionym, classification, publishedIn, extinct, firstReleaseKey, lastReleaseKey);
   }
 }

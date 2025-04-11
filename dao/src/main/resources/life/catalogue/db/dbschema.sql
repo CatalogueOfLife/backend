@@ -1191,6 +1191,7 @@ CREATE TABLE name_usage_archive (
   -- archive specifics, will be dropped from partitioned name table
   according_to TEXT,
   basionym SIMPLE_NAME,
+  accepted SIMPLE_NAME,
   classification SIMPLE_NAME[],
   published_in TEXT,
   first_release_key INTEGER,

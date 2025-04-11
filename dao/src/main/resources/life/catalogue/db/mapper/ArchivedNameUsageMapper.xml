@@ -54,6 +54,7 @@
     <!-- ArchivedNameUsage -->
     according_to,
     basionym,
+    accepted,
     classification,
     published_in,
     first_release_key,
@@ -233,7 +234,8 @@
 
       ra.citation, --according_to
       CASE WHEN bn.id IS NULL THEN null ELSE (bn.id,bn.rank,bn.scientific_name,bn.authorship)::simple_name END, --basionym
-      CASE WHEN is_synonym(u.status) THEN array_append(mp.classification, (up.id,np.rank,np.scientific_name,np.authorship)::simple_name) ELSE m.classification END, --classification
+      CASE WHEN is_synonym(u.status) THEN (up.id,np.rank,np.scientific_name,np.authorship)::simple_name END, -- accepted
+      CASE WHEN is_synonym(u.status) THEN mp.classification ELSE m.classification END, --classification
       rp.citation, --published_in
       #{releaseKey}, --first_release_key
       #{releaseKey} --last_release_key

@@ -18,6 +18,7 @@ and done it manually. So we can as well log changes here.
 ```
 DROP TABLE id_report;
 CREATE INDEX ON name_usage_archive (dataset_key, first_release_key);
+ALTER TABLE name_usage_archive ADD COLUMN accepted SIMPLE_NAME;
 ```
 Then rebuild all name archives for all projects!
 
