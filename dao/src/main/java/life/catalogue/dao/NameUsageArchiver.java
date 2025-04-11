@@ -10,6 +10,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.stream.Collectors;
+
 /**
  * Service that builds the name usage archive for projects.
  * If you want to rebuild an existing archive please manually delete the existing archive records first.
@@ -45,18 +47,13 @@ public class NameUsageArchiver {
       }
       // finally allow the rebuild for each release
       var datasets = dm.listReleasesQuick(projectKey);
+      var releases = datasets.stream().filter(d -> !d.isDeleted() && !d.isPrivat()).collect(Collectors.toList());
+      LOG.info("Archiving name usages for {} public releases of PROJECT {}", releases.size(), projectKey);
       int archived = 0;
-      LOG.info("Archiving name usages for {} releases of project {}", datasets.size(), projectKey);
-      for (var d : datasets) {
-        if (d.isPrivat()) {
-          LOG.info("Ignore private release {}", d.getKey());
-        } else if (d.isDeleted()) {
-          LOG.info("Ignore deleted release {}", d.getKey());
-        } else {
-          archived += archiveRelease(d.getKey());
-        }
+      for (var d : releases) {
+        archived += archiveRelease(d.getKey());
       }
-      LOG.info("Archived {} name usages for entire project {}", archived, projectKey);
+      LOG.info("Archived {} name usages for all {} releases of project {}", archived, releases.size(), projectKey);
     }
   }
 
