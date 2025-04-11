@@ -94,7 +94,11 @@ public class PublicReleaseListener {
       // When a release gets published we need to modify the projects name archive:
       // a) Usages with new ids need to be added
       // b) For all still existing usages the last_release_key needs to be updated
-      archiver.archiveRelease(event.obj.getKey(), true);
+      try {
+        archiver.archiveRelease(event.obj.getKey(), true);
+      } catch (Exception e) {
+        LOG.error("Failed to archive names for published release {}", event.obj.getKey(), e);
+      }
 
       // generic hooks
       if (cfg.actions != null && cfg.actions.containsKey(event.obj.getSourceKey())) {

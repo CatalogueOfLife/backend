@@ -142,11 +142,13 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * List all releases of a project, including deleted and private ones.
+   * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 
   /**
-   * Same as above, but returning just a minimal object which is much quicker to load
+   * Same as above, but returning just a minimal object which is much quicker to load.
+   * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
   List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
 

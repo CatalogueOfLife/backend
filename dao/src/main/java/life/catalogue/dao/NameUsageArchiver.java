@@ -56,6 +56,9 @@ public class NameUsageArchiver {
         archived += archiveRelease(d.getKey(), copyMatches);
       }
       LOG.info("Archived {} name usages for all {} releases of project {}", archived, releases.size(), projectKey);
+
+    } catch (Exception e) {
+      LOG.error("Failed to archive names for project {}", projectKey, e);
     }
   }
 
@@ -66,7 +69,7 @@ public class NameUsageArchiver {
    * @param copyMatches if true also copies the existing name matches for the newly created archive records
    * @return number of newly created archived usages
    */
-  public int archiveRelease(int releaseKey, boolean copyMatches) throws NotFoundException, IllegalArgumentException {
+  public int archiveRelease(int releaseKey, boolean copyMatches) throws RuntimeException {
     var info = DatasetInfoCache.CACHE.info(releaseKey);
     if (!info.origin.isRelease()) {
       throw new IllegalArgumentException("Not a release " + releaseKey);
@@ -98,9 +101,6 @@ public class NameUsageArchiver {
         var matches = anumm.createMissingMatches(projectKey, releaseKey);
         LOG.info("Copied {} archive matches from release {} of project {}", matches, releaseKey, projectKey);
       }
-
-    } catch (Throwable e) {
-      LOG.error("Failed to archive names for release {}.", releaseKey, e);
     }
     return created;
   }
