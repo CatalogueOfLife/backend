@@ -19,9 +19,9 @@
 [unranked],UNRANKED
 abber,ABERRATION
 abberatio,ABERRATION
-aberratio,ABERRATION
 abberation,ABERRATION
 aberrancy,ABERRATION
+aberratio,ABERRATION
 abt,PHYLUM
 abteilung,PHYLUM
 agamosp,SPECIES
@@ -254,6 +254,7 @@ subsection,SUBSECTION_BOTANY
 subser,SUBSERIES
 subsp,SUBSPECIES
 subspec,SUBSPECIES
+subspecies (plantae),SUBSPECIES
 subspeciesaggregate,INFRASPECIFIC_NAME
 subsubf,INFRASUBSPECIFIC_NAME
 subsubvar,INFRASUBSPECIFIC_NAME
