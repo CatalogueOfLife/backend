@@ -187,7 +187,7 @@
 
   <insert id="createMissingUsages" parameterType="map">
     INSERT INTO name_usage_archive (<include refid="COLS"/>)
-    SELECT u.id, n.id, #{projectKey},
+    SELECT distinct on (u.id) u.id, n.id, #{projectKey},
       n.rank,
       n.candidatus,
       n.notho,

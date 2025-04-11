@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IndexName;
+import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 
 import org.junit.Before;
@@ -35,5 +36,11 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   public void processIndexIds() throws Exception {
     mapper().processIndexIds(appleKey).forEach(System.out::println);
   }
-  
+
+  @Test
+  public void createMissingUsages() throws Exception {
+    mapper().createMissingMatches(Datasets.COL, 1000);
+    mapper().createAllMatches();
+  }
+
 }

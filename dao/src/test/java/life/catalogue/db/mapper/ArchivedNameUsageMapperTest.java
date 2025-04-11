@@ -41,6 +41,11 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     assertEquals(0, res.size());
   }
 
+  @Test
+  public void createMissingUsages() throws Exception {
+    mapper().createMissingUsages(Datasets.COL, 1000);
+  }
+
   public static ArchivedNameUsage create() {
     Name n = TestEntityGenerator.newName(appleKey);
     n.setNamesIndexType(null);
