@@ -16,6 +16,22 @@ import org.apache.ibatis.annotations.Param;
  * Processing a project dataset therefore includes the matches of these archived names.
  */
 public interface ArchivedNameUsageMatchMapper extends MatchMapper, DatasetProcessable<NameMatch> {
+
+  /**
+   * Copy new match records from the release to the archive
+   * for all archive usages that have been created in the given release, i.e. which have the same first_release_key as the given release key
+   * @param projectKey
+   * @param releaseKey
+   * @return number of new archived match records
+   */
+  int createMissingMatches(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+
+  /**
+   * Copies all matches for all archive records from the respective releases.
+   * @return number of new archived match records
+   */
+  int createAllMatches();
+
   /**
    * @param key the name key
    */

@@ -62,4 +62,22 @@
   <update id="truncate">
     TRUNCATE name_usage_archive_match
   </update>
+
+  <insert id="createMissingMatches" parameterType="map">
+    INSERT INTO name_usage_archive_match (dataset_key,type,index_id,usage_id)
+    SELECT #{projectKey}, m.type, m.index_id, a.id
+    FROM name_usage_archive a
+      JOIN name_match m ON m.name_id=a.n_id
+    WHERE a.dataset_key=#{projectKey}
+      AND a.first_release_key=#{releaseKey}
+      AND m.dataset_key=#{releaseKey}
+  </insert>
+
+  <insert id="createAllMatches" parameterType="map">
+    INSERT INTO name_usage_archive_match (dataset_key,type,index_id,usage_id)
+    SELECT a.dataset_key, m.type, m.index_id, a.id
+    FROM name_usage_archive a
+       JOIN name_match m ON m.name_id=a.n_id AND m.dataset_key=a.first_release_key
+  </insert>
+
 </mapper>

@@ -5,6 +5,8 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.NameUsageArchiver;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.List;
@@ -42,7 +44,7 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {
-      archiver.rebuildProject(projectKey);
+      archiver.rebuildProject(projectKey, true);
 
     } else {
       List<Integer> projects;
@@ -57,7 +59,14 @@ public class ArchiveCmd extends AbstractMybatisCmd {
       System.out.println("Total number of projects found to rebuild: " + projects.size());
       for (var key : projects) {
         System.out.println("Rebuild name usage archive for project " + key);
-        archiver.rebuildProject(key);
+        archiver.rebuildProject(key, false);
+      }
+
+      System.out.println("Copy all name matches for all archived projects");
+      try (SqlSession session = factory.openSession(true)) {
+        var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+        var matches = amm.createAllMatches();
+        System.out.println("Copied "+matches+" name matches");
       }
     }
     System.out.println("Archive rebuild completed.");

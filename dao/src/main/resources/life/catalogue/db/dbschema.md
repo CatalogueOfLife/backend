@@ -17,6 +17,7 @@ and done it manually. So we can as well log changes here.
 #### 2025-04-10 remove id reports
 ```
 DROP TABLE id_report;
+CREATE INDEX ON name_usage_archive (dataset_key, first_release_key);
 ```
 Then rebuild all name archives for all projects!
 

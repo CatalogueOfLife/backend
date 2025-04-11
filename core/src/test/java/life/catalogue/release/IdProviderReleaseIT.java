@@ -144,7 +144,7 @@ public class IdProviderReleaseIT {
     LOG.info("Match project {} using attempt {} and dataset key {}", project, attempt, newDatasetKey);
     // rebuild project archive
     var archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
-    archiver.rebuildProject(Datasets.COL);
+    archiver.rebuildProject(Datasets.COL, true);
     // rematch
     matchingRule.rematchAll();
     // create new release

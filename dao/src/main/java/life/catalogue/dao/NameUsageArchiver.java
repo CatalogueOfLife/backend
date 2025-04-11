@@ -3,6 +3,7 @@ package life.catalogue.dao;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import org.apache.ibatis.session.SqlSession;
@@ -30,8 +31,9 @@ public class NameUsageArchiver {
    * If a single archived record exists already an IAE will be thrown.
    *
    * The rebuild uses only the currently existing, non deleted releases to decide which usages will have to be archived.
+   * @param copyMatches if true also copies the existing name matches for the newly created archive records
    */
-  public void rebuildProject(int projectKey) {
+  public void rebuildProject(int projectKey, boolean copyMatches) {
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var project = dm.get(projectKey);
@@ -51,7 +53,7 @@ public class NameUsageArchiver {
       LOG.info("Archiving name usages for {} public releases of PROJECT {}", releases.size(), projectKey);
       int archived = 0;
       for (var d : releases) {
-        archived += archiveRelease(d.getKey());
+        archived += archiveRelease(d.getKey(), copyMatches);
       }
       LOG.info("Archived {} name usages for all {} releases of project {}", archived, releases.size(), projectKey);
     }
@@ -61,9 +63,10 @@ public class NameUsageArchiver {
    * Creates new and updates existing archived usages according to the usages from the releaseKey.
    * The release is required to be public, otherwise an IAE is thrown.
    * @param releaseKey valid release key - not verified, must not be deleted or private!
+   * @param copyMatches if true also copies the existing name matches for the newly created archive records
    * @return number of newly created archived usages
    */
-  public int archiveRelease(int releaseKey) throws NotFoundException, IllegalArgumentException {
+  public int archiveRelease(int releaseKey, boolean copyMatches) throws NotFoundException, IllegalArgumentException {
     var info = DatasetInfoCache.CACHE.info(releaseKey);
     if (!info.origin.isRelease()) {
       throw new IllegalArgumentException("Not a release " + releaseKey);
@@ -80,14 +83,21 @@ public class NameUsageArchiver {
 
       LOG.info("Updating names archive for project {} with release {}", projectKey, releaseKey);
 
-      var anm = session.getMapper(ArchivedNameUsageMapper.class);
+      var anum = session.getMapper(ArchivedNameUsageMapper.class);
       LOG.info("Updating last release key of all archive records which still exist in release {} of project {}", releaseKey, projectKey);
-      int updated = anm.updateLastReleaseKey(projectKey, releaseKey);
+      int updated = anum.updateLastReleaseKey(projectKey, releaseKey);
       LOG.info("Updated {} archive records which still exist in release {} of project {}", updated, releaseKey, projectKey);
 
-      LOG.info("Create missing archive records from release {} of project {}", releaseKey, projectKey);
-      created = anm.createMissingUsages(projectKey, releaseKey);
-      LOG.info("Created {} new archive records from release {} of project {}", created, releaseKey, projectKey);
+      LOG.info("Copy missing archive records from release {} of project {}", releaseKey, projectKey);
+      created = anum.createMissingUsages(projectKey, releaseKey);
+      LOG.info("Copied {} new archive records from release {} of project {}", created, releaseKey, projectKey);
+
+      if (copyMatches) {
+        LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);
+        var anumm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+        var matches = anumm.createMissingMatches(projectKey, releaseKey);
+        LOG.info("Copied {} archive matches from release {} of project {}", matches, releaseKey, projectKey);
+      }
 
     } catch (Throwable e) {
       LOG.error("Failed to archive names for release {}.", releaseKey, e);
