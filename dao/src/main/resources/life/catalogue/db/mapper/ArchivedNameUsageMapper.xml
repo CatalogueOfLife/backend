@@ -233,7 +233,7 @@
 
       ra.citation, --according_to
       CASE WHEN bn.id IS NULL THEN null ELSE (bn.id,bn.rank,bn.scientific_name,bn.authorship)::simple_name END, --basionym
-      m.classification, --classification
+      CASE WHEN is_synonym(u.status) THEN array_append(mp.classification, (up.id,np.rank,np.scientific_name,np.authorship)::simple_name) ELSE m.classification END, --classification
       rp.citation, --published_in
       #{releaseKey}, --first_release_key
       #{releaseKey} --last_release_key
@@ -243,6 +243,9 @@
       LEFT JOIN name_rel br ON br.dataset_key=u.dataset_key AND br.name_id=n.id AND br.type='BASIONYM'::nomreltype
       LEFT JOIN name bn ON bn.dataset_key=u.dataset_key AND bn.id=br.related_name_id
       LEFT JOIN taxon_metrics m ON m.dataset_key=u.dataset_key AND m.taxon_id=u.id
+      LEFT JOIN taxon_metrics mp ON mp.dataset_key=u.dataset_key AND mp.taxon_id=u.parent_id
+      LEFT JOIN name_usage up ON up.dataset_key=u.dataset_key AND up.id=u.parent_id
+      LEFT JOIN name np ON np.dataset_key=u.dataset_key AND np.id=up.name_id
       LEFT JOIN reference rp ON rp.dataset_key=u.dataset_key AND rp.id=n.published_in_id
     WHERE u.dataset_key=#{releaseKey}
       AND NOT EXISTS (SELECT true FROM name_usage_archive a WHERE a.dataset_key=#{projectKey} AND a.id=u.id)
