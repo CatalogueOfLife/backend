@@ -4,6 +4,7 @@ import life.catalogue.api.model.FormattableName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.NameMapper;
@@ -101,7 +102,8 @@ public class TreeMergeHandlerConfig {
 
         Taxon t = new Taxon(n);
         t.setDatasetKey(datasetKey);
-        t.setId(UUID.randomUUID().toString());
+        // only create new id if not configured
+        t.setId(ObjectUtils.coalesce(sn.getId(), UUID.randomUUID().toString()));
         t.setParentId(parentID);
         t.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
         t.setOrigin(Origin.OTHER);
