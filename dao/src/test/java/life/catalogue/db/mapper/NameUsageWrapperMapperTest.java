@@ -4,10 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.*;
 
 import java.util.Set;
 import java.util.UUID;
@@ -142,7 +139,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     // test secondary sources
     var srcs = vsm.getSources(TAXON2);
     assertTrue(srcs.isEmpty());
-    vsm.insertSources(TAXON2, TAXON1, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP));
+    vsm.insertSources(TAXON2, EntityType.NAME_USAGE, TAXON1, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP));
 
     commit();
 

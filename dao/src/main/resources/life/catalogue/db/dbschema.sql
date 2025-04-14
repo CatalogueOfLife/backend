@@ -1530,6 +1530,7 @@ CREATE TABLE verbatim_source_secondary (
   dataset_key INTEGER NOT NULL,
   type INFOGROUP NOT NULL,
   source_id TEXT,
+  source_entity ENTITYTYPE,
   source_dataset_key INTEGER,
   FOREIGN KEY (dataset_key, id) REFERENCES name_usage
 ) PARTITION BY HASH (dataset_key);

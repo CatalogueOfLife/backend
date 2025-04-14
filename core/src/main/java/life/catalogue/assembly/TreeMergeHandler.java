@@ -400,8 +400,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
           updated++;
           // update name
           nm.update(pn);
-          // TODO: track source - we require a usage currently, not just a bare name
-          //vsm.insertSources(existingUsageKey, n, upd);
+          // track source - we can track name sources, but need to link them to a usage - or several ;)
+          for (var u : num.listByNameID(existing.getDatasetKey(), existing.getId(), new Page())) {
+            vsm.insertSources(u, EntityType.NAME, n, upd);
+          }
 
           // commit in batches
           if (updated % 1000 == 0) {
@@ -623,7 +625,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        vsm.insertSources(existingUsageKey, nu, upd);
+        vsm.insertSources(existingUsageKey, EntityType.NAME_USAGE, nu, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }

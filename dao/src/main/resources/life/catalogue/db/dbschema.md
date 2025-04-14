@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-04-14 add 2nd source entity
+```
+ALTER TABLE verbatim_source_secondary ADD COLUMN source_entity ENTITYTYPE;
+UPDATE verbatim_source_secondary SET source_entity='NAME_USAGE' WHERE source_id IS NOT NULL;
+```
+
 #### 2025-04-10 remove id reports
 ```
 DROP TABLE id_report;

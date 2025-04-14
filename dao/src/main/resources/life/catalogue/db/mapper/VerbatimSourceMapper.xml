@@ -40,13 +40,13 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
-  <select id="getSources" resultType="life.catalogue.db.mapper.VerbatimSourceMapper$SecondarySource">
+  <select id="getSources" resultType="life.catalogue.api.model.SecondarySource">
     SELECT type, source_id AS id, source_dataset_key AS datasetKey
     FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
 
-  <select id="list" resultType="life.catalogue.db.mapper.VerbatimSourceMapper$SecondarySource">
+  <select id="list" resultType="life.catalogue.api.model.SecondarySource">
     SELECT type, source_id AS id, source_dataset_key AS datasetKey
     FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
@@ -122,9 +122,9 @@
   </update>
 
   <update id="insertSource" parameterType="map">
-    INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id) VALUES
+    INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id, source_entity) VALUES
     <foreach item="group" collection="groups" separator=",">
-    (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id})
+    (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id}, #{entity}::ENTITYTYPE)
     </foreach>
   </update>
 

@@ -1,7 +1,9 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
@@ -68,43 +70,15 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     }
   }
 
-  default void insertSources(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups) {
+  /**
+   * @param key the key of the usage that has secondary sources
+   * @param secondarySource the if of the secondary source record to add - must be an identifier for the secondarySourceEntity given
+   * @param secondarySourceEntity the entity of the secondary source that is added, e.g. usage, name or reference
+   * @param groups the set of information groups this secondary source is responsible for
+   */
+  default void insertSources(DSID<String> key, EntityType secondarySourceEntity, DSID<String> secondarySource, Set<InfoGroup> groups) {
     deleteSourceGroups(key, groups);
-    insertSource(key, secondarySource, groups);
-  }
-
-  class SecondarySource implements DSID<String> {
-    private String id;
-    private Integer datasetKey;
-    private InfoGroup type;
-
-    @Override
-    public String getId() {
-      return id;
-    }
-
-    @Override
-    public void setId(String id) {
-      this.id = id;
-    }
-
-    @Override
-    public Integer getDatasetKey() {
-      return datasetKey;
-    }
-
-    @Override
-    public void setDatasetKey(Integer datasetKey) {
-      this.datasetKey = datasetKey;
-    }
-
-    public InfoGroup getType() {
-      return type;
-    }
-
-    public void setType(InfoGroup type) {
-      this.type = type;
-    }
+    insertSource(key, secondarySourceEntity, secondarySource, groups);
   }
 
   @MapKey("type")
@@ -112,7 +86,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   List<SecondarySource> list(@Param("key") DSID<String> key);
 
-  void insertSource(@Param("key") DSID<String> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
+  void insertSource(@Param("key") DSID<String> key, @Param("entity") EntityType sourceEntity, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
+
   void deleteSourceGroups(@Param("key") DSID<String> key, @Param("groups") Set<InfoGroup> groups);
 
   void deleteSources(@Param("key") DSID<String> key);

@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
@@ -144,14 +145,14 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     // add sources
     var groups = Set.of(InfoGroup.PARENT, InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP);
     final var srcKey = DSID.of(34, "dtfgzhn");
-    mapper().insertSources(v1, srcKey, groups);
+    mapper().insertSources(v1, EntityType.NAME_USAGE, srcKey, groups);
 
     srcs = mapper().getSources(v1);
     var k = srcs.keySet();
     assertEquals(3, k.size());
     var v = srcs.values();
     assertEquals(3, v.size());
-    assertEquals(VerbatimSourceMapper.SecondarySource.class, v.iterator().next().getClass());
+    assertEquals(SecondarySource.class, v.iterator().next().getClass());
     assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.PARENT)));
     assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.PUBLISHED_IN)));
     assertTrue(DSID.equals(srcKey, srcs.get(InfoGroup.AUTHORSHIP)));
