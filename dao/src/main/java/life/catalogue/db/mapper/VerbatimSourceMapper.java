@@ -70,6 +70,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     }
   }
 
+  boolean exists(@Param("key") DSID<String> key);
+
   /**
    * @param key the key of the usage that has secondary sources
    * @param secondarySource the if of the secondary source record to add - must be an identifier for the secondarySourceEntity given
@@ -78,6 +80,10 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
    */
   default void insertSources(DSID<String> key, EntityType secondarySourceEntity, DSID<String> secondarySource, Set<InfoGroup> groups) {
     deleteSourceGroups(key, groups);
+    if (!exists(key)) {
+      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
+      create(v);
+    }
     insertSource(key, secondarySourceEntity, secondarySource, groups);
   }
 

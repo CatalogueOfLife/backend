@@ -10,7 +10,7 @@ import static life.catalogue.api.vocab.EntityType.NAME_USAGE;
 public class SecondarySource implements DSID<String> {
   private String id;
   private Integer datasetKey;
-  private EntityType entity = NAME_USAGE; // currently only NameUsage, Name or Reference is supported!
+  private EntityType entity; // currently only NameUsage, Name or Reference is supported!
   private InfoGroup type;
 
   @Override

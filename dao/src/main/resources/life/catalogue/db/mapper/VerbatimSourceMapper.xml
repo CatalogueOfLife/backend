@@ -41,7 +41,7 @@
   </resultMap>
 
   <select id="getSources" resultType="life.catalogue.api.model.SecondarySource">
-    SELECT type, source_id AS id, source_dataset_key AS datasetKey
+    SELECT type, source_id AS id, source_entity AS entity, source_dataset_key AS datasetKey
     FROM verbatim_source_secondary
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </select>
@@ -105,6 +105,13 @@
     WHERE v.dataset_key = #{key.datasetKey} AND u.sector_key = #{key.id}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT true FROM verbatim_source
+      WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+    )
+  </select>
+
   <update id="removeSectorKey" parameterType="map">
     <!-- nothing to do, sectorKey is no the usage table! -->
   </update>
@@ -121,12 +128,12 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
-  <update id="insertSource" parameterType="map">
+  <insert id="insertSource" parameterType="map">
     INSERT INTO verbatim_source_secondary (dataset_key, id, type, source_dataset_key, source_id, source_entity) VALUES
     <foreach item="group" collection="groups" separator=",">
     (#{key.datasetKey}, #{key.id}, #{group}::INFOGROUP, #{source.datasetKey}, #{source.id}, #{entity}::ENTITYTYPE)
     </foreach>
-  </update>
+  </insert>
 
   <delete id="deleteSourceGroups" parameterType="map">
     DELETE FROM verbatim_source_secondary
