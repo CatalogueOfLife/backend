@@ -256,11 +256,19 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
   }
 
+  private NameUsageBase getOneUsage(NameUsageMapper num, Name n) {
+    var usages = num.listByNameID(n.getDatasetKey(), n.getId(), new Page());
+    assertEquals(1, usages.size());
+    return usages.get(0);
+  }
+
   public void literatureValidate() {
     // check if reference were copied - cant be done with text tree easily
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
       var nm = session.getMapper(NameMapper.class);
       var rm = session.getMapper(ReferenceMapper.class);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
 
       for (Name n : nm.list(Datasets.COL, new Page(100))) {
         Reference ref;
@@ -283,6 +291,9 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             assertEquals("10.11646/zootaxa.3009.1.1", ref.getCsl().getDOI());
             assertEquals("https://bionames.org/references/08f3a09b1eb3a4e3c8a83c26b7911de9", ref.getCsl().getURL());
             assertEquals("A new genus and ten new species of jumping plant lice (Hemiptera: Triozidae) from Allocasuarina (Casuarinaceae) in Australia", ref.getCsl().getTitle());
+            var u = getOneUsage(num, n);
+            var v = vsm.get(u);
+            assertNotNull(v);
             break;
 
           case "Aacanthocnema dobsoni":

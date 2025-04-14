@@ -17,13 +17,13 @@ Freemarker template with the following variables:
  parent - SimpleName instance for the taxons parent
 -->
 
-<#assign _title>${info.taxon.getLabel()} | COL</#assign>
-<#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
+<#assign _title>${info.usage.getLabel()} | COL</#assign>
+<#assign _description>${info.usage.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
 
 <meta name="title" content="${_title}" />
 <meta name="description" content="${_description}" />
 <meta property="og:title" content="${_title}" />
-<meta property="og:url" content="https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}" />
+<meta property="og:url" content="https://www.catalogueoflife.org/data/taxon/${info.usage.getId()}" />
 <meta property="og:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
 <meta property="og:description" content="${_description}" />
 <meta name="twitter:card" content="summary"/>
@@ -46,7 +46,7 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "col": "http://catalogueoflife.org/terms/"
     }
   ],
-  "@id":"https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}",
+  "@id":"https://www.catalogueoflife.org/data/taxon/${info.usage.getId()}",
   "@type": "Taxon",
   "additionalType": [
     "dwc:Taxon",
@@ -57,21 +57,21 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "@type": "PropertyValue",
       "name": "dwc:taxonID",
       "propertyID": "http://rs.tdwg.org/dwc/terms/taxonID",
-      "value": "${info.taxon.getId()}"
+      "value": "${info.usage.getId()}"
     },
     {
       "@type": "PropertyValue",
       "name": "col:ID",
       "propertyID": "http://catalogueoflife.org/terms/ID",
-      "value": "${info.taxon.getId()}"
+      "value": "${info.usage.getId()}"
     }
   ],
-  "name": "${info.taxon.label}",
+  "name": "${info.usage.label}",
   "scientificName": {
     "@type": "TaxonName",
-    "name": "${info.taxon.name.scientificName!}",
-    "author": "${info.taxon.name.authorship!}",
-    "taxonRank": "${info.taxon.name.rank!}"
+    "name": "${info.usage.name.scientificName!}",
+    "author": "${info.usage.name.authorship!}",
+    "taxonRank": "${info.usage.name.rank!}"
    <#if info.getPublishedInReference()??>
     ,"isBasedOn": {
       "@type": "ScholarlyArticle",
@@ -79,10 +79,10 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
     }
    </#if>
   },
-  <#if info.taxon.name.rank??>
+  <#if info.usage.name.rank??>
   "taxonRank": [
-    "https://api.checklistbank.org/vocab/rank/${info.taxon.name.rank}",
-    "${info.taxon.name.rank}"
+    "https://api.checklistbank.org/vocab/rank/${info.usage.name.rank}",
+    "${info.usage.name.rank}"
   ],
   </#if>
 
