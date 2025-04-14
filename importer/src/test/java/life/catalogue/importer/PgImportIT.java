@@ -370,7 +370,7 @@ public class PgImportIT extends PgImportITBase {
       // pubIn.getCsl().getTitle());
       
       assertEquals(5, info.getReferences().size());
-      for (String refId : info.getTaxon().getReferenceIds()) {
+      for (String refId : info.getUsage().getReferenceIds()) {
         Reference r = info.getReference(refId);
         assertNotNull(r);
       }
@@ -615,7 +615,7 @@ public class PgImportIT extends PgImportITBase {
     normalizeAndImport(COLDP, 40);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var t = tdao.getUsageInfo(key(dataset.getKey(), "1"));
-      var n = t.getTaxon().getName();
+      var n = t.getUsage().getName();
       assertEquals("Toleria aegerides", n.getScientificName());
       assertEquals("(Strand, 1916)", n.getAuthorship());
       assertEquals(2, t.getProperties().size());

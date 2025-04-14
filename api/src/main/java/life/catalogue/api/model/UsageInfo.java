@@ -81,11 +81,6 @@ public class UsageInfo {
     this.group = group;
   }
 
-  @Deprecated
-  public NameUsageBase getTaxon() {
-    return usage;
-  }
-
   public VerbatimSource getSource() {
     return source;
   }

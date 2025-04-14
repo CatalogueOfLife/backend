@@ -128,8 +128,8 @@ public class PortalPageRenderer {
           Dataset source = sourceDao.get(datasetKey, info.getSource().getSourceDatasetKey(), false);
           data.put("source", source);
         }
-        if (info.getTaxon().getParentId() != null) {
-          SimpleName parent = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, info.getTaxon().getParentId()));
+        if (info.getUsage().getParentId() != null) {
+          SimpleName parent = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, info.getUsage().getParentId()));
           data.put("parent", parent);
         }
         return render(env, PortalPage.TAXON, data);

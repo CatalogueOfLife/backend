@@ -48,15 +48,15 @@ public class TaxonDaoIT extends DaoTestBase {
     BeanPrinter.out(info);
 
     // See apple.sql
-    assertEquals("root-1", info.getTaxon().getId());
-    assertEquals(1, info.getTaxon().getReferenceIds().size());
+    assertEquals("root-1", info.getUsage().getId());
+    assertEquals(1, info.getUsage().getReferenceIds().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
 
     Set<String> refKeys1 = new HashSet<>();
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
 
-    Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
+    Set<String> refKeys2 = new HashSet<>(info.getUsage().getReferenceIds());
 
     Stream<Referenced> refStream = Stream.concat(
       info.getDistributions().stream(),
