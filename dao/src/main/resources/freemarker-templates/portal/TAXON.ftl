@@ -9,44 +9,45 @@
 
     <!-- Begin SEO -->
 
-<#--
-Freemarker template with the following variables:
- releaseKey - the dataset key of the release
- source - dataset object for the source
- info - TaxonInfo object
- parent - SimpleName instance for the taxons parent
--->
 
-<#assign _title>${info.taxon.getLabel()} | COL</#assign>
-<#assign _description>${info.taxon.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
+    <#--
+    Freemarker template with the following variables:
+     releaseKey - the dataset key of the release
+     source - dataset object for the source
+     info - UsageInfo object
+     parent - SimpleName instance for the taxons parent
+    -->
 
-<meta name="title" content="${_title}" />
-<meta name="description" content="${_description}" />
-<meta property="og:title" content="${_title}" />
-<meta property="og:url" content="https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}" />
-<meta property="og:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
-<meta property="og:description" content="${_description}" />
-<meta name="twitter:card" content="summary"/>
-<meta name="twitter:site" content="@catalogueoflife"/>
-<meta name="twitter:title" content="${_title}" />
-<meta name="twitter:description" content="${_description}" />
-<meta name="twitter:image" content="https://www.catalogueoflife.org/images/col_square_logo.jpg" />
+    <#assign _title>${info.usage.getLabel()} | COL</#assign>
+    <#assign _description>${info.usage.label} in the Catalogue of Life<#if source??> based on ${source.title!""}</#if></#assign>
 
-<!--
-TaxonName DRAFT Profile:
-https://bioschemas.org/profiles/TaxonName/0.1-DRAFT/
-https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
--->
-<script type="application/ld+json">
-{
-  "@context": [
-    "https://schema.org/",
-    {
-      "dwc": "http://rs.tdwg.org/dwc/terms/",
-      "col": "http://catalogueoflife.org/terms/"
-    }
-  ],
-  "@id":"https://www.catalogueoflife.org/data/taxon/${info.taxon.getId()}",
+    <meta name="title" content="${_title}" />
+    <meta name="description" content="${_description}" />
+    <meta property="og:title" content="${_title}" />
+    <meta property="og:url" content="{{ site.url }}/data/taxon/${info.usage.getId()}" />
+    <meta property="og:image" content="{{ site.url }}/images/col_square_logo.jpg" />
+    <meta property="og:description" content="${_description}" />
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@catalogueoflife"/>
+    <meta name="twitter:title" content="${_title}" />
+    <meta name="twitter:description" content="${_description}" />
+    <meta name="twitter:image" content="{{ site.url }}/images/col_square_logo.jpg" />
+
+    <!--
+    TaxonName DRAFT Profile:
+    https://bioschemas.org/profiles/TaxonName/0.1-DRAFT/
+    https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": [
+          "https://schema.org/",
+          {
+            "dwc": "http://rs.tdwg.org/dwc/terms/",
+            "col": "http://catalogueoflife.org/terms/"
+          }
+        ],
+        "@id":"{{ site.url }}/data/taxon/${info.usage.getId()}",
   "@type": "Taxon",
   "additionalType": [
     "dwc:Taxon",
@@ -57,32 +58,32 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "@type": "PropertyValue",
       "name": "dwc:taxonID",
       "propertyID": "http://rs.tdwg.org/dwc/terms/taxonID",
-      "value": "${info.taxon.getId()}"
+      "value": "${info.usage.getId()}"
     },
     {
       "@type": "PropertyValue",
       "name": "col:ID",
       "propertyID": "http://catalogueoflife.org/terms/ID",
-      "value": "${info.taxon.getId()}"
+      "value": "${info.usage.getId()}"
     }
   ],
-  "name": "${info.taxon.label}",
+  "name": "${info.usage.label}",
   "scientificName": {
     "@type": "TaxonName",
-    "name": "${info.taxon.name.scientificName!}",
-    "author": "${info.taxon.name.authorship!}",
-    "taxonRank": "${info.taxon.name.rank!}"
-   <#if info.getPublishedInReference()??>
+    "name": "${info.usage.name.scientificName!}",
+    "author": "${info.usage.name.authorship!}",
+    "taxonRank": "${info.usage.name.rank!}"
+      <#if info.getPublishedInReference()??>
     ,"isBasedOn": {
       "@type": "ScholarlyArticle",
       "name": "${info.getPublishedInReference().citation!}"
     }
    </#if>
-  },
-  <#if info.taxon.name.rank??>
+      },
+      <#if info.usage.name.rank??>
   "taxonRank": [
-    "https://api.checklistbank.org/vocab/rank/${info.taxon.name.rank}",
-    "${info.taxon.name.rank}"
+    "https://api.checklistbank.org/vocab/rank/${info.usage.name.rank}",
+    "${info.usage.name.rank}"
   ],
   </#if>
 
@@ -90,7 +91,7 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
   "alternateName": [
      <#list info.synonyms.all() as s>
       "${s.label}"<#sep>,</#sep>
-     </#list>
+    </#list>
   ],
   "alternateScientificName": [
     <#list info.synonyms.all() as s>
@@ -117,13 +118,13 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
       "@language": "${v.language!}",
       "@value": "${v.name!}"
     }<#sep>,</#sep>
-  </#list>
+    </#list>
   ],
 </#if>
 
 <#if parent??>
   "parentTaxon": {
-    "@id":"https://www.catalogueoflife.org/data/taxon/${parent.id}",
+    "@id":"{{ site.url }}/data/taxon/${parent.id}",
     "@type": "Taxon",
     "name": "${parent.label!}",
     "scientificName": {
@@ -152,8 +153,9 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
     ]
   }
 </#if>
-}
-</script>
+      }
+    </script>
+
     <!-- End SEO -->
 
 
