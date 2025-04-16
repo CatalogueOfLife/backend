@@ -78,6 +78,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   }
 
   @GET
+  @Hidden // for building COL portal sitemaps only
   @Path("ids")
   @Produces(MediaType.TEXT_PLAIN)
   public Cursor<String> sitemap(@PathParam("key") int datasetKey, @Context SqlSession session) {
