@@ -66,10 +66,6 @@
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-server</artifactId>
     </dependency>
-    <dependency>
-      <groupId>info.ganglia.gmetric4j</groupId>
-      <artifactId>gmetric4j</artifactId>
-    </dependency>
 
     <!-- Swagger OpenAPI Docs -->
     <dependency>

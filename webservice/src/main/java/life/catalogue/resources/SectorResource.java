@@ -210,12 +210,6 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     return SectorRematcher.match(dao, req, user.getKey());
   }
 
-  @GET
-  @Path("/wrongSubject")
-  public List<Sector> listWrongSubject(@PathParam("key") int projectKey) {
-    return dao.listWrongSubject(projectKey);
-  }
-
   @POST
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})

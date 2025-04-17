@@ -126,9 +126,17 @@
       <if test="req.publisherKey != null">
         JOIN dataset d ON d.key=s.subject_dataset_key
       </if>
+      <if test="req.wrongSubject">
+        LEFT JOIN name ns on ns.dataset_key=ts.dataset_key and ns.id=ts.name_id
+      </if>
       <where>
         <if test="req.publisherKey != null">
           d.gbif_publisher_key=#{req.publisherKey}
+        </if>
+        <if test="req.wrongSubject">
+          AND s.subject_id IS NOT NULL
+          AND s.subject_name IS NOT NULL
+          AND ns.scientific_name != s.subject_name
         </if>
         <if test="req.broken">
           AND ((coalesce(s.subject_id, s.subject_name) IS NOT NULL AND ts.id IS NULL) OR (coalesce(s.target_id, s.target_name) IS NOT NULL AND tt.id IS NULL))
@@ -226,16 +234,6 @@
         AND s.mode = #{mode}::SECTOR_MODE
       </if>
     </where>
-  </select>
-
-  <select id="listWrongSubject" resultMap="sectorResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-      LEFT JOIN name ns on ns.dataset_key=ts.dataset_key and ns.id=ts.name_id
-    WHERE s.dataset_key = #{datasetKey}
-     AND s.subject_id IS NOT NULL
-     AND s.subject_name IS NOT NULL
-     AND ns.scientific_name != s.subject_name
   </select>
 
   <select id="hasSector" resultType="boolean">

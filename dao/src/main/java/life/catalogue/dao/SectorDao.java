@@ -107,16 +107,6 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
-  /**
-   * List all sectors that have a subject id which points to a different name in the source than what is configured in the subject_name of the sector.
-   */
-  public List<Sector> listWrongSubject(Integer datasetKey) {
-    try (SqlSession session = factory.openSession()) {
-      SectorMapper sm = session.getMapper(SectorMapper.class);
-      return sm.listWrongSubject(datasetKey);
-    }
-  }
-
   private boolean filterSector(Sector s, SectorSearchRequest req) {
     if (req.isBroken() && !s.getTarget().isBroken() && !s.getSubject().isBroken()) {
       return false;
