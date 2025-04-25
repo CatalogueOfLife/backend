@@ -22,8 +22,8 @@ import com.google.common.collect.ImmutableMap;
 public class Language implements Comparable<Language> {
   
   private static final Comparator<Language> NATURAL_ORDER = Comparator.comparing(Language::getCode);
-  public static String ISO_VERSION = "_20200130.tab";
-  public static String ISO_CODE_FILE = "vocab/language/iso-639-3"+ISO_VERSION;
+  public static String ISO_VERSION = "20250415";
+  public static String ISO_CODE_FILE = "vocab/language/iso-639-3_" + ISO_VERSION + ".tab";
   public static String OVERRIDES = "vocab/language/iso-639-3-override.tsv";
 
   public static final Map<String, Language> LANGUAGES = ImmutableMap.copyOf(load());
