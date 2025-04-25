@@ -75,9 +75,9 @@ public class LanguageParser extends ParserBase<Language> {
       LOG.error("Failed to load {} mappings", Language.ISO_CODE_FILE, e);
     }
     // Id	Print_Name	Inverted_Name
-    addMapping("iso-639-3_Name_Index"+Language.ISO_VERSION, 0,  null,1,2);
+    addMapping("iso-639-3_Name_Index_" + Language.ISO_VERSION + ".tab", 0,  null,1,2);
     // Id	Ref_Name	Ret_Reason	Change_To	Ret_Remedy	Effective
-    addMapping("iso-639-3_Retirements"+Language.ISO_VERSION, 3,  null, 0,1);
+    addMapping("iso-639-3_Retirements_" + Language.ISO_VERSION + ".tab", 3,  null, 0,1);
     // ISO	english	native
     addMapping("language-native.tab", 0,  null, 1,2);
     // custom manually curated entries: ISO3	VALUE
