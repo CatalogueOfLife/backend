@@ -10,4 +10,5 @@ colplus=# \copy name_1000 (id,dataset_key,sector_key,verbatim_key,scientific_nam
 COPY 54
 ```
 
-The extra file for verbatim_source was created manually to test the duplicate behavior for projects
+The extra file for verbatim_source was created manually to test the duplicate behavior for projects.
+name_usage.verbatim_source_key was added manually afterwards.

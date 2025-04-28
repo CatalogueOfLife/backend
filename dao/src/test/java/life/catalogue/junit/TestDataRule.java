@@ -420,6 +420,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE name_usage CASCADE");
       st.execute("TRUNCATE name CASCADE");
       st.execute("TRUNCATE reference CASCADE");
+      st.execute("TRUNCATE verbatim_source CASCADE");
       st.execute("TRUNCATE verbatim CASCADE");
       session.getConnection().commit();
       st.execute("TRUNCATE dataset_archive CASCADE");
@@ -520,6 +521,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
     LOG.debug("Copy dataset {}", key);
     copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
+    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key, "source_entity", "NAME_USAGE"), Collections.emptyList());
     copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key), Collections.emptyList());
 
     List<CsvFunction> nameFuncs = testData.parseNames ?
@@ -534,7 +536,6 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     copyPartitionedTable(pgc, "name_usage", key,
       datasetEntityDefaults(key, ImmutableMap.<String, Object>of("origin", Origin.SOURCE)), Collections.emptyList()
     );
-    copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
   }
