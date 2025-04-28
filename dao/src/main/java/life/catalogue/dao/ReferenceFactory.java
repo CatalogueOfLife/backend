@@ -55,7 +55,7 @@ public class ReferenceFactory {
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
   private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
-  private static final Pattern AUTHOR_PATTERN_FN_SN = Pattern.compile("^(" + initials + ") *(" + name + ")$");
+  private static final Pattern AUTHOR_PATTERN_FN_SN = Pattern.compile("^(" + initials + ") *(" + name + ")(?<!v[oa]n)$");
   private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^("+name+") +("+ initials +")$");
   // comma separated authors with surname, initials
   private static final Pattern AUTHOR_PATTERN_SN_C_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
