@@ -7,6 +7,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.PagingUtil;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
@@ -309,19 +310,19 @@ public class ImportManager implements Managed, Idle {
    *         dataset does not exist or is not of matching origin
    */
   public ImportRequest upload(final int datasetKey, final InputStream content, boolean zip, @Nullable String filename, @Nullable String suffix, User user) throws IOException {
-    Dataset d = validDataset(datasetKey);
+    validDataset(datasetKey);
     Path upload;
     if (filename == null) {
       filename = "upload-" + System.currentTimeMillis() + (suffix == null ? "" : "." + suffix);
     }
     upload = nCfg.scratchFile(datasetKey, filename).toPath();
     Files.createDirectories(upload.getParent());
-    LOG.info("Upload data for dataset {} to tmp file {}", d.getKey(), upload);
+    LOG.info("Upload data for dataset {} to tmp file {}", datasetKey, upload);
     Files.copy(content, upload, StandardCopyOption.REPLACE_EXISTING);
 
     if (zip) {
       Path uploadZip = createScratchUploadFile(datasetKey);
-      LOG.debug("Zip uploaded file {} for dataset {} to {}", upload, d.getKey(), uploadZip);
+      LOG.debug("Zip uploaded file {} for dataset {} to {}", upload, datasetKey, uploadZip);
       CompressionUtil.zipFile(upload.toFile(), uploadZip.toFile());
       upload = uploadZip; // use zip for the final request object
     }
@@ -330,7 +331,7 @@ public class ImportManager implements Managed, Idle {
 
   public ImportRequest uploadXls(final int datasetKey, final InputStream content, User user) throws IOException {
     Preconditions.checkNotNull(content, "No content given");
-    Dataset d = validDataset(datasetKey);
+    validDataset(datasetKey);
     // extract CSV files
     File csvDir = nCfg.scratchFile(datasetKey, "xls");
     if (csvDir.exists()) {
@@ -338,9 +339,9 @@ public class ImportManager implements Managed, Idle {
     }
     csvDir.mkdirs();
 
-    LOG.info("Extracting spreadsheet data for dataset {} to {}", d.getKey(), csvDir);
+    LOG.info("Extracting spreadsheet data for dataset {} to {}", datasetKey, csvDir);
     List<File> files = ExcelCsvExtractor.extract(content, csvDir);
-    LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), d.getKey());
+    LOG.info("Extracted {} files from spreadsheet data for dataset {}", files.size(), datasetKey);
     // zip up as single source file for importer
     Path uploadZip = createScratchUploadFile(datasetKey);
     CompressionUtil.zipDir(csvDir, uploadZip.toFile());
@@ -383,16 +384,14 @@ public class ImportManager implements Managed, Idle {
     return req;
   }
 
-  private Dataset validDataset(int datasetKey) {
+  private void validDataset(int datasetKey) {
     if (!hasStarted()) {
       throw UnavailableException.unavailable("dataset importer");
     }
     if (datasetKey == Datasets.COL) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is the CoL working draft and cannot be imported");
     }
-    try (SqlSession session = factory.openSession(true)) {
-      return DaoUtils.assertMutable(datasetKey, "imported", session);
-    }
+    DaoUtils.requireOrigin(datasetKey, DatasetOrigin.EXTERNAL, "imported");
   }
 
   /**

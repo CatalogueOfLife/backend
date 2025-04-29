@@ -92,7 +92,7 @@ public abstract class RematcherBase<
     try(SqlSession session = factory.openSession(true)) {
       this.session = session;
       if (!req.isAllowImmutableDatasets()) {
-        DaoUtils.assertMutable(projectKey, "matched", session);
+        DaoUtils.notReleased(projectKey, "matched");
       }
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);
