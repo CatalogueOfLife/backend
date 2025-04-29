@@ -73,7 +73,7 @@ public class ImportManagerTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = new Dataset();
       d.setTitle("upload test");
-      d.setOrigin(DatasetOrigin.PROJECT);
+      d.setOrigin(DatasetOrigin.EXTERNAL);
       d.setType(DatasetType.OTHER);
       d.setCreatedBy(Users.TESTER);
       d.setModifiedBy(Users.TESTER);
