@@ -550,6 +550,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
+  private void updateParent(NameUsageBase nu, DSID<String> existingUsageKey, UsageMatch existing, SimpleNameWithNidx existingParent, SimpleNameWithNidx parent, Set<InfoGroup> upd) {
+    LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+    numRO.updateParentId(existingUsageKey, parent.getId(), user);
+    upd.add(InfoGroup.PARENT);
+  }
+
   private void update(NameUsageBase nu, UsageMatch existing) {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
@@ -569,11 +575,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
               } else {
                 var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+                var parent2 = matchedParents.size() < 2 ? null : matchedParents.get(matchedParents.size()-2).match;
                 batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
                 if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
-                  LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
-                  numRO.updateParentId(existingUsageKey, parent.getId(), user);
-                  upd.add(InfoGroup.PARENT);
+                  updateParent(nu, existingUsageKey, existing, existingParent, parent, upd);
+                } else if (parent.getRank() == Rank.SERIES && parent2 != null && proposedParentDoesNotConflict(existing.usage, existingParent, parent2)) {
+                  // series in zoology are placed differently than in botany which we consider as series
+                  // See https://github.com/CatalogueOfLife/data/issues/1023
+                  updateParent(nu, existingUsageKey, existing, existingParent, parent2, upd);
                 }
               }
             }
