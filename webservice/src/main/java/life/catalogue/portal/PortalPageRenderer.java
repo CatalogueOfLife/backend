@@ -148,7 +148,7 @@ public class PortalPageRenderer {
       data.put("last", datasetDao.get(e.usage.getLastReleaseKey()));
       // load verbatim source from last release
       if (e.usage.getLastReleaseKey() != null) {
-        var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
+        var v = tdao.getSourceByUsageKey(DSID.of(e.usage.getLastReleaseKey(), id));
         data.put("verbatim", v);
         data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
       }

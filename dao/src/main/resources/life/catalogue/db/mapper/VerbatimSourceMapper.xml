@@ -161,7 +161,8 @@
   </delete>
 
   <delete id="deleteByTaxon" parameterType="map">
-    DELETE FROM verbatim_source_secondary
+    DELETE FROM verbatim_source_secondary v2
+    USING name_usage u, verbatim_source v
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id};
 
     DELETE FROM verbatim_source
@@ -177,13 +178,21 @@
   </delete>
 
   <delete id="deleteBySector" parameterType="map">
-    DELETE FROM verbatim_source_secondary v
-    USING name_usage u
-    WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id};
+    DELETE FROM verbatim_source_secondary v2
+    USING name_usage u, verbatim_source v
+    WHERE v2.dataset_key = #{key.datasetKey}
+      AND v.dataset_key = #{key.datasetKey}
+      AND u.dataset_key = #{key.datasetKey}
+      AND v2.verbatim_source_key=v.id
+      AND u.verbatim_source_key=v.id
+      AND u.sector_key=#{key.id};
 
     DELETE FROM verbatim_source v
     USING name_usage u
-    WHERE v.dataset_key = #{key.datasetKey} AND u.dataset_key = #{key.datasetKey} AND u.id=v.id AND u.sector_key=#{key.id}
+    WHERE v.dataset_key = #{key.datasetKey}
+      AND u.dataset_key = #{key.datasetKey}
+      AND u.verbatim_source_key=v.id
+      AND u.sector_key=#{key.id}
   </delete>
 
   <delete id="deleteByTemp" parameterType="map">

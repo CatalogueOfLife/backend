@@ -24,11 +24,11 @@ import org.apache.ibatis.annotations.Param;
  * Please use the dedicated insertSources method instead!
  */
 public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDataset, DatasetProcessable<VerbatimSource>,
-  SectorProcessable<VerbatimSource>, TaxonProcessable<VerbatimSource> {
+  SectorProcessable<VerbatimSource> {
 
-  VerbatimSource get(@Param("key") DSID<String> key);
+  VerbatimSource get(@Param("key") DSID<Integer> key);
 
-  default VerbatimSource getWithSources(@Param("key") DSID<String> key) {
+  default VerbatimSource getWithSources(@Param("key") DSID<Integer> key) {
     VerbatimSource v = get(key);
     var snd = getSources(key);
     // it can happen that we only have secondary sources!
@@ -42,16 +42,16 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     return v;
   }
 
-  VerbatimSource getIssues(@Param("key") DSID<String> key);
+  VerbatimSource getIssues(@Param("key") DSID<Integer> key);
 
-  int updateIssues(@Param("key") DSID<String> key, @Param("issues") Set<Issue> issues);
+  int updateIssues(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
-  int _addIssueInternal(@Param("key") DSID<String> key, @Param("issues") @NotNull Set<Issue> issues);
+  int _addIssueInternal(@Param("key") DSID<Integer> key, @Param("issues") @NotNull Set<Issue> issues);
 
   /**
    * Add an issue to an existing verbatim source record or create a new one.
    */
-  default void addIssue(@Param("key") DSID<String> key, Issue issue) {
+  default void addIssue(@Param("key") DSID<Integer> key, Issue issue) {
     if (issue != null) {
       Set<Issue> issues = new HashSet<>();
       issues.add(issue);
@@ -59,7 +59,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     }
   }
 
-  default void addIssues(@Param("key") DSID<String> key, Set<Issue> issues) {
+  default void addIssues(@Param("key") DSID<Integer> key, Set<Issue> issues) {
     if (issues != null && !issues.isEmpty()) {
       int mod = _addIssueInternal(key, issues);
       if (mod < 1) {
@@ -88,7 +88,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   }
 
   @MapKey("type")
-  Map<InfoGroup, SecondarySource> getSources(@Param("key") DSID<String> key);
+  Map<InfoGroup, SecondarySource> getSources(@Param("key") DSID<Integer> key);
 
   List<SecondarySource> list(@Param("key") DSID<String> key);
 
@@ -96,9 +96,9 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   void deleteSourceGroups(@Param("key") DSID<String> key, @Param("groups") Set<InfoGroup> groups);
 
-  void deleteSources(@Param("key") DSID<String> key);
+  void deleteSources(@Param("key") DSID<Integer> key);
 
-  void delete(@Param("key") DSID<String> key);
+  void delete(@Param("key") DSID<Integer> key);
 
   /**
    * Removes all issues from all verbatim source records of the given project

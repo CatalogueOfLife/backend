@@ -3,14 +3,18 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.Serializable;
 import java.util.*;
 
 
-public class VerbatimSource implements DSID<String>, IssueContainer, Serializable {
+public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContainer, Serializable {
 
-  private String id;
+  private Integer id;
   private Integer datasetKey;
+  private Integer sectorKey;
+  private Sector.Mode sectorMode;
   private String sourceId;
   private Integer sourceDatasetKey;
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
@@ -21,8 +25,9 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
   public VerbatimSource() {
   }
 
-  public VerbatimSource(Integer datasetKey, String id, Integer sourceDatasetKey, String sourceId) {
+  public VerbatimSource(Integer datasetKey, Integer sectorKey, Integer id, Integer sourceDatasetKey, String sourceId) {
     this.id = id;
+    this.sectorKey = sectorKey;
     this.datasetKey = datasetKey;
     this.sourceId = sourceId;
     this.sourceDatasetKey = sourceDatasetKey;
@@ -37,13 +42,34 @@ public class VerbatimSource implements DSID<String>, IssueContainer, Serializabl
   }
 
   @Override
-  public String getId() {
+  public Integer getId() {
     return id;
   }
 
   @Override
-  public void setId(String id) {
+  public void setId(Integer id) {
     this.id = id;
+  }
+
+  @Nullable
+  @Override
+  public Integer getSectorKey() {
+    return sectorKey;
+  }
+
+  @Override
+  public void setSectorKey(Integer sectorKey) {
+    this.sectorKey = sectorKey;
+  }
+
+  @Override
+  public Sector.Mode getSectorMode() {
+    return sectorMode;
+  }
+
+  @Override
+  public void setSectorMode(Sector.Mode sectorMode) {
+    this.sectorMode = sectorMode;
   }
 
   public Integer getSourceDatasetKey() {

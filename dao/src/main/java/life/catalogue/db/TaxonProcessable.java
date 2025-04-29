@@ -18,7 +18,6 @@ public interface TaxonProcessable<T> extends TempNameUsageRelated {
    */
   List<Class<? extends TaxonProcessable<?>>> MAPPERS = List.of(
     SynonymMapper.class,
-    VerbatimSourceMapper.class,
     VernacularNameMapper.class,
     DistributionMapper.class,
     MediaMapper.class,
