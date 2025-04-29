@@ -23,6 +23,9 @@ import life.catalogue.junit.PgSetupRule;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -196,6 +199,27 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     // just test valid sql rather than expected outcomes
     mapper().listStaleAmbiguousUpdateDecisions(appleKey, null, 100);
     mapper().listStaleAmbiguousUpdateDecisions(appleKey, 1, 100);
+  }
+
+  @Test
+  public void facets(){
+    var ed = create(appleKey);
+    mapper().create(ed);
+
+    var req = new DecisionSearchRequest();
+    req.setDatasetKey(Datasets.COL);
+    var resp = mapper().searchModeFacet(req);
+    assertEquals(1, resp.size());
+    assertEquals(1, resp.get(0).getCount());
+    assertEquals(ed.getMode(), resp.get(0).getValue());
+
+    req.setSubjectDatasetKey(appleKey);
+    resp = mapper().searchModeFacet(req);
+    assertEquals(1, resp.size());
+
+    req.setRank(Rank.SEROVAR);
+    resp = mapper().searchModeFacet(req);
+    assertEquals(0, resp.size());
   }
 
   @Test

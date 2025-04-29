@@ -1,15 +1,12 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.search.FacetValue;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.validation.Validator;
@@ -33,12 +30,16 @@ public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, De
     this.indexService = indexService;
   }
 
-  public ResultPage<EditorialDecision> search(DecisionSearchRequest request, Page page) {
+  public FacettedResultPage<EditorialDecision, String> search(DecisionSearchRequest request, Page page) {
     Page p = page == null ? new Page() : page;
     try (SqlSession session = factory.openSession()) {
       DecisionMapper mapper = session.getMapper(DecisionMapper.class);
       List<EditorialDecision> result = mapper.search(request, p);
-      return new ResultPage<>(p, result, () -> mapper.countSearch(request));
+      Map<String, List<FacetValue<?>>> facets = null;
+      if (request.getFacets().contains("mode")) {
+        facets = Map.of("mode", mapper.searchModeFacet(request));
+      }
+      return new FacettedResultPage<>(p, result, () -> mapper.countSearch(request), facets);
     }
   }
 

@@ -298,4 +298,14 @@
     WHERE dataset_key=#{datasetKey}
   </insert>
 
+  <select id="searchModeFacet" resultType="life.catalogue.db.mapper.DecisionMapper$ModeValue">
+    SELECT mode, count(*)
+    FROM decision ed
+    <if test="req.broken">
+      <include refid="JOIN_USAGE"/>
+    </if>
+    <include refid="WHERE"/>
+    GROUP BY mode
+  </select>
+
 </mapper>

@@ -3,6 +3,7 @@ package life.catalogue.api.search;
 import life.catalogue.api.model.EditorialDecision;
 
 import java.util.Objects;
+import java.util.Set;
 
 import jakarta.ws.rs.QueryParam;
 
@@ -16,6 +17,9 @@ public class DecisionSearchRequest extends BaseDecisionSearchRequest {
 
   @QueryParam("subject")
   private boolean subject = false;
+
+  @QueryParam("facet")
+  private Set<String> facets;
 
   public static DecisionSearchRequest byProject(int datasetKey){
     DecisionSearchRequest req = new DecisionSearchRequest();
@@ -59,18 +63,24 @@ public class DecisionSearchRequest extends BaseDecisionSearchRequest {
     this.subject = subject;
   }
 
+  public Set<String> getFacets() {
+    return facets;
+  }
+
+  public void setFacets(Set<String> facets) {
+    this.facets = facets;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof DecisionSearchRequest)) return false;
+    if (!super.equals(o)) return false;
     DecisionSearchRequest that = (DecisionSearchRequest) o;
-    return subject == that.subject &&
-      Objects.equals(subjectDatasetKey, that.subjectDatasetKey) &&
-      mode == that.mode;
+    return subject == that.subject && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && mode == that.mode && Objects.equals(facets, that.facets);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(subjectDatasetKey, mode, subject);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, mode, subject, facets);
   }
 }

@@ -1,9 +1,6 @@
 package life.catalogue.resources;
 
-import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.dao.DecisionDao;
 import life.catalogue.db.PgUtils;
@@ -46,7 +43,7 @@ public class DecisionResource extends AbstractDatasetScopedResource<Integer, Edi
   }
 
   @Override
-  ResultPage<EditorialDecision> searchImpl(int datasetKey, DecisionSearchRequest req, Page page) {
+  FacettedResultPage<EditorialDecision, String> searchImpl(int datasetKey, DecisionSearchRequest req, Page page) {
     if (req.isSubject()) {
       req.setSubjectDatasetKey(datasetKey);
     } else {
