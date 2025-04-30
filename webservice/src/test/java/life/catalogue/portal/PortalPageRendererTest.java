@@ -57,17 +57,15 @@ public class PortalPageRendererTest {
     ds.setTitle("Super Source");
     when(ddao.get(ds.getKey())).thenReturn(ds);
 
-    var dr1 = new Dataset();
+    var dr1 = new DatasetRelease();
     dr1.setKey(releaseKey-10);
     dr1.setAlias("rel1");
-    dr1.setTitle("First Release");
-    when(ddao.get(dr1.getKey())).thenReturn(dr1);
+    when(ddao.getRelease(dr1.getKey())).thenReturn(dr1);
 
-    var dr2 = new Dataset();
+    var dr2 = new DatasetRelease();
     dr2.setKey(releaseKey-2);
     dr2.setAlias("rel2");
-    dr2.setTitle("Last Release");
-    when(ddao.get(dr2.getKey())).thenReturn(dr2);
+    when(ddao.getRelease(dr2.getKey())).thenReturn(dr2);
 
     ArchivedNameUsage anu = new ArchivedNameUsage();
     anu.setId(ID_DEAD.getId());

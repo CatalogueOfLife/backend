@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<#ftl output_format="XHTML"><!DOCTYPE html>
 <html>
 
   <head>
@@ -231,98 +231,146 @@ setInterval(getHealth, interval);
 </script>
 
       <div class="row" style="padding-top: 40px;">
-<div id="taxon">
-  <div class="catalogue-of-life" style="padding: 24px; min-height: 280px; margin: 16px 0px; font-size: 12px;">
-    <div class="ant-row">
-      <div class="ant-col"><h1 style="font-size: 30px; font-weight: 400; padding-left: 10px; display: inline-block; text-transform: none;">${usage.labelHtml}</h1></div>
-    </div>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">COL Identifier</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">${usage.getId()}</span>
-      </div>
-    </div>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">History</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">First issued in release <a href="https://www.checklistbank.org/dataset/${first.key?c}/taxon/${usage.getId()}">${first.alias!first.version}</a>.
-        Last used in release <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${usage.getId()}">${last.alias!last.version}</a></span>
-      </div>
-    </div>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">Name</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">${usage.labelHtml}</span>
-      </div>
-    </div>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">Checklist status</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">${usage.status} ${usage.rank}</span>
-      </div>
-    </div>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">Classification</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3">
-          <div style="margin-top: -3px; margin-left: -3px;">
-            <#list usage.classification as cl>
-            <div style="float: left; margin-right: 3px;">
-              <span style="color: rgba(0, 0, 0, 0.45); font-size: 11px;">${cl.rank}: </span>
-              <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${cl.id}">${cl.name}</a> &gt;
+
+        <div id="taxon" class="row">
+          <div class="catalogue-of-life" style="padding: 24px; min-height: 280px; margin: 16px 0px; font-size: 12px;">
+            <div class="ant-row">
+              <div class="ant-col"><h1 style="font-size: 30px; font-weight: 400; padding-left: 10px; display: inline-block; text-transform: none;">${usage.labelHtml?no_esc}</h1></div>
             </div>
-            </#list>
+            <div class="ant-row Component-formItem-0-2-1">
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                <div>
+                  <dt class="Component-label-0-2-2">COL Identifier</dt>
+                </div>
+              </div>
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                <span class="Component-content-0-2-3">${usage.getId()}</span>
+              </div>
+            </div>
+            <div class="ant-row Component-formItem-0-2-1">
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                <div>
+                  <dt class="Component-label-0-2-2">History</dt>
+                </div>
+              </div>
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+          <span class="Component-content-0-2-3">First issued in release <a href="https://www.checklistbank.org/dataset/${first.key?c}/taxon/${usage.getId()}">${first.alias!first.version}</a>.
+          Last used in release <a href="https://www.checklistbank.org/dataset/${last.key?c}/taxon/${usage.getId()}">${last.alias!last.version}</a>.
+          </span>
+              </div>
+            </div>
+            <#if annualRelease??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style=""></div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+          <span class="Component-content-0-2-3">Appears in annual releases:
+              <#list annualReleases as r>
+                <a href="https://www.checklistbank.org/dataset/${r.key?c}/taxon/${usage.getId()}">${r.alias!r.version}</a><#sep>, </#sep>
+              </#list>
+          </span>
+                </div>
+              </div>
+            </#if>
+            <#if usage.publishedIn??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                  <div>
+                    <dt class="Component-label-0-2-2">Published in</dt>
+                  </div>
+                </div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                  <span class="Component-content-0-2-3">${usage.publishedIn}</span>
+                </div>
+              </div>
+            </#if>
+            <div class="ant-row Component-formItem-0-2-1">
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                <div>
+                  <dt class="Component-label-0-2-2">Checklist status</dt>
+                </div>
+              </div>
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                <span class="Component-content-0-2-3">${usage.status} ${usage.rank}</span>
+              </div>
+            </div>
+            <#if usage.basionym??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                  <div>
+                    <dt class="Component-label-0-2-2">Basionym</dt>
+                  </div>
+                </div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                  <span class="Component-content-0-2-3">${usage.basionym.labelHtml?no_esc}</span>
+                </div>
+              </div>
+            </#if>
+            <div class="ant-row Component-formItem-0-2-1">
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                <div>
+                  <dt class="Component-label-0-2-2">Classification</dt>
+                </div>
+              </div>
+              <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+          <span class="Component-content-0-2-3">
+            <div>
+              <#list usage.classification as cl>
+                <div style="float: left; margin-right: 3px;">
+                <span style="color: rgba(0, 0, 0, 0.45); font-size: 11px;">${cl.rank}: </span>
+                ${cl.name} &gt;
+              </div>
+              </#list>
+            </div>
+          </span>
+              </div>
+            </div>
+            <#if source??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                  <div>
+                    <dt class="Component-label-0-2-2">Source dataset</dt>
+                  </div>
+                </div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                  <span class="Component-content-0-2-3"><a href="https://www.checklistbank.org/dataset/${source.key?c}">${source.title}</a></span>
+                </div>
+              </div>
+            </#if>
+            <#if usage.link??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                  <div>
+                    <dt class="Component-label-0-2-2">Link to original resource</dt>
+                  </div>
+                </div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+                  <span class="Component-content-0-2-3"><a href="${usage.link}">${usage.link}</a></span>
+                </div>
+              </div>
+            </#if>
+            <#if usage.link??>
+              <div class="ant-row Component-formItem-0-2-1">
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
+                  <div>
+                    <dt class="Component-label-0-2-2">Classification</dt>
+                  </div>
+                </div>
+                <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
+          <span class="Component-content-0-2-3">
+            <div>
+              <#list usage.classification as cl>
+                <div style="float: left; margin-right: 3px;">
+                <span style="color: rgba(0, 0, 0, 0.45); font-size: 11px;">${cl.rank}: </span>
+                ${cl.name} &gt;
+              </div>
+              </#list>
+            </div>
+          </span>
+                </div>
+              </div>
+            </#if>
           </div>
-        </span>
-      </div>
-    </div>
-   <#if source??>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">Source dataset</dt>
         </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3"><a href="https://www.checklistbank.org/dataset/${source.key}">${source.title}</a></span>
-      </div>
-    </div>
-   </#if>
-   <#if usage.link??>
-    <div class="ant-row Component-formItem-0-2-1">
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-5" style="">
-        <div>
-          <dt class="Component-label-0-2-2">Link to original resource</dt>
-        </div>
-      </div>
-      <div class="ant-col Component-smallMargin-0-2-6 ant-col-sm-24 ant-col-md-19" style="">
-        <span class="Component-content-0-2-3"><a href="${usage.link}">${usage.link}</a></span>
-      </div>
-    </div>
-   </#if>
-  </div>
-</div>
-</div>
 
     </div>
 

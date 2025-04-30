@@ -7,6 +7,7 @@ import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.InputStreamUtils;
@@ -24,10 +25,7 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -69,32 +67,8 @@ public class PortalPageRenderer {
           .collect(Collectors.toMap(e -> e, e -> new HashMap<>()))
   );
   private Path portalTemplateDir = Path.of("/tmp");
-  private final LoadingCache<Integer, DatasetRelease> lastAnnualRelease = Caffeine.newBuilder()
-                                                                     .maximumSize(10000)
-                                                                     .build(this::lookupLatestAnnualReleaseKey);
-
-  /**
-   * Looks up the latest annual release before the given release key which has the same origin and long term support,
-   * i.e. is a COL Annual Release
-   */
-  private DatasetRelease lookupLatestAnnualReleaseKey(Integer releaseKey) {
-    try (SqlSession session = tdao.getFactory().openSession()) {
-      var dm = session.getMapper(DatasetMapper.class);
-      final var rel = dm.getRelease(releaseKey);
-      if (rel.hasLongTermSupport()) {
-        return rel;
-      }
-      // try to find the latest annual release before this one
-      var allReleases = dm.listReleasesQuick(rel.getProjectKey());
-      Collections.reverse(allReleases);
-      for (var r : allReleases) {
-        if (r.getOrigin().equals(rel.getOrigin()) && r.getAttempt() < rel.getAttempt() && r.hasLongTermSupport()) {
-          return r;
-        }
-      }
-    }
-    return null;
-  }
+  private final List<DatasetRelease> annualReleases;
+  private final List<DatasetRelease> annualXReleases;
 
   public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
     this.datasetDao = datasetDao;
@@ -103,6 +77,22 @@ public class PortalPageRenderer {
     this.tdao = tdao;
     this.cache = cache;
     setTemplateFolder(portalTemplateDir);
+    List<DatasetRelease> annuals = new ArrayList<>();;
+    if (factory != null) {
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        annuals = dm.listReleasesQuick(Datasets.COL).stream()
+          .filter(d -> !d.isDeleted())
+          .filter(DatasetRelease::hasLongTermSupport)
+          .collect(Collectors.toList());
+      }
+    }
+    annualReleases = annuals.stream()
+      .filter(d -> d.getOrigin()== DatasetOrigin.RELEASE)
+      .collect(Collectors.toList());
+    annualXReleases = annuals.stream()
+      .filter(d -> d.getOrigin()== DatasetOrigin.XRELEASE)
+      .collect(Collectors.toList());
   }
 
   public Path getPortalTemplateDir() {
@@ -137,7 +127,7 @@ public class PortalPageRenderer {
       Taxon t = tdao.getOr404(key);
       UsageInfo info = new UsageInfo(t);
       data.put("info", info);
-      try (SqlSession session = tdao.getFactory().openSession()) {
+      try (SqlSession session = factory.openSession()) {
         tdao.fillUsageInfo(session, info, null,
           false,
           true,
@@ -182,22 +172,21 @@ public class PortalPageRenderer {
         var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
         data.put("verbatim", v);
         data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
-        // load last annual release and make sure it exists in that release
-        var annual = lastAnnualRelease.get(e.usage.getLastReleaseKey());
-        if (annual != null && annual.getAttempt() < e.usage.getFirstReleaseKey()) {
-          annual = null;
-        } else {
-          // verify the taxon id actually exists in that release
-          try (SqlSession session = tdao.getFactory().openSession()) {
-            var num = session.getMapper(NameUsageMapper.class);
-            if (!num.exists(DSID.of(annual.getKey(), id))) {
-              annual = null;
+      }
+      // list all annual releases this id appears in
+      List<DatasetRelease> appearsIn = new ArrayList<>();
+      if (factory != null) {
+        try (SqlSession session = factory.openSession()) {
+          var num = session.getMapper(NameUsageMapper.class);
+          for (DatasetRelease r : annualReleases) {
+            if (num.exists(DSID.of(r.getKey(), id))) {
+              appearsIn.add(r);
             }
           }
         }
-        data.put("annualRelease", annual);
       }
-      // load alternative names in case this is a canonical one
+      data.put("annualReleases", appearsIn);
+      // TODO: load alternative names in case this is a canonical one
       return render(env, PortalPage.TOMBSTONE, data);
 
     } catch (NotFoundException e) {
