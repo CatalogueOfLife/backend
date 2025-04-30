@@ -115,7 +115,6 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     final int cnt;
     LOG.info("Remove orphaned names data from dataset {}", datasetKey);
     try (SqlSession session = factory.openSession(false)) {
-      PgUtils.deferConstraints(session);
       cnt = session.getMapper(NameMapper.class).deleteOrphans(datasetKey, before);
       LOG.info("Removed {} orphan names from dataset {} by user {}", cnt, datasetKey, userKey);
       // also remove orphaned name relations and type material in the same session to not break the FK constraints

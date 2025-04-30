@@ -8,6 +8,7 @@ public interface UsageIdGen {
   String issue(SimpleNameWithNidx usage);
   Integer nidx2canonical(Integer nidx);
 
+  // generates short UUIDs with 22 or 23 characters
   UsageIdGen RANDOM_SHORT_UUID = new UsageIdGen() {
     @Override
     public String issue(SimpleNameWithNidx usage) {

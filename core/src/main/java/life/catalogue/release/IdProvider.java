@@ -626,7 +626,7 @@ public class IdProvider {
       final AtomicInteger counter = new AtomicInteger(0);
       final AtomicInteger removed = new AtomicInteger(0);
       final AtomicInteger other = new AtomicInteger(0);
-      PgUtils.consume(() -> num.processIds(datasetKey, true), id -> {
+      PgUtils.consume(() -> num.processIds(datasetKey, true, null), id -> {
         try {
           int intID = IdConverter.LATIN29.decode(id);
           if (ids.remove(intID) != null) {

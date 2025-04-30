@@ -76,6 +76,11 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     CopyUtil.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
 
+  public static void changeUsageID(String oldID, String newID, SqlSession session) {
+
+
+  }
+
   /**
    * Returns a taxon with the specified key or throws:
    *  - a SynonymException in case the id belongs to a synonym

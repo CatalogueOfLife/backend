@@ -1423,7 +1423,7 @@ CREATE TABLE type_material (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON type_material (dataset_key, name_id);
@@ -1440,7 +1440,7 @@ CREATE TABLE name_match (
   type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_match (dataset_key, sector_key);
@@ -1481,7 +1481,7 @@ CREATE TABLE name_usage (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
   FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
@@ -1520,7 +1520,7 @@ CREATE TABLE verbatim_source (
   source_dataset_key INTEGER,
   issues ISSUE[] DEFAULT '{}',
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
@@ -1532,7 +1532,7 @@ CREATE TABLE verbatim_source_secondary (
   source_id TEXT,
   source_entity ENTITYTYPE,
   source_dataset_key INTEGER,
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
@@ -1556,8 +1556,8 @@ CREATE TABLE taxon_concept_rel (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id);
@@ -1586,8 +1586,8 @@ CREATE TABLE species_interaction (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON species_interaction (dataset_key, taxon_id);
@@ -1620,7 +1620,7 @@ CREATE TABLE vernacular_name (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
@@ -1649,7 +1649,7 @@ CREATE TABLE distribution (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON distribution (dataset_key, taxon_id);
@@ -1671,7 +1671,7 @@ CREATE TABLE treatment (
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON treatment (dataset_key, sector_key);
@@ -1727,7 +1727,7 @@ CREATE TABLE media (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON media (dataset_key, taxon_id);
@@ -1756,7 +1756,7 @@ CREATE TABLE taxon_property (
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON taxon_property (dataset_key, taxon_id);

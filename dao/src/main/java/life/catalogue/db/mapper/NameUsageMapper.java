@@ -418,7 +418,15 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
+  /**
+   * Iterates over all usage ids for a given dataset, optionally filtered by a minimum string length,
+   * e.g. to only list temporary UUIDs
+   * @param datasetKey
+   * @param includeSynonyms
+   * @param minLength
+   * @return
+   */
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);
 
   /**
    * Lists all usage ids of taxa which have synonyms as their parent.
