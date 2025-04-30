@@ -142,6 +142,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
   }
 
+  public DatasetRelease getRelease(Integer key) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(mapperClass);
+      return mapper.getRelease(key);
+    }
+  }
+
   public DatasetWithSettings getWithSettings(UUID gbifKey) {
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);

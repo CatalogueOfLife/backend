@@ -6,17 +6,20 @@ import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.matching.TaxGroupAnalyzer;
 
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -24,32 +27,52 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import jakarta.validation.Validator;
 
+import life.catalogue.printer.JsonTreePrinter;
+
+import life.catalogue.printer.PrinterFactory;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Rank;
 
+import org.gbif.nameparser.util.RankUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 
 public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private static final Pattern TAG = Pattern.compile("(?<!<)([ib])>(.+)</\\1(?!>)");
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
+  private final NameUsageSearchService searchService;
+  private final MetricsDao metricsDao;
+  private final TaxonCounter esCounter = new TaxonCounter() {
+    @Override
+    public int count(DSID<String> key, Rank countRank) {
+      if (searchService == null) return 1; // should be in tests only
+      var req = new NameUsageSearchRequest();
+      req.setDatasetFilter(key.getDatasetKey());
+      req.addFilter(NameUsageSearchParameter.TAXON_ID, key.getId());
+      req.addFilter(NameUsageSearchParameter.RANK, countRank);
+      req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      var resp = searchService.search(req, new Page(0,0));
+      return resp.getTotal();
+    }
+  };
 
   /**
    * Warn: you must set a sector dao manually before using the TaxonDao.
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
-  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
+  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, MetricsDao metricsDao, NameUsageIndexService indexService, NameUsageSearchService searchService, Validator validator) {
     super(Taxon.class, TaxonMapper.class, factory, nameDao, indexService, validator);
+    this.searchService = searchService;
+    this.metricsDao = metricsDao;
   }
 
   // dependency loop :( so cant populate this in the constructor
@@ -700,5 +723,43 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   private static String devNull(String r) {
     return null;
   }
-  
+
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
+    var key = DSID.of(datasetKey, id);
+    var tax = getSimpleOr404(key);
+    var rank = tax.getRank();
+    // lookup lowest concrete parent rank or default to kingdom
+    if (rank.otherOrUnranked()) {
+      rank = classificationSimple(key).stream()
+        .map(SimpleName::getRank)
+        .filter(Rank::notOtherOrUnranked)
+        .findFirst().orElse(Rank.DOMAIN);
+    }
+    if (Rank.GENUS.higherOrEqualsTo(rank)) {
+      throw new NotFoundException("Breakdown for taxon " + key + " does not exist");
+    }
+    // figure out the next lower 2 linnean ranks to breakdown to
+    Set<Rank> ranks = new HashSet<>();
+    var nextRank = RankUtils.nextLowerLinneanRank(rank);
+    ranks.add(nextRank);
+    // for families and alike just show the genera and stop at the first level
+    if (nextRank != Rank.GENUS) {
+      ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
+    }
+    var ttp = TreeTraversalParameter.dataset(datasetKey);
+    ttp.setTaxonID(id);
+    ttp.setSynonyms(false);
+    ttp.setLowestRank(RankUtils.lowestRank(ranks));
+
+    // we need to count differently for projects than other datasets with taxon metrics
+    TaxonCounter taxonCounter;
+    if (DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT) {
+      // use elastic to do project counts
+      taxonCounter = esCounter;
+    } else {
+      taxonCounter = metricsDao;
+    }
+
+    return PrinterFactory.dataset(JsonTreePrinter.class, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
+  }
 }

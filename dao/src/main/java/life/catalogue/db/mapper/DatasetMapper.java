@@ -152,62 +152,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
 
-  class DatasetRelease {
-    private int key;
-    private int projectKey;
-    private int attempt;
-    private DatasetOrigin origin;
-    private boolean privat;
-    private boolean deleted;
-
-    public int getKey() {
-      return key;
-    }
-
-    public void setKey(int key) {
-      this.key = key;
-    }
-
-    public int getProjectKey() {
-      return projectKey;
-    }
-
-    public void setProjectKey(int projectKey) {
-      this.projectKey = projectKey;
-    }
-
-    public int getAttempt() {
-      return attempt;
-    }
-
-    public void setAttempt(int attempt) {
-      this.attempt = attempt;
-    }
-
-    public boolean isPrivat() {
-      return privat;
-    }
-
-    public void setPrivat(boolean privat) {
-      this.privat = privat;
-    }
-
-    public boolean isDeleted() {
-      return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-      this.deleted = deleted;
-    }
-
-    public DatasetOrigin getOrigin() {
-      return origin;
-    }
-
-    public void setOrigin(DatasetOrigin origin) {
-      this.origin = origin;
-    }
-  }
+  /**
+   * Retrieves a release quickly with minimal information.
+   * @return the release or null if no release exists for the given dataset key or the dataset is not a release dataset.
+   */
+  DatasetRelease getRelease(@Param("key") int key);
 
   /**
    * Looks for potential duplicates of a dataset by aggregating them on title and description.

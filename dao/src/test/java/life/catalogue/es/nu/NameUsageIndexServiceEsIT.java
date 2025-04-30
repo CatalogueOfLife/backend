@@ -113,7 +113,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, NameUsageIndexService.passThru(), validator);
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, null, NameUsageIndexService.passThru(), null, validator);
     dsid = tdao.create(taxon, USER_ID);
     LOG.info(">>>>>>> Taxon inserted into database. ID: {}\n", EsModule.writeDebug(taxon));
 

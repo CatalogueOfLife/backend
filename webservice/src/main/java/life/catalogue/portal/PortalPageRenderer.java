@@ -1,5 +1,8 @@
 package life.catalogue.portal;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -12,6 +15,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.api.model.DatasetRelease;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.metadata.FmUtil;
 import life.catalogue.resources.ResourceUtils;
@@ -21,6 +25,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -64,6 +69,32 @@ public class PortalPageRenderer {
           .collect(Collectors.toMap(e -> e, e -> new HashMap<>()))
   );
   private Path portalTemplateDir = Path.of("/tmp");
+  private final LoadingCache<Integer, DatasetRelease> lastAnnualRelease = Caffeine.newBuilder()
+                                                                     .maximumSize(10000)
+                                                                     .build(this::lookupLatestAnnualReleaseKey);
+
+  /**
+   * Looks up the latest annual release before the given release key which has the same origin and long term support,
+   * i.e. is a COL Annual Release
+   */
+  private DatasetRelease lookupLatestAnnualReleaseKey(Integer releaseKey) {
+    try (SqlSession session = tdao.getFactory().openSession()) {
+      var dm = session.getMapper(DatasetMapper.class);
+      final var rel = dm.getRelease(releaseKey);
+      if (rel.hasLongTermSupport()) {
+        return rel;
+      }
+      // try to find the latest annual release before this one
+      var allReleases = dm.listReleasesQuick(rel.getProjectKey());
+      Collections.reverse(allReleases);
+      for (var r : allReleases) {
+        if (r.getOrigin().equals(rel.getOrigin()) && r.getAttempt() < rel.getAttempt() && r.hasLongTermSupport()) {
+          return r;
+        }
+      }
+    }
+    return null;
+  }
 
   public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
     this.datasetDao = datasetDao;
@@ -144,14 +175,29 @@ public class PortalPageRenderer {
     } catch (ArchivedException e) {
       // render tombstone page
       data.put("usage", e.usage);
-      data.put("first", datasetDao.get(e.usage.getFirstReleaseKey()));
-      data.put("last", datasetDao.get(e.usage.getLastReleaseKey()));
+      data.put("first", datasetDao.getRelease(e.usage.getFirstReleaseKey()));
+      data.put("last", datasetDao.getRelease(e.usage.getLastReleaseKey()));
       // load verbatim source from last release
       if (e.usage.getLastReleaseKey() != null) {
         var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
         data.put("verbatim", v);
         data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
+        // load last annual release and make sure it exists in that release
+        var annual = lastAnnualRelease.get(e.usage.getLastReleaseKey());
+        if (annual != null && annual.getAttempt() < e.usage.getFirstReleaseKey()) {
+          annual = null;
+        } else {
+          // verify the taxon id actually exists in that release
+          try (SqlSession session = tdao.getFactory().openSession()) {
+            var num = session.getMapper(NameUsageMapper.class);
+            if (!num.exists(DSID.of(annual.getKey(), id))) {
+              annual = null;
+            }
+          }
+        }
+        data.put("annualRelease", annual);
       }
+      // load alternative names in case this is a canonical one
       return render(env, PortalPage.TOMBSTONE, data);
 
     } catch (NotFoundException e) {

@@ -207,7 +207,7 @@
     <id property="key" column="key"/>
   </resultMap>
 
-  <resultMap id="releaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetRelease" autoMapping="true">
+  <resultMap id="releaseResultMap" type="life.catalogue.api.model.DatasetRelease" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private" />
   </resultMap>
@@ -376,10 +376,16 @@
   </select>
 
   <select id="listReleasesQuick" resultMap="releaseResultMap">
-    SELECT key, #{projectKey} AS projectKey, attempt, origin, private, deleted IS NOT NULL AS deleted
+    SELECT key, #{projectKey} AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
     FROM dataset d
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.attempt, d.key
+  </select>
+
+  <select id="getRelease" resultMap="releaseResultMap">
+    SELECT key, source_key AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
+    FROM dataset d
+    WHERE <include refid="IS_RELEASE"/> AND d.key=#{key}
   </select>
 
   <select id="duplicates" resultMap="duplicateResultMap">

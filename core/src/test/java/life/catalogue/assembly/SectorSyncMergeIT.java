@@ -221,7 +221,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       if (info.rematchSectors) {
         var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
         SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
         var req = new SectorRematchRequest();
         req.setTarget(true);

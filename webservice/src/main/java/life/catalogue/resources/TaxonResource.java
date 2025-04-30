@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
@@ -9,44 +7,37 @@ import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.dao.MetricsDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.printer.JsonTreePrinter;
 
-import java.io.*;
+import org.gbif.nameparser.api.Rank;
+
+import java.io.InputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.ibatis.cursor.Cursor;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-
-import life.catalogue.dw.jersey.filter.ProjectOnly;
-
-import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.printer.*;
-
-import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.session.SqlSession;
-
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.gbif.nameparser.util.RankUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/taxon")
 @Produces(MediaType.APPLICATION_JSON)
@@ -57,14 +48,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   private final SqlSessionFactory factory;
   private final TaxonDao dao;
   private final TxtTreeDao txtTreeDao;
-  private final MetricsDao metricsDao;
 
-  public TaxonResource(SqlSessionFactory factory, TaxonDao dao, TxtTreeDao txtTreeDao, MetricsDao metricsDao) {
+  public TaxonResource(SqlSessionFactory factory, TaxonDao dao, TxtTreeDao txtTreeDao) {
     super(Taxon.class, dao);
     this.factory = factory;
     this.txtTreeDao = txtTreeDao;
     this.dao = dao;
-    this.metricsDao = metricsDao;
   }
 
   public static class TaxonSearchRequest {
@@ -214,35 +203,9 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @GET
   @Path("{id}/breakdown")
   public Response breakdown(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    var key = DSID.of(datasetKey, id);
-    var tax = dao.getSimpleOr404(key);
-    var rank = tax.getRank();
-    // lookup lowest concrete parent rank or default to kingdom
-    if (rank.otherOrUnranked()) {
-      rank = dao.classificationSimple(key).stream()
-        .map(SimpleName::getRank)
-        .filter(Rank::notOtherOrUnranked)
-        .findFirst().orElse(Rank.DOMAIN);
-    }
-    if (Rank.GENUS.higherOrEqualsTo(rank)) {
-      throw new NotFoundException("Breakdown for taxon " + key + " does not exist");
-    }
-    // figure out the next lower 2 linnean ranks to breakdown to
-    Set<Rank> ranks = new HashSet<>();
-    var nextRank = RankUtils.nextLowerLinneanRank(rank);
-    ranks.add(nextRank);
-    // for families and alike just show the genera and stop at the first level
-    if (nextRank != Rank.GENUS) {
-      ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
-    }
-    var ttp = TreeTraversalParameter.dataset(datasetKey);
-    ttp.setTaxonID(id);
-    ttp.setSynonyms(false);
-    ttp.setLowestRank(RankUtils.lowestRank(ranks));
-
     StreamingOutput stream = os -> {
       try (Writer writer = UTF8IoUtils.writerFromStream(os);
-           JsonTreePrinter printer = PrinterFactory.dataset(JsonTreePrinter.class, ttp, ranks, null, Rank.SPECIES, metricsDao, factory, writer)
+           JsonTreePrinter printer = dao.childrenBreakdownPrinter(datasetKey, id, writer)
       ) {
         printer.print();
         writer.flush();
