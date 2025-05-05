@@ -59,6 +59,8 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(Rank.SPECIES, "Ablabesmyia suturalis", Issue.PARENT_GENUS_MISSING);
     assertIssues(Rank.SPECIES, "Ablabesmyia satanis", Issue.PARENT_GENUS_MISSING);
 
+    assertIssues(Rank.SUBSPECIES, "Diamesa vulgaris vulgaris", Issue.PARENT_SPECIES_MISSING);
+
     assertIssues(Rank.GENUS, "Onychodiamesa");
 
     assertIssues(Rank.ORDER, "Heminoptera", Issue.CLASSIFICATION_RANK_ORDER_INVALID);
