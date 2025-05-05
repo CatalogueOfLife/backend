@@ -15,6 +15,7 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.api.model.DatasetRelease;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -175,6 +176,7 @@ public class PortalPageRenderer {
       }
       // list all annual releases this id appears in
       List<DatasetRelease> appearsIn = new ArrayList<>();
+      List<SimpleNameCached> alternatives = new ArrayList<>();
       if (factory != null) {
         try (SqlSession session = factory.openSession()) {
           var num = session.getMapper(NameUsageMapper.class);
@@ -183,10 +185,16 @@ public class PortalPageRenderer {
               appearsIn.add(r);
             }
           }
+          // load alternative names in case we switched authors
+          var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+          var cNidx = amm.getCanonicalNidx(e.usage);
+          if (cNidx != null) {
+            alternatives = num.listByCanonNIDX(datasetKey, cNidx);
+          }
         }
       }
       data.put("annualReleases", appearsIn);
-      // TODO: load alternative names in case this is a canonical one
+      data.put("alternatives", alternatives);
       return render(env, PortalPage.TOMBSTONE, data);
 
     } catch (NotFoundException e) {

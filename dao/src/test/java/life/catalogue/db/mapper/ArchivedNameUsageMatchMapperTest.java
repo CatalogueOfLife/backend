@@ -27,6 +27,11 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   }
 
   @Test
+  public void getCanonicalNidx() throws Exception {
+    mapper().getCanonicalNidx(DSID.of(appleKey, "xxx"));
+  }
+
+  @Test
   public void deleteOrphaned() throws Exception {
     // no real data to delete but tests valid SQL
     mapper().deleteOrphans(appleKey);
