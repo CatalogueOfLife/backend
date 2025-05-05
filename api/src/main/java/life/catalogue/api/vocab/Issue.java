@@ -207,7 +207,7 @@ public enum Issue {
   ACCEPTED_NAME_MISSING(NAME_USAGE, Level.ERROR,
       "Synonym lacking an accepted name. These will be treated as bare names in the datastore"),
 
-  PARENT_SPECIES_MISSING(NAME_USAGE, Level.WARNING,
+  PARENT_SPECIES_MISSING(NAME_USAGE, Level.INFO,
     "The accepted infraspecific name does not have an accepted species in it's classification."),
 
   TAXONOMIC_STATUS_INVALID(NAME_USAGE, Level.ERROR,
@@ -463,6 +463,9 @@ public enum Issue {
 
   VERNACULAR_NAME_UNLIKELY(VERNACULAR, Level.WARNING,
     "A vernacular name which is rather unlikely a true, single vernacular name."),
+
+  PARENT_GENUS_MISSING(NAME_USAGE, Level.INFO,
+    "The accepted species does not have an accepted genus in it's classification."),
 
   ;
 

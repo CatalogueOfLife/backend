@@ -134,7 +134,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
         } else {
           // we have a binomial, compare genus only
           if (genus == null) {
-            issues.addIssue(Issue.MISSING_GENUS);
+            issues.addIssue(Issue.PARENT_GENUS_MISSING);
           } else if (genus.isParsed() &&
               // genus should only have uninomial populated, but play safe here
               !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))

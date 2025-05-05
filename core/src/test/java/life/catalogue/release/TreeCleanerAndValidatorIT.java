@@ -56,8 +56,8 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(Rank.SPECIES, "Burundi negeriana", Issue.PARENT_NAME_MISMATCH);
     assertIssues(Rank.SPECIES, "Diamessa kundera", Issue.PARENT_NAME_MISMATCH);
     assertIssues(Rank.SPECIES, "Nesodiamesa negeriana", Issue.PARENT_NAME_MISMATCH);
-    assertIssues(Rank.SPECIES, "Ablabesmyia suturalis", Issue.MISSING_GENUS);
-    assertIssues(Rank.SPECIES, "Ablabesmyia satanis", Issue.MISSING_GENUS);
+    assertIssues(Rank.SPECIES, "Ablabesmyia suturalis", Issue.PARENT_GENUS_MISSING);
+    assertIssues(Rank.SPECIES, "Ablabesmyia satanis", Issue.PARENT_GENUS_MISSING);
 
     assertIssues(Rank.GENUS, "Onychodiamesa");
 

@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-05-05 new PARENT_GENUS_MISSING issue
+```
+ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
+```
+
 #### 2025-04-14 add 2nd source entity
 ```
 ALTER TABLE verbatim_source_secondary ADD COLUMN source_entity ENTITYTYPE;
