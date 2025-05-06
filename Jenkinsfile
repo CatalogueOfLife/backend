@@ -1,5 +1,3 @@
-@Library('gbif-common-jenkins-pipelines') _
-
 pipeline {
   agent any
   tools {
