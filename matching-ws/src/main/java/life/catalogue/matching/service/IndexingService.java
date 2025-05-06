@@ -1305,7 +1305,8 @@ public class IndexingService {
     .voucher(pn.getVoucher())
     .nominatingParty(pn.getNominatingParty())
     .nomenclaturalNote(pn.getNomenclaturalNote())
-    .warnings(pn.getWarnings());
+    .warnings(pn.getWarnings())
+    .formattedName(NameFormatter.canonicalCompleteHtml(pn));
 
     if (pn.getBasionymAuthorship() != null) {
       storedParsedName.basionymAuthorship(
