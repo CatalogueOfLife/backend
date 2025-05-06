@@ -197,7 +197,7 @@
       <url>http://repository.gbif.org/content/repositories/releases</url>
     </repository>
     <snapshotRepository>
-      <id>gbif-snapshot</id>
+      <id>gbif-deploy</id>
       <url>http://repository.gbif.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
