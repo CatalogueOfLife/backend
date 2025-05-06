@@ -6,6 +6,7 @@ import life.catalogue.common.id.ShortUUID;
 public interface UsageIdGen {
 
   String issue(SimpleNameWithNidx usage);
+
   Integer nidx2canonical(Integer nidx);
 
   // generates short UUIDs with 22 or 23 characters

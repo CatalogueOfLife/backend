@@ -105,5 +105,13 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
    * @param projectKey
    */
   void removeAllIssues(@Param("projectKey") int projectKey);
+
+  /**
+   * Updates the taxonID of all secondary sources pointing to the given taxon.
+   * @param key the old taxonID to be updated
+   * @param newTaxonID
+   */
+  void updateSecondaryTaxonID(@Param("key") DSID<String> key, @Param("newTaxonID") String newTaxonID, @Param("userKey") int userKey);
+
 }
 

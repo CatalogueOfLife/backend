@@ -511,32 +511,31 @@ public class XRelease extends ProjectRelease {
    * @throws Exception
    */
   private void updateTmpIDs() throws Exception {
-    // loop over all tmp short uuid keys and assign final ids if missing
-
     // load them into memory so we can modify them later without breaking the cursor
     List<String> tmpIDs = new ArrayList<>();
     try (SqlSession session = factory.openSession(false)) {
       var num = session.getMapper(NameUsageMapper.class);
       PgUtils.consume(() -> num.processIds(newDatasetKey, true, 16), tmpIDs::add);
     }
+    LOG.info("Found {} temporary IDs to be converted into stable IDs in release {}", tmpIDs.size(), newDatasetKey);
 
     int counter = 0;
     try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
       for (var id : tmpIDs) {
-        String stableID = assignStableID(id);
-        TaxonDao.changeUsageID(id, stableID, session);
+        var key = DSID.of(newDatasetKey, id);
+        var sn = num.getSimpleCached(key);
+        String stableID = usageIdGen.issue(sn);
+        TaxonDao.changeUsageID(key, stableID, sn.isSynonym(), user, session);
+        matcher.getUsageCache().invalidateAll();
         counter++;
-        if (counter % 1000 == 0) {
+        if (counter % 100 == 0) {
           session.commit();
         }
       }
+      session.commit();
     }
     LOG.info("Issued stable IDs for {} temporary canonical name usages in release {}", counter, newDatasetKey);
-  }
-
-  private String assignStableID(String tmpID) {
-    //TODO: impl
-    return tmpID;
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {

@@ -106,4 +106,9 @@
     WHERE t.dataset_key=#{datasetKey}
   </select>
 
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE treatment SET id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </update>
+
 </mapper>

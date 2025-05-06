@@ -76,9 +76,31 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     CopyUtil.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
   }
 
-  public static void changeUsageID(String oldID, String newID, SqlSession session) {
-
-
+  /**
+   * Updates the primary key of a usage and all foreign keys pointing to the (accepted) taxon.
+   * Make sure the session is not in auto commit mode as we need to run it all in a transaction with deferred constraints
+   *
+   * @param key usage key to change
+   * @param newID the new identifier for the usage
+   * @param isSynonym flag to indicate the usage is a synonym and thus has no foreign keys that need to be updated.
+   * @param user making the change
+   * @param session to do the change under. Make sure it is not in auto commit mode
+   */
+  public static void changeUsageID(DSID<String> key, String newID, boolean isSynonym, int user, SqlSession session) {
+    LOG.debug("Change {} ID from {} to {}", isSynonym ? "synonym" : "taxon", key, newID);
+    if (!isSynonym) {
+      for (var tp : TaxonProcessable.MAPPERS) {
+        if (!tp.equals(VerbatimSourceMapper.class)) { // we do this one below also for synonyms
+          session.getMapper(tp).updateTaxonID(key, newID, user);
+        }
+      }
+      session.getMapper(NameUsageMapper.class).updateParentIds(key.getDatasetKey(), key.getId(), newID, null, user);
+    }
+    var vsm = session.getMapper(VerbatimSourceMapper.class);
+    vsm.updateTaxonID(key, newID, user);
+    vsm.updateSecondaryTaxonID(key, newID, user);
+    // the actual PK change
+    session.getMapper(NameUsageMapper.class).updateId(key, newID, user);
   }
 
   /**
