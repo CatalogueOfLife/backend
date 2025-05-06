@@ -62,7 +62,7 @@ public class UsageMatcherGlobalTest {
       var origSN = new SimpleNameCached(origNU, match.usage.getCanonicalId());
       assertEquals(new SimpleNameCached(match.usage), origSN);
 
-      matcher.clear();
+      matcher.clearCache();
       match = matcher.matchWithParents(datasetKey, num.get(dsid), List.of(), false, false);
       assertEquals(new SimpleNameCached(match.usage), origSN);
     }

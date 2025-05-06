@@ -527,7 +527,7 @@ public class XRelease extends ProjectRelease {
         var sn = num.getSimpleCached(key);
         String stableID = usageIdGen.issue(sn);
         TaxonDao.changeUsageID(key, stableID, sn.isSynonym(), user, session);
-        matcher.getUsageCache().invalidateAll();
+        matcher.updateCacheParent(newDatasetKey, id, stableID);
         counter++;
         if (counter % 100 == 0) {
           session.commit();

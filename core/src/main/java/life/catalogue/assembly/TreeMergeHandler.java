@@ -709,7 +709,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           final var newID = usageIdGen.issue(sNidx);
           existingUsage.usage.setId(newID);
           TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
-          matcher.invalidate(targetDatasetKey, canonicalNidx);
+          matcher.updateCacheParent(targetDatasetKey, oldID, newID);
         }
         // update name match in db
         nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
