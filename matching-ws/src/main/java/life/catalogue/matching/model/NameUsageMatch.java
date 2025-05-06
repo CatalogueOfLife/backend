@@ -436,6 +436,7 @@ public class NameUsageMatch implements LinneanClassification {
     private boolean manuscript;
     private String state;
     private Set<String> warnings;
+    private String formattedName;
 
     //additional flags
     private boolean isAbbreviated;

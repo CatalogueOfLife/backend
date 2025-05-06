@@ -857,7 +857,8 @@ public class DatasetIndex {
         .doubtful(pn.isDoubtful())
         .manuscript(pn.isManuscript())
         .state(pn.getState())
-        .warnings(pn.getWarnings().stream().collect(Collectors.toSet()));
+        .warnings(pn.getWarnings().stream().collect(Collectors.toSet()))
+        .formattedName(pn.getFormattedName());
 
         if (pn.getCombinationAuthorship() != null
           && pn.getCombinationAuthorship().getAuthors() != null
