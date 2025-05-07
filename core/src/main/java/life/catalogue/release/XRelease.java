@@ -31,13 +31,9 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -251,6 +247,7 @@ public class XRelease extends ProjectRelease {
     mergeSectors();
 
     updateState(ImportState.PROCESSING);
+    updateTmpIDs();
     processWithPrio();
 
     // flagging of suspicious usages
@@ -506,6 +503,39 @@ public class XRelease extends ProjectRelease {
 
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, "Merging sectors", start);
+  }
+
+  /**
+   * We use tmp uuids for names initially created without authorship, see https://github.com/CatalogueOfLife/backend/issues/1407
+   * Assign final, stable ids to those.
+   * @throws Exception
+   */
+  private void updateTmpIDs() throws Exception {
+    // load them into memory so we can modify them later without breaking the cursor
+    List<String> tmpIDs = new ArrayList<>();
+    try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      PgUtils.consume(() -> num.processIds(newDatasetKey, true, 16), tmpIDs::add);
+    }
+    LOG.info("Found {} temporary IDs to be converted into stable IDs in release {}", tmpIDs.size(), newDatasetKey);
+
+    int counter = 0;
+    try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      for (var id : tmpIDs) {
+        var key = DSID.of(newDatasetKey, id);
+        var sn = num.getSimpleCached(key);
+        String stableID = usageIdGen.issue(sn);
+        TaxonDao.changeUsageID(key, stableID, sn.isSynonym(), user, session);
+        matcher.updateCacheParent(newDatasetKey, id, stableID);
+        counter++;
+        if (counter % 100 == 0) {
+          session.commit();
+        }
+      }
+      session.commit();
+    }
+    LOG.info("Issued stable IDs for {} temporary canonical name usages in release {}", counter, newDatasetKey);
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {

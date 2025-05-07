@@ -84,6 +84,10 @@ public class XReleaseIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"stable-ids", List.of(
+        "src1",
+        "src2"
+      )},
       {"target", List.of(
         "lpsn"
       )},

@@ -73,7 +73,7 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
   @Produces(MediaType.TEXT_PLAIN)
   public Cursor<String> sitemap(@PathParam("key") int datasetKey, @Context SqlSession session) {
     NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-    return num.processIds(datasetKey, false);
+    return num.processIds(datasetKey, false, null);
   }
 
   @GET

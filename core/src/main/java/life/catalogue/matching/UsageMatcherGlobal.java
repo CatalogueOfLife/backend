@@ -692,7 +692,7 @@ public class UsageMatcherGlobal {
    * If it is not cached yet, nothing will happen.
    * @param nidx any names index id
    */
-  public void clear(int datasetKey, int nidx) {
+  public void clearCache(int datasetKey, int nidx) {
     var n = nameIndex.get(nidx);
     if (n != null) {
       if (n.getCanonicalId() != null && !n.isCanonical()) {
@@ -703,9 +703,31 @@ public class UsageMatcherGlobal {
   }
 
   /**
+   * Updates the parentID of the cached names belonging to the given datasetKey
+   * and having the given oldParentID.
+   * @param datasetKey
+   * @param oldParentID
+   * @param newParentID
+   */
+  public void updateCacheParent(int datasetKey, String oldParentID, String newParentID) {
+    int count = 0;
+    for (var entry : usages.asMap().entrySet()) {
+      if (entry.getKey().getDatasetKey() == datasetKey) {
+        for (var sn : entry.getValue()) {
+          if (Objects.equals(oldParentID, sn.getParent())) {
+            sn.setParent(newParentID);
+            count++;
+          }
+        }
+      }
+    }
+    LOG.info("Updated {} usages from datasetKey {} with new parentID {} in the cache", count, datasetKey, newParentID);
+  }
+
+  /**
    * Removes all usages from the given dataset from the matcher cache.
    */
-  public void clear(int datasetKey) {
+  public void clearCache(int datasetKey) {
     int count = 0;
     for (var k : usages.asMap().keySet()) {
       if (datasetKey == k.getDatasetKey()) {
@@ -719,7 +741,7 @@ public class UsageMatcherGlobal {
   /**
    * Wipes the entire cache.
    */
-  public void clear() {
+  public void clearCache() {
     usages.invalidateAll();
     uCache.clear();
     LOG.warn("Cleared entire cache");

@@ -5,6 +5,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
+import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;

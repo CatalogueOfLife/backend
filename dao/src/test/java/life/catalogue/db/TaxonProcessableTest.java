@@ -2,6 +2,7 @@ package life.catalogue.db;
 
 import life.catalogue.api.model.DSID;
 
+import life.catalogue.api.vocab.Users;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.TestDataRule;
 
@@ -24,6 +25,15 @@ public class TaxonProcessableTest {
       var key = DSID.of(3,"1");
       m.listByTaxon(key);
       m.deleteByTaxon(key);
+    }
+  }
+
+  @Test
+  public void updateTaxonID() {
+    for (var mc : TaxonProcessable.MAPPERS) {
+      var m = testDataRule.getMapper(mc);
+      var key = DSID.of(3,"1");
+      m.updateTaxonID(key, "2", Users.TESTER);
     }
   }
 }

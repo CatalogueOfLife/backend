@@ -15,8 +15,61 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 #### 2025-05-05 new PARENT_GENUS_MISSING issue
-```
+```sql
 ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
+```
+
+### 2025-04-30 make all foreign keys to name_usage deferrable and all deferrable FKs initially deferred
+```sql
+-- name related
+ALTER TABLE name_match DROP CONSTRAINT name_match_dataset_key_name_id_fkey; 
+ALTER TABLE name_match ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_name_id_fkey;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_related_name_id_fkey; 
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE type_material DROP CONSTRAINT type_material_dataset_key_name_id_fkey; 
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_name_id_fkey;
+ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) NOT DEFERRABLE;
+
+-- name usage related
+ALTER TABLE verbatim_source DROP CONSTRAINT verbatim_source_dataset_key_id_fkey;
+ALTER TABLE verbatim_source ADD CONSTRAINT verbatim_source_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE verbatim_source_secondary DROP CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey;
+ALTER TABLE verbatim_source_secondary ADD CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE vernacular_name DROP CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey;
+ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE distribution DROP CONSTRAINT distribution_dataset_key_taxon_id_fkey;
+ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE media DROP CONSTRAINT media_dataset_key_taxon_id_fkey;
+ALTER TABLE media ADD CONSTRAINT media_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_property DROP CONSTRAINT taxon_property_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE treatment DROP CONSTRAINT treatment_dataset_key_id_fkey;
+ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 ```
 
 #### 2025-04-14 add 2nd source entity

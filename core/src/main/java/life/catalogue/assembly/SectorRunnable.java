@@ -7,8 +7,6 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.DatasetBlockedException;
-import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -137,7 +135,7 @@ abstract class SectorRunnable implements Runnable {
 
       // clear matcher cache?
       if (clearMatcherCache) {
-        matcher.clear(sectorKey.getDatasetKey());
+        matcher.clearCache(sectorKey.getDatasetKey());
         bus.post(new DatasetDataChanged(sectorKey.getDatasetKey()));
       }
 

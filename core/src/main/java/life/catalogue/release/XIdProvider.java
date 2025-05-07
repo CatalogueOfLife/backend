@@ -2,12 +2,14 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -28,8 +30,14 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
   @Override
   public String issue(SimpleNameWithNidx usage) {
     try {
-      issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
-      return encode(usage.getCanonicalId());
+      if (usage.hasAuthorship()) {
+        issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
+        return encode(usage.getCanonicalId());
+      } else {
+        // for new canonical names we issue a temp id for now, so we can update the authorship later
+        // and assign new ids without wasting stable IDs
+        return ShortUUID.ID_GEN.get();
+      }
 
     } catch (IOException e) {
       throw new RuntimeException(e);

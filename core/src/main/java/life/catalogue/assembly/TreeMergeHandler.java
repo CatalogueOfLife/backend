@@ -6,6 +6,7 @@ import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
@@ -634,7 +635,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        vsm.insertSources(existingUsageKey, EntityType.NAME_USAGE, nu, upd);
+        vsm.insertSources(DSID.of(targetDatasetKey, existing.usage.getId()), EntityType.NAME_USAGE, nu, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
@@ -696,6 +697,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
         n.setNamesIndexId(src.getNamesIndexId());
         if (existingUsage != null) {
           existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
+
+          // also update the usage identifier for changes in authorship !!!
+          // https://github.com/CatalogueOfLife/backend/issues/1407
+          final var canonicalNidx = usageIdGen.nidx2canonical(src.getNamesIndexId());
+          var sNidx = new SimpleNameWithNidx(existingUsage.usage);
+          sNidx.setCanonicalId(canonicalNidx); // the canonicalId changes during issuing a stable ID (dirty) - so we store it before to reuse it
+          sNidx.setNamesIndexMatchType(src.getNamesIndexType());
+          // assign new id based on the new nidx
+          final var oldID = existingUsage.usage.getId();
+          final var newID = usageIdGen.issue(sNidx);
+          existingUsage.usage.setId(newID);
+          TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
+          matcher.updateCacheParent(targetDatasetKey, oldID, newID);
         }
         // update name match in db
         nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());

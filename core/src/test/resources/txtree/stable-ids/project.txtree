@@ -1,0 +1,7 @@
+Plantae [kingdom] {ID=P}
+  Abies [genus] {ID=AB}
+    Abies alba [species] {ID=ABLB}
+    Abies alpina DC. [species] {ID=ABLP}
+  Pinus [genus] {ID=PN}
+    Pinus nigra Mill. [species] {ID=PNN}
+

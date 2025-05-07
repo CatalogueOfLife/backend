@@ -253,6 +253,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
+   * Updates the primary key of the usage. Make sure no foreign keys point to the old id any longer.
+   * Use updateParentIds to update all existing usages with a parentID that points to the old id before.
+   * @param key
+   * @param newID
+   * @param userKey
+   */
+  void updateId(@Param("key") DSID<String> key,
+                @Param("newID") @Nullable String newID,
+                @Param("userKey") int userKey);
+
+  /**
    * Sets a taxon as provisional
    * @param key
    * @param status
@@ -418,7 +429,15 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
 
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
+  /**
+   * Iterates over all usage ids for a given dataset, optionally filtered by a minimum string length,
+   * e.g. to only list temporary UUIDs
+   * @param datasetKey
+   * @param includeSynonyms
+   * @param minLength
+   * @return
+   */
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);
 
   /**
    * Lists all usage ids of taxa which have synonyms as their parent.
@@ -452,5 +471,4 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
-
 }

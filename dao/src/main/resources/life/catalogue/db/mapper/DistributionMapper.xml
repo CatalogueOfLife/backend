@@ -144,4 +144,9 @@
     UPDATE distribution SET sector_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE distribution SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
+  </update>
 </mapper>

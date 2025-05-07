@@ -6,7 +6,8 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 /**
- * A short, unambiguous and URL-safe UUID
+ * A short, unambiguous and URL-safe UUID using only 64 URI safe characters.
+ * This leads to IDs of 22 or 23 characters long - instead of the 36 for regular UUIDs.
  *
  * @author Harpreet Singh
  */
