@@ -3,6 +3,7 @@ package life.catalogue.resources;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.TreatmentFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.util.LoggingUtils;
@@ -138,8 +139,12 @@ public class TaxonResource extends AbstractDatasetScopedResource<String, Taxon, 
 
   @GET
   @Path("{id}/vernacular")
-  public List<VernacularName> vernacular(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
-    return session.getMapper(VernacularNameMapper.class).listByTaxon(DSID.of(datasetKey, id));
+  public List<VernacularName> vernacular(@PathParam("key") int datasetKey, @PathParam("id") String id,
+                                         @QueryParam("lang") String langCode,
+                                         @Context SqlSession session) {
+    // normalize lang codes
+    var lang = Language.byCode(langCode);
+    return session.getMapper(VernacularNameMapper.class).listByTaxonFiltered(DSID.of(datasetKey, id), lang == null ? null : lang.getCode());
   }
 
   @GET

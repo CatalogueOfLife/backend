@@ -105,10 +105,13 @@
     </association>
   </resultMap>
 
-  <select id="listByTaxon" resultMap="vernacularNameResultMap">
+  <select id="listByTaxonFiltered" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE vn.dataset_key = #{key.datasetKey} AND vn.taxon_id = #{key.id}
+    <if test="lang != null">
+      AND vn.language = #{lang}
+    </if>
     ORDER BY name
   </select>
 

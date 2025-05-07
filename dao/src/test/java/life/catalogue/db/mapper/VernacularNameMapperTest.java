@@ -47,7 +47,7 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
   public void search() throws Exception {
     insert("Brauner Berg-Adler", "deu");
     insert("Grüner Berg Adler", "deu");
-    insert("Seeadler", "deu");
+    insert("Seeadler", "spa");
     commit();
     VernacularSearchRequest req = VernacularSearchRequest.byQuery("adler");
 	  List<VernacularNameUsage> resp = mapper().search(tax.getDatasetKey(), req, new Page());
@@ -57,6 +57,15 @@ public class VernacularNameMapperTest extends TaxonExtensionMapperTest<Vernacula
     req = VernacularSearchRequest.byQuery("berg adler");
     resp = mapper().search(tax.getDatasetKey(), req, new Page());
     assertEquals(2, resp.size());
+
+    var result = mapper().listByTaxon(tax);
+    assertEquals(3, result.size());
+
+    result = mapper().listByTaxonFiltered(tax, "spa");
+    assertEquals(1, result.size());
+
+    result = mapper().listByTaxonFiltered(tax, "eng");
+    assertEquals(0, result.size());
   }
 
   @Test
