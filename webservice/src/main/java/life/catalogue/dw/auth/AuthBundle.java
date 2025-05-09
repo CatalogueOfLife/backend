@@ -24,7 +24,7 @@ import io.dropwizard.core.setup.Environment;
  * <p/>
  * Authorization is done in 2 parts:
  *  - a filter to protect private datasets by inspecting the requested URI.
- *  - a dynamic feature that reuires some authenticated user if a non Optional @Auth annotation is present on a method
+ *  - a dynamic feature that requires some authenticated user if a non Optional @Auth annotation is present on a method
  *  - the {@RolesAllowedDynamicFeature} that makes sure required user roles do exist on specifically annotated methods
  */
 public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
@@ -35,8 +35,6 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   
   @Override
   public void run(WsServerConfig cfg, Environment environment) {
-    environment.jersey().register(RolesAllowedDynamicFeature2.class);
-    
     jwtCodec = new JwtCodec(cfg.jwtKey);
     idService = new IdentityService(cfg.auth.createAuthenticationProvider());
     privateFilter = new PrivateFilter();
