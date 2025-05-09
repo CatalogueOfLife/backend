@@ -609,7 +609,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertEquals("Linnaeus, 1758", caretta.getName().getAuthorship());
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var vs = session.getMapper(VerbatimSourceMapper.class).getWithSources(caretta);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var vs = vsm.addSources(vsm.getByUsage(caretta));
       assertEquals(srcDatasetKey, (int) vs.getSourceDatasetKey());
       assertEquals("10", vs.getSourceId());
       assertTrue(DSID.equals(DSID.of(srcDatasetKey, "11"), vs.getSecondarySources().get(InfoGroup.AUTHORSHIP)));

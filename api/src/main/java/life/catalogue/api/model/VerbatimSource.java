@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 
@@ -17,6 +18,7 @@ public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContain
   private Sector.Mode sectorMode;
   private String sourceId;
   private Integer sourceDatasetKey;
+  private EntityType sourceEntity; // currently only NameUsage, Name or Reference is supported!
   private Set<Issue> issues = EnumSet.noneOf(Issue.class);
   private Map<InfoGroup, SecondarySource> secondarySources = new EnumMap<>(InfoGroup.class);
   // instance hash created on load to see if the instance has been changed
@@ -25,12 +27,12 @@ public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContain
   public VerbatimSource() {
   }
 
-  public VerbatimSource(Integer datasetKey, Integer sectorKey, Integer id, Integer sourceDatasetKey, String sourceId) {
-    this.id = id;
+  public VerbatimSource(Integer datasetKey, Integer sectorKey, Integer sourceDatasetKey, String sourceId, EntityType sourceEntity) {
     this.sectorKey = sectorKey;
     this.datasetKey = datasetKey;
     this.sourceId = sourceId;
     this.sourceDatasetKey = sourceDatasetKey;
+    this.sourceEntity = sourceEntity;
   }
 
   public Integer getDatasetKey() {
@@ -88,6 +90,14 @@ public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContain
     this.sourceId = sourceId;
   }
 
+  public EntityType getSourceEntity() {
+    return sourceEntity;
+  }
+
+  public void setSourceEntity(EntityType sourceEntity) {
+    this.sourceEntity = sourceEntity;
+  }
+
   @Override
   public Set<Issue> getIssues() {
     return issues;
@@ -122,19 +132,13 @@ public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContain
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof VerbatimSource)) return false;
     VerbatimSource that = (VerbatimSource) o;
-    return Objects.equals(id, that.id) &&
-      Objects.equals(datasetKey, that.datasetKey) &&
-      Objects.equals(sourceId, that.sourceId) &&
-      Objects.equals(sourceDatasetKey, that.sourceDatasetKey) &&
-      Objects.equals(issues, that.issues) &&
-      Objects.equals(secondarySources, that.secondarySources);
+    return _hashKeyOnLoad == that._hashKeyOnLoad && Objects.equals(id, that.id) && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(sourceId, that.sourceId) && Objects.equals(sourceDatasetKey, that.sourceDatasetKey) && sourceEntity == that.sourceEntity && Objects.equals(issues, that.issues) && Objects.equals(secondarySources, that.secondarySources);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, sourceId, sourceDatasetKey, issues, secondarySources);
+    return Objects.hash(id, datasetKey, sectorKey, sectorMode, sourceId, sourceDatasetKey, sourceEntity, issues, secondarySources, _hashKeyOnLoad);
   }
 }

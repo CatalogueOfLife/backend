@@ -28,6 +28,28 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   VerbatimSource get(@Param("key") DSID<Integer> key);
 
+  default VerbatimSource getByUsage(@Param("key") DSID<String> key) {
+    return getByEntity(key, "name_usage");
+  }
+
+  default VerbatimSource getByName(@Param("key") DSID<String> key) {
+    return getByEntity(key, "name");
+  }
+
+  default VerbatimSource getByReference(@Param("key") DSID<String> key) {
+    return getByEntity(key, "reference");
+  }
+
+  VerbatimSource getByEntity(@Param("key") DSID<String> key, @Param("table") String table);
+
+  default VerbatimSource addSources(VerbatimSource v) {
+    if (v != null) {
+      var snd = getSources(v);
+      v.setSecondarySources(snd);
+    }
+    return v;
+  }
+
   default VerbatimSource getWithSources(@Param("key") DSID<Integer> key) {
     VerbatimSource v = get(key);
     var snd = getSources(key);
@@ -63,7 +85,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     if (issues != null && !issues.isEmpty()) {
       int mod = _addIssueInternal(key, issues);
       if (mod < 1) {
-        VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
+        VerbatimSource v = new VerbatimSource(key.getDatasetKey(), null, key.getId(), null, null);
         v.getIssues().addAll(issues);
         create(v);
       }
@@ -81,7 +103,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   default void insertSources(DSID<String> key, EntityType secondarySourceEntity, DSID<String> secondarySource, Set<InfoGroup> groups) {
     deleteSourceGroups(key, groups);
     if (!exists(key)) {
-      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), key.getId(), null, null);
+      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), null, key.getId(), null, null);
       create(v);
     }
     insertSource(key, secondarySourceEntity, secondarySource, groups);

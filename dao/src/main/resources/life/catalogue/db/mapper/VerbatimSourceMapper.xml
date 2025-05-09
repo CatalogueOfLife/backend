@@ -58,6 +58,14 @@
     WHERE v.dataset_key = #{key.datasetKey} AND v.id = #{key.id}
   </select>
 
+  <select id="getByEntity" resultMap="verbatimResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM ${table} x JOIN <include refid="FROM"/> ON x.verbatim_source_key=v.id AND x.dataset_key=v.dataset_key
+    WHERE x.dataset_key = #{key.datasetKey} AND x.id = #{key.id}
+  </select>
+
+  VerbatimSource getByEntity(@Param("key") DSID<String> key, @Param("table") String table);
+
   <select id="getIssues" resultMap="verbatimResultMap">
     SELECT issues
     FROM verbatim_source

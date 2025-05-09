@@ -314,7 +314,9 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       var d = DatasetInfoCache.CACHE.info(usage.getDatasetKey());
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
-        info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        var v = vsm.getByUsage(usage);
+        info.setSource(vsm.addSources(v));
       }
     }
 

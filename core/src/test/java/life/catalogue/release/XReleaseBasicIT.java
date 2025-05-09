@@ -135,7 +135,7 @@ public class XReleaseBasicIT {
       var all = vsm.list(dsid);
       assertEquals(1, all.size());
 
-      var src = vsm.getWithSources(dsid);
+      var src = vsm.addSources(vsm.getByUsage(dsid));
       assertEquals(100, (int)src.getSourceDatasetKey());
       assertEquals("srcX", src.getSourceId());
       assertEquals(1, src.getSecondarySources().size());

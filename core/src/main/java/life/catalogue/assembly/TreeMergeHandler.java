@@ -394,7 +394,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       if (candidates.size() == 1) {
         Name existing = candidates.get(0);
-        var pn = updateName(existing, n, upd, null);
+        var pn = updateName(existing, n, v, upd, null);
 
         if (!upd.isEmpty()) {
           updated++;
@@ -412,6 +412,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
             batchSession.commit();
           }
         }
+      } else {
+        LOG.debug("Cannot merge {} into {} matching names", n, candidates.size());
       }
     }
   }
@@ -550,11 +552,39 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
-  private void update(NameUsageBase nu, UsageMatch existing) {
-    if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
-      LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
+  static class Context {
+    final EntityType sourceEntity;
+    final String sourceKey;
+    VerbatimSource verbatimSource;
+    Set<InfoGroup> updates = EnumSet.noneOf(InfoGroup.class);
 
+    Context(EntityType sourceEntity, String sourceKey) {
+      this.sourceEntity = sourceEntity;
+      this.sourceKey = sourceKey;
+    }
+  }
+
+  /**
+   * Lazily persist a new verbatim source if the key is not existing yet
+   */
+  private int verbatimKey(VerbatimSource v) {
+    if (v.getKey() == null) {
+      // first persist to create the key
+      vsm.create(v);
+    }
+    return v.getId();
+  }
+
+  private void update(NameUsageBase src, UsageMatch existing) {
+    if (src.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
+      LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), src.getId(), src.getStatus());
+
+      // we need to
+      // 1) load the primary source and add secondary sources if we update anything
+      // 2) create a new verbatim source for all newly added supplementary records like vernaculars, distributions, etc
+      VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
+
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
       if (existing.usage.getStatus().isTaxon()) {
@@ -565,13 +595,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
             var parent = matchedParents.getLast().match;
             if (parent != null) {
               if (parent.getStatus().isSynonym()) {
-                LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), nu);
+                LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), src);
 
               } else {
                 var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
                 batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
                 if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
-                  LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+                  LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, src);
                   numRO.updateParentId(existingUsageKey, parent.getId(), user);
                   upd.add(InfoGroup.PARENT);
                 }
@@ -584,7 +614,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           final var mapper = batchSession.getMapper(VernacularNameMapper.class);
           List<VernacularName> existingVNames = null;
           vnloop:
-          for (var vn : mapper.listByTaxon(nu)) {
+          for (var vn : mapper.listByTaxon(src)) {
             // we only want to add vernaculars with a name & language
             if (vn.getName() == null || vn.getLanguage() == null) continue;
 
@@ -603,7 +633,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             }
             // a new vernacular
             vn.setId(null);
-            vn.setVerbatimKey(null);
+            vn.setVerbatimKey(verbatimKey(v));
             vn.setSectorKey(sector.getId());
             vn.setDatasetKey(targetDatasetKey);
             vn.applyUser(user);
@@ -618,25 +648,26 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
       // try to also update the name - conditional checks within the subroutine
-      Name pn = updateName(null, nu.getName(), upd, existing);
+      Name pn = updateName(null, src.getName(), v, upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
         // update name
         nm.update(pn);
         // track source
-        vsm.insertSources(existingUsageKey, EntityType.NAME_USAGE, nu, upd);
+        do this better !?!
+        vsm.insertSources(existingUsageKey, EntityType.NAME_USAGE, src, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
 
     } else {
-      LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
+      LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), src.getId(), src.getStatus());
     }
 
     // add well know name and usage ids
     if (usageIdScope != null) {
-      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
+      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, src.getId())));
     }
   }
 
@@ -646,17 +677,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private Name lazilyLoad(@Nullable Name n, @Nullable UsageMatch existingUsage) {
     return n != null ? n : loadFromDB(existingUsage.usage.getId());
   }
+
   /**
    * Either the Name n or the existing usage must be given!
    *
    * @param n name to be updated
    * @param src source for updates
+   * @param vs verbatim source for the source record. Never null, but may not be persisted yet and lack a key
    * @param upd
    * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
    *                 Not needed for bare name merging
    * @return
    */
-  private Name updateName(@Nullable Name n, Name src, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
+  private Name updateName(@Nullable Name n, Name src, VerbatimSource vs, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
     if (n == null && existingUsage == null) return null;
 
     if (syncNames) {
@@ -732,7 +765,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
         // a new type
         tm.setNameId(n.getId());
-        tm.setVerbatimKey(null);
+        tm.setVerbatimKey(verbatimKey(vs));
         tm.setSectorKey(sector.getId());
         tm.setDatasetKey(targetDatasetKey);
         tm.applyUser(user);

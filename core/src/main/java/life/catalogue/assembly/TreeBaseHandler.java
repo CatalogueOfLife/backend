@@ -285,7 +285,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
     // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
     v.addIssues(issues);
     vsm.create(v);
     // match name
