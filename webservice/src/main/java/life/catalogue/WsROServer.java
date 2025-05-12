@@ -205,6 +205,9 @@ public class WsROServer extends Application<WsServerConfig> {
     // validation
     var validator = env.getValidator();
 
+    // doi
+    DoiResolver doiResolver = new DoiResolver(httpClient);
+
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
@@ -236,7 +239,7 @@ public class WsROServer extends Application<WsServerConfig> {
     // daos
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), null, validator);
+    ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
@@ -248,15 +251,17 @@ public class WsROServer extends Application<WsServerConfig> {
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
     managedService.manage(Component.UsageCache, uCache);
 
-    // resources
+    // dataset scoped resources
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, FeedbackService.passThru()));
-    j.register(new NameUsageSearchResource(searchService));
     j.register(new ReferenceResource(rdao));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtTreeDao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new VerbatimResource());
+
+    // global resources
+    j.register(new NameUsageSearchResource(searchService));
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());
     j.register(new VocabResource());
@@ -267,6 +272,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new NameParserResource(getSqlSessionFactory()));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
+    j.register(new ReferenceParserResource(doiResolver));
     j.register(new TaxGroupResource());
   }
 
