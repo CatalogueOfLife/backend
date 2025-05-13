@@ -96,6 +96,15 @@ public interface DoiService {
    */
   void update(DoiAttributes doi) throws DoiException;
 
+  default void updateSilently(DoiAttributes doi) {
+    try {
+      update(doi);
+    } catch (DoiException e) {
+      LOG.error("Failed to silently update DOI {}", doi.getDoi(), e);
+      notifyException(doi.getDoi(), "update", e);
+    }
+  }
+
   /**
    * Updates the registered identifier's target URL only.
    *

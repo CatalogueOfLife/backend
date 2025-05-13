@@ -395,7 +395,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       if (newDataset.getDoi() != null) {
         var attr = doiUpdater.buildReleaseMetadata(projectKey, false, newDataset, prevReleaseKey);
         LOG.info("Updating DOI release metadata {}", newDataset.getDoi());
-        doiService.update(attr);
+        doiService.updateSilently(attr);
       }
     }
 
