@@ -148,6 +148,12 @@
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <update id="addIssue" parameterType="map">
+    UPDATE verbatim
+    SET issues = array_append(issues, '${issue}'::ISSUE)
+    WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <!-- requires a base name usage table nu to exist to join to -->
   <sql id="usageIssues">
     SELECT nu.id, v.issues

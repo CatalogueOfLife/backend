@@ -73,6 +73,13 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
   void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
   /**
+   * Adds a single issue to an existing verbatim record.
+   * @param key
+   * @param issue to add
+   */
+  void addIssue(@Param("key") DSID<Integer> key, @Param("issue") Issue issue);
+
+  /**
    * Creates a temporary table tmp_usage_issues that combines all issues from various name usage related tables
    * into a single pair of usage id and non empty issues. This includes also verbatim_source records for projects and releases.
    * @param datasetKey

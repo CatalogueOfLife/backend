@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
@@ -21,6 +22,7 @@ import static life.catalogue.api.TestEntityGenerator.TAXON1;
 import static life.catalogue.db.mapper.LogicalOperator.AND;
 import static life.catalogue.db.mapper.LogicalOperator.OR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 
 public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMapper> {
@@ -65,7 +67,23 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     assertEquals(2, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, "t1", new Page()).size());
     assertEquals(1, mapper().list(TAXON1.getDatasetKey(), null, null, AND, null, null, "alpina", new Page()).size());
   }
-  
+
+  @Test
+  public void addIssue() {
+    insertTestData();
+
+    DSID<Integer> vkey = DSID.of(datasetKey, 8);
+    var issues = mapper().getIssues(vkey);
+    assertEquals(1, issues.getIssues().size());
+    assertTrue(issues.hasIssue(Issue.BASIONYM_ID_INVALID));
+
+    mapper().addIssue(vkey, Issue.NO_SPECIES_INCLUDED);
+    issues = mapper().getIssues(vkey);
+    assertEquals(2, issues.getIssues().size());
+    assertTrue(issues.hasIssue(Issue.BASIONYM_ID_INVALID));
+    assertTrue(issues.hasIssue(Issue.NO_SPECIES_INCLUDED));
+  }
+
   @Test
   public void count() {
     // count apples. rely on import metrics for quick counts so derive them first

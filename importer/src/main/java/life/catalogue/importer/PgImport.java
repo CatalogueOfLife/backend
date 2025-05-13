@@ -362,6 +362,7 @@ public class PgImport implements Callable<Boolean> {
 
   private static class NodeNXtra {
     Node node;
+    public Integer verbatimKey; // for the main usage
     NameUsageWrapper nuw;
 
     public NodeNXtra(Node node) {
@@ -404,9 +405,11 @@ public class PgImport implements Callable<Boolean> {
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
         TaxonPropertyMapper propertyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+        VerbatimRecordMapper verbatimRecordMapper = session.getMapper(VerbatimRecordMapper.class);
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
         // pro parte synonyms will be visited multiple times, remember their name ids!
+        DSID<Integer> vKey = DSID.root(dataset.getKey());
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
           final Stack<NodeNXtra> parentsN = new Stack<>();
@@ -446,6 +449,7 @@ public class PgImport implements Callable<Boolean> {
               var sn = new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank());
               parents.push(sn);
               nx = new NodeNXtra(u.node);
+              nx.verbatimKey = u.getVerbatimKey();
               parentsN.push(nx);
               mBuilder.start(sn.getId());
 
@@ -542,6 +546,7 @@ public class PgImport implements Callable<Boolean> {
               if (sn.getRank().higherThan(Rank.SPECIES_AGGREGATE) && m.getSpeciesCount() == 0) {
                 // see also an alternative implementation in TreeCleanerAndValidators stack handler
                 nx.nuw.getIssues().add(Issue.NO_SPECIES_INCLUDED);
+                verbatimRecordMapper.addIssue(vKey.id(nx.verbatimKey), Issue.NO_SPECIES_INCLUDED);
               }
               indexer.accept(nx.nuw);
             }
