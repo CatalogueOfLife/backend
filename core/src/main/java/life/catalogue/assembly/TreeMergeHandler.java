@@ -530,6 +530,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   private boolean proposedParentDoesNotConflict(SimpleName existing, SimpleName existingParent, SimpleName proposedParent) {
+    // shortcut for special case of incertae sedis parent
+    // regardless of its rank we should always update the classification!
+    if (cfg != null && cfg.incertae != null && cfg.incertae.getId().equals(existingParent.getId())) {
+      return true;
+    }
     boolean existingParentFound = false;
     if (existingParent.getRank().higherThan(proposedParent.getRank())
         && proposedParent.getRank().higherThan(existing.getRank())

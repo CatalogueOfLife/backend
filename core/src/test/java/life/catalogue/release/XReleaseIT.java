@@ -113,7 +113,8 @@ public class XReleaseIT extends SectorSyncTestBase {
       {"incertae",List.of(
         "sedis",
         "src2",
-        "nomen"
+        "nomen",
+        "bdj"
       )},
       {"homonyms", List.of(
         "worms",
