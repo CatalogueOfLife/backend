@@ -530,10 +530,10 @@ public class PgImportIT extends PgImportITBase {
     assertEquals(1, (int) di.getMediaCount());
     assertEquals(11, (int) di.getReferenceCount());
     assertEquals(2, (int) di.getVernacularCount());
-    assertEquals(23, (int) di.getTaxonCount());
+    assertEquals(24, (int) di.getTaxonCount());
     assertEquals(3, (int) di.getTypeMaterialCount());
-    assertEquals(28, (int) di.getNameCount());
-    assertEquals(94, (int) di.getVerbatimCount());
+    assertEquals(29, (int) di.getNameCount());
+    assertEquals(96, (int) di.getVerbatimCount());
     assertEquals(2, (int) di.getEstimateCount());
 
     assertEquals(1, di.getTaxonConceptRelationsByTypeCount().size());
@@ -544,7 +544,7 @@ public class PgImportIT extends PgImportITBase {
     // 1 provisional status taxon
     assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
     assertEquals(1,  (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
     assertEquals(4,  (int) di.getNamesByRankCount().get(Rank.GENUS));
     assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
     assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
