@@ -71,21 +71,22 @@ public class PgImportESIT extends PgImportITBase {
 
     // test facets for all
     NameUsageSearchResponse resp = search(req);
-    assertEquals(30, resp.getTotal());
+    assertEquals(31, resp.getTotal());
 
     Set<FacetValue<?>> facet = resp.getFacets().get(NameUsageSearchParameter.STATUS);
     assertEquals(4, facet.size());
-    assertFacetValue(facet, TaxonomicStatus.ACCEPTED, 22);
+    assertFacetValue(facet, TaxonomicStatus.ACCEPTED, 23);
     assertFacetValue(facet, TaxonomicStatus.PROVISIONALLY_ACCEPTED, 1);
     assertFacetValue(facet, TaxonomicStatus.SYNONYM, 5);
     assertFacetValue(facet, TaxonomicStatus.BARE_NAME, 2);
 
     facet = resp.getFacets().get(NameUsageSearchParameter.ISSUE);
-    assertEquals(4, facet.size());
+    assertEquals(5, facet.size());
     assertFacetValue(facet, Issue.INCONSISTENT_NAME, 1);
     assertFacetValue(facet, Issue.PARTIAL_DATE, 2);
     assertFacetValue(facet, Issue.PARENT_SPECIES_MISSING, 1);
     assertFacetValue(facet, Issue.RANK_NAME_SUFFIX_CONFLICT, 1);
+    assertFacetValue(facet, Issue.NO_SPECIES_INCLUDED, 1);
 
     facet = resp.getFacets().get(NameUsageSearchParameter.DECISION_MODE);
     assertEquals(0, facet.size());
@@ -157,6 +158,18 @@ public class PgImportESIT extends PgImportITBase {
     assertEquals("Jarvis2007", nuw.getUsage().getAccordingToId());
     assertEquals("Jarvis, & Charlie. (2007). Order out of Chaos. Linnaean Plant Types and their Types. Linnaean Society of London in association with the Natural History Museum. https://doi.org/10.5281/zenodo.291971", ((NameUsageBase) nuw.getUsage()).getAccordingTo());
     assertEquals("Gundelia tournefortii L. sensu Jarvis 2007", nuw.getUsage().getLabel());
+
+    // test flagging no_species
+    req.setFilter(NameUsageSearchParameter.USAGE_ID, "12");
+    resp = search(req);
+    nuw = resp.getResult().get(0);
+    assertEquals("12", nuw.getUsage().getId());
+    assertTrue(nuw.getUsage().isTaxon());
+    assertEquals(Rank.FAMILY, nuw.getUsage().getName().getRank());
+    assertEquals("Brassicaceae", nuw.getUsage().getName().getScientificName());
+    assertNull(nuw.getUsage().getName().getAuthorship());
+    assertNull(nuw.getUsage().getNamePhrase());
+    assertTrue(nuw.getIssues().contains(Issue.NO_SPECIES_INCLUDED));
   }
 
   void assertFacetValue(Set<FacetValue<?>> facets, Enum<?> value, int count) {

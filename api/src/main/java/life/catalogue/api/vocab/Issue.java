@@ -467,6 +467,9 @@ public enum Issue {
   PARENT_GENUS_MISSING(NAME_USAGE, Level.INFO,
     "The accepted species does not have an accepted genus in it's classification."),
 
+  NO_SPECIES_INCLUDED(NAME_USAGE, Level.INFO,
+    "The higher taxon does not include any accepted species."),
+
   ;
 
   /**

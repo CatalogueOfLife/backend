@@ -14,7 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2025-05-05 new PARENT_GENUS_MISSING issue
+#### 2025-05-13 new NO_SPECIES_INCLUDED issue
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'NO_SPECIES_INCLUDED';
+```
+
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
 ```

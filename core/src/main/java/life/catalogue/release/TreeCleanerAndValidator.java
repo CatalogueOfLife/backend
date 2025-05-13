@@ -86,6 +86,28 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
         }
       });
     }
+    // add stack handler that counts species and flags all supraspecific taxa without species
+    // see also an alternative implementation in PgImport.insertUsages()
+    // which gets applied to external dataset during imports
+    parents.addHandler(new ParentStack.StackHandler<>() {
+      @Override
+      public void start(XLinneanNameUsage n) {
+        if (n.getRank() == Rank.SPECIES) {
+          parents.getParents(false).forEach(p -> p.numSpecies++);
+        }
+      }
+      @Override
+      public void end(ParentStack.SNC<XLinneanNameUsage> taxon) {
+        if (taxon.usage.getRank().higherThan(Rank.SPECIES_AGGREGATE) && taxon.usage.numSpecies == 0) {
+          LOG.debug("Flag taxon without species: {}", taxon.usage);
+          final var key = DSID.of(datasetKey, taxon.usage.getId());
+          try (SqlSession session = factory.openSession(true)) {
+            var vm = session.getMapper(VerbatimSourceMapper.class);
+            vm.addIssue(key, Issue.NO_SPECIES_INCLUDED);
+          }
+        }
+      }
+    });
   }
 
   ParentStack<XLinneanNameUsage> stack() {
@@ -94,6 +116,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   public static class XLinneanNameUsage extends LinneanNameUsage {
     Integer authorYear;
+    int numSpecies = 0;
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
     }

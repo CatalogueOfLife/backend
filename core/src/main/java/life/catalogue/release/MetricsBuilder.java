@@ -124,7 +124,7 @@ public class MetricsBuilder {
     parentsM.add(tm);
   }
 
-  public void end(NameUsageCore sn, Integer sectorKey, Boolean extinct) {
+  public TaxonMetrics end(NameUsageCore sn, Integer sectorKey, Boolean extinct) {
     // update & store metrics
     final var m = parentsM.pop();
     m.setRgt(nestedSetIdx++);
@@ -153,6 +153,7 @@ public class MetricsBuilder {
         p.incChildExtantCount();
       }
     }
+    return m;
   }
 
   private Integer lookupSource(Integer sectorKey) {
