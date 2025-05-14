@@ -3,6 +3,7 @@ package life.catalogue.gbifsync;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.junit.PgSetupRule;
@@ -35,6 +36,7 @@ public class GbifSyncTest {
   @ClassRule
   public static final PgSetupRule pg = new PgSetupRule();
   private static final GbifConfig cfg = new GbifConfig();
+  private static final ImporterConfig iCfg = new ImporterConfig();
   private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   @Mock
   DatasetImportDao diDao;
@@ -63,13 +65,13 @@ public class GbifSyncTest {
 
   @Test
   public void syncNow() {
-    GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), client);
+    GbifSyncManager gbif = new GbifSyncManager(cfg, iCfg, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), client);
     gbif.syncNow();
   }
 
   @Test
   public void syncSingle() {
-    GbifSyncJob job = new GbifSyncJob(cfg, client, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")), false);
+    GbifSyncJob job = new GbifSyncJob(cfg, iCfg, client, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), Users.GBIF_SYNC, Set.of(UUID.fromString("30f55c63-a829-4cb2-9676-3b1b6f981567")), false);
     job.run();
     Assert.assertEquals(JobStatus.FINISHED, job.getStatus());
   }

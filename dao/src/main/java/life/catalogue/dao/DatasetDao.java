@@ -572,8 +572,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
-    // update alias for publisher based datasets ONLY in case the publisher key has changed
-    if (obj.getGbifPublisherKey() != null && !obj.getGbifPublisherKey().equals(old.getGbifPublisherKey()) && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
+    // update alias for publisher based datasets ONLY in case the publisher key has changed OR we never had any alias
+    if (obj.getGbifPublisherKey() != null &&
+        iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey()) &&
+        (obj.getAlias()==null || !obj.getGbifPublisherKey().equals(old.getGbifPublisherKey()))
+      ) {
       obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
       mapper.update(obj);
     }

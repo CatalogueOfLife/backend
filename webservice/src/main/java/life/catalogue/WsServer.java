@@ -401,7 +401,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.ImportScheduler, cImporter);
 
     // gbif sync
-    GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, ddao, getSqlSessionFactory(), jerseyClient);
+    GbifSyncManager gbifSync = new GbifSyncManager(cfg.gbif, cfg.importer, ddao, getSqlSessionFactory(), jerseyClient);
     managedService.manage(Component.GBIFRegistrySync, gbifSync);
 
     //github feedback

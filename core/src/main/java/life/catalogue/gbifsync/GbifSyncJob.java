@@ -11,6 +11,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.doi.service.BasicAuthenticator;
@@ -43,6 +44,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao dao;
   private final GbifConfig cfg;
+  private final Map<UUID, String> publisherAliases;
   private Set<UUID> keys;
   private int created;
   private int updated;
@@ -53,13 +55,14 @@ public class GbifSyncJob extends GlobalBlockingJob {
   /**
    *  Syncs updates of today
    **/
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, boolean incremental) {
-    this(cfg, client, ddao, sessionFactory, userKey, Collections.emptySet(), incremental);
+  public GbifSyncJob(GbifConfig cfg, ImporterConfig iCfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, boolean incremental) {
+    this(cfg, iCfg, client, ddao, sessionFactory, userKey, Collections.emptySet(), incremental);
   }
 
-  public GbifSyncJob(GbifConfig cfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys, boolean incremental) {
+  public GbifSyncJob(GbifConfig cfg, ImporterConfig iCfg, Client client, DatasetDao ddao, SqlSessionFactory sessionFactory, int userKey, Set<UUID> keys, boolean incremental) {
     super(userKey, JobPriority.HIGH);
     this.cfg = cfg;
+    this.publisherAliases = iCfg.publisherAlias;
     this.client = client;
     this.dao = ddao;
     this.sessionFactory = sessionFactory;
@@ -222,6 +225,9 @@ public class GbifSyncJob extends GlobalBlockingJob {
             }
           }
           updated++;
+        } else if (curr.getAlias() == null && gbif.dataset.getGbifPublisherKey() != null && publisherAliases.containsKey(gbif.dataset.getGbifPublisherKey()) ) {
+          // add an alias if we have publisher aliases configured - this is done by the DAO in update or create if the alias is null
+          dao.update(curr, Users.GBIF_SYNC);
         }
         // let the registry track CLB dataset keys
         if (cfg.bidirectional) {
