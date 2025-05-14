@@ -4,6 +4,8 @@ import java.util.Objects;
 
 import jakarta.validation.constraints.NotNull;
 
+import javax.annotation.Nullable;
+
 public class PgDbConfig {
   
   @NotNull
@@ -13,7 +15,10 @@ public class PgDbConfig {
   public String user = "postgres";
   
   public String password;
-  
+
+  @Nullable
+  public String applicationName;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

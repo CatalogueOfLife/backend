@@ -237,6 +237,10 @@ public class WsROServer extends Application<WsServerConfig> {
     }
 
     // daos
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient),
+      ImageService.passThru(), null, null, indexService, cfg.normalizer::scratchFile, null, validator
+    );
+    DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
@@ -246,6 +250,9 @@ public class WsROServer extends Application<WsServerConfig> {
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
+
+    // portal html page renderer
+    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
     // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
@@ -262,6 +269,7 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // global resources
     j.register(new NameUsageSearchResource(searchService));
+    j.register(new PortalResource(renderer));
     j.register(new VernacularGlobalResource());
     j.register(new VernacularResource());
     j.register(new VocabResource());
