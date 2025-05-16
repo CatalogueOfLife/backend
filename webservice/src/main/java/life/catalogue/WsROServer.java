@@ -1,36 +1,17 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
-import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.assembly.SyncFactory;
-import life.catalogue.assembly.SyncManager;
-import life.catalogue.cache.CacheFlush;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.io.HttpUtils;
-import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.concurrent.ExecutorUtils;
-import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
-import life.catalogue.db.LookupTables;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
-import life.catalogue.dw.auth.AuthenticationProviderFactory;
-import life.catalogue.dw.auth.RequireAuthDynamicFeature;
-import life.catalogue.dw.auth.RolesAllowedDynamicFeature2;
 import life.catalogue.dw.auth.map.MapAuthenticationFactory;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
-import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
@@ -39,46 +20,23 @@ import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
-import life.catalogue.exporter.ExportManager;
-import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.feedback.FeedbackService;
-import life.catalogue.feedback.GithubFeedback;
-import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
-import life.catalogue.importer.ContinuousImporter;
-import life.catalogue.importer.ImportManager;
 import life.catalogue.interpreter.TxtTreeInterpreter;
-import life.catalogue.jobs.cron.CronExecutor;
-import life.catalogue.jobs.cron.ProjectCounterUpdate;
-import life.catalogue.jobs.cron.TempDatasetCleanup;
-import life.catalogue.matching.UsageMatcherGlobal;
-import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
-import life.catalogue.printer.DatasetDiffService;
-import life.catalogue.printer.SectorDiffService;
-import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
-import life.catalogue.resources.legacy.IdMap;
-import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.*;
-import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.util.Timeout;
@@ -94,10 +52,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.DockerClient;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -237,19 +191,30 @@ public class WsROServer extends Application<WsServerConfig> {
     }
 
     // daos
+    final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
+    final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
+
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient),
-      ImageService.passThru(), null, null, indexService, cfg.normalizer::scratchFile, null, validator
+      ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, null, validator
     );
+    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), null, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
+    DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
+    DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
+    EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), null, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
+    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
-    SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
-    TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
+    TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
+
+    // images
+    final ImageService imgService = new ImageServiceFS(cfg.img, null);
 
     // portal html page renderer
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
@@ -258,26 +223,50 @@ public class WsROServer extends Application<WsServerConfig> {
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
     managedService.manage(Component.UsageCache, uCache);
 
+    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      searchService, suggestService, indexService, imgService,
+      FeedbackService.passThru(), renderer, doiResolver, coljersey
+    );
+  }
+
+  static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, DatasetDao ddao, DatasetSourceDao dsdao,
+                                        DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
+                                        NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
+                                        ImageService imgService, FeedbackService feedbackService, PortalPageRenderer renderer, DoiResolver doiResolver, ColJerseyBundle coljersey) {
     // dataset scoped resources
+    j.register(new DatasetArchiveResource(cfg));
+    j.register(new DatasetImportResource(diDao));
+    j.register(new DatasetIssuesResource(factory));
+    j.register(new DatasetPatchResource());
+    j.register(new DatasetResource(factory, ddao));
+    j.register(new DatasetSourceResource(factory, dsdao));
+    j.register(new DecisionResource(decdao));
+    j.register(new DuplicateResource(dupeDao));
+    j.register(new EstimateResource(edao));
+    j.register(new ImageResource(imgService, factory));
     j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, FeedbackService.passThru()));
+    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedbackService));
+    j.register(new PublisherResource(pdao));
     j.register(new ReferenceResource(rdao));
+
+    j.register(new SectorResource(secdao, tdao, fmsDao, siDao, null));
     j.register(new SynonymResource(sdao));
-    j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtTreeDao));
+    j.register(new TaxonResource(factory, tdao, txtrDao));
     j.register(new TreeResource(tdao, trDao));
     j.register(new VerbatimResource());
+    j.register(new VernacularResource());
 
     // global resources
+    j.register(new ExportResource(exdao, cfg));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new VernacularGlobalResource());
-    j.register(new VernacularResource());
     j.register(new VocabResource());
 
-    // parsers
+    // global parsers
     j.register(new HomotypicGroupingResource());
     j.register(new HomoglyphParserResource());
-    j.register(new NameParserResource(getSqlSessionFactory()));
+    j.register(new NameParserResource(factory));
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
     j.register(new ReferenceParserResource(doiResolver));

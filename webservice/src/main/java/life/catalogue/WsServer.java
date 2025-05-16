@@ -348,7 +348,7 @@ public class WsServer extends Application<WsServerConfig> {
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
-    TxtTreeDao txtTreeDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
+    TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
     // usage cache
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
@@ -433,41 +433,34 @@ public class WsServer extends Application<WsServerConfig> {
       getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
-    j.register(new DataPackageResource(http));
-    j.register(new DatasetArchiveResource(cfg));
+
+    WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      searchService, suggestService, indexService,
+      imgService, FeedbackService.passThru(), renderer, doiResolver, coljersey
+    );
+    // dataset scoped
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
     j.register(new DatasetExportResource(getSqlSessionFactory(), mdao, exportManager, cfg));
-    j.register(new DatasetIssuesResource(getSqlSessionFactory()));
-    j.register(new DatasetImportResource(diDao));
-    j.register(new DatasetPatchResource());
-    j.register(new DatasetResource(getSqlSessionFactory(), ddao, dsdao, syncManager, copyFactory, executor));
+    j.register(new DatasetJobResource(getSqlSessionFactory(), ddao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
-    j.register(new DecisionResource(decdao));
+    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
+    j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
+    j.register(new SectorDiffResource(sDiff));
+
+    j.register(new SynonymResource(sdao));
+    j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtrDao));
+    j.register(new TreeResource(tdao, trDao));
+
+    // global
+    j.register(new DataPackageResource(http));
     j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
-    j.register(new DuplicateResource(dupeDao));
-    j.register(new EstimateResource(edao));
-    j.register(new ExportResource(exdao, cfg));
-    j.register(new ImageResource(imgService, getSqlSessionFactory()));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
-    j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
-    j.register(new NameResource(ndao));
-    j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedback));
-    j.register(new NameUsageSearchResource(searchService));
-    j.register(new PortalResource(renderer));
-    j.register(new PublisherResource(pdao));
-    j.register(new ReferenceResource(rdao));
     j.register(new ResolverResource(doiResolver));
-    j.register(new SectorDiffResource(sDiff));
-    j.register(new SectorResource(secdao, tdao, fmsDao, siDao, syncManager));
-    j.register(new SynonymResource(sdao));
-    j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtTreeDao));
-    j.register(new TreeResource(tdao, trDao));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
-    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
     j.register(new ValidatorResource(importManager, ddao, http));
     j.register(new VerbatimResource());
     j.register(new VernacularGlobalResource());

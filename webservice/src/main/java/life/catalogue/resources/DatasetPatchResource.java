@@ -36,7 +36,6 @@ public class DatasetPatchResource {
 
   @GET
   @DatasetPatch
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public List<Dataset> list(@PathParam("key") int datasetKey, @Context SqlSession session) {
     List<Dataset> patches = new ArrayList<>();
     PgUtils.consume(() -> session.getMapper(DatasetPatchMapper.class).processDataset(datasetKey), patches::add);

@@ -51,18 +51,10 @@ import static life.catalogue.api.model.User.userkey;
 @SuppressWarnings("static-method")
 public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetDao dao;
-  private final DatasetSourceDao sourceDao;
-  private final SyncManager assembly;
-  private final JobExecutor exec;
-  private final ProjectCopyFactory jobFactory;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao, DatasetSourceDao sourceDao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
+  public DatasetResource(SqlSessionFactory factory, DatasetDao dao) {
     super(Dataset.class, dao, factory);
     this.dao = dao;
-    this.sourceDao = sourceDao;
-    this.assembly = assembly;
-    this.jobFactory = jobFactory;
-    this.exec = exec;
   }
 
   /**
@@ -181,20 +173,6 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
   }
 
   @GET
-  @Path("{key}/assembly")
-  public SyncState assemblyState(@PathParam("key") int key) {
-    return assembly.getState(key);
-  }
-
-  @POST
-  @Path("/{key}/copy")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void copy(@PathParam("key") int key, @Auth User user) {
-    var job = jobFactory.buildDuplication(key, user.getKey());
-    exec.submit(job);
-  }
-
-  @GET
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   @Path("{key}/matches/count")
   public int count(@PathParam("key") int datasetKey) {
@@ -210,133 +188,5 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     var dim = session.getMapper(DatasetImportMapper.class);
     var list = dim.countTaxaByScrutinizer(datasetKey);
     return DatasetImportDao.countMap(list);
-  }
-
-  @POST
-  @Path("/{key}/consolidate-homotypic")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
-    HomotypicConsolidationJob job;
-    if (StringUtils.isBlank(taxonID)) {
-      job = new HomotypicConsolidationJob(factory, key, user.getKey());
-    } else {
-      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
-    }
-    exec.submit(job);
-  }
-
-  @POST
-  @Path("/{key}/validate")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void validate(@PathParam("key") int key, @Auth User user) {
-    exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
-  }
-
-  @POST
-  @Path("/{key}/release")
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void release(@PathParam("key") int key, @Auth User user) {
-    var job = jobFactory.buildRelease(key, user.getKey());
-    exec.submit(job);
-  }
-
-  @POST
-  @Path("/{key}/xrelease")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void xRelease(@PathParam("key") int key, @Auth User user) {
-    Integer releaseKey;
-    try (SqlSession session = factory.openSession(true)) {
-      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
-    }
-    if (releaseKey == null) {
-      throw new IllegalArgumentException("Project " + key + " was never released in public");
-    }
-    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
-    exec.submit(job);
-  }
-
-  @GET
-  @Path("/{key}/source")
-  public List<Dataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
-                                               @QueryParam("inclPublisherSources") boolean inclPublisherSources,
-                                               @QueryParam("notCurrentOnly") boolean notCurrentOnly
-  ) {
-    var ds = sourceDao.listSimple(datasetKey, inclPublisherSources);
-    if (notCurrentOnly) {
-      List<Dataset> notCurrent = new ArrayList<>();
-      try (SqlSession session = factory.openSession()) {
-        var dm = session.getMapper(DatasetMapper.class);
-        for (Dataset d : ds) {
-          Integer currAttempt = dm.lastImportAttempt(d.getKey());
-          if (currAttempt != null && !Objects.equals(currAttempt, d.getAttempt())) {
-            notCurrent.add(d);
-          }
-        }
-      }
-      return notCurrent;
-
-    } else {
-      return ds;
-    }
-  }
-
-  @GET
-  @Path("/{key}/source/suggest")
-  public List<DatasetSimple> projectOrReleaseSourceSuggest(@PathParam("key") int datasetKey,
-                                                           @QueryParam("merge") boolean inclMerge,
-                                                           @QueryParam("q") String query
-  ) {
-    return sourceDao.suggest(datasetKey, query, inclMerge);
-  }
-
-  @GET
-  @Path("/{key}/source/{id}")
-  @VaryAccept
-  @Produces({MediaType.APPLICATION_JSON,
-    MediaType.APPLICATION_XML, MediaType.TEXT_XML,
-    MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML,
-    MoreMediaTypes.APP_JSON_CSL,
-    MoreMediaTypes.APP_BIBTEX
-  })
-  public Dataset projectSource(@PathParam("key") int datasetKey,
-                               @PathParam("id") int id,
-                               @QueryParam("original") boolean original) {
-    return sourceDao.get(datasetKey, id, original);
-  }
-
-  @PUT
-  @Path("/{key}/source/{id}")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  @Consumes({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.APP_YAML, MoreMediaTypes.TEXT_YAML})
-  public void updateProjectSource(@PathParam("key") int datasetKey, @PathParam("id") int id, Dataset obj, @Auth User user) {
-    if (obj==null) {
-      throw new IllegalArgumentException("No source entity given for key " + id);
-    }
-    obj.setKey(id);
-    obj.applyUser(user);
-    int i = sourceDao.update(datasetKey, obj, user.getKey());
-    if (i == 0) {
-      throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
-    }
-  }
-
-  @GET
-  @Hidden
-  @Path("/{key}/source/{id}/seo")
-  @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
-  public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    var d = sourceDao.get(datasetKey, id, false);
-    if (d == null) {
-      throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
-    }
-    return ResourceUtils.streamFreemarker(d, "seo/DATASET.ftl", MediaType.TEXT_PLAIN_TYPE);
-  }
-
-  @GET
-  @Path("/{key}/source/{id}/metrics")
-  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    return sourceDao.sourceMetrics(datasetKey, id);
   }
 }

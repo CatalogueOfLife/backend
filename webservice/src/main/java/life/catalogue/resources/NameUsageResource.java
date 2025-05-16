@@ -159,25 +159,6 @@ public class NameUsageResource {
 
   @GET
   @Hidden
-  @Path("{id}/nuw")
-  public NameUsageWrapper nuw(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    if (indexService instanceof NameUsageIndexServiceEs) {
-      var idxSrv = (NameUsageIndexServiceEs) indexService;
-      var usages = idxSrv.buildNameUsageWrappers(datasetKey, Set.of(id));
-      return usages == null || usages.isEmpty() ? null : usages.get(0);
-    }
-    throw new UnsupportedOperationException("No real NameUsageIndexServiceEs installed: " + indexService.getClass());
-  }
-
-  @GET
-  @Hidden
-  @Path("{id}/nues")
-  public EsNameUsage nues(@PathParam("key") int datasetKey, @PathParam("id") String id) throws IOException {
-    return NameUsageWrapperConverter.toDocument(nuw(datasetKey, id));
-  }
-
-  @GET
-  @Hidden
   @Path("{id}/info")
   public UsageInfo info(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     UsageInfo info = dao.getUsageInfo(DSID.of(datasetKey, id));
