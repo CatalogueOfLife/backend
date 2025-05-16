@@ -27,7 +27,6 @@ pipeline {
     stages {
         stage('Maven build matching-ws') {
           steps {
-//               git 'https://github.com/catalogueoflife/backend.git'
               sh 'cd matching-ws && mvn clean install -DskipTests'
           }
         }
@@ -74,21 +73,22 @@ pipeline {
                   script {
                       PLATFORM = "amd64"
                       TIMESTAMP = new Date().format("yyyyMMdd-HHmmss")
+                      FULL_TAG = "${DOCKER_TAG}-${PLATFORM}-${CLB_DATASET_ID}-${TIMESTAMP}"
 
                       // Run Docker build with parameters
-                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
-                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${FULL_TAG}"
+                      sh "docker push docker.gbif.org/matching-ws:${FULL_TAG}"
 
                       // Tag and push the latest version if required
                       if (env.DOCKER_TAG_LATEST) {
-                          sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker tag docker.gbif.org/matching-ws:${FULL_TAG} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
                           sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
                           sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
                           sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
                           sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest docker.gbif.org/matching-ws:${DOCKER_TAG}-latest"
                       }
 
-                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker rmi docker.gbif.org/matching-ws:${FULL_TAG}"
                   }
               }
         }
@@ -98,19 +98,20 @@ pipeline {
                   script {
                       PLATFORM = "arm64"
                       TIMESTAMP = new Date().format("yyyyMMdd-HHmmss")
+                      FULL_TAG = "${DOCKER_TAG}-${PLATFORM}-${CLB_DATASET_ID}-${TIMESTAMP}"
 
                       // Run Docker build with parameters
-                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
-                      sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${FULL_TAG}"
+                      sh "docker push docker.gbif.org/matching-ws:${FULL_TAG}"
 
                       // Tag and push the latest version if required
                       if (env.DOCKER_TAG_LATEST) {
-                          sh "docker tag docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
+                          sh "docker tag docker.gbif.org/matching-ws:${FULL_TAG} docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
                           sh "docker push docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
                           sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest"
                       }
 
-                      sh "docker rmi docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-${TIMESTAMP}"
+                      sh "docker rmi docker.gbif.org/matching-ws:${FULL_TAG}"
                   }
               }
         }
