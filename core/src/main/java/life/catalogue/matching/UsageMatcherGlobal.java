@@ -721,7 +721,7 @@ public class UsageMatcherGlobal {
         }
       }
     }
-    LOG.info("Updated {} usages from datasetKey {} with new parentID {} in the cache", count, datasetKey, newParentID);
+    LOG.debug("Updated {} usages from datasetKey {} with new parentID {} in the cache", count, datasetKey, newParentID);
   }
 
   /**

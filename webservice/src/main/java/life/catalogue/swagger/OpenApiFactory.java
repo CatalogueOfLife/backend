@@ -3,7 +3,7 @@ package life.catalogue.swagger;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.util.YamlUtils;
-import life.catalogue.resources.DocsResource;
+import life.catalogue.resources.VersionResource;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,7 +33,7 @@ public class OpenApiFactory {
       // removes @Auth params from request body
       DWReader reader = new DWReader();
       OpenApiContext ctxt = new JaxrsOpenApiContextBuilder()
-        .resourcePackages(Set.of(DocsResource.class.getPackageName()))
+        .resourcePackages(Set.of(VersionResource.class.getPackageName()))
         .buildContext(false);
       ctxt.setModelConverters(Set.of(resolver));
       ctxt.setOpenApiReader(reader);

@@ -39,7 +39,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.validation.Validator;
 
-public class UserDao extends EntityDao<Integer, User, UserMapper> {
+public class UserDao extends UserCrudDao {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
@@ -49,19 +49,10 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
   private final MailConfig mailCfg;
 
   public UserDao(SqlSessionFactory factory, MailConfig cfg, @Nullable Mailer emailer, EventBus bus, Validator validator) {
-    super(true, factory, User.class, UserMapper.class, validator);
+    super(factory, validator);
     this.bus = bus;
     this.mailer = emailer;
     this.mailCfg = cfg;
-  }
-
-  public ResultPage<User> search(@Nullable final String q, @Nullable final User.Role role, @Nullable Page page) {
-    page = page == null ? new Page() : page;
-    try (SqlSession session = factory.openSession()){
-      UserMapper um = session.getMapper(mapperClass);
-      List<User> result = um.search(q, role, defaultPage(page));
-      return new ResultPage<>(page, result, () -> um.searchCount(q, role));
-    }
   }
 
   public void updateSettings(Map<String, String> settings, User user) {
@@ -125,9 +116,6 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     bus.post(UserChanged.created(u, admin.getKey()));
   }
 
-  private static Page defaultPage(Page page){
-    return page == null ? new Page(0, 10) : page;
-  }
 
   @Override
   protected boolean createAfter(User obj, int user, UserMapper mapper, SqlSession session) {

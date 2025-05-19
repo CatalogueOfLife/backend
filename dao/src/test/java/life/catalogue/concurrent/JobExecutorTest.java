@@ -2,6 +2,7 @@ package life.catalogue.concurrent;
 
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.dao.UserCrudDao;
 import life.catalogue.dao.UserDao;
 
 import java.util.*;
@@ -45,7 +46,7 @@ public class JobExecutorTest {
     user.setKey(1);
     user.setUsername("foo");
     user.setLastname("Bar");
-    UserDao dao = mock(UserDao.class);
+    UserCrudDao dao = mock(UserCrudDao.class);
     doReturn(user).when(dao).get(any());
 
     exec = new JobExecutor(JobConfig.withThreads(2), new MetricRegistry(), null, dao);

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.models.OpenAPI;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -16,21 +17,15 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
 
-import io.swagger.v3.oas.models.OpenAPI;
-
 /**
  *
  */
 @Path("/")
-public class DocsResource {
-  private final String version;
-  private final LocalDateTime startup;
+public class OpenApiResource {
   private final OpenAPI openApi;
 
-  public DocsResource(WsServerConfig cfg, OpenAPI openApi, LocalDateTime startup) {
-    version = cfg.versionString();
+  public OpenApiResource(OpenAPI openApi) {
     this.openApi = openApi;
-    this.startup = startup;
   }
   
   @GET
@@ -45,18 +40,5 @@ public class DocsResource {
   public OpenAPI openApi(@Context HttpHeaders headers, @Context UriInfo uriInfo) {
     return openApi;
   }
-
-  @GET
-  @Path("/version")
-  @Produces(MediaType.TEXT_PLAIN)
-  public String version() {
-    return version;
-  }
-
-  @GET
-  @Path("/version/startup")
-  @Produces(MediaType.TEXT_PLAIN)
-  public String startup() {
-    return startup.toString();
-  }
+  
 }

@@ -5,6 +5,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.auth.map.MapAuthenticationFactory;
@@ -35,6 +36,7 @@ import life.catalogue.resources.parser.*;
 
 import org.gbif.dwc.terms.TermFactory;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.client5.http.config.RequestConfig;
@@ -212,6 +214,7 @@ public class WsROServer extends Application<WsServerConfig> {
     tdao.setSectorDao(secdao);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
+    UserCrudDao uDao = new UserCrudDao(getSqlSessionFactory(), validator);
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, null);
@@ -223,13 +226,19 @@ public class WsROServer extends Application<WsServerConfig> {
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
     managedService.manage(Component.UsageCache, uCache);
 
-    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+    // job executor
+    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), null, uDao);
+    managedService.manage(Component.JobExecutor, executor);
+
+    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
+      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService, imgService,
       FeedbackService.passThru(), renderer, doiResolver, coljersey
     );
   }
 
-  static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, DatasetDao ddao, DatasetSourceDao dsdao,
+  static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, JobExecutor exec,
+                                        DatasetDao ddao, DatasetSourceDao dsdao,
                                         DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
                                         ImageService imgService, FeedbackService feedbackService, PortalPageRenderer renderer, DoiResolver doiResolver, ColJerseyBundle coljersey) {
@@ -238,7 +247,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new DatasetImportResource(diDao));
     j.register(new DatasetIssuesResource(factory));
     j.register(new DatasetPatchResource());
-    j.register(new DatasetResource(factory, ddao));
+    j.register(new DatasetResource(factory, exec, ddao));
     j.register(new DatasetSourceResource(factory, dsdao));
     j.register(new DecisionResource(decdao));
     j.register(new DuplicateResource(dupeDao));
@@ -248,8 +257,6 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedbackService));
     j.register(new PublisherResource(pdao));
     j.register(new ReferenceResource(rdao));
-
-    j.register(new SectorResource(secdao, tdao, fmsDao, siDao, null));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(factory, tdao, txtrDao));
     j.register(new TreeResource(tdao, trDao));
@@ -261,6 +268,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PortalResource(renderer));
     j.register(new VernacularGlobalResource());
+    j.register(new VersionResource(cfg, LocalDateTime.now()));
     j.register(new VocabResource());
 
     // global parsers
@@ -271,6 +279,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new ParserResource<>());
     j.register(new ReferenceParserResource(doiResolver));
     j.register(new TaxGroupResource());
+    j.register(new IdEncoderResource());
   }
 
   @Override

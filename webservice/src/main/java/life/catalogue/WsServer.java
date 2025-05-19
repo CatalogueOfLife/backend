@@ -434,7 +434,8 @@ public class WsServer extends Application<WsServerConfig> {
       importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
 
-    WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+    WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
+      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService,
       imgService, FeedbackService.passThru(), renderer, doiResolver, coljersey
     );
@@ -448,37 +449,17 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
-
-    j.register(new SynonymResource(sdao));
-    j.register(new TaxonResource(getSqlSessionFactory(), tdao, txtrDao));
-    j.register(new TreeResource(tdao, trDao));
+    j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
 
     // global
     j.register(new DataPackageResource(http));
-    j.register(new DocsResource(cfg, OpenApiFactory.build(cfg, env), LocalDateTime.now()));
+    j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new ValidatorResource(importManager, ddao, http));
-    j.register(new VerbatimResource());
-    j.register(new VernacularGlobalResource());
-    j.register(new VernacularResource());
-    j.register(new VocabResource());
-    j.register(new XColResource(dsdao, coljersey.getCache(), exportManager, cfg));
-
-
-    // parsers
-    j.register(new HomotypicGroupingResource());
-    j.register(new HomoglyphParserResource());
-    j.register(new NameParserResource(getSqlSessionFactory()));
-    j.register(new MetadataParserResource());
-    j.register(new ParserResource<>());
-    j.register(new ReferenceParserResource(doiResolver));
-    j.register(new TaxGroupResource());
-
-    j.register(new IdEncoderResource());
 
     // attach listeners to event bus
     bus.register(auth);

@@ -54,7 +54,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
   private final FileMetricsSectorDao fmsDao;
   private final SyncManager assembly;
 
-  public SectorResource(SectorDao dao, TaxonDao tdao, FileMetricsSectorDao fmsDao, SectorImportDao sid, SyncManager assembly) {
+  public SectorResource(SectorDao dao, FileMetricsSectorDao fmsDao, SectorImportDao sid, SyncManager assembly) {
     super(Sector.class, dao);
     this.dao = dao;
     this.sid = sid;

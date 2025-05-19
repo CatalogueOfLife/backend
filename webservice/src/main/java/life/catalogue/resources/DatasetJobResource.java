@@ -1,0 +1,118 @@
+package life.catalogue.resources;
+
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.assembly.SyncManager;
+import life.catalogue.assembly.SyncState;
+import life.catalogue.basgroup.HomotypicConsolidationJob;
+import life.catalogue.common.ws.MoreMediaTypes;
+import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetImportDao;
+import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.dao.job.DeleteDatasetJob;
+import life.catalogue.db.mapper.DatasetImportMapper;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
+import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.jobs.ValidationJob;
+import life.catalogue.release.ProjectCopyFactory;
+
+import java.util.*;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.google.common.base.Preconditions;
+
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+import static life.catalogue.api.model.User.userkey;
+
+@Path("/dataset/{key}")
+@SuppressWarnings("static-method")
+public class DatasetJobResource {
+  private final DatasetDao dao;
+  private final SyncManager assembly;
+  private final JobExecutor exec;
+  private final ProjectCopyFactory jobFactory;
+  private final SqlSessionFactory factory;
+
+  public DatasetJobResource(SqlSessionFactory factory, DatasetDao dao, SyncManager assembly, ProjectCopyFactory jobFactory, JobExecutor exec) {
+    this.factory = factory;
+    this.dao = dao;
+    this.assembly = assembly;
+    this.jobFactory = jobFactory;
+    this.exec = exec;
+  }
+
+  @GET
+  @Path("/assembly")
+  public SyncState assemblyState(@PathParam("key") int key) {
+    return assembly.getState(key);
+  }
+
+  @POST
+  @Path("/copy")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void copy(@PathParam("key") int key, @Auth User user) {
+    var job = jobFactory.buildDuplication(key, user.getKey());
+    exec.submit(job);
+  }
+
+  @POST
+  @Path("/consolidate-homotypic")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
+    HomotypicConsolidationJob job;
+    if (StringUtils.isBlank(taxonID)) {
+      job = new HomotypicConsolidationJob(factory, key, user.getKey());
+    } else {
+      job = new HomotypicConsolidationJob(factory, key, user.getKey(), taxonID);
+    }
+    exec.submit(job);
+  }
+
+  @POST
+  @Path("/validate")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void validate(@PathParam("key") int key, @Auth User user) {
+    exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
+  }
+
+  @POST
+  @Path("/release")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void release(@PathParam("key") int key, @Auth User user) {
+    var job = jobFactory.buildRelease(key, user.getKey());
+    exec.submit(job);
+  }
+
+  @POST
+  @Path("/xrelease")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void xRelease(@PathParam("key") int key, @Auth User user) {
+    Integer releaseKey;
+    try (SqlSession session = factory.openSession(true)) {
+      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
+    }
+    if (releaseKey == null) {
+      throw new IllegalArgumentException("Project " + key + " was never released in public");
+    }
+    var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
+    exec.submit(job);
+  }
+}

@@ -51,9 +51,11 @@ import static life.catalogue.api.model.User.userkey;
 @SuppressWarnings("static-method")
 public class DatasetResource extends AbstractGlobalResource<Dataset> {
   private final DatasetDao dao;
+  private final JobExecutor exec;
 
-  public DatasetResource(SqlSessionFactory factory, DatasetDao dao) {
+  public DatasetResource(SqlSessionFactory factory, JobExecutor exec, DatasetDao dao) {
     super(Dataset.class, dao, factory);
+    this.exec = exec;
     this.dao = dao;
   }
 
@@ -183,10 +185,10 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
 
   @GET
   @Hidden
-  @Path("{id}/scrutinizer")
-  public Map<String, Integer> scrutinizer(@PathParam("id") int datasetKey, @Context SqlSession session) {
+  @Path("{key}/scrutinizer")
+  public Map<String, Integer> scrutinizer(@PathParam("key") int key, @Context SqlSession session) {
     var dim = session.getMapper(DatasetImportMapper.class);
-    var list = dim.countTaxaByScrutinizer(datasetKey);
+    var list = dim.countTaxaByScrutinizer(key);
     return DatasetImportDao.countMap(list);
   }
 }
