@@ -428,17 +428,12 @@ public class WsServer extends Application<WsServerConfig> {
     IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
     managedService.manage(Component.LegacyIdMap, idMap);
 
-    // resources
+    // admin resources
     j.register(new AdminResource(
       getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
       importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
     );
 
-    WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
-      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
-      searchService, suggestService, indexService,
-      imgService, FeedbackService.passThru(), renderer, doiResolver, coljersey
-    );
     // dataset scoped
     j.register(new DatasetDiffResource(dDiff));
     j.register(new DatasetEditorResource(adao));
@@ -450,6 +445,13 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
+
+    // shared read only resources
+    WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
+      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      searchService, suggestService, indexService,
+      imgService, FeedbackService.passThru(), renderer, doiResolver, coljersey
+    );
 
     // global
     j.register(new DataPackageResource(http));

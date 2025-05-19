@@ -41,7 +41,7 @@ import jakarta.ws.rs.core.Response;
 
 import static life.catalogue.api.model.User.userkey;
 
-@Path("/dataset/{key}")
+@Path("/dataset")
 @SuppressWarnings("static-method")
 public class DatasetJobResource {
   private final DatasetDao dao;
@@ -59,13 +59,13 @@ public class DatasetJobResource {
   }
 
   @GET
-  @Path("/assembly")
+  @Path("{key}/assembly")
   public SyncState assemblyState(@PathParam("key") int key) {
     return assembly.getState(key);
   }
 
   @POST
-  @Path("/copy")
+  @Path("{key}/copy")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void copy(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildDuplication(key, user.getKey());
@@ -73,7 +73,7 @@ public class DatasetJobResource {
   }
 
   @POST
-  @Path("/consolidate-homotypic")
+  @Path("{key}/consolidate-homotypic")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void homotypicGrouping(@PathParam("key") int key, @QueryParam("taxonID") String taxonID, @Auth User user) {
     HomotypicConsolidationJob job;
@@ -86,14 +86,14 @@ public class DatasetJobResource {
   }
 
   @POST
-  @Path("/validate")
+  @Path("{key}/validate")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void validate(@PathParam("key") int key, @Auth User user) {
     exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
   }
 
   @POST
-  @Path("/release")
+  @Path("{key}/release")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void release(@PathParam("key") int key, @Auth User user) {
     var job = jobFactory.buildRelease(key, user.getKey());
@@ -101,7 +101,7 @@ public class DatasetJobResource {
   }
 
   @POST
-  @Path("/xrelease")
+  @Path("{key}/xrelease")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void xRelease(@PathParam("key") int key, @Auth User user) {
