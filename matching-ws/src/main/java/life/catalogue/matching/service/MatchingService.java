@@ -505,7 +505,9 @@ public class MatchingService {
                   && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
               )
           ) {
-            rank = Rank.valueOf(parsedName.getRank().name());
+            if (parsedName.getRank() != null) {
+              rank = Rank.valueOf(parsedName.getRank().name());
+            }
           }
         }
 

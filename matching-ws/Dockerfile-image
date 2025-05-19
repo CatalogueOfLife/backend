@@ -1,4 +1,4 @@
-FROM openjdk:11-jdk-slim-sid
+FROM openjdk:17-jdk-slim
 
 # this directory should contain a pre-built jar + config, and the generated lucene index
 ARG INDEX_BUILD_PATH=./index-build
@@ -6,7 +6,7 @@ ARG INDEX_BUILD_PATH=./index-build
 # Set environment variables
 ENV SERVER_PORT=8080
 ENV SERVER_ADMIN_PORT=8081
-ENV JVM_OPTIONS="-Xms1g -Xmx4g"
+ENV JVM_OPTIONS="-Xms1g -Xmx4g -XX:+UseZGC -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication"
 ENV SERVLET_CONTEXT_PATH="/"
 ENV USER=matching
 ENV APP_ARTIFACT=matching-ws
