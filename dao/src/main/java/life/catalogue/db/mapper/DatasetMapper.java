@@ -160,6 +160,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * Looks for potential duplicates of a dataset by aggregating them on title and description.
+   * This method avoids temporary datasets used e.g. for validation.
    *
    * @param minCount minimum number of datasets to be considered a duplicate.
    * @param gbifPublisherKey optional publisher filter

@@ -392,6 +392,7 @@
     SELECT title AS name, array_agg(key) AS keys
     FROM dataset
     WHERE deleted is null
+      AND key &lt; 100000000
     <if test="gbifPublisherKey != null">
       AND gbif_publisher_key = #{gbifPublisherKey}
     </if>
