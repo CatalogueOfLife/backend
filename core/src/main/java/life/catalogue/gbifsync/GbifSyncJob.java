@@ -225,8 +225,12 @@ public class GbifSyncJob extends GlobalBlockingJob {
             }
           }
           updated++;
-        } else if (curr.getAlias() == null && gbif.dataset.getGbifPublisherKey() != null && publisherAliases.containsKey(gbif.dataset.getGbifPublisherKey()) ) {
-          // add an alias if we have publisher aliases configured - this is done by the DAO in update or create if the alias is null
+        } else if (gbif.dataset.getGbifPublisherKey() != null &&
+          publisherAliases.containsKey(gbif.dataset.getGbifPublisherKey()) &&
+          (curr.getAlias() == null || !curr.getAlias().startsWith(publisherAliases.get(gbif.dataset.getGbifPublisherKey())))
+        ) {
+          // set new alias if we have publisher aliases configured - this is done by the DAO in update or create if the alias is null
+          curr.setAlias(null);
           dao.update(curr, Users.GBIF_SYNC);
         }
         // let the registry track CLB dataset keys
