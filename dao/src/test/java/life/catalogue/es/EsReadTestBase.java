@@ -168,6 +168,10 @@ public class EsReadTestBase {
   }
 
   protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) {
+    return newDocumentCL(n, status, classification(classification));
+  }
+
+  protected EsNameUsage newDocumentCL(Name n, TaxonomicStatus status, List<EsMonomial> classification) {
     EsNameUsage doc = new EsNameUsage();
     doc.setUsageId(n.getId());
     doc.setDatasetKey(n.getDatasetKey());
@@ -175,9 +179,7 @@ public class EsReadTestBase {
     doc.setNameStrings(new NameStrings(n));
     doc.setDatasetKey(n.getDatasetKey());
     doc.setStatus(status);
-    if (classification != null) {
-      doc.setClassification(classification(classification));
-    }
+    doc.setClassification(classification);
     return doc;
   }
 

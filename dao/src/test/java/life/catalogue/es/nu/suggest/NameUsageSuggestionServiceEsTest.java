@@ -4,12 +4,14 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
 import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -556,7 +558,13 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setGenus("Larus");
     n.setRank(Rank.SPECIES);
 
-    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "fuscus", "foo");
+    EsNameUsage nu1 = newDocumentCL(n, TaxonomicStatus.SYNONYM, List.of(
+      new EsMonomial(Rank.FAMILY, "Laridae"),
+      new EsMonomial(Rank.GENUS, "Larus"),
+      new EsMonomial(Rank.SPECIES, "fuscus"),
+      new EsMonomial(Rank.SUBSPECIES, "foo")
+      )
+    );
     nu1.setClassificationIds(Arrays.asList("1", "2", "3", "4"));
     nu1.setAcceptedName("Larus fuscus");
 
@@ -568,7 +576,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestResponse response = suggest(query);
 
     assertEquals("Larus foo", response.getSuggestions().get(0).getMatch());
-    assertEquals("Larus foo (synonym of Larus fuscus)", response.getSuggestions().get(0).getSuggestion());
+    assertEquals("Larus foo (synonym of Larus fuscus, Laridae)", response.getSuggestions().get(0).getSuggestion());
     assertEquals("3", response.getSuggestions().get(0).getAcceptedUsageId());
   }
 

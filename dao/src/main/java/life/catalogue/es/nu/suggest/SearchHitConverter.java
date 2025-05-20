@@ -66,10 +66,11 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       }
       if (best == null) {
         best = mono;
-      } else if (mono.getRank() != null) {
-        if (Rank.GENUS.higherOrEqualsTo(best.getRank()) && mono.getRank().higherThan(Rank.GENUS)) {
-          best = mono;
-        }
+      } else if (mono.getRank() != null && (
+            best.getRank() == null ||
+            Rank.GENUS.higherOrEqualsTo(best.getRank()) && mono.getRank().higherThan(Rank.GENUS)
+      )) {
+        best = mono;
       }
     }
     return best;
