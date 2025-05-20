@@ -2,6 +2,7 @@ package life.catalogue.matching.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ public class Classification implements LinneanClassification {
 
   String kingdom;
   String phylum;
-  @Schema(name = "class")
+  @Hidden
   String clazz;
   String order;
   String family;
