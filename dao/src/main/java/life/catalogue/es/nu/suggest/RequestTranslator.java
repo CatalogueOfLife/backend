@@ -59,11 +59,7 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
           }
         }
       }
-
-      request.clearFilter(NameUsageSearchParameter.STATUS);
-      request.addFilter(NameUsageSearchParameter.STATUS, PROVISIONALLY_ACCEPTED);
     }
-
 
     BoolQuery q = new BoolQuery();
     // always avoid bare names
