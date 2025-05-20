@@ -1,5 +1,7 @@
 package life.catalogue.api.search;
 
+import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
@@ -37,7 +39,7 @@ public class NameUsageSuggestion {
     if (status == null || status.isBareName()) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
-      return String.format("%s (%s of %s, %s)", match, status.name().toLowerCase(), acceptedName, context);
+      return String.format("%s (%s of %s, %s)", match, VocabularyUtils.toString(status), acceptedName, context);
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append(match);
