@@ -18,12 +18,12 @@ public class NameUsageSuggestion {
   // The name matching the search phrase: an accepted name/synonym/bare name
   private String match;
   // The classification context to report in the suggestion hint.
-  // For accepted names this is the first taxon above genus level, mostly the family.
-  // For synonyms it is the accepted name
+  // For species this is the first taxon above genus level, mostly the family.
   private String context;
   private String usageId;
   private String nameId;
   private String acceptedUsageId;
+  private String acceptedName;
   private Rank rank;
   private TaxonomicStatus status;
   private NomCode nomCode;
@@ -37,16 +37,16 @@ public class NameUsageSuggestion {
     if (status == null || status.isBareName()) {
       return match + " (bare name)";
     } else if (status.isSynonym()) {
-      return String.format("%s (%s of %s)", match, status.name().toLowerCase(), context);
+      return String.format("%s (%s of %s, %s)", match, status.name().toLowerCase(), acceptedName, context);
     } else {
       StringBuilder sb = new StringBuilder();
       sb.append(match);
 
       boolean prov = status == TaxonomicStatus.PROVISIONALLY_ACCEPTED;
       boolean showRank = rank != null && (prov || rank.isSupraspecific());
-      boolean showAcc = context != null;
+      boolean showCtxt = context != null;
 
-      if (showRank || prov || showAcc) {
+      if (showRank || prov || showCtxt) {
         sb.append(" (");
         if (prov) {
           sb.append("prov.");
@@ -57,7 +57,7 @@ public class NameUsageSuggestion {
           }
           sb.append(rank.name().toLowerCase());
         }
-        if (showAcc) {
+        if (showCtxt) {
           if (showRank || prov) {
             sb.append(" in ");
           }
@@ -77,7 +77,6 @@ public class NameUsageSuggestion {
     this.match = match;
   }
 
-  @JsonIgnore
   public String getContext() {
     return context;
   }
@@ -108,6 +107,14 @@ public class NameUsageSuggestion {
 
   public void setAcceptedUsageId(String acceptedUsageId) {
     this.acceptedUsageId = acceptedUsageId;
+  }
+
+  public String getAcceptedName() {
+    return acceptedName;
+  }
+
+  public void setAcceptedName(String acceptedName) {
+    this.acceptedName = acceptedName;
   }
 
   public String getNameId() {
@@ -154,11 +161,11 @@ public class NameUsageSuggestion {
   public boolean equals(Object o) {
     if (!(o instanceof NameUsageSuggestion)) return false;
     NameUsageSuggestion that = (NameUsageSuggestion) o;
-    return Float.compare(score, that.score) == 0 && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
+    return Float.compare(score, that.score) == 0 && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && Objects.equals(acceptedName, that.acceptedName) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(match, context, usageId, nameId, acceptedUsageId, rank, status, nomCode, score, group);
+    return Objects.hash(match, context, usageId, nameId, acceptedUsageId, acceptedName, rank, status, nomCode, score, group);
   }
 }
