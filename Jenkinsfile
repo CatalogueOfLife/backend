@@ -5,6 +5,7 @@ pipeline {
     jdk 'LibericaJDK11'
   }
   options {
+    disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '6'))
     skipStagesAfterUnstable()
     timestamps()
