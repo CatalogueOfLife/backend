@@ -48,6 +48,7 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
       }
     }
     suggestion.setUsageId(doc.getUsageId());
+    suggestion.setNameId(doc.getNameId());
     suggestion.setNomCode(doc.getNomCode());
     suggestion.setRank(doc.getRank());
     suggestion.setStatus(doc.getStatus());

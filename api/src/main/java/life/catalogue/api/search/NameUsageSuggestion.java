@@ -22,6 +22,7 @@ public class NameUsageSuggestion {
   // For synonyms it is the accepted name
   private String context;
   private String usageId;
+  private String nameId;
   private String acceptedUsageId;
   private Rank rank;
   private TaxonomicStatus status;
@@ -109,6 +110,14 @@ public class NameUsageSuggestion {
     this.acceptedUsageId = acceptedUsageId;
   }
 
+  public String getNameId() {
+    return nameId;
+  }
+
+  public void setNameId(String nameId) {
+    this.nameId = nameId;
+  }
+
   public Rank getRank() {
     return rank;
   }
@@ -142,28 +151,14 @@ public class NameUsageSuggestion {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(context, group, match, nomCode, rank, score, status, usageId, acceptedUsageId);
+  public boolean equals(Object o) {
+    if (!(o instanceof NameUsageSuggestion)) return false;
+    NameUsageSuggestion that = (NameUsageSuggestion) o;
+    return Float.compare(score, that.score) == 0 && Objects.equals(match, that.match) && Objects.equals(context, that.context) && Objects.equals(usageId, that.usageId) && Objects.equals(nameId, that.nameId) && Objects.equals(acceptedUsageId, that.acceptedUsageId) && rank == that.rank && status == that.status && nomCode == that.nomCode && group == that.group;
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
-    NameUsageSuggestion other = (NameUsageSuggestion) obj;
-    return Objects.equals(context, other.context)
-        && Objects.equals(match, other.match)
-        && group == other.group
-        && nomCode == other.nomCode
-        && rank == other.rank
-        && Float.floatToIntBits(score) == Float.floatToIntBits(other.score)
-        && status == other.status
-        && Objects.equals(usageId, other.usageId)
-        && Objects.equals(acceptedUsageId, other.acceptedUsageId);
+  public int hashCode() {
+    return Objects.hash(match, context, usageId, nameId, acceptedUsageId, rank, status, nomCode, score, group);
   }
-
 }
