@@ -76,6 +76,9 @@ public class TaxGroupAnalyzerTest {
     assertEquals(TaxGroup.Insects, analyzer.analyze(sn("Insecta")));
 
     assertNull(analyzer.analyze(sn(Rank.GENUS, "Dictymia", "Sm."), List.of(sn(Rank.KINGDOM, "incertae sedis"))));
+
+    // genus is ignored!
+    assertEquals(TaxGroup.Angiosperms, analyzer.analyze(sn("Abies alba"), List.of(sn("Monocotyledoneae"), sn(Rank.GENUS, "Felidae") )));
   }
 
   /**
