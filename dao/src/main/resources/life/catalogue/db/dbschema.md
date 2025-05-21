@@ -14,6 +14,34 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-05-21 add infrageneric field to ES mappings
+```bash
+curl -H "Content-Type: application/json" -X PUT "http://esm.checklistbank.org:9200/clb/_mapping" -d'
+{
+  "properties": {
+    "nameStrings": {
+      "properties": {
+        "infragenericEpithet": {
+          "type": "keyword",
+          "index": false,
+          "fields": {
+            "sac": {
+              "type": "text",
+              "analyzer": "sciname_autocomplete_indextime",
+              "search_analyzer": "sciname_whole_words"
+            },
+            "sic": {
+              "type": "text",
+              "analyzer": "sciname_ignore_case"
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
 #### 2025-05-13 new NO_SPECIES_INCLUDED issue
 
 ```sql

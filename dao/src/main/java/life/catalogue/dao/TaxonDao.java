@@ -286,7 +286,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
     UsageInfo info = new UsageInfo(usage);
     fillUsageInfo(session, info, null, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true);
+      true, true, true, true, true, false, true, true);
     return info;
   }
 
@@ -316,6 +316,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
                             boolean loadProperties,
                             boolean loadConceptRelations,
                             boolean loadSpeciesInteractions,
+                            boolean loadEstimates,
                             boolean loadDecisions,
                             boolean loadSectorModes
                             ) {
@@ -522,6 +523,11 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
           taxonIds.add(r.getRelatedTaxonId());
           addSectorMode(r, sectorModes, sm);
         });
+      }
+
+      if (loadEstimates) {
+        var mapper = session.getMapper(EstimateMapper.class);
+        //TODO: see https://github.com/CatalogueOfLife/backend/issues/1412
       }
     }
 

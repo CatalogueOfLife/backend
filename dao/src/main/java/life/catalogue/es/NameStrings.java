@@ -4,6 +4,7 @@ import life.catalogue.api.model.Name;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.es.ddl.Analyzers;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,6 +30,8 @@ public class NameStrings {
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] genusOrMonomial; // Lower case and weakly normalized versions of genus/uninomial
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
+  private String[] infragenericEpithet; // Lower case and strongly normalized versions of infrageneric epithet
+  @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] specificEpithet; // Lower case and strongly normalized versions of specific epithet
   @Analyzers({SCINAME_IGNORE_CASE, SCINAME_AUTO_COMPLETE})
   private String[] infraspecificEpithet; // Lower case and strongly normalized versions of infraspecific epithet
@@ -50,6 +53,9 @@ public class NameStrings {
     }
     // we used to use the strong normaliser to index species/infraspecific epithets...
     // But that caused more problems than it helped...
+    if (!StringUtils.isBlank(name.getInfragenericEpithet())) {
+      infragenericEpithet = getStrings(name.getInfragenericEpithet().toLowerCase(), normalizeWeakly(name.getInfragenericEpithet()));
+    }
     if (!StringUtils.isBlank(name.getSpecificEpithet())) {
       specificEpithet = getStrings(name.getSpecificEpithet().toLowerCase(), normalizeWeakly(name.getSpecificEpithet()));
     }
@@ -72,6 +78,10 @@ public class NameStrings {
     return genusOrMonomial;
   }
 
+  public String[] getInfragenericEpithet() {
+    return infragenericEpithet;
+  }
+
   public String[] getSpecificEpithet() {
     return specificEpithet;
   }
@@ -92,6 +102,10 @@ public class NameStrings {
     this.genusOrMonomial = genusOrMonomial;
   }
 
+  public void setInfragenericEpithet(String[] infragenericEpithet) {
+    this.infragenericEpithet = infragenericEpithet;
+  }
+
   public void setSpecificEpithetSN(String[] specificEpithet) {
     this.specificEpithet = specificEpithet;
   }
@@ -101,27 +115,17 @@ public class NameStrings {
   }
 
   @Override
-  public int hashCode() {
-    return Objects.hash(genusLetter, genusOrMonomial, infraspecificEpithet, sciNameLetter, specificEpithet);
+  public boolean equals(Object o) {
+    if (!(o instanceof NameStrings)) return false;
+    NameStrings that = (NameStrings) o;
+    return sciNameLetter == that.sciNameLetter && genusLetter == that.genusLetter && Objects.deepEquals(genusOrMonomial, that.genusOrMonomial) && Objects.deepEquals(infragenericEpithet, that.infragenericEpithet) && Objects.deepEquals(specificEpithet, that.specificEpithet) && Objects.deepEquals(infraspecificEpithet, that.infraspecificEpithet);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    NameStrings other = (NameStrings) obj;
-    return genusLetter == other.genusLetter && Objects.equals(genusOrMonomial, other.genusOrMonomial)
-        && Objects.equals(infraspecificEpithet, other.infraspecificEpithet) && sciNameLetter == other.sciNameLetter
-        && Objects.equals(specificEpithet, other.specificEpithet);
+  public int hashCode() {
+    return Objects.hash(sciNameLetter, genusLetter, Arrays.hashCode(genusOrMonomial), Arrays.hashCode(infragenericEpithet), Arrays.hashCode(specificEpithet), Arrays.hashCode(infraspecificEpithet));
   }
-  
+
   private static String[] getStrings(String literal, String normalized) {
     literal = literal.toLowerCase();
     return literal.equals(normalized) ? new String[] {literal} : new String[] {literal, normalized};

@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.*;
@@ -15,11 +13,10 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.es.*;
-
-import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.es.nu.NameUsageWrapperConverter;
-
+import life.catalogue.es.InvalidQueryException;
+import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 
@@ -29,10 +26,16 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -40,15 +43,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriInfo;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.codahale.metrics.annotation.Timed;
-
-import io.swagger.v3.oas.annotations.Hidden;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/dataset/{key}/nameusage")
@@ -233,7 +227,7 @@ public class NameUsageResource {
 
   @GET
   @Path("suggest")
-  public NameUsageSuggestResponse suggestDataset(@PathParam("key") int datasetKey,
+  public List<NameUsageSuggestion> suggestDataset(@PathParam("key") int datasetKey,
                                                  @BeanParam NameUsageSuggestRequest query,
                                                  @Context UriInfo uri) throws InvalidQueryException {
     checkIllegalDatasetKeyParam(datasetKey, query, uri);

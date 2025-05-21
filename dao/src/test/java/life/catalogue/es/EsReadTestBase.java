@@ -159,7 +159,7 @@ public class EsReadTestBase {
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).search(query, new Page(0, 1000));
   }
 
-  protected NameUsageSuggestResponse suggest(NameUsageSuggestRequest query) {
+  protected List<NameUsageSuggestion> suggest(NameUsageSuggestRequest query) {
     return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
   }
 
@@ -176,6 +176,7 @@ public class EsReadTestBase {
     doc.setUsageId(n.getId());
     doc.setDatasetKey(n.getDatasetKey());
     doc.setScientificName(n.getScientificName());
+    doc.setRank(n.getRank());
     doc.setNameStrings(new NameStrings(n));
     doc.setDatasetKey(n.getDatasetKey());
     doc.setStatus(status);

@@ -7,6 +7,7 @@ import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -41,9 +42,9 @@ public class QMatchingTest extends EsReadTestBase {
     suggestQuery.setDatasetFilter(1008);
     suggestQuery.setQ("Crocodylidae");
     suggestQuery.setLimit(1000);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
+    List<NameUsageSuggestion> nur = suggest(suggestQuery);
 
-    assertEquals(nsr.getTotal(), nur.getSuggestions().size());
+    assertEquals(nsr.getTotal(), nur.size());
   }
 
   @Test
@@ -61,10 +62,10 @@ public class QMatchingTest extends EsReadTestBase {
     suggestQuery.setDatasetFilter(2020);
     suggestQuery.setQ("Croco");
     suggestQuery.setLimit(1000);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
+    var nur = suggest(suggestQuery);
 
     assertEquals(4, nsr.getTotal());
-    assertEquals(4, nur.getSuggestions().size());
+    assertEquals(4, nur.size());
   }
 
   @Test
@@ -84,9 +85,9 @@ public class QMatchingTest extends EsReadTestBase {
     suggestQuery.setDatasetFilter(2020);
     suggestQuery.setQ("Croco Dundee");
     suggestQuery.setLimit(1000);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
+    var nur = suggest(suggestQuery);
 
-    assertEquals(0, nur.getSuggestions().size());
+    assertEquals(0, nur.size());
   }
 
   @Test
@@ -107,10 +108,10 @@ public class QMatchingTest extends EsReadTestBase {
     suggestQuery.setQ("morelety");
     suggestQuery.setLimit(1000);
     suggestQuery.setFuzzy(true);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
+    var nur = suggest(suggestQuery);
 
     assertEquals(1, nsr.getTotal());
-    assertEquals(1, nur.getSuggestions().size());
+    assertEquals(1, nur.size());
   }
 
   @Test
@@ -130,10 +131,10 @@ public class QMatchingTest extends EsReadTestBase {
     suggestQuery.setQ("morelety");
     suggestQuery.setLimit(1000);
     suggestQuery.setFuzzy(false);
-    NameUsageSuggestResponse nur = suggest(suggestQuery);
+    var nur = suggest(suggestQuery);
 
     assertEquals(0, nsr.getTotal());
-    assertEquals(0, nur.getSuggestions().size());
+    assertEquals(0, nur.size());
   }
 
   @Test

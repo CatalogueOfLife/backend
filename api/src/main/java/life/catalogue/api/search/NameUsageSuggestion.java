@@ -1,6 +1,5 @@
 package life.catalogue.api.search;
 
-import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
@@ -9,8 +8,6 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Represents a single suggestion coming back from the NameSuggestionService.

@@ -25,6 +25,7 @@ public class UsageInfo {
   private List<TaxonProperty> properties;
   private List<TaxonConceptRelation> conceptRelations;
   private List<SpeciesInteraction> speciesInteractions;
+  private List<SpeciesEstimate> estimates;
 
   /**
    * Lookup of types for a given nameID
@@ -244,16 +245,23 @@ public class UsageInfo {
     this.speciesInteractions = speciesInteractions;
   }
 
+  public List<SpeciesEstimate> getEstimates() {
+    return estimates;
+  }
+
+  public void setEstimates(List<SpeciesEstimate> estimates) {
+    this.estimates = estimates;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof UsageInfo)) return false;
     UsageInfo usageInfo = (UsageInfo) o;
-    return Objects.equals(usage, usageInfo.usage) && Objects.equals(classification, usageInfo.classification) && group == usageInfo.group && Objects.equals(source, usageInfo.source) && Objects.equals(treatment, usageInfo.treatment) && Objects.equals(nameRelations, usageInfo.nameRelations) && Objects.equals(synonyms, usageInfo.synonyms) && Objects.equals(distributions, usageInfo.distributions) && Objects.equals(vernacularNames, usageInfo.vernacularNames) && Objects.equals(media, usageInfo.media) && Objects.equals(properties, usageInfo.properties) && Objects.equals(conceptRelations, usageInfo.conceptRelations) && Objects.equals(speciesInteractions, usageInfo.speciesInteractions) && Objects.equals(typeMaterial, usageInfo.typeMaterial) && Objects.equals(references, usageInfo.references) && Objects.equals(names, usageInfo.names) && Objects.equals(taxa, usageInfo.taxa) && Objects.equals(decisions, usageInfo.decisions);
+    return Objects.equals(usage, usageInfo.usage) && Objects.equals(classification, usageInfo.classification) && group == usageInfo.group && Objects.equals(source, usageInfo.source) && Objects.equals(treatment, usageInfo.treatment) && Objects.equals(nameRelations, usageInfo.nameRelations) && Objects.equals(synonyms, usageInfo.synonyms) && Objects.equals(distributions, usageInfo.distributions) && Objects.equals(vernacularNames, usageInfo.vernacularNames) && Objects.equals(media, usageInfo.media) && Objects.equals(properties, usageInfo.properties) && Objects.equals(conceptRelations, usageInfo.conceptRelations) && Objects.equals(speciesInteractions, usageInfo.speciesInteractions) && Objects.equals(estimates, usageInfo.estimates) && Objects.equals(typeMaterial, usageInfo.typeMaterial) && Objects.equals(references, usageInfo.references) && Objects.equals(names, usageInfo.names) && Objects.equals(taxa, usageInfo.taxa) && Objects.equals(decisions, usageInfo.decisions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, classification, group, source, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa, decisions);
+    return Objects.hash(usage, classification, group, source, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
   }
 }
