@@ -85,7 +85,7 @@ public class DoiResolverIT {
     IssueContainer issues = IssueContainer.simple();
     var cit = resolver.resolve(doi, issues);
     assertNull(cit);
-    assertTrue(issues.hasIssue(Issue.DOI_NOT_FOUND));
+    assertTrue(issues.contains(Issue.DOI_NOT_FOUND));
   }
 
 }

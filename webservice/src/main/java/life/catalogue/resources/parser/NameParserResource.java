@@ -108,17 +108,12 @@ public class NameParserResource {
     }
 
     @Override
-    public void addIssue(Issue issue) {
-      issues.add(issue);
-    }
-
-    @Override
-    public boolean removeIssue(Issue issue) {
+    public boolean remove(Issue issue) {
       return issues.remove(issue);
     }
 
     @Override
-    public boolean hasIssue(Issue issue) {
+    public boolean contains(Issue issue) {
       return issues.contains(issue);
     }
   }

@@ -55,7 +55,7 @@ public class NameInterpreter {
 
   public Optional<ParsedNameUsage> interpret(SimpleName sn, IssueContainer issues) {
     if (sn == null) {
-      issues.addIssue(Issue.NOT_INTERPRETED);
+      issues.add(Issue.NOT_INTERPRETED);
       return Optional.empty();
     }
     return interpret(false,
@@ -95,11 +95,11 @@ public class NameInterpreter {
           rank = parsedRank.get();
         }
       } catch (UnparsableException e) {
-        v.addIssue(Issue.RANK_INVALID);
+        v.add(Issue.RANK_INVALID);
         rank = Rank.OTHER;
       }
     } else if (vrank != null) {
-      v.addIssue(Issue.RANK_INVALID);
+      v.add(Issue.RANK_INVALID);
       rank = Rank.OTHER;
     }
 
@@ -177,9 +177,9 @@ public class NameInterpreter {
         if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
           if (atom.getUninomial() == null) {
             atom.setUninomial(atom.getGenus());
-            issues.addIssue(Issue.UNINOMIAL_FIELD_MISPLACED);
+            issues.add(Issue.UNINOMIAL_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getGenus())) {
-            issues.addIssue(Issue.INCONSISTENT_NAME);
+            issues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setGenus(null); // ignore genus if
         }
@@ -187,9 +187,9 @@ public class NameInterpreter {
         if (rank.isInfragenericStrictly() && atom.getUninomial() != null) {
           if (atom.getInfragenericEpithet() == null) {
             atom.setInfragenericEpithet(atom.getUninomial()); // swap
-            issues.addIssue(Issue.INFRAGENERIC_FIELD_MISPLACED);
+            issues.add(Issue.INFRAGENERIC_FIELD_MISPLACED);
           } else if (!atom.getUninomial().equals(atom.getInfragenericEpithet())) {
-            issues.addIssue(Issue.INCONSISTENT_NAME);
+            issues.add(Issue.INCONSISTENT_NAME);
           }
           atom.setUninomial(null); // no uninomial for infragenerics
         }
@@ -220,7 +220,7 @@ public class NameInterpreter {
                     !Objects.equals(atom.getInfraspecificEpithet(), atomN.getInfraspecificEpithet())
             ) {
               LOG.warn("Parsed and given name atoms differ: [{}] vs [{}]", atomN.getLabel(), atom.getLabel());
-              issues.addIssue(Issue.PARSED_NAME_DIFFERS);
+              issues.add(Issue.PARSED_NAME_DIFFERS);
             }
           }
         } else {
@@ -286,7 +286,7 @@ public class NameInterpreter {
           if (pnu.getName().getPublishedInYear() == null) {
             pnu.getName().setPublishedInYear(year);
           } else if (!pnu.getName().getPublishedInYear().equals(year)) {
-            issues.addIssue(Issue.PUBLISHED_YEAR_CONFLICT);
+            issues.add(Issue.PUBLISHED_YEAR_CONFLICT);
           }
         }
       }
@@ -309,12 +309,12 @@ public class NameInterpreter {
       NomStatus status           = parse(NomStatusParser.PARSER, nomStatus).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, issues);
       NomStatus statusAuthorship = parse(NomStatusParser.PARSER, pnu.getName().getNomenclaturalNote()).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, issues);
       if (statusAuthorship != null) {
-        issues.addIssue(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
+        issues.add(Issue.AUTHORSHIP_CONTAINS_NOMENCLATURAL_NOTE);
       }
       // both given? do they match up?
       if (status != null && statusAuthorship != null) {
         if (status != statusAuthorship && !status.isCompatible(statusAuthorship)) {
-          issues.addIssue(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
+          issues.add(Issue.CONFLICTING_NOMENCLATURAL_STATUS);
         }
       }
       pnu.getName().setNomStatus(ObjectUtils.coalesce(status, statusAuthorship));
@@ -384,7 +384,7 @@ public class NameInterpreter {
 
   protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
     if (!v.hasTerm(term)) {
-      v.addIssue(notExistingIssue);
+      v.add(notExistingIssue);
       return false;
     }
     return true;
@@ -392,14 +392,14 @@ public class NameInterpreter {
 
   private String sanitizeEpithet(String epithet, IssueContainer issues) {
     if (epithet != null && !epithet.equals(epithet.toLowerCase())) {
-      issues.addIssue(Issue.UPPERCASE_EPITHET);
+      issues.add(Issue.UPPERCASE_EPITHET);
       epithet = epithet.trim().toLowerCase();
     } else {
       epithet = trimToNull(epithet);
     }
     if (epithet != null && settings.isEnabled(Setting.EPITHET_ADD_HYPHEN)) {
       epithet = epithet.replaceAll("\\s+", "-");
-      issues.addIssue(Issue.MULTI_WORD_EPITHET);
+      issues.add(Issue.MULTI_WORD_EPITHET);
     }
     return epithet;
   }

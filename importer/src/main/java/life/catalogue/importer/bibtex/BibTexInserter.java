@@ -76,7 +76,7 @@ public class BibTexInserter {
 
         } catch (RuntimeException e) {
           LOG.warn("Failed to convert BibTex into Reference: {}", e.getMessage(), e);
-          v.addIssue(Issue.UNPARSABLE_REFERENCE);
+          v.add(Issue.UNPARSABLE_REFERENCE);
           store.put(v);
         }
       });

@@ -659,12 +659,12 @@ public class NameParserTest {
     }
 
     NameAssertion issue(Issue issue) {
-      assertTrue(this.issues.hasIssue(issue));
+      assertTrue(this.issues.contains(issue));
       return this;
     }
 
     NameAssertion noIssue(Issue issue) {
-      assertFalse(this.issues.hasIssue(issue));
+      assertFalse(this.issues.contains(issue));
       return this;
     }
 

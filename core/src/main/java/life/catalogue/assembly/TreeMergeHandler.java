@@ -321,7 +321,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), true)) {
+    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), mod, true)) {
       // skip this taxon, but include children
       ignored++;
       return;
@@ -499,15 +499,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
-    var ignore =  super.ignoreUsage(u, decision, true);
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
+    var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
       // additional checks - we dont want any unranked unless they are OTU names
       ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
         || (cfg != null && cfg.isBlocked(u.getName()));
-      // if issues are to be excluded we need to load the verbatim records
+      // check the dynamically generated name validation issues without loading
+      if (issues.contains(Issue.INCONSISTENT_NAME)) {
+        LOG.debug("Ignore {} because it is an inconsistent name", u.getLabel());
+        return true;
+      }
+      // if custom issues are to be excluded we need to load the verbatim records
       if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        var issues2 = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        issues.add(issues2);
         if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
           LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
           return true;

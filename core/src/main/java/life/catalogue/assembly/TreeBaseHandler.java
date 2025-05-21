@@ -5,8 +5,8 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
-import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
 
@@ -180,6 +180,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
       var match = nameIndex.match(nu.getName(), true, false);
       nu.getName().applyMatch(match);
     }
+    // validation
+    NameValidator.flagIssues(nu.getName(), mod);
     return mod;
   }
 
@@ -287,7 +289,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     );
     // track source
     VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
-    v.addIssues(issues);
+    v.add(issues);
     vsm.create(v);
     // match name
     var nm = matchName(u.getName());
@@ -477,7 +479,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
   }
 
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     // we must ignore synonyms for taxa which have been skipped
     if (u.isSynonym() && ignoredTaxa.contains(u.getParentId())) {
       // https://github.com/CatalogueOfLife/backend/issues/1150
@@ -527,7 +529,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return false;
   }
 
-  public static class ModifiedUsage {
+  public static class ModifiedUsage extends IssueContainer.Simple {
     final NameUsageBase usage;
     boolean createOrthVarRel = true;
     final boolean relink;

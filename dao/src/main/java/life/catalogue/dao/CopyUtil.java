@@ -180,7 +180,7 @@ public class CopyUtil {
   public static void transliterateVernacularName(VernacularName vn, IssueContainer issues) {
     if (StringUtils.isBlank(vn.getLatin())) {
       vn.setLatin(latinName(vn.getName()));
-      issues.addIssue(Issue.VERNACULAR_NAME_TRANSLITERATED);
+      issues.add(Issue.VERNACULAR_NAME_TRANSLITERATED);
     }
   }
   

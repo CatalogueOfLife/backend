@@ -75,13 +75,13 @@ public class VerbatimRecordMapperTest extends MapperTestBase<VerbatimRecordMappe
     DSID<Integer> vkey = DSID.of(datasetKey, 8);
     var issues = mapper().getIssues(vkey);
     assertEquals(1, issues.getIssues().size());
-    assertTrue(issues.hasIssue(Issue.BASIONYM_ID_INVALID));
+    assertTrue(issues.contains(Issue.BASIONYM_ID_INVALID));
 
     mapper().addIssue(vkey, Issue.NO_SPECIES_INCLUDED);
     issues = mapper().getIssues(vkey);
     assertEquals(2, issues.getIssues().size());
-    assertTrue(issues.hasIssue(Issue.BASIONYM_ID_INVALID));
-    assertTrue(issues.hasIssue(Issue.NO_SPECIES_INCLUDED));
+    assertTrue(issues.contains(Issue.BASIONYM_ID_INVALID));
+    assertTrue(issues.contains(Issue.NO_SPECIES_INCLUDED));
   }
 
   @Test

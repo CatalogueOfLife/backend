@@ -95,7 +95,7 @@ public class AcefInterpreter extends InterpreterBase {
       NeoUsage u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
       // status matches up?
       if (synonym != u.isSynonym()) {
-        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+        v.add(Issue.TAXONOMIC_STATUS_INVALID);
         // override status as we require some accepted status on Taxon and some synonym status for Synonym
         if (synonym) {
           u.convertToSynonym(TaxonomicStatus.SYNONYM);
@@ -132,7 +132,7 @@ public class AcefInterpreter extends InterpreterBase {
             obj.getClass().getSimpleName(),
             v.fileLine()
         );
-        v.addIssue(Issue.REFERENCE_ID_INVALID);
+        v.add(Issue.REFERENCE_ID_INVALID);
       }
     }
   }
@@ -172,8 +172,8 @@ public class AcefInterpreter extends InterpreterBase {
         rank = Rank.GENUS;
       } else {
         // missing name data!
-        v.addIssue(Issue.NOT_INTERPRETED);
-        v.addIssue(Issue.MISSING_GENUS);
+        v.add(Issue.NOT_INTERPRETED);
+        v.add(Issue.MISSING_GENUS);
         return Optional.empty();
       }
       authorship = v.get(AcefTerm.AuthorString);
@@ -181,10 +181,10 @@ public class AcefInterpreter extends InterpreterBase {
     
     // spot potential truncated authorstrings. CoL assembly db uses a max length of 100
     if (NameValidator.hasUnmatchedBrackets(authorship)) {
-      v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+      v.add(Issue.UNMATCHED_NAME_BRACKETS);
     }
     if (Strings.nullToEmpty(authorship).length() == ACEF_AUTHOR_MAX) {
-      v.addIssue(Issue.TRUNCATED_NAME);
+      v.add(Issue.TRUNCATED_NAME);
     }
     
     Optional<ParsedNameUsage> opt;

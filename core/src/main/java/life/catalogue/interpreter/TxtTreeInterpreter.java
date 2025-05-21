@@ -4,11 +4,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
-import life.catalogue.common.kryo.AreaSerializer;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.parser.*;
-
-import org.checkerframework.checker.units.qual.A;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -41,7 +38,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
         rank = parsedRank.get();
       }
     } catch (UnparsableException e) {
-      u.issues.addIssue(Issue.RANK_INVALID);
+      u.issues.add(Issue.RANK_INVALID);
       rank = Rank.OTHER;
     }
 
@@ -53,9 +50,9 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       String[] vals = rmDataItem(PUB, tn);
       for (String val : vals) {
         if (!referenceExists.test(val)) {
-          u.issues.addIssue(Issue.REFERENCE_ID_INVALID);
+          u.issues.add(Issue.REFERENCE_ID_INVALID);
         } else if (pnu.getName().getPublishedInId() != null){
-          u.issues.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
+          u.issues.add(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
         } else {
           pnu.getName().setPublishedInId(val);
         }
@@ -101,7 +98,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
             t.setTemporalRangeStart(normGeoTime(range[0], u.issues));
             t.setTemporalRangeEnd(normGeoTime(range[1], u.issues));
           } else {
-            u.issues.addIssue(Issue.GEOTIME_INVALID);
+            u.issues.add(Issue.GEOTIME_INVALID);
           }
         }
       }
@@ -112,7 +109,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
           if (referenceExists.test(val)) {
             t.addReferenceId(val);
           } else {
-            u.issues.addIssue(Issue.REFERENCE_ID_INVALID);
+            u.issues.add(Issue.REFERENCE_ID_INVALID);
           }
         }
       }
@@ -128,7 +125,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
             vn.setName(m.group(2));
             u.vernacularNames.add(vn);
           } else {
-            u.issues.addIssue(Issue.VERNACULAR_NAME_INVALID);
+            u.issues.add(Issue.VERNACULAR_NAME_INVALID);
           }
         }
       }
@@ -146,10 +143,10 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
               d.setStatus(dstat);
               u.distributions.add(d);
             } else {
-              u.issues.addIssue(Issue.DISTRIBUTION_INVALID);
+              u.issues.add(Issue.DISTRIBUTION_INVALID);
             }
           } else {
-            u.issues.addIssue(Issue.DISTRIBUTION_INVALID);
+            u.issues.add(Issue.DISTRIBUTION_INVALID);
           }
         }
       }

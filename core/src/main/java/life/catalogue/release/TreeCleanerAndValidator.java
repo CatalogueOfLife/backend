@@ -147,34 +147,34 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
           // we have a trinomial, compare species
           var sp = parents.find(Rank.SPECIES);
           if (sp == null) {
-            issues.addIssue(Issue.PARENT_SPECIES_MISSING);
+            issues.add(Issue.PARENT_SPECIES_MISSING);
           } else if (sp.isParsed() && (
               !Objects.equals(sn.getGenus(), sp.getGenus()) ||
               !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
           ) {
-            issues.addIssue(Issue.PARENT_NAME_MISMATCH);
+            issues.add(Issue.PARENT_NAME_MISMATCH);
           }
         } else {
           // we have a binomial, compare genus only
           if (genus == null) {
-            issues.addIssue(Issue.PARENT_GENUS_MISSING);
+            issues.add(Issue.PARENT_GENUS_MISSING);
           } else if (genus.isParsed() &&
               // genus should only have uninomial populated, but play safe here
               !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
           ) {
-            issues.addIssue(Issue.PARENT_NAME_MISMATCH);
+            issues.add(Issue.PARENT_NAME_MISMATCH);
           }
         }
         // flag if published before the genus
-        if (!issues.hasIssue(Issue.PARENT_NAME_MISMATCH)
-            && !issues.hasIssue(Issue.MISSING_GENUS)
-            && !issues.hasIssue(Issue.UNLIKELY_YEAR)
+        if (!issues.contains(Issue.PARENT_NAME_MISMATCH)
+            && !issues.contains(Issue.MISSING_GENUS)
+            && !issues.contains(Issue.UNLIKELY_YEAR)
             && genus != null && genus.authorYear != null
             && sn.authorYear != null
             && genus.authorYear > sn.authorYear
         ) {
             // flag if the accepted bi/trinomial the ones that have an earlier publication date!
-            issues.addIssue(Issue.PUBLISHED_BEFORE_GENUS);
+            issues.add(Issue.PUBLISHED_BEFORE_GENUS);
         }
       }
     }
@@ -184,7 +184,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     if (!sn.getRank().isUncomparable()) {
       parents.getLowestConcreteRank(true).ifPresent(r -> {
         if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
-          issues.addIssue(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
+          issues.add(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
         }
       });
     }

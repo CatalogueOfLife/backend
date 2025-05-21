@@ -288,7 +288,7 @@ public class MatchingJob extends DatasetBlockingJob {
       match = matcher.match(datasetKey, nu, n.name.getClassification(), false, false);
     } else {
       match = UsageMatch.empty(0);
-      n.issues.addIssue(Issue.UNPARSABLE_NAME);
+      n.issues.add(Issue.UNPARSABLE_NAME);
     }
     return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
   }
@@ -322,7 +322,7 @@ public class MatchingJob extends DatasetBlockingJob {
         return new IssueName(mapper.build(row, issues), issues, row, line);
       } catch (Exception e) {
         LOG.error("Error parsing line {}", line, e);
-        issues.addIssue(Issue.NOT_INTERPRETED);
+        issues.add(Issue.NOT_INTERPRETED);
         return new IssueName(null, issues, row, line);
       }
     }));

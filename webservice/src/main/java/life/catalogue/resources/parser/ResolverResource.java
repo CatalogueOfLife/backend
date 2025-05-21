@@ -9,8 +9,6 @@ import life.catalogue.metadata.DoiResolver;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
-import java.util.List;
-
 @Path("/resolver")
 @Produces(MediaType.APPLICATION_JSON)
 public class ResolverResource {
@@ -41,7 +39,7 @@ public class ResolverResource {
       var val = doiResolver.resolve(doi.get(), issues);
       return new Result<>(q, val, issues);
     }
-    issues.addIssue(Issue.DOI_INVALID);
+    issues.add(Issue.DOI_INVALID);
     return new Result<>(q, null, issues);
   }
 

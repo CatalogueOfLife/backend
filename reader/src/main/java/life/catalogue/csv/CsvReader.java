@@ -749,7 +749,7 @@ public class CsvReader {
         }
       }
       if (skippedLast) {
-        tr.addIssue(Issue.PREVIOUS_LINE_SKIPPED);
+        tr.add(Issue.PREVIOUS_LINE_SKIPPED);
       }
       // load next non empty row
       nextRow();

@@ -690,7 +690,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     Classification cl = new Classification(getClassification(oa));
     assertEquals("Plantae", cl.getKingdom());
     var v = getSource(oa);
-    assertTrue(v.hasIssue(Issue.SYNC_OUTSIDE_TARGET));
+    assertTrue(v.contains(Issue.SYNC_OUTSIDE_TARGET));
   }
 
   @Test

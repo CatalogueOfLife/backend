@@ -60,7 +60,7 @@ public class AcefRelationInserter extends RelationInserterBase {
         nn.pnu = opt.get();
         if (!nn.getName().getRank().isInfraspecific()) {
           LOG.info("Expected infraspecific taxon but found {} for name {}: {}", nn.getName().getRank(), u.getId(), nn.getName().getScientificName());
-          v.addIssue(Issue.INCONSISTENT_NAME);
+          v.add(Issue.INCONSISTENT_NAME);
         }
       
         store.names().update(nn);

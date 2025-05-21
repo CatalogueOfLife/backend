@@ -129,6 +129,9 @@ public class XReleaseIT extends SectorSyncTestBase {
   }
 
   public XReleaseIT(String project, List<String> sources) {
+    System.out.println("\n***");
+    System.out.println("*** STARTING TEST " + project + " ***");
+    System.out.println("***\n");
     this.project = project.toLowerCase();
     this.sources = sources;
   }

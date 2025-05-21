@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -94,7 +93,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
             store.createNeoRel(u.nameNode, acc.nameNode, rel);
           }
         } else {
-          v.addIssue(Issue.ACCEPTED_ID_INVALID);
+          v.add(Issue.ACCEPTED_ID_INVALID);
         }
       }
       
@@ -106,8 +105,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     
     // if status is synonym but we ain't got no idea of the accepted flag it
-    if (accepted.isEmpty() && (u.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
-      v.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    if (accepted.isEmpty() && (u.isSynonym() || v.contains(Issue.ACCEPTED_ID_INVALID))) {
+      v.add(Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym to avoid parent relations
       //t.classification = null;
       u.node.addLabel(Labels.SYNONYM);
@@ -170,7 +169,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
       // could not find anything?
       if (usages.isEmpty()) {
-        v.addIssue(invalidIdIssue);
+        v.add(invalidIdIssue);
         LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
@@ -206,7 +205,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       n = store.names().nodeByID(id);
       // could not find anything?
       if (n == null) {
-        v.addIssue(invalidIdIssue);
+        v.add(invalidIdIssue);
         LOG.debug("{} {} not existing", idTerm.simpleName(), id);
       }
     }
@@ -314,7 +313,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         } else{
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
-            v.addIssue(Issue.NAME_NOT_UNIQUE);
+            v.add(Issue.NAME_NOT_UNIQUE);
           }
           return getByNode.apply(matches.iterator().next());
         }

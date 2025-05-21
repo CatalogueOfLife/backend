@@ -134,7 +134,7 @@ public class FuryFactoryTest {
 
     VerbatimRecord rec = TestEntityGenerator.createVerbatim();
     for (Issue issue : Issue.values()) {
-      rec.addIssue(issue);
+      rec.add(issue);
     }
     assertSerde(rec);
   }

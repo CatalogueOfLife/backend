@@ -21,7 +21,6 @@ import life.catalogue.metadata.MetadataFactory;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
-import org.gbif.txtree.Tree;
 import org.gbif.txtree.TreeLine;
 
 import java.io.FileNotFoundException;
@@ -186,7 +185,7 @@ public class TxtTreeInserter implements NeoInserter {
     var tu = interpreter.interpret(tn, synonym, ordinal, parentCode, this::referenceExists);
     tu.usage.setVerbatimKey(v.getId());
     // store issues?
-    v.addIssues(tu.issues.getIssues());
+    v.add(tu.issues.getIssues());
     if (existingIssues < v.getIssues().size()) {
       store.put(v);
     }

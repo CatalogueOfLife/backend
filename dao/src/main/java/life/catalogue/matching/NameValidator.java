@@ -69,22 +69,16 @@ public class NameValidator {
       load();
       container.setIssues(issues);
     }
-  
+
     @Override
-    public void addIssue(Issue issue) {
-      load();
-      container.addIssue(issue);
+    public boolean remove(Issue issue) {
+      return container.remove(issue);
     }
   
     @Override
-    public boolean removeIssue(Issue issue) {
-      return container.removeIssue(issue);
-    }
-  
-    @Override
-    public boolean hasIssue(Issue issue) {
+    public boolean contains(Issue issue) {
       load();
-      return container.hasIssue(issue);
+      return container.contains(issue);
     }
   
     public boolean hasChanged() {
@@ -104,7 +98,7 @@ public class NameValidator {
   public static void flagSuspicousPhrase(String value, IssueContainer v, Issue issue) {
     if (!StringUtils.isBlank(value)) {
       if (hasUnmatchedBrackets(value) || hasNoLetter(value) || isBoolean(value)) {
-        v.addIssue(issue);
+        v.add(issue);
       }
     }
   }
@@ -123,12 +117,12 @@ public class NameValidator {
     } else {
       // flag issues on the full name for unparsed names
       if (hasUnmatchedBrackets(n.getScientificName()) || hasUnmatchedBrackets(n.getAuthorship())) {
-        v.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+        v.add(Issue.UNMATCHED_NAME_BRACKETS);
       }
     }
     // rules that work on unparsed names too
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
-      v.addIssue(Issue.AUTHORSHIP_UNLIKELY);
+      v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
     return v.hasChanged() ? v.container : null;
   }
@@ -158,51 +152,51 @@ public class NameValidator {
       try {
         int year = parseYear(n);
         if (year < MIN_YEAR || year > MAX_YEAR) {
-          issues.addIssue(Issue.UNLIKELY_YEAR);
+          issues.add(Issue.UNLIKELY_YEAR);
         }
       } catch (NumberFormatException e) {
         // TODO: allow ? in year comparisons and write a proper year parser???
-        issues.addIssue(Issue.UNLIKELY_YEAR);
+        issues.add(Issue.UNLIKELY_YEAR);
       }
     }
 
     if (!StringUtils.isBlank(n.getGenus()) && Objects.equals(n.getGenus(), n.getAuthorship()) ||
         !StringUtils.isBlank(n.getUninomial()) && Objects.equals(n.getUninomial(), n.getAuthorship()) ||
         !StringUtils.isBlank(n.getTerminalEpithet()) && Objects.equals(n.getTerminalEpithet(), n.getAuthorship())) {
-      issues.addIssue(Issue.AUTHORSHIP_UNLIKELY);
+      issues.add(Issue.AUTHORSHIP_UNLIKELY);
     }
 
     if (n.getUninomial() != null) {
       if (n.getGenus() != null || n.getInfragenericEpithet() != null || n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null){
         LOG.info("Uninomial with further epithets in name {}", n.getLabel());
-        issues.addIssue(Issue.INCONSISTENT_NAME);
+        issues.add(Issue.INCONSISTENT_NAME);
       }
       Rank inferred = RankUtils.inferRank(n);
       if (n.getRank() != null && !n.getRank().isUncomparable()
         && !inferred.isUncomparable() && inferred.isSuprageneric()
         && n.getRank() != inferred
       ) {
-        issues.addIssue(Issue.RANK_NAME_SUFFIX_CONFLICT);
+        issues.add(Issue.RANK_NAME_SUFFIX_CONFLICT);
       }
 
     } else if (n.getGenus() == null && n.getSpecificEpithet() != null) {
       LOG.info("Missing genus in name {}", n.getLabel());
-      issues.addIssue(Issue.INCONSISTENT_NAME);
+      issues.add(Issue.INCONSISTENT_NAME);
 
     } else if (n.getSpecificEpithet() == null && n.getInfraspecificEpithet() != null) {
       LOG.info("Missing specific epithet in infraspecific name {}", n.getLabel());
-      issues.addIssue(Issue.INCONSISTENT_NAME);
+      issues.add(Issue.INCONSISTENT_NAME);
     }
     // monomials expected as 1 word in Title case
     for (String x : Lists.newArrayList(n.getUninomial(), n.getGenus(), n.getInfragenericEpithet())) {
       if (x != null) {
         if (isMultiWord(x)) {
-          issues.addIssue(Issue.MULTI_WORD_MONOMIAL);
+          issues.add(Issue.MULTI_WORD_MONOMIAL);
         }
         if (x.length() > 1 && !x.equals(x.substring(0,1).toUpperCase() + x.substring(1).toLowerCase())) {
-          issues.addIssue(Issue.WRONG_MONOMIAL_CASE);
+          issues.add(Issue.WRONG_MONOMIAL_CASE);
         } else if (x.length() == 1 && !x.equals(x.substring(0,1).toUpperCase())) {
-          issues.addIssue(Issue.WRONG_MONOMIAL_CASE);
+          issues.add(Issue.WRONG_MONOMIAL_CASE);
         }
       }
     }
@@ -210,17 +204,17 @@ public class NameValidator {
     for (String x : Lists.newArrayList(n.getSpecificEpithet(), n.getInfraspecificEpithet())) {
       if (x != null) {
         if (isMultiWord(x)) {
-          issues.addIssue(Issue.MULTI_WORD_EPITHET);
+          issues.add(Issue.MULTI_WORD_EPITHET);
         }
         if (!x.equals(x.toLowerCase())) {
-          issues.addIssue(Issue.UPPERCASE_EPITHET);
+          issues.add(Issue.UPPERCASE_EPITHET);
         }
       }
     }
 
     // look for truncated authorship
     if (hasUnmatchedBrackets(n.getAuthorship())) {
-      issues.addIssue(Issue.UNMATCHED_NAME_BRACKETS);
+      issues.add(Issue.UNMATCHED_NAME_BRACKETS);
     }
     
     // verify name parts
@@ -228,12 +222,12 @@ public class NameValidator {
       // no whitespace
       if (WHITE.matcher(part).find()) {
         LOG.info("{} part contains whitespace: {}", part, n.getLabel());
-        issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
+        issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }
       // non ascii chars
       if (NON_LETTER.matcher(part).find()) {
         LOG.info("{} part contains non ASCII letters: {}", part, n.getLabel());
-        issues.addIssue(Issue.UNUSUAL_NAME_CHARACTERS);
+        issues.add(Issue.UNUSUAL_NAME_CHARACTERS);
       }
     }
     
@@ -242,35 +236,35 @@ public class NameValidator {
       if (rank.isGenusOrSuprageneric()) {
         if (n.getGenus() != null || n.getUninomial() == null) {
           LOG.info("Missing genus or uninomial for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
         
       } else if (rank.isInfragenericStrictly()) {
         if (n.getInfragenericEpithet() == null) {
           LOG.info("Missing infrageneric epithet for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
         if (n.getSpecificEpithet() != null || n.getInfraspecificEpithet() != null) {
           LOG.info("Species or infraspecific epithet for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
         
       } else if (rank.isSpeciesOrBelow()) {
         if (n.getSpecificEpithet() == null) {
           LOG.info("Missing specific epithet for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
         
         if (!rank.isInfraspecific() && n.getInfraspecificEpithet() != null) {
           LOG.info("Infraspecific epithet found for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
       }
       
       if (rank.isInfraspecific()) {
         if (n.getInfraspecificEpithet() == null) {
           LOG.info("Missing infraspecific epithet for {}", n.getLabel());
-          issues.addIssue(Issue.INCONSISTENT_NAME);
+          issues.add(Issue.INCONSISTENT_NAME);
         }
       }
 
@@ -278,7 +272,7 @@ public class NameValidator {
       if (n.getNotho() != null) {
         String namePart = n.getNamePart(n.getNotho());
         if (namePart == null) {
-          issues.addIssue(Issue.NOTHO_NOT_APPLICABLE);
+          issues.add(Issue.NOTHO_NOT_APPLICABLE);
         }
       }
 
@@ -288,7 +282,7 @@ public class NameValidator {
         Name name = (Name) n;
         // gender agreement only applicable to bi/trinomen with a terminal epithet
         if (name.hasGenderAgreement() != null && name.getTerminalEpithet() == null) {
-          issues.addIssue(Issue.GENDER_AGREEMENT_NOT_APPLICABLE);
+          issues.add(Issue.GENDER_AGREEMENT_NOT_APPLICABLE);
         }
       }
     }

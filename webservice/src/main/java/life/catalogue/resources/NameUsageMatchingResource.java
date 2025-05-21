@@ -67,7 +67,7 @@ public class NameUsageMatchingResource {
       match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
     } else {
       match = UsageMatch.empty(0);
-      issues.addIssue(Issue.UNPARSABLE_NAME);
+      issues.add(Issue.UNPARSABLE_NAME);
     }
     return new UsageMatchWithOriginal(match, issues, sn, null);
   }

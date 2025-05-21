@@ -111,7 +111,7 @@ public class CslJsonInserter {
 
     } catch (JsonProcessingException | RuntimeException e) {
       LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getId(), e.getMessage(), e);
-      v.addIssue(Issue.UNPARSABLE_REFERENCE);
+      v.add(Issue.UNPARSABLE_REFERENCE);
       store.put(v);
     }
   }

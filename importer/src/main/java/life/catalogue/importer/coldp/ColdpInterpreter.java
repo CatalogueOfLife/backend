@@ -121,7 +121,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return findName(v, ColdpTerm.nameID).map(n -> {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
       if (!status.isSynonym()) {
-        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+        v.add(Issue.TAXONOMIC_STATUS_INVALID);
         // override status as we require some accepted status on Taxon and some synonym status for
         status = TaxonomicStatus.SYNONYM;
       }
@@ -138,8 +138,8 @@ public class ColdpInterpreter extends InterpreterBase {
   private Optional<NeoName> findName(VerbatimRecord v, Term nameId) {
     NeoName n = store.names().objByID(v.getRaw(nameId));
     if (n == null) {
-      v.addIssue(Issue.NAME_ID_INVALID);
-      v.addIssue(Issue.NOT_INTERPRETED);
+      v.add(Issue.NAME_ID_INVALID);
+      v.add(Issue.NOT_INTERPRETED);
       return Optional.empty();
     }
     return Optional.of(n);
@@ -209,7 +209,7 @@ public class ColdpInterpreter extends InterpreterBase {
     try {
       CoordParser.PARSER.parse(m.getLatitude(), m.getLongitude()).ifPresent(m::setCoordinate);
     } catch (UnparsableException e) {
-      rec.addIssue(Issue.LAT_LON_INVALID);
+      rec.add(Issue.LAT_LON_INVALID);
     }
     m.setAltitude(rec.get(ColdpTerm.altitude));
     m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(ColdpTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
@@ -298,7 +298,7 @@ public class ColdpInterpreter extends InterpreterBase {
         return Lists.newArrayList(est);
 
       } else {
-        rec.addIssue(Issue.ESTIMATE_INVALID);
+        rec.add(Issue.ESTIMATE_INVALID);
       }
     }
     return Collections.emptyList();

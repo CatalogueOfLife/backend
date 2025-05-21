@@ -111,7 +111,7 @@ public class SafeParser<T> {
         return result.get();
       }
     } else {
-      issues.addIssue(unparsableIssue);
+      issues.add(unparsableIssue);
     }
     return other.get();
   }

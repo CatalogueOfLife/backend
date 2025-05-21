@@ -168,7 +168,7 @@ public class ReferenceFactory {
       if (doi.isPresent()) {
         csl.setDOI(doi.get());
       } else {
-        v.addIssue(Issue.DOI_INVALID);
+        v.add(Issue.DOI_INVALID);
       }
     }
 
@@ -292,7 +292,7 @@ public class ReferenceFactory {
           csl.setVolume(ObjectUtils.toString(vip.volume));
           csl.setIssue(ObjectUtils.toString(vip.issue));
           csl.setPage(ObjectUtils.toString(vip.page));
-        }, () -> issues.addIssue(Issue.CITATION_DETAILS_UNPARSED));
+        }, () -> issues.add(Issue.CITATION_DETAILS_UNPARSED));
       }
       return fromCsl(datasetKey, csl, bibliographicCitation, null, issues);
     }
@@ -318,7 +318,7 @@ public class ReferenceFactory {
       ref = newReference(datasetKey, publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(citation);
-        issues.addIssue(Issue.CITATION_UNPARSED);
+        issues.add(Issue.CITATION_UNPARSED);
       }
       ref.setYear(parseYear(publishedInYear));
     }
@@ -343,13 +343,13 @@ public class ReferenceFactory {
           if (!StringUtils.isBlank(leftover)) {
             VerbatimRecord authorIssues = new VerbatimRecord();
             CslName[] authors = parseAuthors(StringUtils.removeEnd(leftover, ",").trim(), authorIssues);
-            if (!authorIssues.hasIssue(Issue.CITATION_AUTHORS_UNPARSED)) {
+            if (!authorIssues.contains(Issue.CITATION_AUTHORS_UNPARSED)) {
               // parsed authors
               csl.setAuthor(authors);
             }
           }
         }
-        issues.addIssue(Issue.CITATION_UNPARSED);
+        issues.add(Issue.CITATION_UNPARSED);
       }
     }
     return ref;
@@ -419,7 +419,7 @@ public class ReferenceFactory {
             // nothing works, resort to single string in literal
             CslName name = new CslName();
             name.setFamily(authorStringNormed);
-            issues.addIssue(Issue.CITATION_AUTHORS_UNPARSED);
+            issues.add(Issue.CITATION_AUTHORS_UNPARSED);
             return List.of(name);
           })
         )

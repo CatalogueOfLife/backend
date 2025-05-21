@@ -21,7 +21,6 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -178,12 +177,12 @@ public class PgImportITBase {
   
   void assertIssue(VerbatimEntity ent, Issue issue) {
     VerbatimRecord v = vMapper.get(DSID.vkey(ent));
-    assertTrue(v.hasIssue(issue));
+    assertTrue(v.contains(issue));
   }
   
   void assertNoIssue(VerbatimEntity ent, Issue issue) {
     VerbatimRecord v = vMapper.get(DSID.vkey(ent));
-    assertFalse(v.hasIssue(issue));
+    assertFalse(v.contains(issue));
   }
   
   public static List<Distribution> expectedDwca24Distributions() {

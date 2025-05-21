@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
-import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.NeoName;
@@ -78,13 +77,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(v);
         if (n.getName().getId().equals("cult")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+          assertTrue(v.contains(Issue.INCONSISTENT_NAME));
         } else if (n.getName().getId().equals("fake")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+          assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
         } else if (n.getName().getScientificName().equals("Viridae")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.RANK_NAME_SUFFIX_CONFLICT));
+          assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
         } else {
           assertEquals(0, v.getIssues().size());
         }
@@ -95,7 +94,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(v);
         if (u.getId().equals("fake")) {
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+          assertTrue(v.contains(Issue.PARTIAL_DATE));
         } else {
           assertTrue(v.getIssues().isEmpty());
         }
@@ -247,10 +246,10 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(v);
         if (n.getName().getId().equals("cult")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+          assertTrue(v.contains(Issue.INCONSISTENT_NAME));
         } else if (n.getName().getId().equals("fake")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+          assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
         } else {
           assertEquals(0, v.getIssues().size());
         }
@@ -261,7 +260,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(v);
         if (u.getId().equals("fake")) {
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
+          assertTrue(v.contains(Issue.PARTIAL_DATE));
         } else {
           assertTrue(v.getIssues().isEmpty());
         }
@@ -415,16 +414,16 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(v);
         if (u.getId().equals("fake")) {
           assertEquals(2, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.PARTIAL_DATE));
-          assertTrue(v.hasIssue(Issue.PARENT_SPECIES_MISSING));
+          assertTrue(v.contains(Issue.PARTIAL_DATE));
+          assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
 
         } else if(u.getId().equals("cult")) {
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.INCONSISTENT_NAME));
+          assertTrue(v.contains(Issue.INCONSISTENT_NAME));
 
         } else if (u.getId().equals("2")){
           assertEquals(1, v.getIssues().size());
-          assertTrue(v.hasIssue(Issue.RANK_NAME_SUFFIX_CONFLICT));
+          assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
 
         } else {
           assertEquals(0, v.getIssues().size());
@@ -491,7 +490,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       for (VerbatimRecord vr : store.verbatimList()) {
         if (vr.getType() == ColdpTerm.NameRelation) {
           if (vr.getRaw(ColdpTerm.nameID).equals(key)) {
-            assertTrue(vr.hasIssue(Issue.SELF_REFERENCED_RELATION));
+            assertTrue(vr.contains(Issue.SELF_REFERENCED_RELATION));
           } else {
             assertTrue(vr.getIssues().isEmpty());
           }

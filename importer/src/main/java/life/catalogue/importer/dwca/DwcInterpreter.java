@@ -175,7 +175,7 @@ public class DwcInterpreter extends InterpreterBase {
         rec, DwcTerm.occurrenceRemarks, this::setReference);
       
     } else {
-      rec.addIssue(Issue.DISTRIBUTION_INVALID);
+      rec.add(Issue.DISTRIBUTION_INVALID);
       return Collections.emptyList();
     }
   }
@@ -309,7 +309,7 @@ public class DwcInterpreter extends InterpreterBase {
       try {
         status = TypeStatusParser.PARSER.parse(rec.get(DwcTerm.typeStatus));
       } catch (UnparsableException e) {
-        rec.addIssue(Issue.TYPE_STATUS_INVALID);
+        rec.add(Issue.TYPE_STATUS_INVALID);
         status = Optional.of(TypeStatus.OTHER);
       }
 
@@ -324,7 +324,7 @@ public class DwcInterpreter extends InterpreterBase {
         try {
           CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
         } catch (UnparsableException e) {
-          rec.addIssue(Issue.LAT_LON_INVALID);
+          rec.add(Issue.LAT_LON_INVALID);
         }
         m.setAltitude(rec.getFirst(DwcTerm.minimumElevationInMeters, DwcTerm.maximumElevationInMeters));
         m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(DwcTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
