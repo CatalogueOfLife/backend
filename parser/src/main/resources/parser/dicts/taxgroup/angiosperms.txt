@@ -243,6 +243,9 @@ Degeneriaceae
 Diapensiaceae
 Dichapetalaceae
 Dicomoideae
+Dicots
+Dicotyl
+Dicotyledoneae
 Didiereaceae
 Didiereoideae
 Didymelaceae
@@ -508,9 +511,6 @@ Monimioideae
 Monocots
 Monocotyl
 Monocotyledoneae
-Dicotyledoneae
-Dicots
-Dicotyl
 Monotoideae
 Monotropoideae
 Montiaceae

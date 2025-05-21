@@ -76,6 +76,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"machaeridia", List.of("pbdb")},
       {"africasia", List.of("systema-dipterorum", "plz20443", "plz37588")},
       {"literature", List.of("bionames", "afd-lit")},
       {"carcharhinus", List.of("worms", "itis", "taxref", "iucn", "dutch")},
@@ -190,6 +191,12 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // project dataset settings
+      var dsm = session.getMapper(DatasetMapper.class);
+      var settings = new DatasetSettings();
+      settings.enable(Setting.SECTOR_REMOVE_ORDINALS);
+      dsm.updateSettings(Datasets.COL, settings, Users.TESTER);
+
       SectorMapper sm = session.getMapper(SectorMapper.class);
       for (var s : info.sectors) {
         s.applyUser(Users.TESTER);

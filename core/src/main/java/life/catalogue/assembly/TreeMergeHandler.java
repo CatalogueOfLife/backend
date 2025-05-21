@@ -257,7 +257,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
     UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
-    LOG.debug("{} matches {}", nu.getLabel(), match);
+    // remove matches to genera for unranked source names as genera often are homonyms with higher names and can cause serious trouble
+    if (match.isMatch() && nu.getRank().otherOrUnranked() && match.usage.getRank().isGenusGroup()) {
+      LOG.info("Ignore {} [{}] because it is unranked and matches a genus which can be a bad homonym match: {}", nu.getName().getLabel(), nu.getId(), match.usage.getLabel());
+      match = UsageMatch.empty(targetDatasetKey);
+    } else {
+      LOG.debug("{} matches {}", nu.getLabel(), match);
+    }
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
         if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
@@ -442,6 +448,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     } else if (nu.isSynonym() && parent == null) {
       LOG.warn("Ignore synonym without a parent: {}", nu.getLabel());
+      ignored++;
+      return null;
+
+    } else if (nu.isTaxon() && parent != null && parent.rank.notOtherOrUnranked() && nu.getRank().higherOrEqualsTo(parent.rank)) {
+      LOG.info("Avoid bad rank ordering. Do not create {} {} with parent: {}", nu.getRank(), nu.getLabel(), parent.rank);
       ignored++;
       return null;
     }

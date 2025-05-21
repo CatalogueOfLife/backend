@@ -234,6 +234,7 @@ public class MatchedParentStack {
       }
     }
     // if the classification ordering is wrong, mark it as doubtful
+    // this does NOT flag rank ordering issues in matches!
     Rank pRank = null;
     if (!parents.isEmpty()) {
       pRank = parents.getLast().usage.getRank();
