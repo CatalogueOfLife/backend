@@ -182,6 +182,6 @@ public class UserResource {
   @Path("/cache")
   @RolesAllowed({Roles.ADMIN})
   public int flushCache() throws Exception {
-    return idService.flush();
+    return idService.flushCache();
   }
 }

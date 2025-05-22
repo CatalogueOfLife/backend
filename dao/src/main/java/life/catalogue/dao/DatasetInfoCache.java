@@ -195,6 +195,8 @@ public class DatasetInfoCache {
    */
   public void clear() {
     infos.clear();
+    labels.invalidateAll();
+    LOG.info("Dataset info & label cache cleared");
   }
 
   public int size() {

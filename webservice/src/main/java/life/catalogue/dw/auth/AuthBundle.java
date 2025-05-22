@@ -9,7 +9,6 @@ import life.catalogue.api.vocab.Users;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -108,4 +107,8 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     }
   }
 
+  public void flushCache() {
+    privateFilter.flushCache();
+    idService.flushCache();
+  }
 }

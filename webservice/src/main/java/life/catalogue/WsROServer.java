@@ -17,6 +17,7 @@ import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
+import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -235,6 +236,9 @@ public class WsROServer extends Application<WsServerConfig> {
       searchService, suggestService, indexService, imgService,
       FeedbackService.passThru(), renderer, doiResolver, coljersey
     );
+
+    // tasks
+    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
   }
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, JobExecutor exec,

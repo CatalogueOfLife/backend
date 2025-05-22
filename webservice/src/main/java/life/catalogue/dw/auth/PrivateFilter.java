@@ -73,4 +73,8 @@ public class PrivateFilter implements ContainerRequestFilter {
   public void updateCache(int datasetKey, boolean privat) {
     cache.put(datasetKey, privat);
   }
+
+  public void flushCache() {
+    cache.clear();
+  }
 }

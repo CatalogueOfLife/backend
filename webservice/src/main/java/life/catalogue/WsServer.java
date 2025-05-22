@@ -31,6 +31,7 @@ import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
+import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -462,6 +463,9 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new ValidatorResource(importManager, ddao, http));
+
+    // tasks
+    env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
 
     // attach listeners to event bus
     bus.register(auth);
