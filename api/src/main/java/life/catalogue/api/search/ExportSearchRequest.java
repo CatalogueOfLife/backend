@@ -3,7 +3,6 @@ package life.catalogue.api.search;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
-
 import life.catalogue.api.vocab.TabularFormat;
 
 import org.gbif.nameparser.api.Rank;

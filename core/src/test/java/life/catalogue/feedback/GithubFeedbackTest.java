@@ -1,16 +1,16 @@
 package life.catalogue.feedback;
 
 import life.catalogue.api.model.DSID;
-
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.User;
-
-import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GithubFeedbackTest {
 

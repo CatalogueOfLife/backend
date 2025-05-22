@@ -8,14 +8,14 @@ import life.catalogue.db.mapper.VernacularNameMapper;
 
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Path("/vernacular")

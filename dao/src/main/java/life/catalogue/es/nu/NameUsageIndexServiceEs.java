@@ -1,14 +1,10 @@
 package life.catalogue.es.nu;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -16,10 +12,10 @@ import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,11 +23,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -39,6 +32,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;

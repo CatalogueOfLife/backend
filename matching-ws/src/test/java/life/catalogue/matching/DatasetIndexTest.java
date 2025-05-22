@@ -13,19 +13,6 @@
  */
 package life.catalogue.matching;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.io.Resources;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
-
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
@@ -33,10 +20,25 @@ import life.catalogue.matching.model.NameUsageMatch;
 import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
-import org.apache.commons.lang3.StringUtils;
+
 import org.gbif.nameparser.api.Rank;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.google.common.io.Resources;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DatasetIndexTest {
 

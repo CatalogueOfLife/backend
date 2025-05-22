@@ -11,6 +11,7 @@ import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.es.EsConfig;
+import life.catalogue.event.BrokerConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
@@ -47,6 +48,9 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   
   @Valid
   public EsConfig es;
+
+  @Valid
+  public BrokerConfig broker = new BrokerConfig();
 
   @Valid
   public EsConfig analytics;

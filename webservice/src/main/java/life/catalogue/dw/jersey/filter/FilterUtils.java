@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.filter;
 
-import jakarta.ws.rs.core.UriInfo;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import jakarta.ws.rs.core.UriInfo;
 
 public class FilterUtils {
   private static final Pattern DATASET_PATH  = Pattern.compile("dataset/(\\d+)");

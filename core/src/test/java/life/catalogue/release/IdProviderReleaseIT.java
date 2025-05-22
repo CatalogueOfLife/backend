@@ -29,8 +29,6 @@ import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
-
 @RunWith(Parameterized.class)
 public class IdProviderReleaseIT {
   private static final Logger LOG = LoggerFactory.getLogger(IdProviderReleaseIT.class);

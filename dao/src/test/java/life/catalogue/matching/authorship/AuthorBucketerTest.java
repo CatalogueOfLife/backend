@@ -5,15 +5,13 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.LineIterator;
-
-import org.gbif.nameparser.api.NomCode;
-
 import org.junit.Test;
 
 import com.google.common.base.Joiner;

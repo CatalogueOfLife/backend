@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 

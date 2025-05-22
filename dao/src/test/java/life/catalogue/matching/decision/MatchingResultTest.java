@@ -7,7 +7,7 @@ import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class MatchingResultTest {
 

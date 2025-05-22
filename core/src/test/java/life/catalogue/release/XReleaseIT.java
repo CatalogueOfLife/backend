@@ -15,6 +15,8 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
@@ -39,8 +41,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -149,7 +149,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     var matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
+    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBroker(new BrokerConfig()));
     var cfg = TestConfigs.build();
 
     hc = HttpClientBuilder.create().build();

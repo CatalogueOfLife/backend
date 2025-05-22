@@ -12,7 +12,6 @@ import life.catalogue.db.SqlSessionFactoryWithPath;
 import life.catalogue.matching.MatchingException;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.pgcopy.PgBinaryReader;
 import life.catalogue.pgcopy.PgBinarySplitter;
 import life.catalogue.pgcopy.PgBinaryWriter;

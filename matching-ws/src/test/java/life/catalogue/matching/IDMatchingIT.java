@@ -7,14 +7,15 @@ import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.Dictionaries;
 
-import org.apache.lucene.store.ByteBuffersDirectory;
-import org.apache.lucene.store.Directory;
 import org.gbif.nameparser.api.Rank;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+
+import org.apache.lucene.store.ByteBuffersDirectory;
+import org.apache.lucene.store.Directory;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 

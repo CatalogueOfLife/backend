@@ -6,10 +6,10 @@ import life.catalogue.api.search.FacetValue;
 import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.es.NameUsageIndexService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -17,6 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import jakarta.validation.Validator;
 
 public class DecisionDao extends DatasetEntityDao<Integer, EditorialDecision, DecisionMapper> {
 

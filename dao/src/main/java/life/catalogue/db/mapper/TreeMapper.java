@@ -1,7 +1,5 @@
 package life.catalogue.db.mapper;
 
-import jakarta.ws.rs.QueryParam;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.TreeNode;

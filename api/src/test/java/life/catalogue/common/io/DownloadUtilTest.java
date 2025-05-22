@@ -3,8 +3,6 @@ package life.catalogue.common.io;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

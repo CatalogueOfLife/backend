@@ -1,7 +1,6 @@
 package life.catalogue.db;
 
 import life.catalogue.db.type.BaseEnumSetTypeHandler;
-
 import life.catalogue.junit.PgSetupRuleTest;
 
 import org.junit.Test;

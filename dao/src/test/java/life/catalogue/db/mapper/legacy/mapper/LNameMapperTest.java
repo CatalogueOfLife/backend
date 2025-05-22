@@ -1,10 +1,10 @@
 package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.LookupTables;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.model.*;
+import life.catalogue.junit.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 

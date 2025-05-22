@@ -1,16 +1,12 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.event.UserPermissionChanged;
+import life.catalogue.api.event.*;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import com.google.common.eventbus.Subscribe;
 
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.core.ConfiguredBundle;
@@ -26,7 +22,7 @@ import io.dropwizard.core.setup.Environment;
  *  - a dynamic feature that requires some authenticated user if a non Optional @Auth annotation is present on a method
  *  - the {@RolesAllowedDynamicFeature} that makes sure required user roles do exist on specifically annotated methods
  */
-public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
+public class AuthBundle implements ConfiguredBundle<WsServerConfig>, UserListener, DatasetListener {
   
   private JwtCodec jwtCodec;
   private IdentityService idService;
@@ -75,18 +71,18 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     return idService;
   }
 
-  @Subscribe
-  public void permissionChanged(UserPermissionChanged event){
+  @Override
+  public void userPermissionChanged(UserPermissionChanged event){
     idService.invalidate(event.username);
   }
 
-  @Subscribe
+  @Override
   public void userChanged(UserChanged event){
     String username = event.isDeletion() ? event.old.getUsername() : event.obj.getUsername();
     idService.invalidate(username);
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       privateFilter.updateCache(event.key, false);

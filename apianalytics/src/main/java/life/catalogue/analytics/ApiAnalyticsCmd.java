@@ -1,21 +1,20 @@
 package life.catalogue.analytics;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.command.AbstractMybatisCmd;
-
 import life.catalogue.dw.jersey.filter.DatasetKeyRewriteFilter;
-
-import net.sourceforge.argparse4j.inf.Subparser;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
+
+import net.sourceforge.argparse4j.inf.Subparser;
 
 /**
  * Copied API usage metrics from ES to the database for long term storage.

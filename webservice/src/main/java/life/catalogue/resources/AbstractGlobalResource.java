@@ -6,15 +6,14 @@ import life.catalogue.api.model.User;
 import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)

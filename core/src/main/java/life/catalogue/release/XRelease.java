@@ -48,8 +48,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import jakarta.validation.Validator;
 
-import static life.catalogue.api.util.ObjectUtils.coalesce;
-
 public class XRelease extends ProjectRelease {
   private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);
   private final int baseReleaseKey;

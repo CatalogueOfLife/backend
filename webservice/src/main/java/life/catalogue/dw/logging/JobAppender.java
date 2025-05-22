@@ -1,16 +1,17 @@
 package life.catalogue.dw.logging;
 
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.AppenderBase;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import life.catalogue.api.model.JobResult;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.ReleaseConfig;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -18,13 +19,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import javax.annotation.Nullable;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 
 public class JobAppender extends AppenderBase<ILoggingEvent> {
   private static final Logger LOG = LoggerFactory.getLogger(JobAppender.class);

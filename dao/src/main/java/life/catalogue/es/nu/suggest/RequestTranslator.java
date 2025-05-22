@@ -3,7 +3,6 @@ package life.catalogue.es.nu.suggest;
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.db.PgUtils;
 import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.FilterTranslator;
 import life.catalogue.es.nu.FiltersTranslator;

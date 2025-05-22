@@ -7,13 +7,9 @@ import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -22,6 +18,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX

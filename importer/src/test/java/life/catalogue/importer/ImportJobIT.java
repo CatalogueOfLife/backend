@@ -11,6 +11,8 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -29,8 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validator;
 
@@ -113,7 +113,7 @@ public class ImportJobIT {
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
     job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
-      indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, new EventBus("test-bus"), this::start, this::success, this::error);
+      indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, new EventBroker(new BrokerConfig()), this::start, this::success, this::error);
 
   }
 

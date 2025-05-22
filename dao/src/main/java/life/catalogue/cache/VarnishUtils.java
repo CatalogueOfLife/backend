@@ -4,9 +4,7 @@ import java.net.URI;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.message.BasicClassicHttpRequest;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,45 +1,20 @@
 package life.catalogue.resources;
 
-import com.google.common.collect.ImmutableList;
-
-import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
-
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
-import life.catalogue.api.search.SectorSearchRequest;
-import life.catalogue.api.vocab.ImportState;
-import life.catalogue.assembly.SyncManager;
-import life.catalogue.dao.*;
-import life.catalogue.db.mapper.SectorImportMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.dao.PublisherDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
-import life.catalogue.matching.decision.RematcherBase;
-import life.catalogue.matching.decision.SectorRematchRequest;
-import life.catalogue.matching.decision.SectorRematcher;
 
-import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriInfo;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
 
 @Path("/dataset/{key}/sector/publisher")
 @Produces(MediaType.APPLICATION_JSON)

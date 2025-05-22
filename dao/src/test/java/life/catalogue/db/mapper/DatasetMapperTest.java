@@ -9,14 +9,13 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Assert;
 import org.junit.Test;

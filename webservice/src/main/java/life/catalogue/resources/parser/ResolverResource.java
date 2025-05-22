@@ -6,7 +6,10 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.metadata.DoiResolver;
 
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/resolver")

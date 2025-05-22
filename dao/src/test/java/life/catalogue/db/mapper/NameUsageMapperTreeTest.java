@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.junit.TestDataRule;
+import life.catalogue.junit.TxtTreeDataRule;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -9,8 +10,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-
-import life.catalogue.junit.TxtTreeDataRule;
 
 import org.junit.Assert;
 import org.junit.Test;

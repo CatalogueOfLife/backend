@@ -14,11 +14,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.catalogueoflife.newick.Node;
 import org.catalogueoflife.newick.SimpleNode;
-
-import javax.annotation.Nullable;
 
 /**
  * Print an entire dataset in the extended Newick format, listing the name, rank and id in the extended properties.

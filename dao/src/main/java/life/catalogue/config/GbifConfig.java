@@ -1,13 +1,13 @@
 package life.catalogue.config;
 
+import life.catalogue.api.vocab.Publishers;
+
 import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.MoreObjects;
 
 import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.api.vocab.Publishers;
 
 /**
  *

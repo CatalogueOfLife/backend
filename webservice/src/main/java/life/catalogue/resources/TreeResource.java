@@ -6,21 +6,17 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.dao.TreeDao;
 import life.catalogue.dw.auth.Roles;
-
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 
-import org.gbif.nameparser.api.Rank;
-
 import java.util.List;
-
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/tree")
 @Produces(MediaType.APPLICATION_JSON)

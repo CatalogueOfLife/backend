@@ -4,16 +4,15 @@ import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.NameUsage;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import io.dropwizard.jersey.errors.ErrorMessage;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 

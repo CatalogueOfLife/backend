@@ -1,8 +1,6 @@
 package life.catalogue.matching;
 
-import com.google.common.eventbus.EventBus;
-
-import life.catalogue.api.event.FlushDatasetCache;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.db.PgUtils;
@@ -10,21 +8,22 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
-
+import life.catalogue.event.EventBroker;
 import life.catalogue.matching.nidx.NameIndex;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Matches all names & archived names missing any name match incl NoMatch.
  */
 public class GlobalMatcherJob extends GlobalBlockingJob {
   private final GlobalMatcher gm;
-  public GlobalMatcherJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus) {
+  public GlobalMatcherJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus) {
     super(userKey, JobPriority.HIGH);
     this.gm = new GlobalMatcher(factory, ni, bus);
   }
@@ -36,9 +35,9 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
 
   static class GlobalMatcher extends BaseMatcher implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(GlobalMatcher.class);
-    private final EventBus bus;
+    private final EventBroker bus;
 
-    GlobalMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBus bus) {
+    GlobalMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBroker bus) {
       super(factory, ni);
       this.bus = bus;
     }
@@ -54,7 +53,7 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
         LOG.info("Created {} missing name matches, {} not matching.", total, nomatch);
         if (bus != null) {
           for (int dkey : hn.getDatasets()) {
-            bus.post(new FlushDatasetCache(dkey));
+            bus.publish().datasetDataChanged(new DatasetDataChanged(dkey));
           }
         }
       } catch (RuntimeException e) {

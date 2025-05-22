@@ -1,13 +1,14 @@
 package life.catalogue.config;
 
-import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 /**
  *

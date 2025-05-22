@@ -2,8 +2,6 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.vocab.Setting;
 import life.catalogue.dao.DatasetSourceDao;
 
 import java.util.ArrayList;
@@ -14,7 +12,8 @@ import org.junit.Test;
 import static life.catalogue.api.model.Agent.organisation;
 import static life.catalogue.api.model.Agent.person;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 

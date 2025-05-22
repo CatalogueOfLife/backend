@@ -6,16 +6,13 @@ import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+import life.catalogue.junit.TreeRepoRule;
 
 import java.sql.Connection;
 import java.time.LocalDateTime;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.javers.core.Javers;
@@ -25,6 +22,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.google.common.base.Preconditions;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 /**
  * A reusable base class for all mybatis mapper tests that takes care of postgres & mybatis.

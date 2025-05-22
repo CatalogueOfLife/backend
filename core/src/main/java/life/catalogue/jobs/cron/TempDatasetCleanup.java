@@ -2,10 +2,10 @@ package life.catalogue.jobs.cron;
 
 import life.catalogue.dao.DatasetDao;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 public class TempDatasetCleanup extends CronJob {
   private static final Logger LOG = LoggerFactory.getLogger(TempDatasetCleanup.class);

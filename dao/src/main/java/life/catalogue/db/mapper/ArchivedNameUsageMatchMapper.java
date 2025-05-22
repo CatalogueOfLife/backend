@@ -5,8 +5,6 @@ import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.DatasetProcessable;
 
-import javax.annotation.Nullable;
-
 import org.apache.ibatis.annotations.Param;
 
 /**

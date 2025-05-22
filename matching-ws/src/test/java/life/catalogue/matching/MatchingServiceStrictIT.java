@@ -13,19 +13,23 @@
  */
 package life.catalogue.matching;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.common.base.Joiner;
-import java.io.IOException;
-import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.Dictionaries;
 
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+
+import javax.annotation.Nullable;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.base.Joiner;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchingServiceStrictIT {
 

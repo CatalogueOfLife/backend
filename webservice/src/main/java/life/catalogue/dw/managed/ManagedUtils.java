@@ -23,7 +23,7 @@ public class ManagedUtils {
     };
   }
 
-  static Managed from(final life.catalogue.common.Managed obj) {
+  public static Managed from(final life.catalogue.common.Managed obj) {
     return new Managed() {
       @Override
       public void start() throws Exception {

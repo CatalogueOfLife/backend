@@ -2,16 +2,16 @@ package life.catalogue.pgcopy;
 
 import life.catalogue.common.io.TempFile;
 
-import org.junit.Test;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PgBinarySplitterTest {
   enum GENDER {MALE, FEMALE}

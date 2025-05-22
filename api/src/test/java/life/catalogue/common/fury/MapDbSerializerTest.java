@@ -1,16 +1,13 @@
 package life.catalogue.common.fury;
 
 import life.catalogue.api.model.VerbatimRecord;
-
 import life.catalogue.common.io.TempFile;
 
 import org.gbif.dwc.terms.DwcTerm;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.After;
 import org.junit.Before;

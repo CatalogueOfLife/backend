@@ -3,10 +3,10 @@ package life.catalogue.matching;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.Dataset;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

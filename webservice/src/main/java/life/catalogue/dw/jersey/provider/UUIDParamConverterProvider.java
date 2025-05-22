@@ -6,11 +6,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.UUID;
 
+import com.google.common.base.Strings;
+
 import jakarta.ws.rs.ext.ParamConverter;
 import jakarta.ws.rs.ext.ParamConverterProvider;
 import jakarta.ws.rs.ext.Provider;
-
-import com.google.common.base.Strings;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

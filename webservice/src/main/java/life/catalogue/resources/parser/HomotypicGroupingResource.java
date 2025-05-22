@@ -5,13 +5,15 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.basgroup.BasionymSorter;
+import life.catalogue.basgroup.HomotypicGroup;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.matching.authorship.AuthorComparator;
-import life.catalogue.basgroup.HomotypicGroup;
-import life.catalogue.basgroup.BasionymSorter;
 import life.catalogue.parser.NameParser;
+
+import org.gbif.nameparser.api.NomCode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,15 +22,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.nameparser.api.NomCode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/parser/homotypic")
 @Produces(MediaType.APPLICATION_JSON)

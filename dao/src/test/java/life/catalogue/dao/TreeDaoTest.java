@@ -2,8 +2,8 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.SectorDataRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
 import org.gbif.nameparser.api.Rank;

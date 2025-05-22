@@ -1,25 +1,18 @@
 package life.catalogue.dao;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.model.*;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
 
 import java.util.UUID;
-
-import jakarta.validation.Validator;
-
-import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.mapper.PublisherMapper;
-
-import life.catalogue.db.mapper.SectorMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.Validator;
 
 /**
  * Generic CRUD DAO for dataset scoped entities

@@ -1,9 +1,5 @@
 package life.catalogue.common.tax;
 
-import com.google.common.base.Preconditions;
-
-import jakarta.validation.constraints.NotNull;
-
 import life.catalogue.api.model.Name;
 import life.catalogue.common.io.Resources;
 
@@ -20,9 +16,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Utility to compare scientific name authorships, i.e. the recombination and basionym author and publishing year.

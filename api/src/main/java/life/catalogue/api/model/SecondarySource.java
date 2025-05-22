@@ -5,8 +5,6 @@ import life.catalogue.api.vocab.InfoGroup;
 
 import java.util.Objects;
 
-import static life.catalogue.api.vocab.EntityType.NAME_USAGE;
-
 public class SecondarySource implements DSID<String> {
   private String id;
   private Integer datasetKey;

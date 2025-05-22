@@ -5,12 +5,14 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.Resources;
+import life.catalogue.junit.PgSetupRule;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,14 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import life.catalogue.junit.PgSetupRule;
-
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;

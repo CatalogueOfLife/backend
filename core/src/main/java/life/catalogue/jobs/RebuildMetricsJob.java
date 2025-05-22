@@ -4,7 +4,6 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DaoUtils;
-
 import life.catalogue.release.MetricsBuilder;
 
 import org.apache.ibatis.session.SqlSessionFactory;

@@ -1,14 +1,17 @@
 package life.catalogue.matching;
 
-import com.beust.jcommander.*;
-
-import org.springframework.boot.SpringApplication;
-
-import sun.misc.Unsafe;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.boot.SpringApplication;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+import com.beust.jcommander.Parameters;
+
+import sun.misc.Unsafe;
 
 /**
  * Main application class for the matching-ws module.

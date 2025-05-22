@@ -6,22 +6,22 @@ import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.DecisionDao;
+import life.catalogue.db.mapper.DecisionMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.DecisionMapper;
-import life.catalogue.es.NameUsageIndexService;
 
 import org.gbif.nameparser.api.Rank;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

@@ -3,13 +3,11 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.img.ImageService;
 
 import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
 
 public class DwcaExtendedExportTest extends ExportTest {
 

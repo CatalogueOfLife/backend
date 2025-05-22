@@ -4,7 +4,6 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.ReferenceFactory;
@@ -17,7 +16,6 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;

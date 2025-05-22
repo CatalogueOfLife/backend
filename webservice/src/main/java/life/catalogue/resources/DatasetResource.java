@@ -1,42 +1,24 @@
 package life.catalogue.resources;
 
-import life.catalogue.jobs.ValidationJob;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Setting;
-import life.catalogue.assembly.SyncManager;
-import life.catalogue.assembly.SyncState;
-import life.catalogue.basgroup.HomotypicConsolidationJob;
-import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
-import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.job.DeleteDatasetJob;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.dw.auth.Roles;
-import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.release.ProjectRelease;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
-import life.catalogue.release.ProjectReleaseConfig;
-
-import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -44,6 +26,11 @@ import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 import static life.catalogue.api.model.User.userkey;
 

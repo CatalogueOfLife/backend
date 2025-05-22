@@ -1,6 +1,9 @@
 package life.catalogue.common.collection;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public class CountEnumMap<K extends Enum<K>> extends EnumMap<K, Integer> {

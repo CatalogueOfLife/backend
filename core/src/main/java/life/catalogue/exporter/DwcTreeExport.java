@@ -5,9 +5,9 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.img.ImageService;
 import life.catalogue.printer.DwcTreePrinter;
 
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import java.io.IOException;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 public class DwcTreeExport extends PrinterExport<DwcTreePrinter> {
   public DwcTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {

@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ReleaseActionTest {
 

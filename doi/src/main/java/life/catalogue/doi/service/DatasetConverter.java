@@ -15,11 +15,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * Converts COL metadata into DataCite metadata.

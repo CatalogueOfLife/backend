@@ -9,7 +9,6 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
-
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.*;

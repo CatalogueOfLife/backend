@@ -6,13 +6,13 @@ import life.catalogue.api.vocab.TabularFormat;
 import java.io.File;
 import java.util.Objects;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.QueryParam;
-
 import org.apache.commons.io.FilenameUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.QueryParam;
 
 public class MatchingRequest extends TreeTraversalParameter {
 

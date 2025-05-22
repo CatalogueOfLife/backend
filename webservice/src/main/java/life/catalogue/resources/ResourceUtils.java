@@ -9,15 +9,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import jakarta.ws.rs.RedirectionException;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 
 public class ResourceUtils {
 

@@ -5,12 +5,11 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
+import life.catalogue.coldp.ColdpTerm;
 
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import life.catalogue.coldp.ColdpTerm;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.junit.Assert;

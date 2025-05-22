@@ -4,8 +4,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.input.ProxyInputStream;
-
 /**
  * InputStream for the pg binary format that understands the formats header.
  */

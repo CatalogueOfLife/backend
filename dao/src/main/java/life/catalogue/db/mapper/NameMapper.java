@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.*;
 
 import org.gbif.api.vocabulary.NomenclaturalStatus;
@@ -15,10 +14,11 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.QueryParam;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+
+import jakarta.ws.rs.QueryParam;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be

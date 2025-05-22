@@ -4,7 +4,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;

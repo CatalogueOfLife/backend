@@ -1,15 +1,9 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchType;
 
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *

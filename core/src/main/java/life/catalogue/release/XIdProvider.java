@@ -9,7 +9,6 @@ import life.catalogue.matching.nidx.NameIndex;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 

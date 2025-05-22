@@ -1,12 +1,8 @@
 package life.catalogue.basgroup;
 
 import life.catalogue.assembly.SectorSyncIT;
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.junit.TxtTreeDataRule;
+import life.catalogue.junit.*;
 
 import java.io.IOException;
 

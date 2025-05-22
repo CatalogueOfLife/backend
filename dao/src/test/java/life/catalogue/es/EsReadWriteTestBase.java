@@ -3,10 +3,10 @@ package life.catalogue.es;
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.List;
 import java.util.stream.IntStream;

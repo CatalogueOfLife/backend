@@ -8,18 +8,16 @@ import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.text.CitationUtils;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.MybatisFactory;
-import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 
@@ -34,7 +32,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -55,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.EventBus;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -92,7 +88,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private final DatasetImportDao diDao;
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
-  private final EventBus bus;
+  private final EventBroker bus;
   private final TempIdProvider tempIds;
   private final URI gbifDatasetApi;
 
@@ -108,7 +104,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
                     DatasetExportDao exportDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    EventBus bus,
+                    EventBroker bus,
                     Validator validator) {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.nCfg = nCfg;
@@ -132,7 +128,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBroker(new BrokerConfig()), validator);
   }
 
   public Dataset get(UUID gbifKey) {
@@ -336,7 +332,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSources(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
-      .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
+      .forEach(d -> bus.publish().doiChanged(DoiChange.delete(d.getDoi())));
   }
 
   @Override
@@ -427,7 +423,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // trigger DOI update at the very end for the now removed sources!
-    dois.forEach(doi -> bus.post(DoiChange.change(doi)));
+    dois.forEach(doi -> bus.publish().doiChanged(DoiChange.change(doi)));
   }
 
   /**
@@ -473,9 +469,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.post(delEvent);
+    bus.publish().datasetChanged(delEvent);
     if (old.getDoi() != null && old.getDoi().isCOL()) {
-      bus.post(DoiChange.delete(old.getDoi()));
+      bus.publish().doiChanged(DoiChange.delete(old.getDoi()));
     }
     return false;
   }
@@ -539,7 +535,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, null, user);
-    bus.post(DatasetChanged.created(obj, user));
+    bus.publish().datasetChanged(DatasetChanged.created(obj, user));
     return false;
   }
 
@@ -611,9 +607,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, old, user);
-    bus.post(DatasetChanged.changed(obj, old, user));
+    bus.publish().datasetChanged(DatasetChanged.changed(obj, old, user));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {
-      bus.post(DoiChange.change(old.getDoi()));
+      bus.publish().doiChanged(DoiChange.change(old.getDoi()));
     }
     return false;
   }

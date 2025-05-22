@@ -13,6 +13,7 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
@@ -29,8 +30,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
@@ -56,7 +55,7 @@ abstract class SectorRunnable implements Runnable {
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
-  private final EventBus bus;
+  private final EventBroker bus;
   final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
@@ -65,7 +64,7 @@ abstract class SectorRunnable implements Runnable {
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean clearMatcherCache, SqlSessionFactory factory,
-                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
+                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
@@ -138,7 +137,7 @@ abstract class SectorRunnable implements Runnable {
       // clear matcher cache?
       if (clearMatcherCache) {
         matcher.clearCache(sectorKey.getDatasetKey());
-        bus.post(new DatasetDataChanged(sectorKey.getDatasetKey()));
+        bus.publish().datasetDataChanged(new DatasetDataChanged(sectorKey.getDatasetKey()));
       }
 
       doWork();

@@ -9,15 +9,15 @@ import life.catalogue.junit.TestDataRule;
 
 import org.gbif.nameparser.api.Rank;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Set;
+
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 

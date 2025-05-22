@@ -3,7 +3,6 @@ package life.catalogue.csv;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.Resources;
-
 import life.catalogue.common.io.TempFile;
 
 import org.gbif.dwc.terms.*;

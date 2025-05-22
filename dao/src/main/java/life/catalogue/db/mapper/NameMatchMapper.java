@@ -2,16 +2,18 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.db.*;
+import life.catalogue.db.CopyDataset;
+import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.NameProcessable;
+import life.catalogue.db.SectorProcessable;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * WARNING !!!

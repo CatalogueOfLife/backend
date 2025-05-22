@@ -1,13 +1,15 @@
 package life.catalogue.matching.util;
 
-import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+
+import com.google.common.base.Throwables;
 
 /**
  * Utility class to analyze strings using a Lucene analyzer.

@@ -13,17 +13,6 @@
  */
 package life.catalogue.matching;
 
-import static org.gbif.nameparser.api.NameType.NO_NAME;
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.matching.model.Classification;
 import life.catalogue.matching.model.LinneanClassification;
@@ -35,8 +24,23 @@ import life.catalogue.matching.util.NameParsers;
 
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
+
+import static org.gbif.nameparser.api.NameType.NO_NAME;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchingServiceIT {
 

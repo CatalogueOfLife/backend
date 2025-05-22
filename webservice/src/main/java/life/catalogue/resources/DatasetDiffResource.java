@@ -10,10 +10,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
 
+import io.dropwizard.auth.Auth;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-
-import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/diff")
 @SuppressWarnings("static-method")

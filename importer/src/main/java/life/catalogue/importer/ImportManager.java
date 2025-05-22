@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -25,6 +26,7 @@ import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
@@ -58,15 +60,13 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 
 import jakarta.validation.Validator;
 
 /**
  * Manages import task scheduling, removing and listing
  */
-public class ImportManager implements Managed, Idle {
+public class ImportManager implements Managed, Idle, DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
   static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted);
@@ -83,7 +83,7 @@ public class ImportManager implements Managed, Idle {
   private final NameUsageIndexService indexService;
 
   private final JobExecutor jobExecutor;
-  private final EventBus bus;
+  private final EventBroker bus;
 
   private final SectorDao sDao;
   private final DatasetDao dDao;
@@ -94,7 +94,7 @@ public class ImportManager implements Managed, Idle {
   private final Timer importTimer;
   private final Counter failed;
 
-  public ImportManager(ImporterConfig iCfg, NormalizerConfig nCfg, MetricRegistry registry, CloseableHttpClient client, EventBus bus,
+  public ImportManager(ImporterConfig iCfg, NormalizerConfig nCfg, MetricRegistry registry, CloseableHttpClient client, EventBroker bus,
                        SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
                        NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.iCfg = iCfg;
@@ -514,8 +514,8 @@ public class ImportManager implements Managed, Idle {
     return !hasStarted() || hasEmptyQueue() && !hasRunning();
   }
 
-  @Subscribe
-  public void datasetDeleted(DatasetChanged event){
+  @Override
+  public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       LOG.debug("Try to cancel import job for deleted dataset {}. User={}", event.key, event.user);
       cancel(event.key, event.user);

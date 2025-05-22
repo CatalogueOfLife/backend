@@ -13,12 +13,14 @@
  */
 package life.catalogue.matching.similarity;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
 
 public class DistanceComparisonTest {
   private static final Logger LOG = LoggerFactory.getLogger(DistanceComparisonTest.class);

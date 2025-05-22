@@ -7,12 +7,12 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
-import org.junit.ClassRule;
-import org.junit.Test;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 

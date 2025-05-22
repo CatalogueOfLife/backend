@@ -1,10 +1,5 @@
 package life.catalogue.feedback;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import jakarta.ws.rs.ForbiddenException;
-import jakarta.ws.rs.core.UriBuilder;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
@@ -15,26 +10,29 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.SectorMapper;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-import life.catalogue.db.mapper.SectorMapper;
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
-
-import javax.annotation.Nullable;
+import jakarta.ws.rs.core.UriBuilder;
 
 /**
  * https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#create-an-issue

@@ -5,12 +5,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.junit.TreeRepoRule;
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.*;
+import life.catalogue.junit.*;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;

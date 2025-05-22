@@ -3,8 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.NomStatus;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -13,6 +11,8 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

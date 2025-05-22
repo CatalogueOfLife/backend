@@ -6,12 +6,12 @@ import life.catalogue.dw.jersey.provider.DatasetPatchMessageBodyRW;
 
 import java.lang.reflect.Method;
 
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import jakarta.ws.rs.core.MediaType;
+
+import static org.junit.Assert.assertEquals;
 
 public class DatasetPatchResourceTest {
   DatasetPatchMessageBodyRW rw = new DatasetPatchMessageBodyRW();

@@ -1,11 +1,7 @@
 package life.catalogue.csv;
 
-import org.gbif.dwc.terms.AcefTerm;
-import org.gbif.nameparser.api.Rank;
-
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Map;
 
 /**
  * A CSV Reader that supports all txt, csv, tsv files in a given folder.

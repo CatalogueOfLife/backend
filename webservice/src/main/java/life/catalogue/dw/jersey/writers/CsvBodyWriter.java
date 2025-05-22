@@ -10,16 +10,16 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
+import com.google.common.base.Throwables;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
+
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
-
-import com.google.common.base.Throwables;
-import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
 
 @Produces({MoreMediaTypes.TEXT_CSV})
 @Provider

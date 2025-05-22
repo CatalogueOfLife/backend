@@ -1,7 +1,6 @@
 package life.catalogue.printer;
 
 import life.catalogue.api.model.TreeTraversalParameter;
-
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;

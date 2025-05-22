@@ -16,10 +16,9 @@ import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

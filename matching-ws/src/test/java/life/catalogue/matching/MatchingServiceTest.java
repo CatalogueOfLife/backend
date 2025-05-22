@@ -13,12 +13,12 @@
  */
 package life.catalogue.matching;
 
+import org.junit.jupiter.api.Test;
+
 import static life.catalogue.matching.service.MatchingService.normConfidence;
 import static life.catalogue.matching.service.MatchingService.rankSimilarity;
 import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.Test;
 
 public class MatchingServiceTest {
 

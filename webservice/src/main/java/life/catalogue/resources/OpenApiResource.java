@@ -1,12 +1,10 @@
 package life.catalogue.resources;
 
-import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.ws.MoreMediaTypes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.LocalDateTime;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import jakarta.ws.rs.GET;
@@ -40,5 +38,5 @@ public class OpenApiResource {
   public OpenAPI openApi(@Context HttpHeaders headers, @Context UriInfo uriInfo) {
     return openApi;
   }
-  
+
 }

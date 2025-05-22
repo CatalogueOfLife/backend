@@ -1,6 +1,5 @@
 package life.catalogue.printer;
 
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.TabWriter;

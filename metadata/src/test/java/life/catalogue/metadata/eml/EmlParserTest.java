@@ -11,7 +11,6 @@ import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
 
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 

@@ -8,15 +8,11 @@ import life.catalogue.api.model.SimpleNameLink;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.SyncManagerConfig;
-import life.catalogue.junit.TreeRepoRule;
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.junit.*;
 
 import org.gbif.nameparser.api.Rank;
 

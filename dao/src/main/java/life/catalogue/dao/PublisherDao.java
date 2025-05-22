@@ -1,32 +1,32 @@
 package life.catalogue.dao;
 
-import com.google.common.eventbus.EventBus;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.event.DeleteSector;
 import life.catalogue.api.model.*;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.PublisherMapper;
+import life.catalogue.db.mapper.SectorImportMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.event.EventBroker;
+
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(PublisherDao.class);
-  private final EventBus bus;
+  private final EventBroker bus;
 
-  public PublisherDao(SqlSessionFactory factory, EventBus bus, Validator validator) {
+  public PublisherDao(SqlSessionFactory factory, EventBroker bus, Validator validator) {
     super(false, factory, Publisher.class, PublisherMapper.class, validator);
     this.bus = bus;
   }
@@ -36,7 +36,7 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
     // also remove all merge sectors from datasets from this publisher
     final int projectKey = key.getDatasetKey();
     for (Sector s : session.getMapper(SectorMapper.class).listByDatasetPublisher(projectKey, key.getId())){
-      bus.post(new DeleteSector(DSID.of(projectKey, s.getId()), user));
+      bus.publish().sectorDeleted(new DeleteSector(DSID.of(projectKey, s.getId()), user));
     }
     return true;
   }

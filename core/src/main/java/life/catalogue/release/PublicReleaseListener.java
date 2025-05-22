@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
@@ -37,8 +38,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 
 /**
  * Class to listen to dataset changes and act if a COL release was changed from private to public.
@@ -47,7 +46,7 @@ import com.google.common.eventbus.Subscribe;
  *  - inserts deleted ids from the reports into the names archive
  *  - removes resurrected ids from the names archive
  */
-public class PublicReleaseListener {
+public class PublicReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublicReleaseListener.class);
 
   private final ReleaseConfig cfg;
@@ -70,7 +69,7 @@ public class PublicReleaseListener {
     this.archiver = new NameUsageArchiver(factory);
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
       && event.obj.getOrigin().isRelease()

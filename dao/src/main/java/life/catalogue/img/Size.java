@@ -2,10 +2,10 @@ package life.catalogue.img;
 
 import java.util.Objects;
 
-import jakarta.validation.constraints.Min;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.validation.constraints.Min;
 
 public class Size {
   

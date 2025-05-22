@@ -2,7 +2,6 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
 import life.catalogue.db.mapper.NameRelationMapper;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -24,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import jakarta.validation.Validator;
 
 public class NameDao extends SectorEntityDao<Name, NameMapper> {
   

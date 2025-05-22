@@ -17,7 +17,6 @@ import life.catalogue.release.XReleaseConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import org.apache.ibatis.io.Resources;

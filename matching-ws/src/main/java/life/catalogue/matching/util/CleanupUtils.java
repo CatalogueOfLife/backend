@@ -1,16 +1,8 @@
 package life.catalogue.matching.util;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
 import life.catalogue.matching.model.LinneanClassification;
-
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -20,6 +12,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class to clean up strings and other objects, typically from

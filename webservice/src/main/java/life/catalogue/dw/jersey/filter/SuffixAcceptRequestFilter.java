@@ -5,6 +5,10 @@ import life.catalogue.common.ws.MoreMediaTypes;
 import java.net.URI;
 import java.util.Map;
 
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
@@ -12,10 +16,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.UriBuilder;
 import jakarta.ws.rs.ext.Provider;
-
-import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.util.Map.entry;
 /**

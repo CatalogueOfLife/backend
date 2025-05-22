@@ -1,6 +1,7 @@
 package life.catalogue.doi;
 
 import life.catalogue.api.event.DoiChange;
+import life.catalogue.api.event.DoiListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
@@ -25,8 +26,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 /**
  * Service to update or delete DOI metadata when datasets change or get deleted.
  * DOIs for releases and projects are 1:1, so its simple to delete or update them.
@@ -37,7 +36,7 @@ import com.google.common.eventbus.Subscribe;
  * As a rule the URL designated in the DOI metadata should always refer to the earliest release when the DOI was first minted.
  * TODO: We might need to rethink this rule and point it to the first annual release (if existing) as these releases will not be deleted.
  */
-public class DoiUpdater {
+public class DoiUpdater implements DoiListener {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdater.class);
   private final SqlSessionFactory factory;
   private final DoiService doiService;
@@ -57,8 +56,8 @@ public class DoiUpdater {
    * In case an entire project gets deleted
    * which removed the sources already from the DB and cascades a project deletion to all its releases!!!
    */
-  @Subscribe
-  public void update(DoiChange event){
+  @Override
+  public void doiChanged(DoiChange event){
     if (event.getDoi().isCOL()) {
       int datasetKey = -1;
       Integer sourceKey = null;

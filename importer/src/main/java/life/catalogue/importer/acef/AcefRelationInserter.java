@@ -4,11 +4,11 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.importer.RelationInserterBase;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.interpreter.NameInterpreter;
 
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.Rank;

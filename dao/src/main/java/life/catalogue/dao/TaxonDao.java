@@ -1,7 +1,5 @@
 package life.catalogue.dao;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -16,6 +14,11 @@ import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.printer.JsonTreePrinter;
+import life.catalogue.printer.PrinterFactory;
+
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.io.Writer;
 import java.util.*;
@@ -25,24 +28,17 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
-
-import life.catalogue.printer.JsonTreePrinter;
-
-import life.catalogue.printer.PrinterFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
-import org.gbif.nameparser.util.RankUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
+
+import jakarta.validation.Validator;
 
 public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);

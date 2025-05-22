@@ -11,9 +11,14 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.decision.*;
-import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.decision.EstimateRematcher;
+import life.catalogue.matching.decision.MatchingDao;
+import life.catalogue.matching.decision.RematchRequest;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.UsageIdGen;
+import life.catalogue.release.XRelease;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,10 +33,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.release.UsageIdGen;
-
-import life.catalogue.release.XRelease;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
@@ -40,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.EventBus;
 
 /**
  * Syncs/imports source data for a given sector into the assembled catalogue
@@ -65,7 +65,7 @@ public class SectorSync extends SectorRunnable {
   private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
-             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBus bus,
+             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBroker bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,

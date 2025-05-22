@@ -19,6 +19,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
@@ -26,12 +31,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)

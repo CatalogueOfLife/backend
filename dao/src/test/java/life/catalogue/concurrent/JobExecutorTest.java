@@ -3,7 +3,6 @@ package life.catalogue.concurrent;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.dao.UserCrudDao;
-import life.catalogue.dao.UserDao;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

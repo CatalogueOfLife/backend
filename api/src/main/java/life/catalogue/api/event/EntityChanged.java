@@ -61,4 +61,16 @@ public class EntityChanged<K, T> {
   public boolean isUpdated(){
     return type ==  UPDATE;
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" +
+      "type=" + type +
+      ", key=" + key +
+      ", obj=" + obj +
+      ", old=" + old +
+      ", user=" + user +
+      ", objClass=" + objClass +
+      '}';
+  }
 }

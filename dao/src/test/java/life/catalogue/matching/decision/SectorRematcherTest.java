@@ -8,24 +8,24 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

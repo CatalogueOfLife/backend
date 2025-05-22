@@ -1,16 +1,19 @@
 package life.catalogue.api.model;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.

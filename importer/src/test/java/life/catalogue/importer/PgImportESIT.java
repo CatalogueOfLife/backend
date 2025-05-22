@@ -5,12 +5,12 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.es.EsSetupRule;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.Query;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.gbif.nameparser.api.Rank;
 

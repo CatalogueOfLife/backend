@@ -12,16 +12,15 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
+
+import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 

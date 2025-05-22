@@ -5,12 +5,11 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.junit.TestDataRule;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import life.catalogue.junit.TestDataRule;
 
 import org.junit.Test;
 

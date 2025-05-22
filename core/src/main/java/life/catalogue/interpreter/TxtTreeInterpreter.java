@@ -2,7 +2,10 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.Environment;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.parser.*;

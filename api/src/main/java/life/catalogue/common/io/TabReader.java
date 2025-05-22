@@ -4,20 +4,16 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import com.univocity.parsers.common.*;
-
-import com.univocity.parsers.csv.CsvRoutines;
-
-import com.univocity.parsers.tsv.TsvParser;
-import com.univocity.parsers.tsv.TsvParserSettings;
-
 import org.apache.commons.io.input.ReaderInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.io.Closeables;
+import com.univocity.parsers.common.*;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.tsv.TsvParser;
+import com.univocity.parsers.tsv.TsvParserSettings;
 
 public class TabReader implements IterableResult<String[], ParsingContext>, AutoCloseable {
   protected static Logger LOG = LoggerFactory.getLogger(TabReader.class);

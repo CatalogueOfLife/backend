@@ -1,12 +1,14 @@
 package life.catalogue.matching;
 
-import java.util.List;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.NameUsageMatch;
 
-import lombok.Builder;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+
+import lombok.Builder;
 
 class NameUsageBuilder {
 

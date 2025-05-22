@@ -1,13 +1,20 @@
 package life.catalogue.matching.index;
 
-import static life.catalogue.matching.util.IndexConstants.DATASETS_JSON;
-import static life.catalogue.matching.util.IndexConstants.*;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.Main;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
+import life.catalogue.matching.util.IUCNUtils;
+import life.catalogue.matching.util.LuceneUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,31 +26,28 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.model.*;
-import life.catalogue.matching.util.IOUtil;
-import life.catalogue.matching.util.IUCNUtils;
-import life.catalogue.matching.util.LuceneUtils;
-import life.catalogue.matching.Main;
-import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
-
 import org.apache.lucene.util.BytesRef;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+import static life.catalogue.matching.util.IndexConstants.*;
 
 /**
  * Represents an index of a dataset.

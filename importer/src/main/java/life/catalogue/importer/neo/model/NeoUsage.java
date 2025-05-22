@@ -3,11 +3,10 @@ package life.catalogue.importer.neo.model;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.dao.TxtTreeDao;
 
 import java.util.List;
 import java.util.Objects;
-
-import life.catalogue.dao.TxtTreeDao;
 
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;

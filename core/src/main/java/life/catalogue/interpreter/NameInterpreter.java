@@ -8,7 +8,6 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.parser.*;
-
 import life.catalogue.parser.NameParser;
 
 import org.gbif.dwc.terms.Term;
@@ -23,11 +22,11 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 import static life.catalogue.parser.SafeParser.parse;
 import static org.apache.commons.lang3.StringUtils.trimToNull;

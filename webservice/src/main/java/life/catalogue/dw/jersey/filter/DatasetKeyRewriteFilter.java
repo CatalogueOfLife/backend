@@ -13,6 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -20,11 +26,6 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.PreMatching;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriBuilder;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.annotations.VisibleForTesting;
 
 /**
  * Filter that parses dataset keys given as path or query parameters

@@ -11,6 +11,7 @@ import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.NameMatchingRule;
@@ -24,8 +25,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -57,7 +56,7 @@ public abstract class ProjectBaseIT {
     TestConfigs cfg = TestConfigs.build();
     cfg.apiURI = null;
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
-    EventBus bus = mock(EventBus.class);
+    EventBroker bus = mock(EventBroker.class);
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);

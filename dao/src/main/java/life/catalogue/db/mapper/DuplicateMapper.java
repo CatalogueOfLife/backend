@@ -5,7 +5,6 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.MatchingMode;
 import life.catalogue.api.vocab.NameCategory;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.dao.DatasetInfoCache;
 
 import org.gbif.nameparser.api.Rank;

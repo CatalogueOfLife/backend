@@ -1,8 +1,5 @@
 package life.catalogue.db.mapper;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonMetrics;
@@ -11,9 +8,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;

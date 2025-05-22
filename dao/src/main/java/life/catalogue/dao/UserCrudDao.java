@@ -5,14 +5,14 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.UserMapper;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import jakarta.validation.Validator;
-
-import javax.annotation.Nullable;
-
-import java.util.List;
 
 public class UserCrudDao extends EntityDao<Integer, User, UserMapper> {
 

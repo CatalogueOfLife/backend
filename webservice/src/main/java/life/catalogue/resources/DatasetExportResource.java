@@ -1,11 +1,8 @@
 package life.catalogue.resources;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
@@ -15,7 +12,6 @@ import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.MetricsDao;
 import life.catalogue.dw.jersey.Redirect;
 import life.catalogue.dw.jersey.filter.VaryAccept;
-import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.printer.*;
 
@@ -27,19 +23,19 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
 /**
  * Streams dataset or parts of it to the user.

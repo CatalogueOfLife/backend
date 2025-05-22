@@ -4,14 +4,14 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.text.CitationUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Action to be called after a release with the URL being a templated allowed to contain

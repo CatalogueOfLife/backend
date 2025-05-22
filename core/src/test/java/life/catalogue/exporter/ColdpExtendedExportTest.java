@@ -6,16 +6,14 @@ import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.ReferenceMapper;
 import life.catalogue.img.ImageService;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertTrue;
 
 public class ColdpExtendedExportTest extends ExportTest {
   ExportRequest req;

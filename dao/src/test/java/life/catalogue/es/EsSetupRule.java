@@ -1,27 +1,13 @@
 package life.catalogue.es;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.common.util.YamlUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.UUID;
 
-import life.catalogue.db.PgConfig;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Joiner;
-
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 
 /**

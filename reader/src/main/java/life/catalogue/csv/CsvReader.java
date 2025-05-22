@@ -6,7 +6,10 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.BufferedReader;

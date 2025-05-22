@@ -15,11 +15,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.ws.rs.client.Client;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.client.Client;
 
 
 /**

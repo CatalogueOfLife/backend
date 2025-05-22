@@ -1,9 +1,12 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.FormattableName;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
 
 import java.time.Year;
 import java.util.Objects;
@@ -12,9 +15,6 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.nameparser.util.RankUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -8,8 +8,10 @@ import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.UsageIdGen;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -17,13 +19,9 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.release.UsageIdGen;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 public class SyncFactory {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactory.class);
@@ -35,11 +33,11 @@ public class SyncFactory {
   private final UsageMatcherGlobal matcher;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
-  private final EventBus bus;
+  private final EventBroker bus;
 
   public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
-                     NameUsageIndexService indexService, EventBus bus) {
+                     NameUsageIndexService indexService, EventBroker bus) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;

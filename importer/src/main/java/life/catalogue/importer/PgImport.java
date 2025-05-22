@@ -21,6 +21,9 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
+import life.catalogue.release.MetricsBuilder;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -31,14 +34,9 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.release.MetricsBuilder;
-
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;

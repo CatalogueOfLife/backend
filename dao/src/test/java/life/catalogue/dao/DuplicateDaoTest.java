@@ -4,10 +4,10 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.DecisionMapper;
 
 import org.gbif.nameparser.api.Rank;
 

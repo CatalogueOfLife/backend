@@ -1,8 +1,8 @@
 package life.catalogue.doi.service;
 
-import com.google.common.base.MoreObjects;
-
 import life.catalogue.api.model.DOI;
+
+import com.google.common.base.MoreObjects;
 
 import jakarta.validation.constraints.NotNull;
 

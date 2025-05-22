@@ -1,21 +1,21 @@
 package life.catalogue.matching.util;
 
+import life.catalogue.matching.model.Kingdom;
+import life.catalogue.matching.model.LinneanClassification;
+
+import org.gbif.nameparser.api.Rank;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import life.catalogue.matching.model.Kingdom;
-import life.catalogue.matching.model.LinneanClassification;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.Rank;
-import org.springframework.stereotype.Service;
 
 /**
  * Utility class to compare higher taxa of a classification.

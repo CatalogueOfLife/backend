@@ -1,21 +1,20 @@
 package life.catalogue.matching.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.Serializable;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-
 import lombok.*;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * A name usage match with additional classification information and a flag indicating if the name

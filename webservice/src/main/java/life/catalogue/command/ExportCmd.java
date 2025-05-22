@@ -17,6 +17,7 @@ import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.mail.MailBundle;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -28,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -110,13 +109,13 @@ public class ExportCmd extends AbstractMybatisCmd {
       System.out.printf("Enforce new exports\n");
     }
 
-    EventBus bus = new EventBus();
+    EventBroker bus = new EventBroker(cfg.broker);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     UserDao udao = new UserDao(factory, cfg.mail, null, bus, validator);
     mail.run(cfg, null);
     exec = new JobExecutor(cfg.job, metrics, mail.getEmailNotification(), udao);
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
-    final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, bus, validator);
+    final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, validator);
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);

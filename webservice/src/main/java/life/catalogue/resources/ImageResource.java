@@ -14,15 +14,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/dataset/{key}/logo")
 @SuppressWarnings("static-method")

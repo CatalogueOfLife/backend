@@ -10,15 +10,14 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
-
 import life.catalogue.release.TreeCleanerAndValidator;
+
+import java.time.LocalDateTime;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
 
 /**
  * Resets all dataset sector counts for an entire catalogue, see param datasetKey,

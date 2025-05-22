@@ -15,14 +15,13 @@ import life.catalogue.dw.jersey.provider.DatasetPatch;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
+
+import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-
-import org.apache.ibatis.session.SqlSession;
-
-import io.dropwizard.auth.Auth;
 
 /**
  * Editorial decision patching the metadata of a source dataset.

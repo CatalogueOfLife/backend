@@ -7,16 +7,16 @@ import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.dao.SynonymDao;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-
-import org.apache.ibatis.session.SqlSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/synonym")
 @Produces(MediaType.APPLICATION_JSON)

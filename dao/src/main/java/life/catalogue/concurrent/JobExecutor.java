@@ -7,7 +7,6 @@ import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.UserCrudDao;
-import life.catalogue.dao.UserDao;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,10 +16,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.db.mapper.UserMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

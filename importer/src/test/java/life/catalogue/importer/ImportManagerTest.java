@@ -12,6 +12,8 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -37,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validator;
 
@@ -92,7 +93,7 @@ public class ImportManagerTest {
     MetricRegistry metrics = new MetricRegistry();
     final TestConfigs cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
-    manager = new ImportManager(cfg.importer, cfg.normalizer, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
+    manager = new ImportManager(cfg.importer, cfg.normalizer, metrics, hc, new EventBroker(new BrokerConfig()), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
       diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
     manager.start();
   }

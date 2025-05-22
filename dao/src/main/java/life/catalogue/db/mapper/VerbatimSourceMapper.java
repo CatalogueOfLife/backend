@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Mapper that manages the verbatim_source and verbatim_source_secondary tables.

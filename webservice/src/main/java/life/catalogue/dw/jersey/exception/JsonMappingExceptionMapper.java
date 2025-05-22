@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * Converts a JsonMappingException into a http 400 bad request.

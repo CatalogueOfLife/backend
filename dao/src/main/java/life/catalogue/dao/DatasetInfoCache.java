@@ -1,6 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.Subscribe;
 
 /**
  * Cache for Immutable dataset infos that is loaded on demand and never release as the data is immutable
@@ -29,7 +29,7 @@ import com.google.common.eventbus.Subscribe;
  * unless an optional allowDeleted parameter is given as true.
  * We use the GuavaBus to listen to newly deleted datasets.
  */
-public class DatasetInfoCache {
+public class DatasetInfoCache implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetInfoCache.class);
 
   private SqlSessionFactory factory;
@@ -203,7 +203,7 @@ public class DatasetInfoCache {
     return infos.size();
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var info = get(event.key, true);

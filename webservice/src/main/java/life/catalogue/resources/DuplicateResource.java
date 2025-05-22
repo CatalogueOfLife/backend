@@ -5,10 +5,12 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ResultPage;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DuplicateDao;
-import life.catalogue.dw.jersey.filter.CacheControlResponseFilter;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import jakarta.validation.Valid;
 import jakarta.ws.rs.BeanParam;
@@ -18,9 +20,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Path("/dataset/{key}/duplicate")
 @Produces(MediaType.APPLICATION_JSON)

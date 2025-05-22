@@ -1,7 +1,5 @@
 package life.catalogue.feedback;
 
-import java.security.GeneralSecurityException;
-
 import org.springframework.security.crypto.encrypt.Encryptors;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 

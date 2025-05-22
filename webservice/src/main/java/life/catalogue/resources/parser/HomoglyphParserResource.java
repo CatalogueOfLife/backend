@@ -5,12 +5,12 @@ import org.gbif.nameparser.util.UnicodeUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/parser/homoglyph")
 @Produces(MediaType.APPLICATION_JSON)

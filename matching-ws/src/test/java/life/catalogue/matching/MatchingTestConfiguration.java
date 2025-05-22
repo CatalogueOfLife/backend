@@ -13,15 +13,6 @@
  */
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
@@ -32,17 +23,34 @@ import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
 import life.catalogue.matching.util.IOUtils;
-
 import life.catalogue.matching.util.NameParsers;
-import org.apache.lucene.store.Directory;
 
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.NameParser;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.UnparsableNameException;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.lucene.store.Directory;
 import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /** Guice module setting up all dependencies to expose the NubMatching service. */
 @Configuration

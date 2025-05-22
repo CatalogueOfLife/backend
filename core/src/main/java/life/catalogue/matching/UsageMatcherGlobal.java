@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import com.google.common.base.Supplier;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -15,9 +13,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
-
 import life.catalogue.matching.authorship.AuthorComparator;
-
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
@@ -38,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,

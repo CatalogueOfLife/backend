@@ -11,7 +11,8 @@ import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.auth.map.MapAuthenticationFactory;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
-import life.catalogue.dw.health.*;
+import life.catalogue.dw.health.EsHealthCheck;
+import life.catalogue.dw.health.NameParserHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -200,7 +201,7 @@ public class WsROServer extends Application<WsServerConfig> {
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient),
       ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, null, validator
     );
-    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), null, validator);
+    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());

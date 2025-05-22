@@ -12,20 +12,20 @@ import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
+import life.catalogue.event.EventBroker;
 
 import java.util.Objects;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
@@ -68,7 +68,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     // setup
     doiService = new DataCiteService(cfg.doi, jerseyClient);
     Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-    UserDao udao = new UserDao(factory, cfg.mail, null, new EventBus(), validator);
+    UserDao udao = new UserDao(factory, cfg.mail, null, new EventBroker(cfg.broker), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
     try (SqlSession session = factory.openSession(true)) {

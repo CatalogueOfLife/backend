@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 
-import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;

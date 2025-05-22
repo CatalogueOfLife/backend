@@ -1,11 +1,9 @@
 package life.catalogue.pgcopy;
 
-import org.junit.Rule;
-import org.junit.Test;
-
 import java.sql.SQLException;
 
-import static org.junit.Assert.*;
+import org.junit.Rule;
+import org.junit.Test;
 
 public class PgRuleTest {
 

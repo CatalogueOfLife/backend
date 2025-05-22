@@ -1,10 +1,10 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.common.io.TempFile;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.es.EsConfig;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsReadWriteTestBase;
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import java.io.IOException;
 

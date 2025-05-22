@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
-import org.apache.commons.collections4.IteratorUtils;
-
 /**
  * Collection related methods. In order to prevent and pre-empt subtle logical errors, all "Venn-diagram methods" (like
  * firstIsSubsetOfSecond) simply and consistently require all arguments to be non-empty. Equivalent but inverse methods (like

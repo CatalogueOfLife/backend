@@ -1,6 +1,21 @@
 package life.catalogue.matching.service;
 
-import static life.catalogue.matching.util.IndexConstants.*;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.ReleaseAttempt;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.db.DatasetMapper;
+import life.catalogue.matching.index.ScientificNameAnalyzer;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
+import life.catalogue.matching.util.NameParsers;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.UnparsableNameException;
+import org.gbif.nameparser.util.NameFormatter;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
@@ -11,30 +26,18 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.CSVWriterBuilder;
-import com.opencsv.ICSVWriter;
-import com.opencsv.bean.*;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ReleaseAttempt;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.model.*;
-import life.catalogue.matching.db.DatasetMapper;
-import life.catalogue.matching.index.ScientificNameAnalyzer;
-import life.catalogue.matching.util.IOUtil;
-import life.catalogue.matching.util.NameParsers;
-import lombok.extern.slf4j.Slf4j;
+
+import javax.sql.DataSource;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -51,18 +54,26 @@ import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.api.UnparsableNameException;
-import org.gbif.nameparser.util.NameFormatter;
 import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import lombok.extern.slf4j.Slf4j;
+
+import static life.catalogue.matching.util.IndexConstants.*;
 
 /**
  * Service to index a dataset from the Checklist Bank.

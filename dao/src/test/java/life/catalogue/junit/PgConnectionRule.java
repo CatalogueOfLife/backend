@@ -2,9 +2,6 @@ package life.catalogue.junit;
 
 import life.catalogue.db.PgConfig;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zaxxer.hikari.HikariDataSource;
 
 /**

@@ -4,29 +4,28 @@ import life.catalogue.api.event.UserPermissionChanged;
 import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.event.EventBroker;
 
 import java.util.List;
 import java.util.function.Consumer;
-
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.EventBus;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response;
 
 public class AuthorizationDao {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(AuthorizationDao.class);
 
-  private final EventBus bus;
+  private final EventBroker bus;
   private final SqlSessionFactory factory;
 
-  public AuthorizationDao(SqlSessionFactory factory, EventBus bus) {
+  public AuthorizationDao(SqlSessionFactory factory, EventBroker bus) {
     this.factory = factory;
     this.bus = bus;
   }
@@ -79,7 +78,7 @@ public class AuthorizationDao {
       action.accept(session.getMapper(DatasetMapper.class));
       session.commit();
     }
-    bus.post(new UserPermissionChanged(user.getUsername()));
+    bus.publish().userPermissionChanged(new UserPermissionChanged(user.getUsername()));
   }
 
 }

@@ -7,20 +7,16 @@ import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.UsageIdGen;
 
 import java.util.*;
 
-import life.catalogue.release.UsageIdGen;
-
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);

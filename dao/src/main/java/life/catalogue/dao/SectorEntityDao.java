@@ -1,22 +1,23 @@
 package life.catalogue.dao;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetScopedEntity;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SectorScoped;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.mapper.SectorMapper;
 
 import java.util.UUID;
 
-import jakarta.validation.Validator;
-
-import life.catalogue.db.DatasetProcessable;
-
-import life.catalogue.db.mapper.SectorMapper;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
+
+import jakarta.validation.Validator;
 
 public class SectorEntityDao<T extends DatasetScopedEntity<String> & SectorScoped, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>>
   extends DatasetEntityDao<String, T, M> {

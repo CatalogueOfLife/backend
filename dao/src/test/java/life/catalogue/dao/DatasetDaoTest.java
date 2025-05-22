@@ -13,10 +13,12 @@ import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 
 import java.net.URI;
@@ -27,8 +29,6 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.google.common.eventbus.EventBus;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +41,7 @@ public class DatasetDaoTest extends DaoTestBase {
   public void init() {
     DatasetImportDao diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     JobConfig cfg = new JobConfig();
-    DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), new EventBus(), validator);
+    DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), validator);
     dao = new DatasetDao(factory(),
       new NormalizerConfig(), new ReleaseConfig(), iCfg, new GbifConfig(),
       null,
@@ -49,7 +49,7 @@ public class DatasetDaoTest extends DaoTestBase {
       diDao, exDao,
       NameUsageIndexService.passThru(),
       null,
-      new EventBus(),
+      new EventBroker(new BrokerConfig()),
       validator
     );
   }

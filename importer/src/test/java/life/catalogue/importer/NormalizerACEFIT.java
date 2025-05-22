@@ -7,7 +7,6 @@ import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
-
 import life.catalogue.parser.NameParser;
 
 import org.gbif.dwc.terms.AcefTerm;

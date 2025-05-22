@@ -22,6 +22,7 @@ import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
@@ -47,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -86,14 +86,14 @@ public class AdminResource {
   private final NameIndex namesIndex;
   private final JobExecutor exec;
   private final ManagedService componedService;
-  private final EventBus bus;
+  private final EventBroker bus;
   private final LatestDatasetKeyCache lrCache;
   private final EmailEncryption encryption;
 
   public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, Validator validator, EventBus bus, EmailEncryption encryption) {
+                       JobExecutor executor, IdMap idMap, Validator validator, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;

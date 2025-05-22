@@ -1,26 +1,20 @@
 package life.catalogue.printer;
 
-import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import org.gbif.nameparser.api.Rank;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
-import java.util.Set;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
 
 public class DwcTreePrinterTest {
 

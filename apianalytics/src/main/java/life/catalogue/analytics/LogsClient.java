@@ -3,6 +3,12 @@ package life.catalogue.analytics;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.EsConfig;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.elasticsearch.ElasticsearchStatusException;
 import org.elasticsearch.action.admin.cluster.storedscripts.GetStoredScriptRequest;
 import org.elasticsearch.action.admin.cluster.storedscripts.PutStoredScriptRequest;
@@ -25,14 +31,6 @@ import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-
-import java.io.Closeable;
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 
 import static life.catalogue.analytics.EsConstants.*;
 

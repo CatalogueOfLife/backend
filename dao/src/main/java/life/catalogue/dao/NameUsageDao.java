@@ -3,21 +3,26 @@ package life.catalogue.dao;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.*;
-import life.catalogue.db.*;
-import life.catalogue.db.mapper.*;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.db.CRUD;
+import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
+
+import org.gbif.nameparser.api.NameType;
+
+import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.nameparser.api.NameType;
-
 import jakarta.validation.Validator;
-
-import java.util.*;
 
 abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends SectorEntityDao<T, M> {
   protected final NameUsageIndexService indexService;

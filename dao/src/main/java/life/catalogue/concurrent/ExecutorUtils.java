@@ -19,9 +19,13 @@ public class ExecutorUtils {
    * @return an already started non daemon thread running the given task
    */
   public static Thread runInNewThread(Runnable task) {
+    return runInNewThread(task, task.getClass().getSimpleName() + "-Runner");
+  }
+
+  public static Thread runInNewThread(Runnable task, String threadName) {
     return runInNewThread(task, (r) -> {
       Thread t = new Thread(r);
-      t.setName(task.getClass().getSimpleName() + "-Runner");
+      t.setName(threadName);
       t.setDaemon(false);
       t.setPriority(Thread.NORM_PRIORITY);
       return t;

@@ -4,7 +4,6 @@ import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
-
 import life.catalogue.parser.GeoTimeParser;
 import life.catalogue.parser.SafeParser;
 

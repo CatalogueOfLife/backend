@@ -1,14 +1,17 @@
 package life.catalogue.matching.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.gbif.nameparser.api.Rank;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * Version 1 of the name usage match response object. This is the flattered version of the NameUsageMatch object.

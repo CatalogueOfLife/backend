@@ -12,14 +12,14 @@ import life.catalogue.db.PgUtils;
 
 import java.util.List;
 
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
-
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 
 /**
  * Generic CRUD DAO for keyed entities

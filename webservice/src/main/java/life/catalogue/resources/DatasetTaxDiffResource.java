@@ -1,23 +1,20 @@
 package life.catalogue.resources;
 
-import com.github.dockerjava.api.DockerClient;
-
-import com.google.common.base.Preconditions;
-
-import io.dropwizard.auth.Auth;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.User;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.matching.TaxonomicAlignJob;
 
+import java.io.IOException;
+
 import org.apache.ibatis.session.SqlSessionFactory;
 
+import com.github.dockerjava.api.DockerClient;
+
+import io.dropwizard.auth.Auth;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-
-import java.io.IOException;
 
 @Path("/dataset/{key}/taxalign")
 @SuppressWarnings("static-method")

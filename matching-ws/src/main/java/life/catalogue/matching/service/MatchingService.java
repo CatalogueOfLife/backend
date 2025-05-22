@@ -1,7 +1,5 @@
 package life.catalogue.matching.service;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
@@ -22,7 +20,8 @@ import life.catalogue.matching.util.NameParsers;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.RankUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -35,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ComparisonChain;

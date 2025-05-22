@@ -8,13 +8,17 @@ import life.catalogue.dao.TaxonCounter;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 

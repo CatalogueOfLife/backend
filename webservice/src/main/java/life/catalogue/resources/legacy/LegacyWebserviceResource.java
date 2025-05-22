@@ -17,12 +17,6 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import java.net.URI;
 import java.util.List;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -32,6 +26,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 

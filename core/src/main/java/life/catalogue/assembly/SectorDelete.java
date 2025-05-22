@@ -1,6 +1,9 @@
 package life.catalogue.assembly;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.Sector;
+import life.catalogue.api.model.SimpleName;
+import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
@@ -11,6 +14,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
@@ -25,8 +29,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.EventBus;
-
 /**
  * Deletes a sector but keeps its imports so we can still show historical releases properly which access the sync history of projects.
  * A sector deletion keeps synced data of rank genus or above by default!
@@ -37,7 +39,7 @@ public class SectorDelete extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDelete.class);
   private Rank cutoffRank = Rank.GENUS;
 
-  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
+  SectorDelete(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
                Consumer<SectorRunnable> successCallback,
                BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
     super(sectorKey, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, false, user);

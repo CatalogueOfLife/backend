@@ -1,9 +1,5 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.bibtex.BibTeXConverter;
-import de.undercouch.citeproc.csl.CSLDate;
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 
@@ -12,10 +8,14 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import de.undercouch.citeproc.bibtex.BibTeXConverter;
+import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
+import de.undercouch.citeproc.csl.CSLType;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class CslDataConverterTest {
   @Test

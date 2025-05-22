@@ -1,11 +1,8 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.NameUsageArchiver;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 

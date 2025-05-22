@@ -3,11 +3,11 @@ package life.catalogue.doi.service;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.google.common.io.BaseEncoding;
+
 import jakarta.ws.rs.client.ClientRequestContext;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import jakarta.ws.rs.core.MultivaluedMap;
-
-import com.google.common.io.BaseEncoding;
 
 public class BasicAuthenticator implements ClientRequestFilter {
 

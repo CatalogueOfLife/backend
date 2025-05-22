@@ -1,9 +1,8 @@
 package life.catalogue.img;
 
-import com.google.common.eventbus.EventBus;
-
-import life.catalogue.api.event.FlushDatasetCache;
+import life.catalogue.api.event.DatasetLogoChanged;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.event.EventBroker;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -15,8 +14,6 @@ import java.util.function.Function;
 
 import javax.imageio.ImageIO;
 
-import life.catalogue.cache.VarnishUtils;
-
 import org.apache.commons.io.FileUtils;
 import org.imgscalr.Scalr;
 import org.slf4j.Logger;
@@ -27,9 +24,9 @@ public class ImageServiceFS implements ImageService {
   private static final Logger LOG = LoggerFactory.getLogger(ImageServiceFS.class);
   
   private final ImgConfig cfg;
-  private final EventBus bus;
+  private final EventBroker bus;
 
-  public ImageServiceFS(ImgConfig cfg, EventBus bus) {
+  public ImageServiceFS(ImgConfig cfg, EventBroker bus) {
     this.cfg = cfg;
     this.bus = bus;
   }
@@ -64,7 +61,7 @@ public class ImageServiceFS implements ImageService {
     LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);
     storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
     if (bus != null) {
-      bus.post(new FlushDatasetCache(datasetKey, true));
+      bus.publish().datasetLogoChanged(new DatasetLogoChanged(datasetKey));
     }
   }
 

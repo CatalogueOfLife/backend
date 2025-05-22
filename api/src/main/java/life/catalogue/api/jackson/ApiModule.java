@@ -1,7 +1,5 @@
 package life.catalogue.api.jackson;
 
-import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
-
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -32,6 +30,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.blackbird.BlackbirdModule;
 import com.google.common.collect.Lists;
 import com.google.common.reflect.ClassPath;
 

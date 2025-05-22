@@ -17,7 +17,6 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
-
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
 

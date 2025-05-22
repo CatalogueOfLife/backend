@@ -1,22 +1,29 @@
 package life.catalogue.matching.index;
 
-import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
-
-import com.google.common.annotations.VisibleForTesting;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import life.catalogue.matching.model.Classification;
 import life.catalogue.matching.model.LinneanClassification;
 import life.catalogue.matching.util.CleanupUtils;
 
-import org.apache.commons.lang3.StringUtils;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
 
 /**
  * Utilit class to construct a full scientific name with authorship and rank from various input parameters.

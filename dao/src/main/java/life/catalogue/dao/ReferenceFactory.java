@@ -14,6 +14,7 @@ import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.Term;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -23,9 +24,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.dwc.terms.Term;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

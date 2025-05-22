@@ -1,12 +1,14 @@
 package life.catalogue.matching.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import org.gbif.nameparser.api.Rank;
+
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+
 import static life.catalogue.matching.util.CleanupUtils.*;
-import static life.catalogue.matching.util.CleanupUtils.bool;
 
 @AllArgsConstructor
 @Builder

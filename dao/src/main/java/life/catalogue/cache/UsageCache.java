@@ -2,6 +2,7 @@ package life.catalogue.cache;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
@@ -16,12 +17,10 @@ import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 /**
  * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.
  */
-public interface UsageCache extends AutoCloseable, Managed {
+public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
   Logger LOG = LoggerFactory.getLogger(UsageCache.class);
 
 
@@ -40,15 +39,15 @@ public interface UsageCache extends AutoCloseable, Managed {
   @Override
   void close();
 
-  @Subscribe
+  @Override
   default void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       clear(event.key);
     }
   }
 
-  @Subscribe
-  default void dataChanged(DatasetDataChanged event){
+  @Override
+  default void datasetDataChanged(DatasetDataChanged event){
     clear(event.datasetKey);
   }
 

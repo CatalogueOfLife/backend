@@ -8,18 +8,17 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/reference")
 @Produces(MediaType.APPLICATION_JSON)

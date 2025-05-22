@@ -1,23 +1,13 @@
 package life.catalogue.resources;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.dao.NameDao;
-import life.catalogue.db.DatasetPageable;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.dw.auth.Roles;
+import life.catalogue.dw.jersey.filter.ProjectOnly;
 
 import java.util.List;
-
-import javax.annotation.Nullable;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-
-import life.catalogue.dw.jersey.filter.ProjectOnly;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -25,6 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.jsr310.LocalDateTimeParam;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/name")
 @Produces(MediaType.APPLICATION_JSON)

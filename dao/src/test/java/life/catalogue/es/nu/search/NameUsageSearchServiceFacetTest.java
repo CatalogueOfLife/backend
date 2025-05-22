@@ -8,7 +8,6 @@ import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.NameStrings;
-
 import life.catalogue.es.nu.NameUsageWrapperConverter;
 
 import org.gbif.nameparser.api.Rank;

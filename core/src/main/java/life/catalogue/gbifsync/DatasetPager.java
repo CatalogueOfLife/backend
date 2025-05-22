@@ -17,10 +17,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +27,10 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 /**

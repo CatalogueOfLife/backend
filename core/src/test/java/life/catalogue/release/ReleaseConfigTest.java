@@ -1,12 +1,10 @@
 package life.catalogue.release;
 
-import java.net.URI;
-
 import life.catalogue.api.vocab.DatasetType;
 
-import life.catalogue.config.ReleaseConfig;
-
 import org.gbif.nameparser.api.Rank;
+
+import java.net.URI;
 
 import org.junit.Test;
 

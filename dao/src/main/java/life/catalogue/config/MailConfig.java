@@ -4,10 +4,10 @@ package life.catalogue.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.simplejavamail.api.mailer.config.TransportStrategy;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
-import org.simplejavamail.api.mailer.config.TransportStrategy;
 
 public class MailConfig {
 

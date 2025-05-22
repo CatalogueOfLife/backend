@@ -1,9 +1,9 @@
 package life.catalogue.feedback;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.net.URI;
 import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
 
 public class GithubConfig {
 

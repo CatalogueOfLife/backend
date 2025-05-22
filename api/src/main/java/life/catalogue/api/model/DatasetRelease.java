@@ -1,10 +1,10 @@
 package life.catalogue.api.model;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.vocab.DatasetOrigin;
 
 import java.util.Objects;
+
+import com.google.common.base.Preconditions;
 
 public class DatasetRelease {
   private int key;

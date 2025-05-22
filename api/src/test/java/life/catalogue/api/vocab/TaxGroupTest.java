@@ -1,11 +1,8 @@
 package life.catalogue.api.vocab;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
+
+import org.junit.Test;
 
 import static life.catalogue.api.vocab.TaxGroup.*;
 import static org.junit.Assert.*;

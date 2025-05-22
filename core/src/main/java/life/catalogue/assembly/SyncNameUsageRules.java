@@ -7,15 +7,13 @@ import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NomCode;
-
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.nameparser.api.Rank;
 
+import java.util.List;
+
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 public class SyncNameUsageRules {
   private static final Logger LOG = LoggerFactory.getLogger(SyncNameUsageRules.class);

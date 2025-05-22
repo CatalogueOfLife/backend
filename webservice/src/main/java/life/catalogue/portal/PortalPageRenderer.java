@@ -1,8 +1,5 @@
 package life.catalogue.portal;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
@@ -17,7 +14,6 @@ import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.api.model.DatasetRelease;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.metadata.FmUtil;
 import life.catalogue.resources.ResourceUtils;
@@ -30,9 +26,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -43,6 +36,8 @@ import com.google.common.base.Preconditions;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static life.catalogue.api.util.ObjectUtils.checkFound;
 

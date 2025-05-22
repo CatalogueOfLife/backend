@@ -10,16 +10,15 @@ import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.decision.RematcherBase;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.dropwizard.auth.Auth;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.dropwizard.auth.Auth;
 
 @Path("/dataset/{key}/estimate")
 @Produces(MediaType.APPLICATION_JSON)

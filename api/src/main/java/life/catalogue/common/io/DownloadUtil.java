@@ -1,5 +1,7 @@
 package life.catalogue.common.io;
 
+import life.catalogue.common.date.DateUtils;
+
 import java.io.*;
 import java.net.URI;
 import java.time.Instant;
@@ -7,13 +9,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.time.temporal.TemporalAccessor;
-import java.util.Map;
-import java.util.Optional;
 import java.util.regex.Pattern;
-
-import life.catalogue.common.date.DateUtils;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;

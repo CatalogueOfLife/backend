@@ -6,10 +6,10 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.DatasetPartitionMapper;
 
 import org.gbif.nameparser.api.Rank;
 

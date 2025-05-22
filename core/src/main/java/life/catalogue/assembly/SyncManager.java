@@ -1,7 +1,9 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DeleteSector;
+import life.catalogue.api.event.SectorListener;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -38,9 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.eventbus.Subscribe;
 
-public class SyncManager implements Managed, Idle {
+public class SyncManager implements Managed, Idle, SectorListener, DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
   private static final String THREAD_NAME = "assembly-sync";
@@ -356,8 +357,8 @@ public class SyncManager implements Managed, Idle {
     return queued;
   }
 
-  @Subscribe
-  public void deleteSectorListener(DeleteSector event){
+  @Override
+  public void sectorDeleted(DeleteSector event){
     LOG.info("Trigger deletion of sector {} by user={}", event.key, event.user);
     var del = deleteSector(event.key, true, event.user);
     if (!del) {
@@ -365,8 +366,8 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
-  @Subscribe
-  public void datasetDeletedListener(DatasetChanged event){
+  @Override
+  public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var keys = syncs.keySet().stream()
                       .filter(k -> k.getDatasetKey().equals(event.key))

@@ -24,8 +24,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 
-import com.google.common.io.Files;
-
 import static org.junit.Assert.assertEquals;
 
 public class AcefExportTest extends ExportTest {

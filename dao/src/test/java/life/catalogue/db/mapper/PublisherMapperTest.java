@@ -2,17 +2,13 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.Publisher;
-
 import life.catalogue.api.vocab.Users;
-
 import life.catalogue.common.text.StringUtils;
-
-import org.junit.Test;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
 
 public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, PublisherMapper>{
   String KEY = StringUtils.removeLast(UUID.randomUUID().toString(),3);

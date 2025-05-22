@@ -6,12 +6,12 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.SectorSyncIT;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 

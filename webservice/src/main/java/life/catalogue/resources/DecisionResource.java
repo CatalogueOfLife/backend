@@ -11,14 +11,7 @@ import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
 import life.catalogue.matching.decision.RematcherBase;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -27,6 +20,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Preconditions;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/dataset/{key}/decision")
 @Produces(MediaType.APPLICATION_JSON)

@@ -12,9 +12,7 @@ import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.HttpUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
 import life.catalogue.doi.DoiUpdater;
@@ -39,6 +37,7 @@ import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.feedback.FeedbackService;
@@ -65,14 +64,13 @@ import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.legacy.IdMap;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
-import life.catalogue.resources.parser.*;
+import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -93,8 +91,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.client.DropwizardApacheConnector;
 import io.dropwizard.client.JerseyClientBuilder;
@@ -114,9 +110,6 @@ public class WsServer extends Application<WsServerConfig> {
   private final MybatisBundle mybatis = new MybatisBundle();
   private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
-  private final EventBus bus = new AsyncEventBus("server-bus",
-    ExecutorUtils.newCachedThreadPool(3, 25, new NamedThreadFactory("bus"))
-  );
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndex ni;
@@ -186,10 +179,6 @@ public class WsServer extends Application<WsServerConfig> {
     return auth;
   }
 
-  public EventBus getBus() {
-    return bus;
-  }
-
   public NameIndex getNamesIndex() {
     return ni;
   }
@@ -247,10 +236,13 @@ public class WsServer extends Application<WsServerConfig> {
 
     HttpUtils http = new HttpUtils();
 
+    // event broker
+    var broker = new EventBroker(cfg.broker);
+
     // validation
     var validator = env.getValidator();
 
-    UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), bus, validator);
+    UserDao udao = new UserDao(getSqlSessionFactory(), cfg.mail, mail.getMailer(), broker, validator);
 
     // job executor
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
@@ -301,7 +293,7 @@ public class WsServer extends Application<WsServerConfig> {
     env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
 
     // images
-    final ImageService imgService = new ImageServiceFS(cfg.img, bus);
+    final ImageService imgService = new ImageServiceFS(cfg.img, broker);
 
     // name index
     if (cfg.namesIndex.file != null) {
@@ -334,15 +326,15 @@ public class WsServer extends Application<WsServerConfig> {
 
     // daos
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
-    AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), bus);
-    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), bus, validator);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, bus, validator);
+    AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), broker);
+    DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), bus, validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
@@ -376,7 +368,7 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, bus);
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, broker);
     final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
@@ -386,7 +378,7 @@ public class WsServer extends Application<WsServerConfig> {
     importManager = new ImportManager(cfg.importer, cfg.normalizer,
       env.metrics(),
       httpClient,
-      bus,
+      broker,
       getSqlSessionFactory(),
       ni,
       diDao, ddao, secdao, decdao,
@@ -432,7 +424,7 @@ public class WsServer extends Application<WsServerConfig> {
     // admin resources
     j.register(new AdminResource(
       getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
-      importManager, ddao, gbifSync, executor, idMap, validator, bus, encryption)
+      importManager, ddao, gbifSync, executor, idMap, validator, broker, encryption)
     );
 
     // dataset scoped
@@ -467,19 +459,21 @@ public class WsServer extends Application<WsServerConfig> {
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
 
-    // attach listeners to event bus
-    bus.register(auth);
-    bus.register(coljersey);
-    bus.register(DatasetInfoCache.CACHE);
+    // attach listeners to event broker
+    broker.register(auth);
+    broker.register(coljersey);
+    broker.register(DatasetInfoCache.CACHE);
     if (cfg.apiURI != null) {
-      bus.register(new CacheFlush(httpClient, cfg.apiURI));
+      broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    bus.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
-    bus.register(doiUpdater);
-    bus.register(uCache);
-    bus.register(exportManager);
-    bus.register(syncManager);
-    bus.register(importManager);
+    broker.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
+    broker.register(doiUpdater);
+    broker.register(uCache);
+    broker.register(exportManager);
+    broker.register(syncManager);
+    broker.register(importManager);
+    // startup broker, poll from queue
+    env.lifecycle().manage(ManagedUtils.from(broker));
   }
 
   @Override

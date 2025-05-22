@@ -17,6 +17,7 @@ import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.Collections;
 import java.util.List;
@@ -26,8 +27,6 @@ import java.util.function.Function;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
-
-import org.gbif.nameparser.api.Rank;
 
 import static life.catalogue.parser.SafeParser.parse;
 

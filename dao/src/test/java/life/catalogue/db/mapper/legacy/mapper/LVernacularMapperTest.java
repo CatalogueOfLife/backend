@@ -1,11 +1,11 @@
 package life.catalogue.db.mapper.legacy.mapper;
 
 import life.catalogue.db.LookupTables;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.MapperTestBase;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LCommonName;
 import life.catalogue.db.mapper.legacy.model.LName;
+import life.catalogue.junit.TestDataRule;
 
 import java.io.IOException;
 import java.sql.SQLException;
