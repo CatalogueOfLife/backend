@@ -23,7 +23,12 @@ public class ClearCachesTask extends Task {
   @Override
   public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
     auth.flushCache();
+    output.println("flushed auth cache.");
+
     DatasetInfoCache.CACHE.clear();
+    output.println("flushed dataset info cache.");
+
     ldk.clear();
+    output.println("flushed latest dataset key cache.");
   }
 }
