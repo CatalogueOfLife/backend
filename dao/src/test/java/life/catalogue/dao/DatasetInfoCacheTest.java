@@ -5,6 +5,8 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -42,23 +44,32 @@ public class DatasetInfoCacheTest {
 
   @Test
   public void deletedEvent() throws InterruptedException {
-    EventBus bus = new EventBus();
-    bus.register(DatasetInfoCache.CACHE);
+    EventBroker bus = new EventBroker(new BrokerConfig());
+    try {
+      bus.register(DatasetInfoCache.CACHE);
+      bus.start();
 
-    var info = DatasetInfoCache.CACHE.info(3);
-    assertFalse(info.deleted);
+      var info = DatasetInfoCache.CACHE.info(3);
+      assertFalse(info.deleted);
 
-    Dataset d;
-    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      d = session.getMapper(DatasetMapper.class).get(3);
+      Dataset d;
+      try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
+        d = session.getMapper(DatasetMapper.class).get(3);
+      }
+
+      bus.publish().datasetChanged(DatasetChanged.created(d, 1));
+      info = DatasetInfoCache.CACHE.info(3);
+      assertFalse(info.deleted);
+
+      bus.publish().datasetChanged(DatasetChanged.deleted(d, 1));
+      TimeUnit.MILLISECONDS.sleep(110); // give the event a little bit of time
+      bus.dumpQueue();
+
+      info = DatasetInfoCache.CACHE.info(3, true);
+      assertTrue(info.deleted);
+
+    } finally {
+      bus.stop();
     }
 
-    bus.post(DatasetChanged.created(d, 1));
-    info = DatasetInfoCache.CACHE.info(3);
-    assertFalse(info.deleted);
-
-    bus.post(DatasetChanged.deleted(d, 1));
-    TimeUnit.MILLISECONDS.sleep(10); // give the event a little bit of time
-    info = DatasetInfoCache.CACHE.info(3, true);
-    assertTrue(info.deleted);
   }}

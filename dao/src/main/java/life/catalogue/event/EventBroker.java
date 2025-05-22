@@ -136,7 +136,7 @@ public class EventBroker implements Managed {
         // If no message was available, pause for a short time to avoid busy-waiting
         if (!reader.readOne()) {
           try {
-            Thread.sleep(100);
+            Thread.sleep(10);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             break;
