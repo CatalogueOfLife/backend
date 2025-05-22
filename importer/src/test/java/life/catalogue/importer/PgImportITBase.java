@@ -36,7 +36,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
 
 import jakarta.validation.Validation;
@@ -60,7 +59,6 @@ public class PgImportITBase {
   TaxonDao tdao;
   NameDao ndao;
   ReferenceDao rdao;
-  EventBus bus = new EventBus();
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   NameUsageIndexService indexService = NameUsageIndexService.passThru();
 
