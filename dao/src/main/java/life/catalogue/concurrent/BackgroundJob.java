@@ -182,6 +182,7 @@ public abstract class BackgroundJob implements Runnable {
       var marker = logToFile ? LoggingUtils.END_JOB_LOG_MARKER : null;
       LOG.info(marker, "About to end {} {}", getJobName(), key);
       onLogAppenderClose();
+      LoggingUtils.removeJobMDC();
       MDC.clear();
     }
   }

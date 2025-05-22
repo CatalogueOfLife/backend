@@ -58,11 +58,9 @@ public class IndexJob extends BackgroundJob {
     try {
       if (req.getDatasetKey() != null) {
         if (req.getSectorKey() != null) {
-          LoggingUtils.setSectorAndDatasetMDC(req.getSectorKeyAsDSID(), null, getClass());
           LOG.info("Reindex sector {} by {}", req.getSectorKeyAsDSID(), getUserKey());
           indexService.indexSector(req.getSectorKeyAsDSID());
         } else {
-          LoggingUtils.setDatasetMDC(req.getDatasetKey(), getClass());
           LOG.info("Reindex dataset {} by {}", req.getDatasetKey(), getUserKey());
           indexService.indexDataset(req.getDatasetKey());
         }

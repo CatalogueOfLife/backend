@@ -76,7 +76,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, true), exec)
+      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, true), exec)
         .exceptionally(ex -> {
           counter.incrementAndGet();
           LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
@@ -123,17 +123,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
-  private Stats indexDatasetWithMDC(int datasetKey, boolean clearIndex) {
-    try {
-      LoggingUtils.setDatasetMDC(datasetKey, getClass());
-      var stats = indexDatasetInternal(datasetKey, clearIndex);
-      return stats;
-    } finally {
-      LoggingUtils.removeDatasetMDC();
-    }
-  }
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     try {
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
       Stats stats = new Stats();
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       if (clearIndex) {
@@ -163,22 +155,32 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
     } catch (IOException e) {
       throw new EsException(e);
+
+    } finally {
+      LoggingUtils.removeDatasetMDC();
     }
   }
 
   @Override
   public int deleteDataset(int datasetKey) {
-    LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
-    int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
-    LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    return cnt;
+    try {
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
+      int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
+      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      return cnt;
+
+    } finally {
+      LoggingUtils.removeDatasetMDC();
+    }
   }
 
   @Override
   public Stats indexSector(DSID<Integer> sectorKey) {
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
+      LoggingUtils.setSectorMDC(sectorKey, null);
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) throw NotFoundException.notFound(Sector.class, sectorKey);
 
@@ -199,28 +201,42 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
 
+      LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+        sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
+      return stats;
+
     } catch (IOException e) {
       throw new EsException(e);
-    }
 
-    LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-      sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
-    return stats;
+    } finally {
+      LoggingUtils.removeSectorMDC();
+    }
   }
 
   @Override
   public void deleteSector(DSID<Integer> sectorKey) {
-    int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
-    LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+    try {
+      LoggingUtils.setSectorMDC(sectorKey, null);
+      int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
+      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+
+    } finally {
+      LoggingUtils.removeSectorMDC();
+    }
   }
 
   @Override
   public int deleteBareNames(int datasetKey) {
-    int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
-    LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    return cnt;
+    try {
+      LoggingUtils.setDatasetMDC(datasetKey, null);
+      int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
+      LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      return cnt;
+    } finally {
+      LoggingUtils.removeDatasetMDC();
+    }
   }
 
   @Override

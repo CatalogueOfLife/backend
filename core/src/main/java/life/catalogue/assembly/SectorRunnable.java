@@ -128,6 +128,8 @@ abstract class SectorRunnable implements Runnable {
   @Override
   public void run() {
     try {
+      LoggingUtils.setSourceMDC(subjectDatasetKey);
+      LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
       state.setStarted(LocalDateTime.now());
       state.setState( ImportState.PREPARING);
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
