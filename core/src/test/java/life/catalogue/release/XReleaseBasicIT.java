@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
@@ -74,7 +75,7 @@ public class XReleaseBasicIT {
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
     provider = new IdProvider(projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
 
-    EventBroker bus = mock(EventBroker.class);
+    EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
