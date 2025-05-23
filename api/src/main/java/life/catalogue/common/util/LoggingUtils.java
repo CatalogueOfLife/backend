@@ -8,6 +8,8 @@ import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import javax.annotation.Nullable;
+
 public class LoggingUtils {
 
   /**
@@ -44,19 +46,26 @@ public class LoggingUtils {
   /**
    * Sets the dataset key in MDC if it does not exist yet.
    */
+  public static void setDatasetMDC(int datasetKey) {
+    MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
+  }
+
   public static void setDatasetMDC(int datasetKey, Class<?> source) {
     MDC.put(MDC_KEY_DATASET_TASK, source.getSimpleName());
     MDC.put(MDC_KEY_DATASET, String.valueOf(datasetKey));
   }
 
-  public static void setSectorMDC(DSID<Integer> sectorKey, Integer attempt) {
+  public static void setSectorMDC(DSID<Integer> sectorKey) {
     MDC.put(MDC_KEY_SECTOR, String.valueOf(sectorKey.getId()));
+  }
+  public static void setSectorMDC(DSID<Integer> sectorKey, Integer attempt) {
+    setSectorMDC(sectorKey);
     if (attempt != null) {
       MDC.put(MDC_KEY_ATTEMPT, String.valueOf(attempt));
     }
   }
 
-  public static void setSectorAndDatasetMDC(DSID<Integer> sectorKey, Integer attempt, Class<?> source) {
+  public static void setSectorAndDatasetMDC(DSID<Integer> sectorKey, @Nullable Integer attempt, Class<?> source) {
     setDatasetMDC(sectorKey.getDatasetKey(), source);
     setSectorMDC(sectorKey, attempt);
   }
