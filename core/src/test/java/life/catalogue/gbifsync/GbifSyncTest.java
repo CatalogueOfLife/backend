@@ -1,5 +1,6 @@
 package life.catalogue.gbifsync;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
@@ -60,7 +61,7 @@ public class GbifSyncTest {
 
   @Before
   public void initTest() {
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator, TestUtils.mockedBroker());
   }
 
   @Test

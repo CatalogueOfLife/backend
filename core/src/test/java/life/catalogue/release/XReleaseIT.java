@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncMergeIT;
@@ -149,12 +150,15 @@ public class XReleaseIT extends SectorSyncTestBase {
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     var matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBroker(new BrokerConfig()));
+    var broker = TestUtils.mockedBroker();
+    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao,
+      NameUsageIndexService.passThru(), broker
+    );
     var cfg = TestConfigs.build();
 
     hc = HttpClientBuilder.create().build();
     var du = new DownloadUtil(hc);
-    var dDao = new DatasetDao(factory, du, diDao, validator);
+    var dDao = new DatasetDao(factory, du, diDao, validator, broker);
     var rDao = mock(ReferenceDao.class);
     var exportManager = mock(ExportManager.class);
     var doiService = mock(DoiService.class);

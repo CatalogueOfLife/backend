@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -53,7 +54,6 @@ public class PgImportITBase {
   ImporterConfig icfg = new ImporterConfig();
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
-  boolean fullInit = true;
   DatasetDao ddao;
   SynonymDao sdao;
   TaxonDao tdao;
@@ -86,7 +86,7 @@ public class PgImportITBase {
     ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, null, indexService, null, validator);
     rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator, TestUtils.mockedBroker());
   }
   
   @After

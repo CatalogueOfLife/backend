@@ -1,5 +1,6 @@
 package life.catalogue.portal;
 
+import life.catalogue.TestUtils;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetDao;
@@ -78,7 +79,7 @@ public class PortalPageRendererIT {
 
   @Before
   public void init() throws IOException {
-    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
+    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null, TestUtils.mockedBroker());
     var srcDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
     var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
     var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null, null, null);

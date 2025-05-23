@@ -1,5 +1,6 @@
 package life.catalogue.dao;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.exception.NotUniqueException;
 import life.catalogue.api.model.CitationTest;
 import life.catalogue.api.model.DOI;
@@ -49,7 +50,7 @@ public class DatasetDaoTest extends DaoTestBase {
       diDao, exDao,
       NameUsageIndexService.passThru(),
       null,
-      new EventBroker(new BrokerConfig()),
+      TestUtils.mockedBroker(),
       validator
     );
   }

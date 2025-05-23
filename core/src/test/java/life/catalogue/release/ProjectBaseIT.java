@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.DatasetDao;
@@ -30,6 +31,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class ProjectBaseIT {
   
@@ -56,7 +58,7 @@ public abstract class ProjectBaseIT {
     TestConfigs cfg = TestConfigs.build();
     cfg.apiURI = null;
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
-    EventBroker bus = mock(EventBroker.class);
+    EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);

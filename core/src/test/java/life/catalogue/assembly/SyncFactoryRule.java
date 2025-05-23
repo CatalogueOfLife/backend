@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.TestUtils;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
 import life.catalogue.es.NameUsageIndexService;
@@ -48,7 +49,7 @@ public class SyncFactoryRule extends ExternalResource {
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBroker(new BrokerConfig()));
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
   }
 
   public static SyncFactory getFactory() {

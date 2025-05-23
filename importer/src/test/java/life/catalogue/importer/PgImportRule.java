@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -156,7 +157,7 @@ public class PgImportRule extends ExternalResource {
   public void before() throws Throwable {
     LOG.info("run PgImportRule with {} datasets{}", datasets.length, colImportSource==null ? "" : " and import COL from " + colImportSource.second());
     super.before();
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator, TestUtils.mockedBroker());
 
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();

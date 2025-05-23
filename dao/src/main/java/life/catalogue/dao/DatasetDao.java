@@ -127,8 +127,8 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
    */
   @VisibleForTesting
-  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBroker(new BrokerConfig()), validator);
+  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator, EventBroker broker) {
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
   }
 
   public Dataset get(UUID gbifKey) {

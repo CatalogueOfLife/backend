@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.YamlUtils;
@@ -348,7 +349,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     if (decRes != null) {
       LOG.info("Test project {} again with decisions!", project);
       // reset project
-      DatasetDao ddao = new DatasetDao(null, null, null, null);
+      DatasetDao ddao = new DatasetDao(null, null, null, null, TestUtils.mockedBroker());
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(false)) {
         ddao.deleteData(Datasets.COL, session);
         session.commit();
