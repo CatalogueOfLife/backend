@@ -30,6 +30,7 @@ import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
+import life.catalogue.dw.tasks.EventQueueTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -328,7 +329,9 @@ public class WsServer extends Application<WsServerConfig> {
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), broker);
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator);
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif,
+      new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator
+    );
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
     DecisionDao decdao = new DecisionDao(getSqlSessionFactory(), indexService, validator);
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
@@ -458,6 +461,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
+    env.admin().addTask(new EventQueueTask(broker));
 
     // attach listeners to event broker
     broker.register(auth);

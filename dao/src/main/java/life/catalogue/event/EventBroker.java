@@ -4,6 +4,7 @@ import life.catalogue.api.event.*;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,10 @@ public class EventBroker implements Managed {
       throw new IllegalStateException("EventBroker is already running");
     }
     listeners.add(listener);
+  }
+
+  public void dumpQueue(Writer writer) {
+    queue.dump(writer, -1, Long.MAX_VALUE);
   }
 
   public void dumpQueue() {

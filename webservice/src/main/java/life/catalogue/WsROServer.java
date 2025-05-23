@@ -2,6 +2,7 @@ package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.cache.CacheFlush;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
@@ -19,12 +20,14 @@ import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
+import life.catalogue.dw.tasks.EventQueueTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.es.nu.search.NameUsageSearchServiceEs;
 import life.catalogue.es.nu.suggest.NameUsageSuggestionServiceEs;
+import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -33,6 +36,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
+import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.*;
 
@@ -160,6 +164,9 @@ public class WsROServer extends Application<WsServerConfig> {
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
+    // event broker
+    var broker = new EventBroker(cfg.broker);
+
     // validation
     var validator = env.getValidator();
 
@@ -199,7 +206,7 @@ public class WsROServer extends Application<WsServerConfig> {
     final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, new DownloadUtil(httpClient),
-      ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, null, validator
+      ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, broker, validator
     );
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
@@ -208,7 +215,7 @@ public class WsROServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), null, validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
@@ -219,14 +226,10 @@ public class WsROServer extends Application<WsServerConfig> {
     UserCrudDao uDao = new UserCrudDao(getSqlSessionFactory(), validator);
 
     // images
-    final ImageService imgService = new ImageServiceFS(cfg.img, null);
+    final ImageService imgService = new ImageServiceFS(cfg.img, broker);
 
     // portal html page renderer
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
-
-    // usage cache
-    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
-    managedService.manage(Component.UsageCache, uCache);
 
     // job executor
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), null, uDao);
@@ -240,6 +243,14 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
+    env.admin().addTask(new EventQueueTask(broker));
+
+    // attach listeners to event broker
+    broker.register(auth);
+    broker.register(coljersey);
+    broker.register(DatasetInfoCache.CACHE);
+    // startup broker, poll from queue
+    env.lifecycle().manage(ManagedUtils.from(broker));
   }
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, JobExecutor exec,
