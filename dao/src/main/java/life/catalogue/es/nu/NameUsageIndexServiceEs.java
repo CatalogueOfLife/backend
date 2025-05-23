@@ -180,7 +180,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   public Stats indexSector(DSID<Integer> sectorKey) {
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
-      LoggingUtils.setSectorMDC(sectorKey, null);
+      LoggingUtils.setSectorMDC(sectorKey);
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) throw NotFoundException.notFound(Sector.class, sectorKey);
 
@@ -216,7 +216,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public void deleteSector(DSID<Integer> sectorKey) {
     try {
-      LoggingUtils.setSectorMDC(sectorKey, null);
+      LoggingUtils.setSectorMDC(sectorKey);
       int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
       LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
@@ -229,7 +229,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   @Override
   public int deleteBareNames(int datasetKey) {
     try {
-      LoggingUtils.setDatasetMDC(datasetKey, null);
+      LoggingUtils.setDatasetMDC(datasetKey);
       int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
       LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
