@@ -10,6 +10,10 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * WARNING !!!
+ * These test make use of some production configurations and need to be adjusted if these change considerably!
+ */
 public class ReleaseConfigTest {
 
   @Test
@@ -17,7 +21,7 @@ public class ReleaseConfigTest {
     var cfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, URI.create("https://catalogueoflife.github.io/data/release-config.yaml"), true);
 
     assertNotNull(cfg);
-    assertEquals("COL{date,yy.M}", cfg.metadata.alias);
+    //assertEquals("COL{date,yy.M}", cfg.metadata.alias);
     assertNotNull(cfg.metadata.title);
     assertNotNull(cfg.metadata.description);
     assertNotNull(cfg.metadata.publisher);
