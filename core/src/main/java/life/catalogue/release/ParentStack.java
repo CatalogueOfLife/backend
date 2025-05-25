@@ -55,14 +55,6 @@ public class ParentStack<T extends NameUsageCore> {
   public void addHandler(StackHandler<T> handler) {
     this.handler.add(handler);
   }
-  public T find(Rank r) {
-    for (SNC<T> p : parents) {
-      if (p.usage.getRank() == r) {
-        return p.usage;
-      }
-    }
-    return null;
-  }
 
   public boolean isDoubtful() {
     return doubtfulUsageID != null;

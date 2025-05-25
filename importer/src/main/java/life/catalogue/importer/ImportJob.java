@@ -314,7 +314,7 @@ public class ImportJob implements Runnable {
     return false;
   }
 
-  private void  importDataset() throws Exception {
+  private void importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());

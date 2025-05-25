@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-05-25 new issue
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_RANK_DIFFERS';
+```
+
 #### 2025-05-21 add infrageneric field to ES mappings
 ```bash
 curl -H "Content-Type: application/json" -X PUT "http://esm.checklistbank.org:9200/clb/_mapping" -d'
@@ -45,11 +51,8 @@ curl -H "Content-Type: application/json" -X PUT "http://esm.checklistbank.org:92
 #### 2025-05-13 new NO_SPECIES_INCLUDED issue
 
 ```sql
-ALTER TYPE ISSUE ADD VALUE 'NO_SPECIES_INCLUDED';
-```
-
-```sql
 ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
+ALTER TYPE ISSUE ADD VALUE 'NO_SPECIES_INCLUDED';
 ```
 
 ### 2025-04-30 make all foreign keys to name_usage deferrable and all deferrable FKs initially deferred

@@ -470,6 +470,8 @@ public enum Issue {
   NO_SPECIES_INCLUDED(NAME_USAGE, Level.INFO,
     "The higher taxon does not include any accepted species."),
 
+  SYNONYM_RANK_DIFFERS(NAME_USAGE, Level.INFO,
+    "The rank of the synonym and it's accepted name is different."),
   ;
 
   /**

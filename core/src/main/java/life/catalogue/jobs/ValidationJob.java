@@ -53,7 +53,7 @@ public class ValidationJob extends DatasetBlockingJob {
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
-      params.setSynonyms(false);
+      params.setSynonyms(true);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
       LOG.info("Maximum depth of {} found for accepted tree of project {}", consumer.getMaxDepth(), datasetKey);

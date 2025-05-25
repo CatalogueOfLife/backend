@@ -295,6 +295,14 @@ public class Normalizer implements Callable<Boolean> {
             }
           }
         }
+
+        // validate synonyms
+        for (Node sn : Traversals.SYNONYMS.traverse(n).nodes()) {
+          RankedUsage su = NeoProperties.getRankedUsage(sn);
+          if (su.rank != ru.rank) {
+            store.addUsageIssues(sn, Issue.SYNONYM_RANK_DIFFERS);
+          }
+        }
       }
 
       @Override

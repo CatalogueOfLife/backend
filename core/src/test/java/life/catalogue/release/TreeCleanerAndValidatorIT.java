@@ -45,7 +45,7 @@ public class TreeCleanerAndValidatorIT {
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
-      params.setSynonyms(false);
+      params.setSynonyms(true);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), tcv);
     }
@@ -60,6 +60,7 @@ public class TreeCleanerAndValidatorIT {
 
     assertIssues(Rank.SUBSPECIES, "Diamesa vulgaris vulgaris", Issue.PARENT_SPECIES_MISSING);
 
+    assertIssues(Rank.SUBGENUS, "Nesodiamesa", Issue.SYNONYM_RANK_DIFFERS);
     assertIssues(Rank.GENUS, "Onychodiamesa");
 
     assertIssues(Rank.ORDER, "Heminoptera", Issue.CLASSIFICATION_RANK_ORDER_INVALID);

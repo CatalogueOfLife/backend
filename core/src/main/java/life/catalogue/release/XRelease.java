@@ -606,7 +606,7 @@ public class XRelease extends ProjectRelease {
       var num = sessionRO.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(newDatasetKey);
-      params.setSynonyms(false);
+      params.setSynonyms(true);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
       stack.flush();
