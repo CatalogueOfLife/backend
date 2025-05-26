@@ -61,7 +61,7 @@ public class ImageServiceFS implements ImageService {
     LOG.info("{} logo for dataset {}", img == null ? "Delete" : "Change", datasetKey);
     storeAllImageSizes(img, s -> cfg.datasetLogo(datasetKey, s));
     if (bus != null) {
-      bus.publish().datasetLogoChanged(new DatasetLogoChanged(datasetKey));
+      bus.publish(new DatasetLogoChanged(datasetKey));
     }
   }
 

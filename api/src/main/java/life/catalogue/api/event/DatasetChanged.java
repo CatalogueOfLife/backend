@@ -8,6 +8,9 @@ import java.util.Set;
 public class DatasetChanged extends EntityChanged<Integer, Dataset> {
   public final Set<String> usernamesToInvalidate = new HashSet<String>();
 
+  public DatasetChanged() {
+  }
+
   public DatasetChanged(EventType delete, Integer key, Dataset old, Dataset d, int user) {
     super(delete, key, old, d, user, Dataset.class);
   }

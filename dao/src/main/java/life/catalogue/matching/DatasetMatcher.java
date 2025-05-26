@@ -96,7 +96,7 @@ public class DatasetMatcher extends BaseMatcher {
       }
     } finally {
       if (bus != null) {
-        bus.publish().datasetDataChanged(new DatasetDataChanged(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey));
       }
     }
   }

@@ -103,14 +103,14 @@ public class UserDao extends UserCrudDao {
       um.block(key, datetime);
       u = um.get(key);
     }
-    broker.publish().userChanged(UserChanged.created(u, admin.getKey()));
+    broker.publish(UserChanged.created(u, admin.getKey()));
   }
 
 
   @Override
   protected boolean createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
     session.close();
-    broker.publish().userChanged(UserChanged.created(obj, user));
+    broker.publish(UserChanged.created(obj, user));
     return false;
   }
 
@@ -119,13 +119,13 @@ public class UserDao extends UserCrudDao {
     if (!keepSessionOpen) {
       session.close();
     }
-    broker.publish().userChanged(UserChanged.changed(obj, user));
+    broker.publish(UserChanged.changed(obj, user));
     return keepSessionOpen;
   }
 
   @Override
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    broker.publish().userChanged(UserChanged.deleted(old, user));
+    broker.publish(UserChanged.deleted(old, user));
     return false;
   }
 

@@ -55,11 +55,11 @@ public class DatasetInfoCacheTest {
         d = session.getMapper(DatasetMapper.class).get(3);
       }
 
-      bus.publish().datasetChanged(DatasetChanged.created(d, 1));
+      bus.publish(DatasetChanged.created(d, 1));
       info = DatasetInfoCache.CACHE.info(3);
       assertFalse(info.deleted);
 
-      bus.publish().datasetChanged(DatasetChanged.deleted(d, 1));
+      bus.publish(DatasetChanged.deleted(d, 1));
       TimeUnit.MILLISECONDS.sleep(110); // give the event a little bit of time
       bus.dumpQueue();
 

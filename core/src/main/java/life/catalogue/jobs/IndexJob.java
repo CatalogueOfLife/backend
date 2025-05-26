@@ -45,7 +45,7 @@ public class IndexJob extends BackgroundJob {
 
   private void flushCache(int datasetKey){
     if (bus != null) {
-      bus.publish().datasetDataChanged(new DatasetDataChanged(datasetKey));
+      bus.publish(new DatasetDataChanged(datasetKey));
     }
   }
 

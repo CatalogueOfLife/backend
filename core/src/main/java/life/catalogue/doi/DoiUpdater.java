@@ -1,6 +1,6 @@
 package life.catalogue.doi;
 
-import life.catalogue.api.event.DoiChange;
+import life.catalogue.api.event.ChangeDoi;
 import life.catalogue.api.event.DoiListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
@@ -57,7 +57,7 @@ public class DoiUpdater implements DoiListener {
    * which removed the sources already from the DB and cascades a project deletion to all its releases!!!
    */
   @Override
-  public void doiChanged(DoiChange event){
+  public void doiChanged(ChangeDoi event){
     if (event.getDoi().isCOL()) {
       int datasetKey = -1;
       Integer sourceKey = null;

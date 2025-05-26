@@ -137,7 +137,7 @@ abstract class SectorRunnable implements Runnable {
       // clear matcher cache?
       if (clearMatcherCache) {
         matcher.clearCache(sectorKey.getDatasetKey());
-        bus.publish().datasetDataChanged(new DatasetDataChanged(sectorKey.getDatasetKey()));
+        bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey()));
       }
 
       doWork();

@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.event.DoiChange;
+import life.catalogue.api.event.ChangeDoi;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
@@ -16,7 +16,6 @@ import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.event.BrokerConfig;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
@@ -332,7 +331,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
     psm.listReleaseSources(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
-      .forEach(d -> bus.publish().doiChanged(DoiChange.delete(d.getDoi())));
+      .forEach(d -> bus.publish(ChangeDoi.delete(d.getDoi())));
   }
 
   @Override
@@ -423,7 +422,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // trigger DOI update at the very end for the now removed sources!
-    dois.forEach(doi -> bus.publish().doiChanged(DoiChange.change(doi)));
+    dois.forEach(doi -> bus.publish(ChangeDoi.change(doi)));
   }
 
   /**
@@ -469,9 +468,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.publish().datasetChanged(delEvent);
+    bus.publish(delEvent);
     if (old.getDoi() != null && old.getDoi().isCOL()) {
-      bus.publish().doiChanged(DoiChange.delete(old.getDoi()));
+      bus.publish(ChangeDoi.delete(old.getDoi()));
     }
     return false;
   }
@@ -535,7 +534,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, null, user);
-    bus.publish().datasetChanged(DatasetChanged.created(obj, user));
+    bus.publish(DatasetChanged.created(obj, user));
     return false;
   }
 
@@ -607,9 +606,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, old, user);
-    bus.publish().datasetChanged(DatasetChanged.changed(obj, old, user));
+    bus.publish(DatasetChanged.changed(obj, old, user));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {
-      bus.publish().doiChanged(DoiChange.change(old.getDoi()));
+      bus.publish(ChangeDoi.change(old.getDoi()));
     }
     return false;
   }

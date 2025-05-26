@@ -36,7 +36,7 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
     // also remove all merge sectors from datasets from this publisher
     final int projectKey = key.getDatasetKey();
     for (Sector s : session.getMapper(SectorMapper.class).listByDatasetPublisher(projectKey, key.getId())){
-      bus.publish().sectorDeleted(new DeleteSector(DSID.of(projectKey, s.getId()), user));
+      bus.publish(new DeleteSector(DSID.of(projectKey, s.getId()), user));
     }
     return true;
   }

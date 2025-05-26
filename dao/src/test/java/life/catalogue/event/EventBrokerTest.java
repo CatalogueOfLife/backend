@@ -17,6 +17,7 @@ public class EventBrokerTest {
   @Test
   void publish() throws Exception {
     var cfg = new BrokerConfig();
+    cfg.pollingLatency = 2;
     cfg.name = "main";
     var broker = new EventBroker(cfg);
     var cnt = new AtomicInteger(0);
@@ -37,14 +38,14 @@ public class EventBrokerTest {
 
     var d = TestEntityGenerator.newDataset("test D1");
     d.setKey(1);
-    broker.publish().datasetChanged(DatasetChanged.deleted(d, Users.TESTER));
+    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
     d = TestEntityGenerator.newDataset("test D2");
     d.setKey(2);
-    broker.publish().datasetChanged(DatasetChanged.deleted(d, Users.TESTER));
+    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
     //broker.dumpQueue();
-    Thread.sleep(2000);
+    Thread.sleep(50);
     broker.stop();
 
     assertEquals(2, cnt.get());

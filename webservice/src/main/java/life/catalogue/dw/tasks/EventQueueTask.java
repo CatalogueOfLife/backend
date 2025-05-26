@@ -15,7 +15,7 @@ public class EventQueueTask extends Task {
   private final EventBroker broker;
 
   public EventQueueTask(EventBroker broker) {
-    super("event-queue");
+    super("events");
     this.broker = broker;
   }
 

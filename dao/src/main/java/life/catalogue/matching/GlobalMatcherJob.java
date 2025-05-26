@@ -53,7 +53,7 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
         LOG.info("Created {} missing name matches, {} not matching.", total, nomatch);
         if (bus != null) {
           for (int dkey : hn.getDatasets()) {
-            bus.publish().datasetDataChanged(new DatasetDataChanged(dkey));
+            bus.publish(new DatasetDataChanged(dkey));
           }
         }
       } catch (RuntimeException e) {

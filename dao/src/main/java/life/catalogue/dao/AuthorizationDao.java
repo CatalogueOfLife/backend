@@ -78,7 +78,7 @@ public class AuthorizationDao {
       action.accept(session.getMapper(DatasetMapper.class));
       session.commit();
     }
-    bus.publish().userPermissionChanged(new UserPermissionChanged(user.getUsername()));
+    bus.publish(new UserPermissionChanged(user.getUsername()));
   }
 
 }

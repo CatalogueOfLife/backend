@@ -12,13 +12,13 @@ import static life.catalogue.api.event.EventType.*;
  * @param <K> key type
  * @param <T> entity type
  */
-public class EntityChanged<K, T> {
-  public final EventType type;
-  public final K key;
-  public final T obj;
-  public final T old;
-  public final int user;
-  public final Class<T> objClass;
+public class EntityChanged<K, T> implements Event {
+  public EventType type;
+  public K key;
+  public T obj;
+  public T old;
+  public int user;
+  public Class<T> objClass;
 
   /**
    * Creates a change event for newly created instances with just the new (obj) instance.
@@ -39,6 +39,9 @@ public class EntityChanged<K, T> {
    */
   public static <K, T> EntityChanged<K, T> delete(K key, T old, int user, Class<T> objClass){
     return new EntityChanged<>(DELETE, key, null, old, user, objClass);
+  }
+
+  EntityChanged() {
   }
 
   EntityChanged(EventType type, K key, T obj, T old, int user, Class<T> objClass) {

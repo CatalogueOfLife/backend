@@ -345,7 +345,7 @@ public class ImportJob implements Runnable {
         di.setMaxClassificationDepth(pgImport.getMaxDepth());
         dao.updateMetrics(di, datasetKey);
 
-        bus.publish().datasetDataChanged(new DatasetDataChanged(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey));
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);
@@ -410,7 +410,7 @@ public class ImportJob implements Runnable {
         session.getMapper(DatasetMapper.class).updateLastImportAttempt(datasetKey);
       }
       // flush dataset in varnish
-      bus.publish().datasetDataChanged(new DatasetDataChanged(datasetKey));
+      bus.publish(new DatasetDataChanged(datasetKey));
     }
   }
 

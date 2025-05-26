@@ -9,8 +9,6 @@ public class TestUtils {
 
   public static EventBroker mockedBroker() {
     EventBroker bus = mock(EventBroker.class);
-    var publisher = mock(EventBroker.Publisher.class);
-    when(bus.publish()).thenReturn(publisher);
     return bus;
   }
 }
