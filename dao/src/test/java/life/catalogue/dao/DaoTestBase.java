@@ -20,8 +20,8 @@ public abstract class DaoTestBase {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   @ClassRule
-  //public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
-  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
+  public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
+  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
 
   @Rule
   public TestDataRule testDataRule;
