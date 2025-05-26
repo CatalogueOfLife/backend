@@ -56,6 +56,30 @@ public class DatasetDaoTest extends DaoTestBase {
   }
 
   @Test
+  public void doiDupeOverload() throws Exception {
+    DOI doi = DOI.col("10.15468/dl.v0i1f3");
+    Dataset d1 = DatasetMapperTest.create();
+    d1.setDoi(doi);
+
+    dao.create(d1, Users.TESTER);
+    commit();
+
+   for (int i = 0; i < 200; i++) {
+     Dataset d2 = DatasetMapperTest.create();
+     d2.setDoi(doi);
+     try {
+       dao.create(d2, Users.GBIF_SYNC);
+     } catch (NotUniqueException e) {
+       d2.setDoi(null);
+       dao.create(d2, Users.GBIF_SYNC);
+
+     }
+   }
+
+   System.out.println("done");
+  }
+
+  @Test
   public void brachyura() throws Exception {
     var d = ColdpMetadataParser.readYAML(getClass().getResourceAsStream("/brachyura.yml")).get().getDataset();
     d.setOrigin(DatasetOrigin.EXTERNAL);

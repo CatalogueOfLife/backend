@@ -176,8 +176,8 @@ public class GbifSyncJob extends GlobalBlockingJob {
             DOI doi = gbif.dataset.getDoi();
             if (doi != null) {
               gbif.dataset.setDoi(null);
-              dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
-              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+              var dk = dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
+              LOG.warn("Removed non unique DOI {} from newly created dataset {}: {}", doi, dk, gbif.getTitle());
             } else {
               throw e;
             }
@@ -219,7 +219,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
             if (doi != null) {
               curr.setDoi(null);
               dao.update(curr, Users.GBIF_SYNC);
-              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+              LOG.warn("Removed non unique DOI {} from updated dataset {}: {}", doi, curr.getKey(), gbif.getTitle());
             } else {
               throw e;
             }

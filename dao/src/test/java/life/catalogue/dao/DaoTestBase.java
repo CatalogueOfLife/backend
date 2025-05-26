@@ -2,10 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
-import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.junit.*;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -23,8 +20,8 @@ public abstract class DaoTestBase {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
   @ClassRule
-  public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
-  //public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
+  //public static SqlSessionFactoryRule pgSetupRule = new PgSetupRule();
+  public static SqlSessionFactoryRule pgRule = new PgConnectionRule("clb", "postgres", "postgres");
 
   @Rule
   public TestDataRule testDataRule;
