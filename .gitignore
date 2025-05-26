@@ -4,6 +4,7 @@
 **/java-xjc/
 **/.surefire-*
 **/neodb.dot
+**/__pycache__
 
 api/latin29.txt
 dao/127.0.0.1/
