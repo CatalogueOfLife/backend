@@ -87,6 +87,7 @@ public class EventBroker implements Managed {
   @Override
   public void stop() {
     if (polling != null) {
+      LOG.info("Stop event broker with queue at {}", cfg.queueDir);
       polling.interrupt();
       queue.close();
     }
@@ -100,6 +101,7 @@ public class EventBroker implements Managed {
   @Override
   public void start() {
     if (polling == null) {
+      LOG.info("Start event broker with queue at {}", cfg.queueDir);
       polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
     }
   }

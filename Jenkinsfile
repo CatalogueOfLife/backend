@@ -23,17 +23,6 @@ pipeline {
         }
       }
     }
-
-    stage('Trigger dev deploy') {
-      when {
-        allOf {
-          branch 'master';
-        }
-      }
-      steps {
-        build job: "col-dev-deploy", wait: false, propagate: false
-      }
-    }
   }
 
   post {

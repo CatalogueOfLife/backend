@@ -4,6 +4,7 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
+import life.catalogue.api.event.DatasetLogoChanged;
 import life.catalogue.api.vocab.Users;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,12 +21,19 @@ public class EventBrokerTest {
     cfg.pollingLatency = 2;
     cfg.name = "main";
     var broker = new EventBroker(cfg);
-    var cnt = new AtomicInteger(0);
+    var cntD = new AtomicInteger(0);
+    var cntDL = new AtomicInteger(0);
     broker.register(new DatasetListener() {
 
       @Override
       public void datasetChanged(DatasetChanged event) {
-        cnt.incrementAndGet();
+        cntD.incrementAndGet();
+        System.out.println(event);
+      }
+
+      @Override
+      public void datasetLogoChanged(DatasetLogoChanged event) {
+        cntDL.incrementAndGet();
         System.out.println(event);
       }
 
@@ -40,6 +48,8 @@ public class EventBrokerTest {
     d.setKey(1);
     broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
+    broker.publish(new DatasetLogoChanged(d.getKey()));
+
     d = TestEntityGenerator.newDataset("test D2");
     d.setKey(2);
     broker.publish(DatasetChanged.deleted(d, Users.TESTER));
@@ -48,6 +58,7 @@ public class EventBrokerTest {
     Thread.sleep(50);
     broker.stop();
 
-    assertEquals(2, cnt.get());
+    assertEquals(2, cntD.get());
+    assertEquals(1, cntDL.get());
   }
 }
