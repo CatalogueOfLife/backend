@@ -76,7 +76,7 @@ public class EventBroker implements Managed {
     System.out.println("--- END ---\n");
   }
 
-  public void publish(Event event) {
+  public synchronized void publish(Event event) {
     try (DocumentContext dc = appender.writingDocument()) {
       io.write(event, dc.wire().bytes().outputStream());
     } catch (IOException e) {
