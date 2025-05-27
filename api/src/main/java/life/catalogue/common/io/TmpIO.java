@@ -52,7 +52,7 @@ public class TmpIO implements AutoCloseable {
   public static class Dir extends TmpIO {
 
     public Dir() throws IOException {
-      this("col-");
+      this("clb-");
     }
 
     public Dir(String prefix) throws IOException {

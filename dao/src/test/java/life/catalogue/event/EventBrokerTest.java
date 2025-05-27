@@ -10,10 +10,13 @@ import life.catalogue.api.vocab.Users;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import life.catalogue.common.io.TmpIO;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,11 +25,13 @@ class EventBrokerTest {
   private EventBroker broker;
   private AtomicInteger cntD;
   private AtomicInteger cntDL;
+  private TmpIO dir;
 
   @BeforeEach
   public void init() throws Exception {
     var cfg = new BrokerConfig();
-    FileUtils.deleteDirectory(new File(cfg.queueDir));
+    dir = new TmpIO.Dir();
+    cfg.queueDir = dir+"/queue";
     cfg.pollingLatency = 2;
     cfg.name = "main";
     this.broker = new EventBroker(cfg);
@@ -57,6 +62,7 @@ class EventBrokerTest {
   @AfterEach
   public void stop() throws Exception {
     broker.stop();
+    dir.close();
   }
 
   @Test

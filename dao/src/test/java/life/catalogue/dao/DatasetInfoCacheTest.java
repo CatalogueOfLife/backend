@@ -4,6 +4,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.io.TmpIO;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.event.BrokerConfig;
 import life.catalogue.event.EventBroker;
@@ -11,11 +12,13 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -45,10 +48,12 @@ public class DatasetInfoCacheTest {
 
   @Test
   public void deletedEvent() throws InterruptedException, IOException {
+    EventBroker bus = null;
     var cfg = new BrokerConfig();
-    FileUtils.deleteDirectory(new File(cfg.queueDir));
-    EventBroker bus = new EventBroker(cfg);
-    try {
+    try (var dir = new TmpIO.Dir()) {
+      cfg.queueDir = dir + "/queue";
+
+      bus = new EventBroker(cfg);
       bus.register(DatasetInfoCache.CACHE);
       bus.start();
 
@@ -73,8 +78,10 @@ public class DatasetInfoCacheTest {
       info = DatasetInfoCache.CACHE.info(3, true);
       assertTrue(info.deleted);
 
-    } finally {
       bus.stop();
-    }
 
-  }}
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+}
