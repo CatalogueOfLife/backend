@@ -127,7 +127,7 @@ public class DatasetDiffService extends BaseDiffService<Integer> {
         printer.setParentName(parentRank);
       }
       if (rankFilter != null && !rankFilter.isEmpty()) {
-        printer.setFilter(sn -> rankFilter.contains(sn.getRank()));
+        printer.setFilter(sn -> sn.getRank() == null || !rankFilter.contains(sn.getRank()));
       }
       printer.print();
     }
