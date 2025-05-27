@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -98,9 +99,13 @@ public class EventBroker implements Managed {
   private class Polling implements Runnable {
     @Override
     public void run() {
-      final ExcerptTailer tailer = queue.createTailer(cfg.name).toEnd(); // we wind to the end to only consume new messages
-      // Continuously read messages and distribute them to listeners
       long lastDeleteCheck = System.currentTimeMillis();
+      // we create a unique tailer for every webapp instance
+      // this allows us to deploy several aps in parallel and still read all messages
+      final ExcerptTailer tailer = queue.createTailer(cfg.name + "-" + lastDeleteCheck);
+      // we wind to the end to only consume new messages as the queue likely already exists
+      tailer.toEnd();
+      // Continuously read messages and distribute them to listeners
       while (true) {
         // If no message was available, pause for a short time to avoid busy-waiting
         var dc = tailer.readingDocument();
@@ -125,9 +130,10 @@ public class EventBroker implements Managed {
     }
 
     private void removeUnusedFiles() {
+      LOG.info("Look for unused files from queue at {}", cfg.queueDir);
       List<File> candidates = FileUtil.removableRollFileCandidates(queue.file()).collect(toList());
-      LOG.info("Remove {} unused files from queue at {}", candidates.size(), cfg.queueDir);
       candidates.forEach(FileUtils::deleteQuietly);
+      LOG.info("Removed {} unused files from queue at {}", candidates.size(), cfg.queueDir);
     }
 
     private void broker(Object obj) {
