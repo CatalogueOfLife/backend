@@ -16,8 +16,6 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.event.BrokerConfig;
-import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;

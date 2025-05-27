@@ -1,15 +1,12 @@
 package life.catalogue.dw.tasks;
 
-import io.dropwizard.servlets.tasks.Task;
-
-import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.event.EventBroker;
 
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+
+import io.dropwizard.servlets.tasks.Task;
 
 public class EventQueueTask extends Task {
   private final EventBroker broker;

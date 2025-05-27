@@ -7,14 +7,15 @@ import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DatasetLogoChanged;
 import life.catalogue.api.vocab.Users;
 
+import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EventBrokerTest {
 
@@ -25,6 +26,7 @@ class EventBrokerTest {
   @BeforeEach
   public void init() throws Exception {
     var cfg = new BrokerConfig();
+    FileUtils.deleteDirectory(new File(cfg.queueDir));
     cfg.pollingLatency = 2;
     cfg.name = "main";
     this.broker = new EventBroker(cfg);

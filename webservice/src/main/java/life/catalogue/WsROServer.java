@@ -2,8 +2,6 @@ package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.cache.CacheFlush;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
@@ -36,7 +34,6 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
-import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.parser.*;
 

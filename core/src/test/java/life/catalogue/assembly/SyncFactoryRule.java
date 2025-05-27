@@ -4,8 +4,6 @@ import life.catalogue.TestUtils;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.event.BrokerConfig;
-import life.catalogue.event.EventBroker;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TreeRepoRule;

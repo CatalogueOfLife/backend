@@ -1,7 +1,7 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.ChangeDoi;
+import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;

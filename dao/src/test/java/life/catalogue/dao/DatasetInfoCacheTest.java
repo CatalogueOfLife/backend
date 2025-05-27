@@ -11,8 +11,11 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -41,8 +44,10 @@ public class DatasetInfoCacheTest {
   }
 
   @Test
-  public void deletedEvent() throws InterruptedException {
-    EventBroker bus = new EventBroker(new BrokerConfig());
+  public void deletedEvent() throws InterruptedException, IOException {
+    var cfg = new BrokerConfig();
+    FileUtils.deleteDirectory(new File(cfg.queueDir));
+    EventBroker bus = new EventBroker(cfg);
     try {
       bus.register(DatasetInfoCache.CACHE);
       bus.start();
@@ -61,7 +66,9 @@ public class DatasetInfoCacheTest {
 
       bus.publish(DatasetChanged.deleted(d, 1));
       TimeUnit.MILLISECONDS.sleep(110); // give the event a little bit of time
-      bus.dumpQueue();
+
+      Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
+      bus.dumpQueue(pw);
 
       info = DatasetInfoCache.CACHE.info(3, true);
       assertTrue(info.deleted);

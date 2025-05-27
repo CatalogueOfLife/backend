@@ -16,8 +16,6 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.event.BrokerConfig;
-import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;

@@ -4,17 +4,13 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.event.*;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Name;
-
 import life.catalogue.api.model.User;
-
 import life.catalogue.api.vocab.Country;
-
 import life.catalogue.api.vocab.Users;
 
-import org.junit.Test;
-
 import java.util.Set;
+
+import org.junit.Test;
 
 import static life.catalogue.common.kryo.ApiKryoPoolTest.assertSerde;
 

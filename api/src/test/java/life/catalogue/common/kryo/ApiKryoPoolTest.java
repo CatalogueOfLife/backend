@@ -1,30 +1,26 @@
 package life.catalogue.common.kryo;
 
-import com.esotericsoftware.kryo.util.Pool;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.*;
-import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-
-import org.gbif.nameparser.api.NameType;
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Test;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

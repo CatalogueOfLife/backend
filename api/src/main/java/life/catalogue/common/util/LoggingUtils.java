@@ -4,11 +4,11 @@ import life.catalogue.api.model.DSID;
 
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-
-import javax.annotation.Nullable;
 
 public class LoggingUtils {
 

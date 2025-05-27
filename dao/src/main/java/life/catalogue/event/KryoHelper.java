@@ -1,13 +1,15 @@
 package life.catalogue.event;
 
-import java.io.*;
+import life.catalogue.api.event.Event;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.util.Pool;
-
-import life.catalogue.api.event.Event;
 
 public class KryoHelper {
 

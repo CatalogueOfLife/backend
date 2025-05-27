@@ -2,7 +2,10 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
-import life.catalogue.junit.*;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
+import life.catalogue.junit.TreeRepoRule;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

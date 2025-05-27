@@ -10,8 +10,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.openhft.chronicle.queue.util.FileUtil;
-
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +19,7 @@ import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.RollCycles;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
+import net.openhft.chronicle.queue.util.FileUtil;
 import net.openhft.chronicle.wire.DocumentContext;
 
 import static java.util.stream.Collectors.toList;
@@ -64,12 +63,6 @@ public class EventBroker implements Managed {
 
   public void dumpQueue(Writer writer) {
     queue.dump(writer, -1, Long.MAX_VALUE);
-  }
-
-  public void dumpQueue() {
-    System.out.println("\n--- DUMP ---");
-    System.out.println(queue.dump());
-    System.out.println("--- END ---\n");
   }
 
   public synchronized void publish(Event event) {

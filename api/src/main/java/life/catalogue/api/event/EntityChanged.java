@@ -1,10 +1,8 @@
 package life.catalogue.api.event;
 
-import life.catalogue.api.model.DataEntity;
+import java.util.Objects;
 
 import com.google.common.base.Preconditions;
-
-import java.util.Objects;
 
 import static life.catalogue.api.event.EventType.*;
 /**
