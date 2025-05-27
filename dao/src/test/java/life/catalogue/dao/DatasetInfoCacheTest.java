@@ -51,7 +51,7 @@ public class DatasetInfoCacheTest {
     EventBroker bus = null;
     var cfg = new BrokerConfig();
     try (var dir = new TmpIO.Dir()) {
-      cfg.queueDir = dir + "/queue";
+      cfg.queueDir = dir.file + "/queue";
 
       bus = new EventBroker(cfg);
       bus.register(DatasetInfoCache.CACHE);

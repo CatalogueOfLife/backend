@@ -31,7 +31,7 @@ class EventBrokerTest {
   public void init() throws Exception {
     var cfg = new BrokerConfig();
     dir = new TmpIO.Dir();
-    cfg.queueDir = dir+"/queue";
+    cfg.queueDir = dir.file+"/queue";
     cfg.pollingLatency = 2;
     cfg.name = "main";
     this.broker = new EventBroker(cfg);
@@ -94,9 +94,9 @@ class EventBrokerTest {
 
     var p3 = new PublishTask(broker, 2001, 2115);
     Thread t3 = new Thread(p3);
-    t1.run();
-    t2.run();
-    t3.run();
+    t1.start();
+    t2.start();
+    t3.start();
 
     t1.join();
     t2.join();

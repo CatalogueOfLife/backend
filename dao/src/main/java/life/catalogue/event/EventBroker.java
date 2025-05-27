@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import net.openhft.chronicle.core.io.AbstractCloseable;
+import net.openhft.chronicle.core.io.ThreadingIllegalStateException;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,14 +70,14 @@ public class EventBroker implements Managed {
   }
 
   public synchronized void publish(Event event) {
-    var lock = queue.appendLock();
+    // the chronicle appender remembers which thread wrote the last message
+    // it only allows the same thread to write to the queue
+    // we disable this check as we synchronize the method, so we never have multiple threads writing to the queue at the same time
+    appender.singleThreadedCheckReset();
     try (DocumentContext dc = appender.writingDocument()) {
-      lock.lock();
       io.write(event, dc.wire().bytes().outputStream());
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOG.error("Failed to publish event {}", event, e);
-    } finally {
-      lock.unlock();
     }
   }
 
