@@ -293,7 +293,79 @@ public class TestEntityGenerator {
     return d;
   }
 
-  /*
+  public static Dataset newFullDataset(Integer key) {
+    Dataset d = new Dataset();
+    d.setKey(key);
+    d.setPrivat(true);
+    d.setTitle(RandomUtils.randomUnicodeString(80));
+    d.setAlias(RandomUtils.randomUnicodeString(10));
+    d.setDescription(RandomUtils.randomLatinString(2000));
+    d.setType(DatasetType.TAXONOMIC);
+    d.setLicense(License.CC0);
+    d.setOrigin(DatasetOrigin.EXTERNAL);
+    d.setContact(newAgent());
+    d.setCreator(List.of(newAgent(),newAgent()));
+    d.setEditor(List.of(newAgent()));
+    d.setContributor(List.of(newAgent(),newAgent(),newAgent(),newAgent(),newAgent()));
+    d.setAttempt(4567);
+    d.setIssued(FuzzyDate.now());
+    d.setDoi(DOI.test(RandomUtils.randomLatinString(100)));
+    d.setVersion(RandomUtils.randomLatinString(8));
+    d.setSourceKey(3);
+    d.setUrl(RandomUtils.randomUri());
+    d.setLogo(URI.create("http://foo.com/logo.png"));
+    d.setUrlFormatter(Map.of("foo", "bar"));
+    d.setKeyword(List.of("foo", "bar", "baz"));
+    d.setConversion(new Dataset.UrlDescription(RandomUtils.randomUri().toString(), RandomUtils.randomLatinString(100)));
+    d.setGbifKey(UUID.randomUUID());
+    d.setGbifPublisherKey(UUID.randomUUID());
+    d.setConfidence(4);
+    d.setIdentifier(Map.of("foo", "bar"));
+    d.setImported(LocalDateTime.now());
+    d.setLastImportState(ImportState.FINISHED);
+    d.addSource(newCitation());
+    d.addSource(newCitation());
+    d.applyUser(Users.TESTER);
+    d.applyCreatedNow();
+    return d;
+  }
+
+  public static CslName newCslName() {
+    return new CslName(RandomUtils.randomLatinString(12), RandomUtils.randomLatinString(22), "von");
+  }
+
+  public static Citation newCitation() {
+    var c = new Citation();
+    c.setId("1234567890");
+    c.setDoi(DOI.test("2wd"));
+    c.setIssued(FuzzyDate.now());
+    c.setType(CSLType.ARTICLE);
+    c.setAuthor(List.of(newCslName(), newCslName()));
+    c.setEditor(List.of(newCslName()));
+    c.setPublisher("Hancock");
+    c.setTitle("The world's most beautiful place");
+    c.setVolume("123");
+    c.setIssue("456");
+    c.setPage("1234");
+    return c;
+  }
+
+  public static Agent newAgent() {
+    var a = new Agent();
+    a.setOrcid(RandomUtils.randomUnicodeString(32));
+    a.setFamily(RandomUtils.randomUnicodeString(40));
+    a.setGiven(RandomUtils.randomUnicodeString(20));
+    a.setRorid(RandomUtils.randomUnicodeString(32));
+    a.setOrganisation(RandomUtils.randomUnicodeString(80));
+    a.setDepartment(RandomUtils.randomUnicodeString(80));
+    a.setCity(RandomUtils.randomUnicodeString(18));
+    a.setState(RandomUtils.randomUnicodeString(25));
+    a.setCountry(Country.UNITED_KINGDOM);
+    a.setNote(RandomUtils.randomUnicodeString(140));
+    return a;
+  }
+
+    /*
    * Creates a new taxon with a generated id in apple test dataset 11
    */
   public static Taxon newTaxon() {

@@ -63,12 +63,16 @@ public class EventKryoPool extends Pool<Kryo> {
     kryo.register(Agent.class);
     kryo.register(Citation.class);
     kryo.register(Classification.class);
-    kryo.register(DOI.class);
     kryo.register(Dataset.UrlDescription.class);
     kryo.register(Dataset.class);
-    kryo.register(DatasetImport.class);
+    kryo.register(DOI.class);
+    kryo.register(DSID.class);
+    kryo.register(DSIDValue.class);
     kryo.register(Identifier.class);
     kryo.register(User.class);
+    // citation types
+    kryo.register(CslName.class);
+    kryo.register(CSLType.class);
 
     // date/time
     kryo.register(FuzzyDate.class, new FuzzyDateSerializer());

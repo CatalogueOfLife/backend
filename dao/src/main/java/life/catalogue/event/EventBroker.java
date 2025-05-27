@@ -1,33 +1,23 @@
 package life.catalogue.event;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Output;
-
 import life.catalogue.api.event.*;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.openhft.chronicle.queue.ExcerptAppender;
-
-import net.openhft.chronicle.wire.DocumentContext;
-
-import org.jetbrains.annotations.NotNull;
-
-import net.openhft.chronicle.bytes.MethodReader;
 import net.openhft.chronicle.queue.ExcerptTailer;
 import net.openhft.chronicle.queue.RollCycles;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
-
-import org.mapdb.DataIO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.openhft.chronicle.wire.DocumentContext;
 
 public class EventBroker implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);

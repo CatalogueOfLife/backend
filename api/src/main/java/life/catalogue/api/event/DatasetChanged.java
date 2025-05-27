@@ -3,6 +3,7 @@ package life.catalogue.api.event;
 import life.catalogue.api.model.Dataset;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class DatasetChanged extends EntityChanged<Integer, Dataset> {
@@ -25,5 +26,17 @@ public class DatasetChanged extends EntityChanged<Integer, Dataset> {
 
   public static DatasetChanged changed(Dataset d, Dataset old, int user){
     return new DatasetChanged(EventType.UPDATE, d.getKey(), d, old, user);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof DatasetChanged)) return false;
+    DatasetChanged that = (DatasetChanged) o;
+    return Objects.equals(usernamesToInvalidate, that.usernamesToInvalidate);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(usernamesToInvalidate);
   }
 }

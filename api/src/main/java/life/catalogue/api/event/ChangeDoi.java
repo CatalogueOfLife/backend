@@ -2,6 +2,8 @@ package life.catalogue.api.event;
 
 import life.catalogue.api.model.DOI;
 
+import java.util.Objects;
+
 /**
  * Indicates that the metadata of a DOI in DataCite needs to be updated.
  */
@@ -30,5 +32,17 @@ public class ChangeDoi implements Event {
 
   public boolean isDelete() {
     return delete;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ChangeDoi)) return false;
+    ChangeDoi changeDoi = (ChangeDoi) o;
+    return delete == changeDoi.delete && Objects.equals(doi, changeDoi.doi);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(doi, delete);
   }
 }
