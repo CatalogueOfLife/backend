@@ -1,0 +1,20 @@
+Animalia
+Chordata
+Mammalia
+Carnivora
+Canidae
+Alopsis
+Lupulus
+Felidae
+Lynx
+Pardina
+Lynx lynx
+Lynx rufus
+Felis rufus
+Lynx rufus baileyi
+Lynx rufus gigas
+Urocyon
+Urocyon citrinus
+Urocyon littoralis
+Urocyon minicephalus
+Urocyon webbi

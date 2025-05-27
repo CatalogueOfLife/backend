@@ -4,11 +4,13 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.User;
 import life.catalogue.printer.DatasetDiffService;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.List;
+import java.util.Set;
 
 import io.dropwizard.auth.Auth;
 import jakarta.ws.rs.*;
@@ -41,8 +43,9 @@ public class DatasetDiffResource extends AbstractDiffResource<Integer> {
                           @QueryParam("synonyms") boolean inclSynonyms,
                           @QueryParam("showParent") boolean showParent,
                           @QueryParam("parentRank") Rank parentRank,
+                          @QueryParam("rankFilter") Set<Rank> rankFilter,
                           @Auth User user) throws IOException {
-    return service.datasetNamesDiff(user.getKey(), key, root, key2, root2, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank);
+    return service.datasetNamesDiff(user.getKey(), key, root, key2, root2, lowestRank, inclAuthorship, inclSynonyms, showParent, parentRank, rankFilter);
   }
 
 }
