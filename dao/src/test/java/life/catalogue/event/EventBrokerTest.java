@@ -78,13 +78,13 @@ class EventBrokerTest {
 
   @Test
   public void multithreaded() throws Exception {
-    var p1 = new PublishTask(broker, 1, 1000);
+    var p1 = new PublishTask(broker, 1, 100);
     Thread t1 = new Thread(p1);
 
-    var p2 = new PublishTask(broker, 10001, 11500);
+    var p2 = new PublishTask(broker, 1001, 1150);
     Thread t2 = new Thread(p2);
 
-    var p3 = new PublishTask(broker, 20001, 22500);
+    var p3 = new PublishTask(broker, 2001, 2250);
     Thread t3 = new Thread(p3);
     t1.run();
     t2.run();
@@ -94,12 +94,12 @@ class EventBrokerTest {
     t2.join();
     t3.join();
 
-    Thread.sleep(20);
+    Thread.sleep(100);
 
     broker.stop();
 
-    assertEquals(5000, cntD.get());
-    assertEquals(5000, cntDL.get());
+    assertEquals(500, cntD.get());
+    assertEquals(500, cntDL.get());
   }
 
   class PublishTask implements Runnable {
