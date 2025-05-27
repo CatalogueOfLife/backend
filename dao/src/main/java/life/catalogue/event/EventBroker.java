@@ -4,11 +4,15 @@ import life.catalogue.api.event.*;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.openhft.chronicle.queue.util.FileUtil;
+
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +22,8 @@ import net.openhft.chronicle.queue.RollCycles;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueue;
 import net.openhft.chronicle.queue.impl.single.SingleChronicleQueueBuilder;
 import net.openhft.chronicle.wire.DocumentContext;
+
+import static java.util.stream.Collectors.toList;
 
 public class EventBroker implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);
@@ -101,20 +107,34 @@ public class EventBroker implements Managed {
     public void run() {
       final ExcerptTailer tailer = queue.createTailer(cfg.name).toEnd(); // we wind to the end to only consume new messages
       // Continuously read messages and distribute them to listeners
+      long lastDeleteCheck = System.currentTimeMillis();
       while (true) {
         // If no message was available, pause for a short time to avoid busy-waiting
         var dc = tailer.readingDocument();
         if (dc.wire() == null) {
-          try {
-            Thread.sleep(cfg.pollingLatency);
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            break;
+          // check for rolling file deletions once a day
+          if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
+            removeUnusedFiles();
+            lastDeleteCheck = System.currentTimeMillis();
+          } else {
+            try {
+              Thread.sleep(cfg.pollingLatency);
+            } catch (InterruptedException e) {
+              Thread.currentThread().interrupt();
+              break;
+            }
           }
+
         } else {
           broker(io.read(dc.wire().bytes().inputStream()));
         }
       }
+    }
+
+    private void removeUnusedFiles() {
+      List<File> candidates = FileUtil.removableRollFileCandidates(queue.file()).collect(toList());
+      LOG.info("Remove {} unused files from queue at {}", candidates.size(), cfg.queueDir);
+      candidates.forEach(FileUtils::deleteQuietly);
     }
 
     private void broker(Object obj) {
