@@ -459,84 +459,67 @@ public class MatchingService {
       CleanupUtils.clean(classification);
     }
 
-    // treat names that are all upper or lower case special - they cannot be parsed properly so
-    // rather use them as they are!
-    if (scientificName != null
-        && (scientificName.toLowerCase().equals(scientificName)
-            || scientificName.toUpperCase().equals(scientificName))) {
-      log.debug("All upper or lower case name found. Don't try to parse: {}", scientificName);
-      queryNameType = null;
+    try {
+      // use name parser to make the name a canonical one
+      // we build the name with flags manually as we wanna exclude indet. names such as "Abies
+      // spec." and rather match them to Abies only
+      Rank npRank = rank == null ? null : Rank.valueOf(rank.name());
+      start = System.currentTimeMillis();
+      parsedName = NameParsers.INSTANCE.parse(scientificName, npRank, null);
+      timings.put("nameParse", System.currentTimeMillis() - start);
+      queryNameType = NameType.valueOf(parsedName.getType().name());
+      scientificName = parsedName.canonicalNameMinimal();
+
+      // parsed genus provided for a name lower than genus?
+      if (classification.getGenus() == null
+          && getGenusOrAbove(parsedName) != null
+          && parsedName.getRank() != null
+          && parsedName.getRank().isInfragenericStrictly()) {
+        classification.setGenus(getGenusOrAbove(parsedName));
+      }
+
+      // used parsed rank if not given explicitly, but only for bi+trinomials
+      // see https://github.com/CatalogueOfLife/backend/issues/1316
+      if (rank == null) {
+        if (parsedName.isBinomial()
+            || parsedName.isTrinomial()
+            || (
+              parsedName.getRank() != null
+                && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+                && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
+            )
+        ) {
+          if (parsedName.getRank() != null) {
+            rank = Rank.valueOf(parsedName.getRank().name());
+          }
+        }
+      }
+
+      // hybrid names, virus names, OTU & blacklisted ones don't provide any parsed name
+      if (mainMatchingMode != MatchingMode.STRICT && !parsedName.getType().isParsable()) {
+        // turn off fuzzy matching
+        mainMatchingMode = MatchingMode.STRICT;
+        log.debug(
+            "Unparsable {} name, turn off fuzzy matching for {}", parsedName.getType(), scientificName);
+      }
+
+    } catch (UnparsableNameException e) {
+      // hybrid names, virus names & blacklisted ones - dont provide any parsed name
+      queryNameType = NameType.valueOf(e.getType().name());
+      // we assign all OTUs unranked
+      if (NameType.OTU == queryNameType) {
+        rank = Rank.UNRANKED;
+      }
       if (mainMatchingMode != MatchingMode.STRICT) {
         // turn off fuzzy matching
         mainMatchingMode = MatchingMode.STRICT;
+        log.debug(
+            "Unparsable {} name, turn off fuzzy matching for {}", queryNameType, scientificName);
+      } else {
+        log.debug("Unparsable {} name: {}", queryNameType, scientificName);
       }
-      if (rank == null) {
-        rank = Rank.UNRANKED;
-      }
-
-    } else {
-      try {
-        // use name parser to make the name a canonical one
-        // we build the name with flags manually as we wanna exclude indet. names such as "Abies
-        // spec." and rather match them to Abies only
-        Rank npRank = rank == null ? null : Rank.valueOf(rank.name());
-        start = System.currentTimeMillis();
-        parsedName = NameParsers.INSTANCE.parse(scientificName, npRank, null);
-        timings.put("nameParse", System.currentTimeMillis() - start);
-        queryNameType = NameType.valueOf(parsedName.getType().name());
-        scientificName = parsedName.canonicalNameMinimal();
-
-        // parsed genus provided for a name lower than genus?
-        if (classification.getGenus() == null
-            && getGenusOrAbove(parsedName) != null
-            && parsedName.getRank() != null
-            && parsedName.getRank().isInfragenericStrictly()) {
-          classification.setGenus(getGenusOrAbove(parsedName));
-        }
-
-        // used parsed rank if not given explicitly, but only for bi+trinomials
-        // see https://github.com/CatalogueOfLife/backend/issues/1316
-        if (rank == null) {
-          if (parsedName.isBinomial()
-              || parsedName.isTrinomial()
-              || (
-                parsedName.getRank() != null
-                  && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
-                  && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
-              )
-          ) {
-            if (parsedName.getRank() != null) {
-              rank = Rank.valueOf(parsedName.getRank().name());
-            }
-          }
-        }
-
-        // hybrid names, virus names, OTU & blacklisted ones don't provide any parsed name
-        if (mainMatchingMode != MatchingMode.STRICT && !parsedName.getType().isParsable()) {
-          // turn off fuzzy matching
-          mainMatchingMode = MatchingMode.STRICT;
-          log.debug(
-              "Unparsable {} name, turn off fuzzy matching for {}", parsedName.getType(), scientificName);
-        }
-
-      } catch (UnparsableNameException e) {
-        // hybrid names, virus names & blacklisted ones - dont provide any parsed name
-        queryNameType = NameType.valueOf(e.getType().name());
-        // we assign all OTUs unranked
-        if (NameType.OTU == queryNameType) {
-          rank = Rank.UNRANKED;
-        }
-        if (mainMatchingMode != MatchingMode.STRICT) {
-          // turn off fuzzy matching
-          mainMatchingMode = MatchingMode.STRICT;
-          log.debug(
-              "Unparsable {} name, turn off fuzzy matching for {}", queryNameType, scientificName);
-        } else {
-          log.debug("Unparsable {} name: {}", queryNameType, scientificName);
-        }
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
 
     // run the initial match
