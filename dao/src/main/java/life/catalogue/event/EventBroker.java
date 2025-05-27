@@ -67,10 +67,14 @@ public class EventBroker implements Managed {
   }
 
   public synchronized void publish(Event event) {
+    var lock = queue.appendLock();
     try (DocumentContext dc = appender.writingDocument()) {
+      lock.lock();
       io.write(event, dc.wire().bytes().outputStream());
     } catch (IOException e) {
       LOG.error("Failed to publish event {}", event, e);
+    } finally {
+      lock.unlock();
     }
   }
 
