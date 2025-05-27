@@ -32,8 +32,7 @@ class EventBrokerTest {
     var cfg = new BrokerConfig();
     dir = new TmpIO.Dir();
     cfg.queueDir = dir.file+"/queue";
-    cfg.pollingLatency = 2;
-    cfg.name = "main";
+    cfg.pollingLatency = 1;
     this.broker = new EventBroker(cfg);
     this.cntD = new AtomicInteger(0);
     this.cntDL = new AtomicInteger(0);
@@ -77,8 +76,7 @@ class EventBrokerTest {
     d.setKey(2);
     broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
-    //broker.dumpQueue();
-    Thread.sleep(50);
+    Thread.sleep(100);
 
     assertEquals(2, cntD.get());
     assertEquals(1, cntDL.get());
