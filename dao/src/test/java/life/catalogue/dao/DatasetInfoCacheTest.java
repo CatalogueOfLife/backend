@@ -50,6 +50,7 @@ public class DatasetInfoCacheTest {
   public void deletedEvent() throws InterruptedException, IOException {
     EventBroker bus = null;
     var cfg = new BrokerConfig();
+    cfg.pollingLatency = 1;
     try (var dir = new TmpIO.Dir()) {
       cfg.queueDir = dir.file + "/queue";
 
@@ -66,16 +67,16 @@ public class DatasetInfoCacheTest {
       }
 
       bus.publish(DatasetChanged.created(d, 1));
-      info = DatasetInfoCache.CACHE.info(3);
+      info = DatasetInfoCache.CACHE.info(d.getKey());
       assertFalse(info.deleted);
 
       bus.publish(DatasetChanged.deleted(d, 1));
-      TimeUnit.MILLISECONDS.sleep(110); // give the event a little bit of time
+      TimeUnit.MILLISECONDS.sleep(200); // give the event a little bit of time
 
       Writer pw = new PrintWriter(new OutputStreamWriter(System.out, StandardCharsets.UTF_8));
       bus.dumpQueue(pw);
 
-      info = DatasetInfoCache.CACHE.info(3, true);
+      info = DatasetInfoCache.CACHE.info(d.getKey(), true);
       assertTrue(info.deleted);
 
       bus.stop();
