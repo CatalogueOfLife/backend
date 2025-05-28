@@ -505,7 +505,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         return incIgnored(IgnoreReason.RANK, u);
       }
       // apply extinct filter if exists
-      if (sector.getExtinctFilter() != null && u.asTaxon().isExtinct() != null && !Objects.equals(sector.getExtinctFilter(), u.asTaxon().isExtinct())) {
+      if (sector.getExtinctFilter() != null && u.isTaxon() && u.asTaxon().isExtinct() != null && !Objects.equals(sector.getExtinctFilter(), u.asTaxon().isExtinct())) {
         return incIgnored(IgnoreReason.EXTINCT, u);
       }
     }
