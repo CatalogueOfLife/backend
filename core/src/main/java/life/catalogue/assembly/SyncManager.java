@@ -295,10 +295,11 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
   }
 
   private boolean rejectJob(SectorRunnable job, String reason) {
-    LOG.info(reason);
+    LOG.warn(reason);
     try (SqlSession session = factory.openSession(true)) {
       job.state.setState(ImportState.FAILED);
       job.state.setFinished(LocalDateTime.now());
+      job.state.setError(reason);
       session.getMapper(SectorImportMapper.class).update(job.state);
     }
     return false;
