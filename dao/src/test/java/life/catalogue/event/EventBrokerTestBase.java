@@ -8,23 +8,20 @@ import life.catalogue.api.event.DatasetLogoChanged;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TmpIO;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
-@Execution(SAME_THREAD)
-public class EventBroker3Test {
+abstract class EventBrokerTestBase {
 
-  private EventBroker broker;
-  private AtomicInteger cntD;
-  private AtomicInteger cntDL;
-  private TmpIO dir;
+  EventBroker broker;
+  AtomicInteger cntD;
+  AtomicInteger cntDL;
+  TmpIO dir;
 
   @BeforeEach
   public void init() throws Exception {
@@ -61,23 +58,5 @@ public class EventBroker3Test {
   public void stop() throws Exception {
     broker.stop();
     dir.close();
-  }
-
-  @Test
-  public void publish() throws Exception {
-    var d = TestEntityGenerator.newDataset("test D1");
-    d.setKey(1);
-    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
-
-    broker.publish(new DatasetLogoChanged(d.getKey()));
-
-    d = TestEntityGenerator.newDataset("test D2");
-    d.setKey(2);
-    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
-
-    Thread.sleep(100);
-
-    assertEquals(2, cntD.get());
-    assertEquals(1, cntDL.get());
   }
 }
