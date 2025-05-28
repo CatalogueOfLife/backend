@@ -5,7 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSync;
-import life.catalogue.assembly.SycnException;
+import life.catalogue.assembly.SyncException;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.TreeMergeHandlerConfig;
 import life.catalogue.basgroup.HomotypicConsolidator;
@@ -474,9 +474,9 @@ public class XRelease extends ProjectRelease {
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
           if (mergeCfg.xCfg.failOnSyncErrors) {
-            throw new SycnException(ss.lastException());
+            throw new SyncException(ss.lastException());
           }
-          LOG.error("Failed to sync {} with error: {}", s, ss.getState().getError(), ss.lastException());
+          LOG.error("Failed to sync {} with state={}, error={}", s, ss.getState().getState(), ss.getState().getError(), ss.lastException());
         } else {
           // copy remaining merge decisions
           copyMergeDecisions(ss.getDecisions().values());

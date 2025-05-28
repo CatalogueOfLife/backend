@@ -365,7 +365,7 @@ public class SectorSync extends SectorRunnable {
       if (treeHandler.hasThrown()) {
         LOG.error("TreeHandler has thrown an exception. Abort sector {}", sectorKey);
         exception = treeHandler.lastException();
-        throw new SycnException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
+        throw new SyncException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
       }
       LOG.info("Synced {} taxa and {} synonyms from sector {}", state.getTaxonCount(), state.getSynonymCount(), sectorKey);
       LOG.info("Sync name & taxon relations from sector {}", sectorKey);
@@ -404,7 +404,7 @@ public class SectorSync extends SectorRunnable {
         if (treeHandler.hasThrown()) {
           exception = treeHandler.lastException();
           LOG.error("Sync has thrown an exception. Abort sector {}", sectorKey, exception);
-          throw new SycnException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
+          throw new SyncException("Sync of sector "+ sectorKey +" has thrown an exception", exception);
         }
         LOG.info("Updated {} names from sector {}", treeHandler.getUpdated(), sectorKey);
 
