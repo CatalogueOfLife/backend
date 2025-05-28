@@ -17,10 +17,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.parallel.Execution;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.parallel.ExecutionMode.SAME_THREAD;
 
-class EventBrokerTest {
+@Execution(SAME_THREAD)
+public class EventBrokerTest {
 
   private EventBroker broker;
   private AtomicInteger cntD;
@@ -101,8 +104,6 @@ class EventBrokerTest {
     t3.join();
 
     Thread.sleep(100);
-
-    broker.stop();
 
     assertEquals(300, cntD.get());
     assertEquals(300, cntDL.get());
