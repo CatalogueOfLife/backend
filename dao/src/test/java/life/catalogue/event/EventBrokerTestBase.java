@@ -23,7 +23,6 @@ abstract class EventBrokerTestBase {
   AtomicInteger cntDL;
   TmpIO dir;
 
-  @BeforeEach
   public void init() throws Exception {
     var cfg = new BrokerConfig();
     dir = new TmpIO.Dir();
@@ -54,7 +53,6 @@ abstract class EventBrokerTestBase {
     broker.start();
   }
 
-  @AfterEach
   public void stop() throws Exception {
     broker.stop();
     dir.close();

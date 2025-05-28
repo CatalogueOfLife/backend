@@ -22,26 +22,31 @@ public class EventBrokerMultithreadedTest extends EventBrokerTestBase {
 
   @Test
   public void multithreaded() throws Exception {
-    var p1 = new PublishTask(broker, 1, 75);
-    Thread t1 = new Thread(p1);
+    init();
+    try {
+      var p1 = new PublishTask(broker, 1, 75);
+      Thread t1 = new Thread(p1);
 
-    var p2 = new PublishTask(broker, 1001, 1110);
-    Thread t2 = new Thread(p2);
+      var p2 = new PublishTask(broker, 1001, 1110);
+      Thread t2 = new Thread(p2);
 
-    var p3 = new PublishTask(broker, 2001, 2115);
-    Thread t3 = new Thread(p3);
-    t1.start();
-    t2.start();
-    t3.start();
+      var p3 = new PublishTask(broker, 2001, 2115);
+      Thread t3 = new Thread(p3);
+      t1.start();
+      t2.start();
+      t3.start();
 
-    t1.join();
-    t2.join();
-    t3.join();
+      t1.join();
+      t2.join();
+      t3.join();
 
-    Thread.sleep(100);
+      Thread.sleep(100);
 
-    assertEquals(300, cntD.get());
-    assertEquals(300, cntDL.get());
+      assertEquals(300, cntD.get());
+      assertEquals(300, cntDL.get());
+    } finally {
+      stop();
+    }
   }
 
   class PublishTask implements Runnable {
