@@ -87,6 +87,16 @@ public class MatchingService {
           TaxonomicStatus.AMBIGUOUS_SYNONYM, -1,
           TaxonomicStatus.PROVISIONALLY_ACCEPTED, -5,
           TaxonomicStatus.MISAPPLIED, -10);
+  // sort by id length and chars
+  static final Comparator<NameUsageMatch.Usage> USAGE_KEY_LENGTH = Comparator.comparing(
+    NameUsageMatch.Usage::getKey, Comparator.comparingInt(String::length)
+  );
+  static final Comparator<NameUsageMatch.Usage> USAGE_KEY_ALPHA = Comparator.comparing(
+    NameUsageMatch.Usage::getKey, Comparator.naturalOrder()
+  );
+  public static final Comparator<NameUsageMatch> MATCH_KEY_ORDER = Comparator
+    .comparing(NameUsageMatch::getUsage, USAGE_KEY_LENGTH)
+    .thenComparing(NameUsageMatch::getUsage, USAGE_KEY_ALPHA);
 
   private final AuthorComparator authComp;
 
@@ -862,7 +872,7 @@ public class MatchingService {
    * @param canonicalName the canonical name to match against
    * @param rank the rank to match against
    * @param lc the classification to match against
-   * @param exclude the list of keys to exclude
+   * @param exclude an optional list of keys to exclude
    * @param mode the matching mode to use
    * @param verbose if true, add notes to the match object
    * @return the best match, might contain no usageKey
@@ -905,10 +915,10 @@ public class MatchingService {
           m.getDiagnostics().setConfidence(0);
           addNote(m, "excluded by " + m.getUsage().getKey());
         } else {
-          for (Rank r : Rank.DWC_RANKS) {
-            if (exclude.contains(m.getHigherRankKey(r))) {
+          for (var ht : m.getClassification()) {
+            if (exclude.contains(ht.getKey())) {
               m.getDiagnostics().setConfidence(0);
-              addNote(m, "excluded by " + m.getHigherRankKey(r));
+              addNote(m, "excluded by " + ht.getKey());
               break;
             }
           }
@@ -961,10 +971,9 @@ public class MatchingService {
             }
           }
           if (sameClassification) {
-            // if they both have the same classification pick the one with the lowest, hence oldest
-            // id!
-            // FIXME keys are no longer numeric
-            //            Collections.sort(suitableMatches, USAGE_KEY_ORDER);
+            // if they both have the same classification pick the one with the shortest and first sorting id.
+            // Stable IDs in ChecklistBank are generated based on integers and thus represent older identifiers.
+            Collections.sort(suitableMatches, MATCH_KEY_ORDER);
             best = suitableMatches.get(0);
             addNote(best, suitableMatches.size() + " synonym homonyms");
           } else {

@@ -97,10 +97,14 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   public String getHigherRankKey(Rank rank) {
+    var hrn = getHigherRankedName(rank);
+    return hrn == null ? null : hrn.getKey();
+  }
+
+  public RankedName getHigherRankedName(Rank rank) {
     return this.getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
-        .map(RankedName::getKey)
         .orElse(null);
   }
 
@@ -307,7 +311,7 @@ public class NameUsageMatch implements LinneanClassification {
     List<ProcessFlag> processingFlags;
     @Schema(description = "Confidence level in percent")
     Integer confidence;
-    @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")
+    @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, PROVISIONALLY ACCEPTED, etc.")
     TaxonomicStatus status;
     @Schema(description = "Additional notes about the match")
     String note;

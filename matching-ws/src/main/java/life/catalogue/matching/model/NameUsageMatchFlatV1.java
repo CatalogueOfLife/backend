@@ -3,6 +3,7 @@ package life.catalogue.matching.model;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,13 +31,13 @@ public class NameUsageMatchFlatV1 implements Serializable {
   private String canonicalName;
   private String rank;
   private NameUsageMatchV1.TaxonomicStatusV1 status;
+  private Boolean synonym;
   private Integer confidence;
   private String note;
   private NameUsageMatchV1.MatchTypeV1 matchType;
   private List<NameUsageMatchFlatV1> alternatives;
   private String kingdom;
   private String phylum;
-  private Boolean synonym;
   @JsonProperty("class")
   private String clazz;
   private String order;
@@ -53,6 +54,42 @@ public class NameUsageMatchFlatV1 implements Serializable {
   private Integer subgenusKey;
   private Integer speciesKey;
 
+  private void setHigherRanks(Collection<NameUsageMatch.RankedName> rns) {
+    for (NameUsageMatch.RankedName rn : rns) {
+      switch (rn.getRank()) {
+        case KINGDOM:
+          setKingdom(rn.getName());
+          setKingdomKey(Integer.parseInt(rn.getKey()));
+          break;
+        case PHYLUM:
+          setPhylum(rn.getName());
+          setPhylumKey(Integer.parseInt(rn.getKey()));
+          break;
+        case CLASS:
+          setClazz(rn.getName());
+          setClassKey(Integer.parseInt(rn.getKey()));
+          break;
+        case ORDER:
+          setOrder(rn.getName());
+          setOrderKey(Integer.parseInt(rn.getKey()));
+        case FAMILY:
+          setFamily(rn.getName());
+          setFamilyKey(Integer.parseInt(rn.getKey()));
+          break;
+        case GENUS:
+          setGenus(rn.getName());
+          setGenusKey(Integer.parseInt(rn.getKey()));
+        case SUBGENUS:
+          setSubgenus(rn.getName());
+          setSubgenusKey(Integer.parseInt(rn.getKey()));
+          break;
+        case SPECIES:
+          setSpecies(rn.getName());
+          setSpeciesKey(Integer.parseInt(rn.getKey()));
+          break;
+      }
+    }
+  }
   public static Optional<NameUsageMatchFlatV1> createFrom(NameUsageMatch nameUsageMatch) {
     if (nameUsageMatch == null || nameUsageMatch.getUsage() == null) return Optional.empty();
 
@@ -85,31 +122,7 @@ public class NameUsageMatchFlatV1 implements Serializable {
               .filter(Optional::isPresent)
               .map(Optional::get)
               .collect(Collectors.toList()));
-    match.setKingdom(nameUsageMatch.getKingdom());
-    match.setPhylum(nameUsageMatch.getPhylum());
-    match.setClazz(nameUsageMatch.getClazz());
-    match.setOrder(nameUsageMatch.getOrder());
-    match.setFamily(nameUsageMatch.getFamily());
-    match.setGenus(nameUsageMatch.getGenus());
-    match.setSubgenus(nameUsageMatch.getSubgenus());
-    match.setSpecies(nameUsageMatch.getSpecies());
-
-    if (nameUsageMatch.getHigherRankKey(Rank.KINGDOM) != null)
-      match.setKingdomKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.KINGDOM)));
-    if (nameUsageMatch.getHigherRankKey(Rank.PHYLUM) != null)
-      match.setPhylumKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.PHYLUM)));
-    if (nameUsageMatch.getHigherRankKey(Rank.CLASS) != null)
-      match.setClassKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.CLASS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.ORDER) != null)
-      match.setOrderKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.ORDER)));
-    if (nameUsageMatch.getHigherRankKey(Rank.FAMILY) != null)
-      match.setFamilyKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.FAMILY)));
-    if (nameUsageMatch.getHigherRankKey(Rank.GENUS) != null)
-      match.setGenusKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.GENUS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.SUBGENUS) != null)
-      match.setSubgenusKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SUBGENUS)));
-    if (nameUsageMatch.getHigherRankKey(Rank.SPECIES) != null)
-      match.setSpeciesKey(Integer.parseInt(nameUsageMatch.getHigherRankKey(Rank.SPECIES)));
+    match.setHigherRanks(nameUsageMatch.classification);
     return Optional.of(match);
   }
 }
