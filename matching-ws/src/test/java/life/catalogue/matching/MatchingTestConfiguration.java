@@ -17,8 +17,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.NameUsage;
 import life.catalogue.matching.model.NameUsageMatch;
-import life.catalogue.matching.model.NameUsageMatchFlatV1;
-import life.catalogue.matching.model.NameUsageMatchV1;
+import life.catalogue.matching.model.v1.NameUsageMatchFlatV1;
+import life.catalogue.matching.model.v1.NameUsageMatchV1;
 import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.util.Dictionaries;
 import life.catalogue.matching.util.HigherTaxaComparator;
@@ -202,8 +202,6 @@ public class MatchingTestConfiguration {
     var nb = toNU(m.getUsage(), parentID);
     if (m.isSynonym()) {
       nb.status(TaxonomicStatus.SYNONYM.name());
-    } else if (m.getUsage().isDoubtful()) {
-      nb.status(TaxonomicStatus.PROVISIONALLY_ACCEPTED.name());
     }
     return nb.build();
   }

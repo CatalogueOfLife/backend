@@ -1,7 +1,7 @@
 package life.catalogue.matching.util;
 
 import life.catalogue.matching.model.Kingdom;
-import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.RankNameResolver;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -63,15 +63,15 @@ public class HigherTaxaComparator {
    */
   public int compareHigherRank(
       Rank rank,
-      LinneanClassification query,
-      LinneanClassification ref,
+      RankNameResolver query,
+      RankNameResolver ref,
       int match,
       int mismatch,
       int missing) {
-    if (!StringUtils.isBlank(query.getHigherRank(rank))
-        && !StringUtils.isBlank(ref.getHigherRank(rank))) {
-      String querySyn = lookup(query.getHigherRank(rank), rank);
-      String refSyn = lookup(ref.getHigherRank(rank), rank);
+    if (!StringUtils.isBlank(query.nameFor(rank))
+        && !StringUtils.isBlank(ref.nameFor(rank))) {
+      String querySyn = lookup(query.nameFor(rank), rank);
+      String refSyn = lookup(ref.nameFor(rank), rank);
       if (!StringUtils.isBlank(querySyn)
           && !StringUtils.isBlank(refSyn)
           && querySyn.equalsIgnoreCase(refSyn)) {
@@ -83,8 +83,8 @@ public class HigherTaxaComparator {
     return missing;
   }
 
-  public boolean isInKingdoms(LinneanClassification n, Kingdom... kingdoms) {
-    String syn = lookup(n.getKingdom(), Rank.KINGDOM);
+  public boolean isInKingdoms(RankNameResolver n, Kingdom... kingdoms) {
+    String syn = lookup(n.nameFor(Rank.KINGDOM), Rank.KINGDOM);
     if (Objects.nonNull(syn) && !syn.isEmpty()) {
       for (Kingdom kingdom : kingdoms) {
         if (syn.equalsIgnoreCase(kingdom.name())) {

@@ -1,5 +1,7 @@
 package life.catalogue.matching.util;
 
+import com.opencsv.bean.CsvBindByName;
+
 /**
  * Constants for the index
  */
@@ -12,9 +14,14 @@ public class IndexConstants {
   public static final String FIELD_RANK = "rank";
   public static final String FIELD_STATUS = "status";
   public static final String FIELD_PARENT_ID = "parentId";
-  public static final String FIELD_NOMENCLATURAL_CODE = "nomcode";
-  public static final String FIELD_PARSED_NAME = "parsedName";
+  public static final String FIELD_NOMENCLATURAL_CODE = "code";
   public static final String FIELD_CLASSIFICATION = "classification";
+  public static final String FIELD_GENERICNAME = "genericName";
+  public static final String FIELD_INFRAGENERIC_EPITHET = "infragenericEpithet";
+  public static final String FIELD_SPECIFIC_EPITHET = "specificEpithet";
+  public static final String FIELD_INFRASPECIFIC_EPITHET = "infraspecificEpithet";
+  public static final String FIELD_TYPE = "type";
+  public static final String FIELD_FORMATTED = "formatted";
   public static final String FIELD_CATEGORY = "category";
   public static final String FIELD_JOIN_ID = "joinId";
   public static final String FIELD_RIGHT_NESTED_SET_ID = "rgt";

@@ -2,6 +2,7 @@
  <configuration debug="false">
   <conversionRule conversionWord="highlight"
                   converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
+
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
       <pattern>
@@ -23,7 +24,11 @@
     <appender-ref ref="MATCH_CONTROLLER"/>
   </logger>
 
-  <root level="WARN">
+  <logger name="life.catalogue.matching.controller.v1.MatchV1Controller" level="INFO" additivity="false">
+    <appender-ref ref="MATCH_CONTROLLER"/>
+  </logger>
+
+  <root level="INFO">
     <appender-ref ref="CONSOLE"/>
   </root>
 
@@ -31,7 +36,9 @@
   <logger name="life.catalogue.matching.index" level="INFO"/>
   <logger name="life.catalogue.matching.service" level="INFO"/>
   <logger name="life.catalogue.matching.Main" level="INFO"/>
+  <logger name="life.catalogue.matching.controller" level="INFO"/>
   <logger name="life.catalogue.common.tax" level="ERROR"/>
-  <logger name="org.springframework.web" level="ERROR"/>
+  <logger name="org.gbif.nameparser" level="ERROR"/>
+  <logger name="org.springframework" level="ERROR"/>
   <logger name="org.apache.catalina.core" level="ERROR"/>
 </configuration>

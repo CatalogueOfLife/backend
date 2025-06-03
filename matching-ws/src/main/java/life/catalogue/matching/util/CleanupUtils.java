@@ -1,6 +1,6 @@
 package life.catalogue.matching.util;
 
-import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.ClassificationQuery;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
 
@@ -57,10 +57,10 @@ public class CleanupUtils {
     return Strings.emptyToNull(x.trim());
   }
 
-  public static LinneanClassification clean(LinneanClassification cl) {
+  public static ClassificationQuery clean(ClassificationQuery cl) {
     for (Rank rank : HIGHER_RANKS) {
-      if (cl.getHigherRank(rank) != null) {
-        String val = CleanupUtils.clean(cl.getHigherRank(rank));
+      if (cl.nameFor(rank) != null) {
+        String val = CleanupUtils.clean(cl.nameFor(rank));
         if (val != null) {
           Matcher m = FIRST_WORD.matcher(val);
           if (m.find()) {
@@ -72,7 +72,6 @@ public class CleanupUtils {
     cl.setSpecies(clean(cl.getSpecies()));
     return cl;
   }
-
 
   public static String removeNulls(String value) {
     if (value == null) {

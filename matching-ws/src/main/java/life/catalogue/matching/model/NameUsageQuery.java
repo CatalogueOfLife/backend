@@ -23,7 +23,7 @@ public class NameUsageQuery {
   final public String specificEpithet;
   final public String infraSpecificEpithet;
   final public Rank rank;
-  final public LinneanClassification classification;
+  final public ClassificationQuery classification;
   final public Set<String> exclude;
   final public Boolean strict;
   final public Boolean verbose;
@@ -34,15 +34,13 @@ public class NameUsageQuery {
     String taxonConceptID,
     String scientificNameID,
     String scientificName,
-    String scientificName2,
-    String authorship,
-    String authorship2,
+    String scientificNameAuthorship,
     String genericName,
     String specificEpithet,
     String infraspecificEpithet,
-    String rank,
-    String rank2,
-    Classification classification,
+    String taxonRank,
+    String verbatimTaxonRank,
+    ClassificationQuery classification,
     Set<String> exclude,
     Boolean strict,
     Boolean verbose
@@ -52,12 +50,12 @@ public class NameUsageQuery {
       removeNulls(taxonID),
       removeNulls(taxonConceptID),
       removeNulls(scientificNameID),
-      first(removeNulls(scientificName), removeNulls(scientificName2)),
-      first(removeNulls(authorship), removeNulls(authorship2)),
+      scientificName,
+      scientificNameAuthorship,
       removeNulls(genericName),
       removeNulls(specificEpithet),
       removeNulls(infraspecificEpithet),
-      parseRank(first(removeNulls(rank), removeNulls(rank2))),
+      parseRank(first(removeNulls(taxonRank), removeNulls(verbatimTaxonRank))),
       clean(classification),
       exclude != null ? exclude.stream().map(Object::toString).collect(Collectors.toSet()) : Set.of(),
       bool(strict),

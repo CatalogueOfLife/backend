@@ -40,6 +40,11 @@ public class Dictionaries {
    * @throws IOException If an I/O error occurs.
    */
   public InputStream getDictionaryInputStream(String domain, String filename) throws IOException {
+
+    if (dictionaryPath.endsWith("/")) {
+      dictionaryPath = dictionaryPath.substring(0, dictionaryPath.length() - 1);
+    }
+
     String filePath = String.join("/", dictionaryPath, domain, filename);
 
     if (!dictionaryPath.startsWith("http")) {

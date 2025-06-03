@@ -27,7 +27,7 @@ pipeline {
     stages {
         stage('Maven build matching-ws') {
           steps {
-              sh 'cd matching-ws && mvn clean install -DskipTests'
+              sh "cd matching-ws && git checkout $GIT_BRANCH && mvn clean install -DskipTests"
           }
         }
 

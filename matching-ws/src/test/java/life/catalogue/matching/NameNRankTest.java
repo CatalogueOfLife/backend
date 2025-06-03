@@ -1,8 +1,8 @@
 package life.catalogue.matching;
 
 import life.catalogue.matching.index.NameNRank;
-import life.catalogue.matching.model.Classification;
-import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.ClassificationQuery;
+import life.catalogue.matching.model.RankNameResolver;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -17,7 +17,7 @@ class NameNRankTest {
     assertName("Asteraceae Mill.", "Asteraceae", "Mill.");
     assertName("Lepidothrix iris L.", "Lepidothrix iris", "L.", "iris", "", null);
 
-    LinneanClassification cl = new Classification();
+    ClassificationQuery cl = new ClassificationQuery();
     cl.setKingdom("Animalia");
     cl.setPhylum("Chordata");
     cl.setClazz("Aves");
@@ -106,7 +106,7 @@ class NameNRankTest {
       String genericName,
       String specificEpithet,
       String infraSpecificEpithet,
-      LinneanClassification classification) {
+      RankNameResolver classification) {
     assertName(
         expected,
         null,
@@ -127,7 +127,7 @@ class NameNRankTest {
       String specificEpithet,
       Rank rank,
       String infraSpecificEpithet,
-      LinneanClassification classification) {
+      RankNameResolver classification) {
     assertName(
         expected,
         null,
@@ -149,7 +149,7 @@ class NameNRankTest {
       String specificEpithet,
       Rank rank,
       String infraSpecificEpithet,
-      LinneanClassification classification) {
+      RankNameResolver classification) {
     assertName(
         expected,
         expectedRank,
@@ -171,7 +171,7 @@ class NameNRankTest {
       String genericName,
       String specificEpithet,
       String infraSpecificEpithet,
-      LinneanClassification classification) {
+      RankNameResolver classification) {
     assertEquals(
         new NameNRank(expected, expectedRank),
         NameNRank.build(

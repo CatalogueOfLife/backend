@@ -47,7 +47,7 @@ public class MatchingServiceStrictIT {
   }
 
   private NameUsageMatch query(String name, Rank rank, Kingdom kingdom) {
-    LinneanClassification cl = new Classification();
+    ClassificationQuery cl = new ClassificationQuery();
     cl.setKingdom(kingdom.name());
     return matcher.match(new NameUsageQuery(null, null, null, null, name, null, null, null, null, rank, cl, null, true, true));
   }
@@ -95,11 +95,11 @@ public class MatchingServiceStrictIT {
       System.out.println(
           "  "
               + JOINER.join(
-                  best.getKingdom(),
-                  best.getPhylum(),
-                  best.getClazz(),
-                  best.getOrder(),
-                  best.getFamily()));
+                  best.nameFor(Rank.KINGDOM),
+                  best.nameFor(Rank.PHYLUM),
+                  best.nameFor(Rank.CLASS),
+                  best.nameFor(Rank.ORDER),
+                  best.nameFor(Rank.FAMILY)));
       System.out.println("diag: " + best.getDiagnostics().getNote());
     }
 

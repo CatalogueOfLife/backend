@@ -818,7 +818,7 @@ public class DatasetIndex {
 
     String status = doc.get(FIELD_STATUS);
     if (status != null && !status.isEmpty()) {
-      u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status.toUpperCase()));
+      u.getUsage().setStatus(TaxonomicStatus.valueOf(status.toUpperCase()));
     }
 
     return u;
@@ -826,68 +826,21 @@ public class DatasetIndex {
 
   private NameUsageMatch.Usage constructUsage(Document doc) {
 
-    Optional<StoredParsedName> storedParsedName = ioUtil.deserialiseField(doc, FIELD_PARSED_NAME, StoredParsedName.class);
-
-    // set the usage
-    NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
+    return NameUsageMatch.Usage.builder()
         .key(doc.get(FIELD_ID))
         .name(doc.get(FIELD_SCIENTIFIC_NAME))
         .authorship(doc.get(FIELD_AUTHORSHIP))
         .rank(Rank.valueOf(doc.get(FIELD_RANK).toUpperCase()))
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-        .code(getCode(doc));
-
-    storedParsedName.ifPresent(pn -> {
-      b.genus(pn.getGenus())
-        .infragenericEpithet(pn.getInfragenericEpithet())
-        .specificEpithet(pn.getSpecificEpithet())
-        .infraspecificEpithet(pn.getInfraspecificEpithet())
-        .cultivarEpithet(pn.getCultivarEpithet())
-        .phrase(pn.getPhrase())
-        .voucher(pn.getVoucher())
-        .nominatingParty(pn.getNominatingParty())
-        .candidatus(pn.isCandidatus())
-        .notho(pn.getNotho())
-        .originalSpelling(pn.getOriginalSpelling())
-        .epithetQualifier(pn.getEpithetQualifier())
-        .type(pn.getType())
-        .extinct(pn.isExtinct())
-
-        .sanctioningAuthor(pn.getSanctioningAuthor())
-        .taxonomicNote(pn.getTaxonomicNote())
-        .nomenclaturalNote(pn.getNomenclaturalNote())
-        .publishedIn(pn.getPublishedIn())
-        .unparsed(pn.getUnparsed())
-        .doubtful(pn.isDoubtful())
-        .manuscript(pn.isManuscript())
-        .state(pn.getState())
-        .warnings(pn.getWarnings().stream().collect(Collectors.toSet()))
-        .formattedName(pn.getFormattedName());
-
-        if (pn.getCombinationAuthorship() != null
-          && pn.getCombinationAuthorship().getAuthors() != null
-          && !pn.getCombinationAuthorship().getAuthors().isEmpty()
-        ) {
-          b.combinationAuthorship(
-            NameUsageMatch.Authorship.builder()
-              .authors(pn.getCombinationAuthorship().getAuthors())
-              .year(pn.getCombinationAuthorship().getYear())
-              .build());
-        }
-
-        if (pn.getBasionymAuthorship() != null
-          && pn.getBasionymAuthorship().getAuthors() != null
-          && !pn.getBasionymAuthorship().getAuthors().isEmpty()
-        ) {
-          b.basionymAuthorship(
-            NameUsageMatch.Authorship.builder()
-              .authors(pn.getBasionymAuthorship().getAuthors())
-              .year(pn.getBasionymAuthorship().getYear())
-              .build());
-        }
-    });
-
-    return  b.build();
+        .genericName(doc.get(FIELD_GENERICNAME))
+        .parentID(doc.get(FIELD_PARENT_ID))
+        .specificEpithet(doc.get(FIELD_SPECIFIC_EPITHET))
+        .infraspecificEpithet(doc.get(FIELD_INFRASPECIFIC_EPITHET))
+        .infragenericEpithet(doc.get(FIELD_INFRAGENERIC_EPITHET))
+        .type(doc.get(FIELD_TYPE))
+        .formattedName(doc.get(FIELD_FORMATTED))
+        .code(getCode(doc))
+        .build();
   }
 
   private static NomCode getCode(Document doc) {

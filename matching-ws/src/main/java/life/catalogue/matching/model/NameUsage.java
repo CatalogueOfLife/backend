@@ -30,8 +30,23 @@ public class NameUsage {
   @CsvBindByName(column = "rank")
   String rank;
 
-  @CsvBindByName(column = "nomenclaturalCode")
-  String nomenclaturalCode;
+  @CsvBindByName(column = "code")
+  String code;
+
+  @CsvBindByName(column = "genericName")
+  String genericName;
+
+  @CsvBindByName(column = "infragenericEpithet")
+  String infragenericEpithet;
+
+  @CsvBindByName(column = "specificEpithet")
+  String specificEpithet;
+
+  @CsvBindByName(column = "infraspecificEpithet")
+  String infraspecificEpithet;
+
+  @CsvBindByName(column = "type")
+  String type;
 
   @CsvBindByName(column = "category")
   String category;

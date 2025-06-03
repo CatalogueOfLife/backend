@@ -239,7 +239,7 @@ public class MatchingService {
 
   public NameUsageMatch match(
       @Nullable String scientificName,
-      @Nullable LinneanClassification classification,
+      @Nullable ClassificationQuery classification,
       boolean strict) {
     return match(
         NameUsageQuery.builder()
@@ -253,7 +253,7 @@ public class MatchingService {
   public NameUsageMatch match(
       @Nullable String scientificName,
       @Nullable Rank rank,
-      @Nullable LinneanClassification classification,
+      @Nullable ClassificationQuery classification,
       boolean strict) {
     return match(
       NameUsageQuery.builder()
@@ -438,7 +438,7 @@ public class MatchingService {
                                                @Nullable String specificEpithet,
                                                @Nullable String infraSpecificEpithet,
                                                @Nullable Rank suppliedRank,
-                                               @Nullable LinneanClassification classification,
+                                               @Nullable ClassificationQuery classification,
                                                Set<String> exclude, boolean strict, boolean verbose) {
     Map<String, Long> timings = new HashMap<>();
 
@@ -464,7 +464,7 @@ public class MatchingService {
     // clean strings, replacing odd whitespace, iso controls and trimming
     scientificName = CleanupUtils.clean(scientificName);
     if (classification == null) {
-      classification = new Classification();
+      classification = new ClassificationQuery();
     } else {
       CleanupUtils.clean(classification);
     }
@@ -481,7 +481,7 @@ public class MatchingService {
       scientificName = parsedName.canonicalNameMinimal();
 
       // parsed genus provided for a name lower than genus?
-      if (classification.getGenus() == null
+      if (classification.nameFor(Rank.GENUS) == null
           && getGenusOrAbove(parsedName) != null
           && parsedName.getRank() != null
           && parsedName.getRank().isInfragenericStrictly()) {
@@ -641,7 +641,7 @@ public class MatchingService {
     // use classification query strings
     for (Rank qr : HIGHER_QUERY_RANK) {
       if (supraGenericOnly && !qr.isSuprageneric()) continue;
-      String name = classification.getHigherRank(qr);
+      String name = classification.nameFor(qr);
       if (!StringUtils.isEmpty(name)) {
         match =
             match(
@@ -668,11 +668,11 @@ public class MatchingService {
         verbose ? match1.getDiagnostics().getAlternatives() : null);
   }
 
-  private boolean nextAboveGenusDiffers(LinneanClassification cl, NameUsageMatch cl2) {
+  private boolean nextAboveGenusDiffers(RankNameResolver cl, NameUsageMatch cl2) {
     for (Rank r = RankUtils.nextHigherLinneanRank(Rank.GENUS);
          r != null;
          r = RankUtils.nextHigherLinneanRank(r)) {
-      String h1 = cl.getHigherRank(r);
+      String h1 = cl.nameFor(r);
       String h2 = getHigherRank(cl2, r);
       if (h1 != null && h2 != null) {
         return !Objects.equals(h1, h2);
@@ -745,7 +745,7 @@ public class MatchingService {
       ParsedName pn,
       String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, true);
@@ -759,7 +759,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank());
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
       // -25 - 0
       final int fuzzyMatchUnlikely = fuzzyMatchUnlikelyhood(canonicalName, m);
 
@@ -789,7 +789,7 @@ public class MatchingService {
   }
 
   private List<NameUsageMatch> queryHigher(
-      String canonicalName, Rank rank, LinneanClassification lc, boolean verbose) {
+    String canonicalName, Rank rank, RankNameResolver lc, boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, false);
     for (NameUsageMatch m : matches) {
@@ -800,7 +800,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank()) * 2;
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()
@@ -822,7 +822,7 @@ public class MatchingService {
       ParsedName pn,
       String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, false);
@@ -835,12 +835,12 @@ public class MatchingService {
       final int kingdomSimilarity =
           incNegScore(
               kingdomSimilarity(
-                  htComp.toKingdom(lc.getKingdom()), htComp.toKingdom(m.getKingdom())),
+                  htComp.toKingdom(lc.nameFor(Rank.KINGDOM)), htComp.toKingdom(m.nameFor(Rank.KINGDOM))),
               10);
       // -10 - +5
       final int rankSimilarity = incNegScore(rankSimilarity(rank, m.getUsage().getRank()), 10);
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()
@@ -883,7 +883,7 @@ public class MatchingService {
       @Nullable ParsedName pn,
       @Nullable String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       Set<String> exclude,
       @NotNull final MatchingMode mode,
       final boolean verbose) {
@@ -1129,24 +1129,24 @@ public class MatchingService {
     return 0;
   }
 
-  private boolean equalClassification(LinneanClassification best, LinneanClassification m) {
+  private boolean equalClassification(RankNameResolver best, RankNameResolver m) {
     return equalClassification(best, m, null);
   }
 
   /** Compares classifications starting from kingdom stopping after the stopRank if provided. */
   private boolean equalClassification(
-      LinneanClassification best, LinneanClassification m, Rank stopRank) {
+    RankNameResolver best, RankNameResolver m, Rank stopRank) {
     for (Rank r : Rank.LINNEAN_RANKS) {
       if (stopRank != null && stopRank.higherThan(r)) {
         break;
 
-      } else if (best.getHigherRank(r) == null) {
-        if (m.getHigherRank(r) != null) {
+      } else if (best.nameFor(r) == null) {
+        if (m.nameFor(r) != null) {
           return false;
         }
 
       } else {
-        if (m.getHigherRank(r) == null || !best.getHigherRank(r).equals(m.getHigherRank(r))) {
+        if (m.nameFor(r) == null || !best.nameFor(r).equals(m.nameFor(r))) {
           return false;
         }
       }
@@ -1266,7 +1266,7 @@ public class MatchingService {
 
   @VisibleForTesting
   protected int classificationSimilarity(
-      LinneanClassification query, LinneanClassification reference) {
+    RankNameResolver query, RankNameResolver reference) {
     // kingdom is super important
     int rate = htComp.compareHigherRank(Rank.KINGDOM, query, reference, 5, -10, -1);
     if (rate == -10) {
