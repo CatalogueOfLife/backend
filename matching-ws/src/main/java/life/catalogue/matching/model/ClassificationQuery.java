@@ -24,7 +24,11 @@ public class ClassificationQuery implements RankNameResolver {
   @Hidden
   String clazz;
   String order;
+  String superfamily;
   String family;
+  String subfamily;
+  String tribe;
+  String subtribe;
   String genus;
   String subgenus;
   String species;
@@ -40,14 +44,23 @@ public class ClassificationQuery implements RankNameResolver {
           return clazz;
         case ORDER:
           return order;
+        case SUPERFAMILY:
+          return superfamily;
         case FAMILY:
           return family;
+        case SUBFAMILY:
+          return subfamily;
+        case TRIBE:
+          return tribe;
+        case SUBTRIBE:
+          return subtribe;
         case GENUS:
           return genus;
         case SUBGENUS:
           return subgenus;
         case SPECIES:
           return species;
+        default:
       }
     }
     return null;
@@ -68,8 +81,20 @@ public class ClassificationQuery implements RankNameResolver {
         case ORDER:
           setOrder(name);
           break;
+        case SUPERFAMILY:
+          setSuperfamily(name);
+          break;
         case FAMILY:
           setFamily(name);
+          break;
+        case SUBFAMILY:
+          setSubfamily(name);
+          break;
+        case TRIBE:
+          setTribe(name);
+          break;
+        case SUBTRIBE:
+          setSubtribe(name);
           break;
         case GENUS:
           setGenus(name);
@@ -89,10 +114,14 @@ public class ClassificationQuery implements RankNameResolver {
     appendIfNotNull(sb, "p", phylum);
     appendIfNotNull(sb, "c", clazz);
     appendIfNotNull(sb, "o", order);
+    appendIfNotNull(sb, "spf", superfamily);
     appendIfNotNull(sb, "f", family);
+    appendIfNotNull(sb, "sbf", subfamily);
     appendIfNotNull(sb, "g", genus);
     appendIfNotNull(sb, "sg", subgenus);
     appendIfNotNull(sb, "s", species);
+    appendIfNotNull(sb, "t", tribe);
+    appendIfNotNull(sb, "st", subtribe);
     return sb.toString();
   }
 

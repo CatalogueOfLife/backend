@@ -163,10 +163,30 @@ public class MatchController implements ErrorController {
             "See Darwin core term " +
             "<a href='https://dwc.tdwg.org/terms/#dwc:class'>class</a> for more details",
           in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "superfamily",
+          description = "Superfamily to match. " +
+            "See Darwin core term " +
+            "<a href='https://dwc.tdwg.org/terms/#dwc:superfamily'>superfamily</a> for more details",
+          in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
         @Parameter(name = "family",
           description = "Family to match. " +
             "See Darwin core term " +
             "<a href='https://dwc.tdwg.org/terms/#dwc:family'>family</a> for more details",
+          in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "subfamily",
+          description = "Subfamily to match. " +
+            "See Darwin core term " +
+            "<a href='https://dwc.tdwg.org/terms/#dwc:subfamily'>subfamily</a> for more details",
+          in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "tribe",
+          description = "Tribe to match. " +
+            "See Darwin core term " +
+            "<a href='https://dwc.tdwg.org/terms/#dwc:tribe'>tribe</a> for more details",
+          in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
+        @Parameter(name = "subtribe",
+          description = "Subtribe to match. " +
+            "See Darwin core term " +
+            "<a href='https://dwc.tdwg.org/terms/#dwc:subtribe'>subtribe</a> for more details",
           in = ParameterIn.QUERY, schema = @Schema(implementation = String.class)),
         @Parameter(name = "genus",
           description = "Genus to match. " +

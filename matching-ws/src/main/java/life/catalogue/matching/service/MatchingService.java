@@ -78,7 +78,13 @@ public class MatchingService {
       Set.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID_FORMULA);
   private static final List<Rank> HIGHER_QUERY_RANK =
       List.of(
-          Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
+          Rank.SPECIES, Rank.GENUS,
+        Rank.SUBFAMILY,
+        Rank.SUBTRIBE,
+        Rank.TRIBE,
+        Rank.FAMILY,
+        Rank.SUPERFAMILY,
+        Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
   // https://github.com/CatalogueOfLife/backend/issues/1314
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
       Map.of(
@@ -640,7 +646,8 @@ public class MatchingService {
 
     // use classification query strings
     for (Rank qr : HIGHER_QUERY_RANK) {
-      if (supraGenericOnly && !qr.isSuprageneric()) continue;
+      if (supraGenericOnly && !qr.isSuprageneric())
+        continue;
       String name = classification.nameFor(qr);
       if (!StringUtils.isEmpty(name)) {
         match =

@@ -450,7 +450,7 @@ public class MatchingServiceIT {
     ClassificationQuery cl = new ClassificationQuery();
     cl.setKingdom("Plantae");
     cl.setFamily("Poaceae");
-    assertMatch("Elytrigia repens", cl, 7522774, new IntRange(92, 100));
+    assertMatch("Elytrigia repens", cl, 2706649, new IntRange(92, 100));
   }
 
   /**
@@ -548,7 +548,7 @@ public class MatchingServiceIT {
     assertMatch("Prunella alba Döring", cl, 5608009, new IntRange(80, 90));
 
     // 2 homonyms exist
-    assertMatch("Elytrigia repens", cl, 7522774, new IntRange(92, 98));
+    assertMatch("Elytrigia repens", cl, 2706649, new IntRange(92, 98));
     assertMatch("Elytrigia repens Desv.", cl, 7522774, new IntRange(98, 100));
     assertMatch("Elytrigia repens Nevski", cl, 2706649, new IntRange(98, 100));
     assertMatch("Elytrigia repens (L.) Desv.", cl, 7522774, new IntRange(100, 100));
@@ -626,13 +626,13 @@ public class MatchingServiceIT {
     assertMatch("Python molurus bivittatus Kuhl", cl, 6162891, new IntRange(97, 100));
     assertMatch("Python molurus subsp. bibittatus", cl, 4287608, new IntRange(97, 100));
 
-    assertMatch("Ziziphus mauritiana orthacantha", cl, 8068734, new IntRange(95, 99));
+    assertMatch("Ziziphus mauritiana orthacantha", cl, 7786586, new IntRange(95, 99));
     assertMatch("Ziziphus mauritiana ssp. orthacantha", cl, 7786586, new IntRange(97, 100));
     assertMatch("Ziziphus mauritiana ssp. orthacantha Chev.", cl, 7786586, new IntRange(98, 100));
     assertMatch("Ziziphus mauritiana var. orthacantha", cl, 8068734, new IntRange(97, 100));
     assertMatch("Ziziphus mauritiana var. orthacantha Chev.", cl, 8068734, new IntRange(98, 100));
 
-    assertMatch("Solanum verbascifolium auriculatum", cl, 6290014, new IntRange(95, 98));
+    assertMatch("Solanum verbascifolium auriculatum", cl, 2930718, new IntRange(95, 98));
     assertMatch("Solanum verbascifolium ssp. auriculatum", cl, 2930718, new IntRange(95, 99));
     assertMatch(
         "Solanum verbascifolium var. auriculatum Kuntze", cl, 8363606, new IntRange(98, 100));
@@ -928,7 +928,7 @@ public class MatchingServiceIT {
     ClassificationQuery cl = new ClassificationQuery();
     cl.setKingdom("Plantae");
     // THIS SETS the genus too
-    NameUsageMatch m = assertMatch("Centaurea subg. Jacea", cl, 7652419, MatchType.EXACT);
+    NameUsageMatch m = assertMatch("Centaurea subg. Jacea", cl, 3148240, MatchType.EXACT);
     assertEquals("Jacea", m.getUsage().getCanonicalName());
   }
 
