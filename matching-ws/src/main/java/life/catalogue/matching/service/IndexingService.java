@@ -259,7 +259,12 @@ public class IndexingService {
         "n.authorship as authorship, " +
         "n.rank as rank, " +
         "nu.status as status, " +
-        "n.code as nomenclaturalCode, " +
+        "n.code as code, " +
+        "n.type as type, " +
+        "n.genus as genericName, " +
+        "n.infrageneric_epithet as infragenericEpithet, " +
+        "n.specific_epithet as specificEpithet, " +
+        "n.infraspecific_epithet as infraspecificEpithet, " +
         "'' as extension, " +
         "'' as category " +
         "FROM name_usage nu " +
@@ -282,17 +287,23 @@ public class IndexingService {
 
         try (ResultSet rs = st.executeQuery(query)) {
           while (rs.next()) {
-            NameUsage name = new NameUsage(
-              rs.getString("id"),
-              rs.getString("parentId"),
-              rs.getString("scientificName"),
-              rs.getString("authorship"),
-              rs.getString("status"),
-              rs.getString("rank"),
-              rs.getString("nomenclaturalCode"),
-              rs.getString("category"),
-              rs.getString("extension")
-            );
+
+            NameUsage name = NameUsage.builder()
+              .id(rs.getString("id"))
+              .parentId(rs.getString("parentId"))
+              .scientificName(rs.getString("scientificName"))
+              .authorship(rs.getString("authorship"))
+              .status(rs.getString("status"))
+              .rank(rs.getString("rank"))
+              .code(rs.getString("code"))
+              .type(rs.getString("type"))
+              .genericName(rs.getString("genericName"))
+              .infragenericEpithet(rs.getString("infragenericEpithet"))
+              .specificEpithet(rs.getString("specificEpithet"))
+              .infraspecificEpithet(rs.getString("infraspecificEpithet"))
+              .category(rs.getString("category"))
+              .extension(rs.getString("extension"))
+              .build();
 
             sbc.write(cleanNameUsage(name));
             counter.incrementAndGet();
@@ -374,8 +385,6 @@ public class IndexingService {
     }
     Path metadataPath = Paths.get(joinIndexPath + "/" + METADATA_JSON);
     return Files.exists(metadataPath) && Files.size(metadataPath) != 0;
-
-    // check for metadata file
   }
 
   @Transactional
@@ -416,7 +425,7 @@ public class IndexingService {
         "n.authorship as authorship, " +
         "n.rank as rank, " +
         "nu.status as status, " +
-        "n.code as nomenclaturalCode, " +
+        "n.code as code, " +
         "v.terms as extension, " +
         "'' as category " +
         "FROM " +
@@ -445,20 +454,20 @@ public class IndexingService {
 
         try (ResultSet rs = st.executeQuery(query)) {
           while (rs.next()) {
-            NameUsage nameUsage = new NameUsage(
-              rs.getString("id"),
-              rs.getString("parentId"),
-              rs.getString("scientificName"),
-              rs.getString("authorship"),
-              rs.getString("status"),
-              rs.getString("rank"),
-              rs.getString("nomenclaturalCode"),
-              rs.getString("category"),
-              rs.getString("extension")
-            );
+            NameUsage nameUsage = NameUsage.builder()
+              .id(rs.getString("id"))
+              .parentId(rs.getString("parentId"))
+              .scientificName(rs.getString("scientificName"))
+              .authorship(rs.getString("authorship"))
+              .status(rs.getString("status"))
+              .rank(rs.getString("rank"))
+              .code(rs.getString("code"))
+              .category(rs.getString("category"))
+              .extension(rs.getString("extension"))
+              .build();
             try {
               if (StringUtils.isNotBlank(nameUsage.getExtension())) {
-                // parse it
+                // parse json to retrieve IUCN threat status
                 JsonNode node = objectMapper.readTree(nameUsage.getExtension());
                 nameUsage.setCategory(node.path(IUCN_THREAT_STATUS).asText());
               }
@@ -475,6 +484,13 @@ public class IndexingService {
     }
   }
 
+  /**
+   * Indexes a set of name usages into a new Lucene index in memory.
+   * Only used for testing purposes.
+   *
+   * @param usages the name usages to index
+   * @throws IOException if an error occurs during indexing
+   */
   public static Directory newMemoryIndex(Iterable<NameUsage>... usages) throws IOException {
     log.info("Start building a new RAM index");
     Directory tempDir = new ByteBuffersDirectory();
@@ -483,14 +499,12 @@ public class IndexingService {
     Directory tempNestedDir = new ByteBuffersDirectory();
     IndexWriter nestedWriter = getIndexWriter(tempNestedDir);
 
-    IOUtil ioUtil = new IOUtil();
-
     // creates initial index segments
     writer.commit();
     for (var iter : usages) {
       for (NameUsage u : iter) {
         if (u != null && u.getId() != null) {
-          writer.addDocument(toDoc(u, ioUtil));
+          writer.addDocument(toDoc(u));
         }
       }
     }
@@ -505,6 +519,7 @@ public class IndexingService {
 
     Directory denormedDir = new ByteBuffersDirectory();
     IndexWriter denormedWriter = getIndexWriter(denormedDir);
+    IOUtil ioUtil = new IOUtil();
 
     List<Document> batch = new ArrayList<>();
     for (ScoreDoc hit : hits) {
@@ -745,7 +760,7 @@ public class IndexingService {
             continue;
           }
 
-          Classification classification = new Classification();
+          ClassificationQuery classification = new ClassificationQuery();
           classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
           classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
           classification.setClazz(hierarchy.getOrDefault(Rank.CLASS.name(), ""));
@@ -765,9 +780,6 @@ public class IndexingService {
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
                   nameUsageMatch.getUsage().getKey(), Field.Store.YES)
               );
-
-              // reduce the side of these indexes by removing the parsed name
-              doc.removeField(FIELD_PARSED_NAME);
 
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
@@ -1096,13 +1108,13 @@ public class IndexingService {
         batch.add(nameUsage);
         if (batch.size() >= indexingBatchSize) {
           List<NameUsage> finalBatch = batch;
-          exec.submit(new IndexingTask(indexWriter, ioUtil, finalBatch));
+          exec.submit(new IndexingTask(indexWriter, finalBatch));
           batch = new ArrayList<>();
         }
       }
 
       //final batch
-      exec.submit(new IndexingTask(indexWriter, ioUtil, batch));
+      exec.submit(new IndexingTask(indexWriter, batch));
 
       log.info("Finished reading CSV file. Indexing re" + MAIN_INDEX_DIR + "ing taxa...");
 
@@ -1137,19 +1149,17 @@ public class IndexingService {
   static class IndexingTask implements Runnable {
     private final IndexWriter writer;
     private final List<NameUsage> nameUsages;
-    private final IOUtil ioUtil;
 
-    public IndexingTask(IndexWriter writer, IOUtil ioUtil, List<NameUsage> nameUsages) {
+    public IndexingTask(IndexWriter writer, List<NameUsage> nameUsages) {
       this.writer = writer;
       this.nameUsages = nameUsages;
-      this.ioUtil = ioUtil;
     }
 
     @Override
     public void run() {
       try {
         for (NameUsage nameUsage : nameUsages) {
-          Document doc = toDoc(nameUsage, ioUtil);
+          Document doc = toDoc(nameUsage);
           writer.addDocument(doc);
         }
         writer.flush();
@@ -1180,16 +1190,7 @@ public class IndexingService {
    * @param nameUsage to convert to lucene document
    * @return lucene document
    */
-  protected Document toDoc(NameUsage nameUsage) {
-    return toDoc(nameUsage, new IOUtil());
-  }
-
-  /**
-   * Generate the lucene document for a name usage
-   * @param nameUsage to convert to lucene document
-   * @return lucene document
-   */
-  protected static Document toDoc(NameUsage nameUsage, IOUtil ioUtil) {
+  protected static Document toDoc(NameUsage nameUsage) {
 
     Document doc = new Document();
     /*
@@ -1204,8 +1205,8 @@ public class IndexingService {
     ParsedName pn = null;
     NomCode nomCode = null;
     try {
-      if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
-        nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
+      if (!StringUtils.isEmpty(nameUsage.getCode())) {
+        nomCode = NomCode.valueOf(nameUsage.getCode());
       }
       pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
       // canonicalMinimal will construct the name without the hybrid marker and authorship
@@ -1218,12 +1219,7 @@ public class IndexingService {
 
     if (pn != null){
       try {
-        // if there an authorship, reparse with it to get the component authorship parts
-        StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
-          getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
-        // Serialize the User object to a byte array
-        ioUtil.serialiseField(doc, FIELD_PARSED_NAME,  storedParsedName);
-
+        doc.add(new StringField(FIELD_FORMATTED, NameFormatter.canonicalCompleteHtml(pn), Field.Store.YES));
       } catch (Exception e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
@@ -1266,8 +1262,28 @@ public class IndexingService {
       doc.add(new SortedDocValuesField(FIELD_PARENT_ID, new BytesRef(nameUsage.getParentId())));
     }
 
-    if (StringUtils.isNotBlank(nameUsage.getNomenclaturalCode())) {
-      doc.add(new StringField(FIELD_NOMENCLATURAL_CODE, nameUsage.getNomenclaturalCode(), Field.Store.YES));
+    if (StringUtils.isNotBlank(nameUsage.getCode())) {
+      doc.add(new StringField(FIELD_NOMENCLATURAL_CODE, nameUsage.getCode(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getType())) {
+      doc.add(new StringField(FIELD_TYPE, nameUsage.getType(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getGenericName())) {
+      doc.add(new StringField(FIELD_GENERICNAME, nameUsage.getGenericName(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getInfragenericEpithet())) {
+      doc.add(new StringField(FIELD_INFRAGENERIC_EPITHET, nameUsage.getInfragenericEpithet(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getSpecificEpithet())) {
+      doc.add(new StringField(FIELD_SPECIFIC_EPITHET, nameUsage.getSpecificEpithet(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getInfraspecificEpithet())) {
+      doc.add(new StringField(FIELD_INFRASPECIFIC_EPITHET, nameUsage.getInfraspecificEpithet(), Field.Store.YES));
     }
 
     if (StringUtils.isNotBlank(nameUsage.getStatus())) {
@@ -1279,65 +1295,5 @@ public class IndexingService {
     }
 
     return doc;
-  }
-
-  @NotNull
-  private static StoredParsedName constructParsedName(NameUsage nameUsage, Rank rank, NomCode nomCode) throws UnparsableNameException, InterruptedException {
-    ParsedName pn = !StringUtils.isBlank(nameUsage.getAuthorship()) ?
-      NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode)
-      : NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
-    return getStoredParsedName(pn);
-  }
-
-  @NotNull
-  private static StoredParsedName getStoredParsedName(ParsedName pn) {
-    StoredParsedName.StoredParsedNameBuilder storedParsedName = StoredParsedName.builder()
-    .isAbbreviated(pn.isAbbreviated())
-    .isAutonym(pn.isAutonym())
-    .isBinomial(pn.isBinomial())
-    .candidatus(pn.isCandidatus())
-    .cultivarEpithet(pn.getCultivarEpithet())
-    .doubtful(pn.isDoubtful())
-    .genus(pn.getGenus())
-    .uninomial(pn.getUninomial())
-    .unparsed(pn.getUnparsed())
-    .isTrinomial(pn.isTrinomial())
-    .isIncomplete(pn.isIncomplete())
-    .isIndetermined(pn.isIndetermined())
-    .terminalEpithet(pn.getTerminalEpithet())
-    .infragenericEpithet(pn.getInfragenericEpithet())
-    .infraspecificEpithet(pn.getInfraspecificEpithet())
-    .extinct(pn.isExtinct())
-    .publishedIn(pn.getPublishedIn())
-    .sanctioningAuthor(pn.getSanctioningAuthor())
-    .specificEpithet(pn.getSpecificEpithet())
-    .phrase(pn.getPhrase())
-    .isPhraseName(pn.isPhraseName())
-    .voucher(pn.getVoucher())
-    .nominatingParty(pn.getNominatingParty())
-    .nomenclaturalNote(pn.getNomenclaturalNote())
-    .warnings(pn.getWarnings())
-    .formattedName(NameFormatter.canonicalCompleteHtml(pn));
-
-    if (pn.getBasionymAuthorship() != null) {
-      storedParsedName.basionymAuthorship(
-        StoredParsedName.StoredAuthorship.builder()
-          .authors(pn.getBasionymAuthorship().getAuthors())
-          .exAuthors(pn.getBasionymAuthorship().getExAuthors())
-          .year(pn.getBasionymAuthorship().getYear())
-          .build()
-      );
-    }
-    if (pn.getCombinationAuthorship() != null) {
-      storedParsedName.combinationAuthorship(
-        StoredParsedName.StoredAuthorship.builder()
-          .authors(pn.getCombinationAuthorship().getAuthors())
-          .exAuthors(pn.getCombinationAuthorship().getExAuthors())
-          .year(pn.getCombinationAuthorship().getYear()).build()
-      );
-    }
-    storedParsedName.type(pn.getType() != null ? pn.getType().name() : null);
-    storedParsedName.notho(pn.getNotho() != null ? pn.getNotho().name() : null);
-    return storedParsedName.build();
   }
 }

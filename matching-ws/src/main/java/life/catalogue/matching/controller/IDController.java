@@ -17,8 +17,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * ID lookup services, largely for debug purposes to check identifiers
- * have been indexed.
+ * ID lookup services, largely for debug purposes to check that identifiers
+ * have been indexed and linked to the main index.
  */
 @RestController
 @Slf4j

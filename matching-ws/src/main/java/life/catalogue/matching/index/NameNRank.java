@@ -1,7 +1,7 @@
 package life.catalogue.matching.index;
 
-import life.catalogue.matching.model.Classification;
-import life.catalogue.matching.model.LinneanClassification;
+import life.catalogue.matching.model.ClassificationQuery;
+import life.catalogue.matching.model.RankNameResolver;
 import life.catalogue.matching.util.CleanupUtils;
 
 import org.gbif.nameparser.api.NamePart;
@@ -66,11 +66,11 @@ public class NameNRank {
       @Nullable String specificEpithet,
       @Nullable String infraSpecificEpithet,
       @Nullable Rank rank,
-      @Nullable LinneanClassification classification) {
+      @Nullable RankNameResolver classification) {
 
     // make sure we have a classification instance
-    classification = classification == null ? new Classification() : classification;
-    final String genus = clean(CleanupUtils.first(genericName, classification.getGenus()));
+    classification = classification == null ? new ClassificationQuery() : classification;
+    final String genus = clean(CleanupUtils.first(genericName, classification.nameFor(Rank.GENUS)));
     // If given primarily trust the scientific name, especially since these can be unparsable names
     // like OTUs
     // only exceptions is when the scientific name clearly is just a part of the atoms - then
@@ -104,7 +104,7 @@ public class NameNRank {
           return new NameNRank(sb.toString(), rank);
 
         } else if (clRank != null) {
-          return new NameNRank(classification.getHigherRank(clRank), clRank);
+          return new NameNRank(classification.nameFor(clRank), clRank);
         } else {
           return new NameNRank(null, rank);
         }
@@ -113,13 +113,13 @@ public class NameNRank {
         // try atomized
         ParsedName pn = new ParsedName();
         pn.setGenus(genus);
-        pn.setInfragenericEpithet(clean(classification.getSubgenus()));
+        pn.setInfragenericEpithet(clean(classification.nameFor(Rank.SUBGENUS)));
         pn.setSpecificEpithet(clean(specificEpithet));
         pn.setInfraspecificEpithet(clean(infraSpecificEpithet));
         pn.setRank(rank);
         // see if species rank in classification can contribute sth
-        if (exists(classification.getSpecies())) {
-          Matcher m = BINOMIAL.matcher(clean(classification.getSpecies()));
+        if (exists(classification.nameFor(Rank.SPECIES))) {
+          Matcher m = BINOMIAL.matcher(clean(classification.nameFor(Rank.SPECIES)));
           if (m.find()) {
             if (pn.getGenus() == null) {
               pn.setGenus(m.group(1));
@@ -127,10 +127,10 @@ public class NameNRank {
             if (pn.getSpecificEpithet() == null) {
               pn.setSpecificEpithet(m.group(2));
             }
-          } else if (pn.getSpecificEpithet() == null && StringUtils.isAllLowerCase(classification.getSpecies())
-              && !clean(classification.getSpecies()).contains(" ")) {
+          } else if (pn.getSpecificEpithet() == null && StringUtils.isAllLowerCase(classification.nameFor(Rank.SPECIES))
+              && !clean(classification.nameFor(Rank.SPECIES)).contains(" ")) {
             // sometimes the field is wrongly used as the species epithet
-            pn.setSpecificEpithet(clean(classification.getSpecies()));
+            pn.setSpecificEpithet(clean(classification.nameFor(Rank.SPECIES)));
           }
         }
         // append author - we don't break it down into parsed name authorships but keep it as one thing
@@ -190,14 +190,14 @@ public class NameNRank {
       @Nullable String genericName,
       @Nullable String specificEpithet,
       @Nullable String infraSpecificEpithet,
-      LinneanClassification cl) {
+      RankNameResolver cl) {
     // without genus given we cannot assemble the name, so lets then just use it as it is
-    if (exists(cl.getGenus()) || exists(genericName) || isSimpleBinomial(cl.getSpecies())) {
+    if (exists(cl.nameFor(Rank.GENUS)) || exists(genericName) || isSimpleBinomial(cl.nameFor(Rank.SPECIES))) {
       // scientific name is just one of the epithets
       if (StringUtils.isAllLowerCase(scientificName)
           && (scientificName.equals(specificEpithet)
               || scientificName.equals(infraSpecificEpithet)
-              || scientificName.equals(cl.getSpecies()))) {
+              || scientificName.equals(cl.nameFor(Rank.SPECIES)))) {
         return false;
       }
     }
@@ -250,9 +250,9 @@ public class NameNRank {
     return StringUtils.trimToNull(scientificName);
   }
 
-  private static Rank lowestRank(LinneanClassification cl) {
+  private static Rank lowestRank(RankNameResolver cl) {
     for (Rank r : REVERSED_DWC_RANKS) {
-      if (exists(cl.getHigherRank(r))) {
+      if (exists(cl.nameFor(r))) {
         return r;
       }
     }

@@ -27,7 +27,12 @@ However, the index can also be generated from a CSV file with the following colu
 * `authorship` - the authorship for this name usage
 * `rank` - the taxonomic rank e.g. GENUS. See the [Rank](https://github.com/gbif/name-parser/blob/master/name-parser-api/src/main/java/org/gbif/nameparser/api/Rank.java) enumeration for a list of recognised values.
 * `status` - the taxonomic status of the usage e.g. ACCEPTED, SYNONYM. See the [TaxonomicStatus](../api/src/main/java/life/catalogue/api/vocab/TaxonomicStatus.java) enumeration for a list of recognised values.
-* `nomenclaturalCode` - the nomenclatural code for this usage e.g. ZOOLOGICAL. See the [NomCode](https://github.com/gbif/name-parser/blob/master/name-parser-api/src/main/java/org/gbif/nameparser/api/NomCode.java) enumeration for a list of recognised values.
+* `code` - the nomenclatural code for this usage e.g. ZOOLOGICAL. See the [NomCode](https://github.com/gbif/name-parser/blob/master/name-parser-api/src/main/java/org/gbif/nameparser/api/NomCode.java) enumeration for a list of recognised values.
+* `genericName` - the generic name for this usage
+* `specificEpithet` - the specific epithet for this usage
+* `infraspecificEpithet` - the infraspecific epithet for this usage
+* `infragenericEpithet` - the infrageneric epithet for this usage
+* `type` - the type for this usage, e.g. SCIENTIFIC
 
 ### Generating an index from ChecklistBank database
 

@@ -2,7 +2,6 @@ package life.catalogue.matching.util;
 
 import life.catalogue.matching.model.StoredClassification;
 import life.catalogue.matching.model.StoredName;
-import life.catalogue.matching.model.StoredParsedName;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -52,8 +51,6 @@ public class IOUtil {
     protected Kryo create () {
       Kryo kryo = new Kryo();
       kryo.register(StoredClassification.class);
-      kryo.register(StoredParsedName.class);
-      kryo.register(StoredParsedName.StoredAuthorship.class);
       kryo.register(StoredName.class);
       kryo.register(ArrayList.class);
       kryo.register(HashSet.class);

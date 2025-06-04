@@ -1,8 +1,10 @@
-package life.catalogue.matching.model;
+package life.catalogue.matching.model.v1;
 
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.matching.model.MatchingIssue;
+import life.catalogue.matching.model.NameUsageMatch;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.ArrayList;
@@ -111,7 +113,7 @@ public class NameUsageMatchV1 {
         DiagnosticsV1.DiagnosticsV1Builder diagBuilder = DiagnosticsV1.builder();
         diagBuilder.matchType(MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
         diagBuilder.confidence(nameUsageMatch.getDiagnostics().getConfidence());
-        diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getDiagnostics().getStatus()));
+        diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getUsage().getStatus()));
         diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
         diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
         if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
