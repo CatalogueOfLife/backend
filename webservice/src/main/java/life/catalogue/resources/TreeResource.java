@@ -48,10 +48,9 @@ public class TreeResource {
                                    @QueryParam("type") TreeNode.Type type,
                                    @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                    @QueryParam("insertPlaceholder") boolean placeholder,
-                                   @QueryParam("showEstimates") boolean estimates,
                                    @QueryParam("limit") Integer limit,
                                    @QueryParam("offset") Integer offset) {
-    return tree.root(datasetKey, catalogueKey, placeholder, estimates, inclExtinct, type, page(limit, offset));
+    return tree.root(datasetKey, catalogueKey, placeholder, inclExtinct, type, page(limit, offset));
   }
   
   @GET
@@ -61,9 +60,8 @@ public class TreeResource {
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
-                                @QueryParam("showEstimates") boolean estimates,
                                 @QueryParam("type") TreeNode.Type type) {
-    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, estimates, type);
+    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, type);
   }
 
   @DELETE
@@ -82,11 +80,10 @@ public class TreeResource {
                                        @PathParam("id") String id,
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
                                        @QueryParam("insertPlaceholder") boolean placeholder,
-                                       @QueryParam("showEstimates") boolean estimates,
                                        @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                        @QueryParam("type") TreeNode.Type type,
                                        @QueryParam("limit") Integer limit,
                                        @QueryParam("offset") Integer offset) {
-    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, estimates, inclExtinct, type, page(limit, offset));
+    return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, inclExtinct, type, page(limit, offset));
   }
 }

@@ -206,6 +206,7 @@ public class DatasetInfoCache implements DatasetListener {
   @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
+      LOG.info("Deletion event registered for dataset {}", event.key);
       var info = get(event.key, true);
       // mark it as deleted in the cache
       infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, info.publisherKey, true));
