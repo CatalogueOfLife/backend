@@ -12,8 +12,8 @@ public class DatasetChanged extends EntityChanged<Integer, Dataset> {
   public DatasetChanged() {
   }
 
-  public DatasetChanged(EventType delete, Integer key, Dataset old, Dataset d, int user) {
-    super(delete, key, old, d, user, Dataset.class);
+  public DatasetChanged(EventType type, Integer key, Dataset obj, Dataset old, int user) {
+    super(type, key, obj, old, user, Dataset.class);
   }
 
   public static DatasetChanged deleted(Dataset d, int user){

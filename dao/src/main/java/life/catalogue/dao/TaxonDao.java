@@ -232,7 +232,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
   private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
-    if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isMutable()) {
+    if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isProject()) {
       var m = session.getMapper(TaxonMetricsMapper.class).get(key);
       if (m == null) {
         LOG.warn("Missing taxon metrics for {}", key);

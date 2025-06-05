@@ -25,6 +25,8 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
   int MAGIC_ADMIN_USER_KEY = -42;
 
+  DatasetSimple getSimple(@Param("key") int key);
+
   void deletePhysically(@Param("key") int key);
 
   default void createAll(DatasetWithSettings d) {

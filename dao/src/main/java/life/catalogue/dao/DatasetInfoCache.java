@@ -4,6 +4,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 
@@ -65,9 +66,9 @@ public class DatasetInfoCache implements DatasetListener {
 
   public static class DatasetInfo {
     public final int key;
-    public final DatasetOrigin origin;
-    public final Integer sourceKey;
-    public final UUID publisherKey;
+    public final DatasetOrigin origin; // immutable
+    public final Integer sourceKey; // immutable
+    public final UUID publisherKey; // this can change, so we listen to update events.
     public final boolean deleted; // this can change, so we listen to deletion events. But once deleted it can never be reverted.
 
     DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, UUID publisherKey, boolean deleted) {
@@ -81,7 +82,7 @@ public class DatasetInfoCache implements DatasetListener {
       }
     }
 
-    public boolean isMutable(){
+    public boolean isProject(){
       return origin == DatasetOrigin.PROJECT;
     }
 
@@ -111,7 +112,7 @@ public class DatasetInfoCache implements DatasetListener {
   private DatasetInfo get(int datasetKey, boolean allowDeleted) throws NotFoundException {
     DatasetInfo info = infos.computeIfAbsent(datasetKey, key -> {
       try (SqlSession session = factory.openSession()) {
-        return convert(datasetKey, session.getMapper(DatasetMapper.class).get(key));
+        return convert(datasetKey, session.getMapper(DatasetMapper.class).getSimple(key));
       }
     });
     if (info.deleted && !allowDeleted) {
@@ -120,11 +121,11 @@ public class DatasetInfoCache implements DatasetListener {
     return info;
   }
 
-  private DatasetInfo convert(int key, Dataset d) {
+  private DatasetInfo convert(int key, DatasetSimple d) {
     if (d == null) {
       throw NotFoundException.notFound(Dataset.class, key);
     }
-    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), d.hasDeletedDate());
+    return new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), d.isDeleted());
   }
 
   /**
@@ -207,10 +208,20 @@ public class DatasetInfoCache implements DatasetListener {
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       LOG.info("Deletion event registered for dataset {}", event.key);
-      var info = get(event.key, true);
-      // mark it as deleted in the cache
-      infos.put(event.key, new DatasetInfo(info.key, info.origin, info.sourceKey, info.publisherKey, true));
+      update(event.key, event.old, true);
+
+    } else if (event.isUpdated()) {
+      LOG.info("Update event registered for dataset {}", event.key);
+      update(event.key, event.obj, event.obj.hasDeletedDate());
     }
+  }
+
+  /**
+   * Update the cache for the given dataset
+   * @param key
+   */
+  private void update(int key, Dataset d, boolean deleted) {
+    infos.put(key, new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), deleted));
   }
 
 }

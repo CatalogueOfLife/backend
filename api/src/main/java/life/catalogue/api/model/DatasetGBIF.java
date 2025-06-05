@@ -5,7 +5,6 @@ import java.util.UUID;
 
 public class DatasetGBIF extends DatasetSimple {
   private UUID gbifKey;
-  private UUID gbifPublisherKey;
 
   public UUID getGbifKey() {
     return gbifKey;
@@ -15,24 +14,17 @@ public class DatasetGBIF extends DatasetSimple {
     this.gbifKey = gbifKey;
   }
 
-  public UUID getGbifPublisherKey() {
-    return gbifPublisherKey;
-  }
-
-  public void setGbifPublisherKey(UUID gbifPublisherKey) {
-    this.gbifPublisherKey = gbifPublisherKey;
-  }
-
   @Override
   public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof DatasetGBIF)) return false;
     if (!super.equals(o)) return false;
+
     DatasetGBIF that = (DatasetGBIF) o;
-    return Objects.equals(gbifKey, that.gbifKey) && Objects.equals(gbifPublisherKey, that.gbifPublisherKey);
+    return Objects.equals(gbifKey, that.gbifKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), gbifKey, gbifPublisherKey);
+    return Objects.hash(super.hashCode(), gbifKey);
   }
 }

@@ -38,12 +38,11 @@ public class TreeDao {
     return rootOrChildren(id, projectKey, placeholder, inclExtinct, type, page);
   }
 
-  private static List<TreeNode> aggrPublisher(List<TreeNode> nodes, Set<UUID> publisherKeys) {
+  private static void aggrPublisher(List<TreeNode> nodes, Set<UUID> publisherKeys) {
     nodes.forEach(tn -> aggrPublisher(tn, publisherKeys));
-    return nodes;
   }
 
-  private static TreeNode aggrPublisher(TreeNode tn, Set<UUID> publisherKeys) {
+  private static void aggrPublisher(TreeNode tn, Set<UUID> publisherKeys) {
     if (tn.getSourceDatasetKeys() != null && !tn.getSourceDatasetKeys().isEmpty() &&
       publisherKeys != null && !publisherKeys.isEmpty()
     ) {
@@ -65,7 +64,6 @@ public class TreeDao {
         tn.setPublisherDatasetKeys(pub);
       }
     }
-    return tn;
   }
 
   /**

@@ -15,10 +15,13 @@
 
   <sql id="SELECT_SIMPLE">
     d.key,
+    d.source_key,
+    d.origin,
     d.alias,
     d.title,
-    d.issued,
-    d.version
+    d.version,
+    d.deleted is not null as deleted,
+    d.gbif_publisher_key
   </sql>
 
   <sql id="size">coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)))</sql>
@@ -497,6 +500,12 @@
     WHERE key = #{key}
   </select>
 
+  <select id="getSimple" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM dataset d
+    WHERE key = #{key}
+  </select>
+
   <select id="getMaxKey" parameterType="map" resultType="integer">
     SELECT max(key) FROM dataset
     <if test="limit">
@@ -528,9 +537,9 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT key, alias, title, version, gbif_key, gbif_publisher_key
-    FROM dataset
-    WHERE deleted IS NULL AND gbif_key IS NOT NULL
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key
+    FROM dataset d
+    WHERE d.deleted IS NULL AND d.gbif_key IS NOT NULL
   </select>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
