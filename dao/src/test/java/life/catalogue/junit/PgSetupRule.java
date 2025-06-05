@@ -32,7 +32,7 @@ import com.zaxxer.hikari.HikariDataSource;
 public class PgSetupRule extends SqlSessionFactoryRule {
   private static final Logger LOG = LoggerFactory.getLogger(PgSetupRule.class);
 
-  public static String PG_VERSION = "17.2";
+  public static String PG_VERSION = "17.2"; // keep this in sync with our prod pg server
   public static String COL_DB_NAME = "col";
   public static String ADMIN_DB_NAME = "admin";
   private static PostgreSQLContainer<?> PG_CONTAINER;

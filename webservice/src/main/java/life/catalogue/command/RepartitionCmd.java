@@ -30,7 +30,10 @@ import net.sourceforge.argparse4j.inf.Subparser;
  *  - creates new tables
  *  - copies data from old tables
  *  - attaches new tables
- *  - removes old tables
+ *
+ *  WARNING !!!
+ *  Since PG 17.1 FK constraints are also checked for detached partitions and the CMD is broken !!!
+ *  https://github.com/CatalogueOfLife/backend/issues/1424
  */
 public class RepartitionCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(RepartitionCmd.class);
@@ -93,6 +96,9 @@ public class RepartitionCmd extends AbstractMybatisCmd {
       }
       final int existingPartitions = Partitioner.detectPartitionNumber(con);
       LOG.info("Detach and rename {} existing partitions for external data", existingPartitions);
+      st.execute("SET session_replication_role = replica");
+      st.execute("SET constraints all deferred");
+
       for (String t : Lists.reverse(DatasetPartitionMapper.PARTITIONED_TABLES)) {
         for (int mod=0; mod < existingPartitions; mod++) {
           try {
@@ -137,6 +143,8 @@ public class RepartitionCmd extends AbstractMybatisCmd {
           con.commit();
         }
       }
+      // revert to normal behavior
+      st.execute("SET session_replication_role = 'origin'");
       con.commit();
     }
   }
