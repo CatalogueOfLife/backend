@@ -296,7 +296,7 @@
           <when test="sortBy == 'RELEVANCE'">
             ts_rank_cd('{0.001, 0.01, 0.1, 1.0}'::float4[], d.doc, plainto_tsquery('dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' || sortBy == 'LICENSE'">
+          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED'">
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
           </when>

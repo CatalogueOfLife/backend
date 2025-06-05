@@ -29,6 +29,8 @@ public class DatasetSearchRequest {
     EDITOR,
     PUBLISHER,
     LICENSE,
+    ORIGIN,
+    TYPE,
     RELEVANCE,
     CREATED,
     MODIFIED,
