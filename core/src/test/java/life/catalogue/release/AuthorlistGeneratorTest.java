@@ -46,7 +46,7 @@ public class AuthorlistGeneratorTest {
     ));
     sources.add(s2);
 
-    doReturn(sources).when(dao).listSimple(anyInt(), anyBoolean());
+    doReturn(sources).when(dao).listSimple(anyInt(), anyBoolean(), anyBoolean());
 
     var gen = new AuthorlistGenerator(dao);
 

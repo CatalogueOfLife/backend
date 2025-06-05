@@ -89,9 +89,10 @@ public class DatasetSourceDao {
    *  - url_formatter
    *
    * @param datasetKey
+   * @param splitMerge if true split source with merge and non merge sector modes into 2 copies
    * @return
    */
-  public List<DatasetSourceMapper.SourceDataset> listSimple(int datasetKey, boolean inclPublisherSources){
+  public List<DatasetSourceMapper.SourceDataset> listSimple(int datasetKey, boolean inclPublisherSources, boolean splitMerge){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<DatasetSourceMapper.SourceDataset> sources;
     try (SqlSession session = factory.openSession()) {
@@ -109,8 +110,28 @@ public class DatasetSourceDao {
         sources.forEach(d -> patch(d, datasetKey, pm));
       }
       sources.forEach(d -> d.addContainer(container, settings));
+      // should we create 2 copies of sources with merge and non merge sector modes?
+      if (splitMerge) {
+        var splitSources = new ArrayList<DatasetSourceMapper.SourceDataset>();
+        for (DatasetSourceMapper.SourceDataset sd : sources) {
+          if (sd.isMerged() && sd.getSectorModes().size()>1) {
+            // split in two
+            var sd1 = new DatasetSourceMapper.SourceDataset(sd);
+            sd1.getSectorModes().add(Sector.Mode.MERGE);
+            splitSources.add(sd1);
+            var sd2 = new DatasetSourceMapper.SourceDataset(sd);
+            sd2.getSectorModes().addAll(sd.getSectorModes());
+            sd2.getSectorModes().remove(Sector.Mode.MERGE);
+            splitSources.add(sd2);
+          } else {
+            // keep
+            splitSources.add(sd);
+          }
+        }
+        return splitSources;
+      }
+      return sources;
     }
-    return sources;
   }
 
   public List<DatasetSimple> suggest(int datasetKey, String query, boolean inclMergeSources){

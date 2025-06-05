@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -35,19 +36,20 @@ public class DatasetSourceResource {
   }
 
   @GET
-  public List<DatasetSourceDao.SourceDataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
-                                                                      @QueryParam("inclPublisherSources") boolean inclPublisherSources,
-                                                                      @QueryParam("notCurrentOnly") boolean notCurrentOnly
+  public List<DatasetSourceMapper.SourceDataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
+                                                                         @QueryParam("inclPublisherSources") boolean inclPublisherSources,
+                                                                         @QueryParam("splitMerge") boolean splitMerge,
+                                                                         @QueryParam("notCurrentOnly") boolean notCurrentOnly
   ) {
-    var ds = sourceDao.listSimple(datasetKey, inclPublisherSources);
+    var ds = sourceDao.listSimple(datasetKey, inclPublisherSources, splitMerge);
     if (notCurrentOnly) {
-      List<DatasetSourceDao.SourceDataset> notCurrent = new ArrayList<>();
+      List<DatasetSourceMapper.SourceDataset> notCurrent = new ArrayList<>();
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         for (Dataset d : ds) {
           Integer currAttempt = dm.lastImportAttempt(d.getKey());
           if (currAttempt != null && !Objects.equals(currAttempt, d.getAttempt())) {
-            notCurrent.add(new DatasetSourceDao.SourceDataset(d));
+            notCurrent.add(new DatasetSourceMapper.SourceDataset(d));
           }
         }
       }
@@ -74,9 +76,9 @@ public class DatasetSourceResource {
     MoreMediaTypes.APP_JSON_CSL,
     MoreMediaTypes.APP_BIBTEX
   })
-  public Dataset projectSource(@PathParam("key") int datasetKey,
-                                                      @PathParam("id") int id,
-                                                      @QueryParam("original") boolean original) {
+  public DatasetSourceMapper.SourceDataset projectSource(@PathParam("key") int datasetKey,
+                                                        @PathParam("id") int id,
+                                                        @QueryParam("original") boolean original) {
     return sourceDao.get(datasetKey, id, original);
   }
 

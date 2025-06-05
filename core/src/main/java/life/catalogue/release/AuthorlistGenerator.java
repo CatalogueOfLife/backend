@@ -37,7 +37,7 @@ public class AuthorlistGenerator {
     if (cfg.authorSourceExclusion != null) {
       exclusion.addAll(cfg.authorSourceExclusion);
     }
-    var sources = dao.listSimple(d.getKey(), true);
+    var sources = dao.listSimple(d.getKey(), true, false);
     // prepare unique agents for appending to release
     final List<Agent> agents = new ArrayList<>();
     // add some configured authors in alphabetical order

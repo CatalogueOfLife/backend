@@ -17,6 +17,10 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
     dao.listSectorBasedSources(TestDataRule.FISH.key, Datasets.COL, true).forEach(d -> {
       System.out.println(d.getTitle());
     });
+
+    dao.listSimple(TestDataRule.FISH.key, true, true).forEach(d -> {
+      System.out.println(d.getTitle() + " " + d.isMerged());
+    });
   }
 
   @Test
