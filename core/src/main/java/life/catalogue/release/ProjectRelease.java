@@ -321,8 +321,8 @@ public class ProjectRelease extends AbstractProjectCopy {
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null && prevSrc.getDoi().isCOL()) {
         // compare basic metrics
-        var metrics = srcDao.sourceMetrics(projectKey, sourceKey);
-        var prevMetrics = srcDao.sourceMetrics(prevReleaseKey, sourceKey);
+        var metrics = srcDao.sourceMetrics(projectKey, sourceKey, null);
+        var prevMetrics = srcDao.sourceMetrics(prevReleaseKey, sourceKey, null);
         if (Objects.equals(metrics.getTaxaByRankCount(), prevMetrics.getTaxaByRankCount())
             && Objects.equals(metrics.getSynonymsByRankCount(), prevMetrics.getSynonymsByRankCount())
             && Objects.equals(metrics.getVernacularsByLanguageCount(), prevMetrics.getVernacularsByLanguageCount())

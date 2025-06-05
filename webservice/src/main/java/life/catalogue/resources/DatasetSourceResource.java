@@ -35,19 +35,19 @@ public class DatasetSourceResource {
   }
 
   @GET
-  public List<Dataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
-                                               @QueryParam("inclPublisherSources") boolean inclPublisherSources,
-                                               @QueryParam("notCurrentOnly") boolean notCurrentOnly
+  public List<DatasetSourceDao.SourceDataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
+                                                                      @QueryParam("inclPublisherSources") boolean inclPublisherSources,
+                                                                      @QueryParam("notCurrentOnly") boolean notCurrentOnly
   ) {
     var ds = sourceDao.listSimple(datasetKey, inclPublisherSources);
     if (notCurrentOnly) {
-      List<Dataset> notCurrent = new ArrayList<>();
+      List<DatasetSourceDao.SourceDataset> notCurrent = new ArrayList<>();
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
         for (Dataset d : ds) {
           Integer currAttempt = dm.lastImportAttempt(d.getKey());
           if (currAttempt != null && !Objects.equals(currAttempt, d.getAttempt())) {
-            notCurrent.add(d);
+            notCurrent.add(new DatasetSourceDao.SourceDataset(d));
           }
         }
       }
@@ -75,8 +75,8 @@ public class DatasetSourceResource {
     MoreMediaTypes.APP_BIBTEX
   })
   public Dataset projectSource(@PathParam("key") int datasetKey,
-                               @PathParam("id") int id,
-                               @QueryParam("original") boolean original) {
+                                                      @PathParam("id") int id,
+                                                      @QueryParam("original") boolean original) {
     return sourceDao.get(datasetKey, id, original);
   }
 
@@ -111,7 +111,10 @@ public class DatasetSourceResource {
 
   @GET
   @Path("/{id}/metrics")
-  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    return sourceDao.sourceMetrics(datasetKey, id);
+  public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey,
+                                            @PathParam("id") int id,
+                                            @QueryParam("merged") boolean merged
+  ) {
+    return sourceDao.sourceMetrics(datasetKey, id, merged);
   }
 }

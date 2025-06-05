@@ -259,6 +259,11 @@ public class Dataset extends DataEntity<Integer> {
     public UrlDescription() {
     }
 
+    public UrlDescription(URI url, String description) {
+      this.url = url;
+      this.description = description;
+    }
+
     public UrlDescription(String url, String description) {
       this.url = url == null ? null : URI.create(url);
       this.description = description;

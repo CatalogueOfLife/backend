@@ -87,6 +87,21 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
   }
 
   @Test
+  public void copyCOnstructor() throws Exception {
+    Dataset d = TestEntityGenerator.newFullDataset(1234);
+    var d2 = new Dataset(d);
+    assertEquals(d, d2);
+
+    var ud = new Dataset.UrlDescription(d.getConversion().getUrl(), d.getConversion().getDescription());
+    d2.setConversion(ud);
+    assertEquals(d, d2);
+
+    ud = new Dataset.UrlDescription(URI.create("www.gbif.org"), d.getConversion().getDescription());
+    d2.setConversion(ud);
+    assertNotEquals(d, d2);
+  }
+
+  @Test
   public void version() throws Exception {
     Dataset d = new Dataset();
     assertNull(d.getVersion());

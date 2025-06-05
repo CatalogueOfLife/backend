@@ -21,8 +21,8 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     super(DatasetSourceMapper.class);
   }
 
-  public static Dataset createProjectSource() {
-    Dataset d = new Dataset();
+  public static DatasetSourceMapper.SourceDataset createProjectSource() {
+    DatasetSourceMapper.SourceDataset d = new DatasetSourceMapper.SourceDataset();
     DatasetMapperTest.populate(d);
     d.setPrivat(true); // the default which is not stored in the archive
     d.setSourceKey(Datasets.COL);
@@ -98,9 +98,9 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     d.setContainerPublisher(col.getPublisher());
     d.setContainerVersion(col.getVersion());
     d.setContainerIssued(col.getIssued());
-
+    var ds = new DatasetSourceMapper.SourceDataset(d);
     commit();
-    assertEquals(d2, d);
+    assertEquals(d2, ds);
   }
 
   @Test
@@ -148,20 +148,21 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     rs.setContainerPublisher(col.getPublisher());
     rs.setContainerVersion(col.getVersion());
     rs.setContainerIssued(col.getIssued());
-    assertEquals(rs2, rs);
+    var ds = new DatasetSourceMapper.SourceDataset(rs);
+    assertEquals(rs2, ds);
 
     // now try to list sources
     mapper().listReleaseSources(Datasets.COL, true);
 
     // limit container authors to just 2 and verify
-    DatasetSettings ds = dm.getSettings(Datasets.COL);
-    ds.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
-    dm.updateSettings(Datasets.COL, ds, 1);
+    DatasetSettings settings = dm.getSettings(Datasets.COL);
+    settings.put(Setting.SOURCE_MAX_CONTAINER_AUTHORS, 2);
+    dm.updateSettings(Datasets.COL, settings, 1);
     commit();
 
     rs2 = removeDbCreatedProps(mapper().getReleaseSource(rs.getKey(), Datasets.COL));
-    rs.setContainerCreator(col.getCreator().subList(0,2));
-    assertEquals(rs2, rs);
+    ds.setContainerCreator(col.getCreator().subList(0,2));
+    assertEquals(rs2, ds);
   }
 
   Dataset removeDbCreatedProps(Dataset obj) {

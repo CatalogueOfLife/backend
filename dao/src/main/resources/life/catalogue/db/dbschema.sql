@@ -1011,6 +1011,7 @@ CREATE TABLE sector (
 );
 
 CREATE INDEX ON sector (dataset_key);
+CREATE INDEX ON sector (dataset_key, subject_dataset_key);
 CREATE INDEX ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE INDEX ON sector (dataset_key, target_id);
 

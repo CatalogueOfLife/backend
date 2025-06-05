@@ -14,8 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
-#### 2025-05-25 new issue
+#### 2025-06-05 sector index for sources
+```sql
+CREATE INDEX ON sector (dataset_key, subject_dataset_key);
+```
 
+#### 2025-05-25 new issue
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'SYNONYM_RANK_DIFFERS';
 ```

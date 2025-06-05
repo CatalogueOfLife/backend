@@ -114,8 +114,9 @@ public class PublicReleaseListener implements DatasetListener {
     LOG.debug("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
-    try {
-      for (Dataset d : dao.listReleaseSources(release.getKey(), false)) {
+    try (SqlSession session = factory.openSession()) {
+      var dsm = session.getMapper(DatasetSourceMapper.class);
+      for (Dataset d : dsm.listReleaseSourcesSimple(release.getKey(), false)) {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {

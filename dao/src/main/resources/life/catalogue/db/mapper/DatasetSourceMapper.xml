@@ -17,7 +17,6 @@
   <sql id="SELECT_SIMPLE">
     d.key,
     d.doi,
-    d.identifier,
     d.title,
     d.alias,
     d.issued,
@@ -36,7 +35,6 @@
     d.license,
     d.url,
     d.logo,
-    d.url_formatter,
     d.notes,
     d.created,
     d.created_by,
@@ -49,6 +47,10 @@
     d.origin,
     d.type,
     d.source_key
+  </sql>
+
+  <sql id="SELECT_SECTOR_MODES">
+    (SELECT DISTINCT mode FROM sector s WHERE s.dataset_key=d.dataset_key AND s.subject_dataset_key=d.key) as sector_modes
   </sql>
 
   <sql id="COLS">
@@ -72,30 +74,26 @@
     dataset_source d
   </sql>
 
-  <resultMap id="datasetSimpleResultMap" type="Dataset" autoMapping="true">
+  <resultMap id="datasetSimpleResultMap" type="SourceDataset" autoMapping="true">
     <id property="key" column="key"/>
     <result property="privat" column="private"/>
     <result property="contact" column="contact" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
     <result property="creator" column="creator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
-    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
-    <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
-    <association property="conversion" javaType="life.catalogue.api.model.Dataset$UrlDescription">
-      <result property="url" column="conversion_url" />
-      <result property="description" column="conversion_description" />
-    </association>
+    <result property="sectorModes" column="sector_modes" typeHandler="life.catalogue.db.type2.SectorModeSetTypeHandler"/>
   </resultMap>
 
-  <resultMap id="datasetSourceReleaseResultMap" type="Dataset" extends="datasetSourceProjectResultMap" autoMapping="true">
+  <resultMap id="datasetSourceReleaseResultMap" type="SourceDataset" extends="datasetSourceProjectResultMap" autoMapping="true">
     <id property="key" column="key"/>
     <collection property="source" ofType="Citation" column="{datasetKey=key, releaseKey=dataset_key}" select="life.catalogue.db.mapper.CitationMapper.listRelease" />
   </resultMap>
 
-  <resultMap id="datasetSourceProjectResultMap" type="Dataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" autoMapping="true">
+  <resultMap id="datasetSourceProjectResultMap" type="SourceDataset" extends="life.catalogue.db.mapper.DatasetMapper.datasetResultMap" autoMapping="true">
     <id property="key" column="key"/>
     <result property="containerCreator" column="containerCreator" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="containerPublisher" column="containerPublisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
+    <result property="sectorModes" column="sector_modes" typeHandler="life.catalogue.db.type2.SectorModeSetTypeHandler"/>
   </resultMap>
 
   <sql id="PUBLISHER_CLAUSE">
@@ -106,7 +104,7 @@
 
   <sql id="SECTOR_SUBJECT_DATASETS">
     WITH src AS (
-      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt
+      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt, array_distinct(array_agg(s.mode)) AS sector_modes
       FROM sector s JOIN dataset d ON d.key=s.subject_dataset_key
       WHERE s.dataset_key=#{datasetKey}
         <include refid="PUBLISHER_CLAUSE"/>
@@ -118,7 +116,7 @@
   <select id="listProjectSources" parameterType="map" resultMap="datasetSourceProjectResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
       LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
@@ -128,7 +126,7 @@
     UNION
 
     <!-- latest dataset metadata -->
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
       JOIN dataset d ON d.key = src.key
       LEFT JOIN dataset_import di ON di.dataset_key = src.key AND di.attempt = d.attempt
@@ -141,7 +139,7 @@
   <select id="listProjectSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     <include refid="SECTOR_SUBJECT_DATASETS"/>
     <!-- archived dataset metadata -->
-    SELECT <include refid="SELECT_SIMPLE"/>
+    SELECT <include refid="SELECT_SIMPLE"/>, src.sector_modes
     FROM src
       LEFT JOIN dataset_archive d ON d.key = src.key AND d.attempt = src.attempt
     WHERE src.attempt != src.dattempt
@@ -149,7 +147,7 @@
     UNION
 
     <!-- latest dataset metadata -->
-    SELECT <include refid="SELECT_SIMPLE"/>
+    SELECT <include refid="SELECT_SIMPLE"/>, src.sector_modes
     FROM src
       JOIN dataset d ON d.key = src.key
     WHERE src.attempt = src.dattempt OR src.attempt IS NULL
@@ -158,14 +156,14 @@
   </select>
 
   <select id="listReleaseSources" parameterType="map" resultMap="datasetSourceReleaseResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    SELECT d.dataset_key, <include refid="SELECT"/>
+    SELECT d.dataset_key, <include refid="SELECT"/>, <include refid="SELECT_SECTOR_MODES"/>
     FROM <include refid="FROM"/>
     WHERE d.dataset_key = #{datasetKey}
     <include refid="PUBLISHER_CLAUSE"/>
   </select>
 
   <select id="listReleaseSourcesSimple" parameterType="map" resultMap="datasetSimpleResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
-    SELECT d.dataset_key, <include refid="SELECT_SIMPLE"/>
+    SELECT d.dataset_key, <include refid="SELECT_SIMPLE"/>, <include refid="SELECT_SECTOR_MODES"/>
     FROM <include refid="FROM_SIMPLE"/>
     WHERE d.dataset_key = #{datasetKey}
     <include refid="PUBLISHER_CLAUSE"/>
@@ -173,12 +171,12 @@
 
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">
     WITH src AS (
-      SELECT max(s.dataset_attempt) AS attempt
+      SELECT max(s.dataset_attempt) AS attempt, array_distinct(array_agg(s.mode)) AS sector_modes
       FROM sector s
       WHERE s.dataset_key=#{datasetKey} AND s.subject_dataset_key=#{key}
     )
     <!-- archived dataset metadata -->
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
       JOIN dataset d2 ON d2.key = #{key}
       LEFT JOIN dataset_archive d ON d.key = #{key} AND d.attempt = src.attempt
@@ -189,7 +187,7 @@
     UNION
 
     <!-- latest dataset metadata -->
-    SELECT <include refid="SELECT"/>
+    SELECT <include refid="SELECT"/>, src.sector_modes
     FROM src
       JOIN dataset d ON d.key = #{key}
       LEFT JOIN dataset_import di ON di.dataset_key = d.key AND di.attempt = d.attempt
@@ -198,7 +196,7 @@
   </select>
 
   <select id="getReleaseSource" resultMap="datasetSourceReleaseResultMap">
-    SELECT d.dataset_key, <include refid="SELECT"/>
+    SELECT d.dataset_key, <include refid="SELECT"/>, <include refid="SELECT_SECTOR_MODES"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{key} AND d.dataset_key = #{datasetKey}
   </select>

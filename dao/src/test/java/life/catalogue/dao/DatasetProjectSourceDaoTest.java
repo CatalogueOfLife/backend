@@ -22,9 +22,9 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
   @Test
   public void projectSourceMetrics() {
     DatasetSourceDao dao = new DatasetSourceDao(factory());
-    dao.sourceMetrics(3, 100);
-    dao.sourceMetrics(3, 101);
-    dao.sourceMetrics(3, 102);
+    dao.sourceMetrics(3, 100, null);
+    dao.sourceMetrics(3, 101, null);
+    dao.sourceMetrics(3, 102, null);
   }
 
 }
