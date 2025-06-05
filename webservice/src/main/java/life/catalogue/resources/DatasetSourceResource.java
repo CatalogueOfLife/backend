@@ -52,10 +52,8 @@ public class DatasetSourceResource {
         }
       }
       return notCurrent;
-
-    } else {
-      return ds;
     }
+    return ds;
   }
 
   @GET

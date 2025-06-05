@@ -296,18 +296,24 @@
           <when test="sortBy == 'RELEVANCE'">
             ts_rank_cd('{0.001, 0.01, 0.1, 1.0}'::float4[], d.doc, plainto_tsquery('dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
+          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' || sortBy == 'LICENSE'">
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
-          </when>
-          <when test="sortBy == 'CREATOR'">
-            lower( coalesce( (d.creator[1]).family, (d.editor[1]).family ))
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(d.alias)
           </when>
           <when test="sortBy == 'TITLE'">
             lower(d.title)
+          </when>
+          <when test="sortBy == 'CREATOR'">
+            lower( coalesce( (d.creator[1]).family, (d.creator[1]).organisation))
+          </when>
+          <when test="sortBy == 'EDITOR'">
+            lower( coalesce( (d.editor[1]).family, (d.editor[1]).organisation))
+          </when>
+          <when test="sortBy == 'PUBLISHER'">
+            lower( coalesce( (d.publisher).organisation, (d.publisher).family))
           </when>
           <otherwise>
             ${req.sortBy.name().toLowerCase()}
