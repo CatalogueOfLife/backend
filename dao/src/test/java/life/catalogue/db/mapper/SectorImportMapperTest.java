@@ -91,27 +91,27 @@ public class SectorImportMapperTest extends MapperTestBase<SectorImportMapper> {
     mapper().create(create(ImportState.INSERTING, s2));
     mapper().create(create(ImportState.FINISHED, s2));
     
-    assertEquals(7, mapper().count(null, null, null, null));
-    assertEquals(7, mapper().count(null, null,null, new ArrayList<>()));
-    assertEquals(1, mapper().count(null, null,null, List.of(ImportState.FAILED)));
-    assertEquals(3, mapper().count(null, null,null, List.of(ImportState.FINISHED)));
-    assertEquals(2, mapper().count(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING)));
+    assertEquals(7, mapper().count(null, null, null, null, null));
+    assertEquals(7, mapper().count(null, null,null, new ArrayList<>(), null));
+    assertEquals(1, mapper().count(null, null,null, List.of(ImportState.FAILED), null));
+    assertEquals(3, mapper().count(null, null,null, List.of(ImportState.FINISHED), null));
+    assertEquals(2, mapper().count(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null));
     
-    assertEquals(2, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null, new Page()).size());
-    assertEquals(0, mapper().list(null, 100,null, List.of(ImportState.INSERTING, ImportState.PREPARING), false, new Page()).size());
-    assertEquals(0, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), true, new Page()).size());
+    assertEquals(2, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null,null, new Page()).size());
+    assertEquals(0, mapper().list(null, 100,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null, false, new Page()).size());
+    assertEquals(0, mapper().list(null, null,null, List.of(ImportState.INSERTING, ImportState.PREPARING), null, true, new Page()).size());
 
-    assertEquals(5, mapper().count(s.getId(), null, null, null));
-    assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null));
-    assertEquals(5, mapper().count(s.getId(), COL, s.getSubjectDatasetKey(), null));
-    assertEquals(0, mapper().count(s2.getId(), COL, s.getSubjectDatasetKey(), null));
-    assertEquals(5, mapper().count(null, COL, s.getSubjectDatasetKey(), null));
-    assertEquals(2, mapper().count(null, COL, s2.getSubjectDatasetKey(), null));
-    assertEquals(2, mapper().count(s2.getId(), COL, null, null));
+    assertEquals(5, mapper().count(s.getId(), null, null, null, null));
+    assertEquals(5, mapper().count(s.getId(), null, s.getSubjectDatasetKey(), null, null));
+    assertEquals(5, mapper().count(s.getId(), COL, s.getSubjectDatasetKey(), null, null));
+    assertEquals(0, mapper().count(s2.getId(), COL, s.getSubjectDatasetKey(), null, null));
+    assertEquals(5, mapper().count(null, COL, s.getSubjectDatasetKey(), null, null));
+    assertEquals(2, mapper().count(null, COL, s2.getSubjectDatasetKey(), null, null));
+    assertEquals(2, mapper().count(s2.getId(), COL, null, null, null));
     
-    assertEquals(0, mapper().count(99999, null, null, null));
-    assertEquals(0, mapper().count(99999, null, 789, null));
-    assertEquals(0, mapper().count(null, 456789876, null, null));
+    assertEquals(0, mapper().count(99999, null, null, null, null));
+    assertEquals(0, mapper().count(99999, null, 789, null, null));
+    assertEquals(0, mapper().count(null, 456789876, null, null, null));
     
   }
 

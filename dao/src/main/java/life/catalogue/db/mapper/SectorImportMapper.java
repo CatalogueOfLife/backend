@@ -2,6 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SectorImport;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.db.DatasetProcessable;
@@ -30,7 +31,8 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
   int count(@Param("sectorKey") @Nullable Integer sectorKey,
             @Param("datasetKey") @Nullable Integer datasetKey,
             @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
-            @Param("states") Collection<ImportState> states);
+            @Param("states") Collection<ImportState> states,
+            @Param("modes") @Nullable Collection<Sector.Mode> modes);
   
   /**
    * List all imports optionally filtered by their sectorKey and state(s).
@@ -42,6 +44,7 @@ public interface SectorImportMapper extends DatasetProcessable<SectorImport> {
                           @Param("datasetKey") @Nullable Integer datasetKey,
                           @Param("subjectDatasetKey") @Nullable Integer subjectDatasetKey,
                           @Param("states") @Nullable Collection<ImportState> states,
+                          @Param("modes") @Nullable Collection<Sector.Mode> modes,
                           @Param("current") @Nullable Boolean current,
                           @Param("page") @Nullable Page page);
 

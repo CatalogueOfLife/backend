@@ -93,6 +93,7 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
                                        @QueryParam("sectorKey") Integer sectorKey,
                                        @QueryParam("datasetKey") Integer subjectDatasetKey,
                                        @QueryParam("state") List<ImportState> states,
+                                       @QueryParam("mode") List<Sector.Mode> modes,
                                        @QueryParam("running") Boolean running,
                                        @Valid @BeanParam Page page,
                                        @Context SqlSession session) {
@@ -101,8 +102,8 @@ public class SectorResource extends AbstractDatasetScopedResource<Integer, Secto
     }
     final List<ImportState> immutableStates = ImmutableList.copyOf(states);
     SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
-    List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, null, page);
-    return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates));
+    List<SectorImport> imports = sim.list(sectorKey, datasetKey, subjectDatasetKey, states, modes, null, page);
+    return new ResultPage<>(page, imports, () -> sim.count(sectorKey, datasetKey, subjectDatasetKey, immutableStates, modes));
   }
 
   @POST

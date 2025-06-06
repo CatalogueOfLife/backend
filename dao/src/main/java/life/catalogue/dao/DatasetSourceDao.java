@@ -278,24 +278,42 @@ public class DatasetSourceDao {
       // aggregate metrics based on sector syncs/imports
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
+      List<Sector.Mode> modes = new ArrayList<>();
+      if (merged != null && merged) {
+        modes.add(Sector.Mode.MERGE);
+      } else if (merged != null) {
+        modes.add(Sector.Mode.ATTACH);
+        modes.add(Sector.Mode.UNION);
+      }
       // a release? use mother project in that case
       if (info.origin.isRelease()) {
         Integer projectKey = info.sourceKey;
-        for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey, null)){
-          if (s.getSyncAttempt() != null) {
-            SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
-            add(metrics, m);
-            sectorCounter.incrementAndGet();
+        var sm = session.getMapper(SectorMapper.class);
+        if (modes.isEmpty()) {
+          addReleaseMetrics(metrics, projectKey, datasetKey, sourceKey, null, sectorCounter, sm, sim);
+        } else {
+          for (Sector.Mode mode : modes) {
+            addReleaseMetrics(metrics, projectKey, datasetKey, sourceKey, mode, sectorCounter, sm, sim);
           }
         }
       } else {
-        for (SectorImport m : sim.list(null, datasetKey, sourceKey, null, true, null)) {
+        for (SectorImport m : sim.list(null, datasetKey, sourceKey, null, modes, true, null)) {
           add(metrics, m);
           sectorCounter.incrementAndGet();
         }
       }
       metrics.setSectorCount(sectorCounter.get());
       return metrics;
+    }
+  }
+
+  private void addReleaseMetrics(SourceMetrics metrics, int projectKey, int datasetKey, int sourceKey, @Nullable Sector.Mode mode, AtomicInteger sectorCounter, SectorMapper sm, SectorImportMapper sim) {
+    for (Sector s : sm.listByDataset(datasetKey, sourceKey, mode)){
+      if (s.getSyncAttempt() != null) {
+        SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
+        add(metrics, m);
+        sectorCounter.incrementAndGet();
+      }
     }
   }
 

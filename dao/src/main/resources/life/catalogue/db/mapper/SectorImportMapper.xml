@@ -63,6 +63,12 @@
           #{state}::IMPORTSTATE
         </foreach>
       </if>
+      <if test="modes != null and !modes.isEmpty()">
+        AND s.mode IN
+        <foreach item="mode" collection="modes" open="(" separator="," close=")">
+          #{mode}::SECTOR_MODE
+        </foreach>
+      </if>
       <if test="_parameter.containsKey('current') and current != null and current">
         AND si.attempt=s.sync_attempt
       </if>

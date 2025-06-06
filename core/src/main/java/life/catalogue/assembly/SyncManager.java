@@ -93,7 +93,7 @@ public class SyncManager implements Managed, Idle, SectorListener, DatasetListen
       Page page = new Page(0, Page.MAX_LIMIT);
       List<SectorImport> sims = null;
       while (page.getOffset() == 0 || (sims != null && sims.size() == page.getLimit())) {
-        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, page);
+        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, null, page);
         for (SectorImport si : sims) {
           si.setState(ImportState.CANCELED);
           si.setFinished(LocalDateTime.now());
