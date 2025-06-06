@@ -7,6 +7,8 @@ import life.catalogue.dao.DatasetSourceDao;
 import java.util.ArrayList;
 import java.util.List;
 
+import life.catalogue.db.mapper.DatasetSourceMapper;
+
 import org.junit.Test;
 
 import static life.catalogue.api.model.Agent.organisation;
@@ -24,9 +26,9 @@ public class AuthorlistGeneratorTest {
     final int projectKey = 10;
     var dao = mock(DatasetSourceDao.class);
 
-    final List<Dataset> sources = new ArrayList<>();
+    final List<DatasetSourceMapper.SourceDataset> sources = new ArrayList<>();
     final var frankOrcid = "1234-5678-9999-0000";
-    var s1 = new Dataset();
+    var s1 = new DatasetSourceMapper.SourceDataset();
     s1.setAlias("DS1");
     s1.setCreator(List.of(
       person("F", "Berril", null, frankOrcid),
@@ -34,7 +36,7 @@ public class AuthorlistGeneratorTest {
     ));
     sources.add(s1);
 
-    var s2 = new Dataset();
+    var s2 = new DatasetSourceMapper.SourceDataset();
     s2.setAlias("ALIAS");
     s2.setCreator(List.of(
       person("Gerry", "Newman"),
@@ -78,7 +80,7 @@ public class AuthorlistGeneratorTest {
     assertEquals(8, d.getCreator().size());
     assertEquals(proj.getContributor().size(), d.getContributor().size());
 
-    var s3 = new Dataset();
+    var s3 = new DatasetSourceMapper.SourceDataset();
     s3.setKey(projectKey+3);
     s3.setAlias("ALIAS");
     s3.setCreator(List.of(person("Markus", "Döring", "markus@vegan.pork", null, "Vegan")));

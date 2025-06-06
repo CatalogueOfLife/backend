@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import life.catalogue.db.mapper.DatasetSourceMapper;
+
 public class AuthorlistGenerator {
   private final Validator validator;
   private final DatasetSourceDao dao;
