@@ -19,8 +19,15 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
     });
 
     dao.listSimple(TestDataRule.FISH.key, true, true).forEach(d -> {
-      System.out.println(d.getTitle() + " " + d.isMerged());
+      System.out.println(d.getKey() +": " + d.getTitle() + " " + d.isMerged());
     });
+  }
+
+  @Test
+  public void get() {
+    DatasetSourceDao dao = new DatasetSourceDao(factory());
+    var src = dao.get(103, 100, true);
+    System.out.println(src);
   }
 
   @Test

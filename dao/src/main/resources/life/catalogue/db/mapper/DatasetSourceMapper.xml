@@ -50,7 +50,7 @@
   </sql>
 
   <sql id="SELECT_SECTOR_MODES">
-    (SELECT DISTINCT mode FROM sector s WHERE s.dataset_key=d.dataset_key AND s.subject_dataset_key=d.key) as sector_modes
+    (SELECT array_agg(DISTINCT mode) FROM sector s WHERE s.dataset_key=d.dataset_key AND s.subject_dataset_key=d.key) as sector_modes
   </sql>
 
   <sql id="COLS">
@@ -104,7 +104,7 @@
 
   <sql id="SECTOR_SUBJECT_DATASETS">
     WITH src AS (
-      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt, array_distinct(array_agg(s.mode)) AS sector_modes
+      SELECT s.subject_dataset_key AS key, d.attempt AS dattempt, max(s.dataset_attempt) AS attempt, array_agg(DISTINCT s.mode) AS sector_modes
       FROM sector s JOIN dataset d ON d.key=s.subject_dataset_key
       WHERE s.dataset_key=#{datasetKey}
         <include refid="PUBLISHER_CLAUSE"/>
@@ -171,7 +171,7 @@
 
   <select id="getProjectSource" resultMap="datasetSourceProjectResultMap">
     WITH src AS (
-      SELECT max(s.dataset_attempt) AS attempt, array_distinct(array_agg(s.mode)) AS sector_modes
+      SELECT max(s.dataset_attempt) AS attempt, array_agg(distinct s.mode) AS sector_modes
       FROM sector s
       WHERE s.dataset_key=#{datasetKey} AND s.subject_dataset_key=#{key}
     )

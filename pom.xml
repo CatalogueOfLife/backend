@@ -83,7 +83,7 @@
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
-    <postgresql.version>42.7.5</postgresql.version>
+    <postgresql.version>42.7.6</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.12.5</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
