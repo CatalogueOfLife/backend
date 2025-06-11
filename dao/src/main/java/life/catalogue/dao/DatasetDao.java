@@ -57,6 +57,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotNull;
 
+import static life.catalogue.common.text.StringUtils.removePunctWS;
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
@@ -80,7 +81,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   private static final int TEMP_EXPIRY_DAYS = 7;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
-  private final ImporterConfig iCfg;
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
@@ -96,7 +96,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
   public DatasetDao(SqlSessionFactory factory,
-                    NormalizerConfig nCfg, ReleaseConfig rCfg, ImporterConfig iCfg, GbifConfig gbifCfg,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg, GbifConfig gbifCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -108,8 +108,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.nCfg = nCfg;
     this.rCfg = rCfg;
-    this.iCfg = iCfg;
-    if (iCfg.publisherAlias == null) iCfg.publisherAlias = new HashMap<>(); // avoids many null checks below
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -127,7 +125,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator, EventBroker broker) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
   }
 
   public Dataset get(UUID gbifKey) {
@@ -520,9 +518,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         cm.create(obj.getKey(), c);
       }
     }
-    // update alias for publisher based datasets - we need the generated key for it
-    if (obj.getAlias() == null && obj.getGbifPublisherKey() != null && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
-      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
+    // update alias for ARTICLE datasets: https://github.com/CatalogueOfLife/backend/issues/1421
+    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
+      obj.setAlias(articleAlias(obj));
       mapper.update(obj);
     }
 
@@ -567,13 +565,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
-    // update alias for publisher based datasets ONLY in case the publisher key has changed OR we never had any alias
-    if (obj.getGbifPublisherKey() != null &&
-        iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey()) &&
-        (obj.getAlias()==null || !obj.getGbifPublisherKey().equals(old.getGbifPublisherKey()))
-      ) {
-      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
-      mapper.update(obj);
+    // update alias for ARTICLE datasets when none existed: https://github.com/CatalogueOfLife/backend/issues/1421
+    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
+      obj.setAlias(articleAlias(obj));
     }
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
@@ -585,8 +579,31 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super.updateBefore(obj, old, user, mapper, session);
   }
 
-  private String publisherAlias(UUID publisher, Integer key) {
-    return iCfg.publisherAlias.get(publisher) + key;
+  static String articleAlias(Dataset d) {
+    StringBuilder sb = new StringBuilder();
+    if (d.getSource() != null && d.getSource().size() == 1 &&
+      d.getSource().get(0).getAuthor() != null && !d.getSource().get(0).getAuthor().isEmpty() && !StringUtils.isBlank(d.getSource().get(0).getAuthor().get(0).getFamily())) {
+      var src = d.getSource().get(0);
+      var author = src.getAuthor().get(0);
+      if (!StringUtils.isBlank(author.getNonDroppingParticle())) {
+        sb.append((author.getNonDroppingParticle()));
+      }
+      sb.append(author.getFamily());
+      if (src.getIssued() != null) {
+        sb.append(src.getIssued().getYear());
+      }
+
+    } else if (d.getCreator() != null && !d.getCreator().isEmpty()) {
+      var author = d.getCreator().get(0);
+      var name = ObjectUtils.coalesce(author.getFamily(), author.getOrganisation(), author.getName());
+      if (!StringUtils.isBlank(name)) {
+        sb.append(name);
+      }
+      if (d.getIssued() != null) {
+        sb.append(d.getIssued().getYear());
+      }
+    }
+    return sb.length() > 2 ? removePunctWS(sb.toString()) : null;
   }
 
   @Override

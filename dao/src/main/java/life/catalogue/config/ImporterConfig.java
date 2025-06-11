@@ -54,24 +54,6 @@ public class ImporterConfig {
   public ContinuousImportConfig continuous = new ContinuousImportConfig();
 
   /**
-   * Map of GBIF publisher keys to short alias prefixed to be used in combination with the dataset key when a dataset is created.
-   */
-  public Map<UUID, String> publisherAlias = new HashMap<>();
-
-  /**
-   * Makes sure all publisher aliases are unique
-   */
-  public void validatePublisherAlias() {
-    Set<String> aliases = new HashSet<>();
-    for (var alias : publisherAlias.values()) {
-      if (aliases.contains(alias)) {
-        throw new IllegalStateException("Duplicate publisher alias: " + alias);
-      }
-      aliases.add(alias);
-    }
-  }
-
-  /**
    * Makes sure all configured directories do actually exist and create them if missing
    * @return true if at least one dir was newly created
    */

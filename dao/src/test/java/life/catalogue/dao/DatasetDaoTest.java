@@ -2,13 +2,12 @@ package life.catalogue.dao;
 
 import life.catalogue.TestUtils;
 import life.catalogue.api.exception.NotUniqueException;
-import life.catalogue.api.model.CitationTest;
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
@@ -42,7 +41,7 @@ public class DatasetDaoTest extends DaoTestBase {
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), validator);
     dao = new DatasetDao(factory(),
-      new NormalizerConfig(), new ReleaseConfig(), iCfg, new GbifConfig(),
+      new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(),
       null,
       ImageService.passThru(),
       diDao, exDao,
@@ -104,24 +103,41 @@ public class DatasetDaoTest extends DaoTestBase {
   }
 
   @Test
-  public void publisherAlias() throws Exception {
+  public void articleAlias() throws Exception {
     final UUID publisher = UUID.randomUUID();
-    iCfg.publisherAlias.put(publisher, "plazi");
     Dataset d = DatasetMapperTest.create();
+    d.setAlias(null);
     d.setGbifPublisherKey(publisher);
+    d.setType(DatasetType.ARTICLE);
+    var cit = Citation.create("Aha");
+    cit.setAuthor(List.of(new CslName("Paul", "Möglich", "von")));
+    cit.setIssued(FuzzyDate.of(2017));
+    d.setSource(List.of(cit));
+
     dao.create(d, Users.TESTER);
     commit();
-    assertEquals("plazi1000", d.getAlias());
+    assertEquals("vonMöglich2017", d.getAlias());
 
     // keep existing alias
     d = DatasetMapperTest.create();
     d.setGbifPublisherKey(publisher);
     d.setAlias("myPersonalAli");
+    d.setType(DatasetType.ARTICLE);
     dao.create(d, Users.TESTER);
     commit();
     assertEquals("myPersonalAli", d.getAlias());
 
-    // keep null if unkown publisher
+    // use dataset creator otherwise if no source
+    d = DatasetMapperTest.create();
+    d.setAlias(null);
+    d.setType(DatasetType.ARTICLE);
+    d.setCreator(List.of(Agent.person("Paul", "Mägdefrau")));
+    d.setIssued(FuzzyDate.of(2018, 12, 6));
+    dao.create(d, Users.TESTER);
+    commit();
+    assertEquals("Mägdefrau2018", d.getAlias());
+
+    // keep null if no source nor author
     d = DatasetMapperTest.create();
     d.setGbifPublisherKey(UUID.randomUUID());
     d.setAlias(null);

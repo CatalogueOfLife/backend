@@ -51,12 +51,14 @@ public class DatasetPager {
   private final LoadingCache<UUID, Agent> publisherCache;
   private final LoadingCache<UUID, Agent> hostCache;
   private final Set<UUID> articlePublishers;
+  private final Set<UUID> articleHostInstallations;
   private final LocalDate since;
 
   public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since) {
     this.client = client;
     this.since = since;
     articlePublishers = Set.copyOf(gbif.articlePublishers);
+    articleHostInstallations = Set.copyOf(gbif.articleHostInstallations);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -232,7 +234,9 @@ public class DatasetPager {
       return null;
     }
     // type
-    if (d.dataset.getGbifPublisherKey() != null && articlePublishers.contains(d.dataset.getGbifPublisherKey())) {
+    if (d.dataset.getGbifPublisherKey() != null && articlePublishers.contains(d.dataset.getGbifPublisherKey())
+        || g.installationKey != null && articleHostInstallations.contains(g.installationKey)
+    ) {
       d.dataset.setType(DatasetType.ARTICLE);
 
     } else if (g.subtype != null) {

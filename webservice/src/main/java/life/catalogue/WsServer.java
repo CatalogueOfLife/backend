@@ -190,9 +190,6 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
-    // validate configs
-    cfg.importer.validatePublisherAlias();
-
     final JerseyEnvironment j = env.jersey();
 
     // remove SSL defaults that prevent correct use of TLS1.3
@@ -332,7 +329,7 @@ public class WsServer extends Application<WsServerConfig> {
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), broker);
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif,
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
       new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator
     );
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());

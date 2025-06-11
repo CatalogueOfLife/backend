@@ -52,7 +52,7 @@ public class GbifSyncManager implements Managed {
   }
   
   public void syncNow() {
-    Runnable job = new GbifSyncJob(cfg, iCfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true);
+    Runnable job = new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true);
     job.run();
   }
 
@@ -71,7 +71,7 @@ public class GbifSyncManager implements Managed {
       if (cfg.fullSyncFrequency > 0) {
         LOG.info("Schedule a full GBIF registry sync incl deletions every {} days", cfg.fullSyncFrequency);
         futures.add(scheduler.scheduleAtFixedRate(
-          new GbifSyncJob(cfg, iCfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false),
+          new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, false),
           0, cfg.fullSyncFrequency, TimeUnit.DAYS)
         );
       }
@@ -80,7 +80,7 @@ public class GbifSyncManager implements Managed {
         LOG.info("Enable incremental GBIF registry syncs every {} minutes", cfg.syncFrequency);
         // we delay the first run by 30 minutes as we do the full sync first
         futures.add(scheduler.scheduleAtFixedRate(
-          new GbifSyncJob(cfg, iCfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
+          new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
           30, cfg.syncFrequency, TimeUnit.MINUTES)
         );
       }

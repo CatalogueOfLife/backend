@@ -127,6 +127,17 @@ public class StringUtilsTest {
     assertEquals("HALLO", StringUtils.digitOrAsciiLetters("Hallo"));
     assertEquals("HA LLO", StringUtils.digitOrAsciiLetters(" Ha-llo!"));
     assertEquals("HA LLO34 GRR", StringUtils.digitOrAsciiLetters(" Ha-llo34!   grr.!"));
+    assertEquals("M DORING", StringUtils.digitOrAsciiLetters(" M.Döring"));
+  }
+
+  @Test
+  public void removePunctWS() throws Exception {
+    assertEquals("Hallo", StringUtils.removePunctWS("Hallo"));
+    assertEquals("Hallo", StringUtils.removePunctWS(" Ha-llo!"));
+    assertEquals("Hallo34grr", StringUtils.removePunctWS(" Ha-llo34!   grr.!"));
+    assertEquals("MDöring", StringUtils.removePunctWS(" M.Döring"));
+    assertEquals("GalléSzpisjak2024", StringUtils.removePunctWS(" Gallé-Szpisjak, 2024"));
+    assertEquals("daCostaSilva", StringUtils.removePunctWS("da  Costa-Silva  "));
   }
 
   @Test
