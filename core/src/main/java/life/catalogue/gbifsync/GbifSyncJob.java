@@ -223,7 +223,9 @@ public class GbifSyncJob extends GlobalBlockingJob {
             }
           }
           updated++;
-        } else if (curr.getType() == DatasetType.ARTICLE && curr.getAlias() != null && curr.getAlias().endsWith(curr.getKey().toString())) {
+        } else if (curr.getType() == DatasetType.ARTICLE &&
+          (curr.getAlias() == null || curr.getAlias() != null && curr.getAlias().endsWith(curr.getKey().toString()))
+        ) {
           // set new alias if we have the old form with dataset key still for articles
           curr.setAlias(null);
           dao.update(curr, Users.GBIF_SYNC);
