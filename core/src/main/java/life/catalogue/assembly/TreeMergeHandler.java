@@ -803,7 +803,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // TODO: implement basionym/name rel updates
     }
     // well known name identifier
-    if (nameIdScope != null) {
+    if (existingUsage != null && nameIdScope != null) {
       var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
       nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, src.getId())));
     }
