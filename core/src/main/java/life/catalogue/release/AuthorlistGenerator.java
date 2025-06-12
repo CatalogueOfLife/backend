@@ -113,7 +113,8 @@ public class AuthorlistGenerator {
       }
       result.addAll(0, existing);
     }
-    return result;
+    // replace SrcAgent which troubles kryo
+    return result.stream().map(Agent::new).collect(Collectors.toList());
   }
 
   private static List<SrcAgent> addSourceNote(Dataset d, List<Agent> agents) {
