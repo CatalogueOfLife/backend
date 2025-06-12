@@ -293,7 +293,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());
-    LOG.debug("Created {} {} usage {} from source {}:{}", u.getStatus(), u.getRank(), u.getLabel(), sector.getSubjectDatasetKey(), u.getId());
+    LOG.debug("Created {} {} usage {} [ID={}] with parent {} from source {}:{}", u.getStatus(), u.getRank(), u.getLabel(), u.getId(), parent, sector.getSubjectDatasetKey(), origID);
 
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);

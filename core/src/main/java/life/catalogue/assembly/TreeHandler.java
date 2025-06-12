@@ -51,6 +51,11 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
       this.status = status;
       this.decision = decision;
     }
+
+    @Override
+    public String toString() {
+      return String.format("%s %s %s (%s)", status, rank, id, parentId);
+    }
   }
 
 }
