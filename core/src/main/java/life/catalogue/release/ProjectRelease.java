@@ -243,7 +243,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   /**
    * @param dKey datasetKey to remove name & reference orphans from.
    */
-  void removeOrphans(int dKey) {
+  void removeOrphans(int dKey) throws InterruptedException {
+    checkIfCancelled();
     final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
@@ -252,19 +253,22 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
-    LocalDateTime start = LocalDateTime.now();
+    super.prepWork();
+
+    LocalDateTime start;
 
     if (prCfg.removeBareNames) {
+      start = LocalDateTime.now();
       removeOrphans(projectKey);
+      DateUtils.logDuration(LOG, "Remove orphans", start);
     }
 
     prevReleaseKey = createReleaseDOI();
-    DateUtils.logDuration(LOG, "Preparing release", start);
 
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, factory);
+    IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, factory);
     idp.mapIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
@@ -296,6 +300,7 @@ public class ProjectRelease extends AbstractProjectCopy {
    * @param prevReleaseKey the previous release key to build the metadata with
    */
   protected Integer createReleaseDOI(Integer prevReleaseKey) throws Exception {
+    checkIfCancelled();
     // assign DOIs?
     if (doiCfg != null) {
       newDataset.setDoi(doiCfg.datasetDOI(newDatasetKey));

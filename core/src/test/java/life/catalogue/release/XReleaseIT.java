@@ -8,8 +8,10 @@ import life.catalogue.assembly.SectorSyncMergeIT;
 import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.cache.UsageCache;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.dao.*;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
@@ -22,12 +24,15 @@ import life.catalogue.junit.*;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
+import life.catalogue.matching.nidx.NameIndexImpl;
+
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
@@ -44,8 +49,7 @@ import org.slf4j.LoggerFactory;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -214,6 +218,20 @@ public class XReleaseIT extends SectorSyncTestBase {
     System.out.println("\n*** COMPARISON ***");
     // compare with expected tree
     assertTree(project, xreleaseKey, getClass().getResourceAsStream("/txtree/" + project + "/xrelease.txtree"));
+
+    // make sure we always have no temp ids
+    AtomicInteger count = new AtomicInteger();
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      PgUtils.consume(() -> num.processIds(xreleaseKey, true, ShortUUID.MIN_LEN), u -> {
+        var nu = num.get(DSID.of(xreleaseKey, u));
+        System.out.println(nu + " -> " + nu.getName().getType());
+        if (NameIndexImpl.INDEX_NAME_TYPES.contains(nu.getName().getType())) {
+          count.incrementAndGet();
+        }
+      });
+    }
+    assertEquals(0, count.get());
 
     conditionalChecks(xrel);
   }

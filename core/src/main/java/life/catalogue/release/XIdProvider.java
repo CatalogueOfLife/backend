@@ -20,8 +20,8 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
   private final NameIndex nidx;
   private final Writer nomatchWriter;
 
-  public XIdProvider(int projectKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, NameIndex nidx, SqlSessionFactory factory) throws IOException {
-    super(projectKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, factory);
+  public XIdProvider(int projectKey, int mappedDatasetKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, NameIndex nidx, SqlSessionFactory factory) throws IOException {
+    super(projectKey, mappedDatasetKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, factory);
     this.nidx = nidx;
     nomatchWriter = buildNomatchWriter();
   }

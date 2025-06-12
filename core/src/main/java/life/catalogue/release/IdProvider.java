@@ -68,11 +68,11 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  */
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
-
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
-  private final int releaseDatasetKey;
+  private final int mappedDatasetKey; // from
+  private final int releaseDatasetKey; // to
   private final Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
@@ -104,8 +104,10 @@ public class IdProvider {
       this.attempt = attempt;
     }
   }
-  public IdProvider(int projectKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+  public IdProvider(int projectKey, int mappedDatasetKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+    LOG.info("Setup ID provider for project {}, mapping dataset {}", projectKey, mappedDatasetKey);
     this.releaseDatasetKey = releaseDatasetKey;
+    this.mappedDatasetKey = mappedDatasetKey;
     this.projectKey = projectKey;
     this.origin = origin;
     this.attempt = attempt;
@@ -297,7 +299,7 @@ public class IdProvider {
         sn = num.getSimple(key);
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
-        sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
+        sn = num.getSimpleByIdMap(DSID.of(mappedDatasetKey, ID));
         if (sn != null) {
           key = DSID.of(releaseDatasetKey, ID);
         }
@@ -470,14 +472,18 @@ public class IdProvider {
   }
 
   protected void mapIds(){
-    try (SqlSession readSession = factory.openSession(true)) {
-      mapIds(readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey));
+    try (SqlSession readSession = factory.openSession(true);
+         var cursor = readSession.getMapper(NameUsageMapper.class).processNxIds(mappedDatasetKey);
+    ) {
+      mapIds(cursor);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
   @VisibleForTesting
   protected void mapIds(Iterable<SimpleNameWithNidx> names){
-    LOG.info("Map name usage IDs");
+    LOG.info("Map name usage IDs from dataset {}", mappedDatasetKey);
     final int lastRelIds = ids.lastAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
@@ -596,7 +602,7 @@ public class IdProvider {
           issueNewId(sn);
         }
         if (persistIdMapping) {
-          idm.mapUsage(projectKey, sn.getId(), encode(sn.getCanonicalId()));
+          idm.mapUsage(mappedDatasetKey, sn.getId(), encode(sn.getCanonicalId()));
         }
       }
     }

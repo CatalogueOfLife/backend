@@ -15,6 +15,7 @@ public final class ShortUUID {
 
   public static final Builder BUILDER = new Builder();
   public static final Supplier<String> ID_GEN = () -> random().toString();
+  public static final int MIN_LEN = 20;
 
   private final String uuid;
 

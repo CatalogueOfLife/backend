@@ -149,7 +149,7 @@ public class IdProviderReleaseIT {
     createDataset();
     // map ids
     LOG.info("Map IDs for project {}", project);
-    IdProvider idp = new IdProvider(Datasets.COL, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    IdProvider idp = new IdProvider(Datasets.COL, Datasets.COL, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     final int nextKey = idp.previewNextKey();
     idp.mapIds();
     idp.report();

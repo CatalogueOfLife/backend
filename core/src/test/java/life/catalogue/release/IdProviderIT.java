@@ -56,7 +56,7 @@ public class IdProviderIT {
 
   public void init(ReleaseConfig cfg) throws IOException {
     this.cfg = cfg;
-    provider = new IdProvider(projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

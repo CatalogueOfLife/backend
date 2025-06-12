@@ -76,6 +76,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     String expected = Resources.toString("assembly-trees/" + resourceName);
     assertEquals(expected.trim(), tree.trim());
   }
+
   public static String readTree(int datasetKey) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey);
@@ -86,6 +87,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     return tree;
   }
+
   @Test
   public void release() throws Exception {
     ProjectRelease release = buildRelease();

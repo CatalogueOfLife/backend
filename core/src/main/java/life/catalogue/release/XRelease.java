@@ -63,6 +63,7 @@ public class XRelease extends ProjectRelease {
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
   private int failedSyncs;
+  private int tmpProjectKey;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -128,11 +129,105 @@ public class XRelease extends ProjectRelease {
   }
 
   @Override
+  void initJob() throws Exception {
+    // this creates the newDatasetKey - our final destination
+    super.initJob();
+    // we do copy the base release into a new tmp dataset that we merge into
+    // and finally copy all data over to map the stable ids - just like we do with regular releases
+    Dataset d = new Dataset();
+    d.setTitle("Merge Project " + newDatasetKey);
+    d.setOrigin(DatasetOrigin.XRELEASE);
+    d.setSourceKey(projectKey);
+    d.setPrivat(true);
+    d.setType(newDataset.getType());
+    d.setLicense(newDataset.getLicense());
+    tmpProjectKey = dDao.createTemp(d, user);
+    idMapDatasetKey = tmpProjectKey;
+
+    // create sequences
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).createSequences(tmpProjectKey);;
+    }
+    createIdMapTables();
+
+    LOG.info("Created temporary project {} which will cleanup by itself in a few days", tmpProjectKey);
+  }
+
+  @Override
   void prepWork() throws Exception {
     // fail early if components are not ready
     syncFactory.assertComponentsOnline();
     // ... or licenses of existing sectors are not compatible
+    licenseCheck();
+
+    // make sure the base release is fully matched
+    // runs in parallel to the rest of the prep phase below
+    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
+    final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
+
+    // add new publisher sectors
+    updatePublisherSectors();
+
+    // load all merge sectors from project as they do not exist in the base release
+    loadMergeSectors();
+
+    // make sure the missing matching is completed before we deal with the real data
+    thread.join();
+
+    // copy base release to tmp project
+    final int xreleaseDatasetKey = newDatasetKey;
+    newDatasetKey = tmpProjectKey;
+    copyData();
+
+    // setup id generator
+    usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, ni, factory);
+    usageIdGen.removeIdsFromDataset(tmpProjectKey);
+
+    mergeSectors();
+
+    homotypicGrouping();
+
+    // flagging
+    validateAndCleanTree();
+    cleanImplicitTaxa();
+    flagLoops();
+
+    // remove orphan names and references
+    removeOrphans(tmpProjectKey);
+
+    // stable ids
+    mapTmpIDs();
+
+    // switch back to final release for the main copy phase
+    newDatasetKey = xreleaseDatasetKey;
+
+    // update metadata
+    updateMetadata();
+
+    // DOI
+    createReleaseDOI();
+  }
+
+  @Override
+  protected void metrics() throws InterruptedException {
+    // create sector metrics
+    buildSectorMetrics();
+    // main metrics
+    super.metrics();
+  }
+
+  @Override
+  void finalWork() throws Exception {
+    super.finalWork();
+    // drop tmp project sequences
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetPartitionMapper.class).deleteSequences(tmpProjectKey);;
+    }
+  }
+
+  private void licenseCheck() {
     final License projectLicense = dataset.getLicense();
+    LOG.info("Checking source licenses against project license {} ...", projectLicense);
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var sm = session.getMapper(SectorMapper.class);
@@ -148,12 +243,10 @@ public class XRelease extends ProjectRelease {
         }
       }
     }
+  }
 
-    // make sure the base release is fully matched
-    // runs in parallel to the rest of the prep phase below
-    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
-    final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
-
+  private void updatePublisherSectors() {
+    LOG.info("Updating publisher sectors");
     try (SqlSession session = factory.openSession(true)) {
       var pm = session.getMapper(PublisherMapper.class);
       var publisher = pm.listAll(projectKey);
@@ -163,8 +256,9 @@ public class XRelease extends ProjectRelease {
         LOG.info("Created {} newly published merge sectors in project {} from publisher {} {}", newSectors, projectKey, p.getAlias(), p.getId());
       }
     }
+  }
 
-    // load all merge sectors from project as they not exist in the base release
+  private void loadMergeSectors() {
     // note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -182,35 +276,9 @@ public class XRelease extends ProjectRelease {
         }
         // move sector to release and rematch targets to base release
         rematchTarget(s, baseReleaseKey, matcher);
-        s.setDatasetKey(newDatasetKey);
+        s.setDatasetKey(tmpProjectKey);
       }
     }
-
-    // update description
-    if (prCfg.metadata.description != null) {
-      final Set<Integer> baseSources = new HashSet<>();
-      try (SqlSession session = factory.openSession(true)) {
-        SectorMapper sm = session.getMapper(SectorMapper.class);
-        SectorSearchRequest req = new SectorSearchRequest();
-        req.setMode(Set.of(Sector.Mode.ATTACH, Sector.Mode.UNION));
-        req.setDatasetKey(baseReleaseKey);
-        PgUtils.consume(()->sm.processSearch(req), s -> {
-          baseSources.add(s.getSubjectDatasetKey());
-        });
-      }
-      int numMerge = (int) sectors.stream().map(Sector::getSubjectDatasetKey).distinct().count();
-      var data = new XReleaseWrapper(new CitationUtils.ReleaseWrapper(newDataset, base, dataset), baseSources.size(), numMerge);
-      newDataset.setDescription( CitationUtils.fromTemplate(data, prCfg.metadata.description) );
-    }
-
-    // DOI
-    createReleaseDOI();
-
-    // setup id generator
-    usageIdGen = new XIdProvider(projectKey, attempt, newDatasetKey, cfg, ni, factory);
-
-    // make sure the missing matching is completed before we deal with the real data
-    thread.join();
   }
 
   public static void rematchTarget(Sector s, int targetDatasetKey, UsageMatcherGlobal matcher) {
@@ -238,42 +306,13 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  @Override
-  void finalWork() throws Exception {
-    usageIdGen.removeIdsFromDataset(newDatasetKey);
-
-    mergeSectors();
-
-    updateState(ImportState.PROCESSING);
-    updateTmpIDs();
-    processWithPrio();
-
-    // flagging of suspicious usages
-    validateAndCleanTree();
-    cleanImplicitTaxa();
-
-    // remove orphan names and references
-    removeOrphans(newDatasetKey);
-
-    updateState(ImportState.ANALYZING);
-    // flag loops and nonexisting parents
-    flagLoops();
-    // update sector metrics. The entire releases metrics are done later by the superclass
-    buildSectorMetrics();
-    // update metadata
-    updateMetadata();
-    // write id reports
-    usageIdGen.report();
-    // finally also call the shared part which e.g. archives metadata and creates source dataset records
-    super.finalWork();
-  }
-
-  private void processWithPrio() {
+  private void homotypicGrouping() throws InterruptedException {
+    checkIfCancelled();
     final var prios = new SectorPriority(getDatasetKey(), factory);
     // detect and group basionyms
     if (xCfg.homotypicConsolidation) {
       final LocalDateTime start = LocalDateTime.now();
-      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
+      var hc = HomotypicConsolidator.entireDataset(factory, tmpProjectKey, prios::priority);
       if (xCfg.basionymExclusions != null) {
         hc.setBasionymExclusions(xCfg.basionymExclusions);
       }
@@ -287,7 +326,25 @@ public class XRelease extends ProjectRelease {
     flagDuplicatesAsProvisional(prios);
   }
 
-  private void updateMetadata() {
+  private void updateMetadata() throws InterruptedException {
+    checkIfCancelled();
+    // update description
+    if (prCfg.metadata.description != null) {
+      final Set<Integer> baseSources = new HashSet<>();
+      try (SqlSession session = factory.openSession(true)) {
+        SectorMapper sm = session.getMapper(SectorMapper.class);
+        SectorSearchRequest req = new SectorSearchRequest();
+        req.setMode(Set.of(Sector.Mode.ATTACH, Sector.Mode.UNION));
+        req.setDatasetKey(baseReleaseKey);
+        PgUtils.consume(()->sm.processSearch(req), s -> {
+          baseSources.add(s.getSubjectDatasetKey());
+        });
+      }
+      int numMerge = (int) sectors.stream().map(Sector::getSubjectDatasetKey).distinct().count();
+      var data = new XReleaseWrapper(new CitationUtils.ReleaseWrapper(newDataset, base, dataset), baseSources.size(), numMerge);
+      newDataset.setDescription( CitationUtils.fromTemplate(data, prCfg.metadata.description) );
+    }
+
     newDataset.appendNotes(String.format("Base release %s.", baseReleaseKey));
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetMapper.class).update(newDataset);
@@ -297,16 +354,17 @@ public class XRelease extends ProjectRelease {
   /**
    * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
-  private void flagLoops() {
+  private void flagLoops() throws InterruptedException {
+    checkIfCancelled();
     // any chained synonyms?
     try (SqlSession session = factory.openSession(true)) {
-      var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
+      var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(tmpProjectKey);
       if (chains != null && !chains.isEmpty()) {
-        LOG.error("{} chained synonyms found in XRelease {}", chains.size(),newDatasetKey);
+        LOG.error("{} chained synonyms found in XRelease {}", chains.size(),tmpProjectKey);
 
         var num = session.getMapper(NameUsageMapper.class);
         var vsm = session.getMapper(VerbatimSourceMapper.class);
-        var key = DSID.<String>root(newDatasetKey);
+        var key = DSID.<String>root(tmpProjectKey);
 
         for (var id : chains) {
           key.id(id);
@@ -319,13 +377,13 @@ public class XRelease extends ProjectRelease {
 
     // any accepted names below synonyms? Move to accepted
     try (SqlSession session = factory.openSession(true)) {
-      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
+      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(tmpProjectKey);
       if (synParents != null && !synParents.isEmpty()) {
-        LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
+        LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),tmpProjectKey);
         var num = session.getMapper(NameUsageMapper.class);
         var vsm = session.getMapper(VerbatimSourceMapper.class);
 
-        var key = DSID.<String>root(newDatasetKey);
+        var key = DSID.<String>root(tmpProjectKey);
         for (var id : synParents) {
           key.id(id);
           vsm.addIssue(key, Issue.SYNONYM_PARENT);
@@ -337,16 +395,16 @@ public class XRelease extends ProjectRelease {
 
     // cut potential cycles in the tree?
     try (SqlSession session = factory.openSession(true)) {
-      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);
+      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(tmpProjectKey);
       if (cycles != null && !cycles.isEmpty()) {
-        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),newDatasetKey);
+        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),tmpProjectKey);
         var tm = session.getMapper(TaxonMapper.class);
         var num = session.getMapper(NameUsageMapper.class);
         var vsm = session.getMapper(VerbatimSourceMapper.class);
 
         Name n = Name.newBuilder()
                      .id("cycleParentPlaceholder")
-                     .datasetKey(newDatasetKey)
+                     .datasetKey(tmpProjectKey)
                      .scientificName("Cycle parent holder")
                      .rank(Rank.UNRANKED)
                      .type(NameType.PLACEHOLDER)
@@ -358,25 +416,25 @@ public class XRelease extends ProjectRelease {
         cycleParent.setParentId(mergeCfg.incertae.getId());
         tm.create(cycleParent);
 
-        final DSID<String> key = DSID.root(newDatasetKey);
+        final DSID<String> key = DSID.root(tmpProjectKey);
         for (String id : cycles) {
           vsm.addIssue(key.id(id), Issue.PARENT_CYCLE);
           num.updateParentId(key, cycleParent.getId(), user);
         }
-        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
+        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), tmpProjectKey);
       }
 
     } catch (PersistenceException e) {
       // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
       //TODO: rewrite to test all in memory, using the int values of the stable ids or create negative ones for non stable ids and store a mapping on disk mapdb
-      LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
+      LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", tmpProjectKey, e);
     }
 
     // look for non existing parents
     try (SqlSession session = factory.openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var vsm = session.getMapper(VerbatimSourceMapper.class);
-      var missing = num.listMissingParentIds(newDatasetKey);
+      var missing = num.listMissingParentIds(tmpProjectKey);
       if (missing != null && !missing.isEmpty()) {
         LOG.error("{} usages found with a non existing parentID", missing.size());
         final String parent;
@@ -385,12 +443,12 @@ public class XRelease extends ProjectRelease {
         } else {
           parent = null;
         }
-        final DSID<String> key = DSID.root(newDatasetKey);
+        final DSID<String> key = DSID.root(tmpProjectKey);
         for (String id : missing) {
           vsm.addIssue(key.id(id), Issue.PARENT_ID_INVALID);
           num.updateParentId(key, parent, user);
         }
-        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
+        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),tmpProjectKey);
       }
     }
   }
@@ -399,23 +457,35 @@ public class XRelease extends ProjectRelease {
    * We copy the tables of the base release here, not the project
    */
   @Override
-  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) {
-    // we copy publisher entities from the project, all the rest from the base release with the new ids already
-    if (entity.equals(Publisher.class)) {
-      super.copyTable(entity, mapperClass, session);
-
+  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) throws InterruptedException {
+    int from;
+    boolean map;
+    checkIfCancelled();
+    if (newDatasetKey != tmpProjectKey) {
+      // this is the second copy step from the tmpProject to the actual release using the mapped IDs!
+      from = tmpProjectKey;
+      map = true;
     } else {
-      // copy all data from the base release
-      int count = session.getMapper(mapperClass).copyDataset(baseReleaseKey, newDatasetKey, false);
-      LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), baseReleaseKey, newDatasetKey);
+      map = false;
+      if (entity.equals(Publisher.class)) {
+        // we copy publisher entities from the project, all the rest from the base release with the new ids already
+        from = projectKey;
+      } else {
+        // copy all data from the base release
+        from = baseReleaseKey;
+      }
     }
+
+    int count = session.getMapper(mapperClass).copyDataset(from, newDatasetKey, map);
+    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), from, newDatasetKey);
   }
 
   /**
    * This updates the merge sector metrics with the final counts.
    * We do this at the very end as homotypic grouping and other final changes have impact on the sectors.
    */
-  private void buildSectorMetrics() {
+  private void buildSectorMetrics() throws InterruptedException {
+    checkIfCancelled();
     final LocalDateTime start = LocalDateTime.now();
     // sector metrics
     for (Sector s : sectors) {
@@ -445,8 +515,10 @@ public class XRelease extends ProjectRelease {
    * We do all extended work here, e.g. sector merging
    */
   private void mergeSectors() throws Exception {
-    final LocalDateTime start = LocalDateTime.now();
+    checkIfCancelled();
     // prepare merge handler config instance
+    LOG.info("Start merging {} sectors", sectors.size());
+    final LocalDateTime start = LocalDateTime.now();
     mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     final int size = sectors.size();
     int counter = 0;
@@ -469,7 +541,7 @@ public class XRelease extends ProjectRelease {
       SectorSync ss;
       try {
         // this loads decisions from the main project, even though the sector dataset key is the xrelease
-        ss = syncFactory.release(s, newDatasetKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
+        ss = syncFactory.release(s, tmpProjectKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
@@ -508,32 +580,16 @@ public class XRelease extends ProjectRelease {
    * Assign final, stable ids to those.
    * @throws Exception
    */
-  private void updateTmpIDs() throws Exception {
-    // load them into memory so we can modify them later without breaking the cursor
-    List<String> tmpIDs = new ArrayList<>();
-    try (SqlSession session = factory.openSession(false)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      PgUtils.consume(() -> num.processIds(newDatasetKey, true, 16), tmpIDs::add);
-    }
-    LOG.info("Found {} temporary IDs to be converted into stable IDs in release {}", tmpIDs.size(), newDatasetKey);
-
-    int counter = 0;
-    try (SqlSession session = factory.openSession(false)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      for (var id : tmpIDs) {
-        var key = DSID.of(newDatasetKey, id);
-        var sn = num.getSimpleCached(key);
-        String stableID = usageIdGen.issue(sn);
-        TaxonDao.changeUsageID(key, stableID, sn.isSynonym(), user, session);
-        matcher.updateCacheParent(newDatasetKey, id, stableID);
-        counter++;
-        if (counter % 100 == 0) {
-          session.commit();
-        }
-      }
-      session.commit();
-    }
-    LOG.info("Issued stable IDs for {} temporary canonical name usages in release {}", counter, newDatasetKey);
+  private void mapTmpIDs() throws InterruptedException {
+    checkIfCancelled();
+    var start = LocalDateTime.now();
+    final int startKey = usageIdGen.previewNextKey();
+    LOG.debug("Next key for stable IDs before mapping will be {}", startKey);
+    usageIdGen.mapIds();
+    LOG.info("Issued {} new IDs", usageIdGen.previewNextKey()-startKey);
+    checkIfCancelled();
+    usageIdGen.report();
+    DateUtils.logDuration(LOG, "ID provider", start);
   }
 
   private void copyMergeDecisions(Collection<EditorialDecision> decisions) {
@@ -570,14 +626,16 @@ public class XRelease extends ProjectRelease {
    *
    * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
    */
-  private void cleanImplicitTaxa() {
+  private void cleanImplicitTaxa() throws InterruptedException {
+    checkIfCancelled();
     LOG.warn("Clean implicit taxa - not implemented");
   }
 
   /**
    * Iterates over the entire tree of accepted names, validates taxa and resolves data.
    */
-  private void validateAndCleanTree() {
+  private void validateAndCleanTree() throws InterruptedException {
+    checkIfCancelled();
     LOG.info("Clean, validate & produce taxon metrics for entire xrelease {}", newDatasetKey);
     final AtomicInteger counter = new AtomicInteger();
     final LocalDateTime start = LocalDateTime.now();
@@ -624,7 +682,8 @@ public class XRelease extends ProjectRelease {
   /**
    * Assigns a doubtful status to accepted names that only differ in authorship
    */
-  private void flagDuplicatesAsProvisional(SectorPriority prios) {
+  private void flagDuplicatesAsProvisional(SectorPriority prios) throws InterruptedException {
+    checkIfCancelled();
     LOG.info("Find homonyms and mark as provisional");
     final LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(false)) {

@@ -61,7 +61,7 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+      super(projectKey, projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     }
 
     @Override
