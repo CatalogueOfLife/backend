@@ -269,9 +269,9 @@ public class IndexingService {
         "'' as category " +
         "FROM name_usage nu " +
         "INNER JOIN " +
-        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getClbKey() +
         " WHERE " +
-        "nu.dataset_key = " + dataset.get().getKey();
+        "nu.dataset_key = " + dataset.get().getClbKey();
 
       try (
         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();
@@ -431,13 +431,13 @@ public class IndexingService {
         "FROM " +
         "name_usage nu " +
         " INNER JOIN " +
-        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getClbKey() +
         " LEFT JOIN " +
-        "distribution d on d.taxon_id = nu.id AND d.dataset_key = " + dataset.get().getKey() +
+        "distribution d on d.taxon_id = nu.id AND d.dataset_key = " + dataset.get().getClbKey() +
         " LEFT JOIN " +
-        "verbatim v on v.id = d.verbatim_key AND v.dataset_key = " + dataset.get().getKey() +
+        "verbatim v on v.id = d.verbatim_key AND v.dataset_key = " + dataset.get().getClbKey() +
         " WHERE " +
-        "nu.dataset_key = " + dataset.get().getKey();
+        "nu.dataset_key = " + dataset.get().getClbKey();
 
       try (
         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();

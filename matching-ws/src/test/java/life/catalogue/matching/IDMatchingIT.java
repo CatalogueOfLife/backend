@@ -59,7 +59,7 @@ public class IDMatchingIT {
     );
 
     Dataset dataset = Dataset.builder().build();
-    dataset.setKey(1);
+    dataset.setClbKey(1);
     dataset.setAlias("DUMMY_IDS");
     dataset.setTitle("Dummy dataset for testing");
     dataset.setPrefix("ext-");

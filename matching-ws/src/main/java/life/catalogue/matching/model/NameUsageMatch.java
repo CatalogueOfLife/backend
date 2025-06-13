@@ -289,12 +289,12 @@ public class NameUsageMatch implements RankNameResolver {
   @Schema(description = "A status value derived from a dataset or external source. E.g. IUCN Red List.",
     title = "Status", type = "object")
   public static class Status {
-    @Schema(description = "The dataset key for the dataset that the status is associated with")
-    private String datasetKey;
+    @Schema(description = "The checklistbank dataset key for the dataset that the status is associated with")
+    private String clbDatasetKey;
     @Schema(description = "The dataset alias for the dataset that the status is associated with")
     private String datasetAlias;
     @Schema(description = "The GBIF registry key (UUID) for the dataset that the status is associated with")
-    private String gbifKey;
+    private String datasetKey;
     @Schema(description = "The status value")
     private String status;
     @Schema(description = "The status code value")

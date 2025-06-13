@@ -20,8 +20,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Dataset {
-  Integer key;
-  String gbifKey;
+  Integer clbKey;
+  String datasetKey;
   String title;
   String alias;
   String prefix;

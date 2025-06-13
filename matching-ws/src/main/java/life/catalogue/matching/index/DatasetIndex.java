@@ -155,7 +155,7 @@ public class DatasetIndex {
                 Dataset.class);
 
               // apply prefix mapping
-              Dataset prefixDatasetConfig = prefixMapping.get(dataset.getKey());
+              Dataset prefixDatasetConfig = prefixMapping.get(dataset.getClbKey());
               if (prefixDatasetConfig != null) {
                 dataset.setPrefix(prefixDatasetConfig.getPrefix());
                 dataset.setPrefixMapping(prefixDatasetConfig.getPrefixMapping());
@@ -192,8 +192,8 @@ public class DatasetIndex {
       Dataset[] datasets = mapper.readValue(inputStream, Dataset[].class);
 
       return Arrays.stream(datasets)
-        .peek(dataset -> log.debug("Loaded dataset {} [{}]", dataset.getTitle(), dataset.getKey()))
-        .collect(Collectors.toMap(Dataset::getKey, dataset -> dataset));
+        .peek(dataset -> log.debug("Loaded dataset {} [{}]", dataset.getTitle(), dataset.getClbKey()))
+        .collect(Collectors.toMap(Dataset::getClbKey, dataset -> dataset));
     } catch (IOException e) {
       log.warn("Cannot read dataset prefix mapping file", e);
       return Map.of();
@@ -251,13 +251,13 @@ public class DatasetIndex {
 
       for (Dataset dataset : identifierSearchers.keySet()) {
         metadata.getIdentifierIndexes().add(
-          getIndexMetadata(indexPath + "/" + IDENTIFIERS_DIR + "/" + dataset.getKey(),
+          getIndexMetadata(indexPath + "/" + IDENTIFIERS_DIR + "/" + dataset.getClbKey(),
             identifierSearchers.get(dataset), false));
       }
 
       for (Dataset dataset : ancillarySearchers.keySet()) {
         metadata.getAncillaryIndexes().add(
-          getIndexMetadata(indexPath + "/" + ANCILLARY_DIR + "/" + dataset.getKey(),
+          getIndexMetadata(indexPath + "/" + ANCILLARY_DIR + "/" + dataset.getClbKey(),
             ancillarySearchers.get(dataset), false));
       }
     }
@@ -319,8 +319,8 @@ public class DatasetIndex {
 
     Map<String, Object> datasetInfo = getDatasetInfo(indexPath);
     metadata.setDatasetTitle((String) datasetInfo.getOrDefault("datasetTitle", null));
-    metadata.setDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
-    metadata.setGbifKey((String) datasetInfo.getOrDefault("gbifKey", null));
+    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
+    metadata.setDatasetKey((String) datasetInfo.getOrDefault("gbifKey", null));
 
     // number of taxa
     metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
@@ -597,7 +597,7 @@ public class DatasetIndex {
         for (Dataset dataset : searchers.keySet()) {
 
           // use the prefix mapping
-          if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
+          if (dataset.getClbKey().toString().equals(datasetID) || (dataset.getDatasetKey() != null && dataset.getDatasetKey().equals(datasetID))) {
 
             // if configured, remove the prefix
             if (dataset.getRemovePrefixForMatching()){
@@ -628,8 +628,8 @@ public class DatasetIndex {
   private static ExternalID toExternalID(Document doc, Dataset dataset) {
     return ExternalID.builder()
       .id(doc.get(FIELD_ID))
-      .datasetKey(dataset.getKey().toString())
-      .gbifKey(dataset.getGbifKey())
+      .clbDatasetKey(dataset.getClbKey().toString())
+      .datasetKey(dataset.getDatasetKey())
       .datasetTitle(dataset.getTitle())
       .scientificName(doc.get(FIELD_SCIENTIFIC_NAME))
       .rank(doc.get(FIELD_RANK))
@@ -665,7 +665,7 @@ public class DatasetIndex {
 
             // check for multiple matches - indicates duplicates in index
             if (identifierDocs.totalHits.value > 1) {
-              log.warn("Multiple matches found for identifier {} in dataset {}", key, dataset.getKey());
+              log.warn("Multiple matches found for identifier {} in dataset {}", key, dataset.getClbKey());
               return noMatch(ignoredIssue, "Multiple matches found for the identifier");
             }
 
@@ -682,11 +682,11 @@ public class DatasetIndex {
               return idMatch;
             } else {
               log.warn("Cannot find usage {} in main lucene index after " +
-                "finding it in identifier index for {}", key, dataset.getKey());
-              return noMatch(ignoredIssue, "Identifier recognised in {}, but not matching in main index" + dataset.getKey());
+                "finding it in identifier index for {}", key, dataset.getClbKey());
+              return noMatch(ignoredIssue, "Identifier recognised in {}, but not matching in main index" + dataset.getClbKey());
             }
           } else {
-            log.info("Identifier {} not found in dataset {}", key, dataset.getKey());
+            log.info("Identifier {} not found in dataset {}", key, dataset.getClbKey());
             return noMatch(notFoundIssue, "Identifier not found");
           }
         }
@@ -718,7 +718,7 @@ public class DatasetIndex {
     if (dataset.getRemovePrefixForMatching() != null && dataset.getRemovePrefixForMatching()){
       key = key.replace(dataset.getPrefix(), "");
     }
-    log.debug("Searching for identifier {} in dataset {}", key, dataset.getKey());
+    log.debug("Searching for identifier {} in dataset {}", key, dataset.getClbKey());
     return Optional.of(key);
   }
 
@@ -804,8 +804,8 @@ public class DatasetIndex {
             IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
             ancillaryStatus.setStatus(formattedIUCN);
             ancillaryStatus.setStatusCode(iucn.getCode());
-            ancillaryStatus.setDatasetKey(dataset.getKey().toString());
-            ancillaryStatus.setGbifKey(dataset.getGbifKey());
+            ancillaryStatus.setClbDatasetKey(dataset.getClbKey().toString());
+            ancillaryStatus.setDatasetKey(dataset.getDatasetKey());
             ancillaryStatus.setDatasetAlias(dataset.getAlias());
             ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
             u.addAdditionalStatus(ancillaryStatus);

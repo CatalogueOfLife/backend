@@ -199,10 +199,10 @@ public class MatchingApplication implements ApplicationRunner {
             .name(licence)
             .url(licenceUrl)));
 
-      if (m.getMainIndex().getDatasetKey() != null) {
+      if (m.getMainIndex().getClbDatasetKey() != null) {
         openAPI.externalDocs(new ExternalDocumentation()
           .description(m.getMainIndex().getDatasetTitle())
-          .url("https://checklistbank.org/dataset/" + m.getMainIndex().getDatasetKey()));
+          .url("https://checklistbank.org/dataset/" + m.getMainIndex().getClbDatasetKey()));
       }
     });
 
