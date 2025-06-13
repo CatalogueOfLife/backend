@@ -912,7 +912,8 @@ public class IndexingService {
       long left = currentIdx;
       Document rootTaxon = searcher.doc(scoreDoc.doc);
       if (!rootTaxon.get(FIELD_CANONICAL_NAME).equalsIgnoreCase("incertae sedis")
-        && rootTaxon.get(FIELD_STATUS).equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
+//        && rootTaxon.get(FIELD_STATUS).equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())
+      ) {
         log.info("[Nested set] Starting Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME));
         currentIdx = nestedSetTaxon(rootTaxon, searcher, nestedIndexWriter, currentIdx, new ArrayList<>(), 0);
         log.info("[Nested set] Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME) + " left: " + left + " right: " + currentIdx);
@@ -938,7 +939,7 @@ public class IndexingService {
     String status = doc.get(FIELD_STATUS);
 
     // if it is a synonym, we avoid recursively looking at child nodes
-    if (!status.equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
+    if (status != null && !status.equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
       currentIndex ++;
       Document nestedSet = new Document();
       nestedSet.add(new StringField(FIELD_ID, id, Field.Store.YES));
