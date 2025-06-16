@@ -405,11 +405,13 @@ public class WsServer extends Application<WsServerConfig> {
     EmailEncryption encryption = null;
     if (cfg.github == null) {
       feedback = FeedbackService.passThru();
+      LOG.warn("No feedback configured!");
     } else {
       if (cfg.github.encryptPassword != null) {
         encryption = new EmailEncryption(cfg.github.encryptPassword, cfg.github.encryptSalt);
       }
       feedback = new GithubFeedback(cfg.github, cfg.clbURI, cfg.apiURI, jerseyClient, encryption, getSqlSessionFactory());
+      LOG.info("Using Github feedback {}", feedback);
     }
     managedService.manage(Component.Feedback, feedback);
 

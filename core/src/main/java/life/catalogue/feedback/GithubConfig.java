@@ -30,4 +30,13 @@ public class GithubConfig {
   public URI issueURI() {
     return api.resolve("/repos/"+organisation+"/"+repository+"/issues");
   }
+
+  @Override
+  public String toString() {
+    return "api=" + api +
+      ", organisation='" + organisation + '\'' +
+      ", repository='" + repository + '\'' +
+      ", assignee=" + assignee +
+      ", labels=" + labels;
+  }
 }

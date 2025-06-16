@@ -165,6 +165,11 @@ public class GithubFeedback implements FeedbackService {
   }
 
   @Override
+  public String toString() {
+    return "GithubFeedback{" + cfg +'}';
+  }
+
+  @Override
   public boolean hasStarted() {
     return active;
   }

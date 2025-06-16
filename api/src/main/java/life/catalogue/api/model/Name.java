@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
+import static life.catalogue.common.text.StringUtils.rmWS;
 
 /**
  * A parsed or unparsed name with strictly nomenclatural properties.
@@ -848,7 +849,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
       sb.append(" ");
       sb.append(preAuthorship);
     }
-    if (authorship != null) {
+    if (authorship != null && name != null && !rmWS(name.toLowerCase()).contains(rmWS(authorship.toLowerCase()))) {
       sb.append(" ");
       sb.append(authorship);
     }
