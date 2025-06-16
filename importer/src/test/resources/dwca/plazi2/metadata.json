@@ -1,0 +1,80 @@
+{
+	"identifier": {
+		"plazi": "FFDAFFE15E17FFE3FFA1FFCCFC433739"
+	},
+	"title": "New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)",
+	"version": "1732815892511",
+	"issued": "2024-11-28",
+	"creator": [
+		{
+			"organisation": "School of Horticulture and Plant Protection & Institute of Applied Entomology, Yangzhou University, Yangzhou 225009, China.",
+			"given": "Qing-Bo",
+			"family": "Huo"
+		},
+		{
+			"organisation": "Key Laboratory of Medicinal Animal and Plant Resources of Qinghai-Tibetan Plateau in Qinghai Province, School of Life Science, Qinghai Normal University, Xining, 810008, China.",
+			"given": "Zhen-Ning",
+			"family": "Chen"
+		},
+		{
+			"organisation": "Key Laboratory of Forest Protection of the National Forestry and Grassland Administration of China, Research Institute of Forest Ecology, Environment and Protection, Chinese Academy of Forestry, Beijing, 100091, China.",
+			"given": "Xiang-Bo",
+			"family": "Kong"
+		},
+		{
+			"organisation": "School of Horticulture and Plant Protection & Institute of Applied Entomology, Yangzhou University, Yangzhou 225009, China. & Joint International Research Laboratory of Agriculture and Agri-Product Safety, the Ministry of Education, Yangzhou University, Yangzhou 225009, China.",
+			"given": "Yu-Zhou",
+			"family": "Du"
+		}
+	],
+	"editor": [
+	],
+	"publisher": {
+		"organisation": "MagnoliaPress via Plazi",
+		"city": "Bern",
+		"country": "CH",
+		"email": "info@plazi.org",
+		"url": "https://plazi.org/"
+	},
+	"contact": {
+		"family": "Sautter",
+		"given": "Guido",
+		"organisation": "Plazi",
+		"email": "sautter@plazi.org",
+		"url": "https://plazi.org"
+	},
+	"description": "This dataset contains the digitized treatments in Plazi based on the original journal article Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3",
+	"url": "https://tb.plazi.org/GgServer/summary/FFDAFFE15E17FFE3FFA1FFCCFC433739",
+	"license": "CC0",
+	"source": [
+		{
+			"author": [
+				{
+					"given": "Qing-Bo",
+					"family": "Huo"
+				},
+				{
+					"given": "Zhen-Ning",
+					"family": "Chen"
+				},
+				{
+					"given": "Xiang-Bo",
+					"family": "Kong"
+				},
+				{
+					"given": "Yu-Zhou",
+					"family": "Du"
+				}
+			],
+			"type": "article-journal",
+			"containerTitle": "Zootaxa",
+			"volume": "4808",
+			"issue": "3",
+			"page": "455-474",
+			"issued": "2020-07-03",
+			"doi": "10.11646/zootaxa.4808.3.3",
+			"id": "10.11646/zootaxa.4808.3.3",
+			"title": "New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)"
+		}
+	]
+}

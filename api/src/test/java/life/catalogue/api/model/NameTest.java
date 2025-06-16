@@ -129,6 +129,19 @@ public class NameTest extends SerdeTestBase<Name> {
     assertFalse(json.contains("\"basionymAuthorship\""));
     assertFalse(json.contains("\"authorship\""));
   }
+
+  @Test
+  public void testUnparsableAuthorship() throws JsonProcessingException {
+    Name n = new Name();
+    n.setScientificName("Isoperla eximia : Zapekina-Dulkeit 1975");
+    n.setAuthorship(": Zapekina-Dulkeit 1975");
+    n.setGenus("Isoperla");
+    n.setSpecificEpithet("eximia");
+    n.setRank(Rank.SPECIES);
+    //n.rebuildScientificName();
+    //n.rebuildAuthorship();
+    assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", n.getLabel());
+  }
   
   @Test
   public void updateNameCacheLabel() throws Exception {
