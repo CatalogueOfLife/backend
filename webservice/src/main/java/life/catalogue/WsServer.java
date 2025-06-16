@@ -448,7 +448,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService,
-      imgService, FeedbackService.passThru(), renderer, doiResolver, coljersey
+      imgService, feedback, renderer, doiResolver, coljersey
     );
 
     // global
