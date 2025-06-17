@@ -1,6 +1,7 @@
 package life.catalogue.parser;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Test;
@@ -25,11 +26,17 @@ public class UriParserTest extends ParserTestBase<URI> {
     
     assertParse("http://gbif.org/missing%20space?escape=t%20r%20u%20e", "http://gbif.org/missing space?escape=t r u e");
     assertParse("http://gbif.org/missing%20space?escape=t%20r%20u%20e", "gbif.org/missing space?escape=t r u e");
-  
+    // DOIs are special - the doi.org resolver can contain unescaped DOIs which can have reserved URI characters
+    assertParseDOI("10.3417/1055-3177(2006)", "https://doi.org/10.3417/1055-3177(2006)");
+    assertParseDOI("10.3417/1055-3177(2006)16[244:ANSOCS]2.0.CO;2", "https://doi.org/10.3417/1055-3177(2006)16[244:ANSOCS]2.0.CO;2");
   }
   
-  private void assertParse(String expected, String input) throws UnparsableException {
+  private void assertParse(String expected, String input) throws UnparsableException, URISyntaxException {
     assertParse(URI.create(expected), input);
+  }
+  private void assertParseDOI(String expectedDOI, String input) throws UnparsableException, URISyntaxException {
+    URI expected = new URI("https", "doi.org", "/"+expectedDOI, null, null);
+    assertParse(expected, input);
   }
   @Override
   List<String> additionalUnparsableValues() {
