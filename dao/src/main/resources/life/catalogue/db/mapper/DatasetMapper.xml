@@ -475,6 +475,7 @@
     WHERE source_key = #{key} AND deleted IS NULL
       <if test="origin != null">AND origin = #{origin}::DATASETORIGIN</if>
       <if test="public">AND NOT private</if>
+      <if test="keyLimit != null">AND key &lt; #{keyLimit}</if>
       <if test="ignore != null and !ignore.isEmpty()">
         AND key NOT IN <foreach item="k" collection="ignore" open="(" separator="," close=")">#{k}</foreach>
       </if>
