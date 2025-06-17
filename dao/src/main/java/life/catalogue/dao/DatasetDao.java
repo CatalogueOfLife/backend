@@ -74,10 +74,9 @@ import static life.catalogue.metadata.MetadataFactory.stripHtml;
  * On startup we load the current max keys from the database.
  */
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
-  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
-  private static final int TEMP_KEY_START = 100_000_000;
+  public static final int TEMP_KEY_START = 100_000_000;
   private static final int TEMP_EXPIRY_DAYS = 7;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
