@@ -39,7 +39,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * List all keys equal or above the given minimum.
-   * Includes deleted and private datasets.
+   * Includes deleted, private and temporary datasets!
    */
   List<Integer> keysAbove(@Param("min") int minID, @Nullable @Param("olderThan") LocalDateTime olderThan);
 
@@ -268,27 +268,21 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   boolean isPrivate(@Param("key") int key);
 
   /**
-   * Looks up the dataset key of the latest release for a given project
+   * Looks up the dataset key of the latest release for a given project, ignoring temporary datasets
    * @param key the project key
    * @param publicOnly if true only include public releases
-   * @param keyLimit optional maximum key. All keys equal or above will be ignored.
    * @param origin the kind of release, can be null to allow any
    * @param ignore list of dataset key to ignore as the latest release
    * @return dataset key of the latest release or null if no release exists
    */
   Integer latestRelease(@Param("key") int key,
                         @Param("public") boolean publicOnly,
-                        @Param("keyLimit") Integer keyLimit,
                         @Nullable @Param("ignore") List<Integer> ignore,
                         @Nullable @Param("origin") DatasetOrigin origin
   );
 
   default Integer latestRelease(int key, boolean publicOnly, DatasetOrigin origin) {
-    return latestRelease(key, publicOnly, DatasetDao.TEMP_KEY_START, null, origin);
-  }
-
-  default Integer latestRelease(int key, boolean publicOnly, List<Integer> ignore, DatasetOrigin origin) {
-    return latestRelease(key, publicOnly, DatasetDao.TEMP_KEY_START, ignore, origin);
+    return latestRelease(key, publicOnly, null, origin);
   }
 
   /**
