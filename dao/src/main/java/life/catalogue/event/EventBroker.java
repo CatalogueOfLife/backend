@@ -151,6 +151,7 @@ public class EventBroker implements Managed {
     }
 
     private void broker(Object obj) {
+      LOG.info("Broker event {}", obj);
       if (obj instanceof DatasetLogoChanged) {
         DatasetLogoChanged event = (DatasetLogoChanged) obj;
         for (DatasetListener l : datasetListeners) {
