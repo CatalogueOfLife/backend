@@ -42,7 +42,7 @@ public class MatchingDao {
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
+      if (StringUtils.isNotBlank(name.getAuthorship()) && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
         result.ignore(t, "Authorship differs");
         continue;
       }
@@ -54,7 +54,7 @@ public class MatchingDao {
         result.ignore(t, "Code differs");
         continue;
       }
-      if (name.getParent() != null) {
+      if (StringUtils.isNotBlank(name.getParent())) {
         // synonyms already have their parent name. For taxa we need to look that up
         // https://github.com/Sp2000/colplus-backend/issues/349
         Name parent;
