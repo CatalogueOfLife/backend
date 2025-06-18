@@ -59,7 +59,7 @@ public class AuthorlistGeneratorTest {
     proj.setContributor(List.of(person("Frank", "Berril"), person("Brant", "Spar")));
 
     Dataset d = new Dataset(proj);
-    d.setKey(projectKey+1);
+    d.setKey(projectKey + 1);
     assertEquals(1, d.getCreator().size());
     assertEquals(2, d.getContributor().size());
 
@@ -75,26 +75,35 @@ public class AuthorlistGeneratorTest {
     assertEquals(2, d.getContributor().size());
 
     d = new Dataset(proj);
-    d.setKey(projectKey+2);
+    d.setKey(projectKey + 2);
     gen.appendSourceAuthors(d, cfg);
     assertEquals(8, d.getCreator().size());
     assertEquals(proj.getContributor().size(), d.getContributor().size());
 
     var s3 = new DatasetSourceMapper.SourceDataset();
-    s3.setKey(projectKey+3);
+    s3.setKey(projectKey + 3);
     s3.setAlias("ALIAS");
     s3.setCreator(List.of(person("Markus", "Döring", "markus@vegan.pork", null, "Vegan")));
     sources.add(s3);
 
+
+    var s4 = new DatasetSourceMapper.SourceDataset();
+    s4.setKey(projectKey + 4);
+    s4.setAlias("ALIs4");
+    s4.setCreator(List.of(
+      person("Henry D.", "Agudelo Zamora"),
+      person("Henry D.", "Agudelo-Zamora")
+    ));
+    sources.add(s4);
+
     d = new Dataset(proj);
-    d.setKey(projectKey+4);
+    d.setKey(projectKey + 10);
     gen.appendSourceAuthors(d, cfg);
-    assertEquals(8, d.getCreator().size());
+    assertEquals(9, d.getCreator().size());
 
     assertEquals("Drummer; Vegan; ALIAS", d.getCreator().get(0).getNote());
-    assertEquals("ALIAS, DS1", d.getCreator().get(4).getNote());
-    // sorted
-    assertEquals("Bella", d.getCreator().get(1).getFamily());
+    assertEquals("Henry D.", d.getCreator().get(1).getGiven());
+    assertEquals("Agudelo Zamora", d.getCreator().get(1).getFamily());
+    assertEquals("ALIAS, DS1", d.getCreator().get(5).getNote());
   }
-
 }
