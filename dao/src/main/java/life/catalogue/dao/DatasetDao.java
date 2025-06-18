@@ -687,18 +687,38 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @return true if the private flag has changed and the dataset was published
    */
   public boolean publish(int key, User user) {
+    var d = getNotDeleted(key);
+    if (d.isPrivat()) {
+      d.setPrivat(false);
+      update(d, user.getKey());
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Convenience method to make a dataset private again.
+   * Interally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * @return true if the private flag has changed and the dataset was unpublished
+   */
+  public boolean unpublish(int key, User user) {
+    var d = getNotDeleted(key);
+    if (!d.isPrivat()) {
+      d.setPrivat(true);
+      update(d, user.getKey());
+      return true;
+    }
+    return false;
+  }
+
+  private Dataset getNotDeleted(int key) {
     try (SqlSession session = factory.openSession(true)){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var d = dm.get(key);
       if (d == null || d.hasDeletedDate()) {
         throw NotFoundException.notFound(Dataset.class, key);
       }
-      if (d.isPrivat()) {
-        d.setPrivat(false);
-        update(d, user.getKey());
-        return true;
-      }
-      return false;
+      return d;
     }
   }
 

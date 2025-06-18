@@ -135,6 +135,13 @@ public class DatasetResource extends AbstractGlobalResource<Dataset> {
     return dao.publish(key, user);
   }
 
+  @PUT
+  @Path("{key}/unpublish")
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public boolean unpublish(@PathParam("key") int key, @Auth User user) {
+    return dao.unpublish(key, user);
+  }
+
   @GET
   @Path("{key}/{attempt}")
   @VaryAccept
