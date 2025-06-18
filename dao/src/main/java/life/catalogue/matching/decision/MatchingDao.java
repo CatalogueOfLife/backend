@@ -18,6 +18,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.text.StringUtils.removePunctWS;
+
 public class MatchingDao {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingDao.class);
   
@@ -31,7 +33,11 @@ public class MatchingDao {
     uMapper = session.getMapper(NameUsageMapper.class);
     nMapper = session.getMapper(NameMapper.class);
   }
-  
+
+  private static String norm(String x) {
+    return x == null ? null : removePunctWS(x).toLowerCase();
+  }
+
   /**
    * Strictly matches a simple name to name usages from a given dataset
    * @param name
@@ -42,7 +48,7 @@ public class MatchingDao {
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.isNotBlank(name.getAuthorship()) && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
+      if (StringUtils.isNotBlank(name.getAuthorship()) && !norm(name.getAuthorship()).equals(norm(t.getName().getAuthorship()))) {
         result.ignore(t, "Authorship differs");
         continue;
       }
