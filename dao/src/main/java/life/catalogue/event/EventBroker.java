@@ -70,6 +70,7 @@ public class EventBroker implements Managed {
   }
 
   public synchronized void publish(Event event) {
+    LOG.info("publish new event {}", event);
     // the chronicle appender remembers which thread wrote the last message
     // it only allows the same thread to write to the queue
     // we disable this check as we synchronize the method, so we never have multiple threads writing to the queue at the same time
@@ -106,34 +107,40 @@ public class EventBroker implements Managed {
   private class Polling implements Runnable {
     @Override
     public void run() {
-      long lastDeleteCheck = System.currentTimeMillis();
-      // we create a unique tailer for every webapp instance
-      // this allows us to deploy several aps in parallel and still read all messages
-      final ExcerptTailer tailer = queue.createTailer(cfg.name + "-" + lastDeleteCheck);
-      // we wind to the end to only consume new messages as the queue likely already exists
-      tailer.toEnd();
-      // Continuously read messages and distribute them to listeners
-      while (true) {
-        // If no message was available, pause for a short time to avoid busy-waiting
-        var dc = tailer.readingDocument();
-        if (dc.wire() == null) {
-          // check for rolling file deletions once a day
-          if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
-            removeUnusedFiles();
-            lastDeleteCheck = System.currentTimeMillis();
-          } else {
-            try {
-              Thread.sleep(cfg.pollingLatency);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              break;
+      try {
+        long lastDeleteCheck = System.currentTimeMillis();
+        // we create a unique tailer for every webapp instance
+        // this allows us to deploy several aps in parallel and still read all messages
+        final ExcerptTailer tailer = queue.createTailer(cfg.name + "-" + lastDeleteCheck);
+        // we wind to the end to only consume new messages as the queue likely already exists
+        tailer.toEnd();
+        // Continuously read messages and distribute them to listeners
+        while (true) {
+          // If no message was available, pause for a short time to avoid busy-waiting
+          var dc = tailer.readingDocument();
+          if (dc.wire() == null) {
+            // check for rolling file deletions once a day
+            if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
+              removeUnusedFiles();
+              lastDeleteCheck = System.currentTimeMillis();
+            } else {
+              try {
+                Thread.sleep(cfg.pollingLatency);
+              } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.warn("Event polling interrupted");
+                break;
+              }
             }
-          }
 
-        } else {
-          broker(io.read(dc.wire().bytes().inputStream()));
+          } else {
+            broker(io.read(dc.wire().bytes().inputStream()));
+          }
         }
+      } catch (Exception e) {
+        LOG.error("Event polling throws exception", e);
       }
+      LOG.warn("Event polling stopped!");
     }
 
     private void removeUnusedFiles() {
