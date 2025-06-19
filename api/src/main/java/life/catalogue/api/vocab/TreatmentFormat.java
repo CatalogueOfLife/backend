@@ -8,12 +8,12 @@ public enum TreatmentFormat {
 
   PLAIN_TEXT(MediaType.TEXT_PLAIN_TYPE, "txt"),
   MARKDOWN(MoreMediaTypes.TEXT_MARKDOWN_TYPE, "md"),
-  PDF(MoreMediaTypes.APP_PDF_TYPE, "pdf"),
   XML(MediaType.TEXT_XML_TYPE, "xml"),
   HTML(MediaType.TEXT_HTML_TYPE, "html"),
   TAX_PUB(MediaType.TEXT_XML_TYPE, "xml"),
   TAXON_X(MediaType.TEXT_XML_TYPE, "xml"),
-  RDF(MediaType.TEXT_XML_TYPE, "rdf");
+  RDF(MediaType.TEXT_XML_TYPE, "rdf"),
+  PDF(MoreMediaTypes.APP_PDF_TYPE, "pdf");
 
   private final MediaType type;
   private final String suffix;
