@@ -188,7 +188,6 @@
     <module>reader</module>
     <module>reader-xls</module>
     <module>webservice</module>
-    <module>apianalytics</module>
   </modules>
 
   <distributionManagement>
@@ -292,11 +291,6 @@
         <version>${project.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.catalogueoflife</groupId>
-        <artifactId>apianalytics</artifactId>
-        <version>${project.version}</version>
       </dependency>
       <!-- Dropwizard -->
       <dependency>

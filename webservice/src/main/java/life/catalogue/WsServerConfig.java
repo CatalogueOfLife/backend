@@ -53,9 +53,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public BrokerConfig broker = new BrokerConfig();
 
   @Valid
-  public EsConfig analytics;
-
-  @Valid
   @NotNull
   public PgDbConfig adminDb = new PgDbConfig();
   
