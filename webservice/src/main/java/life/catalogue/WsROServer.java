@@ -223,13 +223,15 @@ public class WsROServer extends Application<WsServerConfig> {
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
 
-    // portal html page renderer
+    // portal html page renderer - only in ROServer !!!
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+    j.register(new PortalResource(renderer));
 
+    // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService, imgService,
-      FeedbackService.passThru(), renderer, doiResolver, coljersey
+      FeedbackService.passThru(), doiResolver, coljersey
     );
 
     // tasks
@@ -248,7 +250,7 @@ public class WsROServer extends Application<WsServerConfig> {
                                         @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao,
                                         DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
-                                        ImageService imgService, FeedbackService feedbackService, PortalPageRenderer renderer, DoiResolver doiResolver, ColJerseyBundle coljersey) {
+                                        ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, ColJerseyBundle coljersey) {
     // dataset scoped resources
     j.register(new DatasetArchiveResource(cfg));
     j.register(new DatasetImportResource(diDao));
@@ -273,7 +275,6 @@ public class WsROServer extends Application<WsServerConfig> {
     // global resources
     j.register(new ExportResource(exdao, cfg));
     j.register(new NameUsageSearchResource(searchService));
-    j.register(new PortalResource(renderer));
     j.register(new VernacularGlobalResource());
     j.register(new VersionResource(cfg, LocalDateTime.now()));
     j.register(new VocabResource());
