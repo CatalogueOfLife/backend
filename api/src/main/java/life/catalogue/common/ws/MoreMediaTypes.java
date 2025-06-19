@@ -21,6 +21,9 @@ public class MoreMediaTypes {
   public final static String APP_ZIP_ALT2 = "application/x-zip-compressed";
   public final static String APP_ZIP_ALT3 = "multipart/x-zip";
 
+  public final static String APP_PDF = "application/pdf";
+  public final static MediaType APP_PDF_TYPE = new MediaType("application", "pdf");
+
   public final static String APP_YAML = "application/yaml";
   public final static MediaType APP_YAML_TYPE = new MediaType("application", "yaml");
 
