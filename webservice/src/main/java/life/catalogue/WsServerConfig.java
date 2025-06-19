@@ -129,6 +129,12 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public int logCollectorSize = 1000;
 
   /**
+   * Maximum time in seconds that is allowed before logs are persisted. If 0 only the size matters.
+   * Otherwise what event ever happens first.
+   */
+  public int logCollectorTime = 60*60;  // defaults to hourly
+
+  /**
    * The name parser timeout in milliseconds
    */
   @Min(100)
