@@ -23,14 +23,16 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   private final boolean stacktrace;
   private final String defaultMessage;
 
-  public JsonExceptionMapperBase(Response.StatusType errorCode) {
-    this(errorCode,null);
-  }
-
   public JsonExceptionMapperBase(Response.StatusType errorCode, String defaultMessage) {
     this(errorCode, false, true, defaultMessage);
   }
 
+  /**
+   * @param errorCode http code to return
+   * @param debug log at debug level? if false logs at info level
+   * @param stacktrace log stacktrace?
+   * @param defaultMessage
+   */
   public JsonExceptionMapperBase(Response.StatusType errorCode, boolean debug, boolean stacktrace, String defaultMessage) {
     this.errorCode = errorCode;
     this.debug = debug;
