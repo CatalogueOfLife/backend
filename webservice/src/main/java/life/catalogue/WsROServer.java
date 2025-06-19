@@ -13,6 +13,7 @@ import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.EsHealthCheck;
 import life.catalogue.dw.health.NameParserHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
@@ -77,6 +78,7 @@ public class WsROServer extends Application<WsServerConfig> {
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private final AuthBundle auth = new AuthBundle();
+  private final PgLogBundle log = new PgLogBundle();
 
   public static void main(final String[] args) throws Exception {
     SLF4JBridgeHandler.install();
@@ -91,6 +93,7 @@ public class WsROServer extends Application<WsServerConfig> {
     bootstrap.addBundle(coljersey);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
+    bootstrap.addBundle(log);
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
 
@@ -155,7 +158,7 @@ public class WsROServer extends Application<WsServerConfig> {
     jerseyClient = builder.build(getUserAgent(cfg));
     auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setClient(httpClient);
-
+    log.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     // finally provide the SqlSessionFactory & http client to the auth and jersey bundle
     coljersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
 

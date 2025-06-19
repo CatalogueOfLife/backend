@@ -24,6 +24,7 @@ import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.*;
 import life.catalogue.dw.jersey.ColJerseyBundle;
+import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -111,6 +112,7 @@ public class WsServer extends Application<WsServerConfig> {
   private final MybatisBundle mybatis = new MybatisBundle();
   private final MailBundle mail = new MailBundle();
   private final AuthBundle auth = new AuthBundle();
+  private final PgLogBundle log = new PgLogBundle();
   protected CloseableHttpClient httpClient;
   protected Client jerseyClient;
   private NameIndex ni;
@@ -130,6 +132,7 @@ public class WsServer extends Application<WsServerConfig> {
     bootstrap.addBundle(mail);
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new CorsBundle());
+    bootstrap.addBundle(log);
 
     // authentication which requires the UserMapper from mybatis AFTER the mybatis bundle has run
     bootstrap.addBundle(auth);
@@ -228,10 +231,11 @@ public class WsServer extends Application<WsServerConfig> {
   
     jerseyClient = builder.build(getUserAgent(cfg));
 
-    // finally provide the SqlSessionFactory & http client to the auth and jersey bundle
+    // finally provide the SqlSessionFactory & http client to bundles that need it
     coljersey.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setSqlSessionFactory(mybatis.getSqlSessionFactory());
     auth.setClient(httpClient);
+    log.setSqlSessionFactory(mybatis.getSqlSessionFactory());
 
     DatasetInfoCache.CACHE.setFactory(mybatis.getSqlSessionFactory());
 
