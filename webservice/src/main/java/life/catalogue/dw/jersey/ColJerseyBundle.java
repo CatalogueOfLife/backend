@@ -41,8 +41,8 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig>, Datase
     env.jersey().register(lrFilter);
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
-    env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
-    env.jersey().register(new DelayRequestFilter(cfg.legacyDelay));
+    env.jersey().register(new DeprecatedWarningResponseFilter(cfg.legacy));
+    env.jersey().register(new DelayRequestFilter(cfg.legacy.delay));
 
     // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());

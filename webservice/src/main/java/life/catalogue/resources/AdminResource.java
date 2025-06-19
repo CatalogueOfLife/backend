@@ -56,6 +56,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
+import javax.annotation.Nullable;
+
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_CSV;
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_TSV;
 
@@ -76,7 +78,7 @@ public class AdminResource {
   private boolean maintenance = false;
   private final DatasetDao ddao;
   private final SyncManager assembly;
-  private final IdMap idMap;
+  private final @Nullable IdMap idMap;
   private final ImportManager importManager;
   private final GbifSyncManager gbifSync;
   private final NameIndex namesIndex;
@@ -89,7 +91,7 @@ public class AdminResource {
                        WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, EventBroker bus, EmailEncryption encryption) {
+                       JobExecutor executor, @Nullable IdMap idMap, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;
@@ -186,8 +188,11 @@ public class AdminResource {
   @POST
   @Path("/reload-idmap")
   public int reloadIdmap(@Auth User user) throws IOException {
-    idMap.reload();
-    return idMap.size();
+    if (idMap != null) {
+      idMap.reload();
+      return idMap.size();
+    }
+    return -1;
   }
 
   @POST

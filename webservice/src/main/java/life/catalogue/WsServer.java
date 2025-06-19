@@ -424,7 +424,7 @@ public class WsServer extends Application<WsServerConfig> {
     importManager.setAssemblyCoordinator(syncManager);
 
     // legacy ID map
-    IdMap idMap = IdMap.fromURI(cfg.legacyIdMapFile, cfg.legacyIdMapURI);
+    IdMap idMap = IdMap.fromURI(cfg.legacy.idMapFile, cfg.legacy.idMapURI);
     managedService.manage(Component.LegacyIdMap, idMap);
 
     // admin resources
