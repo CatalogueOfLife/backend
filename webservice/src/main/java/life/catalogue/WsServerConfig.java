@@ -126,6 +126,12 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public GithubConfig github;
 
   /**
+   * The size of the in memory log collector queue
+   */
+  @Min(3)
+  public int logCollectorSize = 1000;
+
+  /**
    * The name parser timeout in milliseconds
    */
   @Min(100)

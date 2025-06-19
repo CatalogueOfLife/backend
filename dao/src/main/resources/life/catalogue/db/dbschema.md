@@ -14,6 +14,45 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-06-19 log table
+```sql
+CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH',
+  'OTHER'
+);
+
+CREATE TABLE api_logs(
+  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  duration INT,
+  method APILOG_HTTPMETHOD,
+  response_code INT,
+  dataset_key INT,
+  "user" INT,
+  request TEXT,
+  agent TEXT
+) PARTITION BY RANGE (date);
+
+CREATE INDEX ON api_logs(date);
+CREATE INDEX ON api_logs(duration);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs(response_code);
+
+CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
+CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
+
+-- drop old analytics tables
+DROP TABLE api_analytics;
+```
+
 #### 2025-06-05 sector index for sources
 ```sql
 CREATE INDEX ON sector (dataset_key, subject_dataset_key);

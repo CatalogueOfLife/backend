@@ -21,6 +21,19 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
+CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH',
+  'OTHER'
+);
+
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -1238,22 +1251,25 @@ CREATE TABLE parser_config (
   remarks TEXT
 );
 
-CREATE TABLE api_analytics(
-  key bigserial NOT NULL PRIMARY KEY,
-  from_datetime TIMESTAMP NOT NULL,
-  to_datetime TIMESTAMP NOT NULL,
-  request_count INTEGER NOT NULL,
-  country_agg HSTORE,
-  response_code_agg HSTORE,
-  agent_agg HSTORE,
-  request_pattern_agg HSTORE,
-  dataset_agg HSTORE,
-  other_metrics HSTORE
-);
+CREATE TABLE api_logs(
+  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  duration INT,
+  method APILOG_HTTPMETHOD,
+  response_code INT,
+  dataset_key INT,
+  "user" INT,
+  request TEXT,
+  agent TEXT
+) PARTITION BY RANGE (date);
 
-CREATE UNIQUE INDEX unique_date_range ON api_analytics(from_datetime, to_datetime);
-CREATE INDEX ON api_analytics(from_datetime);
-CREATE INDEX ON api_analytics(to_datetime);
+CREATE INDEX ON api_logs(date);
+CREATE INDEX ON api_logs(duration);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs(response_code);
+
+CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
+CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
 
 --
 -- PARTITIONED DATA TABLES

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="life.catalogue.db.mapper.ApiLogsMapper">
+
+  <insert id="create" parameterType="ApiLog">
+    INSERT INTO api_logs (date,duration,method,response_code,dataset_key,"user",request,agent)
+        VALUES (#{date},#{duration},#{method}::APILOG_HTTPMETHOD,#{responseCode},#{datasetKey},#{user},#{request},#{agent})
+  </insert>
+
+</mapper>
