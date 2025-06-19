@@ -368,9 +368,6 @@ public class WsServer extends Application<WsServerConfig> {
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
 
-    // portal html page renderer
-    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
-
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
@@ -453,7 +450,7 @@ public class WsServer extends Application<WsServerConfig> {
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
       ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService,
-      imgService, feedback, renderer, doiResolver, coljersey
+      imgService, feedback, doiResolver, coljersey
     );
 
     // global
