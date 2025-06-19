@@ -19,7 +19,7 @@ public class PgLogBundle implements ConfiguredBundle<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment environment) {
-    collector = new PgLogCollector(cfg.logCollectorSize);
+    collector = new PgLogCollector(cfg.logCollectorSize, cfg.logCollectorTime);
     environment.lifecycle().manage(ManagedUtils.from(collector));
 
     // add filters

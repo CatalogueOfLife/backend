@@ -15,12 +15,20 @@ import org.slf4j.LoggerFactory;
 public class PgLogCollector implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(PgLogCollector.class);
   private final int maxSize;
+  private final long maxTime;
+  private long lastPersist;
   private SqlSessionFactory factory;
   private List<ApiLog> logs;
 
 
-  public PgLogCollector(int maxSize) {
+  public PgLogCollector(int maxSize, int maxTime) {
     this.maxSize = maxSize;
+    this.maxTime = maxTime * 1000; // we use milliseconds internally
+    lastPersist = System.currentTimeMillis();
+    clearLogs();
+  }
+
+  private void clearLogs() {
     logs = new ArrayList<>(maxSize +10);
   }
 
@@ -30,10 +38,10 @@ public class PgLogCollector implements AutoCloseable {
 
   public void add(ApiLog log) {
     logs.add(log);
-    if (logs.size() >= maxSize) {
+    if (logs.size() >= maxSize || System.currentTimeMillis() - lastPersist > maxTime) {
       // persist asynchroneously to not slow down current response
       persistAsync(logs);
-      logs = new ArrayList<>(maxSize +10);
+      clearLogs();
     }
   }
 
@@ -45,6 +53,7 @@ public class PgLogCollector implements AutoCloseable {
 
   private void persist(List<ApiLog> logs) {
     LOG.info("Persisting {} logs to DB", logs.size());
+    lastPersist = System.currentTimeMillis();
     try (SqlSession session = factory.openSession(false)) {
       var mapper = session.getMapper(ApiLogsMapper.class);
       for (ApiLog log : logs) {
