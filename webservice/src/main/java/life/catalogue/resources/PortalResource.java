@@ -35,40 +35,15 @@ public class PortalResource {
   }
 
   @GET
-  @Path("metadata-x")
-  public Response xMetadata(@PathParam("env") Environment env) throws Exception {
-    return renderer.renderMetadata(env, true);
-  }
-
-  @GET
   @Path("dataset/{id}")
   public Response datasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
     return renderer.renderDatasource(id, env, false);
   }
 
   @GET
-  @Path("dataset-x/{id}")
-  public Response xDatasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
-    return renderer.renderDatasource(id, env, true);
-  }
-
-  @GET
   @Path("taxon/{id}")
   public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
     return renderer.renderTaxon(id, env, false);
-  }
-
-  @GET
-  @Path("taxon-x/{id}")
-  public Response xTaxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
-    return renderer.renderTaxon(id, env, true);
-  }
-
-
-  @GET
-  @Path("clb_dataset/{id}")
-  public Response clbDataset(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
-    return renderer.renderClbDataset(id, env);
   }
 
   @PUT
