@@ -21,9 +21,9 @@ public class PgLogCollector implements AutoCloseable {
   private List<ApiLog> logs;
 
 
-  public PgLogCollector(int maxSize, int maxTime) {
-    this.maxSize = maxSize;
-    this.maxTime = maxTime * 1000; // we use milliseconds internally
+  public PgLogCollector(PgLogConfig cfg) {
+    this.maxSize = cfg.maxSize;
+    this.maxTime = (long) cfg.maxTime * 1000; // we use milliseconds internally
     lastPersist = System.currentTimeMillis();
     clearLogs();
   }
