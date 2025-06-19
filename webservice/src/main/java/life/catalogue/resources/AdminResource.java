@@ -6,7 +6,6 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
-import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -16,7 +15,6 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -53,7 +51,6 @@ import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -77,7 +74,6 @@ public class AdminResource {
   private final NameUsageIndexService indexService;
   private final NameUsageSearchService searchService;
   private boolean maintenance = false;
-  private final Validator validator;
   private final DatasetDao ddao;
   private final SyncManager assembly;
   private final IdMap idMap;
@@ -87,13 +83,13 @@ public class AdminResource {
   private final JobExecutor exec;
   private final ManagedService componedService;
   private final EventBroker bus;
-  private final LatestDatasetKeyCache lrCache;
   private final EmailEncryption encryption;
 
-  public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
+                       WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, Validator validator, EventBroker bus, EmailEncryption encryption) {
+                       JobExecutor executor, IdMap idMap, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;
@@ -110,8 +106,6 @@ public class AdminResource {
     this.importManager = importManager;
     this.exec = executor;
     this.idMap = idMap;
-    this.validator = validator;
-    this.lrCache = lrCache;
   }
 
   @GET
@@ -315,15 +309,6 @@ public class AdminResource {
    */
   public BackgroundJob rematchUnmatched(@Auth User user) {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
-  }
-
-  @DELETE
-  @Path("/cache")
-  public boolean clearCaches(@Auth User user) {
-    LOG.info("Clear dataset info cache with {} entries by {}", DatasetInfoCache.CACHE.size(), user);
-    DatasetInfoCache.CACHE.clear();
-    lrCache.clear();
-    return true;
   }
 
   @POST
