@@ -53,7 +53,9 @@ public class DwcInterpreter extends InterpreterBase {
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);
-        if (!u.getId().equals(dwcaID)) {
+        // for bare names u.ID is null !
+        // TODO: check if that impacts name relations or type material which is linked to names, not taxa
+        if (u.getId() != null && !u.getId().equals(dwcaID)) {
           dwcaID2taxonID.put(dwcaID, u.getId());
         }
       }
