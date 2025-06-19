@@ -16,6 +16,8 @@ and done it manually. So we can as well log changes here.
 
 #### 2025-06-19 log table
 ```sql
+ALTER TYPE TREATMENTFORMAT ADD VALUE 'PDF';
+
 CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
   'GET',
   'HEAD',
