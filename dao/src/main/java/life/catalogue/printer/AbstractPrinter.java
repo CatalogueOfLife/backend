@@ -74,7 +74,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
    */
   public int print() throws IOException {
     counter.clear();
-    LOG.info("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
+    LOG.debug("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
     try {
       session = factory.openSession(true);
       if (ordered || params.hasFilter()) {

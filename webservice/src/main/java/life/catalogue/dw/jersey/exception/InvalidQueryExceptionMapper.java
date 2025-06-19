@@ -12,6 +12,6 @@ import jakarta.ws.rs.ext.Provider;
 public class InvalidQueryExceptionMapper extends JsonExceptionMapperBase<InvalidQueryException> {
   
   public InvalidQueryExceptionMapper() {
-    super(Response.Status.BAD_REQUEST);
+    super(Response.Status.BAD_REQUEST, true, false, null);
   }
 }

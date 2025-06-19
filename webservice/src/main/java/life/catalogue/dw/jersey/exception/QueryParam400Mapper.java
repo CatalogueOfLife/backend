@@ -13,7 +13,7 @@ import jakarta.ws.rs.ext.Provider;
 public class QueryParam400Mapper extends JsonExceptionMapperBase<ParamException.QueryParamException> {
   
   public QueryParam400Mapper() {
-    super(Response.Status.BAD_REQUEST);
+    super(Response.Status.BAD_REQUEST, false, false, null);
   }
   
   @Override
