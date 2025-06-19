@@ -135,7 +135,7 @@ public class DownloadUtil {
         return true;
         
       } else {
-        LOG.error("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status);
+        LOG.warn("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status);
         StringBuilder sb = new StringBuilder()
             .append("http ")
             .append(status)
