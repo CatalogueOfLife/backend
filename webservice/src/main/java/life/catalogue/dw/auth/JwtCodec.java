@@ -28,8 +28,8 @@ public class JwtCodec {
     key = Keys.hmacShaKeyFor(signingKey.getBytes(StandardCharsets.UTF_8));
     parser = Jwts.parser()
         .requireIssuer(ISSUER)
-        .setAllowedClockSkewSeconds(3 * 60) // allow for 3 minutes time skew
-        .setSigningKey(key)
+        .clockSkewSeconds(60) // allow for 1 minute time skew
+        .verifyWith(key)
         .build();
   }
   
@@ -37,17 +37,17 @@ public class JwtCodec {
     LocalDateTime now = LocalDateTime.now();
     LOG.info("Generating new token for {} {}", user.getUsername(), user.getKey());
     JwtBuilder builder = Jwts.builder()
-        .setId(UUID.randomUUID().toString())
-        .setIssuer(ISSUER)
-        .setIssuedAt(DateUtils.asDate(now))
-        .setSubject(user.getUsername())
-        .setExpiration(DateUtils.asDate(now.plus(EXPIRE_IN_HOURS, ChronoUnit.HOURS)))
+        .id(UUID.randomUUID().toString())
+        .issuer(ISSUER)
+        .issuedAt(DateUtils.asDate(now))
+        .subject(user.getUsername())
+        .expiration(DateUtils.asDate(now.plus(EXPIRE_IN_HOURS, ChronoUnit.HOURS)))
         .signWith(key);
     return builder.compact();
   }
   
   public Jws<Claims> parse(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
-    return parser.parseClaimsJws(token);
+    return parser.parseSignedClaims(token);
   }
   
 }
