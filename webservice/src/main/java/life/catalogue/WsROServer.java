@@ -70,6 +70,15 @@ import jakarta.ws.rs.client.Client;
 
 import javax.annotation.Nullable;
 
+/**
+ * A read-only (RO) server for the most common resources.
+ * It does not have any long running routines like exports and
+ * is the only app that exposes the portal html rendering!
+ *
+ * Keeping caches in sync between the read-only and main application is tricky
+ * and we rely on the EventBus to message changes relevant to caching between the apps.
+ * This is mostly dataset changes (private, new releases) and user changes (permissions).
+ */
 public class WsROServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsROServer.class);
 
@@ -123,12 +132,13 @@ public class WsROServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
-    // this is read only - make sure we don't use a proper auth - whatever the configs say
-    LOG.warn("This service runs in read only mode and only responds to GET requests.");
-    var noUsers = new MapAuthenticationFactory();
-    noUsers.users.clear();
-    cfg.auth = noUsers;
     final JerseyEnvironment j = env.jersey();
+    LOG.warn("This service runs in read only mode and only responds to GET, HEAD & OPTIONS requests.");
+
+    // this is read only - make sure we don't use a proper auth - whatever the configs say
+    //var noUsers = new MapAuthenticationFactory();
+    //noUsers.users.clear();
+    //cfg.auth = noUsers;
 
     // remove SSL defaults that prevent correct use of TLS1.3
     if (cfg.client != null && cfg.client.getTlsConfiguration() != null) {
