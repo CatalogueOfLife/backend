@@ -127,11 +127,5 @@ public class PortalPageRendererIT {
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
     assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD, false).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some SEO please?");
-    assertEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some <!-- REPLACE_WITH_SEO --> please?");
-    assertNotEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
   }
 }

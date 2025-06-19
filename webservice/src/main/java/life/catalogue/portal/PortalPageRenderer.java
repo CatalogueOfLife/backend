@@ -7,7 +7,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetSourceDao;
@@ -23,7 +22,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -45,10 +43,7 @@ public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
   public enum PortalPage {
-    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA, CLB_DATASET;
-    public boolean isChecklistBank() {
-      return this == CLB_DATASET;
-    }
+    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA;
   }
 
   public enum Environment {PROD, PREVIEW, DEV};
@@ -93,20 +88,6 @@ public class PortalPageRenderer {
 
   public Path getPortalTemplateDir() {
     return portalTemplateDir;
-  }
-
-  public Response renderClbDataset(int datasetKey, Environment env) throws TemplateException, IOException {
-    try {
-      var d = datasetDao.getOr404(datasetKey);
-      return render(env, PortalPage.CLB_DATASET, d);
-
-    } catch (NotFoundException e) {
-      return Response
-        .status(Response.Status.NOT_FOUND)
-        .type(MediaType.TEXT_HTML)
-        .entity(readClbIndexPage())
-        .build();
-    }
   }
 
   /**
@@ -270,29 +251,10 @@ public class PortalPageRenderer {
       LOG.info("Load {} {} portal template from {}", env, pp, p);
       in = Files.newInputStream(p);
     } else {
-      if (pp.isChecklistBank()) {
-        LOG.info("Prepare checklistbank {} template from resources", pp);
-        // for CLB pages we first need to inject the freemarker template
-        var html = readClbIndexPage();
-        // storing does the injection
-        store(env, pp, html);
-        // now read the generated file just as we do above
-        in = Files.newInputStream(p);
-      } else {
-        LOG.info("Load {} portal template from resources", pp);
-        in = getClass().getResourceAsStream("/freemarker-templates/portal/"+pp.name()+".ftl");
-      }
+      LOG.info("Load {} portal template from resources", pp);
+      in = getClass().getResourceAsStream("/freemarker-templates/portal/"+pp.name()+".ftl");
     }
     loadTemplate(env, pp, in);
-  }
-
-  private String readClbIndexPage() {
-    return readTemplateResource("clb/index.html");
-  }
-
-  private String readTemplateResource(String resourceName) {
-    var in = getClass().getResourceAsStream("/freemarker-templates/portal/"+resourceName);
-    return InputStreamUtils.readEntireStream(in);
   }
 
   private void loadTemplate(Environment env, PortalPage pp, InputStream stream) throws IOException {
@@ -303,11 +265,6 @@ public class PortalPageRenderer {
   }
 
   public boolean store(Environment env, PortalPage pp, String template) throws IOException {
-    if (pp.isChecklistBank()) {
-      // inject SEO!
-      var seo = readTemplateResource("clb/"+pp.name().toLowerCase()+".ftl");
-      template = template.replaceFirst("<!-- REPLACE_WITH_SEO -->", Matcher.quoteReplacement(seo));
-    }
     LOG.info("Store new portal page template {}", pp);
     try (Writer w = UTF8IoUtils.writerFromPath(template(env, pp))) {
       // enforce xhtml freemarker setting which we cannot keep in Jekyll
@@ -323,10 +280,9 @@ public class PortalPageRenderer {
   }
 
   private int releaseKey(Environment env, boolean extended) {
-    boolean preview = env == Environment.PREVIEW;
-    //TODO: for now we only have private extended releases, so show them also in non preview ENVs
-    Integer key = preview || extended ? cache.getLatestReleaseCandidate(Datasets.COL, extended) : cache.getLatestRelease(Datasets.COL, extended);
-    if (key == null) throw new NotFoundException("No COL " + (preview ? "preview " : "") + (extended ? "X-":"") + "release existing");
+    boolean candidate = env != Environment.PROD;
+    Integer key = candidate ? cache.getLatestReleaseCandidate(Datasets.COL, extended) : cache.getLatestRelease(Datasets.COL, extended);
+    if (key == null) throw new NotFoundException("No COL " + (extended ? "X-":"") + "release " + (candidate ? "candidate " : "") + "existing");
     return key;
   }
 }
