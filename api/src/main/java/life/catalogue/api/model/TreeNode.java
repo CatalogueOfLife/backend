@@ -1,12 +1,10 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

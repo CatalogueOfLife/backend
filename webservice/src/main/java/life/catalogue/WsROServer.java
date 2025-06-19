@@ -14,8 +14,6 @@ import life.catalogue.dw.health.EsHealthCheck;
 import life.catalogue.dw.health.NameParserHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.logging.pg.PgLogBundle;
-import life.catalogue.dw.managed.Component;
-import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
@@ -69,6 +67,8 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import jakarta.ws.rs.client.Client;
+
+import javax.annotation.Nullable;
 
 public class WsROServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsROServer.class);
@@ -135,9 +135,6 @@ public class WsROServer extends Application<WsServerConfig> {
       cfg.client.getTlsConfiguration().setProtocol(null);
     }
 
-    // create a managed service that controls our startable/stoppable components in sync with the DW lifecycle
-    final ManagedService managedService = new ManagedService(env.lifecycle());
-
     // update name parser timeout settings
     NameParser.PARSER.setTimeout(cfg.parserTimeout);
 
@@ -203,7 +200,6 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // daos
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
-    final SectorImportDao siDao = new SectorImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
     DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif, new DownloadUtil(httpClient),
       ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, broker, validator
@@ -223,7 +219,6 @@ public class WsROServer extends Application<WsServerConfig> {
     tdao.setSectorDao(secdao);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
-    UserCrudDao uDao = new UserCrudDao(getSqlSessionFactory(), validator);
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
@@ -231,11 +226,7 @@ public class WsROServer extends Application<WsServerConfig> {
     // portal html page renderer
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
 
-    // job executor
-    JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), null, uDao);
-    managedService.manage(Component.JobExecutor, executor);
-
-    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
+    registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
       ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService, imgService,
       FeedbackService.passThru(), renderer, doiResolver, coljersey
@@ -253,8 +244,8 @@ public class WsROServer extends Application<WsServerConfig> {
     env.lifecycle().manage(ManagedUtils.from(broker));
   }
 
-  static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory, JobExecutor exec,
-                                        DatasetDao ddao, DatasetSourceDao dsdao,
+  static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
+                                        @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao,
                                         DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
                                         ImageService imgService, FeedbackService feedbackService, PortalPageRenderer renderer, DoiResolver doiResolver, ColJerseyBundle coljersey) {

@@ -432,8 +432,9 @@ public class WsServer extends Application<WsServerConfig> {
 
     // admin resources
     j.register(new AdminResource(
-      getSqlSessionFactory(), coljersey.getCache(), managedService, syncManager, new DownloadUtil(httpClient), cfg, imgService, ni, indexService, searchService,
-      importManager, ddao, gbifSync, executor, idMap, validator, broker, encryption)
+      getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
+      imgService, ni, indexService, searchService,
+      importManager, ddao, gbifSync, executor, idMap, broker, encryption)
     );
 
     // dataset scoped

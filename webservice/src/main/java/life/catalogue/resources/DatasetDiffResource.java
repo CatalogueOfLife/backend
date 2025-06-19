@@ -4,7 +4,6 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.User;
 import life.catalogue.printer.DatasetDiffService;
 
-import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
