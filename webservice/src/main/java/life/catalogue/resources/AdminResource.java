@@ -31,7 +31,6 @@ import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
 import java.util.List;
@@ -56,8 +55,6 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
 
-import javax.annotation.Nullable;
-
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_CSV;
 import static life.catalogue.common.ws.MoreMediaTypes.TEXT_TSV;
 
@@ -78,7 +75,6 @@ public class AdminResource {
   private boolean maintenance = false;
   private final DatasetDao ddao;
   private final SyncManager assembly;
-  private final @Nullable IdMap idMap;
   private final ImportManager importManager;
   private final GbifSyncManager gbifSync;
   private final NameIndex namesIndex;
@@ -91,7 +87,7 @@ public class AdminResource {
                        WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, @Nullable IdMap idMap, EventBroker bus, EmailEncryption encryption) {
+                       JobExecutor executor, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;
@@ -107,7 +103,6 @@ public class AdminResource {
     this.gbifSync = gbifSync;
     this.importManager = importManager;
     this.exec = executor;
-    this.idMap = idMap;
   }
 
   @GET
@@ -183,16 +178,6 @@ public class AdminResource {
     componedService.stopAll();
     componedService.startAll();
     return true;
-  }
-
-  @POST
-  @Path("/reload-idmap")
-  public int reloadIdmap(@Auth User user) throws IOException {
-    if (idMap != null) {
-      idMap.reload();
-      return idMap.size();
-    }
-    return -1;
   }
 
   @POST

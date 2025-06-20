@@ -58,13 +58,11 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
-import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
-import life.catalogue.resources.legacy.IdMap;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
@@ -423,15 +421,11 @@ public class WsServer extends Application<WsServerConfig> {
     // link assembly and import manager so they are aware of each other
     importManager.setAssemblyCoordinator(syncManager);
 
-    // legacy ID map
-    IdMap idMap = IdMap.fromURI(cfg.legacy.idMapFile, cfg.legacy.idMapURI);
-    managedService.manage(Component.LegacyIdMap, idMap);
-
     // admin resources
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, indexService, searchService,
-      importManager, ddao, gbifSync, executor, idMap, broker, encryption)
+      importManager, ddao, gbifSync, executor, broker, encryption)
     );
 
     // dataset scoped
@@ -442,7 +436,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetReviewerResource(adao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
     j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
-    j.register(new LegacyWebserviceResource(cfg, idMap, env.metrics(), getSqlSessionFactory()));
+    j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
 

@@ -1,11 +1,8 @@
 package life.catalogue.resources.legacy;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
@@ -30,7 +27,6 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
@@ -52,16 +48,14 @@ public class LegacyWebserviceResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(LegacyWebserviceResource.class);
   private final String version;
-  private final IdMap idMap;
   private final URI portalURI;
   private final Timer searchTimer;
   private final Timer getTimer;
   private final SqlSessionFactory factory;
 
-  public LegacyWebserviceResource(WsServerConfig cfg, IdMap idMap, MetricRegistry registry, SqlSessionFactory factory) {
+  public LegacyWebserviceResource(WsServerConfig cfg, MetricRegistry registry, SqlSessionFactory factory) {
     version = cfg.versionString();
     portalURI = cfg.portalURI;
-    this.idMap = idMap;
     searchTimer = registry.timer("life.catalogue.resources.legacy.search");
     getTimer = registry.timer("life.catalogue.resources.legacy.get");
     this.factory = factory;
@@ -105,29 +99,9 @@ public class LegacyWebserviceResource {
   @GET
   @Path("{id}")
   @VaryAccept
-  @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
-  public Response redirectPortal(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return redirect(datasetKey, id, true);
-  }
-
-  @GET
-  @Path("{id}")
-  @VaryAccept
   @Produces(MediaType.APPLICATION_JSON)
-  public Response redirectAPI(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return redirect(datasetKey, id, false);
-  }
-
-  private Response redirect(int datasetKey, String id, boolean portal) {
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {
-      String newID = idMap.lookup(id);
-      URI target = portal ?
-        portalURI.resolve("/data/taxon/" + newID) :
-        URI.create("/dataset/"+datasetKey+"/nameusage/" + newID);
-      return Response.status(Response.Status.FOUND).location(target).build();
-    }
-    throw NotFoundException.notFound("COL Legacy ID", id);
+  public LResponse getFull(@PathParam("key") int datasetKey, @PathParam("id") String id) {
+    return get(datasetKey, id, true);
   }
 
   /**

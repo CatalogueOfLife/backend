@@ -21,7 +21,7 @@ public class Users {
   public final static int HOMOTYPIC_GROUPER = 14;
 
   private final static Set<Integer> BOTS = Set.of(
-    DB_INIT, IMPORTER, MATCHER, GBIF_SYNC, RELEASER
+    DB_INIT, IMPORTER, MATCHER, GBIF_SYNC, RELEASER, HOMOTYPIC_GROUPER
   );
 
   private Users() {
