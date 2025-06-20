@@ -1265,8 +1265,11 @@ CREATE TABLE api_logs(
 
 CREATE INDEX ON api_logs(date);
 CREATE INDEX ON api_logs(duration);
-CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs(method);
 CREATE INDEX ON api_logs(response_code);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs("user");
+CREATE INDEX ON api_logs(request text_pattern_ops);
 
 CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
 CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
