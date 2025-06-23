@@ -45,7 +45,7 @@ public class PortalPageRenderer {
 
   private static final String RELEASE_KEY_FILE = "releaseKey";
   public enum PortalPage {
-    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA, RELEASE_KEY;
+    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA;
   }
 
   public enum Environment {PROD, PREVIEW, DEV};
@@ -71,6 +71,10 @@ public class PortalPageRenderer {
     this.factory = tdao.getFactory();
     this.tdao = tdao;
     this.portalTemplateDir = Preconditions.checkNotNull(portalTemplateDir);
+    if (!Files.exists(portalTemplateDir)) {
+      Files.createDirectories(portalTemplateDir);
+    }
+    loadReleases();
     loadTemplates();
     List<DatasetRelease> annuals = new ArrayList<>();;
     if (factory != null) {
@@ -256,10 +260,21 @@ public class PortalPageRenderer {
       .build();
   }
 
-  private void loadTemplates() throws IOException {
-    if (!Files.exists(portalTemplateDir)) {
-      Files.createDirectories(portalTemplateDir);
+  /**
+   * Reads all release keys for all environments from the file system and stores them in the internal map
+   * @throws IOException
+   */
+  private void loadReleases() throws IOException {
+    for (Environment env : Environment.values()) {
+      loadRelease(env);
     }
+  }
+
+  /**
+   * Reads all portal templates for all environments keys from the file system and store it in the internal map
+   * @throws IOException
+   */
+  private void loadTemplates() throws IOException {
     for (Environment env : Environment.values()) {
       if (!releaseKeys.containsKey(env)) {
         LOG.warn("No portal release deployed for environment {}", env);
@@ -271,37 +286,31 @@ public class PortalPageRenderer {
     }
   }
 
-  private void loadTemplate(Environment env, PortalPage pp) throws IOException {
-    if (pp == PortalPage.RELEASE_KEY) {
-      var p = releaseFile(env);
-      Integer releaseKey = null;
-      if (Files.exists(p)) {
-        var in = Files.newInputStream(p);
-        var strKey = UTF8IoUtils.readString(in);
-        releaseKey = Integer.parseInt(strKey.trim());
-        LOG.info("Use release {} for environment {}", releaseKey, env);
-      } else {
-        LOG.warn("No release deployed for environment {}", env);
-      }
-      releaseKeys.put(env, releaseKey);
-
+  private Integer loadRelease(Environment env) throws IOException {
+    var p = releaseFile(env);
+    Integer releaseKey = null;
+    if (Files.exists(p)) {
+      var in = Files.newInputStream(p);
+      var strKey = UTF8IoUtils.readString(in);
+      releaseKey = Integer.parseInt(strKey.trim());
+      LOG.info("Use release {} for environment {}", releaseKey, env);
     } else {
-      var p = template(env, pp);
-      InputStream in;
-      if (Files.exists(p)) {
-        LOG.info("Load {} {} portal template from {}", env, pp, p);
-        in = Files.newInputStream(p);
-        loadTemplate(env, pp, in);
-      } else {
-        LOG.warn("{} {} portal template missing", env, pp);
-      }
+      LOG.warn("No release deployed for environment {}", env);
     }
+    releaseKeys.put(env, releaseKey);
+    return releaseKey;
   }
 
-  private void loadTemplate(Environment env, PortalPage pp, InputStream stream) throws IOException {
-    try (BufferedReader br = UTF8IoUtils.readerFromStream(stream)) {
-      Template temp = new Template(pp.name(), br, FmUtil.FMK);
-      portalTemplates.get(env).put(pp, temp);
+  private void loadTemplate(Environment env, PortalPage pp) throws IOException {
+    var p = template(env, pp);
+    if (Files.exists(p)) {
+      LOG.info("Load {} {} portal template from {}", env, pp, p);
+      try (BufferedReader br = UTF8IoUtils.readerFromPath(p)) {
+        Template temp = new Template(pp.name(), br, FmUtil.FMK);
+        portalTemplates.get(env).put(pp, temp);
+      }
+    } else {
+      LOG.warn("{} {} portal template missing", env, pp);
     }
   }
 
@@ -320,18 +329,13 @@ public class PortalPageRenderer {
   }
 
   public boolean store(Environment env, PortalPage pp, String template) throws IOException {
-    if (pp == PortalPage.RELEASE_KEY) {
-      setReleaseKey(env, Integer.parseInt(template.trim()));
-
-    } else {
-      LOG.info("Store new portal page template {} for {} environment", pp, env);
-      try (Writer w = UTF8IoUtils.writerFromPath(template(env, pp))) {
-        // enforce xhtml freemarker setting which we cannot keep in Jekyll
-        w.write("<#ftl output_format=\"XHTML\">");
-        IOUtils.write(template, w);
-      }
-      loadTemplate(env, pp);
+    LOG.info("Store new portal page template {} for {} environment", pp, env);
+    try (Writer w = UTF8IoUtils.writerFromPath(template(env, pp))) {
+      // enforce xhtml freemarker setting which we cannot keep in Jekyll
+      w.write("<#ftl output_format=\"XHTML\">");
+      IOUtils.write(template, w);
     }
+    loadTemplate(env, pp);
     return true;
   }
 
