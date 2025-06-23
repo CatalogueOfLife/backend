@@ -47,6 +47,13 @@ public class PortalResource {
   }
 
   @PUT
+  @Path("release")
+  @RolesAllowed({Roles.ADMIN})
+  public void setRelease(@PathParam("env") Environment env, int releaseKey) throws IOException {
+    renderer.setReleaseKey(env, releaseKey);
+  }
+
+  @PUT
   @Path("{page}")
   @RolesAllowed({Roles.ADMIN})
   public void setTemplate(@PathParam("env") Environment env, @PathParam("page") String page, String template) throws IOException {

@@ -51,10 +51,8 @@ public class PortalPageRendererIT {
     for (PortalPageRenderer.Environment env : PortalPageRenderer.Environment.values()) {
       renderer.setReleaseKey(env, releaseKey);
       for (PortalPageRenderer.PortalPage pp : PortalPageRenderer.PortalPage.values()) {
-        if (pp != PortalPageRenderer.PortalPage.RELEASE_KEY) {
-          try (var in = PortalPageRenderer.class.getResourceAsStream("/portal-ftl/"+pp.name()+".ftl")) {
-            renderer.store(env, pp, InputStreamUtils.readEntireStream(in));
-          }
+        try (var in = PortalPageRenderer.class.getResourceAsStream("/portal-ftl/"+pp.name()+".ftl")) {
+          renderer.store(env, pp, InputStreamUtils.readEntireStream(in));
         }
       }
     }
