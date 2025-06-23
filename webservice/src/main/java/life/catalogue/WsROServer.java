@@ -234,7 +234,7 @@ public class WsROServer extends Application<WsServerConfig> {
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
 
     // portal html page renderer - only in ROServer !!!
-    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, coljersey.getCache(), cfg.portalTemplateDir.toPath());
+    PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, cfg.portalTemplateDir.toPath(), true);
     j.register(new PortalResource(renderer));
 
     // shared read only resources

@@ -31,19 +31,19 @@ public class PortalResource {
   @GET
   @Path("metadata")
   public Response metadata(@PathParam("env") Environment env) throws Exception {
-    return renderer.renderMetadata(env, false);
+    return renderer.renderMetadata(env);
   }
 
   @GET
   @Path("dataset/{id}")
   public Response datasource(@PathParam("env") Environment env, @PathParam("id") int id) throws Exception {
-    return renderer.renderDatasource(id, env, false);
+    return renderer.renderDatasource(id, env);
   }
 
   @GET
   @Path("taxon/{id}")
   public Response taxon(@PathParam("env") Environment env, @PathParam("id") String id) throws Exception {
-    return renderer.renderTaxon(id, env, false);
+    return renderer.renderTaxon(id, env);
   }
 
   @PUT

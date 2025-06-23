@@ -1,4 +1,4 @@
-<#ftl output_format="XHTML"><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
   <head>
