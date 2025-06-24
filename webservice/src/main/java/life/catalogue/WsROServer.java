@@ -7,7 +7,6 @@ import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.dw.auth.AuthBundle;
-import life.catalogue.dw.auth.map.MapAuthenticationFactory;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.EsHealthCheck;
@@ -34,6 +33,7 @@ import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 import life.catalogue.portal.PortalPageRenderer;
 import life.catalogue.resources.*;
+import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.parser.*;
 
 import org.gbif.dwc.terms.TermFactory;

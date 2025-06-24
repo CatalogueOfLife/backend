@@ -63,6 +63,7 @@ import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
 import life.catalogue.resources.*;
+import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;

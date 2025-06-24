@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.dataset;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.model.*;
@@ -12,6 +12,7 @@ import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.*;
 import life.catalogue.parser.*;
 
+import life.catalogue.resources.ImporterResource;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 

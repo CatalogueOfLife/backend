@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;

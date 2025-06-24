@@ -167,7 +167,7 @@ public class ImporterResource {
     importManager.cancel(datasetKey, user.getKey());
   }
 
-  static String contentType2Suffix(HttpHeaders h) {
+  public static String contentType2Suffix(HttpHeaders h) {
     if (h != null && h.getRequestHeaders() != null) {
       String ctype = Strings.nullToEmpty(h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).toLowerCase();
       switch (ctype) {

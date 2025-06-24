@@ -6,6 +6,7 @@ import life.catalogue.dw.jersey.provider.DatasetPatchMessageBodyRW;
 
 import java.lang.reflect.Method;
 
+import life.catalogue.resources.dataset.DatasetPatchResource;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 

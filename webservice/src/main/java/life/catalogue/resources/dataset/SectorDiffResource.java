@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.printer.SectorDiffService;
