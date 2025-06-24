@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.dataset;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -20,6 +20,8 @@ import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
 
+import life.catalogue.resources.NameUsageSearchResource;
+import life.catalogue.resources.ResourceUtils;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;

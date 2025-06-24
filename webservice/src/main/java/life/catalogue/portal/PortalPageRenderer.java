@@ -286,19 +286,17 @@ public class PortalPageRenderer {
     }
   }
 
-  private Integer loadRelease(Environment env) throws IOException {
+  private void loadRelease(Environment env) throws IOException {
     var p = releaseFile(env);
-    Integer releaseKey = null;
     if (Files.exists(p)) {
       var in = Files.newInputStream(p);
       var strKey = UTF8IoUtils.readString(in);
-      releaseKey = Integer.parseInt(strKey.trim());
+      int releaseKey = Integer.parseInt(strKey.trim());
+      releaseKeys.put(env, releaseKey);
       LOG.info("Use release {} for environment {}", releaseKey, env);
     } else {
       LOG.warn("No release deployed for environment {}", env);
     }
-    releaseKeys.put(env, releaseKey);
-    return releaseKey;
   }
 
   private void loadTemplate(Environment env, PortalPage pp) throws IOException {
@@ -314,11 +312,19 @@ public class PortalPageRenderer {
     }
   }
 
+  public Integer getReleaseKey(Environment env) {
+    return releaseKeys.get(env);
+  }
+
   public void setReleaseKey(Environment env, int releaseKey) throws IOException {
     if (requireCOL) {
-      var info = DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE);
-      if (info.sourceKey != Datasets.COL) {
-        throw new IllegalArgumentException("Not a COL release key: " + info.sourceKey);
+      try {
+        var info = DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE);
+        if (info.sourceKey != Datasets.COL) {
+          throw new IllegalArgumentException("Not a COL release key: " + info.sourceKey);
+        }
+      } catch (NotFoundException e) {
+        throw new IllegalArgumentException(e.getMessage());
       }
     }
     LOG.info("Update environment {} to COL release {}", env, releaseKey);

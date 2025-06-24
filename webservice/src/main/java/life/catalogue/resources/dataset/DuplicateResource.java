@@ -1,4 +1,4 @@
-package life.catalogue.resources;
+package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.Duplicate;
 import life.catalogue.api.model.Page;
@@ -9,6 +9,7 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
 
+import life.catalogue.resources.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

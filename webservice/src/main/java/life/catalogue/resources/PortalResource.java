@@ -46,9 +46,17 @@ public class PortalResource {
     return renderer.renderTaxon(id, env);
   }
 
+  @GET
+  @Path("release")
+  @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
+  public Integer getRelease(@PathParam("env") Environment env) {
+    return renderer.getReleaseKey(env);
+  }
+
   @PUT
   @Path("release")
   @RolesAllowed({Roles.ADMIN})
+  @Consumes({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
   public void setRelease(@PathParam("env") Environment env, int releaseKey) throws IOException {
     renderer.setReleaseKey(env, releaseKey);
   }
