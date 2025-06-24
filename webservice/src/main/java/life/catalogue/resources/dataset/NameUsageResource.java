@@ -6,6 +6,7 @@ import life.catalogue.api.search.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.util.RegexUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.TaxonDao;
@@ -22,6 +23,9 @@ import life.catalogue.feedback.FeedbackService;
 
 import life.catalogue.resources.NameUsageSearchResource;
 import life.catalogue.resources.ResourceUtils;
+
+import org.apache.ibatis.cursor.Cursor;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -234,6 +238,15 @@ public class NameUsageResource {
                                                  @Context UriInfo uri) throws InvalidQueryException {
     checkIllegalDatasetKeyParam(datasetKey, query, uri);
     return suggestService.suggest(query);
+  }
+
+  @GET
+  @Hidden // for debugging tmp ids
+  @Path("ids")
+  @Produces(MediaType.TEXT_PLAIN)
+  public Cursor<String> tmpIds(@PathParam("key") int datasetKey, @QueryParam("minLength") Integer minLength, @Context SqlSession session) {
+    NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+    return num.processIds(datasetKey, true, minLength == null ? ShortUUID.MIN_LEN : minLength);
   }
 
   NameUsageRequest checkIllegalDatasetKeyParam(int datasetKey, NameUsageRequest query, UriInfo uri){
