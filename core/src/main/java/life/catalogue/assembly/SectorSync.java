@@ -180,6 +180,14 @@ public class SectorSync extends SectorRunnable {
         LOG.info("Loaded {} sector subjects for auto blocking", counter);
       }
     }
+    // ignore block decisions that match the subject itself!
+    if (sector.getSubject() != null && sector.getSubject().getId() != null
+      && decisions.containsKey(sector.getSubject().getId())
+      && decisions.get(sector.getSubject().getId()).getMode().equals(EditorialDecision.Mode.BLOCK)
+    ) {
+      decisions.remove(sector.getSubject().getId());
+      LOG.warn("Removed block decision for {} which is the subject of sector {}", sector.getSubject(), sectorKey);
+    }
     // load override decisions
     if (mergeCfg != null && mergeCfg.xCfg.decisions.containsKey(subjectDatasetKey)) {
       int counter = 0;
