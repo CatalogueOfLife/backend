@@ -402,15 +402,15 @@ public class DatasetIndex {
         // Read JSON file and parse to JsonNode
         JsonNode rootNode = mapper.readTree(new File(filePath));
         // Navigate to the author node
-        String datasetKey = rootNode.path("key").asText();
+        String clbKey = rootNode.path("key").asText();
         String datasetTitle = rootNode.path("title").asText();
-        String gbifKey = rootNode.path("gbifKey").asText();
+        String datasetKey = rootNode.path("gbifKey").asText();
         String taxonCount = rootNode.path("taxonCount").asText();
         String matchesToMainIndex = rootNode.path("matchesToMainIndex").asText();
         return Map.of(
-          "datasetKey", datasetKey,
+          "clbKey", clbKey,
           "datasetTitle", datasetTitle,
-          "gbifKey", gbifKey,
+          "datasetKey", datasetKey,
           "taxonCount", taxonCount,
           "matchesToMainIndex", matchesToMainIndex
         );
