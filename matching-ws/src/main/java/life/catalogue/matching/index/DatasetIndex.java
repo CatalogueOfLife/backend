@@ -319,8 +319,8 @@ public class DatasetIndex {
 
     Map<String, Object> datasetInfo = getDatasetInfo(indexPath);
     metadata.setDatasetTitle((String) datasetInfo.getOrDefault("datasetTitle", null));
-    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
-    metadata.setDatasetKey((String) datasetInfo.getOrDefault("gbifKey", null));
+    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault("clbKey", null));
+    metadata.setDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
 
     // number of taxa
     metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
