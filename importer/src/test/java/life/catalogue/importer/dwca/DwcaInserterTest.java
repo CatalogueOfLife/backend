@@ -71,6 +71,20 @@ public class DwcaInserterTest extends InserterBaseTest {
   }
 
   /**
+   * GBIF Identifier extension
+   */
+  @Test
+  public void altIds() throws Exception {
+    NeoInserter ins = setup("/dwca/53");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var t = store.usageWithName("763571").asTaxon();
+      assertEquals(5, t.getIdentifier().size());
+    }
+  }
+
+  /**
    * Plazi with COL metadata.json
    */
   @Test

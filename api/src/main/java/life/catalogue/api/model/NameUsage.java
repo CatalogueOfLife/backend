@@ -57,6 +57,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
     return getStatus() != null && getStatus().isTaxon();
   }
 
+  default NameUsageBase asUsageBase() {
+    return this instanceof NameUsageBase ? (NameUsageBase) this : null;
+  }
   default Taxon asTaxon() {
     return this instanceof Taxon ? (Taxon) this : null;
   }

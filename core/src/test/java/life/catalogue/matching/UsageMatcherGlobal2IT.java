@@ -30,7 +30,7 @@ import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class UsageMatcherGlobalTest {
+public class UsageMatcherGlobal2IT {
 
   public final static PgSetupRule pg = new PgSetupRule();
   public final static TestDataRule dataRule = TestDataRules.matching();

@@ -98,6 +98,16 @@ public class DwcInterpreter extends InterpreterBase {
     return Collections.emptyList();
   }
 
+  public List<Taxon> interpretAltIdentifiers(VerbatimRecord v) {
+    if (v.hasTerm(DcTerm.identifier)) {
+      Taxon t = new Taxon();
+      t.setIdentifier(new ArrayList<>());
+      t.getIdentifier().add(Identifier.parse(v.getRaw(DcTerm.identifier)));
+      return List.of(t);
+    }
+    return Collections.emptyList();
+  }
+
   private void addEnv(VerbatimRecord v, GbifTerm term, Environment env, Set<Environment> envs) {
     if (v.hasTerm(term)) {
       if (bool(v, Issue.ENVIRONMENT_INVALID, false, term)) {
