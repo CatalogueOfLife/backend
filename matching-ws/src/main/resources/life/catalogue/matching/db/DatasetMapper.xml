@@ -20,7 +20,7 @@
     LIMIT 1
   </select>
   <select id="getDataset" resultType="life.catalogue.matching.model.Dataset">
-    SELECT key, gbif_key as gbifKey, title, alias FROM dataset
+    SELECT key as clbKey, gbif_key as datasetKey, title, alias FROM dataset
     WHERE key = #{key}
     LIMIT 1
   </select>

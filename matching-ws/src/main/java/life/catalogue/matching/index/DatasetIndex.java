@@ -60,6 +60,11 @@ import static life.catalogue.matching.util.IndexConstants.*;
 @Service
 public class DatasetIndex {
 
+  public static final String CLB_KEY = "clbKey";
+  public static final String DATASET_TITLE = "datasetTitle";
+  public static final String DATASET_KEY = "datasetKey";
+  public static final String TAXON_COUNT = "taxonCount";
+  public static final String MATCHES_TO_MAIN_INDEX = "matchesToMainIndex";
   private IndexSearcher searcher;
   private Map<Dataset, IndexSearcher> identifierSearchers = new HashMap<>();
   private Map<Dataset, IndexSearcher> ancillarySearchers = new HashMap<>();
@@ -318,14 +323,14 @@ public class DatasetIndex {
     }
 
     Map<String, Object> datasetInfo = getDatasetInfo(indexPath);
-    metadata.setDatasetTitle((String) datasetInfo.getOrDefault("datasetTitle", null));
-    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
-    metadata.setDatasetKey((String) datasetInfo.getOrDefault("gbifKey", null));
+    metadata.setDatasetTitle((String) datasetInfo.getOrDefault(DATASET_TITLE, null));
+    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault(CLB_KEY, null));
+    metadata.setDatasetKey((String) datasetInfo.getOrDefault(DATASET_KEY, null));
 
     // number of taxa
-    metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
+    metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault(TAXON_COUNT, 0)));
     if (!isMain) {
-      metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault("matchesToMainIndex", 0)));
+      metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault(MATCHES_TO_MAIN_INDEX, 0)));
     }
 
     try {
@@ -346,45 +351,37 @@ public class DatasetIndex {
   }
 
   /**
-   * Reads the git information from the git.json file in the working directory.
+   * Reads Git information from git.json in the working directory.
    * @return Optional of BuildInfo
    */
   private Optional<BuildInfo> getGitInfo() {
-    ObjectMapper mapper = new ObjectMapper();
-    final String filePath = workingDir + GIT_JSON;
+    File file = new File(workingDir + GIT_JSON);
+    if (!file.exists()) {
+      log.warn("Git info not found at {}", file.getPath());
+      return Optional.empty();
+    }
+
     try {
-      if (new File(filePath).exists()) {
-        // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(filePath));
+      JsonNode root = new ObjectMapper().readTree(file);
+      JsonNode commit = root.path("commit");
+      JsonNode author = commit.path("author");
 
-        // Navigate to the author node
-        String sha = rootNode.path("sha").asText();
-        String url = rootNode.path("url").asText();
-        String html_url = rootNode.path("html_url").asText();
-        String message = rootNode.path("commit").path("message").asText();
-        JsonNode authorNode = rootNode.path("commit").path("author");
+      BuildInfo info = BuildInfo.builder()
+        .sha(root.path("sha").asText())
+        .url(root.path("url").asText())
+        .html_url(root.path("html_url").asText())
+        .message(commit.path("message").asText())
+        .name(author.path("name").asText())
+        .email(author.path("email").asText())
+        .date(author.path("date").asText())
+        .build();
 
-        // Retrieve author information
-        String name = authorNode.path("name").asText();
-        String email = authorNode.path("email").asText();
-        String date = authorNode.path("date").asText();
+      return Optional.of(info);
 
-        return Optional.of(BuildInfo.builder()
-          .sha(sha)
-          .url(url)
-          .html_url(html_url)
-          .message(message)
-          .name(name)
-          .email(email)
-          .date(date)
-          .build());
-      } else {
-        log.warn("Git info not found at {}", filePath);
-      }
     } catch (IOException e) {
       log.error("Cannot read index git information", e);
-    }
     return Optional.empty();
+  }
   }
 
   /**
@@ -393,34 +390,28 @@ public class DatasetIndex {
    * @return Map of dataset information
    */
   public Map<String, Object> getDatasetInfo(String indexPath) {
-    ObjectMapper mapper = new ObjectMapper();
-    String filePath = indexPath + "/" + METADATA_JSON;
+    File file = new File(indexPath, METADATA_JSON);
+    if (!file.exists()) {
+      log.warn("Dataset info not found at {}", file.getPath());
+      return Map.of();
+    }
 
     try {
-      if (new File(filePath).exists()){
-        log.debug("Loading dataset info from {}", filePath);
-        // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(filePath));
-        // Navigate to the author node
-        String datasetKey = rootNode.path("key").asText();
-        String datasetTitle = rootNode.path("title").asText();
-        String gbifKey = rootNode.path("gbifKey").asText();
-        String taxonCount = rootNode.path("taxonCount").asText();
-        String matchesToMainIndex = rootNode.path("matchesToMainIndex").asText();
+      log.debug("Loading dataset info from {}", file.getPath());
+      JsonNode root = new ObjectMapper().readTree(file);
+
         return Map.of(
-          "datasetKey", datasetKey,
-          "datasetTitle", datasetTitle,
-          "gbifKey", gbifKey,
-          "taxonCount", taxonCount,
-          "matchesToMainIndex", matchesToMainIndex
+        CLB_KEY, root.path(CLB_KEY).asText(),
+        DATASET_TITLE, root.path("title").asText(),
+        DATASET_KEY, root.path(DATASET_KEY).asText(),
+        TAXON_COUNT, root.path(TAXON_COUNT).asText(),
+        MATCHES_TO_MAIN_INDEX, root.path(MATCHES_TO_MAIN_INDEX).asText()
         );
-      } else {
-        log.warn("Dataset info not found at {}", filePath);
-      }
+
     } catch (IOException e) {
       log.error("Cannot read index dataset information", e);
-    }
     return Map.of();
+  }
   }
 
   private long getCountForRank(IndexSearcher searcher, String rank) throws IOException {
