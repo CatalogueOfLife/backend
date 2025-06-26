@@ -26,6 +26,10 @@ public class UriParserTest extends ParserTestBase<URI> {
     
     assertParse("http://gbif.org/missing%20space?escape=t%20r%20u%20e", "http://gbif.org/missing space?escape=t r u e");
     assertParse("http://gbif.org/missing%20space?escape=t%20r%20u%20e", "gbif.org/missing space?escape=t r u e");
+
+    // https://github.com/CatalogueOfLife/checklistbank/issues/1572
+    assertParse("https://images.ala.org.au/image/proxyImageThumbnailLarge?imageId=8f9d8db3-325a-49e0-b7fc-d989bf57a3ce", "https://images.ala.org.au/image/proxyImageThumbnailLarge?imageId=8f9d8db3-325a-49e0-b7fc-d989bf57a3ce");
+
     // DOIs are special - the doi.org resolver can contain unescaped DOIs which can have reserved URI characters
     assertParseDOI("10.3417/1055-3177(2006)", "https://doi.org/10.3417/1055-3177(2006)");
     assertParseDOI("10.3417/1055-3177(2006)16[244:ANSOCS]2.0.CO;2", "https://doi.org/10.3417/1055-3177(2006)16[244:ANSOCS]2.0.CO;2");
