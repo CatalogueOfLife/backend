@@ -41,4 +41,5 @@
   <logger name="org.gbif.nameparser" level="ERROR"/>
   <logger name="org.springframework" level="ERROR"/>
   <logger name="org.apache.catalina.core" level="ERROR"/>
+  <logger name="org.springdoc" level="ERROR"/>
 </configuration>
