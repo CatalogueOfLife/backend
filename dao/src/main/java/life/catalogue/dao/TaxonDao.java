@@ -362,7 +362,8 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
         info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
-      } else if (usage.getVerbatimKey() != null) {
+      }
+      if (usage.getVerbatimKey() != null) {
         info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
       }
     }
@@ -546,6 +547,15 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         addSectorMode(r, sectorModes, sm);
         cleanReference(r);
       });
+
+      // copy over into full reference the details and link
+      info.setPublishedIn(info.getReferences().getOrDefault(usage.getName().getPublishedInId(), null));
+      if (info.getPublishedIn() != null && info.getUsage().getName().getPublishedInPage() != null) {
+        info.getPublishedIn().setPage(info.getUsage().getName().getPublishedInPage());
+      }
+      if (info.getPublishedIn() != null && info.getUsage().getName().getPublishedInPageLink() != null) {
+        info.getPublishedIn().getCsl().setURL(info.getUsage().getName().getPublishedInPageLink());
+      }
     }
 
     if (!nameIds.isEmpty()) {

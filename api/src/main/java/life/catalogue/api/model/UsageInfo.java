@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class UsageInfo {
   
   private final NameUsageBase usage;
+  private Reference publishedIn;
   private List<SimpleName> classification;
   private TaxGroup group;
   private VerbatimSource source;
@@ -66,6 +67,14 @@ public class UsageInfo {
 
   public NameUsageBase getUsage() {
     return usage;
+  }
+
+  public Reference getPublishedIn() {
+    return publishedIn;
+  }
+
+  public void setPublishedIn(Reference publishedIn) {
+    this.publishedIn = publishedIn;
   }
 
   public List<SimpleName> getClassification() {
@@ -152,11 +161,6 @@ public class UsageInfo {
   
   public Reference getReference(String id) {
     return references.getOrDefault(id, null);
-  }
-
-  @JsonIgnore
-  public Reference getPublishedInReference() {
-    return references.getOrDefault(usage.getName().getPublishedInId(), null);
   }
 
   public Map<String, Reference> getReferences() {
@@ -279,6 +283,7 @@ public class UsageInfo {
 
     UsageInfo usageInfo = (UsageInfo) o;
     return Objects.equals(usage, usageInfo.usage) &&
+      Objects.equals(publishedIn, usageInfo.publishedIn) &&
       Objects.equals(classification, usageInfo.classification) &&
       group == usageInfo.group &&
       Objects.equals(source, usageInfo.source) &&
@@ -302,6 +307,6 @@ public class UsageInfo {
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, classification, group, source, verbatim, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
+    return Objects.hash(usage, publishedIn, classification, group, source, verbatim, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
   }
 }
