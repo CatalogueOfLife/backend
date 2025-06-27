@@ -362,9 +362,8 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
         info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
-        if (usage.getVerbatimKey() != null) {
-          info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
-        }
+      } else if (usage.getVerbatimKey() != null) {
+        info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
       }
     }
 
