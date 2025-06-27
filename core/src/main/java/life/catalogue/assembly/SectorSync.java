@@ -155,16 +155,17 @@ public class SectorSync extends SectorRunnable {
 
     loadForeignChildren();
     if (!disableAutoBlocking) {
-      // also load all sector subjects of non merge sources to auto block them
+      // also load all sector subjects of the same source to auto block them
+      // do not include merge subjects for non merge sectors
       try (SqlSession session = factory.openSession()) {
         AtomicInteger counter = new AtomicInteger();
         PgUtils.consume(
           () -> session.getMapper(SectorMapper.class).processSectors(sectorKey.getDatasetKey(), subjectDatasetKey),
           s -> {
-            if (!s.getId().equals(sectorKey.getId())
-                && s.getSubject() != null
-                && s.getSubject().getId() != null
-                && s.getMode() != Sector.Mode.MERGE
+            if (!s.getId().equals(sectorKey.getId()) &&
+                s.getSubject() != null &&
+                s.getSubject().getId() != null &&
+                (s.getMode() != Sector.Mode.MERGE || sector.getMode() == Sector.Mode.MERGE)
             ) {
               EditorialDecision d = new EditorialDecision();
               d.setSubject(s.getSubject());
