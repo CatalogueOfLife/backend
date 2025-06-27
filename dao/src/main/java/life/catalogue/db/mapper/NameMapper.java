@@ -126,6 +126,11 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
                     @Param("page") Page page
   );
 
+  List<Name> find(@Param("datasetKey") int datasetKey,
+                  @Param("name") String name,
+                  @Param("rank") Rank rank
+  );
+
   /**
    * Adds extra identifiers to the name
    * @param key name to add to

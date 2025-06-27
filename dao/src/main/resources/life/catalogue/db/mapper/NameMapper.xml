@@ -383,6 +383,14 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="find" parameterType="map" resultMap="simpleResultMap">
+    SELECT id, scientific_name, authorship, rank, code
+    FROM name
+    WHERE dataset_key=#{datasetKey}
+      AND lower(scientific_name) = lower(#{name})
+    <if test="rank != null">AND rank = #{rank}::RANK</if>
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

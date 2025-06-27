@@ -13,6 +13,9 @@ import life.catalogue.matching.NameValidator;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
@@ -109,15 +112,52 @@ public class TxtTreeDao {
     LOG.info("Insert tree with {} nodes by {} under parent {} ", tree.size(), user, parent);
     int counter = 0;
     var docs = new ArrayList<NameUsageWrapper>();
+    var typeNameRelations = new ArrayList<NameRelation>();
     for (SimpleTreeNode t : tree.getRoot()) {
-      counter += insertTaxon(parent, t, 0, classification, code, user, docs);
+      counter += insertTaxon(parent, t, 0, classification, code, user, typeNameRelations, docs);
     }
+    // finally we can lookup related name ids and insert the relations
+    insertNameRelations(datasetKey, typeNameRelations, code, user);
     // push remaining docs to ES
     if (docs.size() >= INDEX_BATCH_SIZE) {
       indexService.add(docs);
     }
 
     return counter;
+  }
+
+  private void insertNameRelations(int datasetKey, ArrayList<NameRelation> typeNameRelations, NomCode code, User user) {
+    try (SqlSession session = factory.openSession(false)) {
+      var nrm = session.getMapper(NameRelationMapper.class);
+      var nm = session.getMapper(NameMapper.class);
+      for (NameRelation nr : typeNameRelations) {
+        String name = nr.getRelatedNameId();
+        Rank rank = name.contains(" ") ? Rank.SPECIES : Rank.GENUS;
+        var results = nm.find(datasetKey, name, rank);
+        if (results.isEmpty()) {
+          // create new name
+          //TODO: parse name
+          Name n = new Name();
+          n.setDatasetKey(datasetKey);
+          n.setRank(rank);
+          n.setScientificName(name);
+          n.setType(NameType.SCIENTIFIC);
+          n.setCode(code);
+          n.applyUser(user);
+
+          nm.create(n);
+          nr.setRelatedNameId(n.getId());
+        } else {
+          nr.setRelatedNameId(results.get(0).getId());
+          if (results.size() > 1) {
+            LOG.warn("More than one name found for {} {} in dataset {}", rank, name, datasetKey);
+          }
+        }
+        nr.setDatasetKey(datasetKey);
+        nr.applyUser(user);
+        nrm.create(nr);
+      }
+    }
   }
 
   private void addDoc(List<NameUsageWrapper> docs, NameUsageBase nu, LinkedList<SimpleName> classification, IssueContainer issues) {
@@ -162,17 +202,19 @@ public class TxtTreeDao {
 
   /**
    * Recursive insert of a txt tree node, inserting the taxon itself and then all synonyms and children
+   *
    * @param parent
    * @param t
    * @param classification
    * @param code
    * @param user
+   * @param typeNameRelations
    * @param docs
    * @return number of total inserts done
    */
-  private int insertTaxon(Taxon parent, SimpleTreeNode t, int ordinal, LinkedList<SimpleName> classification, NomCode code, User user, List<NameUsageWrapper> docs) throws InterruptedException {
+  private int insertTaxon(Taxon parent, SimpleTreeNode t, int ordinal, LinkedList<SimpleName> classification, NomCode code, User user, ArrayList<NameRelation> typeNameRelations, List<NameUsageWrapper> docs) throws InterruptedException {
     int counter = 0;
-    int datasetKey = parent.getDatasetKey();
+    final int datasetKey = parent.getDatasetKey();
     var refExists = refExistsFunc(datasetKey);
     var tu = prep(datasetKey, parent.getId(), interpreter.interpret(t, false, ordinal, code, refExists));
     final Taxon tax = tu.usage.asTaxon();
@@ -180,12 +222,13 @@ public class TxtTreeDao {
     addDoc(docs, tax, classification, tu.issues);
     counter++;
     // vernacular?
-    if (!tu.vernacularNames.isEmpty() || !tu.distributions.isEmpty() || !tu.properties.isEmpty() || !tu.media.isEmpty()) {
+    if (tu.hasTaxonRelatedEntities()) {
       try (SqlSession session = factory.openSession(false)) {
         var vm = session.getMapper(VernacularNameMapper.class);
         var dm = session.getMapper(DistributionMapper.class);
         var pm = session.getMapper(TaxonPropertyMapper.class);
         var mm = session.getMapper(MediaMapper.class);
+        var em = session.getMapper(EstimateMapper.class);
         for (var v : tu.vernacularNames) {
           fill(v, datasetKey, user);
           vm.create(v, tax.getId());
@@ -202,8 +245,15 @@ public class TxtTreeDao {
           fill(m, datasetKey, user);
           mm.create(m, tax.getId());
         }
+        for (var m : tu.estimates) {
+          fill(m, datasetKey, user);
+          m.setTarget(SimpleNameLink.of(tax.getId(), tax.getName().getScientificName(), tax.getName().getAuthorship(), tax.getName().getRank()));
+          em.create(m);
+        }
         session.commit();
       }
+      // type and type material
+      addNameRelated(tu, tax.getName(), typeNameRelations, datasetKey, user);
     }
 
     // synonyms
@@ -224,6 +274,8 @@ public class TxtTreeDao {
           nrm.create(rel);
         }
       }
+      // type and type material
+      addNameRelated(su, syn.getName(), typeNameRelations, datasetKey, user);
       addDoc(docs, syn, classification, su.issues);
       classification.removeLast(); // addDoc adds the synonym to the classification - we dont want this in the other usages
       counter++;
@@ -232,7 +284,7 @@ public class TxtTreeDao {
     // accepted children
     int childOrd = 1;
     for (SimpleTreeNode c : t.children){
-      counter += insertTaxon(tax, c, childOrd++, classification, code, user, docs);
+      counter += insertTaxon(tax, c, childOrd++, classification, code, user, typeNameRelations, docs);
     }
 
     // remove taxon from classification again
@@ -241,7 +293,29 @@ public class TxtTreeDao {
     return counter;
   }
 
-  private <T extends DatasetScopedEntity<Integer>> T fill(T obj, int datasetKey, User user) {
+  private void addNameRelated(TxtUsage tu, Name n, ArrayList<NameRelation> typeNameRelations, int datasetKey, User user) {
+    if (!tu.typeMaterial.isEmpty()) {
+      try (SqlSession session = factory.openSession(true)) {
+        var tm = session.getMapper(TypeMaterialMapper.class);
+        for (var m : tu.typeMaterial) {
+          fill(m, datasetKey, user);
+          m.setNameId(n.getId());
+          tm.create(m);
+        }
+      }
+    }
+    if (StringUtils.isNotBlank(tu.type)) {
+      var rel = new NameRelation();
+      rel.setDatasetKey(datasetKey);
+      rel.setNameId(n.getId());
+      rel.setType(NomRelType.TYPE);
+      rel.applyUser(user);
+      // find related id via name later
+      rel.setRelatedNameId(tu.type);
+      typeNameRelations.add(rel);
+    }
+  }
+  private <T extends DatasetScopedEntity<?>> T fill(T obj, int datasetKey, User user) {
     obj.setDatasetKey(datasetKey);
     obj.setModifiedBy(user.getKey());
     obj.setCreatedBy(user.getKey());
@@ -256,6 +330,11 @@ public class TxtTreeDao {
     public final List<VernacularName> vernacularNames = Lists.newArrayList();
     public final List<SpeciesEstimate> estimates = Lists.newArrayList();
     public final List<TaxonProperty> properties = Lists.newArrayList();
+    public String type;
+    public final List<TypeMaterial> typeMaterial = Lists.newArrayList();
+    boolean hasTaxonRelatedEntities() {
+      return !distributions.isEmpty() || !media.isEmpty() || !vernacularNames.isEmpty() || !estimates.isEmpty() || !properties.isEmpty();
+    }
   }
 
   public interface TxTreeNodeInterpreter {

@@ -2,10 +2,7 @@ package life.catalogue.interpreter;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.Environment;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Origin;
-import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TxtTreeDao;
 import life.catalogue.parser.*;
@@ -15,8 +12,10 @@ import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static life.catalogue.api.vocab.terms.TxtTreeTerm.*;
 import static life.catalogue.interpreter.InterpreterUtils.normGeoTime;
@@ -25,6 +24,7 @@ import static life.catalogue.parser.SafeParser.parse;
 public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
   private static final Pattern VERNACULAR = Pattern.compile("([a-z]{2,3}):(.+)");
   private static final Pattern DISTRIBUTION = Pattern.compile("^([a-z]{3,9}:[^:\\s,]+)(?::([a-z]+))?$"); // LONGHURST = max 9 length
+  private static final Pattern TYPE_MATERIAL = Pattern.compile("([a-z]{5,}):(.+)");
 
   @Override
   public TxtTreeDao.TxtUsage interpret(SimpleTreeNode tn, boolean synonym, int ordinal, NomCode parentCode, Predicate<String> referenceExists) throws InterruptedException {
@@ -61,6 +61,11 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
         }
       }
     }
+    // NOM STATUS
+    if (hasDataItem(NOM, tn)) {
+      var nomStatus = parse(NomStatusParser.PARSER, rmSingleDataItem(NOM, tn)).orNull(Issue.NOMENCLATURAL_STATUS_INVALID, u.issues);
+      pnu.getName().setNomStatus(nomStatus);
+    }
 
     // general usage props to be removed before we add properties!
     String uid = rmSingleDataItem(ID, tn);
@@ -71,12 +76,18 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
       u.usage = new Synonym(pnu.getName());
       u.usage.setOrigin(Origin.SOURCE);
       u.usage.setStatus(TaxonomicStatus.SYNONYM);
+      if (hasAndRmDataItem(tn, PROV, ENV, CHRONO, REF, VERN, DIST)) {
+        u.issues.add(Issue.SYNONYM_WITH_TAXON_PROPERTY);
+      }
+      interpretTypeMaterial(tn, u);
+
     } else {
       TaxonomicStatus status = rmBoolean(PROV, tn, u.issues) || tn.provisional || pnu.isDoubtful() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
       var t = new Taxon(pnu.getName());
       u.usage = t;
       t.setStatus(status);
       t.setOrdinal(ordinal);
+      interpretTypeMaterial(tn, u);
       // DAGGER
       t.setExtinct(tn.extinct);
       // ENVIRONMENT
@@ -125,7 +136,7 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
             VernacularName vn = new VernacularName();
             var lang = parse(LanguageParser.PARSER, m.group(1)).orNull(Issue.VERNACULAR_LANGUAGE_INVALID, u.issues);
             vn.setLanguage(lang);
-            vn.setName(m.group(2));
+            vn.setName(decode(m.group(2)));
             u.vernacularNames.add(vn);
           } else {
             u.issues.add(Issue.VERNACULAR_NAME_INVALID);
@@ -153,19 +164,45 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
           }
         }
       }
-
-      // ALL OTHER
+      // Species Estimates - 45000,†340
+      if (hasDataItem(EST, tn)) {
+        String raw = rmSingleDataItem(EST, tn);
+        if (raw != null) {
+          String[] vals = raw.split(",");
+          for (String val : vals) {
+            var type = EstimateType.SPECIES_LIVING;
+            if (val.charAt(0) == NameUsageBase.EXTINCT_SYMBOL) {
+              type = EstimateType.SPECIES_EXTINCT;
+              val = val.substring(1);
+            }
+            try {
+              var num = Integer.parseInt(val.trim());
+              var est = new SpeciesEstimate();
+              est.setEstimate(num);
+              est.setType(type);
+              u.estimates.add(est);
+            } catch (NumberFormatException e) {
+              u.issues.add(Issue.ESTIMATE_INVALID);
+            }
+          }
+        }
+      }
+      // ALL OTHER as PROPERTIES
       for (var entry : tn.infos.entrySet()) {
         // ignore the PUB entry which we handle below
         if (!entry.getKey().equalsIgnoreCase(PUB.name())) {
           var tp = new TaxonProperty();
           if (entry.getValue() == null || entry.getValue().length == 0) continue;
           tp.setProperty(entry.getKey().toLowerCase());
-          tp.setValue(String.join(", ", entry.getValue()));
+          tp.setValue(Arrays.stream(entry.getValue())
+            .map(TxtTreeInterpreter::decode)
+            .collect(Collectors.joining(", "))
+          );
           u.properties.add(tp);
         }
       }
     }
+
     u.usage.setOrigin(Origin.SOURCE);
     u.usage.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
     u.usage.setLink(link);
@@ -175,8 +212,43 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
     return u;
   }
 
+  private void interpretTypeMaterial(SimpleTreeNode tn, TxtTreeDao.TxtUsage u) {
+    // TYPE
+    if (hasDataItem(TYPE, tn)) {
+      u.type = decode(rmSingleDataItem(TYPE, tn));
+    }
+    // TYPE MATERIAL
+    if (hasDataItem(TM, tn)) {
+      String[] vals = rmDataItem(TM, tn);
+      for (String val : vals) {
+        var tm = new TypeMaterial();
+        var m = TYPE_MATERIAL.matcher(val);
+        if (m.find()) {
+          var status = parse(TypeStatusParser.PARSER, m.group(1)).orNull(Issue.TYPE_STATUS_INVALID, u.issues);
+          tm.setStatus(status);
+          tm.setCitation(decode(m.group(2)));
+        } else {
+          tm.setCitation(decode(val));
+        }
+        u.typeMaterial.add(tm);
+      }
+    }
+  }
+
+  private static String decode(String x) {
+    return x == null ? null : x.replaceAll("_", " ");
+  }
+
   private static boolean hasDataItem(TxtTreeTerm key, SimpleTreeNode tn) {
     return tn.infos != null && tn.infos.containsKey(key.name());
+  }
+  private static boolean hasAndRmDataItem(SimpleTreeNode tn, TxtTreeTerm... keys) {
+    boolean has = false;
+    for (var key : keys) {
+      var val = rmDataItem(key, tn);
+      has = has || (val != null && val.length > 0);
+    }
+    return has;
   }
   private static String[] rmDataItem(TxtTreeTerm key, SimpleTreeNode tn) {
     return tn.infos.remove(key.name());

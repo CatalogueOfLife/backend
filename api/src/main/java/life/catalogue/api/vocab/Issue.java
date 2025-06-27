@@ -472,6 +472,9 @@ public enum Issue {
 
   SYNONYM_RANK_DIFFERS(NAME_USAGE, Level.INFO,
     "The rank of the synonym and it's accepted name is different."),
+
+  SYNONYM_WITH_TAXON_PROPERTY(SYNONYM, Level.WARNING,
+    "A synonym has linked information which applies only to taxa, e.g. distributions, media items or species estimates."),
   ;
 
   /**

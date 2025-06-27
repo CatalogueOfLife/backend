@@ -269,7 +269,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
         t.setOrdinal(ordinal);
       }
       var status = TaxonomicStatus.ACCEPTED;
-      if (tn.provisional || tn.infos.containsKey(TxtTreeTerm.PROV.name())) {
+      if (tn.provisional) {
         status = TaxonomicStatus.PROVISIONALLY_ACCEPTED;
       }
 

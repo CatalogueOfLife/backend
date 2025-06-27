@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-06-27 new issues
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_WITH_TAXON_PROPERTY';
+```
+
 #### 2025-06-19 log table
 ```sql
 ALTER TYPE TREATMENTFORMAT ADD VALUE 'PDF';
