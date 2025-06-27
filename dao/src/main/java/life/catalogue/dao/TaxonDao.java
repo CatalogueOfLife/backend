@@ -316,7 +316,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
                             boolean loadDecisions,
                             boolean loadSectorModes
                             ) {
-    var usage = info.getUsage();
+    final var usage = info.getUsage();
     final boolean isTaxon = usage.isTaxon();
     // we don't expect too many different sectors to show up, so lets fetch them as we go and reuse them
     // sectors only exist in projects and releases anyways
@@ -362,6 +362,9 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
         info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
+        if (usage.getVerbatimKey() != null) {
+          info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
+        }
       }
     }
 

@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxGroup;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public class UsageInfo {
   private List<SimpleName> classification;
   private TaxGroup group;
   private VerbatimSource source;
+  private VerbatimRecord verbatim;
   private Treatment treatment;
   private List<NameUsageRelation> nameRelations;
   // taxa only
@@ -88,6 +90,24 @@ public class UsageInfo {
 
   public void setSource(VerbatimSource source) {
     this.source = source;
+  }
+
+  public VerbatimRecord getVerbatim() {
+    return verbatim;
+  }
+
+  public void setVerbatim(VerbatimRecord verbatim) {
+    this.verbatim = verbatim;
+  }
+
+  public Set<Issue> getIssues() {
+    if (verbatim != null) {
+      return verbatim.getIssues();
+    }
+    if (source != null) {
+      return source.getIssues();
+    }
+    return null;
   }
 
   public Synonymy getSynonyms() {
@@ -256,12 +276,32 @@ public class UsageInfo {
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof UsageInfo)) return false;
+
     UsageInfo usageInfo = (UsageInfo) o;
-    return Objects.equals(usage, usageInfo.usage) && Objects.equals(classification, usageInfo.classification) && group == usageInfo.group && Objects.equals(source, usageInfo.source) && Objects.equals(treatment, usageInfo.treatment) && Objects.equals(nameRelations, usageInfo.nameRelations) && Objects.equals(synonyms, usageInfo.synonyms) && Objects.equals(distributions, usageInfo.distributions) && Objects.equals(vernacularNames, usageInfo.vernacularNames) && Objects.equals(media, usageInfo.media) && Objects.equals(properties, usageInfo.properties) && Objects.equals(conceptRelations, usageInfo.conceptRelations) && Objects.equals(speciesInteractions, usageInfo.speciesInteractions) && Objects.equals(estimates, usageInfo.estimates) && Objects.equals(typeMaterial, usageInfo.typeMaterial) && Objects.equals(references, usageInfo.references) && Objects.equals(names, usageInfo.names) && Objects.equals(taxa, usageInfo.taxa) && Objects.equals(decisions, usageInfo.decisions);
+    return Objects.equals(usage, usageInfo.usage) &&
+      Objects.equals(classification, usageInfo.classification) &&
+      group == usageInfo.group &&
+      Objects.equals(source, usageInfo.source) &&
+      Objects.equals(verbatim, usageInfo.verbatim) &&
+      Objects.equals(treatment, usageInfo.treatment) &&
+      Objects.equals(nameRelations, usageInfo.nameRelations) &&
+      Objects.equals(synonyms, usageInfo.synonyms) &&
+      Objects.equals(distributions, usageInfo.distributions) &&
+      Objects.equals(vernacularNames, usageInfo.vernacularNames) &&
+      Objects.equals(media, usageInfo.media) &&
+      Objects.equals(properties, usageInfo.properties) &&
+      Objects.equals(conceptRelations, usageInfo.conceptRelations) &&
+      Objects.equals(speciesInteractions, usageInfo.speciesInteractions) &&
+      Objects.equals(estimates, usageInfo.estimates) &&
+      Objects.equals(typeMaterial, usageInfo.typeMaterial) &&
+      Objects.equals(references, usageInfo.references) &&
+      Objects.equals(names, usageInfo.names) &&
+      Objects.equals(taxa, usageInfo.taxa) &&
+      Objects.equals(decisions, usageInfo.decisions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, classification, group, source, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
+    return Objects.hash(usage, classification, group, source, verbatim, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
   }
 }
