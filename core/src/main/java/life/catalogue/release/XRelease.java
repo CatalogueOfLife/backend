@@ -219,6 +219,11 @@ public class XRelease extends ProjectRelease {
   @Override
   void finalWork() throws Exception {
     super.finalWork();
+    // finally report about IDs which access names from the final release dataset
+    checkIfCancelled();
+    var start = LocalDateTime.now();
+    usageIdGen.report();
+    DateUtils.logDuration(LOG, "ID reporting", start);
     // drop tmp project sequences
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).deleteSequences(tmpProjectKey);;
@@ -586,9 +591,6 @@ public class XRelease extends ProjectRelease {
     final int startKey = usageIdGen.previewNextKey();
     LOG.debug("Next key for stable IDs before mapping will be {}", startKey);
     usageIdGen.mapIds();
-    LOG.info("Issued {} new IDs", usageIdGen.previewNextKey()-startKey);
-    checkIfCancelled();
-    usageIdGen.report();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
 
