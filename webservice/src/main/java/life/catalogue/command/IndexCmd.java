@@ -89,9 +89,12 @@ public class IndexCmd extends AbstractMybatisCmd {
     }
   }
 
-  static String indexNameToday(){
+  private String indexNameToday(){
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-    return "col-" + date;
+    if (StringUtils.isBlank(cfg.es.nameUsage.name)) {
+      throw new IllegalStateException("index config is empty");
+    }
+    return cfg.es.nameUsage.name + "-" + date;
   }
 
   @Override
