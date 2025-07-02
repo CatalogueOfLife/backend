@@ -17,6 +17,7 @@ import life.catalogue.dw.managed.ManagedUtils;
 import life.catalogue.dw.metrics.HttpClientBuilder;
 import life.catalogue.dw.tasks.ClearCachesTask;
 import life.catalogue.dw.tasks.EventQueueTask;
+import life.catalogue.dw.tasks.ReloadPortalTemplatesTask;
 import life.catalogue.es.EsClientFactory;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
@@ -247,6 +248,7 @@ public class WsROServer extends Application<WsServerConfig> {
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
     env.admin().addTask(new EventQueueTask(broker));
+    env.admin().addTask(new ReloadPortalTemplatesTask(renderer));
 
     // attach listeners to event broker
     broker.register(auth);

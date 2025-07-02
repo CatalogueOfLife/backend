@@ -274,7 +274,7 @@ public class PortalPageRenderer {
    * Reads all portal templates for all environments keys from the file system and store it in the internal map
    * @throws IOException
    */
-  private void loadTemplates() throws IOException {
+  public void loadTemplates() throws IOException {
     for (Environment env : Environment.values()) {
       if (!releaseKeys.containsKey(env)) {
         LOG.warn("No portal release deployed for environment {}", env);
