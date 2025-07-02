@@ -32,13 +32,8 @@ public class MediaInterpreter {
    * Tries to derive a media type (image/video/audio) from the format, url or explicitly given type.
    */
   public static Media detectType(Media m) {
-    if (Strings.isNullOrEmpty(m.getFormat())) {
-      // derive from URI
-      m.setFormat(parseMimeType(m.getUrl()));
-    }
-
-    // if MIME type is text/html make it a references link instead
-    if (HTML_TYPE.equalsIgnoreCase(m.getFormat()) && m.getUrl() != null) {
+    // if MIME type is text/html and we do not yet have a link, make it a references link instead
+    if (HTML_TYPE.equalsIgnoreCase(m.getFormat()) && m.getUrl() != null && m.getLink() == null) {
       // make file URI the references link URL instead
       m.setLink(m.getUrl());
       m.setUrl(null);
@@ -84,7 +79,13 @@ public class MediaInterpreter {
   /**
    * Parses a mime type using apache tika which can handle the following:
    * http://svn.apache.org/repos/asf/tika/trunk/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml
+   *
+   * Deprecated as it wrongly assumes URLs with www represent html pages:
+   * https://github.com/CatalogueOfLife/backend/issues/1433
+   *
+   * TODO: consider to pull content from one or two full URLs and interpret those instead to represent the entire data?
    */
+  @Deprecated
   private static String parseMimeType(@Nullable URI uri) {
     if (uri != null) {
       String mime = TIKA.detect(uri.toString());

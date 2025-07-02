@@ -626,11 +626,11 @@ public class PgImportIT extends PgImportITBase {
     dataset.setType(DatasetType.TAXONOMIC);
 
     //normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
-    //normalizeAndImportArchive(new File("/Users/markus/Downloads/iucn-test.zip"), DWCA);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-305823.zip"), COLDP);
 
     //normalizeAndImport(URI.create("https://hosted-datasets.gbif.org/datasets/iucn/iucn-latest.zip"), DWCA);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);
-    normalizeAndImport(URI.create("https://ipt.biodiversidad.co/sib/archive.do?r=jbm_lista_epifitas"), DWCA);
+    //normalizeAndImport(URI.create("https://ipt.biodiversidad.co/sib/archive.do?r=jbm_lista_epifitas"), DWCA);
 
     System.out.println("Print tree to import.txtree");
     try (Writer writer = UTF8IoUtils.writerFromFile(new File("/Users/markus/Downloads/import.txtree"))) {
