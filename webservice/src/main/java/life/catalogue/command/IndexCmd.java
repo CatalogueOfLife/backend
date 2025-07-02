@@ -94,6 +94,8 @@ public class IndexCmd extends AbstractMybatisCmd {
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
     if (StringUtils.isBlank(cfg.nameUsage.name)) {
       throw new IllegalStateException("index config is empty");
+    } else if (cfg.nameUsage.name.length() > 10) {
+      throw new IllegalStateException("index config name is too long to be a prefix");
     }
     return cfg.nameUsage.name + "-" + date;
   }
@@ -101,8 +103,7 @@ public class IndexCmd extends AbstractMybatisCmd {
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
     boolean create = namespace.getBoolean(ARG_CREATE) || namespace.getBoolean(ARG_ALL);
-    String index =  create ? indexNameToday(cfg.es) : cfg.es.nameUsage.name;
-    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", index, cfg.es.hosts);
+    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", cfg.es.nameUsage.name, cfg.es.hosts);
   }
 
   @Override
