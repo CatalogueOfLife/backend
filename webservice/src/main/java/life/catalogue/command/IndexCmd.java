@@ -3,6 +3,7 @@ package life.catalogue.command;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
@@ -83,24 +84,24 @@ public class IndexCmd extends AbstractMybatisCmd {
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
     if (namespace.getBoolean(ARG_ALL) || namespace.getBoolean(ARG_CREATE)) {
       // change index name, use current date
-      cfg.es.nameUsage.name = indexNameToday();
+      cfg.es.nameUsage.name = indexNameToday(cfg.es);
       System.out.println("Creating new index " + cfg.es.nameUsage.name);
       LOG.info("Creating new index {}", cfg.es.nameUsage.name);
     }
   }
 
-  private String indexNameToday(){
+  public static String indexNameToday(EsConfig cfg){
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-    if (StringUtils.isBlank(cfg.es.nameUsage.name)) {
+    if (StringUtils.isBlank(cfg.nameUsage.name)) {
       throw new IllegalStateException("index config is empty");
     }
-    return cfg.es.nameUsage.name + "-" + date;
+    return cfg.nameUsage.name + "-" + date;
   }
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
     boolean create = namespace.getBoolean(ARG_CREATE) || namespace.getBoolean(ARG_ALL);
-    String index =  create ? indexNameToday() : cfg.es.nameUsage.name;
+    String index =  create ? indexNameToday(cfg.es) : cfg.es.nameUsage.name;
     return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", index, cfg.es.hosts);
   }
 
