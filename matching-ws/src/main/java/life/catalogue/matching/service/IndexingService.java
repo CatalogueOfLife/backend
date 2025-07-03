@@ -1218,7 +1218,11 @@ public class IndexingService {
 
     if (pn != null){
       try {
-        doc.add(new StringField(FIELD_FORMATTED, NameFormatter.canonicalCompleteHtml(pn), Field.Store.YES));
+        var formattedName = NameFormatter.canonicalCompleteHtml(pn);
+        if (StringUtils.isNotBlank(nameUsage.getAuthorship())) {
+          formattedName += " " + nameUsage.getAuthorship();
+        }
+        doc.add(new StringField(FIELD_FORMATTED, formattedName, Field.Store.YES));
       } catch (Exception e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
@@ -1250,7 +1254,6 @@ public class IndexingService {
       nameComplete += " " + nameUsage.getAuthorship();
       doc.add(new TextField(FIELD_AUTHORSHIP, nameUsage.getAuthorship(), Field.Store.YES));
     }
-
     doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
