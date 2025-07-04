@@ -70,7 +70,7 @@ public class EventBroker implements Managed {
   }
 
   public synchronized void publish(Event event) {
-    LOG.info("publish new event {}", event);
+    LOG.debug("publish new event {}", event);
     // the chronicle appender remembers which thread wrote the last message
     // it only allows the same thread to write to the queue
     // we disable this check as we synchronize the method, so we never have multiple threads writing to the queue at the same time
@@ -151,7 +151,7 @@ public class EventBroker implements Managed {
     }
 
     private void broker(Object obj) {
-      LOG.info("Broker event {}", obj);
+      LOG.debug("Broker event {}", obj);
       if (obj instanceof DatasetLogoChanged) {
         DatasetLogoChanged event = (DatasetLogoChanged) obj;
         for (DatasetListener l : datasetListeners) {
