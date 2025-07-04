@@ -72,10 +72,10 @@ https://bioschemas.org/profiles/Taxon/0.6-RELEASE/
     "name": "${info.usage.name.scientificName!}",
     "author": "${info.usage.name.authorship!}",
     "taxonRank": "${info.usage.name.rank!}"
-   <#if info.getPublishedInReference()??>
+   <#if info.publishedIn??>
     ,"isBasedOn": {
       "@type": "ScholarlyArticle",
-      "name": "${info.getPublishedInReference().citation!}"
+      "name": "${info.publishedIn.citation!}"
     }
    </#if>
   },

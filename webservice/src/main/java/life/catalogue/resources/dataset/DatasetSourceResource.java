@@ -101,18 +101,6 @@ public class DatasetSourceResource {
   }
 
   @GET
-  @Hidden
-  @Path("/{id}/seo")
-  @Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
-  public Response getHtmlHeader(@PathParam("key") int datasetKey, @PathParam("id") int id) {
-    var d = sourceDao.get(datasetKey, id, false);
-    if (d == null) {
-      throw NotFoundException.notFound(Dataset.class, DSID.of(datasetKey, id));
-    }
-    return ResourceUtils.streamFreemarker(d, "seo/DATASET.ftl", MediaType.TEXT_PLAIN_TYPE);
-  }
-
-  @GET
   @Path("/{id}/metrics")
   public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey,
                                             @PathParam("id") int id,
