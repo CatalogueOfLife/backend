@@ -264,7 +264,7 @@ public enum Issue {
       "A synonym which originally had some associated data (descriptions distributions, media items, vernacular names, bibliography) " +
           "but which was moved to its accepted taxon."),
   
-  SYNONYM_DATA_REMOVED(NAME_USAGE, Level.INFO,
+  SYNONYM_DATA_REMOVED(NAME_USAGE, Level.WARNING,
       "A synonym which originally had some associated data (descriptions distributions, media items, vernacular names, bibliography) " +
           "but which was removed as it lacks an accepted taxon."),
 
