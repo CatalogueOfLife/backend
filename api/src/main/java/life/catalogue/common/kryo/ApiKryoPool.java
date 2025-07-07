@@ -175,6 +175,7 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(EntityType.class);
     kryo.register(SimpleNameLink.class);
     kryo.register(SimpleNameClassified.class);
+    kryo.register(TaxGroup.class);
 
     return kryo;
   }
