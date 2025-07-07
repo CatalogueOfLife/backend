@@ -8,6 +8,7 @@
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     d.deleted,
     d.private,
+    d.taxonomic_group_scope,
     d.last_import_attempt,
     dli.state AS last_import_state,
     <include refid="size"/> AS size
@@ -92,6 +93,9 @@
       </if>
       <if test="req.codeIsNull">
         AND (d.settings IS NULL OR NOT d.settings ?? 'nomenclatural code')
+      </if>
+      <if test="req.group != null and !req.group.isEmpty()">
+        AND d.taxonomic_group_scope &amp;&amp; ARRAY[<foreach item="o" collection="req.group" separator=",">#{o}::TAXGROUP</foreach>]
       </if>
       <if test="req.type != null and !req.type.isEmpty()">
         AND d.type IN <foreach item="o" collection="req.type" open="(" separator="," close=")">#{o}::DATASETTYPE</foreach>
@@ -202,6 +206,7 @@
     <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="taxonomicGroupScope" column="taxonomic_group_scope" typeHandler="life.catalogue.db.type2.TaxGroupSetTypeHandler"/>
     <association property="conversion" javaType="life.catalogue.api.model.Dataset$UrlDescription">
       <result property="url" column="conversion_url" />
       <result property="description" column="conversion_description" />
@@ -588,6 +593,10 @@
     WHERE key = #{key}
   </update>
 
+  <update id="_updateTaxonomicGroupScope" parameterType="map">
+    UPDATE dataset SET taxonomic_group_scope = #{groups, typeHandler=life.catalogue.db.type2.TaxGroupSetTypeHandler}
+    WHERE key = #{key}
+  </update>
 
   <select id="getReviewer" resultType="it.unimi.dsi.fastutil.ints.IntSet">
     SELECT acl_reviewer FROM dataset WHERE key = #{key}

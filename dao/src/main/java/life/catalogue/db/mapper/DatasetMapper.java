@@ -3,11 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,11 +21,17 @@ import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The dataset mappers create method expects the key to be provided.
  * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.
  */
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
+  Logger LOG = LoggerFactory.getLogger(DatasetMapper.class);
+
   int MAGIC_ADMIN_USER_KEY = -42;
 
   DatasetSimple getSimple(@Param("key") int key);
@@ -51,6 +59,22 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   void updateSettings(@Param("key") int key, @Param("settings") DatasetSettings settings, @Param("userKey") int userKey);
 
+  /**
+   * Updates the taxonomic group scope of a given dataset.
+   * It adds missing parental groups to the set before storing it with the dataset.
+   */
+  default void updateTaxonomicGroupScope(int key, Set<TaxGroup> groups) {
+    Set<TaxGroup> allGroups = EnumSet.noneOf(TaxGroup.class);
+    // expand group to include all parents
+    for (TaxGroup g : groups) {
+      allGroups.add(g);
+      allGroups.addAll(g.classification());
+    }
+    LOG.debug("Store {} taxon groups for dataset {} ", allGroups.size(), key);
+    _updateTaxonomicGroupScope(key, allGroups);
+  }
+
+  void _updateTaxonomicGroupScope(@Param("key") int key, @Param("groups") Set<TaxGroup> groups);
 
   IntSet getReviewer(@Param("key") int key);
 

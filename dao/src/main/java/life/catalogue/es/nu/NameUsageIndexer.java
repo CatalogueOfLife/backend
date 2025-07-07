@@ -1,6 +1,7 @@
 package life.catalogue.es.nu;
 
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.es.EsException;
 import life.catalogue.es.EsModule;
 import life.catalogue.es.EsNameUsage;
@@ -8,7 +9,9 @@ import life.catalogue.es.EsUtil;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.elasticsearch.client.Request;
@@ -22,9 +25,6 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   
   private static final Logger LOG = LoggerFactory.getLogger(NameUsageIndexer.class);
 
-  // Set to true for extra statistics (make sure it's false in production)
-  private static final boolean EXTRA_STATS = false;
-
   /*
    * The request body. With a batch size of 4096 the request body can grow to about 11 MB for synonyms with zipped
    * payloads, and 20 MB with unzipped payloads. A batch size of 4096 seems about optimal. A batch size of 2048 also
@@ -37,20 +37,18 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
   private final String indexHeader;
 
   private int indexed = 0;
+  private final Set<TaxGroup> taxGroups;
 
   NameUsageIndexer(RestClient client, String index) {
     this.client = client;
     this.index = index;
     this.indexHeader = getIndexHeader();
+    this.taxGroups = EnumSet.noneOf(TaxGroup.class);
   }
 
   @Override
   public void accept(List<NameUsageWrapper> batch) {
-    if (EXTRA_STATS) {
-      indexWithExtraStats(batch);
-    } else {
-      index(batch);
-    }
+    index(batch);
   }
 
   /**
@@ -83,31 +81,11 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
         buf.append(indexHeader);
         buf.append(EsModule.write(NameUsageWrapperConverter.toDocument(nuw)));
         buf.append("\n");
+        if (nuw.getGroup() != null) {
+          taxGroups.add(nuw.getGroup());
+        }
       }
       sendBatch(batch.size());
-    } catch (IOException e) {
-      throw new EsException(e);
-    }
-  }
-
-  private void indexWithExtraStats(List<NameUsageWrapper> batch) {
-    buf.setLength(0);
-    int docSize = 0;
-    DecimalFormat df = new DecimalFormat("0.0");
-    try {
-      String json;
-      for (NameUsageWrapper nuw : batch) {
-        buf.append(indexHeader);
-        buf.append(json = EsModule.write(NameUsageWrapperConverter.toDocument(nuw)));
-        docSize += json.getBytes(Charsets.UTF_8).length;
-        buf.append("\n");
-      }
-      sendBatch(batch.size());
-      double totSize = ((double) docSize / (double) (1024 * 1024));
-      double avgSize = ((double) docSize / (double) (batch.size() * 1024));
-      String tot = df.format(totSize);
-      String avg = df.format(avgSize);
-      LOG.info("Average document size: {} KB. Total document size: {} MB.", avg, tot);
     } catch (IOException e) {
       throw new EsException(e);
     }
@@ -153,6 +131,10 @@ public class NameUsageIndexer implements Consumer<List<NameUsageWrapper>> {
    */
   int documentsIndexed() {
     return indexed;
+  }
+
+  public Set<TaxGroup> getTaxGroups() {
+    return taxGroups;
   }
 
   private String getIndexHeader() {

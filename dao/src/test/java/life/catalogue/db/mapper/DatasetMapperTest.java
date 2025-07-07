@@ -800,6 +800,16 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(8, mapper().search(query, null, new Page()).size());
     query.setLastImportState(ImportState.FAILED);
     assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    // tax group
+    query = new DatasetSearchRequest();
+    query.setGroup(List.of(TaxGroup.Animals, TaxGroup.Plants));
+    assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    mapper().updateTaxonomicGroupScope(d1, Set.of(TaxGroup.Animals, TaxGroup.Arthropods, TaxGroup.Insects, TaxGroup.Coleoptera));
+    mapper().updateTaxonomicGroupScope(d2, Set.of(TaxGroup.Plants, TaxGroup.Gymnosperms));
+    mapper().updateTaxonomicGroupScope(d3, Set.of(TaxGroup.Viruses));
+    assertEquals(2, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

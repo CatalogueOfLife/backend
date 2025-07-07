@@ -580,6 +580,46 @@ CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
   'MUTUALIST_OF'
 );
 
+CREATE TYPE TAXGROUP AS ENUM (
+  'Viruses',
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Eukaryotes',
+  'Protists',
+  'Plants',
+  'Algae',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Pseudofungi',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Gastropods',
+  'Bivalves',
+  'OtherMolluscs',
+  'Chordates',
+  'OtherAnimals'
+);
+
 CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
   'EQUALS',
   'INCLUDES',
@@ -761,6 +801,7 @@ CREATE TABLE dataset (
   geographic_scope TEXT,
   taxonomic_scope TEXT,
   temporal_scope TEXT,
+  taxonomic_group_scope TAXGROUP[],
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   license LICENSE,
@@ -810,6 +851,7 @@ CREATE INDEX ON dataset (gbif_key);
 CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (doc) WITH (fastupdate = off);
+CREATE INDEX ON dataset USING GIN (taxonomic_group_scope);
 -- used by import scheduler:
 CREATE INDEX ON dataset (key)
  WHERE deleted IS NULL

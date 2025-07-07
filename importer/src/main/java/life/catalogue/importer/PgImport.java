@@ -5,6 +5,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
@@ -13,6 +14,7 @@ import life.catalogue.db.Create;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.Labels;
@@ -566,6 +568,15 @@ public class PgImport implements Callable<Boolean> {
           nuw.setIssues(mergeIssues(vKeys));
           indexer.accept(nuw);
           runtimeInterruptIfCancelled();
+        }
+      }
+
+      // update the dataset tax scope
+      if (indexer instanceof NameUsageIndexServiceEs.IndexerBatchConsumer) {
+        var ibc = (NameUsageIndexServiceEs.IndexerBatchConsumer) indexer;
+        try (SqlSession session = sessionFactory.openSession(true)) {
+          var dm = session.getMapper(DatasetMapper.class);
+          dm.updateTaxonomicGroupScope(dataset.getKey(), ibc.indexer.getTaxGroups());
         }
       }
     }

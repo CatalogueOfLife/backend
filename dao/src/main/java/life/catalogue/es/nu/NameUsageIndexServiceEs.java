@@ -5,6 +5,7 @@ import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -24,6 +25,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.cursor.Cursor;
@@ -90,26 +92,36 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
+  public IndexerBatchConsumer buildDatasetIndexingHandler(int datasetKey) {
     LOG.info("Start indexing dataset {}", datasetKey);
     try {
       LOG.info("Remove dataset {} from index", datasetKey);
       createOrEmptyIndex(datasetKey);
 
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
-      return new BatchConsumer<>(indexer, BATCH_SIZE) {
-        @Override
-        public void close() {
-          super.close();
-          EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-        }
-      };
+      return new IndexerBatchConsumer(indexer);
 
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
+  public SqlSessionFactory getFactory() {
+    return factory;
+  }
+
+  public static class IndexerBatchConsumer extends BatchConsumer<NameUsageWrapper> {
+    public final NameUsageIndexer indexer;
+    public IndexerBatchConsumer(NameUsageIndexer indexer) {
+      super(indexer, BATCH_SIZE);
+      this.indexer = indexer;
+    }
+    @Override
+    public void close() {
+      super.close();
+      EsUtil.refreshIndex(indexer.getEsClient(), indexer.getIndexName());
+    }
+  }
   private void index(Cursor<NameUsageWrapper> cursor, NameUsageIndexer indexer) throws IOException {
     try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
       PgUtils.consume(
@@ -144,6 +156,12 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
+
+      // taxon groups dataset scope
+      try (SqlSession session = factory.openSession(true)) {
+        var dm = session.getMapper(DatasetMapper.class);
+        dm.updateTaxonomicGroupScope(datasetKey, indexer.getTaxGroups());
+      }
 
       LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
         datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());

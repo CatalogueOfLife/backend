@@ -14,6 +14,51 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-07-07 dataset groups
+```sql
+CREATE TYPE TAXGROUP AS ENUM (
+  'Viruses',
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Eukaryotes',
+  'Protists',
+  'Plants',
+  'Algae',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Pseudofungi',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Gastropods',
+  'Bivalves',
+  'OtherMolluscs',
+  'Chordates',
+  'OtherAnimals'
+  );
+ALTER TABLE dataset ADD COLUMN taxonomic_group_scope TAXGROUP[];
+CREATE INDEX ON dataset USING GIN (taxonomic_group_scope);
+```
+
 #### 2025-06-27 new issues
 ```sql
 ALTER TYPE ISSUE ADD VALUE 'SYNONYM_WITH_TAXON_PROPERTY';

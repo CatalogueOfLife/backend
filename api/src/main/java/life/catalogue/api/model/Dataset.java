@@ -63,6 +63,7 @@ public class Dataset extends DataEntity<Integer> {
         "privat",
         "type",
         "origin",
+        "taxonomicGroupScope",
         "imported",
         "deleted",
         "lastImportAttempt",
@@ -179,6 +180,7 @@ public class Dataset extends DataEntity<Integer> {
   private String geographicScope;
   private String taxonomicScope;
   private String temporalScope;
+  private Set<TaxGroup> taxonomicGroupScope = EnumSet.noneOf(TaxGroup.class); // read only - automatically populated from data!
   @Min(1)
   @Max(5)
   private Integer confidence;
@@ -240,6 +242,7 @@ public class Dataset extends DataEntity<Integer> {
     this.containerIssued = other.containerIssued;
     this.geographicScope = other.geographicScope;
     this.taxonomicScope = other.taxonomicScope;
+    this.taxonomicGroupScope = other.taxonomicGroupScope;
     this.temporalScope = other.temporalScope;
     this.confidence = other.confidence;
     this.completeness = other.completeness;
@@ -844,6 +847,10 @@ public class Dataset extends DataEntity<Integer> {
     return temporalScope;
   }
 
+  public Set<TaxGroup> getTaxonomicGroupScope() {
+    return taxonomicGroupScope;
+  }
+
   public void setTemporalScope(String temporalScope) {
     this.temporalScope = temporalScope;
   }
@@ -1020,6 +1027,7 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(containerIssued, dataset.containerIssued)
            && Objects.equals(geographicScope, dataset.geographicScope)
            && Objects.equals(taxonomicScope, dataset.taxonomicScope)
+           && Objects.equals(taxonomicGroupScope, dataset.taxonomicGroupScope)
            && Objects.equals(temporalScope, dataset.temporalScope)
            && Objects.equals(confidence, dataset.confidence)
            && Objects.equals(completeness, dataset.completeness)
@@ -1038,7 +1046,7 @@ public class Dataset extends DataEntity<Integer> {
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
-      geographicScope, taxonomicScope, temporalScope, confidence, completeness, license, url, logo,
+      geographicScope, taxonomicScope, taxonomicGroupScope, temporalScope, confidence, completeness, license, url, logo,
       urlFormatter, conversion,  source);
   }
 
