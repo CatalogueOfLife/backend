@@ -143,13 +143,17 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
    *
+   * Ignores IDs and names which are exactly the same as the NeoUsage t - often the terms are used to point to itself for accepted names or basionyms.
+   *
    * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
   private List<RankedUsage> usagesByIdOrName(VerbatimRecord v, NeoUsage t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedUsage> usages = Lists.newArrayList();
     final String unsplitIds = v.getRaw(idTerm);
-    final boolean idPointsToSelf = unsplitIds != null && unsplitIds.equals(t.getId());
-    if (unsplitIds != null && !idPointsToSelf) {
+    boolean pointsToSelf = unsplitIds != null && unsplitIds.equals(t.getId());
+    if (pointsToSelf) return usages;
+
+    if (unsplitIds != null) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(idTerm)) {
         usages.addAll(usagesByIds(meta.getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), t));
       } else {
@@ -175,11 +179,15 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
     }
 
-    if (usages.isEmpty() && !idPointsToSelf) {
-      // try to setup rel via the name - but only if the ids did not point to itself already
-      RankedUsage ru = usageByName(nameTerm, v, t, createdNameOrigin);
-      if (ru != null) {
-        usages.add(ru);
+    if (usages.isEmpty() && v.hasTerm(nameTerm)) {
+      // try to setup rel via the name if it is different
+      String relatedName = v.get(nameTerm);
+      pointsToSelf = relatedName.equals(t.usage.getName().getScientificName());
+      if (!pointsToSelf) {
+        RankedUsage ru = usageByName(nameTerm, v, t, createdNameOrigin);
+        if (ru != null) {
+          usages.add(ru);
+        }
       }
     }
     return usages;
@@ -280,7 +288,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return usageMatches;
   }
-  
+
   private <T extends RankedName> T byName(DwcTerm term, VerbatimRecord v, RankedName source,
                                           boolean transformToUsages,
                                           Function<Node, T> getByNode,
