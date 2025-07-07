@@ -148,7 +148,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
   private List<RankedUsage> usagesByIdOrName(VerbatimRecord v, NeoUsage t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedUsage> usages = Lists.newArrayList();
     final String unsplitIds = v.getRaw(idTerm);
-    if (unsplitIds != null && !unsplitIds.equals(t.getId())) {
+    final boolean idPointsToSelf = unsplitIds != null && unsplitIds.equals(t.getId());
+    if (unsplitIds != null && !idPointsToSelf) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(idTerm)) {
         usages.addAll(usagesByIds(meta.getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), t));
       } else {
@@ -174,8 +175,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
     }
 
-    if (usages.isEmpty()) {
-      // try to setup rel via the name
+    if (usages.isEmpty() && !idPointsToSelf) {
+      // try to setup rel via the name - but only if the ids did not point to itself already
       RankedUsage ru = usageByName(nameTerm, v, t, createdNameOrigin);
       if (ru != null) {
         usages.add(ru);

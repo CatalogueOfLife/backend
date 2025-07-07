@@ -612,7 +612,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void testExternal() throws Exception {
 
     //normalize(Paths.get("/Users/markus/Desktop/antcat"));
-    normalize(URI.create("https://data.freshwaterbiodiversity.eu/ipt/archive.do?r=fada-annelida-oligochaeta"));
+    normalize(URI.create("https://ipt.laji.fi/archive.do?r=cfs"));
     //normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     //normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));
