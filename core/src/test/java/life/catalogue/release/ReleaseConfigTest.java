@@ -2,10 +2,14 @@ package life.catalogue.release;
 
 import life.catalogue.api.vocab.DatasetType;
 
+import life.catalogue.common.util.YamlUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,12 +20,17 @@ import static org.junit.Assert.*;
  */
 public class ReleaseConfigTest {
 
+  @Before
+  public void init() {
+    YamlUtils.setFailOnUnknownProperties(true);
+  }
+
   @Test
   public void testCfgBase() throws Exception {
     var cfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, URI.create("https://catalogueoflife.github.io/data/release-config.yaml"), true);
 
     assertNotNull(cfg);
-    //assertEquals("COL{date,yy.M}", cfg.metadata.alias);
+    assertEquals("COL{date,yy.M}", cfg.metadata.alias);
     assertNotNull(cfg.metadata.title);
     assertNotNull(cfg.metadata.description);
     assertNotNull(cfg.metadata.publisher);

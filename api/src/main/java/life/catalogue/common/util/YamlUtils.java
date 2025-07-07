@@ -27,6 +27,10 @@ public class YamlUtils {
     MAPPER.registerModule(new ApiModule());
   }
 
+  public static void setFailOnUnknownProperties(boolean failOnUnknownProperties) {
+    MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties);
+  }
+
   /**
    * Deserializes an object from a yaml input stream.
    */
