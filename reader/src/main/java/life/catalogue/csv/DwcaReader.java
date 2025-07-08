@@ -203,6 +203,14 @@ public class DwcaReader extends CsvReader {
   private void buildSchema(XMLStreamReader2 parser, boolean core) throws XMLStreamException, IOException {
     // rowType
     final Term rowType = VocabularyUtils.TF.findClassTerm(attr(parser, "rowType"));
+    if (rowType == null) {
+      if (core) {
+        throw new IllegalArgumentException("core rowType missing");
+      } else {
+        LOG.warn("No extension rowType found! Ignore");
+        return;
+      }
+    }
     if (core) {
       coreRowType = rowType;
     }
