@@ -75,8 +75,24 @@ public class NameUsageMatchV1 {
   }
 
   public static Optional<NameUsageMatchV1> createFrom(NameUsageMatch nameUsageMatch) {
-    if (nameUsageMatch == null)
+    if  (nameUsageMatch == null || nameUsageMatch.getUsage() == null){
+      return Optional.of(NameUsageMatchV1.builder()
+          .synonym(false)
+          .diagnostics(DiagnosticsV1.builder()
+              .matchType(MatchTypeV1.NONE)
+              .confidence(100)
+              .note("No name given")
+              .build())
+        .build());
+    }
+
+    try {
+      //check if usageKey is a number
+      Integer.parseInt(nameUsageMatch.getUsage().getKey());
+    } catch (NumberFormatException e) {
       return Optional.empty();
+    }
+
     try {
       NameUsageMatchV1Builder builder = NameUsageMatchV1.builder();
       builder.synonym(nameUsageMatch.isSynonym());

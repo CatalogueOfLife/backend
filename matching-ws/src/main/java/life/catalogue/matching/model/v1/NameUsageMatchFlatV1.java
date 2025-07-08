@@ -55,7 +55,15 @@ public class NameUsageMatchFlatV1 implements Serializable {
   private Integer speciesKey;
 
   public static Optional<NameUsageMatchFlatV1> createFrom(NameUsageMatch nameUsageMatch) {
-    if (nameUsageMatch == null || nameUsageMatch.getUsage() == null) return Optional.empty();
+
+    if (nameUsageMatch == null || nameUsageMatch.getUsage() == null){
+      NameUsageMatchFlatV1 match = new NameUsageMatchFlatV1();
+      match.setMatchType(NameUsageMatchV1.MatchTypeV1.NONE);
+      match.setConfidence(100);
+      match.setSynonym(false);
+      match.setNote("No name given");
+      return Optional.of(match);
+    }
 
     try {
       //check if usageKey is a number
