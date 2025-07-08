@@ -51,6 +51,7 @@ public class CleanupUtils {
     // remove all content within square or curly brackets
     x = BRACKET_PATTERN.matcher(x).replaceAll("");
     x = SPACE_MATCHER.trimAndCollapseFrom(x, ' ');
+    x = x.replaceAll("_+", " ");
     // normalise unicode into NFC
     x = Normalizer.normalize(x, Normalizer.Form.NFC);
 

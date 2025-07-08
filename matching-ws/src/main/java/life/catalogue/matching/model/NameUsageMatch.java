@@ -97,6 +97,9 @@ public class NameUsageMatch implements RankNameResolver {
   }
 
   public String getHigherRankKey(Rank rank) {
+    if (this.getClassification() == null || this.getClassification().isEmpty()) {
+      return null;
+    }
     return this.getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
