@@ -104,7 +104,7 @@ public class DatasetSourceResource {
   @Path("/{id}/metrics")
   public ImportMetrics projectSourceMetrics(@PathParam("key") int datasetKey,
                                             @PathParam("id") int id,
-                                            @QueryParam("merged") boolean merged
+                                            @QueryParam("merged") Boolean merged
   ) {
     return sourceDao.sourceMetrics(datasetKey, id, merged);
   }
