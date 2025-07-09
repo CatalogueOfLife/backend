@@ -55,7 +55,8 @@ public class MatchingDao {
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.isNotBlank(name.getAuthorship()) && !norm(name.getAuthorship()).equals(norm(t.getName().getAuthorship()))) {
+      String normedAuthorship = norm(name.getAuthorship());
+      if (StringUtils.isNotBlank(normedAuthorship) && !normedAuthorship.equals(norm(t.getName().getAuthorship()))) {
         result.ignore(t, "Authorship differs");
         continue;
       }
