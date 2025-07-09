@@ -35,7 +35,8 @@ public class MatchingDao {
   }
 
   private static String norm(String x) {
-    return x == null ? null : removePunctWS(x).toLowerCase();
+    x = removePunctWS(x);
+    return x == null ? null : x.toLowerCase();
   }
 
   /**
