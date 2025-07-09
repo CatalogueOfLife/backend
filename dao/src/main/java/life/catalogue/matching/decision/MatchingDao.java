@@ -1,5 +1,7 @@
 package life.catalogue.matching.decision;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.model.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
@@ -34,9 +36,13 @@ public class MatchingDao {
     nMapper = session.getMapper(NameMapper.class);
   }
 
-  private static String norm(String x) {
+  @VisibleForTesting
+  protected static String norm(String x) {
     x = removePunctWS(x);
-    return x == null ? null : x.toLowerCase();
+    if (x != null) {
+      x = x.toLowerCase();
+    }
+    return StringUtils.trimToEmpty(x);
   }
 
   /**
