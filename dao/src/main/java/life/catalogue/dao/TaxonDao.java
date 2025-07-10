@@ -777,7 +777,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         .findFirst().orElse(Rank.DOMAIN);
     }
     if (Rank.GENUS.higherOrEqualsTo(rank)) {
-      throw new NotFoundException("Breakdown for taxon " + key + " does not exist");
+      throw new NotFoundException("Breakdown only available for suprageneric names, not " + tax);
     }
     // figure out the next lower 2 linnean ranks to breakdown to
     Set<Rank> ranks = new HashSet<>();
