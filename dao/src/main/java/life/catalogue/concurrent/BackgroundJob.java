@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.config.MailConfig;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -222,6 +224,15 @@ public abstract class BackgroundJob implements Runnable {
   @VisibleForTesting
   public void setError(Exception error) {
     this.error = error;
+  }
+
+  public String getErrorStackTrace() {
+    StringWriter sw = new StringWriter();
+    if (error != null) {
+      PrintWriter pw = new PrintWriter(sw);
+      error.printStackTrace(pw);
+    }
+    return sw.toString();
   }
 
   public LocalDateTime getCreated() {

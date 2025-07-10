@@ -50,6 +50,12 @@ public class MailConfig {
   public String replyTo;
 
   /**
+   * URL to the COL user mailing list
+   */
+  @NotNull
+  public String mailinglist;
+
+  /**
    * Optional address to sent mails to when background jobs throw an error
    */
   public String onErrorTo;

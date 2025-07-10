@@ -2,12 +2,26 @@ Thanks,
 ${fromName!"ChecklistBank"}
 
 
-<#if dataset??>
+<#if job.dataset?has_content>
 ---
-${dataset.title}<#if dataset.version??>, version ${dataset.version}</#if>:
-https://www.checklistbank.org/dataset/${dataset.key?c}
+${job.dataset.title}<#if job.dataset.version??>, version ${job.dataset.version}</#if>:
+https://www.${domain!"checklistbank.org"}/dataset/${job.dataset.key?c}
+</#if>
+<#if job.dataset2?has_content>
+---
+${job.dataset2.title}<#if job.dataset2.version??>, version ${job.dataset2.version}</#if>:
+https://www.${domain!"checklistbank.org"}/dataset/${job.dataset2.key?c}
 </#if>
 ---
-ChecklistBank: https://www.checklistbank.org
-Mailinglist: https://lists.gbif.org/mailman/listinfo/col-users
-Support : ${replyTo!}
+ChecklistBank: https://www.${domain!"checklistbank.org"}
+Mailinglist: ${mailinglist!"https://lists.gbif.org/mailman/listinfo/col-users"}
+Support : ${replyTo!support@catalogueoflife.org}
+
+<#if job.error?has_content>
+---
+Error Stacktrace:
+
+${job.errorStackTrace}
+---
+
+</#if>

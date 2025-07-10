@@ -1,4 +1,4 @@
-Hello ${user.firstname!user.lastname!user.username},
+<#include "header.ftl">
 
 Your ${job.jobName} ${job.key} was canceled.
 
