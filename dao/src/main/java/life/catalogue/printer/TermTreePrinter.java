@@ -40,7 +40,7 @@ abstract class TermTreePrinter extends AbstractTreePrinter {
   private boolean showTaxGroups = false;
   private static final TaxGroupAnalyzer tgAnalyzer = new TaxGroupAnalyzer();
   protected TermWriter tw;
-  private List<SimpleName> rootClassification;
+  private List<SimpleName> rootClassification = Collections.emptyList();
 
   public TermTreePrinter(TreeTraversalParameter params, @Nullable  Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
@@ -61,11 +61,15 @@ abstract class TermTreePrinter extends AbstractTreePrinter {
    * This is needed when only a part of a dataset is printed and no information about the entire classification is found in the parents stack.
    */
   public void setRootClassification(List<SimpleName> classification, boolean reverse) throws IOException {
-    var list = new ArrayList<>(classification);
-    if (reverse) {
-      Collections.reverse(list);
+    if (classification == null) {
+      rootClassification = Collections.emptyList();
+    } else {
+      var list = new ArrayList<>(classification);
+      if (reverse) {
+        Collections.reverse(list);
+      }
+      rootClassification = List.copyOf(list);
     }
-    this.rootClassification = List.copyOf(list);
   }
 
   /**
