@@ -1,10 +1,8 @@
 package life.catalogue.printer;
 
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.dao.TaxonCounter;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -20,9 +18,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.*;
 
-public class NameParentPrinterTest {
+public class NameParentPrinterIT {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();

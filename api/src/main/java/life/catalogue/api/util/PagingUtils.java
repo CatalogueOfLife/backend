@@ -6,7 +6,7 @@ import life.catalogue.api.model.ResultPage;
 import java.util.Iterator;
 import java.util.function.Function;
 
-public class PagingUtil {
+public class PagingUtils {
   
   public static <T> Iterator<T> pageAll(Function<Page, ResultPage<T>> func) {
     return new ResultPageIterator<T>(func);

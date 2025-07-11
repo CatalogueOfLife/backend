@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-07-11 add tax groups to export props
+```sql
+ALTER TABLE dataset_export ADD COLUMN add_tax_group BOOLEAN NOT NULL DEFAULT FALSE; 
+```
+
 #### 2025-07-07 dataset groups
 ```sql
 CREATE TYPE TAXGROUP AS ENUM (

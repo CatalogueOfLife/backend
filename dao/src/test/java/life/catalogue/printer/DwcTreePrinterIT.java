@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class DwcTreePrinterTest {
+public class DwcTreePrinterIT {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();

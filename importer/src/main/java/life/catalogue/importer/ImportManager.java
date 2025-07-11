@@ -7,7 +7,7 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.util.PagingUtil;
+import life.catalogue.api.util.PagingUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.ImportState;
@@ -450,7 +450,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     List<ImportRequest> requests = new ArrayList<>();
     var req = new JobSearchRequest();
     req.setStates(Set.copyOf(ImportState.runningAndWaitingStates()));
-    Iterator<DatasetImport> iter = PagingUtil.pageAll(p -> dao.list(req, p), 100);
+    Iterator<DatasetImport> iter = PagingUtils.pageAll(p -> dao.list(req, p), 100);
     while (iter.hasNext()) {
       DatasetImport di = iter.next();
       // only reschedule import jobs, no releases

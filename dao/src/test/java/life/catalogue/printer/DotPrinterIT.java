@@ -21,14 +21,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class JsonTreePrinterTest {
-  
+public class DotPrinterIT {
+
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
-  
+
   @Rule
   public final TestDataRule testDataRule = TestDataRule.tree();
-  
+
   @Test
   public void print() throws IOException {
     Writer writer = new StringWriter();
@@ -38,13 +38,11 @@ public class JsonTreePrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(JsonTreePrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
+    int count = PrinterFactory.dataset(DotPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
       Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
-    String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.json"));
-    // properties label and labelHtml change their order in the serialization. Lets focus on labelHtml
-    String got = writer.toString().replaceAll(",\"label\":\"[^\"]+\"", "");
-    assertEquals(expected, got);
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.dot"));
+    assertEquals(expected, writer.toString());
   }
 }

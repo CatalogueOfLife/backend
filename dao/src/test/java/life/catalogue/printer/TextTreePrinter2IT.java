@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class TextTreePrinter2Test {
+public class TextTreePrinter2IT {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();

@@ -42,7 +42,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
   protected final TaxonCounter taxonCounter; // method to do the counting
   protected final SqlSessionFactory factory;
   protected SqlSession session;
-  protected final boolean ordered;
+  protected final boolean ordered; // ordered for classification processing
 
   /**
    * @param ordered if true does a more expensive depth first traversal with ordered children

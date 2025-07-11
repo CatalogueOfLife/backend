@@ -1007,6 +1007,7 @@ CREATE TABLE dataset_export (
   excel BOOLEAN NOT NULL,
   extended BOOLEAN NOT NULL,
   add_classification BOOLEAN NOT NULL,
+  add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 

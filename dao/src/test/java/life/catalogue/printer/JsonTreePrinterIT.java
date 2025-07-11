@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class JsonFlatPrinterTest {
+public class JsonTreePrinterIT {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -38,10 +38,11 @@ public class JsonFlatPrinterTest {
         return 999;
       }
     };
-    int count = PrinterFactory.dataset(JsonFlatPrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null, Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    int count = PrinterFactory.dataset(JsonTreePrinter.class, TreeTraversalParameter.dataset(TestDataRule.TREE.key), null, null,
+      Rank.SPECIES, taxonCounter, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
     assertEquals(24, count);
     System.out.println(writer);
-    String expected = UTF8IoUtils.readString(Resources.stream("trees/flat.json"));
+    String expected = UTF8IoUtils.readString(Resources.stream("trees/tree.json"));
     // properties label and labelHtml change their order in the serialization. Lets focus on labelHtml
     String got = writer.toString().replaceAll(",\"label\":\"[^\"]+\"", "");
     assertEquals(expected, got);

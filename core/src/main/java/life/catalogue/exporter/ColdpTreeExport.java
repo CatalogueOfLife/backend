@@ -3,15 +3,15 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.img.ImageService;
-import life.catalogue.printer.DwcTreePrinter;
+import life.catalogue.printer.ColdpTreePrinter;
 
 import java.io.IOException;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-public class DwcTreeExport extends PrinterExport<DwcTreePrinter> {
-  public DwcTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {
-    super(DwcTreePrinter.class, "dwc tree", DataFormat.DWCA, req, userKey, factory, cfg, imageService);
+public class ColdpTreeExport extends PrinterExport<ColdpTreePrinter> {
+  public ColdpTreeExport(ExportRequest req, int userKey, SqlSessionFactory factory, ExporterConfig cfg, ImageService imageService) {
+    super(ColdpTreePrinter.class, "coldp tree", DataFormat.COLDP, req, userKey, factory, cfg, imageService);
   }
 
   @Override
@@ -20,7 +20,7 @@ public class DwcTreeExport extends PrinterExport<DwcTreePrinter> {
   }
 
   @Override
-  void modifyPrinter(DwcTreePrinter printer) throws IOException {
+  void modifyPrinter(ColdpTreePrinter printer) throws IOException {
     if (req.isTaxGroups()) {
       printer.showTaxGroups();
     }

@@ -16,11 +16,11 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class DatasetDiffServiceTest extends BaseDiffServiceTest<Integer> {
+public class DatasetDiffServiceIT extends BaseDiffServiceIT<Integer> {
   static int attemptCnt;
   final DatasetDiffService diffService;
 
-  public DatasetDiffServiceTest() {
+  public DatasetDiffServiceIT() {
     diffService = new DatasetDiffService(factory(), new FileMetricsDatasetDao(factory(), treeRepoRule.getRepo()), 10);
     diff = diffService;
   }

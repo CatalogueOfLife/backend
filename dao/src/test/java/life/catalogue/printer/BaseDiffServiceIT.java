@@ -17,11 +17,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public abstract class BaseDiffServiceTest<K> extends DaoTestBase {
+public abstract class BaseDiffServiceIT<K> extends DaoTestBase {
 
   BaseDiffService<K> diff;
 
-  public BaseDiffServiceTest() {
+  public BaseDiffServiceIT() {
     super(TestDataRule.tree());
   }
 

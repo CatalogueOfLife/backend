@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RowTermPrinterTest {
+public class RowTermPrinterIT {
   
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();

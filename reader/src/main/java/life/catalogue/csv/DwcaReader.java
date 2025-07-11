@@ -1,6 +1,7 @@
 package life.catalogue.csv;
 
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.collection.MapUtils;
@@ -84,16 +85,7 @@ public class DwcaReader extends CsvReader {
   
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc", "dwca");
-    detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
-                                                            .put(DwcTerm.kingdom, Rank.KINGDOM)
-                                                            .put(DwcTerm.phylum, Rank.PHYLUM)
-                                                            .put(DwcTerm.class_, Rank.CLASS)
-                                                            .put(DwcTerm.order, Rank.ORDER)
-                                                            .put(DwcTerm.family, Rank.FAMILY)
-                                                            .put(DwcTerm.genus, Rank.GENUS)
-                                                            .put(DwcTerm.subgenus, Rank.SUBGENUS)
-                                                            .build()
-    );
+    detectMappedClassification(ColdpTerm.Taxon, RankUtils.RANK2DWC.inverse());
   }
   
   public static DwcaReader from(Path folder) throws IOException {

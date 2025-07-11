@@ -20,7 +20,7 @@ import org.reflections.scanners.Scanners;
 
 import static org.junit.Assert.assertNotNull;
 
-public class PrinterFactoryTest {
+public class PrinterFactoryIT {
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
 

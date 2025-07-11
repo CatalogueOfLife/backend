@@ -3,10 +3,10 @@ package life.catalogue.printer;
 import life.catalogue.api.model.DSID;
 import life.catalogue.dao.FileMetricsSectorDao;
 
-public class SectorDiffServiceTest extends BaseDiffServiceTest<DSID<Integer>> {
+public class SectorDiffServiceIT extends BaseDiffServiceIT<DSID<Integer>> {
   static int attemptCnt;
 
-  public SectorDiffServiceTest() {
+  public SectorDiffServiceIT() {
     diff = new SectorDiffService(factory(), new FileMetricsSectorDao(factory(), treeRepoRule.getRepo()), 10);
   }
 

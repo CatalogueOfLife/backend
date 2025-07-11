@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
@@ -94,8 +95,8 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.ordinal, t.getOrdinal());
       if (t.getClassification() != null) {
         for (var ht : t.getClassification()) {
-          if (ColdpReader.RANK2COLDP.containsKey(ht.getRank())) {
-            writer.set(ColdpReader.RANK2COLDP.get(ht.getRank()), ht.getName());
+          if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
+            writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
           }
         }
       }
