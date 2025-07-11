@@ -1575,9 +1575,9 @@ CREATE TABLE taxon_metrics (
   taxa_by_rank_count HSTORE,
   species_by_source_count HSTORE,
   classification SIMPLE_NAME[],
-  source_dataset_keys INTEGER[]
+  source_dataset_keys INTEGER[],
+  PRIMARY KEY (dataset_key, taxon_id)
 ) PARTITION BY HASH (dataset_key);
-CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
 CREATE INDEX ON taxon_metrics (dataset_key, lft);
 CREATE INDEX ON taxon_metrics (dataset_key, rgt);
 

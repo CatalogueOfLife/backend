@@ -16,7 +16,9 @@ and done it manually. So we can as well log changes here.
 
 #### 2025-07-11 add tax groups to export props
 ```sql
-ALTER TABLE dataset_export ADD COLUMN add_tax_group BOOLEAN NOT NULL DEFAULT FALSE; 
+ALTER TABLE dataset_export ADD COLUMN add_tax_group BOOLEAN NOT NULL DEFAULT FALSE;
+DROP INDEX taxon_metrics_dataset_key_taxon_id_idx;
+ALTER TABLE taxon_metrics ADD PRIMARY KEY (dataset_key, taxon_id);
 ```
 
 #### 2025-07-07 dataset groups

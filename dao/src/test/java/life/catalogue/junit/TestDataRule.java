@@ -413,6 +413,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
       st.execute("TRUNCATE \"user\" CASCADE");
       session.getConnection().commit();
       st.execute("TRUNCATE dataset CASCADE"); // this should cascade to all data partitions, but to make sure we also do:
+      st.execute("TRUNCATE taxon_metrics CASCADE");
       st.execute("TRUNCATE name_usage CASCADE");
       st.execute("TRUNCATE name CASCADE");
       st.execute("TRUNCATE reference CASCADE");

@@ -31,9 +31,12 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
 
   @Test
   public void roundtrip() throws Exception {
+    final int datasetKey=TestEntityGenerator.TAXON1.getDatasetKey();
+    mapper().deleteByDataset(datasetKey);
+
     TaxonMetrics tm1 = new TaxonMetrics();
     tm1.setId(TestEntityGenerator.TAXON1.getId());
-    tm1.setDatasetKey(TestEntityGenerator.TAXON1.getDatasetKey());
+    tm1.setDatasetKey(datasetKey);
     tm1.setTaxonCount(23456);
     tm1.setMaxDepth(67);
     tm1.setDepth(13);
