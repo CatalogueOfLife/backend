@@ -21,6 +21,7 @@ public class DwcTreeExport extends PrinterExport<DwcTreePrinter> {
 
   @Override
   void modifyPrinter(DwcTreePrinter printer) throws IOException {
+    printer.setRootClassification(getExport().getClassification(), true);
     if (req.isTaxGroups()) {
       printer.showTaxGroups();
     }

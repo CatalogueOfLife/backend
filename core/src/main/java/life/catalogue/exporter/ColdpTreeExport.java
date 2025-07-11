@@ -21,6 +21,7 @@ public class ColdpTreeExport extends PrinterExport<ColdpTreePrinter> {
 
   @Override
   void modifyPrinter(ColdpTreePrinter printer) throws IOException {
+    printer.setRootClassification(getExport().getClassification(), true);
     if (req.isTaxGroups()) {
       printer.showTaxGroups();
     }

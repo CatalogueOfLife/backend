@@ -15,7 +15,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
@@ -25,6 +24,7 @@ import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +40,7 @@ abstract class TermTreePrinter extends AbstractTreePrinter {
   private boolean showTaxGroups = false;
   private static final TaxGroupAnalyzer tgAnalyzer = new TaxGroupAnalyzer();
   protected TermWriter tw;
+  private List<SimpleName> rootClassification;
 
   public TermTreePrinter(TreeTraversalParameter params, @Nullable  Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
@@ -52,6 +53,19 @@ abstract class TermTreePrinter extends AbstractTreePrinter {
    */
   public void showTaxGroups() throws IOException {
     this.showTaxGroups = true;
+  }
+
+  /**
+   * Sets a root classification to include with every record.
+   * Expects the list to start with the highest, root taxon. You can supply the inverse ordering when you set the reverse flag to true.
+   * This is needed when only a part of a dataset is printed and no information about the entire classification is found in the parents stack.
+   */
+  public void setRootClassification(List<SimpleName> classification, boolean reverse) throws IOException {
+    var list = new ArrayList<>(classification);
+    if (reverse) {
+      Collections.reverse(list);
+    }
+    this.rootClassification = List.copyOf(list);
   }
 
   /**
@@ -69,7 +83,11 @@ abstract class TermTreePrinter extends AbstractTreePrinter {
     if (tw == null) {
       initWriter();
     }
-    List<SimpleName> cl = parents.stream().map(s -> s.sn).collect(Collectors.toList());
+    final List<SimpleName> cl = new ArrayList<>();
+    if (rootClassification != null && !rootClassification.isEmpty()) {
+      cl.addAll(rootClassification);
+    }
+    cl.addAll(parents.stream().map(s -> s.sn).collect(Collectors.toList()));
     writeRow(sn, cl);
     if (showTaxGroups) {
       try {

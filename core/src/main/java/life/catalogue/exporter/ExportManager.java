@@ -79,12 +79,12 @@ public class ExportManager implements DatasetListener {
     switch (req.getFormat()) {
       case COLDP:
         job = req.isExtended() ? new ColdpExtendedExport(req, userKey, factory, cfg, imageService) :
-                req.isClassification() ? new ColdpTreeExport(req, userKey, factory, cfg, imageService) :
+                Boolean.TRUE.equals(req.isClassification()) ? new ColdpTreeExport(req, userKey, factory, cfg, imageService) :
                   ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
         job = req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
-                req.isClassification() ? new DwcTreeExport(req, userKey, factory, cfg, imageService) :
+              Boolean.TRUE.equals(req.isClassification()) ? new DwcTreeExport(req, userKey, factory, cfg, imageService) :
                     DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
