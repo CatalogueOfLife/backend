@@ -9,7 +9,7 @@ import life.catalogue.junit.TestDataRule;
 
 import org.junit.Test;
 
-public class DwcaSimpleExportTest extends ExportTest {
+public class DwcaSimpleExportIT extends ExportTest {
 
   @Test
   public void dataset() {

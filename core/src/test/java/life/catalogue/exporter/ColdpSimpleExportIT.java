@@ -15,13 +15,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ColdpExtendedExportTest extends ExportTest {
+public class ColdpSimpleExportIT extends ExportTest {
   ExportRequest req;
 
   @Before
   public void initReq()  {
     req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.COLDP);
-    req.setExtended(true);
+    req.setExtended(false);
     // add CSL data to refs to test CSL export
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       ReferenceMapper rm = session.getMapper(ReferenceMapper.class);
@@ -41,7 +41,7 @@ public class ColdpExtendedExportTest extends ExportTest {
 
   @Test
   public void dataset() {
-    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    var exp = ColdpSimpleExport.build(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertExportExists(exp.getArchive());
@@ -50,18 +50,10 @@ public class ColdpExtendedExportTest extends ExportTest {
   @Test
   public void bareName() {
     req.setBareNames(true);
-    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
+    var exp = ColdpSimpleExport.build(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
     exp.run();
 
     assertExportExists(exp.getArchive());
   }
 
-  @Test
-  public void excel() {
-    req.setExcel(true);
-    ColdpExtendedExport exp = new ColdpExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
-    exp.run();
-
-    assertExportExists(exp.getArchive());
-  }
 }

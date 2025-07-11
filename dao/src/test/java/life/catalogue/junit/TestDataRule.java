@@ -515,7 +515,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
 
   private void copyDataset(PgConnection pgc, int key) throws IOException, SQLException {
     LOG.debug("Copy dataset {}", key);
-    copyPartitionedTable(pgc, "verbatim", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
+    copyPartitionedTable(pgc, "verbatim", key, datasetDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "reference", key, datasetEntityDefaults(key), Collections.emptyList());
 
     List<CsvFunction> nameFuncs = testData.parseNames ?
@@ -533,6 +533,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     copyPartitionedTable(pgc, "verbatim_source", key, ImmutableMap.of("dataset_key", key), Collections.emptyList());
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "taxon_metrics", key, datasetDefaults(key), Collections.emptyList());
   }
 
   class NameParserFunc implements CsvFunction {
@@ -616,6 +617,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
   private static String str(List<String> arr) {
     return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
+  }
+
+  private Map<String, Object> datasetDefaults(int datasetKey) {
+    return ImmutableMap.of("dataset_key", datasetKey);
   }
 
   private Map<String, Object> datasetEntityDefaults(int datasetKey) {

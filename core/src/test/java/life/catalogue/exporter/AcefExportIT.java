@@ -26,7 +26,7 @@ import org.junit.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class AcefExportTest extends ExportTest {
+public class AcefExportIT extends ExportTest {
   
   File arch;
 

@@ -1,32 +1,25 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.Users;
-import life.catalogue.img.ImageService;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
+import life.catalogue.api.util.RankUtils;
+import life.catalogue.api.vocab.EntityType;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-public class DwcaExtendedExportTest extends ExportTest {
+import static org.junit.Assert.assertTrue;
 
-  @Test
-  public void dataset() {
-    DwcaExtendedExport exp = new DwcaExtendedExport(new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA), Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
-    exp.run();
+public class DwcaExtendedExportTest {
 
-    assertExportExists(exp.getArchive());
-  }
-
-  @Test
-  public void withBareNames() {
-    var req = new ExportRequest(TestDataRule.APPLE.key, DataFormat.DWCA);
-    req.setBareNames(true);
-    DwcaExtendedExport exp = new DwcaExtendedExport(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), cfg, ImageService.passThru());
-    exp.run();
-
-    assertExportExists(exp.getArchive());
-  }
-
+    @Test
+    public void dwcRankTerms() {
+      var exp = new DwcaExtendedExport(new ExportRequest(), 1, null, null, null);
+      var terms = exp.define(EntityType.NAME_USAGE);
+      var set = Arrays.stream(terms).collect(Collectors.toSet());
+      for (var term : RankUtils.RANK2DWC.values()) {
+        assertTrue(set.contains(term));
+      }
+    }
 }
