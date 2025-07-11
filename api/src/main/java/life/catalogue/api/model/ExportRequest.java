@@ -137,6 +137,7 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
+  @JsonIgnore
   public boolean isForce() {
     return force;
   }
@@ -149,6 +150,7 @@ public class ExportRequest {
    * @return true if the requested output requires ordered tree traversal.
    * Typically when the full classification per row is required.
    */
+  @JsonIgnore
   public boolean isTreeRequest() {
     return Boolean.TRUE.equals(classification) || Boolean.TRUE.equals(taxGroups);
   }
@@ -156,6 +158,7 @@ public class ExportRequest {
   /**
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
+  @JsonIgnore
   public boolean hasFilter() {
     return !synonyms || extinct!=null || bareNames || root!=null || minRank!=null;
   }
