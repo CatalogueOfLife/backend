@@ -103,6 +103,9 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.family,
           DwcTerm.subfamily,
           DwcTerm.tribe,
+          DwcTerm.subtribe,
+          DwcTerm.genus,
+          DwcTerm.subgenus,
           DwcTerm.taxonRemarks,
           DcTerm.references
         };
