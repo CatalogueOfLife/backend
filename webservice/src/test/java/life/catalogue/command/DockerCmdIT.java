@@ -7,9 +7,9 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class DockerCmdTest extends CmdTestBase {
+public class DockerCmdIT extends CmdTestBase {
 
-  public DockerCmdTest() {
+  public DockerCmdIT() {
     super(DockerCmd::new);
   }
   

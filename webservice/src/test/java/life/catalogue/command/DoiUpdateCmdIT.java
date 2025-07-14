@@ -7,9 +7,9 @@ import static org.junit.Assert.assertTrue;
 /**
  *
  */
-public class DoiUpdateCmdTest extends CmdTestBase {
+public class DoiUpdateCmdIT extends CmdTestBase {
 
-  public DoiUpdateCmdTest() {
+  public DoiUpdateCmdIT() {
     super(DoiUpdateCmd::new);
   }
   

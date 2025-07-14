@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertTrue;
 
 @Ignore("With pg17.2 FK constraints are also checked for detached partitions and the CMD is broken !!!")
-public class RepartitionCmdTest extends CmdTestBase {
+public class RepartitionCmdIT extends CmdTestBase {
 
   @ClassRule
   public static final PgSetupRule pgSetupRule = new PgSetupRule();
@@ -19,7 +19,7 @@ public class RepartitionCmdTest extends CmdTestBase {
   @Rule
   public final TestDataRule testDataRule = TestDataRule.apple();
 
-  public RepartitionCmdTest() {
+  public RepartitionCmdIT() {
     super(RepartitionCmd::new);
   }
 

@@ -4,9 +4,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class InfoCmdTest extends CmdTestBase {
+public class InfoCmdIT extends CmdTestBase {
 
-  public InfoCmdTest() {
+  public InfoCmdIT() {
     super(InfoCmd::new);
   }
 
