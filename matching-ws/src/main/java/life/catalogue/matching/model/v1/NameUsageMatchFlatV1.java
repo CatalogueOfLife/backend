@@ -61,7 +61,20 @@ public class NameUsageMatchFlatV1 implements Serializable {
       match.setMatchType(NameUsageMatchV1.MatchTypeV1.NONE);
       match.setConfidence(100);
       match.setSynonym(false);
-      match.setNote("No name given");
+      if (nameUsageMatch != null && nameUsageMatch.getDiagnostics() != null) {
+        match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
+        match.setMatchType(NameUsageMatchV1.MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
+        match.setNote(nameUsageMatch.getDiagnostics().getNote());
+        if (nameUsageMatch.getDiagnostics().getAlternatives() != null && !nameUsageMatch.getDiagnostics().getAlternatives().isEmpty()) {
+          //create alternatives from diagnostics
+          match.setAlternatives(
+            nameUsageMatch.getDiagnostics().getAlternatives().stream()
+              .map(NameUsageMatchFlatV1::createFrom)
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .collect(Collectors.toList()));
+        }
+      }
       return Optional.of(match);
     }
 
@@ -87,13 +100,14 @@ public class NameUsageMatchFlatV1 implements Serializable {
     match.setConfidence(nameUsageMatch.getDiagnostics().getConfidence());
     match.setNote(nameUsageMatch.getDiagnostics().getNote());
     match.setMatchType(NameUsageMatchV1.MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
-    if (nameUsageMatch.getDiagnostics().getAlternatives() != null)
+    if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
       match.setAlternatives(
-          nameUsageMatch.getDiagnostics().getAlternatives().stream()
-              .map(NameUsageMatchFlatV1::createFrom)
-              .filter(Optional::isPresent)
-              .map(Optional::get)
-              .collect(Collectors.toList()));
+        nameUsageMatch.getDiagnostics().getAlternatives().stream()
+          .map(NameUsageMatchFlatV1::createFrom)
+          .filter(Optional::isPresent)
+          .map(Optional::get)
+          .collect(Collectors.toList()));
+    }
     match.setKingdom(nameUsageMatch.nameFor(Rank.KINGDOM));
     match.setPhylum(nameUsageMatch.nameFor(Rank.PHYLUM));
     match.setClazz(nameUsageMatch.nameFor(Rank.CLASS));

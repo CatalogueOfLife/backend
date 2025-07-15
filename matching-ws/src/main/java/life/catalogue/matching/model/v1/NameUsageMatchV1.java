@@ -76,14 +76,29 @@ public class NameUsageMatchV1 {
 
   public static Optional<NameUsageMatchV1> createFrom(NameUsageMatch nameUsageMatch) {
     if  (nameUsageMatch == null || nameUsageMatch.getUsage() == null){
-      return Optional.of(NameUsageMatchV1.builder()
-          .synonym(false)
-          .diagnostics(DiagnosticsV1.builder()
-              .matchType(MatchTypeV1.NONE)
-              .confidence(100)
-              .note("No name given")
-              .build())
-        .build());
+
+      NameUsageMatchV1Builder builder = NameUsageMatchV1.builder();
+      builder.synonym(false);
+      if (nameUsageMatch != null && nameUsageMatch.getDiagnostics() != null) {
+        DiagnosticsV1.DiagnosticsV1Builder diagBuilder = DiagnosticsV1.builder();
+        diagBuilder.matchType(MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
+        diagBuilder.confidence(nameUsageMatch.getDiagnostics().getConfidence());
+        diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getUsage().getStatus()));
+        diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
+        diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
+
+        if (nameUsageMatch.getDiagnostics().getAlternatives() != null) {
+          List<NameUsageMatchV1> alts = nameUsageMatch.getDiagnostics().getAlternatives().stream()
+            .map(NameUsageMatchV1::createFrom)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+          diagBuilder.alternatives(alts);
+        }
+        builder.diagnostics(diagBuilder.build());
+        builder.issues(nameUsageMatch.getDiagnostics().getIssues());
+      }
+      return Optional.of(builder.build());
     }
 
     try {
@@ -167,6 +182,8 @@ public class NameUsageMatchV1 {
           return MatchTypeV1.HIGHERRANK;
         case AMBIGUOUS:
           return MatchTypeV1.PARTIAL;
+        case NONE:
+          return MatchTypeV1.NONE;
         default:
           return null;
       }
