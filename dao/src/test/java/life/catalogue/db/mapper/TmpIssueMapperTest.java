@@ -1,9 +1,11 @@
 package life.catalogue.db.mapper;
 
-import org.junit.jupiter.api.Test;
+import life.catalogue.api.vocab.Datasets;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+/**
+ * Just doing sql sanity checks, no data assertions
+ */
 public class TmpIssueMapperTest extends MapperTestBase<TmpIssueMapper> {
 
   public TmpIssueMapperTest() {
@@ -11,8 +13,14 @@ public class TmpIssueMapperTest extends MapperTestBase<TmpIssueMapper> {
   }
 
   @Test
-  public void createTmpIssuesTable() {
-    mapper().createTmpIssuesTable(testDataRule.testData.key, null);
+  public void external() throws Exception {
+    mapper().createTmpIssuesTable(12, null);
+    mapper().processIssues();
   }
 
+  @Test
+  public void project() throws Exception {
+    mapper().createTmpIssuesTable(Datasets.COL, null);
+    mapper().processIssues();
+  }
 }
