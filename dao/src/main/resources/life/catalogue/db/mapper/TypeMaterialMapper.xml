@@ -46,6 +46,7 @@
   <sql id="COLS_COPY">
     ${alias}id,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}citation,
     ${alias}status,
     ${alias}locality,
@@ -74,6 +75,7 @@
     #{nameId},
     #{id},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{citation},
     #{status}::TYPESTATUS,
     #{locality},

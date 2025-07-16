@@ -86,6 +86,7 @@
   <sql id="COLS_COPY">
     ${alias}identifier,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}scientific_name,
     ${alias}scientific_name_normalized,
     ${alias}authorship,
@@ -132,6 +133,7 @@
     #{id},
     #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{scientificName},
     #{scientificNameNormalized},
     #{authorship},

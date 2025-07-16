@@ -74,7 +74,7 @@
   </update>
 
   <update id="createTmpSourcesTableFromVerbatim" parameterType="map">
-    CREATE TEMPORARY TABLE tmp_usage_sources (id TEXT, issues ISSUE[]);
+    CREATE TEMPORARY TABLE tmp_usage_sources (id TEXT, groups INFOGROUP[], sources int[]);
   </update>
 
 

@@ -33,6 +33,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     name,
     latin,
     language,
@@ -50,6 +51,7 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.name},
     #{obj.latin},
     #{obj.language},

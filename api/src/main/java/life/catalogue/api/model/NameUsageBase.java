@@ -110,6 +110,14 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   }
 
   @Override
+  public void setDatasetKey(Integer datasetKey) {
+    super.setDatasetKey(datasetKey);
+    if (hasName()) {
+      getName().setDatasetKey(datasetKey);
+    }
+  }
+
+  @Override
   public String getLabel() {
     return getLabel(false);
   }
@@ -182,6 +190,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       }
     }
     return sb.toString();
+  }
+
+  @JsonIgnore
+  public boolean hasName() {
+    return name != null;
   }
 
   @Override

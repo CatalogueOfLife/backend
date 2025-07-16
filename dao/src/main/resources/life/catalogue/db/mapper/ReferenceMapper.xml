@@ -29,6 +29,7 @@
   <sql id="COLS_COPY">
     ${alias}id,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}csl,
     ${alias}citation,
     ${alias}year,
@@ -41,6 +42,7 @@
     #{sectorKey},
     #{id},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{csl, typeHandler=life.catalogue.db.type.CslJsonHandler}::jsonb,
     #{citation},
     #{year},

@@ -32,6 +32,7 @@
   <sql id="COLS_COPY">
     related_taxon_scientific_name,
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -46,6 +47,7 @@
     #{relatedTaxonId},
     #{relatedTaxonScientificName},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::SPECIESINTERACTIONTYPE,
     #{referenceId},
     #{remarks},

@@ -31,6 +31,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     property,
     value,
     reference_id,
@@ -46,6 +47,7 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.property},
     #{obj.value},
     #{obj.referenceId},
