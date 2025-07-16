@@ -69,7 +69,7 @@ abstract class CRUDTestBase<K, V extends Entity<K>, M extends CRUD<K, V>> extend
     V u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
     removeDbCreatedProps(u1);
 
-    printDiff(u1, u2);
+    //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
   

@@ -240,7 +240,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
 
     DecisionMapperTest.removeCreatedProps(d1);
     DecisionMapperTest.removeCreatedProps(nodes.get(0).getDecision());
-    printDiff(d1, nodes.get(0).getDecision());
+    //printDiff(d1, nodes.get(0).getDecision());
     equals(d1, nodes.get(0).getDecision());
     
     nodes = mapper().classification(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t4"), true);

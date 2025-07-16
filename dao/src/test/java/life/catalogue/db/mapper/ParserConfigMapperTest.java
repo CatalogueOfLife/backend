@@ -52,7 +52,7 @@ public class ParserConfigMapperTest extends MapperTestBase<ParserConfigMapper> {
     commit();
 
     ParserConfig pc2 = removeDbCreatedProps(mapper().get(pc1.getId()));
-    printDiff(pc1, pc2);
+    //printDiff(pc1, pc2);
     assertEquals(pc1, pc2);
 
     mapper().delete(pc1.getId());

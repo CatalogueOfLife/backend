@@ -94,7 +94,7 @@ public class DuplicateMapperTest {
     EditorialDecision d = res.get(0).getDecision();
     assertNotNull(d);
     assertNotNull(d.getKey());
-    printDiff(DecisionMapperTest.removeCreatedProps(d), d1);
+    //printDiff(DecisionMapperTest.removeCreatedProps(d), d1);
     assertEquals(DecisionMapperTest.removeCreatedProps(d), d1);
 
     // now pointing decisions at an empty project

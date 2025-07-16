@@ -52,7 +52,7 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
     commit();
 
     TaxonMetrics tm2 = mapper().get(tm1.getKey());
-    printDiff(tm1, tm2);
+    //printDiff(tm1, tm2);
     assertEquals(tm1, tm2);
   }
 }
