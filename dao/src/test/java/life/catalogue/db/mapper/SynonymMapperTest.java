@@ -56,7 +56,7 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     insertName(n);
   
     Synonym syn = TestEntityGenerator.newSynonym(n, tax.getId());
-    return syn;
+    return rmAccTo(syn);
   }
   
   @Override
@@ -71,7 +71,13 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     obj.setOrigin(Origin.IMPLICIT_NAME);
     obj.setRemarks("traralala");
   }
-  
+
+  static Synonym rmAccTo(Synonym syn) {
+    syn.setAccordingTo(null);
+    syn.setAccordingToId(null);
+    return syn;
+  }
+
   @Test
   public void roundtrip2() {
     Name n = TestEntityGenerator.newName();
@@ -83,7 +89,8 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     t.setName(an);
     taxonMapper.create(t);
     
-    Synonym s1 = TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t.getId());
+    Synonym s1 = rmAccTo(TestEntityGenerator.newSynonym(TaxonomicStatus.SYNONYM, n, t.getId()));
+    s1.setAccordingTo(null);
     s1.setVerbatimKey(1);
     synonymMapper.create(s1);
     commit();
