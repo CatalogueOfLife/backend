@@ -1,6 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.EntityType;
@@ -17,6 +18,9 @@ import jakarta.validation.constraints.NotNull;
 
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
+
+import javax.annotation.Nullable;
 
 /**
  * Mapper that manages the verbatim_source and verbatim_source_secondary tables.
@@ -68,10 +72,8 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
 
   int updateIssues(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
-  int _addIssueInternal(@Param("key") DSID<Integer> key, @Param("issues") @NotNull Set<Issue> issues);
-
   /**
-   * Add an issue to an existing verbatim source record or create a new one.
+   * Add an issue to an existing verbatim source record.
    */
   default void addIssue(@Param("key") DSID<Integer> key, Issue issue) {
     if (issue != null) {
@@ -81,42 +83,32 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
     }
   }
 
-  default void addIssues(@Param("key") DSID<Integer> key, Set<Issue> issues) {
-    if (issues != null && !issues.isEmpty()) {
-      int mod = _addIssueInternal(key, issues);
-      if (mod < 1) {
-        VerbatimSource v = new VerbatimSource(key.getDatasetKey(), null, key.getId(), null, null);
-        v.getIssues().addAll(issues);
-        create(v);
-      }
-    }
-  }
+  /**
+   * Add some issues to an existing verbatim source record.
+   */
+  void addIssues(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
-  boolean exists(@Param("key") DSID<String> key);
+  boolean exists(@Param("key") DSID<Integer> key);
 
   /**
-   * @param key the key of the usage that has secondary sources
+   * @param key the verbatim source that has secondary sources
    * @param secondarySource the if of the secondary source record to add - must be an identifier for the secondarySourceEntity given
-   * @param secondarySourceEntity the entity of the secondary source that is added, e.g. usage, name or reference
    * @param groups the set of information groups this secondary source is responsible for
    */
-  default void insertSources(DSID<String> key, EntityType secondarySourceEntity, DSID<String> secondarySource, Set<InfoGroup> groups) {
+  default void insertSources(DSID<Integer> key, DSID<String> secondarySource, Set<InfoGroup> groups) {
     deleteSourceGroups(key, groups);
-    if (!exists(key)) {
-      VerbatimSource v = new VerbatimSource(key.getDatasetKey(), null, key.getId(), null, null);
-      create(v);
-    }
-    insertSource(key, secondarySourceEntity, secondarySource, groups);
+    insertSource(key, secondarySource, groups);
   }
 
+  /**
+   * List all secondary sources for a given verbatim source
+   */
   @MapKey("type")
   Map<InfoGroup, SecondarySource> getSources(@Param("key") DSID<Integer> key);
 
-  List<SecondarySource> list(@Param("key") DSID<String> key);
+  void insertSource(@Param("key") DSID<Integer> key, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
 
-  void insertSource(@Param("key") DSID<String> key, @Param("entity") EntityType sourceEntity, @Param("source") DSID<String> secondarySource, @Param("groups") Set<InfoGroup> groups);
-
-  void deleteSourceGroups(@Param("key") DSID<String> key, @Param("groups") Set<InfoGroup> groups);
+  void deleteSourceGroups(@Param("key") DSID<Integer> key, @Param("groups") Set<InfoGroup> groups);
 
   void deleteSources(@Param("key") DSID<Integer> key);
 

@@ -278,16 +278,18 @@ public abstract class TreeBaseHandler implements TreeHandler {
         parent = createImplicit(parent, (Taxon) u);
       }
     }
+    // track source
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
+    v.addIssues(issues);
+    vsm.create(v);
+    u.setVerbatimSourceKey(v.getId());
+    u.getName().setVerbatimSourceKey(v.getId());
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
       nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
-    // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
-    v.addIssues(issues);
-    vsm.create(v);
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());
@@ -730,6 +732,13 @@ public abstract class TreeBaseHandler implements TreeHandler {
         ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
         ref.applyUser(user);
+
+        // track source
+        VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), ref.getId(), EntityType.REFERENCE);
+        vsm.create(v);
+        ref.setVerbatimSourceKey(v.getId());
+
+        // copy
         DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user);
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();

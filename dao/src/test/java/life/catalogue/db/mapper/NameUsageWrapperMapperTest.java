@@ -42,6 +42,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
   @Test
   public void testGetComplete() throws Exception {
+    Taxon tax2 = new Taxon(TAXON2);
     DatasetMapper dm = mapper(DatasetMapper.class);
     Dataset d = dm.get(Datasets.COL);
     d.setGbifPublisherKey(UUID.randomUUID());
@@ -72,8 +73,8 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
     SectorMapper sm = mapper(SectorMapper.class);
     Sector s = new Sector();
-    s.setSubjectDatasetKey(TAXON2.getDatasetKey());
-    s.setSubject(TAXON2.toSimpleNameLink());
+    s.setSubjectDatasetKey(tax2.getDatasetKey());
+    s.setSubject(tax2.toSimpleNameLink());
     s.setDatasetKey(d.getKey());
     s.setTarget(t.toSimpleNameLink());
     s.applyUser(TestEntityGenerator.USER_USER);
@@ -84,7 +85,7 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
 
     commit();
 
-    NameUsageWrapper w = mapper().get(Datasets.COL, t.getId());
+    NameUsageWrapper w = mapper().get(Datasets.COL, true, t.getId());
     assertNotNull(w);
     assertNotNull(w.getUsage());
     Taxon wt = (Taxon) w.getUsage();
@@ -102,55 +103,58 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     EditorialDecision ed = new EditorialDecision();
     ed.setDatasetKey(d.getKey());
     ed.setMode(EditorialDecision.Mode.BLOCK);
-    ed.setSubjectDatasetKey(TAXON2.getDatasetKey());
-    ed.setSubject(TAXON2.toSimpleNameLink());
+    ed.setSubjectDatasetKey(tax2.getDatasetKey());
+    ed.setSubject(tax2.toSimpleNameLink());
     ed.applyUser(TestEntityGenerator.USER_USER);
     dem.create(ed);
 
     // setup verbatim records - requires a sequence in pg which we normally only create during imports
     var dpm = mapper(DatasetPartitionMapper.class);
-    dpm.createSequences(TAXON2.getDatasetKey());
+    dpm.createSequences(tax2.getDatasetKey());
 
     var vm = mapper(VerbatimRecordMapper.class);
     var vn = new VerbatimRecord();
-    vn.setDatasetKey(TAXON2.getDatasetKey());
+    vn.setDatasetKey(tax2.getDatasetKey());
     vn.setType(ColdpTerm.Name);
     vn.setIssues(Set.of(Issue.INCONSISTENT_NAME, Issue.UNPARSABLE_NAME));
     vm.create(vn);
 
-    var n1 = nm.get(TAXON2.getName());
+    var n1 = nm.get(tax2.getName());
     n1.setVerbatimKey(vn.getId());
     nm.update(n1);
 
     var vu = new VerbatimRecord();
-    vu.setDatasetKey(TAXON2.getDatasetKey());
+    vu.setDatasetKey(tax2.getDatasetKey());
     vu.setType(ColdpTerm.Taxon);
     vu.setIssues(Set.of(Issue.PARTIAL_DATE));
     vm.create(vu);
 
-    var t1 = tm.get(TAXON2);
+    var t1 = tm.get(tax2);
     t1.setVerbatimKey(vu.getId());
     tm.update(t1);
 
     // there are also verbatim source records in the test data - remove it now that we have v records
     var vsm = mapper(VerbatimSourceMapper.class);
-    vsm.deleteByDataset(TAXON2.getDatasetKey());
+    vsm.deleteByDataset(tax2.getDatasetKey());
+    var vs = vsm.getByUsage(tax2);
+    assertNull(vs);
 
-    // test secondary sources
-    var srcs = vsm.getSources(TAXON2);
-    assertTrue(srcs.isEmpty());
-    vsm.insertSources(TAXON2, EntityType.NAME_USAGE, TAXON1, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP));
-
+    // add secondary sources
+    vs = new VerbatimSource(tax2.getDatasetKey(), null, appleKey, "not-there", EntityType.NAME_USAGE);
+    vsm. create(vs);
+    vsm.insertSources(vs.getKey(), TAXON1, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP));
+    tax2.setVerbatimSourceKey(vs.getId());
+    tm.update(tax2);
     commit();
 
-    // test
-    w = mapper().get(TAXON2.getDatasetKey(), TestEntityGenerator.TAXON2.getId());
+    // test secondary sources
+    w = mapper().get(tax2.getDatasetKey(), true, tax2.getId());
     assertNotNull(w);
     assertNotNull(w.getUsage());
     wt = (Taxon) w.getUsage();
     assertNotNull(wt.getName());
     // compare with taxon via taxon mapper
-    var t2 = tm.get(TestEntityGenerator.TAXON2);
+    var t2 = tm.get(tax2);
     assertEquals(t2, wt);
     assertNull(w.getUsage().getSectorKey());
 

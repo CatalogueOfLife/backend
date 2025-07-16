@@ -178,6 +178,18 @@ public class BareName implements NameUsage {
       name.setVerbatimKey(verbatimKey);
     }
   }
+
+  @Override
+  public Integer getVerbatimSourceKey() {
+    return name == null ? null : name.getVerbatimSourceKey();
+  }
+
+  @Override
+  public void setVerbatimSourceKey(Integer verbatimKey) {
+    if (name != null) {
+      name.setVerbatimSourceKey(verbatimKey);
+    }
+  }
   
   @Override
   public boolean equals(Object o) {
@@ -191,5 +203,5 @@ public class BareName implements NameUsage {
   public int hashCode() {
     return Objects.hash(name);
   }
-  
+
 }

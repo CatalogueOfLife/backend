@@ -7,6 +7,7 @@ public class TaxonProperty extends DatasetScopedEntity<Integer> implements Exten
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private String property;
   private String value;
   private String referenceId;
@@ -42,6 +43,14 @@ public class TaxonProperty extends DatasetScopedEntity<Integer> implements Exten
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public String getProperty() {
@@ -98,15 +107,24 @@ public class TaxonProperty extends DatasetScopedEntity<Integer> implements Exten
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof TaxonProperty)) return false;
     if (!super.equals(o)) return false;
+
     TaxonProperty that = (TaxonProperty) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(verbatimKey, that.verbatimKey) && Objects.equals(property, that.property) && Objects.equals(value, that.value) && Objects.equals(referenceId, that.referenceId) && Objects.equals(page, that.page) && Objects.equals(ordinal, that.ordinal) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(property, that.property) &&
+      Objects.equals(value, that.value) &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(page, that.page) &&
+      Objects.equals(ordinal, that.ordinal) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, property, value, referenceId, page, ordinal, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, property, value, referenceId, page, ordinal, remarks);
   }
 }

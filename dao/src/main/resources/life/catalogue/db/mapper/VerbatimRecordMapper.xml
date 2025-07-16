@@ -87,11 +87,6 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
-  <resultMap id="issueResultMap" type="SimpleWithID" autoMapping="false">
-    <id property="id" column="id" />
-    <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
-  </resultMap>
-
   <select id="count" resultType="integer">
     SELECT coalesce(
     (SELECT
@@ -148,89 +143,6 @@
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
   </update>
 
-  <!-- requires a base name usage table nu to exist to join to -->
-  <sql id="usageIssues">
-    SELECT nu.id, v.issues
-      FROM nu JOIN verbatim v ON nu.uvkey=v.id
-      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN verbatim v ON nu.nvkey=v.id
-      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN taxon_concept_rel x ON x.taxon_id=nu.id   JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN species_interaction x ON x.taxon_id=nu.id JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN distribution x ON x.taxon_id=nu.id        JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN media x ON x.taxon_id=nu.id               JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN vernacular_name x ON x.taxon_id=nu.id     JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN type_material x ON x.name_id=nu.name_id   JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN name_rel x ON x.name_id=nu.name_id        JOIN verbatim v ON x.verbatim_key=v.id
-      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-
-    UNION
-      SELECT nu.id, v.issues
-      FROM nu JOIN verbatim_source v ON v.id=nu.id
-      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
-  </sql>
-
-  <update id="createTmpIssuesTable" parameterType="map">
-    WITH nu AS (
-      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
-      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
-      WHERE u.dataset_key=#{datasetKey}
-      <if test="sectorKey != null">
-        AND u.sector_key = #{sectorKey}
-      </if>
-    )
-    SELECT vs.id, array_cat_agg(vs.issues) AS issues
-    INTO TEMPORARY TABLE tmp_usage_issues
-    FROM (
-    <include refid="usageIssues"/>
-    ) vs
-    GROUP BY vs.id;
-
-    CREATE INDEX ON tmp_usage_issues (id);
-    ANALYZE tmp_usage_issues;
-  </update>
-
-  <update id="createTmpVSourcesTable" parameterType="map">
-    SELECT v.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
-    INTO TEMPORARY TABLE tmp_usage_sources
-    FROM verbatim_source_secondary v
-    <if test="sectorKey != null">
-      JOIN name_usage u ON u.dataset_key = v.dataset_key AND u.id = v.id
-    </if>
-    WHERE v.dataset_key=#{datasetKey}
-    <if test="sectorKey != null">
-      AND u.sector_key = #{sectorKey}
-    </if>
-    GROUP BY v.id;
-
-    CREATE INDEX ON tmp_usage_sources (id);
-    ANALYZE tmp_usage_sources;
-  </update>
-
   <select id="processDataset" parameterType="map" resultMap="verbatimResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -242,8 +154,4 @@
     WHERE dataset_key=#{datasetKey}
   </delete>
 
-  <select id="processIssues" parameterType="map" resultMap="issueResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
-    SELECT id, issues
-    FROM tmp_usage_issues
-  </select>
 </mapper>

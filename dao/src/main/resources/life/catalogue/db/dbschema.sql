@@ -153,8 +153,7 @@ CREATE TYPE INFOGROUP AS ENUM (
   'BASIONYM',
   'EXTINCT',
   'TEMPORAL_RANGE',
-  'RANK',
-  'HOLOTYPE'
+  'RANK'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -1275,6 +1274,7 @@ CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_ops);
 CREATE TABLE verbatim_source (
    id INTEGER NOT NULL,
    dataset_key INTEGER NOT NULL,
+   sector_key INTEGER,
    source_id TEXT,
    source_entity ENTITYTYPE,
    source_dataset_key INTEGER,
@@ -1290,7 +1290,6 @@ CREATE TABLE verbatim_source_secondary (
    dataset_key INTEGER NOT NULL,
    type INFOGROUP NOT NULL,
    source_id TEXT,
-   source_entity ENTITYTYPE,
    source_dataset_key INTEGER,
    FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source
 ) PARTITION BY HASH (dataset_key);

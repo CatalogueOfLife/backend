@@ -42,6 +42,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
 
   private Integer namesIndexId;
   private MatchType namesIndexType;
@@ -225,6 +226,8 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     this.setKey(n);
     this.sectorKey = n.sectorKey;
     this.sectorMode = n.sectorMode;
+    this.verbatimKey = n.verbatimKey;
+    this.verbatimSourceKey = n.verbatimSourceKey;
     this.namesIndexId = n.namesIndexId;
     this.namesIndexType = n.namesIndexType;
     this.identifier = n.identifier;
@@ -274,6 +277,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setSectorKey(builder.sectorKey);
     setSectorMode(builder.sectorMode);
     setVerbatimKey(builder.verbatimKey);
+    setVerbatimSourceKey(builder.verbatimSourceKey);
     setNamesIndexId(builder.namesIndexId);
     setNamesIndexType(builder.namesIndexType);
     setScientificName(builder.scientificName);
@@ -358,6 +362,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     builder.sectorKey = copy.getSectorKey();
     builder.sectorMode = copy.getSectorMode();
     builder.verbatimKey = copy.getVerbatimKey();
+    builder.verbatimSourceKey = copy.getVerbatimSourceKey();
     builder.namesIndexId = copy.getNamesIndexId();
     builder.namesIndexType = copy.getNamesIndexType();
     builder.scientificName = copy.getScientificName();
@@ -420,6 +425,14 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public Integer getNamesIndexId() {
@@ -857,51 +870,52 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof Name)) return false;
     if (!super.equals(o)) return false;
+
     Name name = (Name) o;
-    return candidatus == name.candidatus
-           && Objects.equals(sectorKey, name.sectorKey)
-           && Objects.equals(sectorMode, name.sectorMode)
-           && Objects.equals(verbatimKey, name.verbatimKey)
-           && Objects.equals(namesIndexId, name.namesIndexId)
-           && namesIndexType == name.namesIndexType
-           && Objects.equals(identifier, name.identifier)
-           && Objects.equals(scientificName, name.scientificName)
-           && Objects.equals(authorship, name.authorship)
-           && rank == name.rank
-           && Objects.equals(uninomial, name.uninomial)
-           && Objects.equals(genus, name.genus)
-           && Objects.equals(infragenericEpithet, name.infragenericEpithet)
-           && Objects.equals(specificEpithet, name.specificEpithet)
-           && Objects.equals(infraspecificEpithet, name.infraspecificEpithet)
-           && Objects.equals(cultivarEpithet, name.cultivarEpithet)
-           && notho == name.notho
-           && Objects.equals(combinationAuthorship, name.combinationAuthorship)
-           && Objects.equals(basionymAuthorship, name.basionymAuthorship)
-           && Objects.equals(sanctioningAuthor, name.sanctioningAuthor)
-           && code == name.code
-           && nomStatus == name.nomStatus
-           && Objects.equals(originalSpelling, name.originalSpelling)
-           && Objects.equals(genderAgreement, name.genderAgreement)
-           && gender == name.gender
-           && Objects.equals(publishedInId, name.publishedInId)
-           && Objects.equals(publishedInPage, name.publishedInPage)
-           && Objects.equals(publishedInPageLink, name.publishedInPageLink)
-           && Objects.equals(publishedInYear, name.publishedInYear)
-           && origin == name.origin
-           && type == name.type
-           && Objects.equals(link, name.link)
-           && Objects.equals(nomenclaturalNote, name.nomenclaturalNote)
-           && Objects.equals(unparsed, name.unparsed)
-           && Objects.equals(etymology, name.etymology)
-           && Objects.equals(remarks, name.remarks);
+    return candidatus == name.candidatus &&
+      Objects.equals(sectorKey, name.sectorKey) &&
+      sectorMode == name.sectorMode &&
+      Objects.equals(verbatimKey, name.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, name.verbatimSourceKey) &&
+      Objects.equals(namesIndexId, name.namesIndexId) &&
+      namesIndexType == name.namesIndexType &&
+      Objects.equals(identifier, name.identifier) &&
+      Objects.equals(scientificName, name.scientificName) &&
+      Objects.equals(authorship, name.authorship) &&
+      rank == name.rank &&
+      Objects.equals(uninomial, name.uninomial) &&
+      Objects.equals(genus, name.genus) &&
+      Objects.equals(infragenericEpithet, name.infragenericEpithet) &&
+      Objects.equals(specificEpithet, name.specificEpithet) &&
+      Objects.equals(infraspecificEpithet, name.infraspecificEpithet) &&
+      Objects.equals(cultivarEpithet, name.cultivarEpithet) &&
+      notho == name.notho &&
+      Objects.equals(combinationAuthorship, name.combinationAuthorship) &&
+      Objects.equals(basionymAuthorship, name.basionymAuthorship) &&
+      Objects.equals(sanctioningAuthor, name.sanctioningAuthor) &&
+      code == name.code &&
+      nomStatus == name.nomStatus &&
+      Objects.equals(originalSpelling, name.originalSpelling) &&
+      Objects.equals(genderAgreement, name.genderAgreement) &&
+      gender == name.gender &&
+      Objects.equals(publishedInId, name.publishedInId) &&
+      Objects.equals(publishedInPage, name.publishedInPage) &&
+      Objects.equals(publishedInPageLink, name.publishedInPageLink) &&
+      Objects.equals(publishedInYear, name.publishedInYear) &&
+      origin == name.origin &&
+      type == name.type &&
+      Objects.equals(link, name.link) &&
+      Objects.equals(nomenclaturalNote, name.nomenclaturalNote) &&
+      Objects.equals(unparsed, name.unparsed) &&
+      Objects.equals(etymology, name.etymology) &&
+      Objects.equals(remarks, name.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, namesIndexId, namesIndexType, identifier, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, candidatus, notho, combinationAuthorship, basionymAuthorship, sanctioningAuthor, code, nomStatus, originalSpelling, genderAgreement, gender, publishedInId, publishedInPage, publishedInPageLink, publishedInYear, origin, type, link, nomenclaturalNote, unparsed, etymology, remarks);
   }
 
   @Override
@@ -961,6 +975,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     private Integer sectorKey;
     private Sector.Mode sectorMode;
     private Integer verbatimKey;
+    private Integer verbatimSourceKey;
     private Integer namesIndexId;
     private MatchType namesIndexType;
     private String scientificName;
@@ -1040,6 +1055,11 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
 
     public Builder verbatimKey(Integer val) {
       verbatimKey = val;
+      return this;
+    }
+
+    public Builder verbatimSourceKey(Integer val) {
+      verbatimSourceKey = val;
       return this;
     }
 

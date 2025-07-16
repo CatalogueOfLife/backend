@@ -94,11 +94,10 @@ public class SynonymMapperTest extends CRUDDatasetScopedStringTestBase<Synonym, 
     // remove child count for comparison
     s2.setAccepted(null);
     removeDbCreatedProps(s1, s2);
-    //printDiff(s1, s2);
+    printDiff(s1, s2);
     assertEquals(s1, s2);
   }
-  
-  
+
   @Test
   public void synonyms() throws Exception {
     

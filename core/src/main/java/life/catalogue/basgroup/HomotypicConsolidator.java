@@ -126,12 +126,14 @@ public class HomotypicConsolidator {
   private class ConsolidatorTask implements Runnable {
     private final SimpleName tax;
     private final DSID<String> dsid;
+    private final DSID<Integer> vsid;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
     private ConsolidatorTask(SimpleName tax) {
       this.tax = tax;
       this.dsid = DSID.root(datasetKey);
+      this.vsid = DSID.root(datasetKey);
     }
 
     @Override
@@ -394,7 +396,7 @@ public class HomotypicConsolidator {
     private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
       try (SqlSession session = factory.openSession(false)) {
         VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssue(dsid.id(obj.key().getId()), obj.value());
+        vsm.addIssue(vsid.id(obj.key().getVerbatimSourceKey()), obj.value());
         session.commit();
       }
     }
@@ -443,7 +445,7 @@ public class HomotypicConsolidator {
             VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
             for (var u : group.getAll()) {
               if (u.getStatus().isTaxon()) {
-                vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+                vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
               }
             }
             session.commit();
@@ -497,14 +499,14 @@ public class HomotypicConsolidator {
 
     private void addIssue(LinneanNameUsage u, Issue issue, SqlSession session) {
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      vsm.addIssue(dsid.id(u.getId()), issue);
+      vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), issue);
     }
 
     private void delete(LinneanNameUsage u, SqlSession session) {
       VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      vsm.delete(dsid.id(u.getId()));
-      num.delete(dsid);
+      vsm.delete(vsid.id(u.getVerbatimSourceKey()));
+      num.delete(dsid.id(u.getId()));
     }
 
     /**
@@ -550,7 +552,7 @@ public class HomotypicConsolidator {
 
       // convert to synonym, removing old parent relation
       if (issue != null) {
-        vsm.addIssue(dsid.id(u.getId()), issue);
+        vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), issue);
       }
 
       // move all descendants!
@@ -601,7 +603,7 @@ public class HomotypicConsolidator {
 
     private SimpleName loadSN(String id) {
       try (SqlSession session = factory.openSession()) {
-        return session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, id));
+        return session.getMapper(NameUsageMapper.class).getSimple(dsid.id(id));
       }
     }
 

@@ -13,6 +13,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
   private String id; // usage id, not name!
   private String parentId;
   private Integer sectorKey;
+  private Integer verbatimSourceKey;
   private TaxonomicStatus status;
   private Boolean extinct;
   private String nameId;
@@ -38,6 +39,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     this.id = other.id;
     this.parentId = other.parentId;
     this.sectorKey = other.sectorKey;
+    this.verbatimSourceKey = other.verbatimSourceKey;
     this.status = other.status;
     this.extinct = other.extinct;
     this.nameId = other.nameId;
@@ -61,6 +63,7 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
     id = nu.getId();
     parentId = nu.getParentId();
     sectorKey = nu.getSectorKey();
+    verbatimSourceKey = nu.getVerbatimSourceKey();
     status = nu.getStatus();
     extinct = nu.isTaxon() ? nu.asTaxon().isExtinct() : null;
     nameId = nu.getName().getId();
@@ -102,6 +105,14 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
 
   public void setSectorKey(Integer sectorKey) {
     this.sectorKey = sectorKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public TaxonomicStatus getStatus() {
@@ -298,15 +309,35 @@ public class LinneanNameUsage implements FormattableName, NameUsageCore {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof LinneanNameUsage)) return false;
+
     LinneanNameUsage that = (LinneanNameUsage) o;
-    return Objects.equals(id, that.id) && Objects.equals(parentId, that.parentId) && Objects.equals(sectorKey, that.sectorKey) && status == that.status && Objects.equals(extinct, that.extinct) && Objects.equals(nameId, that.nameId) && type == that.type && code == that.code && Objects.equals(scientificName, that.scientificName) && Objects.equals(authorship, that.authorship) && rank == that.rank && Objects.equals(uninomial, that.uninomial) && Objects.equals(genus, that.genus) && Objects.equals(infragenericEpithet, that.infragenericEpithet) && Objects.equals(specificEpithet, that.specificEpithet) && Objects.equals(infraspecificEpithet, that.infraspecificEpithet) && Objects.equals(cultivarEpithet, that.cultivarEpithet) && Objects.equals(combinationAuthorship, that.combinationAuthorship) && Objects.equals(basionymAuthorship, that.basionymAuthorship) && Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
+    return Objects.equals(id, that.id) &&
+      Objects.equals(parentId, that.parentId) &&
+      Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      status == that.status &&
+      Objects.equals(extinct, that.extinct) &&
+      Objects.equals(nameId, that.nameId) &&
+      type == that.type &&
+      code == that.code &&
+      Objects.equals(scientificName, that.scientificName) &&
+      Objects.equals(authorship, that.authorship) &&
+      rank == that.rank &&
+      Objects.equals(uninomial, that.uninomial) &&
+      Objects.equals(genus, that.genus) &&
+      Objects.equals(infragenericEpithet, that.infragenericEpithet) &&
+      Objects.equals(specificEpithet, that.specificEpithet) &&
+      Objects.equals(infraspecificEpithet, that.infraspecificEpithet) &&
+      Objects.equals(cultivarEpithet, that.cultivarEpithet) &&
+      Objects.equals(combinationAuthorship, that.combinationAuthorship) &&
+      Objects.equals(basionymAuthorship, that.basionymAuthorship) &&
+      Objects.equals(sanctioningAuthor, that.sanctioningAuthor);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, parentId, sectorKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
+    return Objects.hash(id, parentId, sectorKey, verbatimSourceKey, status, extinct, nameId, type, code, scientificName, authorship, rank, uninomial, genus, infragenericEpithet, specificEpithet, infraspecificEpithet, cultivarEpithet, combinationAuthorship, basionymAuthorship, sanctioningAuthor);
   }
 
   @Override

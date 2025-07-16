@@ -394,15 +394,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       if (candidates.size() == 1) {
         Name existing = candidates.get(0);
-        var pn = updateName(existing, n, v, upd, null);
+        VerbatimSource vs = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
+        var pn = updateName(existing, n, vs, upd, null);
 
         if (!upd.isEmpty()) {
           updated++;
+          // persist VS to get a key
+          int vsKey = verbatimSourceKey(vs);
           // update name
           nm.update(pn);
+          vsm.insertSources(vs, n, upd);
           // track source - we can track name sources, but need to link them to a usage - or several ;)
           for (var u : num.listByNameID(existing.getDatasetKey(), existing.getId(), new Page())) {
-            vsm.insertSources(u, EntityType.NAME, n, upd);
           }
 
           // commit in batches
@@ -567,7 +570,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   /**
    * Lazily persist a new verbatim source if the key is not existing yet
    */
-  private int verbatimKey(VerbatimSource v) {
+  private int verbatimSourceKey(VerbatimSource v) {
     if (v.getKey() == null) {
       // first persist to create the key
       vsm.create(v);
@@ -582,7 +585,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // we need to
       // 1) load the primary source and add secondary sources if we update anything
       // 2) create a new verbatim source for all newly added supplementary records like vernaculars, distributions, etc
-      VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
+      //    we do only create the VS record when it is actually needed, so we start with just the instance without persisted key:
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
       // set targetKey to the existing usage
@@ -633,7 +637,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             }
             // a new vernacular
             vn.setId(null);
-            vn.setVerbatimKey(verbatimKey(v));
+            vn.setVerbatimSourceKey(verbatimSourceKey(vs));
             vn.setSectorKey(sector.getId());
             vn.setDatasetKey(targetDatasetKey);
             vn.applyUser(user);
@@ -648,15 +652,15 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
       // try to also update the name - conditional checks within the subroutine
-      Name pn = updateName(null, src.getName(), v, upd, existing);
+      Name pn = updateName(null, src.getName(), vs, upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
         // update name
         nm.update(pn);
         // track source
-        do this better !?!
-        vsm.insertSources(existingUsageKey, EntityType.NAME_USAGE, src, upd);
+        verbatimSourceKey(vs); // persist if not yet done
+        vsm.insertSources(vs, src, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
@@ -679,12 +683,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   /**
+   * Updates an existing name.
    * Either the Name n or the existing usage must be given!
    *
    * @param n name to be updated
    * @param src source for updates
-   * @param vs verbatim source for the source record. Never null, but may not be persisted yet and lack a key
-   * @param upd
+   * @param vs verbatim source for the source record, but might not have been persisted yet with a key
+   * @param upd set of info groups that have been updated from this verbatim source. Will be persisted in the calling method.
    * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
    *                 Not needed for bare name merging
    * @return
@@ -765,7 +770,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
         // a new type
         tm.setNameId(n.getId());
-        tm.setVerbatimKey(verbatimKey(vs));
+        tm.setVerbatimSourceKey(verbatimSourceKey(vs));
         tm.setSectorKey(sector.getId());
         tm.setDatasetKey(targetDatasetKey);
         tm.applyUser(user);
@@ -780,9 +785,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
           mapper.create(tm);
         }
         existingTMs.add(tm);
-        if (tm.getStatus().getRoot() == TypeStatus.HOLOTYPE) {
-          upd.add(InfoGroup.HOLOTYPE);
-        }
       }
     }
 

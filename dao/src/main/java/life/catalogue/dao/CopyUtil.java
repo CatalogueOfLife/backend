@@ -82,19 +82,15 @@ public class CopyUtil {
         final TaxonExtensionMapper<ExtensionEntity> mapper = (TaxonExtensionMapper<ExtensionEntity>) batchSession.getMapper(extMapper.get(type));
         mapper.listByTaxon(origT).forEach(e -> {
           e.setId(null);
-          e.setSectorKey(t.getSectorKey());
           e.setDatasetKey(targetParent.getDatasetKey());
+          e.setSectorKey(t.getSectorKey());
+          e.setVerbatimSourceKey(t.getVerbatimSourceKey()); // keep the same verbatim source record as the main usage
+          // nullify verbatim keys until we create new verbatim records to keep issues
+          e.setVerbatimKey(null);
           e.applyUser(user);
-          if (e instanceof VerbatimEntity) {
-            // nullify verbatim keys until we create new verbatim records to keep issues
-            ((VerbatimEntity) e).setVerbatimKey(null);
-          }
           // check if the entity refers to a reference which we need to lookup / copy
-          if (Referenced.class.isAssignableFrom(e.getClass())) {
-            Referenced eRef = (Referenced) e;
-            String ridCopy = lookupByIdReference.apply(eRef.getReferenceId());
-            eRef.setReferenceId(ridCopy);
-          }
+          String ridCopy = lookupByIdReference.apply(e.getReferenceId());
+          e.setReferenceId(ridCopy);
           if (EntityType.VERNACULAR == type) {
             transliterateVernacularName((VernacularName)e, IssueContainer.VOID);
           }
@@ -108,8 +104,9 @@ public class CopyUtil {
         mapper.listByName(origN).forEach(tm -> {
           newKey(tm, typeMaterialIdSupplier); // id=UUID & verbatimKey=null
           tm.setNameId(t.getName().getId());
-          tm.setSectorKey(t.getSectorKey());
           tm.setDatasetKey(targetParent.getDatasetKey());
+          tm.setSectorKey(t.getSectorKey());
+          tm.setVerbatimSourceKey(t.getVerbatimSourceKey()); // keep the same verbatim source record as the main usage
           tm.applyUser(user);
           String ridCopy = lookupByIdReference.apply(tm.getReferenceId());
           tm.setReferenceId(ridCopy);

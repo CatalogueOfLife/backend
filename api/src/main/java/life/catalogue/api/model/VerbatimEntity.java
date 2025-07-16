@@ -8,5 +8,5 @@ public interface VerbatimEntity extends DatasetScoped {
   Integer getVerbatimKey();
   
   void setVerbatimKey(Integer verbatimKey);
-  
+
 }

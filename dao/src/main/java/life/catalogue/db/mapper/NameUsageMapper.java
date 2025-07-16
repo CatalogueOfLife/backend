@@ -55,6 +55,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id
    * @param key
@@ -66,7 +67,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * SimpleName.parent=parent.id
    * @param key of the child to fetch the parent from
    */
-  SimpleName getSimpleParent(@Param("key") DSID<String> key);
+  SimpleNameVerbatim getSimpleParent(@Param("key") DSID<String> key);
 
   /**
    * Lists all accepted, direct children of a taxon

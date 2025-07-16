@@ -315,9 +315,13 @@ public class XRelease extends ProjectRelease {
 
         for (var id : chains) {
           key.id(id);
-          vsm.addIssue(key, Issue.CHAINED_SYNONYM);
-          var syn = num.getSimple(key);
+          var syn = num.getSimpleVerbatim(key);
           num.updateParentId(key, syn.getParentId(), user);
+          if (syn.getVerbatimSourceKey() != null) {
+            vsm.addIssue(DSID.of(newDatasetKey, syn.getVerbatimSourceKey()), Issue.CHAINED_SYNONYM);
+          } else {
+            LOG.warn("Missing verbatim source for synonym {}", key);
+          }
         }
       }
     }
@@ -333,8 +337,12 @@ public class XRelease extends ProjectRelease {
         var key = DSID.<String>root(newDatasetKey);
         for (var id : synParents) {
           key.id(id);
-          vsm.addIssue(key, Issue.SYNONYM_PARENT);
           var syn = num.getSimpleParent(key);
+          if (syn.getVerbatimSourceKey() != null) {
+            vsm.addIssue(DSID.of(newDatasetKey, syn.getVerbatimSourceKey()), Issue.SYNONYM_PARENT);
+          } else {
+            LOG.warn("Missing verbatim source for synonym {}", key);
+          }
           num.updateParentId(key, syn.getParentId(), user);
         }
       }

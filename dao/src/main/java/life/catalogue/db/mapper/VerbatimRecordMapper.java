@@ -72,26 +72,5 @@ public interface VerbatimRecordMapper extends Create<VerbatimRecord>, DatasetPro
 
   void update(@Param("key") DSID<Integer> key, @Param("issues") Set<Issue> issues);
 
-  /**
-   * Creates a temporary table tmp_usage_issues that combines all issues from various name usage related tables
-   * into a single pair of usage id and non empty issues. This includes also verbatim_source records for projects and releases.
-   * @param datasetKey
-   * @param sectorKey optional sector to restrict the issues to
-   */
-  void createTmpIssuesTable(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
-
-  /**
-   * Creates a temporary table tmp_usage_sources that aggregates all secondary source records
-   * into a set of infogroups and source dataset keys.
-   * @param datasetKey
-   * @param sectorKey optional sector to restrict the covered usages to
-   */
-  void createTmpVSourcesTable(@Param("datasetKey") int datasetKey, @Nullable @Param("sectorKey") Integer sectorKey);
-
-  /**
-   * Process all dataset issues of the temporary table tmp_usage_issues that needs to be existing for the given session.
-   */
-  Cursor<IssueContainer.SimpleWithID> processIssues(@Param("datasetKey") int datasetKey);
-
 }
 

@@ -55,6 +55,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_SIMPLE_VERBATIM">
+    <include refid="SELECT_SIMPLE"/>, u.verbatim_source_key
+  </sql>
+
   <sql id="SELECT_SIMPLE_CACHED">
     <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, ni.canonical_id, nm.type
   </sql>
@@ -63,6 +67,7 @@
     u.id,
     u.parent_id,
     u.sector_key,
+    u.verbatim_source_key,
     u.status,
     u.extinct,
     u.name_id,
@@ -97,6 +102,7 @@
   <sql id="COLS_COPY">
     ${alias}sector_key,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}status,
     ${alias}origin,
     ${alias}name_phrase,
@@ -264,6 +270,11 @@
     <result property="namesIndexMatchType" column="type" />
   </resultMap>
 
+  <resultMap id="simpleVerbatimResultMap" type="SimpleNameVerbatim" autoMapping="true" extends="simpleResultMap">
+    <id property="id" column="id"/>
+    <result property="verbatimSourceKey" column="verbatim_source_key" />
+  </resultMap>
+
   <resultMap id="simpleCachedResultMap" type="SimpleNameCached" autoMapping="true" extends="simpleNidxResultMap">
     <id property="id" column="id"/>
     <result property="sectorKey" column="sector_key" />
@@ -302,14 +313,20 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="getSimpleVerbatim" resultMap="simpleVerbatimResultMap">
+    SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
   <select id="getSimpleCached" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_SIMPLE_CACHED"/>
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
-  <select id="getSimpleParent" resultMap="simpleResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>
+  <select id="getSimpleParent" resultMap="simpleVerbatimResultMap">
+    SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
     FROM <include refid="FROM_SIMPLE"/>
       JOIN name_usage child ON child.dataset_key=u.dataset_key AND child.parent_id=u.id
     WHERE child.dataset_key = #{key.datasetKey} AND child.id = #{key.id}

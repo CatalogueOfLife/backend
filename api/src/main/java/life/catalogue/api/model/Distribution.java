@@ -13,6 +13,7 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private Area area;
   private DistributionStatus status;
   private String referenceId;
@@ -47,7 +48,15 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public Area getArea() {
     return area;
   }
@@ -86,16 +95,23 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Distribution)) return false;
     if (!super.equals(o)) return false;
+
     Distribution that = (Distribution) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(verbatimKey, that.verbatimKey) && Objects.equals(area, that.area) && status == that.status && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(area, that.area) &&
+      status == that.status &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, area, status, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, area, status, referenceId, remarks);
   }
 
   @Override

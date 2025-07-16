@@ -13,6 +13,7 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private String name;
   private String latin;
   private Boolean preferred;
@@ -53,7 +54,17 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  @Override
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  @Override
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public String getName() {
     return name;
   }
@@ -138,16 +149,28 @@ public class VernacularName extends DatasetScopedEntity<Integer> implements Exte
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof VernacularName)) return false;
     if (!super.equals(o)) return false;
+
     VernacularName that = (VernacularName) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(verbatimKey, that.verbatimKey) && Objects.equals(name, that.name) && Objects.equals(latin, that.latin) && Objects.equals(preferred, that.preferred) && Objects.equals(language, that.language) && country == that.country && Objects.equals(area, that.area) && sex == that.sex && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(name, that.name) &&
+      Objects.equals(latin, that.latin) &&
+      Objects.equals(preferred, that.preferred) &&
+      Objects.equals(language, that.language) &&
+      country == that.country &&
+      Objects.equals(area, that.area) &&
+      sex == that.sex &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, name, latin, preferred, language, country, area, sex, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, name, latin, preferred, language, country, area, sex, referenceId, remarks);
   }
 
   @Override

@@ -157,18 +157,30 @@
 
   <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
     WITH nu AS (
-      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      SELECT u.id, u.name_id,
+             u.verbatim_key AS uvkey, n.verbatim_key AS nvkey,
+             u.verbatim_source_key AS uvskey, n.verbatim_source_key AS nvskey
       FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
       WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
     ), nuissues AS (
-      SELECT vs.id, array_cat_agg(vs.issues) AS issues
+      SELECT iss.id, array_cat_agg(iss.issues) AS issues
       FROM (
-      <include refid="life.catalogue.db.mapper.VerbatimRecordMapper.usageIssues"/>
-      ) vs
-      GROUP BY vs.id
-    ), src AS (
-      SELECT v.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
-      FROM nu JOIN verbatim_source_secondary v ON nu.id=v.id
+      <if test="isProjectOrRelease">
+        <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssuesVerbatimSource"/>
+      </if>
+      <if test="!isProjectOrRelease">
+        <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssuesVerbatim"/>
+      </if>
+      ) iss
+      GROUP BY iss.id
+    ), usrc AS (
+      SELECT v.verbatim_source_key, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
+      FROM nu JOIN verbatim_source_secondary v ON nu.uvskey=v.verbatim_source_key
+      WHERE v.dataset_key=#{datasetKey}
+      GROUP BY v.id
+    ), nsrc AS (
+      SELECT v.verbatim_source_key, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
+      FROM nu JOIN verbatim_source_secondary v ON nu.nvskey=v.verbatim_source_key
       WHERE v.dataset_key=#{datasetKey}
       GROUP BY v.id
     )
@@ -178,8 +190,9 @@
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
       v.issues, src.sources, src.groups
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
-      LEFT JOIN nuissues v ON v.id=u.id
-      LEFT JOIN src ON src.id=u.id
+      LEFT JOIN nuissues v ON v.id=u.verbatim_source_key
+      LEFT JOIN usrc ON usrc.verbatim_source_key=u.verbatim_source_key
+      LEFT JOIN nsrc ON nsrc.verbatim_source_key=u.verbatim_source_key
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>
@@ -191,7 +204,7 @@
       v.issues, v2.sources, v2.groups,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM_NO_ACCEPTED"/>
-      LEFT JOIN tmp_usage_issues v ON v.id=u.id
+      LEFT JOIN tmp_usage_issues v ON v.id=u.verbatim_source_key
       LEFT JOIN tmp_usage_sources v2 ON v2.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     WHERE u.dataset_key=#{datasetKey}
