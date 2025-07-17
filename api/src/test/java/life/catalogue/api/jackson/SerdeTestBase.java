@@ -1,12 +1,14 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.Reference;
+
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JavaType;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -64,4 +66,18 @@ public abstract class SerdeTestBase<T> {
     return json;
   }
 
+  @Test
+  public void testMinimumEquals() throws Exception {
+    T obj1 = clazz.getConstructor().newInstance();
+    T obj2 = clazz.getConstructor().newInstance();
+    // we don't care if it is actually equal - we likely generate different objects
+    // we only want to test
+    assertEquals(obj1, obj2);
+
+    // we don't care if it is actually equal - we likely generate different objects
+    // we only want to test equals not to throw
+    obj1 = genTestValue();
+    obj2 = genTestValue();
+    obj1.equals(obj2);
+  }
 }

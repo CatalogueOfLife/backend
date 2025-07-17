@@ -159,7 +159,7 @@ public class Reference extends DatasetScopedEntity<String> implements VerbatimEn
       Objects.equals(verbatimKey, reference.verbatimKey) &&
       Objects.equals(verbatimSourceKey, reference.verbatimSourceKey) &&
       Objects.equals(csl, reference.csl) &&
-      citation.equals(reference.citation) &&
+      Objects.equals(citation, reference.citation) &&
       Objects.equals(year, reference.year) &&
       Objects.equals(remarks, reference.remarks);
   }

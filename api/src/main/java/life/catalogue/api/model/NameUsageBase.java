@@ -373,7 +373,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       sectorMode == that.sectorMode &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
       Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
-      name.equals(that.name) &&
+      Objects.equals(name, that.name) &&
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&
