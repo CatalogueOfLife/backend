@@ -3,18 +3,10 @@ package life.catalogue.resources;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.dao.IssueUtils;
-import life.catalogue.db.mapper.VerbatimRecordMapper;
+import life.catalogue.db.mapper.TmpIssueMapper;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
-
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -22,6 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Streams;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
 
 /**
  * Streams all issues of an entire dataset
@@ -48,10 +47,11 @@ public class DatasetIssuesResource {
   public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @Context SqlSession session) {
     // export entire dataset with issues
-    IssueUtils.createTmpIssueTable(datasetKey, session);
+    var ism = session.getMapper(TmpIssueMapper.class);
+    ism.createTmpIssuesTable(datasetKey, null);
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
-      Streams.stream(vm.processIssues(datasetKey))
+      Streams.stream(ism.processIssues())
              .map(this::map)
     );
   }

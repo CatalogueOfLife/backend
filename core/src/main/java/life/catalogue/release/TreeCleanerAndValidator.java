@@ -71,16 +71,13 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
             LOG.info("Remove empty {}", taxon.usage);
             final var key = DSID.of(datasetKey, taxon.usage.getId());
             try (SqlSession session = factory.openSession(true)) {
-              var vm = session.getMapper(VerbatimSourceMapper.class);
               var um = session.getMapper(NameUsageMapper.class);
               // first remove all synonyms
               for (var c : um.childrenIds(key)) {
-                vm.delete(key.id(c));
                 um.delete(key);
               }
-              vm.delete(key.id(taxon.usage.getId()));
               um.delete(key);
-              // names, references and related are removed as orphans at the end of the release
+              // names, references, verbatim source and related are removed as orphans at the end of the release
             }
           }
         }
@@ -173,14 +170,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     if (issues.hasIssues()) {
       try (SqlSession session = factory.openSession(true)) {
         var vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssues(dsid(sn), issues.getIssues());
+        vsm.addIssues(vsKey(sn), issues.getIssues());
         flagged.incrementAndGet();
       }
     }
   }
 
-  DSID<String> dsid(LinneanNameUsage u){
-    return DSID.of(datasetKey, u.getId());
+  DSID<Integer> vsKey(LinneanNameUsage u){
+    return XRelease.usageID2verbatimKey(u.getId());
   }
 
   public int getCounter() {

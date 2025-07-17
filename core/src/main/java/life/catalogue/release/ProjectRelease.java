@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -17,10 +18,7 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.db.mapper.CitationMapper;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
@@ -250,6 +248,12 @@ public class ProjectRelease extends AbstractProjectCopy {
     final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
+    LOG.info("Remove orphaned verbatim sources from dataset {}", dKey);
+    try (SqlSession session = factory.openSession()) {
+      int cnt = session.getMapper(VerbatimSourceMapper.class).deleteOrphans(dKey);
+      session.commit();
+      LOG.info("Remove {} orphan references from dataset {}", cnt, dKey);
+    }
     DateUtils.logDuration(LOG, "Removing orphans", start);
   }
 

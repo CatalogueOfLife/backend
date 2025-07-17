@@ -119,5 +119,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
    * @param projectKey
    */
   void removeAllIssues(@Param("projectKey") int projectKey);
+
+  int deleteOrphans(@Param("datasetKey") int datasetKey);
 }
 

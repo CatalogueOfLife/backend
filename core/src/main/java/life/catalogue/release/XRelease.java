@@ -257,7 +257,7 @@ public class XRelease extends ProjectRelease {
     validateAndCleanTree();
     cleanImplicitTaxa();
 
-    // remove orphan names and references
+    // remove orphan names, references & verbatim sources
     removeOrphans(newDatasetKey);
 
     updateState(ImportState.ANALYZING);
@@ -373,7 +373,7 @@ public class XRelease extends ProjectRelease {
 
         final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : cycles) {
-          vsm.addIssue(key.id(id), Issue.PARENT_CYCLE);
+          vsm.addIssue(usageID2verbatimKey(id), Issue.PARENT_CYCLE);
           num.updateParentId(key, cycleParent.getId(), user);
         }
         LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
@@ -400,12 +400,17 @@ public class XRelease extends ProjectRelease {
         }
         final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : missing) {
-          vsm.addIssue(key.id(id), Issue.PARENT_ID_INVALID);
+          vsm.addIssue(usageID2verbatimKey(id), Issue.PARENT_ID_INVALID);
           num.updateParentId(key, parent, user);
         }
         LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
       }
     }
+  }
+
+  public static DSID<Integer> usageID2verbatimKey(String id) {
+    //TODO impl and create missing verbatim source records if necessary
+    return null;
   }
 
   /**
@@ -625,7 +630,7 @@ public class XRelease extends ProjectRelease {
         for (var u : d.getUsages()) {
           if (prios.priority(u.getSectorKey()) > min) {
             num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
-            vsm.addIssue(key, Issue.DUPLICATE_NAME);
+            vsm.addIssue(usageID2verbatimKey(u.getId()), Issue.DUPLICATE_NAME);
             if (counter++ % 1000 == 0) {
               session.commit();
             }

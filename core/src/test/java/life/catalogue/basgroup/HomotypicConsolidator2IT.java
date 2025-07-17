@@ -15,6 +15,8 @@ import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
+import life.catalogue.release.XRelease;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -68,9 +70,8 @@ public class HomotypicConsolidator2IT {
     Set<String> skipped = Set.of("1","2","3","4");
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      final DSID<String> key = DSID.root(dataRule.testData.key);
       for (var id : skipped) {
-        var v = vm.get(key.id(id));
+        var v = vm.get(XRelease.usageID2verbatimKey(id)); // dataRule.testData.key
         assertTrue(v.getIssues().contains(Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED));
       }
     }
