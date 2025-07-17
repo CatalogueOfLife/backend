@@ -3,6 +3,7 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
@@ -174,6 +175,23 @@ public class DwcaInserter extends NeoCsvInserter {
               t.getEnvironments().addAll(sp.getEnvironments());
             } else {
               t.setEnvironments(sp.getEnvironments());
+            }
+          }
+
+          if (!sp.getReferenceIds().isEmpty()) {
+            t.getReferenceIds().addAll(sp.getReferenceIds());
+          }
+
+          if (!sp.properties.isEmpty()) {
+            for (var kv : sp.properties.entrySet()) {
+              var tp = new TaxonProperty();
+              tp.setVerbatimKey(sp.getVerbatimKey());
+              tp.setProperty(kv.getKey().prefixedName());
+              tp.setValue(kv.getValue());
+              if (!sp.getReferenceIds().isEmpty()) {
+                tp.setReferenceId(sp.getReferenceIds().get(0));
+              }
+              u.properties.add(tp);
             }
           }
         }
