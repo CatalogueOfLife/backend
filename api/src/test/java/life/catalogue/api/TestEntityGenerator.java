@@ -343,7 +343,8 @@ public class TestEntityGenerator {
 
   public static Taxon newTaxon(int datasetKey, String id, String parentID, Rank rank, String scientificName) {
     Taxon t = newMinimalTaxon(datasetKey, id, parentID, rank, scientificName);
-    t.setAccordingTo("Foo");
+    // we don't set accordingTo as this is a read only field populated via reference
+    //t.setAccordingTo("Foo");
     t.setScrutinizerDate(FuzzyDate.of(2010, 11, 24));
     t.setLink(URI.create("http://foo-bar.com"));
     t.setExtinct(true);
@@ -382,7 +383,8 @@ public class TestEntityGenerator {
     s.setDatasetKey(name.getDatasetKey());
     s.setId("syn" + ID_GEN.getAndIncrement());
     s.setName(name);
-    s.setAccordingTo("non Döring 1999");
+    // we don't set accordingTo as this is a read only field populated via reference
+    //s.setAccordingTo("non Döring 1999");
     s.setStatus(status);
     s.setParentId(acceptedID);
     s.setOrigin(Origin.SOURCE);

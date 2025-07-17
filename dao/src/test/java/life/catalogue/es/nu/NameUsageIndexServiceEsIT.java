@@ -55,7 +55,12 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     List<Taxon> esTaxa = res.getResult().stream().map(nuw -> (Taxon) nuw.getUsage()).collect(toList());
     massageTaxa(pgTaxa);
     massageTaxa(esTaxa);
-    assertEquals(pgTaxa, esTaxa);
+    assertEquals(pgTaxa.size(), esTaxa.size());
+    System.out.println("+++ DIFF TAXA LIST +++");
+    for (int i = 0; i < pgTaxa.size(); i++) {
+      System.out.println(" idx="+i);
+      assertEquals(pgTaxa.get(i), esTaxa.get(i));
+    }
   }
 
   @Test
