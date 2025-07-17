@@ -1,7 +1,5 @@
 package life.catalogue.config;
 
-import java.util.*;
-
 import javax.annotation.Nullable;
 
 import jakarta.validation.Valid;

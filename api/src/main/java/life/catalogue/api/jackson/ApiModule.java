@@ -84,7 +84,6 @@ public class ApiModule extends SimpleModule {
     mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     
     mapper.registerModule(new ApiModule());
-    
     // replaces AfterBurner since java 11
     mapper.registerModule(new BlackbirdModule());
   

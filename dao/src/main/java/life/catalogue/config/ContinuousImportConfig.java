@@ -1,5 +1,9 @@
 package life.catalogue.config;
 
+import java.time.LocalDate;
+
+import javax.annotation.Nullable;
+
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 
@@ -32,5 +36,13 @@ public class ContinuousImportConfig {
   @Min(1)
   @Max(365)
   public int defaultFrequency = 7;
+
+  /**
+   * If set, imports will be forced if the last import of the dataset was before the configured date.
+   * This setting can be used to deploy major changes of the importer and slowly reimport all datasets
+   * even if the archives have not changed.
+   */
+  @Nullable
+  public LocalDate forceBefore;
 
 }
