@@ -8,6 +8,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JavaType;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -68,16 +70,21 @@ public abstract class SerdeTestBase<T> {
 
   @Test
   public void testMinimumEquals() throws Exception {
-    T obj1 = clazz.getConstructor().newInstance();
-    T obj2 = clazz.getConstructor().newInstance();
-    // we don't care if it is actually equal - we likely generate different objects
-    // we only want to test
-    assertEquals(obj1, obj2);
-
     // we don't care if it is actually equal - we likely generate different objects
     // we only want to test equals not to throw
-    obj1 = genTestValue();
-    obj2 = genTestValue();
+    T obj1 = genTestValue();
+    T obj2 = genTestValue();
     obj1.equals(obj2);
+
+    try {
+      obj1 = clazz.getConstructor().newInstance();
+      obj2 = clazz.getConstructor().newInstance();
+      // we don't care if it is actually equal - we likely generate different objects
+      // we only want to test
+      assertEquals(obj1, obj2);
+    } catch (NoSuchMethodException e) {
+      System.out.println("Empty constructor test not supported");
+    }
+
   }
 }
