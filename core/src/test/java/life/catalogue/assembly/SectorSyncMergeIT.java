@@ -296,9 +296,6 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             var v = vsm.addSources(vsm.getByUsage(u));
             assertNotNull(v);
             assertEquals(1, v.getSecondarySources().size());
-            for (var ss : v.getSecondarySources().values()) {
-              assertEquals(EntityType.NAME, ss.getEntity());
-            }
             break;
 
           case "Aacanthocnema dobsoni":

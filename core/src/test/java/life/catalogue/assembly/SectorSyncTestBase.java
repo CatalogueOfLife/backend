@@ -53,9 +53,9 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static VerbatimSource getSource(DSID<String> key) {
+  public static VerbatimSource getSource(DSID<String> usageID) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      return session.getMapper(VerbatimSourceMapper.class).get(key);
+      return session.getMapper(VerbatimSourceMapper.class).getByUsage(usageID);
     }
   }
 

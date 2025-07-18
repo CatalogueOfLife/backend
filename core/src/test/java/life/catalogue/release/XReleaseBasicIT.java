@@ -132,7 +132,8 @@ public class XReleaseBasicIT {
 
       // 2 sectors from dataset 101 & 102 have an authorship update for that name
       // make sure we only have one as the secondary source
-      var all = vsm.getSources(dsid);
+      var vs = vsm.getByUsage(dsid);
+      var all = vsm.getSources(vs.getKey());
       assertEquals(1, all.size());
 
       var src = vsm.addSources(vsm.getByUsage(dsid));

@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.ReferenceDao;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.dw.jersey.filter.VaryAccept;
@@ -45,6 +46,12 @@ public class ReferenceResource extends AbstractDatasetScopedResource<String, Ref
   })
   public Reference get(@PathParam("key") int datasetKey, @PathParam("id") String id) {
     return super.get(datasetKey, id);
+  }
+
+  @GET
+  @Path("{id}/source")
+  public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(VerbatimSourceMapper.class).getByReference(DSID.of(datasetKey, id));
   }
 
   @Override
