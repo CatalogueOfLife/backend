@@ -8,6 +8,7 @@ import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
 import life.catalogue.release.UsageIdGen;
@@ -42,10 +43,13 @@ public class TreeBaseHandlerTest {
   public void setup() throws Exception {
     TaxonMapper tm = mock(TaxonMapper.class);
     DatasetMapper dm = mock(DatasetMapper.class);
+    VerbatimSourceMapper vsm = mock(VerbatimSourceMapper.class);
+    when(vsm.getMaxID(anyInt())).thenReturn(1);
 
     SqlSession session = mock(SqlSession.class);
     when(session.getMapper(TaxonMapper.class)).thenReturn(tm);
     when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
+    when(session.getMapper(VerbatimSourceMapper.class)).thenReturn(vsm);
 
     factory = mock(SqlSessionFactory.class);
     when(factory.openSession(anyBoolean())).thenReturn(session);
