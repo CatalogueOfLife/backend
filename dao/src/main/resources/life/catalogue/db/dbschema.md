@@ -14,6 +14,54 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-07-18 verbatim_source refactoring
+```
+DROP TYPE INFOGROUP;
+CREATE TYPE INFOGROUP AS ENUM (
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'PARENT',
+  'BASIONYM',
+  'EXTINCT',
+  'TEMPORAL_RANGE',
+  'RANK'
+);
+
+
+CREATE TABLE verbatim_source (
+   id INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   sector_key INTEGER,
+   source_id TEXT,
+   source_entity ENTITYTYPE,
+   source_dataset_key INTEGER,
+   issues ISSUE[] DEFAULT '{}',
+   PRIMARY KEY (dataset_key, id)
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+CREATE INDEX on verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
+
+CREATE TABLE verbatim_source_secondary (
+   verbatim_source_key INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   type INFOGROUP NOT NULL,
+   source_id TEXT,
+   source_dataset_key INTEGER,
+   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
+
+ALTER TABLE reference ADD COLUMN verbatim_source_key INTEGER;
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
+CREATE INDEX ON reference (dataset_key, verbatim_source_key);
+
+
+
+```
+
 #### 2025-04-14 add 2nd source entity
 ```
 ALTER TABLE verbatim_source_secondary ADD COLUMN source_entity ENTITYTYPE;

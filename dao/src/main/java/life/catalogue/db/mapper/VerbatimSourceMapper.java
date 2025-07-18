@@ -30,6 +30,8 @@ import javax.annotation.Nullable;
 public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDataset, DatasetProcessable<VerbatimSource>,
   SectorProcessable<VerbatimSource> {
 
+  int getMaxID(@Param("datasetKey") int datasetKey);
+
   VerbatimSource get(@Param("key") DSID<Integer> key);
 
   default VerbatimSource getByUsage(@Param("key") DSID<String> key) {
@@ -57,14 +59,7 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   default VerbatimSource getWithSources(@Param("key") DSID<Integer> key) {
     VerbatimSource v = get(key);
     var snd = getSources(key);
-    // it can happen that we only have secondary sources!
-    if (v == null && snd != null && !snd.isEmpty())  {
-      v = new VerbatimSource();
-      v.setKey(key);
-    }
-    if (v != null) {
-      v.setSecondarySources(snd);
-    }
+    v.setSecondarySources(snd);
     return v;
   }
 

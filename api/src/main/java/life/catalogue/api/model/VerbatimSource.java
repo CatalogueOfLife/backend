@@ -24,12 +24,14 @@ public class VerbatimSource implements DSID<Integer>, SectorScoped, IssueContain
   // instance hash created on load to see if the instance has been changed
   private int _hashKeyOnLoad = -1;
 
+  @Deprecated // only for mybatis
   public VerbatimSource() {
   }
 
-  public VerbatimSource(Integer datasetKey, Integer sectorKey, Integer sourceDatasetKey, String sourceId, EntityType sourceEntity) {
-    this.sectorKey = sectorKey;
+  public VerbatimSource(Integer datasetKey, Integer id, Integer sectorKey, Integer sourceDatasetKey, String sourceId, EntityType sourceEntity) {
+    this.id = id;
     this.datasetKey = datasetKey;
+    this.sectorKey = sectorKey;
     this.sourceId = sourceId;
     this.sourceDatasetKey = sourceDatasetKey;
     this.sourceEntity = sourceEntity;

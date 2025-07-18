@@ -641,7 +641,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE name_usage SET sector_key = NULL
+    UPDATE name_usage SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

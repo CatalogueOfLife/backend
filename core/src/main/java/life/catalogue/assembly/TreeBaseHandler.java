@@ -14,6 +14,7 @@ import life.catalogue.release.UsageIdGen;
 import org.gbif.nameparser.api.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -69,6 +70,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> nameIdGen;
   protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
+  protected final AtomicInteger vsIdGen = new AtomicInteger(1);
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
@@ -137,6 +139,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     nm = batchSession.getMapper(NameMapper.class);
     nmm= batchSession.getMapper(NameMatchMapper.class);
     num= batchSession.getMapper(NameUsageMapper.class);
+
+    // update verbatim source id generator - use current max
+    vsIdGen.set(vsm.getMaxID(targetDatasetKey)+1);
+    LOG.info("Start new verbatim source ids from {}", vsIdGen.get());
   }
 
   @Override
@@ -279,7 +285,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       }
     }
     // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen.getAndIncrement(), sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
     v.addIssues(issues);
     vsm.create(v);
     u.setVerbatimSourceKey(v.getId());
@@ -734,7 +740,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         ref.applyUser(user);
 
         // track source
-        VerbatimSource v = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), ref.getId(), EntityType.REFERENCE);
+        VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen.getAndIncrement(), sector.getId(), sector.getSubjectDatasetKey(), ref.getId(), EntityType.REFERENCE);
         vsm.create(v);
         ref.setVerbatimSourceKey(v.getId());
 

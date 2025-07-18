@@ -130,7 +130,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE species_interaction SET sector_key = NULL
+    UPDATE species_interaction SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

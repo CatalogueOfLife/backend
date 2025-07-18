@@ -282,7 +282,6 @@ public abstract class SectorSyncTestBase {
 
   protected void assertHasVerbatimSource(DSID<String> id, String expectedSourceId) {
     VerbatimSource v = getSource(id);
-    assertEquals(id.getId(), v.getId());
     assertEquals(id.getDatasetKey(), v.getDatasetKey());
     assertNotNull(v.getSourceDatasetKey());
     assertEquals(expectedSourceId, v.getSourceId());

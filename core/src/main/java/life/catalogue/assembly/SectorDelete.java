@@ -102,9 +102,6 @@ public class SectorDelete extends SectorRunnable {
 
       // TODO: remove refs and name rels
 
-      // remove verbatim sources from remaining usages
-      vsm.deleteBySector(s);
-
       // remove sector from all entities left
       SectorProcessable.MAPPERS.forEach(mc -> {
         int count;

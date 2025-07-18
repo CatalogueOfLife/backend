@@ -38,6 +38,19 @@
     <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
   </resultMap>
 
+  <select id="getMaxID" resultType="integer">
+    WITH x AS (
+      SELECT id
+      FROM verbatim_source
+      WHERE dataset_key=#{datasetKey}
+      ORDER BY id DESC
+      LIMIT 1
+    )
+    SELECT x.id FROM x
+    UNION ALL
+    SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM x)
+  </select>
+
   <select id="getSources" resultType="life.catalogue.api.model.SecondarySource">
     SELECT source_id AS id, source_dataset_key AS datasetKey, type
     FROM verbatim_source_secondary
@@ -64,7 +77,7 @@
 
   <insert id="create" parameterType="VerbatimSource" keyProperty="id" useGeneratedKeys="true">
     INSERT INTO verbatim_source (id,dataset_key,<include refid="COLS_COPY"/>)
-    VALUES (nextval('verbatim_source_${datasetKey}_id_seq'), #{datasetKey}, <include refid="PROPS"/>)
+    VALUES (#{id}, #{datasetKey}, <include refid="PROPS"/>)
   </insert>
 
   <insert id="copyDataset" parameterType="map">
@@ -99,7 +112,8 @@
   </select>
 
   <update id="removeSectorKey" parameterType="map">
-    <!-- nothing to do, sectorKey is no the usage table! -->
+    UPDATE verbatim_source SET sector_key = NULL
+    WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
   <update id="updateIssues" parameterType="map">

@@ -167,14 +167,14 @@ public class NameUsageWrapperMapperTest extends MapperTestBase<NameUsageWrapperM
     tm.update(srcTax);
 
     // add secondary sources to taxon & name of project
-    var vs = new VerbatimSource(projectKey, null, appleKey, "not-there", EntityType.NAME_USAGE);
+    var vs = new VerbatimSource(projectKey, 10, null, appleKey, "not-there", EntityType.NAME_USAGE);
     vs.setIssues(Set.of(Issue.UNPARSABLE_NAME));
     vsm. create(vs);
     vsm.insertSources(vs.getKey(), TAXON1, Set.of(InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP));
     projTax.setVerbatimSourceKey(vs.getId());
     tm.update(projTax);
 
-    vs = new VerbatimSource(projectKey, null, appleKey, "not-there", EntityType.NAME_USAGE);
+    vs = new VerbatimSource(projectKey, 11, null, appleKey, "not-there", EntityType.NAME_USAGE);
     vs.setIssues(Set.of(Issue.WRONG_MONOMIAL_CASE, Issue.UNPARSABLE_NAME));
     vsm. create(vs);
     projTax.getName().setVerbatimSourceKey(vs.getId());

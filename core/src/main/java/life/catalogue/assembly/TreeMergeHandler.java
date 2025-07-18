@@ -394,7 +394,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       if (candidates.size() == 1) {
         Name existing = candidates.get(0);
-        VerbatimSource vs = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
+        VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
         var pn = updateName(existing, n, vs, upd, null);
 
         if (!upd.isEmpty()) {
@@ -571,8 +571,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * Lazily persist a new verbatim source if the key is not existing yet
    */
   private int verbatimSourceKey(VerbatimSource v) {
-    if (v.getKey() == null) {
+    if (v.getId() == null) {
       // first persist to create the key
+      v.setId(vsIdGen.getAndIncrement());
       vsm.create(v);
     }
     return v.getId();
@@ -586,7 +587,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // 1) load the primary source and add secondary sources if we update anything
       // 2) create a new verbatim source for all newly added supplementary records like vernaculars, distributions, etc
       //    we do only create the VS record when it is actually needed, so we start with just the instance without persisted key:
-      VerbatimSource vs = new VerbatimSource(targetDatasetKey, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
       // set targetKey to the existing usage

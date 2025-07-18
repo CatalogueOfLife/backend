@@ -55,7 +55,6 @@ public interface DatasetPartitionMapper {
     "sector",
       "decision",
       "verbatim",
-      "verbatim_source",
       "name_rel",
       "taxon_concept_rel",
       "species_interaction",
