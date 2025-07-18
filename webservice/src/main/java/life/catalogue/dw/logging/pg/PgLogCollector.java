@@ -52,7 +52,7 @@ public class PgLogCollector implements AutoCloseable {
   }
 
   private void persist(List<ApiLog> logs) {
-    LOG.info("Persisting {} logs to DB", logs.size());
+    LOG.debug("Persisting {} logs to DB", logs.size());
     lastPersist = System.currentTimeMillis();
     try (SqlSession session = factory.openSession(false)) {
       var mapper = session.getMapper(ApiLogsMapper.class);

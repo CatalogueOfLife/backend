@@ -7,7 +7,7 @@ public class PgLogConfig {
    * The size of the in memory log collector queue
    */
   @Min(3)
-  public int maxSize = 1000;
+  public int maxSize = 10_000;
 
   /**
    * Maximum time in seconds that is allowed before logs are persisted. If 0 only the size matters.
