@@ -400,14 +400,10 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (!upd.isEmpty()) {
           updated++;
           // persist VS to get a key
-          int vsKey = verbatimSourceKey(vs);
+          verbatimSourceKey(vs);
           // update name
           nm.update(pn);
           vsm.insertSources(vs, n, upd);
-          // track source - we can track name sources, but need to link them to a usage - or several ;)
-          for (var u : num.listByNameID(existing.getDatasetKey(), existing.getId(), new Page())) {
-          }
-
           // commit in batches
           if (updated % 1000 == 0) {
             interruptIfCancelled();
@@ -555,25 +551,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
-  static class Context {
-    final EntityType sourceEntity;
-    final String sourceKey;
-    VerbatimSource verbatimSource;
-    Set<InfoGroup> updates = EnumSet.noneOf(InfoGroup.class);
-
-    Context(EntityType sourceEntity, String sourceKey) {
-      this.sourceEntity = sourceEntity;
-      this.sourceKey = sourceKey;
-    }
-  }
-
   /**
    * Lazily persist a new verbatim source if the key is not existing yet
    */
   private int verbatimSourceKey(VerbatimSource v) {
     if (v.getId() == null) {
       // first persist to create the key
-      v.setId(vsIdGen.getAndIncrement());
+      v.setId(vsIdGen++);
       vsm.create(v);
     }
     return v.getId();
@@ -660,8 +644,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
         // update name
         nm.update(pn);
         // track source
-        verbatimSourceKey(vs); // persist if not yet done
-        vsm.insertSources(vs, src, upd);
+        // not sure if we would ever see a name without a verbatim source. But lets be sure
+        DSID<Integer> vsKey = pn.getVerbatimSourceKey() != null ? DSID.of(targetDatasetKey, pn.getVerbatimSourceKey()) : DSID.of(targetDatasetKey, verbatimSourceKey(vs));
+        vsm.insertSources(vsKey, src, upd);
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
@@ -689,7 +674,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
    *
    * @param n name to be updated
    * @param src source for updates
-   * @param vs verbatim source for the source record, but might not have been persisted yet with a key
+   * @param vs verbatim source for the source record, but might not have been persisted yet with a key. Will only be used for newly created records like type material!
    * @param upd set of info groups that have been updated from this verbatim source. Will be persisted in the calling method.
    * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
    *                 Not needed for bare name merging
