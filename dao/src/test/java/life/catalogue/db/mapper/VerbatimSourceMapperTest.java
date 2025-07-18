@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMapper> {
 
   int datasetKey = testDataRule.testData.key;
+  int id = 1;
 
   public VerbatimSourceMapperTest() {
     super(VerbatimSourceMapper.class, TestDataRule.fish());
@@ -25,6 +26,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
   VerbatimSource create(){
     VerbatimSource v = new VerbatimSource();
+    v.setId(id++);
     v.setDatasetKey(datasetKey);
     v.setSourceId("source77");
     v.setSourceDatasetKey(77);
@@ -90,11 +92,8 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     TestEntityGenerator.setUser(s);
     mapper(SectorMapper.class).create(s);
 
-    VerbatimSource v1 = new VerbatimSource();
-    v1.setDatasetKey(datasetKey);
+    VerbatimSource v1 = create();
     v1.setSectorKey(s.getId());
-    v1.setSourceId("source77");
-    v1.setSourceDatasetKey(77);
     mapper().create(v1);
 
     commit();

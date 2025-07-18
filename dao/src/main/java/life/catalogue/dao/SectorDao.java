@@ -200,6 +200,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
 
       if (!toCopy.isEmpty()) {
         for (Taxon t : toCopy) {
+          t.setVerbatimSourceKey(createVerbatimSource(s.getDatasetKey(), s.getId(), t, session));
           t.setSectorKey(s.getId());
           TaxonDao.copyTaxon(session, t, s.getTargetAsDSID(), user);
         }
@@ -218,6 +219,17 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  private int createVerbatimSource(int datasetKey, int sectorKey, DSID<String> src, SqlSession session) {
+    var vsm = session.getMapper(VerbatimSourceMapper.class);
+    var vs = new VerbatimSource();
+    vs.setId(vsm.getMaxID(datasetKey)+1);
+    vs.setDatasetKey(datasetKey);
+    vs.setSectorKey(sectorKey);
+    vs.setSourceId(src.getId());
+    vs.setSourceDatasetKey(src.getDatasetKey());
+    vsm.create(vs);
+    return vs.getId();
+  }
   public static Taxon verifyTaxon(Sector s, String kind, Supplier<DSID<String>> getter, TaxonMapper tm) {
     DSID<String> did = getter.get();
     Taxon tax = null;
