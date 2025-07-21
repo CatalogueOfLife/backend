@@ -182,6 +182,12 @@
     WHERE id = #{id} AND dataset_key=#{datasetKey}
   </update>
 
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE reference
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <delete id="delete" parameterType="map">
     DELETE FROM reference
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}

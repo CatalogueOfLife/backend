@@ -6,14 +6,13 @@ import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
+import life.catalogue.dao.IssueAdder;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -47,9 +46,10 @@ import org.slf4j.LoggerFactory;
 public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, AutoCloseable {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
-  final SqlSessionFactory factory;
-  final int datasetKey;
-  final ParentStack<XLinneanNameUsage> parents;
+  private final SqlSessionFactory factory;
+  private final IssueAdder issueAdder;
+  private final int datasetKey;
+  private final ParentStack<XLinneanNameUsage> parents;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
   private int maxDepth = 0;
@@ -58,6 +58,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     this.factory = factory;
     this.datasetKey = datasetKey;
     this.parents = new ParentStack<>();
+    this.issueAdder = new IssueAdder(datasetKey, factory);
     if (removeEmptyGenera) {
       // add stack handler that considers to remove empty genera and creates missing autonyms
       parents.addHandler(new ParentStack.StackHandler<>() {
@@ -168,16 +169,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {
-      try (SqlSession session = factory.openSession(true)) {
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssues(vsKey(sn), issues.getIssues());
-        flagged.incrementAndGet();
-      }
+      issueAdder.addIssues(sn.getVerbatimSourceKey(), sn.getId(), issues.getIssues());
+      flagged.incrementAndGet();
     }
-  }
-
-  DSID<Integer> vsKey(LinneanNameUsage u){
-    return XRelease.usageID2verbatimKey(u.getId());
   }
 
   public int getCounter() {
@@ -193,7 +187,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // nothing so far
+    issueAdder.close();
   }
 }

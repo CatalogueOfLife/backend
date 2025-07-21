@@ -31,7 +31,6 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -51,8 +50,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import jakarta.validation.Validator;
-
-import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 public class XRelease extends ProjectRelease {
   private static final Logger LOG = LoggerFactory.getLogger(XRelease.class);
@@ -278,12 +275,13 @@ public class XRelease extends ProjectRelease {
     // detect and group basionyms
     if (xCfg.homotypicConsolidation) {
       final LocalDateTime start = LocalDateTime.now();
-      var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
-      if (xCfg.basionymExclusions != null) {
-        hc.setBasionymExclusions(xCfg.basionymExclusions);
+      try (var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority)) {
+        if (xCfg.basionymExclusions != null) {
+          hc.setBasionymExclusions(xCfg.basionymExclusions);
+        }
+        hc.consolidate(xCfg.homotypicConsolidationThreads);
+        DateUtils.logDuration(LOG, hc.getClass(), start);
       }
-      hc.consolidate(xCfg.homotypicConsolidationThreads);
-      DateUtils.logDuration(LOG, hc.getClass(), start);
 
     } else {
       LOG.warn("Homotypic grouping disabled in xrelease configs");
@@ -303,114 +301,98 @@ public class XRelease extends ProjectRelease {
    * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
   private void flagLoops() {
-    // any chained synonyms?
-    try (SqlSession session = factory.openSession(true)) {
-      var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
-      if (chains != null && !chains.isEmpty()) {
-        LOG.error("{} chained synonyms found in XRelease {}", chains.size(),newDatasetKey);
+    try (var adder = new IssueAdder(newDatasetKey, factory)) {
+      // any chained synonyms?
+      try (SqlSession session = factory.openSession(true)) {
+        var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
+        if (chains != null && !chains.isEmpty()) {
+          LOG.error("{} chained synonyms found in XRelease {}", chains.size(),newDatasetKey);
 
-        var num = session.getMapper(NameUsageMapper.class);
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-        var key = DSID.<String>root(newDatasetKey);
+          var num = session.getMapper(NameUsageMapper.class);
+          var key = DSID.<String>root(newDatasetKey);
 
-        for (var id : chains) {
-          key.id(id);
-          var syn = num.getSimpleVerbatim(key);
-          num.updateParentId(key, syn.getParentId(), user);
-          if (syn.getVerbatimSourceKey() != null) {
-            vsm.addIssue(DSID.of(newDatasetKey, syn.getVerbatimSourceKey()), Issue.CHAINED_SYNONYM);
-          } else {
-            LOG.warn("Missing verbatim source for synonym {}", key);
+          for (var id : chains) {
+            key.id(id);
+            var syn = num.getSimpleVerbatim(key);
+            num.updateParentId(key, syn.getParentId(), user);
+            adder.addIssue(syn.getVerbatimSourceKey(), id, Issue.CHAINED_SYNONYM);
           }
         }
       }
-    }
 
-    // any accepted names below synonyms? Move to accepted
-    try (SqlSession session = factory.openSession(true)) {
-      var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
-      if (synParents != null && !synParents.isEmpty()) {
-        LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
-        var num = session.getMapper(NameUsageMapper.class);
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-
-        var key = DSID.<String>root(newDatasetKey);
-        for (var id : synParents) {
-          key.id(id);
-          var syn = num.getSimpleParent(key);
-          if (syn.getVerbatimSourceKey() != null) {
-            vsm.addIssue(DSID.of(newDatasetKey, syn.getVerbatimSourceKey()), Issue.SYNONYM_PARENT);
-          } else {
-            LOG.warn("Missing verbatim source for synonym {}", key);
+      // any accepted names below synonyms? Move to accepted
+      try (SqlSession session = factory.openSession(true)) {
+        var synParents = session.getMapper(NameUsageMapper.class).detectParentSynoynms(newDatasetKey);
+        if (synParents != null && !synParents.isEmpty()) {
+          LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
+          var num = session.getMapper(NameUsageMapper.class);
+          var key = DSID.<String>root(newDatasetKey);
+          for (var id : synParents) {
+            key.id(id);
+            var syn = num.getSimpleParent(key);
+            num.updateParentId(key, syn.getParentId(), user);
+            adder.addIssue(syn.getVerbatimSourceKey(), id, Issue.SYNONYM_PARENT);
           }
-          num.updateParentId(key, syn.getParentId(), user);
         }
       }
-    }
 
-    // cut potential cycles in the tree?
-    try (SqlSession session = factory.openSession(true)) {
-      var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);
-      if (cycles != null && !cycles.isEmpty()) {
-        LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),newDatasetKey);
-        var tm = session.getMapper(TaxonMapper.class);
+      // cut potential cycles in the tree?
+      try (SqlSession session = factory.openSession(true)) {
+        var cycles = session.getMapper(NameUsageMapper.class).detectLoop(newDatasetKey);
+        if (cycles != null && !cycles.isEmpty()) {
+          LOG.error("{} cycles found in the parent-child classification of dataset {}", cycles.size(),newDatasetKey);
+          var tm = session.getMapper(TaxonMapper.class);
+          var num = session.getMapper(NameUsageMapper.class);
+
+          Name n = Name.newBuilder()
+                       .id("cycleParentPlaceholder")
+                       .datasetKey(newDatasetKey)
+                       .scientificName("Cycle parent holder")
+                       .rank(Rank.UNRANKED)
+                       .type(NameType.PLACEHOLDER)
+                       .origin(Origin.OTHER)
+                       .build();
+          n.applyUser(user);
+          Taxon cycleParent = new Taxon(n);
+          cycleParent.setId("cycleParentPlaceholder");
+          cycleParent.setParentId(mergeCfg.incertae.getId());
+          tm.create(cycleParent);
+
+          final DSID<String> key = DSID.root(newDatasetKey);
+          for (String id : cycles) {
+            num.updateParentId(key, cycleParent.getId(), user);
+            adder.addIssue(id, Issue.PARENT_CYCLE);
+          }
+          LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
+        }
+
+      } catch (PersistenceException e) {
+        // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
+        //TODO: rewrite to test all in memory, using the int values of the stable ids or create negative ones for non stable ids and store a mapping on disk mapdb
+        LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
+      }
+
+      // look for non existing parents
+      try (SqlSession session = factory.openSession(true)) {
         var num = session.getMapper(NameUsageMapper.class);
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-
-        Name n = Name.newBuilder()
-                     .id("cycleParentPlaceholder")
-                     .datasetKey(newDatasetKey)
-                     .scientificName("Cycle parent holder")
-                     .rank(Rank.UNRANKED)
-                     .type(NameType.PLACEHOLDER)
-                     .origin(Origin.OTHER)
-                     .build();
-        n.applyUser(user);
-        Taxon cycleParent = new Taxon(n);
-        cycleParent.setId("cycleParentPlaceholder");
-        cycleParent.setParentId(mergeCfg.incertae.getId());
-        tm.create(cycleParent);
-
-        final DSID<String> key = DSID.root(newDatasetKey);
-        for (String id : cycles) {
-          vsm.addIssue(usageID2verbatimKey(id), Issue.PARENT_CYCLE);
-          num.updateParentId(key, cycleParent.getId(), user);
+        var missing = num.listMissingParentIds(newDatasetKey);
+        if (missing != null && !missing.isEmpty()) {
+          LOG.error("{} usages found with a non existing parentID", missing.size());
+          final String parent;
+          if (mergeCfg.hasIncertae()) {
+            parent = mergeCfg.incertae.getId();
+          } else {
+            parent = null;
+          }
+          final DSID<String> key = DSID.root(newDatasetKey);
+          for (String id : missing) {
+            num.updateParentId(key, parent, user);
+            adder.addIssue(id, Issue.PARENT_ID_INVALID);
+          }
+          LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
         }
-        LOG.warn("Resolved {} cycles found in the parent-child classification of dataset {}", cycles.size(), newDatasetKey);
-      }
-
-    } catch (PersistenceException e) {
-      // detectLoop is known to sometimes throw PSQLException: ERROR: temporary file size exceeds temp_file_limit
-      //TODO: rewrite to test all in memory, using the int values of the stable ids or create negative ones for non stable ids and store a mapping on disk mapdb
-      LOG.warn("Failed to detect tree cycles in the parent-child classification of dataset {}", newDatasetKey, e);
-    }
-
-    // look for non existing parents
-    try (SqlSession session = factory.openSession(true)) {
-      var num = session.getMapper(NameUsageMapper.class);
-      var vsm = session.getMapper(VerbatimSourceMapper.class);
-      var missing = num.listMissingParentIds(newDatasetKey);
-      if (missing != null && !missing.isEmpty()) {
-        LOG.error("{} usages found with a non existing parentID", missing.size());
-        final String parent;
-        if (mergeCfg.hasIncertae()) {
-          parent = mergeCfg.incertae.getId();
-        } else {
-          parent = null;
-        }
-        final DSID<String> key = DSID.root(newDatasetKey);
-        for (String id : missing) {
-          vsm.addIssue(usageID2verbatimKey(id), Issue.PARENT_ID_INVALID);
-          num.updateParentId(key, parent, user);
-        }
-        LOG.warn("Resolved {} usages with a non existing parent in dataset {}", missing.size(),newDatasetKey);
       }
     }
-  }
-
-  public static DSID<Integer> usageID2verbatimKey(String id) {
-    //TODO impl and create missing verbatim source records if necessary
-    return null;
   }
 
   /**
@@ -612,10 +594,11 @@ public class XRelease extends ProjectRelease {
   private void flagDuplicatesAsProvisional(SectorPriority prios) {
     LOG.info("Find homonyms and mark as provisional");
     final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession session = factory.openSession(false)) {
+    try (SqlSession session = factory.openSession(false);
+        var adder = new IssueAdder(newDatasetKey, factory)
+    ) {
       var num = session.getMapper(NameUsageMapper.class);
       var dum = session.getMapper(DuplicateMapper.class);
-      var vsm = session.getMapper(VerbatimSourceMapper.class);
       // same names with the same rank and code
       var dupes = dum.homonyms(newDatasetKey, Set.of(TaxonomicStatus.ACCEPTED));
       LOG.info("Marking {} homonyms as provisional", dupes.size());
@@ -630,8 +613,8 @@ public class XRelease extends ProjectRelease {
         for (var u : d.getUsages()) {
           if (prios.priority(u.getSectorKey()) > min) {
             num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
-            vsm.addIssue(usageID2verbatimKey(u.getId()), Issue.DUPLICATE_NAME);
-            if (counter++ % 1000 == 0) {
+            adder.addIssue(u.getId(), Issue.DUPLICATE_NAME);
+           if (counter++ % 1000 == 0) {
               session.commit();
             }
           }

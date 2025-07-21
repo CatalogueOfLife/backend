@@ -8,6 +8,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
@@ -399,11 +400,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
         if (!upd.isEmpty()) {
           updated++;
-          // persist VS to get a key
-          verbatimSourceKey(vs);
+          // make sure name has a vs key
+          var vskey = vsKey(pn);
+          vsm.insertSources(vskey, n, upd);
           // update name
           nm.update(pn);
-          vsm.insertSources(vs, n, upd);
           // commit in batches
           if (updated % 1000 == 0) {
             interruptIfCancelled();
@@ -641,12 +642,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
       if (!upd.isEmpty()) {
         this.updated++;
-        // update name
+        // update name & usage vsKey
+        final boolean vsKeyMissing = pn.getVerbatimSourceKey() == null;
+        var vskey = vsKey(pn);
+        vsm.insertSources(vskey, src, upd);
         nm.update(pn);
-        // track source
-        // not sure if we would ever see a name without a verbatim source. But lets be sure
-        DSID<Integer> vsKey = pn.getVerbatimSourceKey() != null ? DSID.of(targetDatasetKey, pn.getVerbatimSourceKey()) : DSID.of(targetDatasetKey, verbatimSourceKey(vs));
-        vsm.insertSources(vsKey, src, upd);
+        if (vsKeyMissing) {
+          num.updateVerbatimSourceKey(existingUsageKey, vskey.getId());
+        }
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
@@ -659,6 +662,23 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (usageIdScope != null) {
       num.addIdentifier(existing, List.of(new Identifier(usageIdScope, src.getId())));
     }
+  }
+
+  /**
+   * Use the verbatim source key from a name instance or create a new emtpy VS record with no source link.
+   * The name.verbatimSourceKey property is set, but not persisted yet!
+   * @return the VS key
+   */
+  private DSID<Integer> vsKey(Name n) {
+    // we can see usages and names that were manually created and have not been synced, this do not have a verbatim source!
+    // So we need to create missing ones in such cases...
+    if (n.getVerbatimSourceKey() != null) {
+      return DSID.of(targetDatasetKey, n.getVerbatimSourceKey());
+    }
+    var vs = new VerbatimSource(targetDatasetKey, vsIdGen++, null, null, null, null);
+    vsm.create(vs);
+    n.setVerbatimSourceKey(vs.getId());
+    return vs;
   }
 
   /**

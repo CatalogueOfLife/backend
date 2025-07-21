@@ -414,19 +414,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     try (java.sql.Statement st = session.getConnection().createStatement()) {
       var dpm = session.getMapper(DatasetPartitionMapper.class);
 
-      st.execute("TRUNCATE \"user\" CASCADE");
-      session.getConnection().commit();
-      st.execute("TRUNCATE dataset CASCADE"); // this should cascade to all data partitions, but to make sure we also do:
-      st.execute("TRUNCATE name_usage CASCADE");
-      st.execute("TRUNCATE name CASCADE");
-      st.execute("TRUNCATE reference CASCADE");
-      st.execute("TRUNCATE verbatim_source CASCADE");
-      st.execute("TRUNCATE verbatim CASCADE");
+      st.execute("TRUNCATE \"user\", dataset, name_usage, name, reference, verbatim_source_secondary, verbatim_source, verbatim CASCADE"); // this should cascade to all data partitions, but to make sure we also do:
       session.getConnection().commit();
       st.execute("TRUNCATE dataset_archive CASCADE");
-      st.execute("TRUNCATE sector CASCADE");
-      st.execute("TRUNCATE estimate CASCADE");
-      st.execute("TRUNCATE decision CASCADE");
+      st.execute("TRUNCATE sector, estimate, decision CASCADE");
       st.execute("TRUNCATE name_match");
       st.execute("TRUNCATE names_index RESTART IDENTITY CASCADE");
       session.getConnection().commit();

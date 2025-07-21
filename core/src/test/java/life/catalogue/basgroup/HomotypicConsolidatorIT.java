@@ -37,10 +37,11 @@ public class HomotypicConsolidatorIT {
 
   @Test
   public void homconsolidation() throws IOException {
-    var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,
+    try (var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), datasetKey,
       lnu -> lnu.getSectorKey() == null ? Integer.MAX_VALUE : lnu.getSectorKey()
-    );
-    hc.consolidate();
+    )) {
+      hc.consolidate();
+    };
     assertNoLoop(datasetKey);
     SectorSyncIT.assertTree("homconsolidation-expected.txtree", datasetKey, null, getClass().getResourceAsStream("/txtree/homconsolidation-expected.txtree"));
   }

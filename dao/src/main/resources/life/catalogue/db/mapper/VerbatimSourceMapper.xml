@@ -69,6 +69,12 @@
     WHERE x.dataset_key = #{key.datasetKey} AND x.id = #{key.id}
   </select>
 
+  <select id="getVSKey" resultType="integer">
+    SELECT verbatim_source_key
+    FROM ${table} x
+    WHERE x.dataset_key = #{key.datasetKey} AND x.id = #{key.id}
+  </select>
+
   <select id="getIssues" resultMap="verbatimResultMap">
     SELECT issues
     FROM verbatim_source
@@ -180,5 +186,45 @@
     WHERE v.dataset_key = #{key.datasetKey}
       AND v.sector_key=#{key.id}
   </delete>
+
+  <delete id="deleteOrphans" parameterType="map">
+    <include refid="tmpRefIdTable"/>
+
+    DELETE FROM verbatim_source v
+    WHERE v.dataset_key=#{datasetKey} AND NOT EXISTS (
+      SELECT TRUE FROM vs_fks_${datasetKey} vsfk WHERE v.id=vsfk.id
+    )
+  </delete>
+
+  <sql id="tmpRefIdTable">
+    CREATE TEMP TABLE IF NOT EXISTS vs_fks_${datasetKey} AS
+    SELECT verbatim_source_key AS id FROM reference WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM name WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM name_usage WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM name_rel WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM type_material WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM taxon_concept_rel WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM species_interaction WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM vernacular_name WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM distribution WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM treatment WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM estimate WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM media WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL
+    UNION
+    SELECT verbatim_source_key AS id FROM taxon_property WHERE dataset_key=#{datasetKey} AND verbatim_source_key IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_vs_fks_${datasetKey} ON vs_fks_${datasetKey} (id);
+  </sql>
 
 </mapper>

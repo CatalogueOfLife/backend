@@ -65,6 +65,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected final ReferenceDao rDao;
   protected final NameDao nDao;
   protected final SectorDao sDao;
+  protected final VerbatimDao vDao;
   private final UriBuilder datasetApiBuilder;
   private final URI portalURI;
   private final CloseableHttpClient client;
@@ -105,6 +106,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
+    this.vDao = new VerbatimDao(factory);
   }
 
   @Override
@@ -248,12 +250,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
-    LOG.info("Remove orphaned verbatim sources from dataset {}", dKey);
-    try (SqlSession session = factory.openSession()) {
-      int cnt = session.getMapper(VerbatimSourceMapper.class).deleteOrphans(dKey);
-      session.commit();
-      LOG.info("Remove {} orphan references from dataset {}", cnt, dKey);
-    }
+    vDao.deleteOrphans(dKey, user);
     DateUtils.logDuration(LOG, "Removing orphans", start);
   }
 

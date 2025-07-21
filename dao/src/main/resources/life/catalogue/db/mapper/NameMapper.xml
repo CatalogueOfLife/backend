@@ -342,6 +342,12 @@
     </if>
   </delete>
 
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE name
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <delete id="deleteOrphans" parameterType="map">
     DELETE FROM name n
     <include refid="orphanWhere"/>

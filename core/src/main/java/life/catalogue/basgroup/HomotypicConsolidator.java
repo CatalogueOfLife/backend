@@ -11,13 +11,12 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
+import life.catalogue.dao.IssueAdder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
-
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
 
@@ -44,7 +43,7 @@ import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.Pair;
 
-public class HomotypicConsolidator {
+public class HomotypicConsolidator implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
@@ -52,6 +51,7 @@ public class HomotypicConsolidator {
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
+  private final IssueAdder issueAdder;
   private final List<SimpleName> taxa;
   private Map<String, Set<String>> basionymExclusions = new HashMap<>();
   private final AuthorComparator authorComparator;
@@ -98,6 +98,7 @@ public class HomotypicConsolidator {
     this.taxa = taxa;
     authorComparator = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     basSorter = new BasionymSorter<>(authorComparator, priorityFunc);
+    issueAdder = new IssueAdder(datasetKey, factory);
   }
 
   public void setBasionymExclusions(Map<String, Set<String>> basionymExclusions) {
@@ -117,6 +118,11 @@ public class HomotypicConsolidator {
     ExecutorUtils.shutdown(exec);
   }
 
+  @Override
+  public void close() {
+    issueAdder.close();
+  }
+
   /**
    * Goes through all usages of a given parent taxon and tries to discover basionyms by comparing the specific or infraspecific epithet and the authorships.
    * As we often see missing brackets from author names we must code defensively and allow several original names in the data for a single epithet.
@@ -126,14 +132,12 @@ public class HomotypicConsolidator {
   private class ConsolidatorTask implements Runnable {
     private final SimpleName tax;
     private final DSID<String> dsid;
-    private final DSID<Integer> vsid;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
     private ConsolidatorTask(SimpleName tax) {
       this.tax = tax;
       this.dsid = DSID.root(datasetKey);
-      this.vsid = DSID.root(datasetKey);
     }
 
     @Override
@@ -394,11 +398,7 @@ public class HomotypicConsolidator {
     }
 
     private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
-      try (SqlSession session = factory.openSession(false)) {
-        VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssue(vsid.id(obj.key().getVerbatimSourceKey()), obj.value());
-        session.commit();
-      }
+      issueAdder.addIssue(obj.key().getVerbatimSourceKey(), obj.key().getId(), obj.value());
     }
 
     private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
@@ -441,14 +441,10 @@ public class HomotypicConsolidator {
         final LinneanNameUsage primary = findPrimaryUsage(group);
         if (primary == null) {
           // we did not find a usage to trust. skip, but mark accepted names with issues
-          try (SqlSession session = factory.openSession(false)) {
-            VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-            for (var u : group.getAll()) {
-              if (u.getStatus().isTaxon()) {
-                vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-              }
+          for (var u : group.getAll()) {
+            if (u.getStatus().isTaxon()) {
+              issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
             }
-            session.commit();
           }
           return;
         }
@@ -488,7 +484,7 @@ public class HomotypicConsolidator {
                 LOG.debug("Same priority, keep usage: {}", u);
               } else {
                 LOG.warn("Unexpected priorities. Keep usage: {}", u);
-                addIssue(u, Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED, session);
+                issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
               }
             }
           }
@@ -497,15 +493,8 @@ public class HomotypicConsolidator {
       }
     }
 
-    private void addIssue(LinneanNameUsage u, Issue issue, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), issue);
-    }
-
     private void delete(LinneanNameUsage u, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      vsm.delete(vsid.id(u.getVerbatimSourceKey()));
       num.delete(dsid.id(u.getId()));
     }
 
@@ -520,7 +509,6 @@ public class HomotypicConsolidator {
      * @param issue    optional issue to flag
      */
     public void convertToSynonym(LinneanNameUsage u, LinneanNameUsage accepted, @Nullable Issue issue, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
       if (!accepted.getStatus().isTaxon()) {
@@ -552,7 +540,7 @@ public class HomotypicConsolidator {
 
       // convert to synonym, removing old parent relation
       if (issue != null) {
-        vsm.addIssue(vsid.id(u.getVerbatimSourceKey()), issue);
+        issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), issue);
       }
 
       // move all descendants!

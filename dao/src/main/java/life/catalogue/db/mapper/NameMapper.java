@@ -101,6 +101,13 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   boolean hasData(@Param("datasetKey") int datasetKey);
 
   /**
+   * Updates only the verbatimSourceKey of the name
+   * @param key
+   * @param verbatimSourceKey
+   */
+  void updateVerbatimSourceKey(@Param("key") DSID<String> key, @Param("vsKey") Integer verbatimSourceKey);
+
+  /**
    * Deletes all names that do not have at least one name usage, i.e. remove all bare names.
    * @param datasetKey the datasetKey to restrict the deletion to
    * @param before optional timestamp to restrict deletions to orphans before the given time

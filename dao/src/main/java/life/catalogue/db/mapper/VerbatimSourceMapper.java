@@ -1,26 +1,18 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
-import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.validation.constraints.NotNull;
-
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.cursor.Cursor;
-
-import javax.annotation.Nullable;
 
 /**
  * Mapper that manages the verbatim_source and verbatim_source_secondary tables.
@@ -47,6 +39,20 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   }
 
   VerbatimSource getByEntity(@Param("key") DSID<String> key, @Param("table") String table);
+
+  default Integer getVSKeyByUsage(@Param("key") DSID<String> key) {
+    return getVSKey(key, "name_usage");
+  }
+
+  default Integer getVSKeyByName(@Param("key") DSID<String> key) {
+    return getVSKey(key, "name");
+  }
+
+  default Integer getVSKeyByReference(@Param("key") DSID<String> key) {
+    return getVSKey(key, "reference");
+  }
+
+  Integer getVSKey(@Param("key") DSID<String> key, @Param("table") String table);
 
   default VerbatimSource addSources(VerbatimSource v) {
     if (v != null) {
