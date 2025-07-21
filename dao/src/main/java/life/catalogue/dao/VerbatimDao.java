@@ -33,9 +33,9 @@ public class VerbatimDao {
   public int deleteOrphans(int datasetKey, int userKey) {
     LOG.info("Remove orphaned verbatim sources from dataset {}", datasetKey);
     try (SqlSession session = factory.openSession()) {
-      int cnt = session.getMapper(VerbatimSourceMapper.class).deleteOrphans(datasetKey);
-      session.commit();
-      LOG.info("Remove {} orphan verbatim sources from dataset {} by user {}", cnt, datasetKey, userKey);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      int cnt = vsm.deleteOrphans(datasetKey);
+      LOG.info("Removed {} orphan verbatim sources from dataset {} by user {}", cnt, datasetKey, userKey);
       return cnt;
     }
   }
