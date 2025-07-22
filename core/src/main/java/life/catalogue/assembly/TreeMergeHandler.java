@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
@@ -8,7 +9,6 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
@@ -643,12 +643,23 @@ public class TreeMergeHandler extends TreeBaseHandler {
       if (!upd.isEmpty()) {
         this.updated++;
         // update name & usage vsKey
-        final boolean vsKeyMissing = pn.getVerbatimSourceKey() == null;
-        var vskey = vsKey(pn);
-        vsm.insertSources(vskey, src, upd);
+        // both name and usage can have a key to a verbatim source. Ideally they are the same
+        Integer uvsKey = vsm.getVSKeyByUsage(existingUsageKey);
+        DSID<Integer> vsKey;
+        if (uvsKey != null) {
+          vsKey = DSID.of(targetDatasetKey, uvsKey);
+        } else if (pn.getVerbatimSourceKey() != null) {
+          vsKey = DSID.of(targetDatasetKey, pn.getVerbatimSourceKey());
+        } else {
+          vsKey = createSecondaryVS();
+        }
+        vsm.insertSources(vsKey, src, upd);
+        if (pn.getVerbatimSourceKey() == null) {
+          pn.setVerbatimSourceKey(vsKey.getId());
+        }
         nm.update(pn);
-        if (vsKeyMissing) {
-          num.updateVerbatimSourceKey(existingUsageKey, vskey.getId());
+        if (uvsKey == null) {
+          num.updateVerbatimSourceKey(existingUsageKey, vsKey.getId());
         }
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
@@ -665,6 +676,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   /**
+   * Creates a new verbatim source record to hold issues and secondary sources.
+   * But do not link to a primary source, i.e. not populate sector, sourceId & source dataset
+   */
+  private VerbatimSource createSecondaryVS() {
+    var vs = new VerbatimSource(targetDatasetKey, vsIdGen++, null, null, null, null);
+    vsm.create(vs);
+    return vs;
+  }
+
+  /**
    * Use the verbatim source key from a name instance or create a new emtpy VS record with no source link.
    * The name.verbatimSourceKey property is set, but not persisted yet!
    * @return the VS key
@@ -675,8 +696,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (n.getVerbatimSourceKey() != null) {
       return DSID.of(targetDatasetKey, n.getVerbatimSourceKey());
     }
-    var vs = new VerbatimSource(targetDatasetKey, vsIdGen++, null, null, null, null);
-    vsm.create(vs);
+    var vs = createSecondaryVS();
     n.setVerbatimSourceKey(vs.getId());
     return vs;
   }

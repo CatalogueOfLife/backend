@@ -201,6 +201,7 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
       if (!toCopy.isEmpty()) {
         for (Taxon t : toCopy) {
           t.setVerbatimSourceKey(createVerbatimSource(s.getDatasetKey(), s.getId(), t, session));
+          t.getName().setVerbatimSourceKey(t.getVerbatimSourceKey());
           t.setSectorKey(s.getId());
           TaxonDao.copyTaxon(session, t, s.getTargetAsDSID(), user);
         }
