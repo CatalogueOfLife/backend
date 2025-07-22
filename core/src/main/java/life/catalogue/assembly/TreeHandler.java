@@ -1,19 +1,14 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.NameUsageBase;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.func.ThrowingConsumer;
 
 import org.gbif.nameparser.api.Rank;
 
-import javax.annotation.Nullable;
-
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Consumers should not expect the accepted property of a Synonym to exist!
@@ -55,6 +50,11 @@ public interface TreeHandler extends ThrowingConsumer<NameUsageBase, Interrupted
       this.rank = rank;
       this.status = status;
       this.decision = decision;
+    }
+
+    @Override
+    public String toString() {
+      return String.format("%s %s %s (%s)", status, rank, id, parentId);
     }
   }
 

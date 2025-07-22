@@ -1,67 +1,48 @@
 package life.catalogue.dao;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import freemarker.template.TemplateException;
-
 import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.model.Page;
-import life.catalogue.api.model.ResultPage;
 import life.catalogue.api.model.User;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.common.lang.Exceptions;
 import life.catalogue.config.MailConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.UserMapper;
+import life.catalogue.event.EventBroker;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.metadata.FmUtil;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
-import org.simplejavamail.email.EmailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.validation.Validator;
 
-public class UserDao extends EntityDao<Integer, User, UserMapper> {
+public class UserDao extends UserCrudDao {
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(UserDao.class);
-  private final EventBus bus;
+  private final EventBroker broker;
   @Nullable
   private Mailer mailer;
   private final MailConfig mailCfg;
 
-  public UserDao(SqlSessionFactory factory, MailConfig cfg, @Nullable Mailer emailer, EventBus bus, Validator validator) {
-    super(true, factory, User.class, UserMapper.class, validator);
-    this.bus = bus;
+  public UserDao(SqlSessionFactory factory, MailConfig cfg, @Nullable Mailer emailer, EventBroker broker, Validator validator) {
+    super(factory, validator);
+    this.broker = broker;
     this.mailer = emailer;
     this.mailCfg = cfg;
-  }
-
-  public ResultPage<User> search(@Nullable final String q, @Nullable final User.Role role, @Nullable Page page) {
-    page = page == null ? new Page() : page;
-    try (SqlSession session = factory.openSession()){
-      UserMapper um = session.getMapper(mapperClass);
-      List<User> result = um.search(q, role, defaultPage(page));
-      return new ResultPage<>(page, result, () -> um.searchCount(q, role));
-    }
   }
 
   public void updateSettings(Map<String, String> settings, User user) {
@@ -122,17 +103,14 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
       um.block(key, datetime);
       u = um.get(key);
     }
-    bus.post(UserChanged.created(u, admin.getKey()));
+    broker.publish(UserChanged.created(u, admin.getKey()));
   }
 
-  private static Page defaultPage(Page page){
-    return page == null ? new Page(0, 10) : page;
-  }
 
   @Override
   protected boolean createAfter(User obj, int user, UserMapper mapper, SqlSession session) {
     session.close();
-    bus.post(UserChanged.created(obj, user));
+    broker.publish(UserChanged.created(obj, user));
     return false;
   }
 
@@ -141,13 +119,13 @@ public class UserDao extends EntityDao<Integer, User, UserMapper> {
     if (!keepSessionOpen) {
       session.close();
     }
-    bus.post(UserChanged.changed(obj, user));
+    broker.publish(UserChanged.changed(obj, user));
     return keepSessionOpen;
   }
 
   @Override
   protected boolean deleteAfter(Integer key, User old, int user, UserMapper mapper, SqlSession session) {
-    bus.post(UserChanged.deleted(old, user));
+    broker.publish(UserChanged.deleted(old, user));
     return false;
   }
 

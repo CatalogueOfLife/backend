@@ -1,10 +1,11 @@
 package life.catalogue.db;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
 
 import java.util.List;
-
-import life.catalogue.db.mapper.*;
 
 import org.apache.ibatis.annotations.Param;
 

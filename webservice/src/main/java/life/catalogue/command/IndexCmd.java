@@ -3,6 +3,7 @@ package life.catalogue.command;
 import life.catalogue.WsServerConfig;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.es.EsClientFactory;
+import life.catalogue.es.EsConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
 
@@ -10,12 +11,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.client.RestClient;
@@ -86,22 +84,26 @@ public class IndexCmd extends AbstractMybatisCmd {
   public void prePromt(Bootstrap<WsServerConfig> bootstrap, Namespace namespace, WsServerConfig cfg){
     if (namespace.getBoolean(ARG_ALL) || namespace.getBoolean(ARG_CREATE)) {
       // change index name, use current date
-      cfg.es.nameUsage.name = indexNameToday();
+      cfg.es.nameUsage.name = indexNameToday(cfg.es);
       System.out.println("Creating new index " + cfg.es.nameUsage.name);
       LOG.info("Creating new index {}", cfg.es.nameUsage.name);
     }
   }
 
-  static String indexNameToday(){
+  public static String indexNameToday(EsConfig cfg){
     String date = DateTimeFormatter.ISO_DATE.format(LocalDate.now());
-    return "col-" + date;
+    if (StringUtils.isBlank(cfg.nameUsage.name)) {
+      throw new IllegalStateException("index config is empty");
+    } else if (cfg.nameUsage.name.length() > 10) {
+      throw new IllegalStateException("index config name is too long to be a prefix");
+    }
+    return cfg.nameUsage.name + "-" + date;
   }
 
   @Override
   public String describeCmd(Namespace namespace, WsServerConfig cfg) {
     boolean create = namespace.getBoolean(ARG_CREATE) || namespace.getBoolean(ARG_ALL);
-    String index =  create ? indexNameToday() : cfg.es.nameUsage.name;
-    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", index, cfg.es.hosts);
+    return String.format("Indexing DB %s on %s into %sES index %s on %s.\n", cfg.db.database, cfg.db.host, create ? "new " : "", cfg.es.nameUsage.name, cfg.es.hosts);
   }
 
   @Override

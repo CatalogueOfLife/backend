@@ -1,28 +1,24 @@
 package life.catalogue.matching.util;
 
-import com.esotericsoftware.kryo.Kryo;
-
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
-import com.esotericsoftware.kryo.util.Pool;
-
 import life.catalogue.matching.model.StoredClassification;
 import life.catalogue.matching.model.StoredName;
-import life.catalogue.matching.model.StoredParsedName;
 
-
-import lombok.extern.slf4j.Slf4j;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Optional;
 
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.util.BytesRef;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Optional;
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.util.Pool;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -55,8 +51,6 @@ public class IOUtil {
     protected Kryo create () {
       Kryo kryo = new Kryo();
       kryo.register(StoredClassification.class);
-      kryo.register(StoredParsedName.class);
-      kryo.register(StoredParsedName.StoredAuthorship.class);
       kryo.register(StoredName.class);
       kryo.register(ArrayList.class);
       kryo.register(HashSet.class);

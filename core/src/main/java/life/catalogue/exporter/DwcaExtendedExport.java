@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
@@ -33,16 +34,6 @@ import org.slf4j.LoggerFactory;
 public class DwcaExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExtendedExport.class);
   private static final String EML_FILENAME = "eml.xml";
-  private static final Map<Rank, DwcTerm> CLASSIFICATION_TERMS = Map.of(
-    Rank.KINGDOM, DwcTerm.kingdom,
-    Rank.PHYLUM, DwcTerm.phylum,
-    Rank.CLASS, DwcTerm.class_,
-    Rank.ORDER, DwcTerm.order,
-    Rank.SUPERFAMILY, DwcTerm.superfamily,
-    Rank.FAMILY, DwcTerm.family,
-    Rank.SUBFAMILY, DwcTerm.subfamily,
-    Rank.TRIBE, DwcTerm.tribe
-  );
 
   private TermWriter writer2;
   private final Archive arch = new Archive();
@@ -112,6 +103,9 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.family,
           DwcTerm.subfamily,
           DwcTerm.tribe,
+          DwcTerm.subtribe,
+          DwcTerm.genus,
+          DwcTerm.subgenus,
           DwcTerm.taxonRemarks,
           DcTerm.references
         };
@@ -157,8 +151,8 @@ public class DwcaExtendedExport extends ArchiveExport {
       TaxonWithClassification t = (TaxonWithClassification) u;
       if (t.getClassification() != null) {
         for (var ht : t.getClassification()) {
-          if (CLASSIFICATION_TERMS.containsKey(ht.getRank())) {
-            writer.set(CLASSIFICATION_TERMS.get(ht.getRank()), ht.getName());
+          if (RankUtils.RANK2DWC.containsKey(ht.getRank())) {
+            writer.set(RankUtils.RANK2DWC.get(ht.getRank()), ht.getName());
           }
         }
       }

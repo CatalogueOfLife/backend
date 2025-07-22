@@ -5,7 +5,6 @@ import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.User;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Origin;
@@ -25,6 +24,8 @@ import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.postgres.PgAuthorshipNormalizer;
 
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,14 +35,12 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
-
 import org.junit.rules.ExternalResource;
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;
@@ -52,8 +51,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.Pair;
-
-import javax.annotation.Nullable;
 
 /**
  * A junit test rule that truncates all CoL tables, potentially loads some test
@@ -98,7 +95,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
    */
   public final static TestData DATASET_MIX = new TestData("dataset_mix", null, false, Collections.emptyMap(), null, false, null);
   public final static TestData APPLE = new TestData("apple", 11, Set.of(3, 11, 12));
-  public final static TestData FISH = new TestData("fish", 100, Set.of(3, 100, 101, 102));
+  public final static TestData FISH = new TestData("fish", 100, Set.of(3, 100, 101, 102, 103));
   public final static TestData TREE = new TestData("tree", 11, Set.of(3, 11, 12));
   public final static TestData TREE2 = new TestData("tree2", 11, Set.of(3, 11));
   public final static TestData TREE3 = new TestData("tree3", 3, Set.of(3));
@@ -529,6 +526,7 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
     );
     copyPartitionedTable(pgc, "distribution", key, datasetEntityDefaults(key), Collections.emptyList());
     copyPartitionedTable(pgc, "vernacular_name", key, datasetEntityDefaults(key), Collections.emptyList());
+    copyPartitionedTable(pgc, "taxon_metrics", key, datasetDefaults(key), Collections.emptyList());
   }
 
   class NameParserFunc implements CsvFunction {
@@ -612,6 +610,10 @@ public class TestDataRule extends ExternalResource implements AutoCloseable {
   }
   private static String str(List<String> arr) {
     return PgCopyUtils.buildPgArray(arr.toArray(new String[0]));
+  }
+
+  private Map<String, Object> datasetDefaults(int datasetKey) {
+    return ImmutableMap.of("dataset_key", datasetKey);
   }
 
   private Map<String, Object> datasetEntityDefaults(int datasetKey) {

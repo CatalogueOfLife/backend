@@ -3,10 +3,10 @@ package life.catalogue.dw.jersey.filter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Preconditions;
+
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
-
-import com.google.common.base.Preconditions;
 
 @LegacyAPI
 public class DelayRequestFilter implements ContainerRequestFilter {

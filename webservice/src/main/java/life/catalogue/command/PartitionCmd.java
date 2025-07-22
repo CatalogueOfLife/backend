@@ -1,12 +1,12 @@
 package life.catalogue.command;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.WsServerConfig;
 import life.catalogue.dao.Partitioner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;

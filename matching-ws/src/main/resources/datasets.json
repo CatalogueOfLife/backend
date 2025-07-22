@@ -1,17 +1,17 @@
 [
   {
-    "key": "53147",
-    "gbifKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
+    "clbKey": "53147",
+    "datasetKey": "d7dddbf4-2cf0-4f39-9b2a-bb099caae36c",
     "title": "GBIF Backbone Taxonomy"
   },
   {
-    "key": "53131",
-    "gbifKey": "19491596-35ae-4a91-9a98-85cf505f1bd3",
+    "clbKey": "53131",
+    "datasetKey": "19491596-35ae-4a91-9a98-85cf505f1bd3",
     "title": "IUCN"
   },
   {
-    "key": "2006",
-    "gbifKey": "046bbc50-cae2-47ff-aa43-729fbf53f7c5",
+    "clbKey": "2006",
+    "datasetKey": "046bbc50-cae2-47ff-aa43-729fbf53f7c5",
     "title": "IPNI",
     "prefix": "urn:lsid:ipni.org:names:",
     "prefixMapping": [
@@ -21,8 +21,8 @@
     "removePrefixForMatching": true
   },
   {
-    "key": "2011",
-    "gbifKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
+    "clbKey": "2011",
+    "datasetKey": "2d59e5db-57ad-41ff-97d6-11f5fb264527",
     "title": "WoRMS",
     "prefix": "urn:lsid:marinespecies.org:taxname:",
     "prefixMapping": [
@@ -33,14 +33,14 @@
     ]
   },
   {
-    "key": "7888",
-    "gbifKey": "dbaa27eb-29e7-4cbb-8eab-3f689cfce116",
+    "clbKey": "7888",
+    "datasetKey": "dbaa27eb-29e7-4cbb-8eab-3f689cfce116",
     "title": "UK Species Inventory",
     "prefix": "*"
   },
   {
-    "key": "2041",
-    "gbifKey": "de8934f4-a136-481c-a87a-b0b202b80a31",
+    "clbKey": "2041",
+    "datasetKey": "de8934f4-a136-481c-a87a-b0b202b80a31",
     "title": "Dyntaxa. Svensk taxonomisk databas",
     "prefix": "urn:lsid:dyntaxa.se:Taxon:",
     "prefixMapping": [
@@ -48,8 +48,8 @@
     ]
   },
   {
-    "key": "2144",
-    "gbifKey": "9ca92552-f23a-41a8-a140-01abaa31c931",
+    "clbKey": "2144",
+    "datasetKey": "9ca92552-f23a-41a8-a140-01abaa31c931",
     "title": "ITIS",
     "prefixMapping": [
       "itis:",
@@ -60,7 +60,8 @@
     ]
   },
   {
-    "key": "139831",
+    "clbKey": "139831",
+    "datasetKey": "50c9509d-22c7-4a22-a47d-8c48425ef4a7",
     "title": "iNaturalist",
     "prefix": "https://www.inaturalist.org/taxa/",
     "prefixMapping": [

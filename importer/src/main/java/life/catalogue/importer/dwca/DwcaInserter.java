@@ -3,10 +3,13 @@ package life.catalogue.importer.dwca;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.TaxonProperty;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
@@ -16,12 +19,10 @@ import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
-import org.gbif.dwc.terms.AcTerm;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
+import org.gbif.dwc.terms.*;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -31,6 +32,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.collection.CollectionUtils.isEmpty;
 import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 
 /**
@@ -38,6 +40,7 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
  */
 public class DwcaInserter extends NeoCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
+  private static final UnknownTerm DNA_EXTENSION = UnknownTerm.build("http://rs.gbif.org/terms/1.0/DnaDerivedData", "DnaDerivedData", true);
 
   private DwcInterpreter inter;
 
@@ -174,11 +177,47 @@ public class DwcaInserter extends NeoCsvInserter {
               t.setEnvironments(sp.getEnvironments());
             }
           }
+
+          if (!sp.getReferenceIds().isEmpty()) {
+            t.getReferenceIds().addAll(sp.getReferenceIds());
+          }
+
+          if (!sp.properties.isEmpty()) {
+            for (var kv : sp.properties.entrySet()) {
+              var tp = new TaxonProperty();
+              tp.setVerbatimKey(sp.getVerbatimKey());
+              tp.setProperty(kv.getKey().prefixedName());
+              tp.setValue(kv.getValue());
+              if (!sp.getReferenceIds().isEmpty()) {
+                tp.setReferenceId(sp.getReferenceIds().get(0));
+              }
+              u.properties.add(tp);
+            }
+          }
         }
       }
     );
+
+
+    insertTaxonEntities(reader, GbifTerm.Identifier,
+      inter::interpretAltIdentifiers,
+      inter::taxonID,
+      (nu, alt) -> {
+        if (!isEmpty(alt.getIdentifier())) {
+          var u = nu.usage.asUsageBase();
+          if (isEmpty(u.getIdentifier())) {
+            u.setIdentifier(alt.getIdentifier());
+          } else {
+            u.getIdentifier().addAll(alt.getIdentifier());
+          }
+        }
+      }
+    );
+
+    // just add verbatim data for these well know extensions without interpreting any data!
+    insertVerbatimEntities(reader, GbifTerm.Image, GbifTerm.TypesAndSpecimen, DwcTerm.ResourceRelationship, DNA_EXTENSION);
   }
-  
+
   @Override
   protected NodeBatchProcessor relationProcessor() {
     return new DwcaRelationInserter(store, reader.getMappingFlags());

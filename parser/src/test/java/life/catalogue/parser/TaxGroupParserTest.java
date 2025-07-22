@@ -1,19 +1,14 @@
 package life.catalogue.parser;
 
 import life.catalogue.api.vocab.TaxGroup;
-
-import life.catalogue.common.io.Resources;
-
 import life.catalogue.common.io.UTF8IoUtils;
+
+import java.io.BufferedReader;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

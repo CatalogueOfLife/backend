@@ -6,7 +6,10 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.io.CharsetDetectingStream;
 import life.catalogue.common.io.PathUtils;
 
-import org.gbif.dwc.terms.*;
+import org.gbif.dwc.terms.DwcTerm;
+import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.TermFactory;
+import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.BufferedReader;
@@ -499,9 +502,9 @@ public class CsvReader {
     return PathUtils.listFiles(folder, null);
   }
   
-  protected void detectMappedClassification(Term rowType, Map<Term, Rank> terms) {
+  protected void detectMappedClassification(Term rowType, Map<? extends Term, Rank> terms) {
     schema(rowType).ifPresent(s -> {
-      for (Map.Entry<Term, Rank> ent : terms.entrySet()) {
+      for (Map.Entry<? extends Term, Rank> ent : terms.entrySet()) {
         if (s.hasTerm(ent.getKey())) {
           mappingFlags.getDenormedRanksMapped().add(ent.getValue());
         }
@@ -749,7 +752,7 @@ public class CsvReader {
         }
       }
       if (skippedLast) {
-        tr.addIssue(Issue.PREVIOUS_LINE_SKIPPED);
+        tr.add(Issue.PREVIOUS_LINE_SKIPPED);
       }
       // load next non empty row
       nextRow();

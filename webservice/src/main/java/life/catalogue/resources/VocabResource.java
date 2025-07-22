@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
@@ -28,19 +26,19 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 
 import de.undercouch.citeproc.csl.CSLType;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/vocab")
 @Produces(MediaType.APPLICATION_JSON)

@@ -1,13 +1,13 @@
 package life.catalogue.config;
 
+import life.catalogue.api.vocab.Publishers;
+
 import java.util.Set;
 import java.util.UUID;
 
 import com.google.common.base.MoreObjects;
 
 import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.api.vocab.Publishers;
 
 /**
  *
@@ -50,6 +50,12 @@ public class GbifConfig {
    */
   @NotNull
   public Set<UUID> articlePublishers = Set.of(Publishers.PLAZI);
+
+  /**
+   * GBIF installation keys for hosts that exclusively publish article based datasets, e.g. Plazi.
+   */
+  @NotNull
+  public Set<UUID> articleHostInstallations = Set.of(UUID.fromString("7ce8aef1-9e92-11dc-8740-b8a03c50a999"));
 
   @Override
   public String toString() {

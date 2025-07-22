@@ -12,7 +12,6 @@ import life.catalogue.cache.VarnishUtils;
 import life.catalogue.common.date.DateUtils;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.HttpUtils;
-import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.text.CitationUtils;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.util.YamlUtils;
@@ -28,11 +27,9 @@ import life.catalogue.img.ImageService;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -246,7 +243,8 @@ public class ProjectRelease extends AbstractProjectCopy {
   /**
    * @param dKey datasetKey to remove name & reference orphans from.
    */
-  void removeOrphans(int dKey) {
+  void removeOrphans(int dKey) throws InterruptedException {
+    checkIfCancelled();
     final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
@@ -256,19 +254,22 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void prepWork() throws Exception {
-    LocalDateTime start = LocalDateTime.now();
+    super.prepWork();
+
+    LocalDateTime start;
 
     if (prCfg.removeBareNames) {
+      start = LocalDateTime.now();
       removeOrphans(projectKey);
+      DateUtils.logDuration(LOG, "Remove orphans", start);
     }
 
     prevReleaseKey = createReleaseDOI();
-    DateUtils.logDuration(LOG, "Preparing release", start);
 
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, factory);
+    IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, factory);
     idp.mapIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
@@ -300,6 +301,7 @@ public class ProjectRelease extends AbstractProjectCopy {
    * @param prevReleaseKey the previous release key to build the metadata with
    */
   protected Integer createReleaseDOI(Integer prevReleaseKey) throws Exception {
+    checkIfCancelled();
     // assign DOIs?
     if (doiCfg != null) {
       newDataset.setDoi(doiCfg.datasetDOI(newDatasetKey));
@@ -325,8 +327,8 @@ public class ProjectRelease extends AbstractProjectCopy {
       var prevSrc = psm.getReleaseSource(sourceKey, prevReleaseKey);
       if (prevSrc != null && prevSrc.getDoi() != null && prevSrc.getDoi().isCOL()) {
         // compare basic metrics
-        var metrics = srcDao.sourceMetrics(projectKey, sourceKey);
-        var prevMetrics = srcDao.sourceMetrics(prevReleaseKey, sourceKey);
+        var metrics = srcDao.sourceMetrics(projectKey, sourceKey, null);
+        var prevMetrics = srcDao.sourceMetrics(prevReleaseKey, sourceKey, null);
         if (Objects.equals(metrics.getTaxaByRankCount(), prevMetrics.getTaxaByRankCount())
             && Objects.equals(metrics.getSynonymsByRankCount(), prevMetrics.getSynonymsByRankCount())
             && Objects.equals(metrics.getVernacularsByLanguageCount(), prevMetrics.getVernacularsByLanguageCount())
@@ -396,7 +398,7 @@ public class ProjectRelease extends AbstractProjectCopy {
       if (newDataset.getDoi() != null) {
         var attr = doiUpdater.buildReleaseMetadata(projectKey, false, newDataset, prevReleaseKey);
         LOG.info("Updating DOI release metadata {}", newDataset.getDoi());
-        doiService.update(attr);
+        doiService.updateSilently(attr);
       }
     }
 

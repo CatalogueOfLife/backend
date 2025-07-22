@@ -40,12 +40,12 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
     DSID<String> rootID = DSID.of(catKey, null);
     DSID<String> trilobitaRootID = DSID.of(TRILOBITA, null);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> root = noSectors(tm.children(catKey, type, rootID, true, true, page));
+      List<TreeNode> root = noSectors(tm.children(catKey, type, rootID, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Animalia", root.get(0).getName());
 
-      root = noSectors(tm.children(catKey, type, trilobitaRootID, true, false, page));
+      root = noSectors(tm.children(catKey, type, trilobitaRootID, true, page));
       assertEquals(1, root.size());
       assertEquals("1", root.get(0).getId());
       assertEquals("Trilobita", root.get(0).getName());
@@ -56,7 +56,7 @@ public class TreeMapper2Test extends MapperTestBase<TreeMapper> {
   public void parents() {
     TreeMapper tm = mapper(TreeMapper.class);
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> parents = valid(tm.classification(catKey, type, DSID.of(TRILOBITA, "10"), true));
+      List<TreeNode> parents = valid(tm.classification(catKey, type, DSID.of(TRILOBITA, "10")));
       assertEquals(6, parents.size());
       assertEquals(Rank.SPECIES, parents.get(0).getRank());
       assertEquals(Rank.GENUS, parents.get(1).getRank());

@@ -2,12 +2,12 @@ package life.catalogue.dao;
 
 import life.catalogue.common.io.UTF8IoUtils;
 
+import java.io.BufferedReader;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.BufferedReader;
-import java.util.stream.Stream;
 
 public class FileMetricsDatasetDaoTest extends FileMetricsDaoTestBase<Integer> {
 

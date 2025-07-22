@@ -1,18 +1,7 @@
 package life.catalogue.dw.jersey.writers;
 
-import com.google.common.base.Throwables;
-
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-
-import org.glassfish.jersey.message.internal.MediaTypes;
-
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.ext.MessageBodyWriter;
-import jakarta.ws.rs.ext.Provider;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -23,7 +12,15 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
+import com.google.common.base.Throwables;
+
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.MessageBodyWriter;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Vocabularies are listed as list of maps.

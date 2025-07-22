@@ -1,12 +1,9 @@
 package life.catalogue.common.io;
 
-import com.univocity.parsers.csv.CsvWriterSettings;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Pattern;
+
+import com.univocity.parsers.csv.CsvWriterSettings;
 
 /**
  * CSV delimited file writer that uses univocity under the hood.

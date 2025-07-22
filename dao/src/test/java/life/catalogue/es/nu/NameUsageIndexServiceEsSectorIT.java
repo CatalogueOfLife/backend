@@ -5,8 +5,8 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.es.EsPgTestBase;
+import life.catalogue.junit.TestDataRule;
 
 import java.io.IOException;
 

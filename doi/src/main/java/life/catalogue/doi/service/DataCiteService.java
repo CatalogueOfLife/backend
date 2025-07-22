@@ -14,15 +14,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.NotFoundException;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.Invocation;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.Mailer;
@@ -32,6 +23,16 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
+
+import jakarta.ws.rs.NotFoundException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriBuilder;
 
 public class DataCiteService implements DoiService {
   private static final Logger LOG = LoggerFactory.getLogger(DataCiteService.class);

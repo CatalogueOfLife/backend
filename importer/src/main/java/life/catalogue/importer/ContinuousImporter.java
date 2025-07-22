@@ -1,5 +1,7 @@
 package life.catalogue.importer;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.Managed;
 import life.catalogue.common.util.LoggingUtils;
@@ -8,6 +10,8 @@ import life.catalogue.config.ContinuousImportConfig;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -39,13 +43,16 @@ public class ContinuousImporter implements Managed {
   private ImporterConfig cfg;
   private SqlSessionFactory factory;
   private ContinousImporterJob job;
-  
+
   public ContinuousImporter(ImporterConfig cfg, ImportManager manager, SqlSessionFactory factory) {
     this.cfg = cfg;
     this.manager = manager;
     this.factory = factory;
+    if (cfg.continuous.forceBefore != null) {
+      LOG.info("Enforce all imports which last happened before {}", cfg.continuous.forceBefore);
+    }
   }
-  
+
   static class ContinousImporterJob implements Runnable {
     private final SqlSessionFactory factory;
     private final ImportManager manager;
@@ -103,10 +110,13 @@ public class ContinuousImporter implements Managed {
 
     private void scheduleImport(DatasetMapper.DatasetAttempt d) {
       try {
-        if (d.isFailed()) {
+        boolean forceBefore = wasImportedBefore(d, cfg.forceBefore);
+        if (forceBefore) {
+          LOG.info("Schedule a forced import of dataset {} which was last imported before our forceBefore cutoff on {}: {}", d.getKey(), d.getLastImportAttempt(), d.getTitle());
+        } else if (d.isFailed()) {
           LOG.info("Schedule a forced import of dataset {} which failed the last time on {}: {}", d.getKey(), d.getLastImportAttempt(), d.getTitle());
         }
-        manager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER, d.isFailed()));
+        manager.submit(ImportRequest.external(d.getKey(), Users.IMPORTER, d.isFailed() || forceBefore));
       } catch (IllegalArgumentException e) {
         LOG.warn("Failed to schedule a {}dataset import {}: {}", d.isFailed()? "forced ":"", d.getKey(), d.getTitle(), e);
       }
@@ -134,6 +144,10 @@ public class ContinuousImporter implements Managed {
     }
   }
 
+  @VisibleForTesting
+  static boolean wasImportedBefore(DatasetMapper.DatasetAttempt d, LocalDate before) {
+    return before != null && d.getLastImportAttempt() != null && before.isAfter(d.getLastImportAttempt().toLocalDate());
+  }
 
   @Override
   public boolean hasStarted() {

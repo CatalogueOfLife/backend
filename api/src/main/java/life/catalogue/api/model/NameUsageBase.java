@@ -393,6 +393,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{" + name.getLabel() + " [" + getId() + "]}";
+    String label = name != null ? name.getLabel() : "[no_name]";
+    return getClass().getSimpleName() + "{" + label + " [" + getId() + "]}";
   }
 }

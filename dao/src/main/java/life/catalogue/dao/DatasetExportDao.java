@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.event.ExportChanged;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.model.Page;
@@ -18,22 +17,18 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import jakarta.validation.Validator;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import com.google.common.eventbus.EventBus;
+import jakarta.validation.Validator;
 
 public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExportMapper> {
   Set<JobStatus> GOOD = Set.of(JobStatus.FINISHED, JobStatus.WAITING, JobStatus.BLOCKED, JobStatus.RUNNING);
-  private final EventBus bus;
   private final JobConfig cfg;
 
-  public DatasetExportDao(JobConfig cfg, SqlSessionFactory factory, EventBus bus, Validator validator) {
+  public DatasetExportDao(JobConfig cfg, SqlSessionFactory factory, Validator validator) {
     super(false, true, factory, DatasetExport.class, DatasetExportMapper.class, validator);
-    this.bus = bus;
     this.cfg = cfg;
   }
 
@@ -75,8 +70,6 @@ public class DatasetExportDao extends EntityDao<UUID, DatasetExport, DatasetExpo
     if (zip.exists()) {
       FileUtils.deleteQuietly(zip);
     }
-    // notify event bus
-    bus.post(ExportChanged.deleted(old, user));
     return true;
   }
 

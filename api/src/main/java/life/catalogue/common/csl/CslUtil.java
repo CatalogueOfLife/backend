@@ -1,7 +1,5 @@
 package life.catalogue.common.csl;
 
-import de.undercouch.citeproc.csl.CSLType;
-
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslName;
 import life.catalogue.api.model.Reference;
@@ -21,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.undercouch.citeproc.csl.CSLItemData;
+import de.undercouch.citeproc.csl.CSLType;
 
 public class CslUtil {
   private static final Logger LOG = LoggerFactory.getLogger(CslUtil.class);

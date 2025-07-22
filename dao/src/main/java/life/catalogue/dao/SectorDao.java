@@ -9,8 +9,6 @@ import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 
-import org.apache.ibatis.annotations.Param;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -19,13 +17,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.Validator;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);

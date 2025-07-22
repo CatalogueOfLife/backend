@@ -42,6 +42,15 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     this.classification = classification;
   }
 
+  public T getByRank(Rank rank) {
+    for (T t : classification) {
+      if (t.getRank() == rank) {
+        return t;
+      }
+    }
+    return null;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

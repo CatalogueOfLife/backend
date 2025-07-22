@@ -16,9 +16,9 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Prints simple names as TSV or CSV rows.

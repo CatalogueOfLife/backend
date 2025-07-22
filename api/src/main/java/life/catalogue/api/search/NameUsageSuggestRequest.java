@@ -11,6 +11,8 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
 
   @QueryParam("accepted")
   private boolean accepted;
+  @QueryParam("exclBareNames")
+  private boolean exclBareNames;
   @QueryParam("limit")
   private Integer limit; // Desired number of suggestions
 
@@ -36,6 +38,14 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
     this.accepted = accepted;
   }
 
+  public boolean isExclBareNames() {
+    return exclBareNames;
+  }
+
+  public void setExclBareNames(boolean exclBareNames) {
+    this.exclBareNames = exclBareNames;
+  }
+
   public Integer getLimit() {
     return limit;
   }
@@ -50,27 +60,15 @@ public class NameUsageSuggestRequest extends NameUsageRequest {
   }
 
   @Override
-  public int hashCode() {
-    final int prime = 31;
-    int result = super.hashCode();
-    result = prime * result + Objects.hash(accepted, limit);
-    return result;
+  public boolean equals(Object o) {
+    if (!(o instanceof NameUsageSuggestRequest)) return false;
+    if (!super.equals(o)) return false;
+    NameUsageSuggestRequest that = (NameUsageSuggestRequest) o;
+    return accepted == that.accepted && exclBareNames == that.exclBareNames && Objects.equals(limit, that.limit);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (!super.equals(obj)) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    NameUsageSuggestRequest other = (NameUsageSuggestRequest) obj;
-    return Objects.equals(accepted, other.accepted) 
-        && Objects.equals(limit, other.limit);
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), accepted, exclBareNames, limit);
   }
-
 }

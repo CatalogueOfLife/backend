@@ -1,13 +1,13 @@
 package life.catalogue.concurrent;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.config.MailConfig;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,12 +16,12 @@ import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.slf4j.MDC;
+import com.google.common.annotations.VisibleForTesting;
 
 public abstract class BackgroundJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(BackgroundJob.class);
@@ -182,6 +182,7 @@ public abstract class BackgroundJob implements Runnable {
       var marker = logToFile ? LoggingUtils.END_JOB_LOG_MARKER : null;
       LOG.info(marker, "About to end {} {}", getJobName(), key);
       onLogAppenderClose();
+      LoggingUtils.removeJobMDC();
       MDC.clear();
     }
   }
@@ -223,6 +224,15 @@ public abstract class BackgroundJob implements Runnable {
   @VisibleForTesting
   public void setError(Exception error) {
     this.error = error;
+  }
+
+  public String getErrorStackTrace() {
+    StringWriter sw = new StringWriter();
+    if (error != null) {
+      PrintWriter pw = new PrintWriter(sw);
+      error.printStackTrace(pw);
+    }
+    return sw.toString();
   }
 
   public LocalDateTime getCreated() {

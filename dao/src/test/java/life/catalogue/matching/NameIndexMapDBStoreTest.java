@@ -1,10 +1,10 @@
 package life.catalogue.matching;
 
-import java.io.File;
-import java.io.IOException;
-
 import life.catalogue.matching.nidx.NameIndexMapDBStore;
 import life.catalogue.matching.nidx.NameIndexStore;
+
+import java.io.File;
+import java.io.IOException;
 
 import org.mapdb.DBMaker;
 

@@ -6,7 +6,6 @@ import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.assembly.SyncState;
-import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.common.io.LineReader;
@@ -16,12 +15,12 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
@@ -32,7 +31,6 @@ import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.resources.legacy.IdMap;
 
 import java.io.*;
 import java.util.List;
@@ -47,13 +45,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
 
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Validator;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -77,23 +73,21 @@ public class AdminResource {
   private final NameUsageIndexService indexService;
   private final NameUsageSearchService searchService;
   private boolean maintenance = false;
-  private final Validator validator;
   private final DatasetDao ddao;
   private final SyncManager assembly;
-  private final IdMap idMap;
   private final ImportManager importManager;
   private final GbifSyncManager gbifSync;
   private final NameIndex namesIndex;
   private final JobExecutor exec;
   private final ManagedService componedService;
-  private final EventBus bus;
-  private final LatestDatasetKeyCache lrCache;
+  private final EventBroker bus;
   private final EmailEncryption encryption;
 
-  public AdminResource(SqlSessionFactory factory, LatestDatasetKeyCache lrCache, ManagedService managedService, SyncManager assembly, DownloadUtil downloader, WsServerConfig cfg, ImageService imgService, NameIndex ni,
+  public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
+                       WsServerConfig cfg, ImageService imgService, NameIndex ni,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, IdMap idMap, Validator validator, EventBus bus, EmailEncryption encryption) {
+                       JobExecutor executor, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;
@@ -109,9 +103,6 @@ public class AdminResource {
     this.gbifSync = gbifSync;
     this.importManager = importManager;
     this.exec = executor;
-    this.idMap = idMap;
-    this.validator = validator;
-    this.lrCache = lrCache;
   }
 
   @GET
@@ -187,13 +178,6 @@ public class AdminResource {
     componedService.stopAll();
     componedService.startAll();
     return true;
-  }
-
-  @POST
-  @Path("/reload-idmap")
-  public int reloadIdmap(@Auth User user) throws IOException {
-    idMap.reload();
-    return idMap.size();
   }
 
   @POST
@@ -315,15 +299,6 @@ public class AdminResource {
    */
   public BackgroundJob rematchUnmatched(@Auth User user) {
     return runJob(new GlobalMatcherJob(user.getKey(), factory, namesIndex, bus));
-  }
-
-  @DELETE
-  @Path("/cache")
-  public boolean clearCaches(@Auth User user) {
-    LOG.info("Clear dataset info cache with {} entries by {}", DatasetInfoCache.CACHE.size(), user);
-    DatasetInfoCache.CACHE.clear();
-    lrCache.clear();
-    return true;
   }
 
   @POST

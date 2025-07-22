@@ -1,0 +1,50 @@
+package life.catalogue.printer;
+
+import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
+
+import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Modifier;
+import java.util.Set;
+
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+
+import static org.junit.Assert.assertNotNull;
+
+public class PrinterFactoryIT {
+  @ClassRule
+  public static PgSetupRule pgSetupRule = new PgSetupRule();
+
+  @Rule
+  public final TestDataRule testDataRule = TestDataRule.tree();
+
+  @Test
+  public void datasetFactorForAllPrinters() throws IOException {
+    Reflections reflections = new Reflections(AbstractPrinter.class.getPackage().getName());
+    Set<Class<?>> printerClasses = reflections.get(Scanners.SubTypes.of(AbstractPrinter.class).asClass());
+    for (Class<?> pcl : printerClasses) {
+      if (!Modifier.isAbstract(pcl.getModifiers())) {
+        var strw = new StringWriter();
+        AbstractPrinter p = PrinterFactory.dataset((Class<? extends AbstractPrinter>)pcl, testDataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), strw);
+        int cnt = p.print();
+        System.out.println("\n### " + pcl.getSimpleName());
+        System.out.println("count=" + cnt);
+        System.out.println(strw);
+        assertNotNull(strw.toString());
+      }
+    }
+
+    var ttp = TreeTraversalParameter.all(3, "x", null, Rank.GENUS, true);
+    var p2 = PrinterFactory.dataset(JsonFlatPrinter.class, ttp, null, new StringWriter());
+    assertNotNull(p2);
+  }
+}

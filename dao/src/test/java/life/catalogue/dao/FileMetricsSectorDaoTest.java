@@ -3,8 +3,8 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameLink;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.junit.TestDataRule;
 
 import java.sql.Statement;
 

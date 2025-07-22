@@ -71,7 +71,7 @@ public class InterpreterBase {
   
   protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
     if (!v.hasTerm(term)) {
-      v.addIssue(notExistingIssue);
+      v.add(notExistingIssue);
       return false;
     }
     return true;
@@ -97,7 +97,7 @@ public class InterpreterBase {
       ref = refFactory.find(rid, null);
       if (ref == null) {
         LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
-        v.addIssue(Issue.REFERENCE_ID_INVALID);
+        v.add(Issue.REFERENCE_ID_INVALID);
       } else {
         refIdConsumer.accept(ref.getId());
         if (refCitationConsumer != null) {
@@ -117,7 +117,7 @@ public class InterpreterBase {
           Reference ref = refFactory.find(rid);
           if (ref == null) {
             LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
-            v.addIssue(Issue.REFERENCE_ID_INVALID);
+            v.add(Issue.REFERENCE_ID_INVALID);
           } else {
             existingIds.add(ref.getId());
           }
@@ -132,7 +132,7 @@ public class InterpreterBase {
    */
   protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
-      v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
+      v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
       if (m.find()) {
         String remainder = m.replaceFirst("");
@@ -156,7 +156,7 @@ public class InterpreterBase {
       Reference ref = buildReference(accordingTo, v);
       if (ref != null) {
         if (u.getAccordingToId() != null) {
-          v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+          v.add(Issue.ACCORDING_TO_CONFLICT);
         }
         u.setAccordingToId(ref.getId());
         u.setAccordingTo(accordingTo);
@@ -220,7 +220,7 @@ public class InterpreterBase {
       vn.setRemarks(getFormattedText(rec, remarks));
 
       if (InterpreterUtils.unlikelyVernacular(vname)) {
-        rec.addIssue(Issue.VERNACULAR_NAME_UNLIKELY);
+        rec.add(Issue.VERNACULAR_NAME_UNLIKELY);
       }
       if (translit != null) {
         vn.setLatin(rec.get(translit));
@@ -377,12 +377,12 @@ public class InterpreterBase {
     try {
       date = DateParser.PARSER.parse(v.get(term));
     } catch (UnparsableException e) {
-      v.addIssue(invalidIssue);
+      v.add(invalidIssue);
       return null;
     }
     if (date.isPresent()) {
       if (date.get().isFuzzyDate()) {
-        v.addIssue(Issue.PARTIAL_DATE);
+        v.add(Issue.PARTIAL_DATE);
       }
       return date.get();
     }
@@ -429,7 +429,7 @@ public class InterpreterBase {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
       if (pnu.isExtinct()) {
         // flag this as synonyms cannot have the extinct flag
-        v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+        v.add(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
       }
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);

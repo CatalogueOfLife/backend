@@ -2,7 +2,9 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.TabularFormat;
+import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.dao.TaxonCounter;
 
@@ -12,8 +14,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 

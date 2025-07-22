@@ -1,6 +1,9 @@
 package life.catalogue.common.text;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.date.FuzzyDate;

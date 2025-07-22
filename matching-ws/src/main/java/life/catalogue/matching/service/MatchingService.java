@@ -1,7 +1,5 @@
 package life.catalogue.matching.service;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import life.catalogue.api.model.ScientificName;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
@@ -22,7 +20,8 @@ import life.catalogue.matching.util.NameParsers;
 import org.gbif.nameparser.api.*;
 import org.gbif.nameparser.util.RankUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
@@ -35,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ComparisonChain;
@@ -78,7 +78,13 @@ public class MatchingService {
       Set.of(NameType.OTU, NameType.VIRUS, NameType.HYBRID_FORMULA);
   private static final List<Rank> HIGHER_QUERY_RANK =
       List.of(
-          Rank.SPECIES, Rank.GENUS, Rank.FAMILY, Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
+          Rank.SPECIES, Rank.GENUS,
+        Rank.SUBFAMILY,
+        Rank.SUBTRIBE,
+        Rank.TRIBE,
+        Rank.FAMILY,
+        Rank.SUPERFAMILY,
+        Rank.ORDER, Rank.CLASS, Rank.PHYLUM, Rank.KINGDOM);
   // https://github.com/CatalogueOfLife/backend/issues/1314
   public static final Map<TaxonomicStatus, Integer> STATUS_SCORE =
       Map.of(
@@ -87,6 +93,16 @@ public class MatchingService {
           TaxonomicStatus.AMBIGUOUS_SYNONYM, -1,
           TaxonomicStatus.PROVISIONALLY_ACCEPTED, -5,
           TaxonomicStatus.MISAPPLIED, -10);
+  // sort by id length and chars
+  static final Comparator<NameUsageMatch.Usage> USAGE_KEY_LENGTH = Comparator.comparing(
+    NameUsageMatch.Usage::getKey, Comparator.comparingInt(String::length)
+  );
+  static final Comparator<NameUsageMatch.Usage> USAGE_KEY_ALPHA = Comparator.comparing(
+    NameUsageMatch.Usage::getKey, Comparator.naturalOrder()
+  );
+  public static final Comparator<NameUsageMatch> MATCH_KEY_ORDER = Comparator
+    .comparing(NameUsageMatch::getUsage, USAGE_KEY_LENGTH)
+    .thenComparing(NameUsageMatch::getUsage, USAGE_KEY_ALPHA);
 
   private final AuthorComparator authComp;
 
@@ -229,7 +245,7 @@ public class MatchingService {
 
   public NameUsageMatch match(
       @Nullable String scientificName,
-      @Nullable LinneanClassification classification,
+      @Nullable ClassificationQuery classification,
       boolean strict) {
     return match(
         NameUsageQuery.builder()
@@ -243,7 +259,7 @@ public class MatchingService {
   public NameUsageMatch match(
       @Nullable String scientificName,
       @Nullable Rank rank,
-      @Nullable LinneanClassification classification,
+      @Nullable ClassificationQuery classification,
       boolean strict) {
     return match(
       NameUsageQuery.builder()
@@ -428,7 +444,7 @@ public class MatchingService {
                                                @Nullable String specificEpithet,
                                                @Nullable String infraSpecificEpithet,
                                                @Nullable Rank suppliedRank,
-                                               @Nullable LinneanClassification classification,
+                                               @Nullable ClassificationQuery classification,
                                                Set<String> exclude, boolean strict, boolean verbose) {
     Map<String, Long> timings = new HashMap<>();
 
@@ -454,87 +470,72 @@ public class MatchingService {
     // clean strings, replacing odd whitespace, iso controls and trimming
     scientificName = CleanupUtils.clean(scientificName);
     if (classification == null) {
-      classification = new Classification();
+      classification = new ClassificationQuery();
     } else {
       CleanupUtils.clean(classification);
     }
 
-    // treat names that are all upper or lower case special - they cannot be parsed properly so
-    // rather use them as they are!
-    if (scientificName != null
-        && (scientificName.toLowerCase().equals(scientificName)
-            || scientificName.toUpperCase().equals(scientificName))) {
-      log.debug("All upper or lower case name found. Don't try to parse: {}", scientificName);
-      queryNameType = null;
-      if (mainMatchingMode != MatchingMode.STRICT) {
-        // turn off fuzzy matching
-        mainMatchingMode = MatchingMode.STRICT;
+    try {
+      // use name parser to make the name a canonical one
+      // we build the name with flags manually as we wanna exclude indet. names such as "Abies
+      // spec." and rather match them to Abies only
+      Rank npRank = rank == null ? null : Rank.valueOf(rank.name());
+      start = System.currentTimeMillis();
+      parsedName = NameParsers.INSTANCE.parse(scientificName, npRank, null);
+      timings.put("nameParse", System.currentTimeMillis() - start);
+      queryNameType = NameType.valueOf(parsedName.getType().name());
+      scientificName = parsedName.canonicalNameMinimal();
+
+      // parsed genus provided for a name lower than genus?
+      if (classification.nameFor(Rank.GENUS) == null
+          && getGenusOrAbove(parsedName) != null
+          && parsedName.getRank() != null
+          && parsedName.getRank().isInfragenericStrictly()) {
+        classification.setGenus(getGenusOrAbove(parsedName));
       }
+
+      // used parsed rank if not given explicitly, but only for bi+trinomials
+      // see https://github.com/CatalogueOfLife/backend/issues/1316
       if (rank == null) {
-        rank = Rank.UNRANKED;
-      }
-
-    } else {
-      try {
-        // use name parser to make the name a canonical one
-        // we build the name with flags manually as we wanna exclude indet. names such as "Abies
-        // spec." and rather match them to Abies only
-        Rank npRank = rank == null ? null : Rank.valueOf(rank.name());
-        start = System.currentTimeMillis();
-        parsedName = NameParsers.INSTANCE.parse(scientificName, npRank, null);
-        timings.put("nameParse", System.currentTimeMillis() - start);
-        queryNameType = NameType.valueOf(parsedName.getType().name());
-        scientificName = parsedName.canonicalNameMinimal();
-
-        // parsed genus provided for a name lower than genus?
-        if (classification.getGenus() == null
-            && getGenusOrAbove(parsedName) != null
-            && parsedName.getRank() != null
-            && parsedName.getRank().isInfragenericStrictly()) {
-          classification.setGenus(getGenusOrAbove(parsedName));
-        }
-
-        // used parsed rank if not given explicitly, but only for bi+trinomials
-        // see https://github.com/CatalogueOfLife/backend/issues/1316
-        if (rank == null) {
-          if (parsedName.isBinomial()
-              || parsedName.isTrinomial()
-              || (
-                parsedName.getRank() != null
-                  && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
-                  && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
-              )
-          ) {
+        if (parsedName.isBinomial()
+            || parsedName.isTrinomial()
+            || (
+              parsedName.getRank() != null
+                && parsedName.getRank().ordinal() >= Rank.SPECIES.ordinal()
+                && parsedName.getEpithet(NamePart.SPECIFIC) != null  //see https://github.com/CatalogueOfLife/data/issues/719
+            )
+        ) {
+          if (parsedName.getRank() != null) {
             rank = Rank.valueOf(parsedName.getRank().name());
           }
         }
-
-        // hybrid names, virus names, OTU & blacklisted ones don't provide any parsed name
-        if (mainMatchingMode != MatchingMode.STRICT && !parsedName.getType().isParsable()) {
-          // turn off fuzzy matching
-          mainMatchingMode = MatchingMode.STRICT;
-          log.debug(
-              "Unparsable {} name, turn off fuzzy matching for {}", parsedName.getType(), scientificName);
-        }
-
-      } catch (UnparsableNameException e) {
-        // hybrid names, virus names & blacklisted ones - dont provide any parsed name
-        queryNameType = NameType.valueOf(e.getType().name());
-        // we assign all OTUs unranked
-        if (NameType.OTU == queryNameType) {
-          rank = Rank.UNRANKED;
-        }
-        if (mainMatchingMode != MatchingMode.STRICT) {
-          // turn off fuzzy matching
-          mainMatchingMode = MatchingMode.STRICT;
-          log.debug(
-              "Unparsable {} name, turn off fuzzy matching for {}", queryNameType, scientificName);
-        } else {
-          log.debug("Unparsable {} name: {}", queryNameType, scientificName);
-        }
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
       }
+
+      // hybrid names, virus names, OTU & blacklisted ones don't provide any parsed name
+      if (mainMatchingMode != MatchingMode.STRICT && !parsedName.getType().isParsable()) {
+        // turn off fuzzy matching
+        mainMatchingMode = MatchingMode.STRICT;
+        log.debug(
+            "Unparsable {} name, turn off fuzzy matching for {}", parsedName.getType(), scientificName);
+      }
+
+    } catch (UnparsableNameException e) {
+      // hybrid names, virus names & blacklisted ones - dont provide any parsed name
+      queryNameType = NameType.valueOf(e.getType().name());
+      // we assign all OTUs unranked
+      if (NameType.OTU == queryNameType) {
+        rank = Rank.UNRANKED;
+      }
+      if (mainMatchingMode != MatchingMode.STRICT) {
+        // turn off fuzzy matching
+        mainMatchingMode = MatchingMode.STRICT;
+        log.debug(
+            "Unparsable {} name, turn off fuzzy matching for {}", queryNameType, scientificName);
+      } else {
+        log.debug("Unparsable {} name: {}", queryNameType, scientificName);
+      }
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
 
     // run the initial match
@@ -645,8 +646,9 @@ public class MatchingService {
 
     // use classification query strings
     for (Rank qr : HIGHER_QUERY_RANK) {
-      if (supraGenericOnly && !qr.isSuprageneric()) continue;
-      String name = classification.getHigherRank(qr);
+      if (supraGenericOnly && !qr.isSuprageneric())
+        continue;
+      String name = classification.nameFor(qr);
       if (!StringUtils.isEmpty(name)) {
         match =
             match(
@@ -673,11 +675,11 @@ public class MatchingService {
         verbose ? match1.getDiagnostics().getAlternatives() : null);
   }
 
-  private boolean nextAboveGenusDiffers(LinneanClassification cl, NameUsageMatch cl2) {
+  private boolean nextAboveGenusDiffers(RankNameResolver cl, NameUsageMatch cl2) {
     for (Rank r = RankUtils.nextHigherLinneanRank(Rank.GENUS);
          r != null;
          r = RankUtils.nextHigherLinneanRank(r)) {
-      String h1 = cl.getHigherRank(r);
+      String h1 = cl.nameFor(r);
       String h2 = getHigherRank(cl2, r);
       if (h1 != null && h2 != null) {
         return !Objects.equals(h1, h2);
@@ -750,7 +752,7 @@ public class MatchingService {
       ParsedName pn,
       String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, true);
@@ -764,7 +766,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank());
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
       // -25 - 0
       final int fuzzyMatchUnlikely = fuzzyMatchUnlikelyhood(canonicalName, m);
 
@@ -794,7 +796,7 @@ public class MatchingService {
   }
 
   private List<NameUsageMatch> queryHigher(
-      String canonicalName, Rank rank, LinneanClassification lc, boolean verbose) {
+    String canonicalName, Rank rank, RankNameResolver lc, boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, false);
     for (NameUsageMatch m : matches) {
@@ -805,7 +807,7 @@ public class MatchingService {
       // -10 - +5
       final int rankSimilarity = rankSimilarity(rank, m.getUsage().getRank()) * 2;
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()
@@ -827,7 +829,7 @@ public class MatchingService {
       ParsedName pn,
       String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       boolean verbose) {
     // do a lucene matching
     List<NameUsageMatch> matches = queryIndex(rank, canonicalName, false);
@@ -840,12 +842,12 @@ public class MatchingService {
       final int kingdomSimilarity =
           incNegScore(
               kingdomSimilarity(
-                  htComp.toKingdom(lc.getKingdom()), htComp.toKingdom(m.getKingdom())),
+                  htComp.toKingdom(lc.nameFor(Rank.KINGDOM)), htComp.toKingdom(m.nameFor(Rank.KINGDOM))),
               10);
       // -10 - +5
       final int rankSimilarity = incNegScore(rankSimilarity(rank, m.getUsage().getRank()), 10);
       // -5 - +1
-      final int statusScore = STATUS_SCORE.get(m.getDiagnostics().getStatus());
+      final int statusScore = STATUS_SCORE.get(m.getUsage().getStatus());
 
       // preliminary total score, -5 - 20 distance to next best match coming below!
       m.getDiagnostics()
@@ -877,7 +879,7 @@ public class MatchingService {
    * @param canonicalName the canonical name to match against
    * @param rank the rank to match against
    * @param lc the classification to match against
-   * @param exclude the list of keys to exclude
+   * @param exclude an optional list of keys to exclude
    * @param mode the matching mode to use
    * @param verbose if true, add notes to the match object
    * @return the best match, might contain no usageKey
@@ -888,7 +890,7 @@ public class MatchingService {
       @Nullable ParsedName pn,
       @Nullable String canonicalName,
       Rank rank,
-      LinneanClassification lc,
+      RankNameResolver lc,
       Set<String> exclude,
       @NotNull final MatchingMode mode,
       final boolean verbose) {
@@ -920,10 +922,10 @@ public class MatchingService {
           m.getDiagnostics().setConfidence(0);
           addNote(m, "excluded by " + m.getUsage().getKey());
         } else {
-          for (Rank r : Rank.DWC_RANKS) {
-            if (exclude.contains(m.getHigherRankKey(r))) {
+          for (var ht : m.getClassification()) {
+            if (exclude.contains(ht.getKey())) {
               m.getDiagnostics().setConfidence(0);
-              addNote(m, "excluded by " + m.getHigherRankKey(r));
+              addNote(m, "excluded by " + ht.getKey());
               break;
             }
           }
@@ -976,10 +978,9 @@ public class MatchingService {
             }
           }
           if (sameClassification) {
-            // if they both have the same classification pick the one with the lowest, hence oldest
-            // id!
-            // FIXME keys are no longer numeric
-            //            Collections.sort(suitableMatches, USAGE_KEY_ORDER);
+            // if they both have the same classification pick the one with the shortest and first sorting id.
+            // Stable IDs in ChecklistBank are generated based on integers and thus represent older identifiers.
+            Collections.sort(suitableMatches, MATCH_KEY_ORDER);
             best = suitableMatches.get(0);
             addNote(best, suitableMatches.size() + " synonym homonyms");
           } else {
@@ -1135,24 +1136,24 @@ public class MatchingService {
     return 0;
   }
 
-  private boolean equalClassification(LinneanClassification best, LinneanClassification m) {
+  private boolean equalClassification(RankNameResolver best, RankNameResolver m) {
     return equalClassification(best, m, null);
   }
 
   /** Compares classifications starting from kingdom stopping after the stopRank if provided. */
   private boolean equalClassification(
-      LinneanClassification best, LinneanClassification m, Rank stopRank) {
+    RankNameResolver best, RankNameResolver m, Rank stopRank) {
     for (Rank r : Rank.LINNEAN_RANKS) {
       if (stopRank != null && stopRank.higherThan(r)) {
         break;
 
-      } else if (best.getHigherRank(r) == null) {
-        if (m.getHigherRank(r) != null) {
+      } else if (best.nameFor(r) == null) {
+        if (m.nameFor(r) != null) {
           return false;
         }
 
       } else {
-        if (m.getHigherRank(r) == null || !best.getHigherRank(r).equals(m.getHigherRank(r))) {
+        if (m.nameFor(r) == null || !best.nameFor(r).equals(m.nameFor(r))) {
           return false;
         }
       }
@@ -1272,7 +1273,7 @@ public class MatchingService {
 
   @VisibleForTesting
   protected int classificationSimilarity(
-      LinneanClassification query, LinneanClassification reference) {
+    RankNameResolver query, RankNameResolver reference) {
     // kingdom is super important
     int rate = htComp.compareHigherRank(Rank.KINGDOM, query, reference, 5, -10, -1);
     if (rate == -10) {

@@ -46,17 +46,7 @@
         <if test="type == @life.catalogue.api.model.TreeNode$Type@PROJECT">
           t.sector_key AS sector_key,
           NULL AS ed_id,
-          <choose>
-            <when test="estimates">
-              <include refid="life.catalogue.db.mapper.EstimateMapper.SelectVar">
-                <property name="alias" value="est."/>
-                <property name="prefix" value="est_"/>
-              </include>
-            </when>
-            <otherwise>
-              NULL AS est_id
-            </otherwise>
-          </choose>
+          NULL AS est_id
         </if>
       </otherwise>
     </choose>
@@ -77,9 +67,6 @@
       </if>
       <if test="type == @life.catalogue.api.model.TreeNode$Type@PROJECT">
         LEFT JOIN sector s ON s.id=t.sector_key AND s.dataset_key=#{catalogueKey}
-        <if test="estimates">
-          LEFT JOIN estimate est ON est.target_id=t.id AND est.dataset_key=#{datasetKey}
-        </if>
       </if>
     </if>
   </sql>
@@ -101,8 +88,6 @@
     <association property="_name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap"/>
     <association property="decision" javaType="EditorialDecision" resultMap="life.catalogue.db.mapper.DecisionMapper.decisionResultMap" columnPrefix="ed_"
                  notNullColumn="id"/>
-    <collection property="estimates" ofType="SpeciesEstimate" resultMap="life.catalogue.db.mapper.EstimateMapper.estimateResultMap" columnPrefix="est_"
-                notNullColumn="id"/>
   </resultMap>
 
   <select id="get" resultMap="treeResultMap">

@@ -1,13 +1,11 @@
 package life.catalogue.pgcopy;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class PgBinarySplitter {
   private PgBinaryStream in;

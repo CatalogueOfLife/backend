@@ -3,7 +3,6 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.MatchType;
 
 import org.gbif.nameparser.api.*;
 
@@ -139,6 +138,19 @@ public class NameTest extends SerdeTestBase<Name> {
     assertFalse(json.contains("\"combinationAuthorship\""));
     assertFalse(json.contains("\"basionymAuthorship\""));
     assertFalse(json.contains("\"authorship\""));
+  }
+
+  @Test
+  public void testUnparsableAuthorship() throws JsonProcessingException {
+    Name n = new Name();
+    n.setScientificName("Isoperla eximia : Zapekina-Dulkeit 1975");
+    n.setAuthorship(": Zapekina-Dulkeit 1975");
+    n.setGenus("Isoperla");
+    n.setSpecificEpithet("eximia");
+    n.setRank(Rank.SPECIES);
+    //n.rebuildScientificName();
+    //n.rebuildAuthorship();
+    assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", n.getLabel());
   }
   
   @Test

@@ -107,10 +107,13 @@
     </association>
   </resultMap>
 
-  <select id="listByTaxon" resultMap="vernacularNameResultMap">
+  <select id="listByTaxonFiltered" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE vn.dataset_key = #{key.datasetKey} AND vn.taxon_id = #{key.id}
+    <if test="lang != null">
+      AND vn.language = #{lang}
+    </if>
     ORDER BY name
   </select>
 
@@ -201,6 +204,11 @@
   <update id="removeSectorKey" parameterType="map">
     UPDATE vernacular_name SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE vernacular_name SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
 </mapper>

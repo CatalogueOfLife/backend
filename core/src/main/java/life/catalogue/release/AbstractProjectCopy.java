@@ -38,6 +38,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected final Validator validator;
   protected final int user;
   protected final int projectKey;
+  protected int idMapDatasetKey;
   protected final String actionName;
   protected int attempt;
   protected DatasetImport metrics;
@@ -58,6 +59,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     var info = DatasetInfoCache.CACHE.info(baseReleaseOrProjectKey);
     this.projectKey = info.keyOrProjectKey();
     DaoUtils.requireProject(projectKey, "Only projects can be duplicated.");
+    this.idMapDatasetKey = projectKey; // defaults to project key as the idmap namespace
     this.logToFile = true;
     this.deleteOnError = deleteOnError;
     this.actionName = actionName;
@@ -126,7 +128,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   void prepWork() throws Exception {
-    // dont do nothing - override if needed
+    // is an id mapping table needed?
+    createIdMapTables();
   }
 
   void finalWork() throws Exception {
@@ -146,19 +149,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // are sequences in place?
     try (SqlSession session = factory.openSession(true)) {
       session.getMapper(DatasetPartitionMapper.class).createSequences(newDatasetKey);;
-    }
-
-    // is an id mapping table needed?
-    if (mapIds) {
-      checkIfCancelled();
-      LOG.info("Create clean id mapping tables for project {}", projectKey);
-      try (SqlSession session = factory.openSession(true)) {
-        DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
-          dmp.dropTable(t, projectKey);
-          dmp.createIdMapTable(t, projectKey);
-        });
-      }
     }
 
     // call prep
@@ -199,6 +189,20 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("Successfully finished {} project {} into dataset {}", actionName, projectKey, newDatasetKey);
   }
 
+  protected void createIdMapTables() throws InterruptedException {
+    checkIfCancelled();
+    if (mapIds) {
+      LOG.info("Create clean id mapping tables with scope {}", idMapDatasetKey);
+      try (SqlSession session = factory.openSession(true)) {
+        DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
+        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> {
+          dmp.dropTable(t, idMapDatasetKey);
+          dmp.createIdMapTable(t, idMapDatasetKey);
+        });
+      }
+    }
+  }
+
   @Override
   protected void onError(Exception e) {
     String attempt = null;
@@ -230,18 +234,18 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     LOG.info("{} took {}", getClass().getSimpleName(), DurationFormatUtils.formatDuration(metrics.getDuration(), "HH:mm:ss"));
     diDao.update(metrics);
     if (mapIds) {
-      LOG.info("Remove id mapping tables for project {}", projectKey);
+      LOG.info("Remove id mapping tables for scope {}", idMapDatasetKey);
       try (SqlSession session = factory.openSession(true)) {
         DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
-        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, projectKey));
+        DatasetPartitionMapper.IDMAP_TABLES.forEach(t -> dmp.dropTable(t, idMapDatasetKey));
       } catch (Exception e) {
         // avoid any exceptions as it would bring down the finally block
-        LOG.error("Failed to remove id mapping tables for project {}", projectKey, e);
+        LOG.error("Failed to remove id mapping tables for scope {}", idMapDatasetKey, e);
       }
     }
   }
 
-  private void metrics() throws InterruptedException {
+  protected void metrics() throws InterruptedException {
     LOG.info("Build import metrics for dataset " + projectKey);
     updateState(ImportState.ANALYZING);
     // update usage counter
@@ -287,10 +291,10 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   void updateState(ImportState state) throws InterruptedException {
+    checkIfCancelled();
     LOG.info("Change state for dataset {} to {}", newDatasetKey, state);
     metrics.setState(state);
     diDao.update(metrics);
-    interruptIfCancelled();
   }
 
   void updateDataset(Dataset d) {
@@ -304,7 +308,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     indexService.indexDataset(newDatasetKey);
   }
 
-  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session){
+  <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) throws InterruptedException {
+    checkIfCancelled();
     int count = session.getMapper(mapperClass).copyDataset(projectKey, newDatasetKey, mapIds);
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), projectKey, newDatasetKey);
   }

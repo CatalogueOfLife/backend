@@ -1,7 +1,6 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.event.DatasetDataChanged;
-import life.catalogue.api.event.FlushDatasetCache;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
@@ -25,6 +24,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.neo.NeoDb;
@@ -58,7 +58,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validator;
 
@@ -89,7 +88,7 @@ public class ImportJob implements Runnable {
   private final Validator validator;
   private final DoiResolver resolver;
   private final DistributedArchiveService distributedArchiveService;
-  private final EventBus bus;
+  private final EventBroker bus;
   private final StartNotifier notifier;
   private final Consumer<ImportRequest> successCallback;
   private final BiConsumer<ImportRequest, Exception> errorCallback;
@@ -98,7 +97,7 @@ public class ImportJob implements Runnable {
             ImporterConfig iCfg, NormalizerConfig nCfg,
             DownloadUtil downloader, SqlSessionFactory factory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
-            DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBus bus,
+            DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
             StartNotifier notifier,
             Consumer<ImportRequest> successCallback,
             BiConsumer<ImportRequest, Exception> errorCallback
@@ -315,7 +314,7 @@ public class ImportJob implements Runnable {
     return false;
   }
 
-  private void  importDataset() throws Exception {
+  private void importDataset() throws Exception {
     di = dao.createWaiting(datasetKey, this, req.createdBy);
     LoggingUtils.setDatasetMDC(datasetKey, getAttempt(), getClass());
     LOG.info("Start new {}import attempt {} for {} dataset {}: {}", req.force ? "forced " : "" ,di.getAttempt(), dataset.getOrigin(), datasetKey, dataset.getTitle());
@@ -346,7 +345,7 @@ public class ImportJob implements Runnable {
         di.setMaxClassificationDepth(pgImport.getMaxDepth());
         dao.updateMetrics(di, datasetKey);
 
-        bus.post(new DatasetDataChanged(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey));
 
         if (rematchDecisions()) {
           updateState(ImportState.MATCHING);
@@ -411,7 +410,7 @@ public class ImportJob implements Runnable {
         session.getMapper(DatasetMapper.class).updateLastImportAttempt(datasetKey);
       }
       // flush dataset in varnish
-      bus.post(new FlushDatasetCache(datasetKey));
+      bus.publish(new DatasetDataChanged(datasetKey));
     }
   }
 

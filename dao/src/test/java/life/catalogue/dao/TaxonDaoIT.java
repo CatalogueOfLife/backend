@@ -4,14 +4,14 @@ import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.junit.MybatisTestUtils;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.junit.MybatisTestUtils;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Authorship;
@@ -36,7 +36,7 @@ public class TaxonDaoIT extends DaoTestBase {
 
   public TaxonDaoIT() {
     nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
     SectorDao sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
     tDao.setSectorDao(sdao);
   }

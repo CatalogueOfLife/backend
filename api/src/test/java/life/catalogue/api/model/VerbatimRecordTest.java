@@ -50,84 +50,84 @@ public class VerbatimRecordTest extends SerdeTestBase<VerbatimRecord> {
   @Test
   public void getTerm() throws Exception {
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.get(DwcTerm.nameAccordingTo));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
 
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("9-ii-1999\\00°37'55\"S 076°08'39\"W", v.get(DwcTerm.verbatimCoordinates));
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
 
     assertEquals("Abies alba", v.get(DwcTerm.scientificName));
     assertEquals("Abies alba", v.getRaw(DwcTerm.scientificName));
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     
     assertEquals("D&ouml;ring & M&#246;glich", v.getRaw(DwcTerm.scientificNameAuthorship));
     assertEquals("Döring & Möglich", v.get(DwcTerm.scientificNameAuthorship));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.get(DwcTerm.nameAccordingTo));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.get(DwcTerm.namePublishedIn));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("A new species of Neamia (Perciformes: Apogonidae) from the West Pacific Ocean.", v.get(AcefTerm.Title));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Keihäsluuhauki", v.get(DwcTerm.vernacularName));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
   
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertFalse(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.INVISIBLE_CHARACTERS));
     assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.scientificName));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.INVISIBLE_CHARACTERS));
 
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Dasysiphonia  japonica", v.get(ColdpTerm.specificEpithet));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
-    assertTrue(v.hasIssue(Issue.INVISIBLE_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.INVISIBLE_CHARACTERS));
   }
   
   @Test
   public void getFirst() throws Exception {
     assertEquals("Abies alba", v.getFirst(GbifTerm.canonicalName, DwcTerm.scientificName));
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.scientificNameAuthorship));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.nameAccordingTo));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Döring & Möglich", v.getFirst(GbifTerm.canonicalName, DwcTerm.namePublishedIn));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("A new species of Neamia (Perciformes: Apogonidae) from the West Pacific Ocean.", v.getFirst(GbifTerm.canonicalName, AcefTerm.Title));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
     
     init();
-    assertFalse(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertFalse(v.contains(Issue.ESCAPED_CHARACTERS));
     assertEquals("Keihäsluuhauki", v.getFirst(GbifTerm.canonicalName, DwcTerm.vernacularName));
-    assertTrue(v.hasIssue(Issue.ESCAPED_CHARACTERS));
+    assertTrue(v.contains(Issue.ESCAPED_CHARACTERS));
   }
   
 }

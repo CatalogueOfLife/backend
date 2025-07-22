@@ -9,14 +9,13 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -306,9 +305,9 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     Dataset r = create();
     r.setGbifKey(null);
     r.setDoi(null);
-
     r.setOrigin(DatasetOrigin.RELEASE);
     r.setSourceKey(p.getKey());
+    r.setAttempt(0);
     mapper().create(r);
     final int r1 = r.getKey();
 
@@ -322,12 +321,18 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
     var rels = mapper().listReleasesQuick(p.getKey());
     assertEquals(3, rels.size());
-    assertEquals(0, rels.stream().filter(DatasetMapper.DatasetRelease::isDeleted).count());
+    assertEquals(0, rels.stream().filter(DatasetRelease::isDeleted).count());
+
+    var r3b = mapper().getRelease(r3);
+    var r3Expected = new DatasetRelease(r);
+    r3Expected.setAttempt(r.getAttempt());
+
+    assertEquals(r3Expected, r3b);
 
     mapper().delete(r2);
     rels = mapper().listReleasesQuick(p.getKey());
     assertEquals(3, rels.size());
-    assertEquals(1, rels.stream().filter(DatasetMapper.DatasetRelease::isDeleted).count());
+    assertEquals(1, rels.stream().filter(DatasetRelease::isDeleted).count());
   }
 
   @Test
@@ -795,6 +800,16 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(8, mapper().search(query, null, new Page()).size());
     query.setLastImportState(ImportState.FAILED);
     assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    // tax group
+    query = new DatasetSearchRequest();
+    query.setGroup(List.of(TaxGroup.Animals, TaxGroup.Plants));
+    assertEquals(0, mapper().search(query, null, new Page()).size());
+
+    mapper().updateTaxonomicGroupScope(d1, Set.of(TaxGroup.Animals, TaxGroup.Arthropods, TaxGroup.Insects, TaxGroup.Coleoptera));
+    mapper().updateTaxonomicGroupScope(d2, Set.of(TaxGroup.Plants, TaxGroup.Gymnosperms));
+    mapper().updateTaxonomicGroupScope(d3, Set.of(TaxGroup.Viruses));
+    assertEquals(2, mapper().search(query, null, new Page()).size());
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {

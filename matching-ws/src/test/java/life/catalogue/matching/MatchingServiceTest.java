@@ -13,12 +13,23 @@
  */
 package life.catalogue.matching;
 
+import life.catalogue.matching.model.NameUsageMatch;
+
+import life.catalogue.matching.service.MatchingService;
+
+import org.gbif.nameparser.api.Rank;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static life.catalogue.matching.service.MatchingService.normConfidence;
 import static life.catalogue.matching.service.MatchingService.rankSimilarity;
 import static org.gbif.nameparser.api.Rank.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.Test;
 
 public class MatchingServiceTest {
 
@@ -38,6 +49,32 @@ public class MatchingServiceTest {
     assertEquals(-35, rankSimilarity(GENUS, FAMILY));
     // with the introduction of the new rank class
     assertEquals(-26, rankSimilarity(FAMILY, KINGDOM));
+  }
+
+  NameUsageMatch build(String key) {
+    var m = new NameUsageMatch();
+    m.setUsage(new NameUsageMatch.Usage());
+    m.getUsage().setKey(key);
+    m.getUsage().setRank(SPECIES);
+    m.getUsage().setName("Abies alba");
+    return m;
+  }
+
+  @Test
+  public void testMatchKeySortOrder() {
+    var list = new ArrayList<>(List.of(
+      build("ZHT5R"),
+      build("GHT5R"),
+      build("3HT5R"),
+      build("KL"),
+      build("CC8"),
+      build("A29")
+    ));
+    Collections.sort(list, MatchingService.MATCH_KEY_ORDER);
+    assertEquals(
+      List.of("KL", "A29", "CC8", "3HT5R", "GHT5R", "ZHT5R"),
+      list.stream().map(m -> m.getUsage().getKey()).collect(Collectors.toList())
+    );
   }
 
   @Test

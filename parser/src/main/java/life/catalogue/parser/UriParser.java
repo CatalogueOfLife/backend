@@ -1,6 +1,7 @@
 package life.catalogue.parser;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -16,9 +17,8 @@ import com.google.common.base.Strings;
  * Modified version of the registry-metadata GreedyUriConverter.
  */
 public class UriParser implements Parser<URI> {
-  private static final Logger LOG = LoggerFactory.getLogger(UriParser.class);
-  private static final String[] MULTI_VALUE_DELIMITERS = {"|#DELIMITER#|", "|", ",", ";"};
   private static final String HTTP_SCHEME = "http://";
+  private static final Pattern DOI_HTTP = Pattern.compile("^https?://doi.org(/.+)$");
   private final static Pattern WHITESPACE = Pattern.compile("\\s");
   public static final UriParser PARSER = new UriParser();
   
@@ -51,7 +51,16 @@ public class UriParser implements Parser<URI> {
     if (Strings.isNullOrEmpty(value)) {
       return null;
     }
-  
+
+    var doiMatch = DOI_HTTP.matcher(value);
+    if (doiMatch.matches()) {
+      try {
+        return new URI("https", "doi.org", doiMatch.group(1), null, null);
+      } catch (URISyntaxException e) {
+        // not sure how that can happen - let it continue for now and it will surely fail again
+      }
+    }
+
     // escape whitespace which is often given unescaped
     value = WHITESPACE.matcher(value.trim()).replaceAll("%20");
   

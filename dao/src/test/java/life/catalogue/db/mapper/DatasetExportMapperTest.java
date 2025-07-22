@@ -37,7 +37,7 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     req.setSynonyms(true);
     req.setExtinct(null);
     req.setMinRank(Rank.SPECIES);
-    req.setAddClassification(true);
+    req.setClassification(true);
 
     DatasetExport d = new DatasetExport();
     d.setKey(UUID.randomUUID());

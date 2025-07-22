@@ -1,7 +1,6 @@
 package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.api.search.NameUsageSuggestion;
 import life.catalogue.es.*;
 import life.catalogue.es.ddl.Analyzer;
@@ -32,7 +31,7 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   }
 
   @Override
-  public NameUsageSuggestResponse suggest(NameUsageSuggestRequest request) {
+  public List<NameUsageSuggestion> suggest(NameUsageSuggestRequest request) {
     try {
       return suggest(index, request);
     } catch (IOException e) {
@@ -41,21 +40,21 @@ public class NameUsageSuggestionServiceEs extends NameUsageQueryService implemen
   }
 
   @VisibleForTesting
-  public NameUsageSuggestResponse suggest(String index, NameUsageSuggestRequest request) throws IOException {
+  public List<NameUsageSuggestion> suggest(String index, NameUsageSuggestRequest request) throws IOException {
     validateRequest(request);
     String[] terms = EsUtil.getSearchTerms(client, index, Analyzer.SCINAME_AUTO_COMPLETE, request.getQ());
     request.setSciNameSearchTerms(terms);
     RequestTranslator translator = new RequestTranslator(request);
     EsSearchRequest query = translator.translate();
     EsResponse<EsNameUsage> esResponse = executeSearchRequest(index, query);
-    List<NameUsageSuggestion> suggestions = new ArrayList<>();
+    final List<NameUsageSuggestion> suggestions = new ArrayList<>();
     SearchHitConverter suggestionFactory = new SearchHitConverter();
     esResponse.getHits().getHits().forEach(hit -> {
       if (hit.matchedQuery(QTranslator.SN_QUERY_NAME)) {
         suggestions.add(suggestionFactory.createSuggestion(hit));
       }
     });
-    return new NameUsageSuggestResponse(suggestions);
+    return suggestions;
   }
 
   private static void validateRequest(NameUsageSuggestRequest request) {

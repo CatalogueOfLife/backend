@@ -1,34 +1,30 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.IgnoreReason;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.nidx.NameIndex;
-
 import life.catalogue.release.UsageIdGen;
 
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;

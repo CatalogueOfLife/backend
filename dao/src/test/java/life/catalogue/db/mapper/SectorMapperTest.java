@@ -114,6 +114,10 @@ public class SectorMapperTest extends BaseDecisionMapperTest<Sector, SectorSearc
     var res = mapper().search(req, new Page());
     assertEquals(1, res.size());
     assertEquals(TestEntityGenerator.TAXON1.getId(), res.get(0).getSubjectID());
+
+    req.setWrongSubject(false);
+    res = mapper().search(req, new Page());
+    assertEquals(2, res.size());
   }
 
   @Test

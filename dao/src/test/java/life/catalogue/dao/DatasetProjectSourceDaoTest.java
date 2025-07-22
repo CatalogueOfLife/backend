@@ -17,14 +17,25 @@ public class DatasetProjectSourceDaoTest extends DaoTestBase {
     dao.listSectorBasedSources(TestDataRule.FISH.key, Datasets.COL, true).forEach(d -> {
       System.out.println(d.getTitle());
     });
+
+    dao.listSimple(TestDataRule.FISH.key, true, true).forEach(d -> {
+      System.out.println(d.getKey() +": " + d.getTitle() + " " + d.isMerged());
+    });
+  }
+
+  @Test
+  public void get() {
+    DatasetSourceDao dao = new DatasetSourceDao(factory());
+    var src = dao.get(103, 100, true);
+    System.out.println(src);
   }
 
   @Test
   public void projectSourceMetrics() {
     DatasetSourceDao dao = new DatasetSourceDao(factory());
-    dao.sourceMetrics(3, 100);
-    dao.sourceMetrics(3, 101);
-    dao.sourceMetrics(3, 102);
+    dao.sourceMetrics(3, 100, null);
+    dao.sourceMetrics(3, 101, null);
+    dao.sourceMetrics(3, 102, null);
   }
 
 }

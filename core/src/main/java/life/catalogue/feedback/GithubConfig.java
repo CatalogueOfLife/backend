@@ -1,9 +1,9 @@
 package life.catalogue.feedback;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.net.URI;
 import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
 
 public class GithubConfig {
 
@@ -29,5 +29,14 @@ public class GithubConfig {
 
   public URI issueURI() {
     return api.resolve("/repos/"+organisation+"/"+repository+"/issues");
+  }
+
+  @Override
+  public String toString() {
+    return "api=" + api +
+      ", organisation='" + organisation + '\'' +
+      ", repository='" + repository + '\'' +
+      ", assignee=" + assignee +
+      ", labels=" + labels;
   }
 }

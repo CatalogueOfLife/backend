@@ -19,8 +19,6 @@ import java.io.Writer;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.ws.rs.ProcessingException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -35,6 +33,8 @@ import com.github.dockerjava.api.command.PullImageResultCallback;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.Volume;
+
+import jakarta.ws.rs.ProcessingException;
 
 /**
  * Jonathan Rees Listtool integration

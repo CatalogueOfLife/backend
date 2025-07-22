@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import com.github.dockerjava.api.DockerClient;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.BackgroundJob;
@@ -21,6 +19,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import com.github.dockerjava.api.DockerClient;
 
 import static org.junit.Assert.assertTrue;
 

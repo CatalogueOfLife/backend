@@ -16,6 +16,12 @@
     WHERE nm.dataset_key = #{key.datasetKey} AND nm.usage_id = #{key.id}
   </select>
 
+  <select id="getCanonicalNidx" resultType="integer">
+    SELECT n.canonical_id
+    FROM name_usage_archive_match nm LEFT JOIN names_index n ON n.id=nm.index_id
+    WHERE nm.dataset_key = #{key.datasetKey} AND nm.usage_id = #{key.id}
+  </select>
+
   <select id="processIndexIds" resultType="Integer" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT DISTINCT index_id
     FROM name_usage_archive_match

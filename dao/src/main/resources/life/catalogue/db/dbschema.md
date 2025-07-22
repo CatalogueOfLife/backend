@@ -143,7 +143,7 @@ FROM verbatim_source_old v LEFT JOIN name_usage u ON u.dataset_key=v.dataset_key
 CREATE INDEX ON verbatim_source (usage_id);
 
 INSERT INTO verbatim_source_secondary (verbatim_source_key, dataset_key, type, source_id, source_dataset_key) 
-SELECT v.id, v.dataset_key, u.sector_key, v.source_id, 'NAME_USAGE', v.source_dataset_key, v.issues
+SELECT v.id, v.dataset_key, vs.type, vs.source_id, vs.source_dataset_key
 FROM verbatim_source_secondary_old vs 
   JOIN verbatim_source v ON vs.dataset_key=v.dataset_key AND vs.id=v.usage_id;
 
@@ -206,6 +206,205 @@ ALTER TABLE verbatim_source DROP COLUMN usage_id;
 DROP TABLE _tmp_holotypes;
 DROP TABLE verbatim_source_secondary_old;
 DROP TABLE verbatim_source_old;
+```
+
+#### 2025-07-11 add tax groups to export props
+```sql
+ALTER TABLE dataset_export ADD COLUMN add_tax_group BOOLEAN NOT NULL DEFAULT FALSE;
+DROP INDEX taxon_metrics_dataset_key_taxon_id_idx;
+ALTER TABLE taxon_metrics ADD PRIMARY KEY (dataset_key, taxon_id);
+```
+
+#### 2025-07-07 dataset groups
+```sql
+CREATE TYPE TAXGROUP AS ENUM (
+  'Viruses',
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Eukaryotes',
+  'Protists',
+  'Plants',
+  'Algae',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Pseudofungi',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Gastropods',
+  'Bivalves',
+  'OtherMolluscs',
+  'Chordates',
+  'OtherAnimals'
+  );
+ALTER TABLE dataset ADD COLUMN taxonomic_group_scope TAXGROUP[];
+CREATE INDEX ON dataset USING GIN (taxonomic_group_scope);
+```
+
+#### 2025-06-27 new issues
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_WITH_TAXON_PROPERTY';
+```
+
+#### 2025-06-19 log table
+```sql
+ALTER TYPE TREATMENTFORMAT ADD VALUE 'PDF';
+
+CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH',
+  'OTHER'
+);
+
+CREATE TABLE api_logs(
+  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  duration INT,
+  method APILOG_HTTPMETHOD,
+  response_code INT,
+  dataset_key INT,
+  "user" INT,
+  request TEXT,
+  agent TEXT
+) PARTITION BY RANGE (date);
+
+CREATE INDEX ON api_logs(date);
+CREATE INDEX ON api_logs(duration);
+CREATE INDEX ON api_logs(method);
+CREATE INDEX ON api_logs(response_code);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs("user");
+CREATE INDEX ON api_logs(request text_pattern_ops);
+
+CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
+CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
+
+-- drop old analytics tables
+DROP TABLE api_analytics;
+```
+
+#### 2025-06-05 sector index for sources
+```sql
+CREATE INDEX ON sector (dataset_key, subject_dataset_key);
+```
+
+#### 2025-05-25 new issue
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_RANK_DIFFERS';
+```
+
+#### 2025-05-21 add infrageneric field to ES mappings
+```bash
+curl -H "Content-Type: application/json" -X PUT "http://esm.checklistbank.org:9200/clb/_mapping" -d'
+{
+  "properties": {
+    "nameStrings": {
+      "properties": {
+        "infragenericEpithet": {
+          "type": "keyword",
+          "index": false,
+          "fields": {
+            "sac": {
+              "type": "text",
+              "analyzer": "sciname_autocomplete_indextime",
+              "search_analyzer": "sciname_whole_words"
+            },
+            "sic": {
+              "type": "text",
+              "analyzer": "sciname_ignore_case"
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+#### 2025-05-13 new NO_SPECIES_INCLUDED issue
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
+ALTER TYPE ISSUE ADD VALUE 'NO_SPECIES_INCLUDED';
+```
+
+### 2025-04-30 make all foreign keys to name_usage deferrable and all deferrable FKs initially deferred
+```sql
+-- name related
+ALTER TABLE name_match DROP CONSTRAINT name_match_dataset_key_name_id_fkey; 
+ALTER TABLE name_match ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_name_id_fkey;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_related_name_id_fkey; 
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE type_material DROP CONSTRAINT type_material_dataset_key_name_id_fkey; 
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_name_id_fkey;
+ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) NOT DEFERRABLE;
+
+-- name usage related
+ALTER TABLE verbatim_source DROP CONSTRAINT verbatim_source_dataset_key_id_fkey;
+ALTER TABLE verbatim_source ADD CONSTRAINT verbatim_source_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE verbatim_source_secondary DROP CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey;
+ALTER TABLE verbatim_source_secondary ADD CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE vernacular_name DROP CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey;
+ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE distribution DROP CONSTRAINT distribution_dataset_key_taxon_id_fkey;
+ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE media DROP CONSTRAINT media_dataset_key_taxon_id_fkey;
+ALTER TABLE media ADD CONSTRAINT media_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_property DROP CONSTRAINT taxon_property_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE treatment DROP CONSTRAINT treatment_dataset_key_id_fkey;
+ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
 ```
 
 #### 2025-04-14 add 2nd source entity

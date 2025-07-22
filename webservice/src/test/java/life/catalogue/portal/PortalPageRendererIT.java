@@ -1,11 +1,12 @@
 package life.catalogue.portal;
 
+import life.catalogue.TestUtils;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.cache.LatestDatasetKeyCache;
+import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.dao.DatasetDao;
-import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameDao;
-import life.catalogue.dao.TaxonDao;
+import life.catalogue.common.text.StringUtils;
+import life.catalogue.dao.*;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -24,49 +25,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 public class PortalPageRendererIT {
-  final LatestDatasetKeyCache cache = new LatestDatasetKeyCache() {
-    @Override
-    public void setSqlSessionFactory(SqlSessionFactory factory) {
-    }
-
-    @Override
-    public @Nullable Integer getLatestRelease(int projectKey, boolean ext) {
-      return dataRule.testData.key;
-    }
-
-    @Override
-    public @Nullable Integer getLatestReleaseCandidate(int projectKey, boolean ext) {
-      return dataRule.testData.key;
-    }
-
-    @Override
-    public @Nullable Integer getReleaseByAttempt(int projectKey, int attempt) {
-      return null;
-    }
-
-    @Override
-    public @Nullable Integer getColRelease(int year, int month, boolean extended) {
-      return null;
-    }
-
-    @Override
-    public @Nullable Integer getDatasetKeyByGbif(UUID gbif) {
-      return null;
-    }
-
-    @Override
-    public boolean isLatestRelease(int datasetKey) {
-      return true;
-    }
-
-    @Override
-    public void refresh(int projectKey) {
-    }
-
-    @Override
-    public void clear() {
-    }
-  };
 
   @ClassRule
   public final static PgSetupRule pg = new PgSetupRule();
@@ -78,13 +36,26 @@ public class PortalPageRendererIT {
 
   @Before
   public void init() throws IOException {
-    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
+    DatasetInfoCache.CACHE.setFactory(SqlSessionFactoryRule.getSqlSessionFactory());
+    var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null, TestUtils.mockedBroker());
     var srcDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
     var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
-    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null);
+    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null, null, null);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
-    renderer = new PortalPageRenderer(dDao, srcDao, tDao, cache, p);
+    renderer = new PortalPageRenderer(dDao, srcDao, tDao, p, false);
+    loadTemplates(renderer, dataRule.testData.key);
+  }
+
+  static void loadTemplates(PortalPageRenderer renderer, int releaseKey) throws IOException {
+    for (PortalPageRenderer.Environment env : PortalPageRenderer.Environment.values()) {
+      renderer.setReleaseKey(env, releaseKey);
+      for (PortalPageRenderer.PortalPage pp : PortalPageRenderer.PortalPage.values()) {
+        try (var in = PortalPageRenderer.class.getResourceAsStream("/portal-ftl/"+pp.name()+".ftl")) {
+          renderer.store(env, pp, InputStreamUtils.readEntireStream(in));
+        }
+      }
+    }
   }
 
   @After
@@ -94,43 +65,37 @@ public class PortalPageRendererIT {
 
   @Test
   public void renderTaxon() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", PROD, false).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", DEV, false).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", PROD, false).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", DEV, false).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", PROD).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderTaxon("root-1", DEV).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", PROD).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderTaxon("nope", DEV).getStatus());
   }
 
   @Test
   public void renderDataset() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, PROD, false).getStatus());
-    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, DEV, false).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, PROD, false).getStatus());
-    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, DEV, false).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, PROD).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderDatasource(dataRule.testData.key, DEV).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, PROD).getStatus());
+    assertEquals(HttpStatus.SC_NOT_FOUND, renderer.renderDatasource(99999, DEV).getStatus());
   }
 
   @Test
   public void renderMetadata() throws Exception {
-    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD, false).getStatus());
+    assertEquals(HttpStatus.SC_OK, renderer.renderMetadata(PROD).getStatus());
   }
 
   @Test
   public void store() throws Exception {
     renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol.");
-    assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD, false).getEntity());
+    assertEquals("Hergott Sackra nochamol.", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.DATASET, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, PROD, false).getEntity());
+    assertEquals("Hergott Sackra nochamol. no works", renderer.renderDatasource(dataRule.testData.key, PROD).getEntity());
 
     renderer.store(PREVIEW, PortalPageRenderer.PortalPage.DATASET, "Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'");
-    assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW, false).getEntity());
+    assertEquals("Hergott catalogueKey: '2351' , pathToTree: '/data/browse', auth: '', pathToSearch: '/data/search', pageTitleTemplate: 'COL | __dataset__'", renderer.renderDatasource(dataRule.testData.key, PREVIEW).getEntity());
 
     renderer.store(PROD, PortalPageRenderer.PortalPage.METADATA, "Hergott Sackra nochamol. ${freemarker!\"no\"} works");
-    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD, false).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some SEO please?");
-    assertEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
-
-    renderer.store(PROD, PortalPageRenderer.PortalPage.CLB_DATASET, "Can I get some <!-- REPLACE_WITH_SEO --> please?");
-    assertNotEquals("Can I get some SEO please?", renderer.renderClbDataset(3, PROD).getEntity());
+    assertEquals("Hergott Sackra nochamol. no works", renderer.renderMetadata(PROD).getEntity());
   }
 }

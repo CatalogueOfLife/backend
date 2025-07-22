@@ -4,14 +4,12 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Gender;
-import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

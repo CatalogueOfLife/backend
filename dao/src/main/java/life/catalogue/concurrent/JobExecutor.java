@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.common.Idle;
 import life.catalogue.common.Managed;
 import life.catalogue.common.collection.CountMap;
-import life.catalogue.dao.UserDao;
+import life.catalogue.dao.UserCrudDao;
 
 import java.util.List;
 import java.util.UUID;
@@ -34,7 +34,7 @@ public class JobExecutor implements Managed, Idle {
   private final JobConfig cfg;
   private final PriorityBlockingQueue<Runnable> queue;
   private final ConcurrentMap<UUID, ComparableFutureTask> futures = new ConcurrentHashMap<>();
-  private final UserDao udao;
+  private final UserCrudDao udao;
   private final @Nullable EmailNotification emailer;
   private ColExecutor exec;
   private final Timer timer;
@@ -79,10 +79,10 @@ public class JobExecutor implements Managed, Idle {
     }
   }
 
-  public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserDao uDao) throws Exception {
+  public JobExecutor(JobConfig cfg, MetricRegistry registry, @Nullable EmailNotification emailer, UserCrudDao udao) throws Exception {
     LOG.info("Created new job executor with {} workers and a queue size of {}", cfg.threads, cfg.queue);
     this.cfg = cfg;
-    this.udao = uDao;
+    this.udao = udao;
     queue = new PriorityBlockingQueue<>(cfg.queue);
     if (emailer == null) {
       LOG.warn("No emailer configured!");

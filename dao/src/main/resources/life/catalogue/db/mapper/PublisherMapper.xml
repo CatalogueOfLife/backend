@@ -68,6 +68,12 @@
     ORDER BY id
   </select>
 
+  <select id="listAllKeys" resultType="java.util.UUID">
+    SELECT p.id
+    FROM <include refid="FROM"/>
+    WHERE p.dataset_key = #{datasetKey}
+  </select>
+
   <select id="count" resultType="integer">
     SELECT count(*) FROM sector_publisher WHERE dataset_key=#{datasetKey}
   </select>

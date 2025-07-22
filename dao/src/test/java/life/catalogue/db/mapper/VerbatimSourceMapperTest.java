@@ -30,7 +30,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     v.setDatasetKey(datasetKey);
     v.setSourceId("source77");
     v.setSourceDatasetKey(77);
-    v.addIssues(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE, Issue.BASIONYM_DERIVED);
+    v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE, Issue.BASIONYM_DERIVED);
     return v;
   }
 

@@ -46,6 +46,14 @@ public class MediaInterpreterTest {
     assertEquals(MediaType.IMAGE, m.getType());
     assertEquals(uri, m.getUrl());
     assertNull(m.getLink());
+
+    m = new Media();
+    uri = URI.create("https://www.biodiversitylibrary.org/pageimage/39205667");
+    m.setUrl(uri);
+    MediaInterpreter.detectType(m);
+    assertNull(m.getType());
+    assertEquals(uri, m.getUrl());
+    assertNull(m.getLink());
   }
 
 }

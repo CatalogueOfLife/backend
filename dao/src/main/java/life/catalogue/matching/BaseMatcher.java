@@ -1,24 +1,24 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.db.mapper.MatchMapper;
-
 import life.catalogue.matching.nidx.NameIndex;
+
+import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 public class BaseMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(BaseMatcher.class);

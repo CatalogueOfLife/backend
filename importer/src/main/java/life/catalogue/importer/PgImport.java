@@ -5,6 +5,7 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
@@ -13,6 +14,7 @@ import life.catalogue.db.Create;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.Labels;
@@ -21,6 +23,9 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
+import life.catalogue.release.MetricsBuilder;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -31,12 +36,9 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.release.MetricsBuilder;
-
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -358,6 +360,16 @@ public class PgImport implements Callable<Boolean> {
     LOG.info("Inserted {} type material records", tmCounter);
   }
 
+  private static class NodeNXtra {
+    Node node;
+    public Integer verbatimKey; // for the main usage
+    NameUsageWrapper nuw;
+
+    public NodeNXtra(Node node) {
+      this.node = node;
+    }
+  }
+
   /**
    * insert taxa/synonyms with all the rest. Skips bare name usages.
    * This also indexes usages into the ES search index!
@@ -393,12 +405,14 @@ public class PgImport implements Callable<Boolean> {
         SynonymMapper synMapper = session.getMapper(SynonymMapper.class);
         TaxonPropertyMapper propertyMapper = session.getMapper(TaxonPropertyMapper.class);
         VernacularNameMapper vernacularMapper = session.getMapper(VernacularNameMapper.class);
+        VerbatimRecordMapper verbatimRecordMapper = session.getMapper(VerbatimRecordMapper.class);
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
         // pro parte synonyms will be visited multiple times, remember their name ids!
+        DSID<Integer> vKey = DSID.root(dataset.getKey());
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
-          final Stack<Node> parentsN = new Stack<>();
+          final Stack<NodeNXtra> parentsN = new Stack<>();
           final MetricsBuilder mBuilder = new MetricsBuilder(MetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
@@ -411,6 +425,7 @@ public class PgImport implements Callable<Boolean> {
               maxDepth.set(parents.size());
             }
             // insert taxon or synonym
+            NodeNXtra nx = null; // we only populate that for accepted taxa which we push onto the stack later
             if (u.isSynonym()) {
               if (NeoDbUtils.isProParteSynonym(n)) {
                 if (proParteIds.contains(u.getId())) {
@@ -433,7 +448,9 @@ public class PgImport implements Callable<Boolean> {
               // ES indexes only id,rank & name
               var sn = new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank());
               parents.push(sn);
-              parentsN.push(u.node);
+              nx = new NodeNXtra(u.node);
+              nx.verbatimKey = u.getVerbatimKey();
+              parentsN.push(nx);
               mBuilder.start(sn.getId());
 
               // insert vernacular
@@ -497,18 +514,23 @@ public class PgImport implements Callable<Boolean> {
               LOG.info("Inserted {} taxa, {} synonyms & {} bare names", tCounter.get(), sCounter.get(), bnCounter.get());
             }
 
-            // index into ES
+            // index into ES later when we "end" so we can add issues still, but build up the instance here already
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
             nuw.setPublisherKey(dataset.getGbifPublisherKey());
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
-              NeoUsage acc = fillNeoUsage(parentsN.peek(), parents.peek(), null);
+              NeoUsage acc = fillNeoUsage(parentsN.peek().node, parents.peek(), null);
               ((Synonym)u.usage).setAccepted(acc.asTaxon());
               nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
             nuw.setDecisions(decisions.get(u.getId()));
-            indexer.accept(nuw);
+            if (nx == null) {
+              indexer.accept(nuw);
+            } else {
+              // we index accepted taxa later when we have metrics about all their descendants
+              nx.nuw = nuw;
+            }
           }
 
           @Override
@@ -517,9 +539,16 @@ public class PgImport implements Callable<Boolean> {
             // remove this key from parent queue if its an accepted taxon
             if (n.hasLabel(Labels.TAXON)) {
               var sn = parents.pop();
-              parentsN.pop();
+              var nx = parentsN.pop();
               // update & store metrics
-              mBuilder.end(sn, null, null);
+              var m = mBuilder.end(sn, null, null);
+              // index into ES and flag higher taxa without species
+              if (sn.getRank().higherThan(Rank.SPECIES_AGGREGATE) && m.getSpeciesCount() == 0) {
+                // see also an alternative implementation in TreeCleanerAndValidators stack handler
+                nx.nuw.getIssues().add(Issue.NO_SPECIES_INCLUDED);
+                verbatimRecordMapper.addIssue(vKey.id(nx.verbatimKey), Issue.NO_SPECIES_INCLUDED);
+              }
+              indexer.accept(nx.nuw);
             }
           }
         });
@@ -539,6 +568,15 @@ public class PgImport implements Callable<Boolean> {
           nuw.setIssues(mergeIssues(vKeys));
           indexer.accept(nuw);
           runtimeInterruptIfCancelled();
+        }
+      }
+
+      // update the dataset tax scope
+      if (indexer instanceof NameUsageIndexServiceEs.IndexerBatchConsumer) {
+        var ibc = (NameUsageIndexServiceEs.IndexerBatchConsumer) indexer;
+        try (SqlSession session = sessionFactory.openSession(true)) {
+          var dm = session.getMapper(DatasetMapper.class);
+          dm.updateTaxonomicGroupScope(dataset.getKey(), ibc.indexer.getTaxGroups());
         }
       }
     }

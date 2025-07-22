@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.mapper.*;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.*;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 

@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -19,8 +20,8 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
   private final NameIndex nidx;
   private final Writer nomatchWriter;
 
-  public XIdProvider(int projectKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, NameIndex nidx, SqlSessionFactory factory) throws IOException {
-    super(projectKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, factory);
+  public XIdProvider(int projectKey, int mappedDatasetKey, int attempt, int releaseDatasetKey, ReleaseConfig cfg, NameIndex nidx, SqlSessionFactory factory) throws IOException {
+    super(projectKey, mappedDatasetKey, DatasetOrigin.XRELEASE, attempt, releaseDatasetKey, cfg, factory);
     this.nidx = nidx;
     nomatchWriter = buildNomatchWriter();
   }
@@ -28,8 +29,14 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
   @Override
   public String issue(SimpleNameWithNidx usage) {
     try {
-      issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
-      return encode(usage.getCanonicalId());
+      if (usage.hasAuthorship()) {
+        issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
+        return encode(usage.getCanonicalId());
+      } else {
+        // for new canonical names we issue a temp id for now, so we can update the authorship later
+        // and assign new ids without wasting stable IDs
+        return ShortUUID.ID_GEN.get();
+      }
 
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -28,7 +28,7 @@ public class SectorDiffService extends BaseDiffService<DSID<Integer>> {
       public List<? extends ImportAttempt> get() {
         try (SqlSession session = factory.openSession(true)) {
           return session.getMapper(SectorImportMapper.class)
-              .list(sectorKey.getId(), sectorKey.getDatasetKey(), null, Lists.newArrayList(ImportState.FINISHED), null, new Page(0, 2));
+              .list(sectorKey.getId(), sectorKey.getDatasetKey(), null, Lists.newArrayList(ImportState.FINISHED), null, null, new Page(0, 2));
         }
       }
     });

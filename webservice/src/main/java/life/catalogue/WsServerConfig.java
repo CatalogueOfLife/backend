@@ -9,8 +9,10 @@ import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
+import life.catalogue.dw.logging.pg.PgLogConfig;
 import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.es.EsConfig;
+import life.catalogue.event.BrokerConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
@@ -23,6 +25,8 @@ import java.time.LocalDate;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
+
+import life.catalogue.resources.legacy.LegacyConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +53,7 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public EsConfig es;
 
   @Valid
-  public EsConfig analytics;
+  public BrokerConfig broker = new BrokerConfig();
 
   @Valid
   @NotNull
@@ -121,6 +125,16 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   public GithubConfig github;
 
+  @Valid
+  @NotNull
+  public LegacyConfig legacy = new LegacyConfig();
+
+  /**
+   * If null no logging will be done!
+   */
+  @Valid
+  public PgLogConfig pgLog;
+
   /**
    * The name parser timeout in milliseconds
    */
@@ -172,32 +186,8 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @NotNull
   public File portalTemplateDir = new File("/tmp/col/life.catalogue.portal-templates");
 
-  /**
-   * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.
-   * First column must be the legacy ID, second column the new name usage ID.
-   */
-  @Nullable
-  public URI legacyIdMapURI;
-
-  /**
-   * File to persist legacy id map on disk. If empty will use a volatile memory map.
-   */
-  public File legacyIdMapFile;
-
   @NotNull
   public String support = "support@catalogueoflife.org";
-
-  /**
-   * Optional sunset value for the deprecation header.
-   * See https://datatracker.ietf.org/doc/draft-ietf-httpapi-deprecation-header/
-   */
-  public LocalDate sunset;
-
-  /**
-   * Delay in milliseconds to all requests to the legacy API.
-   */
-  @Min(0)
-  public int legacyDelay = 0;
 
   @Override
   @JsonIgnore

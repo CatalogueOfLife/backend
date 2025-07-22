@@ -2,15 +2,21 @@ package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Taxon;
-import life.catalogue.api.search.*;
+import life.catalogue.api.search.NameUsageSearchRequest;
+import life.catalogue.api.search.NameUsageSuggestRequest;
+import life.catalogue.api.search.NameUsageSuggestion;
+import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.es.EsMonomial;
 import life.catalogue.es.EsNameUsage;
 import life.catalogue.es.EsReadTestBase;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +84,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     query.setQ("abcde");
     query.setFuzzy(true);
 
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
     assertTrue(containsUsageIds(response, doc1, doc2, doc3, doc6));
   }
@@ -129,18 +135,18 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     indexRaw(doc1, doc2, doc3, doc4);
 
     query.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
-    NameUsageSuggestResponse response = suggest(query);
-    assertEquals(3, response.getSuggestions().size());
-    assertEquals("1", response.getSuggestions().get(0).getUsageId());
-    assertEquals("2", response.getSuggestions().get(1).getUsageId());
-    assertEquals("3", response.getSuggestions().get(2).getUsageId());
+    var response = suggest(query);
+    assertEquals(3, response.size());
+    assertEquals("1", response.get(0).getUsageId());
+    assertEquals("2", response.get(1).getUsageId());
+    assertEquals("3", response.get(2).getUsageId());
 
     query.setSortBy(NameUsageSearchRequest.SortBy.RELEVANCE);
     response = suggest(query);
-    assertEquals(3, response.getSuggestions().size());
-    assertEquals("1", response.getSuggestions().get(0).getUsageId());
-    assertEquals("2", response.getSuggestions().get(1).getUsageId());
-    assertEquals("3", response.getSuggestions().get(2).getUsageId());
+    assertEquals(3, response.size());
+    assertEquals("1", response.get(0).getUsageId());
+    assertEquals("2", response.get(1).getUsageId());
+    assertEquals("3", response.get(2).getUsageId());
 
   }
 
@@ -196,9 +202,9 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2, doc3, doc4, doc5, doc6);
 
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
-    response.getSuggestions().forEach(s -> System.out.println("usage ID " + s.getUsageId() + ": " + s.getScore()));
+    response.forEach(s -> System.out.println("usage ID " + s.getUsageId() + ": " + s.getScore()));
 
   }
 
@@ -225,11 +231,11 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     indexRaw(doc1, doc2);
 
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
     // We have switched from OR-ing the search terms to AND-ing the search terms
-    // assertEquals(2, response.getSuggestions().size());
-    assertEquals(0, response.getSuggestions().size());
+    // assertEquals(2, response.size());
+    assertEquals(0, response.size());
 
   }
 
@@ -258,37 +264,37 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetFilter(1);
 
-    NameUsageSuggestResponse response;
+    List<NameUsageSuggestion> response;
 
     query.setQ("Larus argentatus argenteus");
     response = suggest(query);
-    float score1 = response.getSuggestions().get(0).getScore();
+    float score1 = response.get(0).getScore();
 
     // User mixed up specific and infraspecific epithet (still good score)
     query.setQ("Larus argenteus argentatus");
     response = suggest(query);
-    float score2 = response.getSuggestions().get(0).getScore();
+    float score2 = response.get(0).getScore();
 
     // This should actually score higher than the binomial (Larus argentatus)
     query.setQ("Larus argenteus");
     response = suggest(query);
-    float score3 = response.getSuggestions().get(0).getScore();
+    float score3 = response.get(0).getScore();
 
     query.setQ("Larus argentatus");
     response = suggest(query);
-    float score4 = response.getSuggestions().get(0).getScore();
+    float score4 = response.get(0).getScore();
 
     query.setQ("argentatus L.");
     response = suggest(query);
-    float score5 = response.getSuggestions().get(0).getScore();
+    float score5 = response.get(0).getScore();
 
     query.setQ("argenteus");
     response = suggest(query);
-    float score6 = response.getSuggestions().get(0).getScore();
+    float score6 = response.get(0).getScore();
 
     query.setQ("Larus argentatus arg");
     response = suggest(query);
-    float score7 = response.getSuggestions().get(0).getScore();
+    float score7 = response.get(0).getScore();
 
     System.out.println("score1: " + score1); // just curious
     System.out.println("score2: " + score2);
@@ -304,6 +310,53 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     // assertTrue(score3 > score4);
     // assertTrue(score4 > score5);
     // assertTrue(score5 > score6);
+  }
+
+  @Test
+  public void infrageneric() {
+
+    NameUsageSuggestRequest query = new NameUsageSuggestRequest();
+    query.setDatasetFilter(1);
+    query.setQ("Fish");
+    query.setSortBy(NameUsageSearchRequest.SortBy.TAXONOMIC);
+
+    Name n = new Name();
+    n.setDatasetKey(1);
+    n.setId("1");
+    n.setRank(Rank.GENUS);
+    n.setUninomial("Fisherana");
+    EsNameUsage doc1 = newDocument(n);
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("2");
+    n.setRank(Rank.SUBGENUS);
+    n.setInfragenericEpithet("Fisherana");
+    EsNameUsage doc2 = newDocument(n);
+
+    n = new Name();
+    n.setDatasetKey(1);
+    n.setId("3");
+    n.setRank(Rank.GENUS);
+    n.setUninomial("Fisheraster");
+    EsNameUsage doc3 = newDocument(n);
+
+    n = new Name();
+    n.setId("4");
+    n.setDatasetKey(1);
+    n.setRank(Rank.SPECIES);
+    n.setGenus("Fisherana");
+    n.setSpecificEpithet("vulgaris");
+    EsNameUsage doc4 = newDocument(n);
+
+    indexRaw(doc1, doc2, doc3, doc4);
+
+    var response = suggest(query);
+
+    response.forEach(s -> System.out.println("usage ID " + s.getUsageId() + ": " + s.getScore()));
+
+    assertEquals(4, response.size());
+    assertEquals(List.of("1","3","2","4"), response.stream().map(NameUsageSuggestion::getUsageId).collect(Collectors.toList()));
   }
 
   /**
@@ -358,7 +411,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     query.setQ("abcde");
 
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
     assertMatch(response, doc3, doc4);
 
     query.setQ("rex");
@@ -431,7 +484,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
 
     query.setQ("abcde");
 
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
     assertMatch(response, doc3, doc4);
 
     query.setQ("rex");
@@ -494,7 +547,7 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetFilter(1);
     query.setQ("larus f");
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
     assertMatch(response, nu1, nu2);
 
@@ -516,11 +569,11 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetFilter(1);
     query.setQ("larus f");
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
-    assertEquals("Larus fuscus", response.getSuggestions().get(0).getMatch());
-    assertEquals("Larus", response.getSuggestions().get(0).getContext());
-    assertEquals("Larus fuscus (Larus)", response.getSuggestions().get(0).getSuggestion());
+    assertEquals("Larus fuscus", response.get(0).getMatch());
+    assertEquals("Larus", response.get(0).getContext());
+    assertEquals("Larus fuscus (Larus)", response.get(0).getSuggestion());
 
   }
 
@@ -539,11 +592,11 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetFilter(1);
     query.setQ("mus");
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
-    assertEquals("Mustelidae", response.getSuggestions().get(0).getMatch());
-    assertEquals("Carnivora", response.getSuggestions().get(0).getContext());
-    assertEquals("Mustelidae (Carnivora)", response.getSuggestions().get(0).getSuggestion());
+    assertEquals("Mustelidae", response.get(0).getMatch());
+    assertEquals("Carnivora", response.get(0).getContext());
+    assertEquals("Mustelidae (family in Carnivora)", response.get(0).getSuggestion());
 
   }
 
@@ -556,7 +609,13 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     n.setGenus("Larus");
     n.setRank(Rank.SPECIES);
 
-    EsNameUsage nu1 = newDocument(n, TaxonomicStatus.SYNONYM, "Laridae", "Larus", "fuscus", "foo");
+    EsNameUsage nu1 = newDocumentCL(n, TaxonomicStatus.SYNONYM, List.of(
+      new EsMonomial(Rank.FAMILY, "Laridae"),
+      new EsMonomial(Rank.GENUS, "Larus"),
+      new EsMonomial(Rank.SPECIES, "fuscus"),
+      new EsMonomial(Rank.SUBSPECIES, "foo")
+      )
+    );
     nu1.setClassificationIds(Arrays.asList("1", "2", "3", "4"));
     nu1.setAcceptedName("Larus fuscus");
 
@@ -565,11 +624,11 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     NameUsageSuggestRequest query = new NameUsageSuggestRequest();
     query.setDatasetFilter(1);
     query.setQ("foo");
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
-    assertEquals("Larus foo", response.getSuggestions().get(0).getMatch());
-    assertEquals("Larus foo (synonym of Larus fuscus)", response.getSuggestions().get(0).getSuggestion());
-    assertEquals("3", response.getSuggestions().get(0).getAcceptedUsageId());
+    assertEquals("Larus foo", response.get(0).getMatch());
+    assertEquals("Larus foo (synonym of Larus fuscus, Laridae)", response.get(0).getSuggestion());
+    assertEquals("3", response.get(0).getAcceptedUsageId());
   }
 
   @Test
@@ -599,23 +658,22 @@ public class NameUsageSuggestionServiceEsTest extends EsReadTestBase {
     query.setDatasetFilter(1);
     query.setAccepted(true);
     query.setQ("laru");
-    NameUsageSuggestResponse response = suggest(query);
+    var response = suggest(query);
 
-    assertEquals(1, response.getSuggestions().size());
-    assertEquals("1", response.getSuggestions().get(0).getUsageId());
-
+    assertEquals(1, response.size());
+    assertEquals("1", response.get(0).getUsageId());
   }
 
-  private static boolean containsUsageIds(NameUsageSuggestResponse response, EsNameUsage... docs) {
+  private static boolean containsUsageIds(List<NameUsageSuggestion> response, EsNameUsage... docs) {
     Set<String> expected = Arrays.stream(docs).map(EsNameUsage::getUsageId).collect(toSet());
-    Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
+    Set<String> actual = response.stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
     actual.forEach(System.out::println);
     return expected.equals(actual);
   }
 
-  private static void assertMatch(NameUsageSuggestResponse response, EsNameUsage... docs) {
+  private static void assertMatch(List<NameUsageSuggestion> response, EsNameUsage... docs) {
     Set<String> expected = Arrays.stream(docs).map(EsNameUsage::getUsageId).collect(toSet());
-    Set<String> actual = response.getSuggestions().stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
+    Set<String> actual = response.stream().map(NameUsageSuggestion::getUsageId).collect(toSet());
     actual.forEach(System.out::println);
     assertTrue(expected.equals(actual));
   }

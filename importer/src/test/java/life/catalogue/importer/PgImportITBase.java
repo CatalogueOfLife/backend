@@ -1,14 +1,12 @@
 package life.catalogue.importer;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.*;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.es.NameUsageIndexService;
@@ -16,12 +14,13 @@ import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
-
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
-import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
@@ -31,9 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.After;
@@ -41,8 +37,10 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.io.Files;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.*;
 
@@ -56,13 +54,11 @@ public class PgImportITBase {
   ImporterConfig icfg = new ImporterConfig();
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
-  boolean fullInit = true;
   DatasetDao ddao;
   SynonymDao sdao;
   TaxonDao tdao;
   NameDao ndao;
   ReferenceDao rdao;
-  EventBus bus = new EventBus();
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   NameUsageIndexService indexService = NameUsageIndexService.passThru();
 
@@ -88,9 +84,9 @@ public class PgImportITBase {
 
     sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
     ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, null, indexService, null, validator);
     rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator, TestUtils.mockedBroker());
   }
   
   @After
@@ -178,12 +174,12 @@ public class PgImportITBase {
   
   void assertIssue(VerbatimEntity ent, Issue issue) {
     VerbatimRecord v = vMapper.get(DSID.vkey(ent));
-    assertTrue(v.hasIssue(issue));
+    assertTrue(v.contains(issue));
   }
   
   void assertNoIssue(VerbatimEntity ent, Issue issue) {
     VerbatimRecord v = vMapper.get(DSID.vkey(ent));
-    assertFalse(v.hasIssue(issue));
+    assertFalse(v.contains(issue));
   }
   
   public static List<Distribution> expectedDwca24Distributions() {

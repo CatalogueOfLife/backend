@@ -1,25 +1,26 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.TestEntityGenerator;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Page;
+import life.catalogue.api.model.Sector;
 import life.catalogue.api.search.SectorSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.junit.MybatisTestUtils;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
-import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.TreeMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.junit.MybatisTestUtils;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class SectorDaoTest extends DaoTestBase {
   static int user = TestEntityGenerator.USER_EDITOR.getKey();
@@ -31,7 +32,7 @@ public class SectorDaoTest extends DaoTestBase {
   @Before
   public void init(){
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 

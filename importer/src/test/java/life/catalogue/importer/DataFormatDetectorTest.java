@@ -2,9 +2,7 @@ package life.catalogue.importer;
 
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.Resources;
-import life.catalogue.csv.DwcaReader;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

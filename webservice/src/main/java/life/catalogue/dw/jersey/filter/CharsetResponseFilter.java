@@ -1,13 +1,12 @@
 package life.catalogue.dw.jersey.filter;
 
-import jakarta.ws.rs.ext.Provider;
-
 import life.catalogue.common.ws.MoreMediaTypes;
 
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Sets the charset encoding parameter to UTF8 for all text media types that do not have a charset specified.

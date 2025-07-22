@@ -2,19 +2,16 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.dao.ParserConfigDao;
 import life.catalogue.importer.neo.model.Labels;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.traverse.Traversals;
-
 import life.catalogue.parser.NameParser;
 
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
@@ -182,7 +179,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
       t = usageByID("3");
       assertEquals("Null bactus", t.usage.getName().getScientificName());
-      assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).hasIssue(Issue.NULL_EPITHET));
+      assertTrue(store.getVerbatim(t.usage.getName().getVerbatimKey()).contains(Issue.NULL_EPITHET));
     }
   }
   
@@ -265,22 +262,22 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals("Lamprostiba pu!chra", u.usage.getName().getScientificName());
       assertEquals("Pace, 2014", u.usage.getName().getAuthorship());
       VerbatimRecord v = verbatim(u.usage.getName());
-      assertTrue(v.hasIssue(Issue.UNUSUAL_NAME_CHARACTERS));
-      assertTrue(v.hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
-      assertTrue(v.hasIssue(Issue.PARSED_NAME_DIFFERS));
+      assertTrue(v.contains(Issue.UNUSUAL_NAME_CHARACTERS));
+      assertTrue(v.contains(Issue.PARTIALLY_PARSABLE_NAME));
+      assertTrue(v.contains(Issue.PARSED_NAME_DIFFERS));
   
       u = usageByID("Eusphalerum_caucasicum_feldmanni");
       assertNull(u);
       
       v = vByLine(AcefTerm.AcceptedInfraSpecificTaxa, 2);
-      assertTrue(v.hasIssue(Issue.PARENT_ID_INVALID));
+      assertTrue(v.contains(Issue.PARENT_ID_INVALID));
   
   
       u = usageByID("1-1");
       assertEquals("Anterhynchium alecto lalepi", u.usage.getName().getScientificName());
       assertEquals("(Cheesm.i.l.)", u.usage.getName().getAuthorship());
       v = verbatim(u.usage.getName());
-      assertTrue(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
+      assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
   
       u = usageByID("2");
       assertEquals("Foa fo", u.usage.getName().getScientificName());
@@ -288,7 +285,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertTrue(u.getNeoName().getName().isParsed());
       assertEquals(NameType.SCIENTIFIC, u.getNeoName().getName().getType());
       v = verbatim(u.usage.getName());
-      assertFalse(v.hasIssue(Issue.UNPARSABLE_AUTHORSHIP));
+      assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
     }
   }
   
@@ -308,8 +305,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
       assertEquals(Rank.SPECIES, u.usage.getName().getRank());
 
       VerbatimRecord v = verbatim(u.usage.getName());
-      assertTrue(v.hasIssue(Issue.ID_NOT_UNIQUE));
-      assertFalse(v.hasIssue(Issue.NOT_INTERPRETED));
+      assertTrue(v.contains(Issue.ID_NOT_UNIQUE));
+      assertFalse(v.contains(Issue.NOT_INTERPRETED));
   
   
       int counter = 0;
@@ -323,8 +320,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
           if (vr.get(AcefTerm.AcceptedTaxonID).equals("Scr-04-.01-.01-.00-.002-.000-.009-.b")) {
             // this is the duplicate
             assertEquals("nigrella", vr.get(AcefTerm.InfraSpeciesEpithet));
-            assertTrue(vr.hasIssue(Issue.NOT_INTERPRETED));
-            assertTrue(vr.hasIssue(Issue.ID_NOT_UNIQUE));
+            assertTrue(vr.contains(Issue.NOT_INTERPRETED));
+            assertTrue(vr.contains(Issue.ID_NOT_UNIQUE));
   
           } else {
             assertEquals("habaensis", vr.get(AcefTerm.InfraSpeciesEpithet));

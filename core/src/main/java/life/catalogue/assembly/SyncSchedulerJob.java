@@ -10,15 +10,15 @@ import life.catalogue.config.SyncManagerConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapper;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 class SyncSchedulerJob implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SyncSchedulerJob.class);

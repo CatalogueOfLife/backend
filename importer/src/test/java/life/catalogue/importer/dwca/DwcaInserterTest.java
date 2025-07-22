@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -66,6 +67,20 @@ public class DwcaInserterTest extends InserterBaseTest {
       t = store.usageWithName("6").asTaxon();
       assertNull(t.isExtinct());
       assertEquals(Set.of(), t.getEnvironments());
+    }
+  }
+
+  /**
+   * GBIF Identifier extension
+   */
+  @Test
+  public void altIds() throws Exception {
+    NeoInserter ins = setup("/dwca/53");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      var t = store.usageWithName("763571").asTaxon();
+      assertEquals(5, t.getIdentifier().size());
     }
   }
 
@@ -115,6 +130,20 @@ public class DwcaInserterTest extends InserterBaseTest {
       assertNotNull(u.getVerbatimKey());
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       v.hasTerm(new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false));
+    }
+  }
+
+  @Test
+  @Ignore("unfinished")
+  public void plazi2() throws Exception {
+    NeoInserter ins = setup("/dwca/plazi2");
+    ins.insertAll();
+
+    try (Transaction tx = store.getNeo().beginTx()) {
+      NeoUsage u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon");
+      assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", u.getNeoName().getName().getScientificName());
+      assertEquals(": Zapekina-Dulkeit, 1975", u.getNeoName().getName().getAuthorship());
+      assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", u.getNeoName().getName().getLabel());
     }
   }
 

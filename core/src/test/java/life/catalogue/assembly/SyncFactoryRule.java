@@ -1,23 +1,22 @@
 package life.catalogue.assembly;
 
+import life.catalogue.TestUtils;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.TreeRepoRule;
-import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.UsageMatcherGlobal;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
+import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.EventBus;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 /**
  * A junit test rule that sets up a new in memory names index and a sync factory.
@@ -44,11 +43,11 @@ public class SyncFactoryRule extends ExternalResource {
     siDao = new SectorImportDao(factory, TreeRepoRule.getRepo());
     eDao = new EstimateDao(factory, validator);
     nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
-    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), new EventBus("test-bus"));
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), matcher, sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
   }
 
   public static SyncFactory getFactory() {

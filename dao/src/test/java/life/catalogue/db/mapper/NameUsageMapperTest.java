@@ -6,9 +6,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;

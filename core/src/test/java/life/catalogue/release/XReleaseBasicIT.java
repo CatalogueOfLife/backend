@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
@@ -16,6 +17,7 @@ import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
@@ -31,8 +33,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validation;
 
@@ -73,9 +73,9 @@ public class XReleaseBasicIT {
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    provider = new IdProvider(projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
 
-    EventBus bus = mock(EventBus.class);
+    EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
@@ -88,7 +88,7 @@ public class XReleaseBasicIT {
     var nuIdxService = NameUsageIndexService.passThru();
     var imgService = ImageService.passThru();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
-    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
+    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
 
     projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),

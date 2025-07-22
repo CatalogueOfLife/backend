@@ -1,7 +1,6 @@
 package life.catalogue.dao;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
@@ -59,6 +58,20 @@ public class DaoUtils {
 
   /**
    * @param datasetKey dataset to test
+   * @param origin to be required for the dataset key
+   * @param message end with a full stop
+   * @throws NotFoundException if deleted or not existing
+   * @throws IllegalArgumentException if not of required origin
+   */
+  public static void requireOrigin(int datasetKey, DatasetOrigin origin, String message) throws NotFoundException {
+    var info = DatasetInfoCache.CACHE.info(datasetKey);
+    if (info == null || info.origin != origin) {
+      throw new IllegalArgumentException(message + " Dataset " + datasetKey + " is of origin " + origin);
+    }
+  }
+
+  /**
+   * @param datasetKey dataset to test
    * @throws NotFoundException if deleted or not existing
    * @throws IllegalArgumentException if the dataset is a project
    */
@@ -69,30 +82,19 @@ public class DaoUtils {
     }
   }
 
-  public static boolean isProjectOrRelease(int datasetKey) {
-    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey, true).origin;
-    if (origin != null) {
-      return origin.isProjectOrRelease();
-    }
-    return false;
-  }
-
   /**
    * Makes sure a given dataset key belongs to a dataset that can be modified,
    * i.e. it exists, it is not deleted or released.
    * @param datasetKey
    * @param action for "cannot be xxx" for logging messages only
-   * @throws IllegalArgumentException if the dataset key should not be modified
+   * @throws IllegalArgumentException if the dataset key points to a release
+   * @throws NotFoundException if the dataset does not exist or was deleted
    */
-  public static Dataset assertMutable(int datasetKey, String action, SqlSession session) throws IllegalArgumentException {
-    DatasetMapper dm = session.getMapper(DatasetMapper.class);
-    Dataset d = dm.get(datasetKey);
-    if (d == null || d.hasDeletedDate()) {
-      throw NotFoundException.notFound(Dataset.class, datasetKey);
-    } else if (d.getOrigin().isRelease()) {
+  public static void notReleased(int datasetKey, String action) throws IllegalArgumentException {
+    DatasetOrigin origin = DatasetInfoCache.CACHE.info(datasetKey).origin;
+    if (origin == null || origin.isRelease()) {
       throw new IllegalArgumentException("Dataset " + datasetKey + " is released and cannot be " + action);
     }
-    return d;
   }
 
   /**

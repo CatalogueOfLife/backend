@@ -132,7 +132,7 @@ public class UsageCacheMapDB implements UsageCache {
              //.valueInline()
              //.valuesOutsideNodesEnable()
              ;
-    if (expireMutable && DatasetInfoCache.CACHE.info(datasetKey).isMutable()) {
+    if (expireMutable && DatasetInfoCache.CACHE.info(datasetKey).isProject()) {
       maker.expireAfterCreate(1, TimeUnit.HOURS);
     }
     return maker;

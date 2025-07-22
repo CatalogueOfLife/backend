@@ -1,10 +1,8 @@
 package life.catalogue.matching.authorship;
 
 import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.tax.AuthorshipNormalizer;
-import life.catalogue.common.text.StringUtils;
 import life.catalogue.matching.Equality;
 import life.catalogue.parser.NameParser;
 
@@ -15,9 +13,6 @@ import org.gbif.nameparser.api.ParsedAuthorship;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.gbif.nameparser.api.Rank;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Strings;

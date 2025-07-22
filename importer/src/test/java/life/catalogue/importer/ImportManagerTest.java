@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -12,6 +13,8 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.BrokerConfig;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -37,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validator;
 
@@ -73,7 +75,7 @@ public class ImportManagerTest {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset d = new Dataset();
       d.setTitle("upload test");
-      d.setOrigin(DatasetOrigin.PROJECT);
+      d.setOrigin(DatasetOrigin.EXTERNAL);
       d.setType(DatasetType.OTHER);
       d.setCreatedBy(Users.TESTER);
       d.setModifiedBy(Users.TESTER);
@@ -81,18 +83,19 @@ public class ImportManagerTest {
       datasetKey = d.getKey();
     }
 
+    var broker = TestUtils.mockedBroker();
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, indexService, validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, indexService, null, validator);
     SectorDao sDao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, tDao, validator);
     DecisionDao dDao = new DecisionDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), validator);
     var diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), new File("/tmp"));
-    DatasetDao datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,diDao, validator);
+    DatasetDao datasetDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,diDao, validator, broker);
 
     MetricRegistry metrics = new MetricRegistry();
     final TestConfigs cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
-    manager = new ImportManager(cfg.importer, cfg.normalizer, metrics, hc, new EventBus("test-bus"), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
+    manager = new ImportManager(cfg.importer, cfg.normalizer, metrics, hc, broker, SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(),
       diDao, datasetDao, sDao, dDao, indexService, imgService, jobExecutor, validator, null);
     manager.start();
   }

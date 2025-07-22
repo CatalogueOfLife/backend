@@ -1,5 +1,15 @@
 package life.catalogue.dw.logging;
 
+import life.catalogue.common.util.LoggingUtils;
+
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Marker;
+import org.slf4j.event.KeyValuePair;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
@@ -7,16 +17,6 @@ import ch.qos.logback.classic.spi.LoggerContextVO;
 import co.elastic.logging.EcsJsonSerializer;
 import co.elastic.logging.JsonUtils;
 import co.elastic.logging.logback.EcsEncoder;
-
-import life.catalogue.common.util.LoggingUtils;
-
-import org.slf4j.Marker;
-import org.slf4j.event.KeyValuePair;
-
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ClbEcsEncoder extends EcsEncoder {
   private static final Map<String, String> ECS_MAP = Map.of(

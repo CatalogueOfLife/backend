@@ -9,7 +9,6 @@ import life.catalogue.api.search.NameUsageSearchResponse;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.NomStatus;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.TermFactory;
@@ -24,7 +23,6 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.junit.Assert.*;
 

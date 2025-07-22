@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.VernacularName;
 import life.catalogue.api.search.VernacularNameUsage;
@@ -16,5 +17,12 @@ public interface VernacularNameMapper extends TaxonExtensionMapper<VernacularNam
   List<VernacularNameUsage> search(@Param("datasetKey") int datasetKey, @Param("req") VernacularSearchRequest request, @Param("page") Page page);
 
   int count(@Param("datasetKey") int datasetKey, @Param("req") VernacularSearchRequest request);
+
+  @Override
+  default List<VernacularName> listByTaxon(@Param("key") DSID<String> key) {
+    return listByTaxonFiltered(key, null);
+  }
+
+  List<VernacularName> listByTaxonFiltered(@Param("key") DSID<String> key, @Param("lang") String language);
 
 }

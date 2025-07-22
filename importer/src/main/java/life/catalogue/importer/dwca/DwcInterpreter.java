@@ -16,10 +16,9 @@ import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-
-import org.gbif.nameparser.api.Rank;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +53,9 @@ public class DwcInterpreter extends InterpreterBase {
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);
-        if (!u.getId().equals(dwcaID)) {
+        // for bare names u.ID is null !
+        // TODO: check if that impacts name relations or type material which is linked to names, not taxa
+        if (u.getId() != null && !u.getId().equals(dwcaID)) {
           dwcaID2taxonID.put(dwcaID, u.getId());
         }
       }
@@ -70,37 +71,75 @@ public class DwcInterpreter extends InterpreterBase {
     });
   }
 
-
-  public List<Taxon> interpretSpeciesProfile(VerbatimRecord v) {
-    Taxon t = new Taxon();
-    boolean hasData = false;
-    if (v.hasTerm(GbifTerm.isExtinct)) {
-      t.setExtinct(bool(v, GbifTerm.isExtinct));
-      hasData = true;
+  public static class TaxonAndProperties extends Taxon {
+    public final Map<Term, String> properties = new HashMap<>();
+    public boolean isEmpty() {
+      return properties.isEmpty() &&
+        getEnvironments().isEmpty() &&
+        isExtinct() == null &&
+        getTemporalRangeStart() == null;
     }
-    Set<Environment> envs = new HashSet<>();
-    addEnv(v, GbifTerm.isFreshwater, Environment.FRESHWATER, envs);
-    addEnv(v, GbifTerm.isMarine, Environment.MARINE, envs);
-    addEnv(v, GbifTerm.isTerrestrial, Environment.TERRESTRIAL, envs);
+  }
+
+  public List<TaxonAndProperties> interpretSpeciesProfile(VerbatimRecord v) {
+    var tp = new TaxonAndProperties();
+    String refID;
+    if (v.hasTerm(DcTerm.source)) {
+      var ref = buildReference(v.get(DcTerm.source), v);
+      if (ref != null) {
+        refID = ref.getId();
+        tp.getReferenceIds().add(refID);
+      }
+    }
+
+    super.setReference(v, ColdpTerm.referenceID, tp.getReferenceIds()::add);
+
+    if (v.hasTerm(GbifTerm.isExtinct)) {
+      tp.setExtinct(bool(v, GbifTerm.isExtinct));
+    }
+    addEnv(v, GbifTerm.isFreshwater, Environment.FRESHWATER, tp);
+    addEnv(v, GbifTerm.isMarine, Environment.MARINE, tp);
+    addEnv(v, GbifTerm.isTerrestrial, Environment.TERRESTRIAL, tp);
 
     if (v.hasTerm(GbifTerm.livingPeriod)) {
-      t.setTemporalRangeStart(v.get(GbifTerm.livingPeriod));
-      hasData = true;
+      tp.setTemporalRangeStart(v.get(GbifTerm.livingPeriod));
     }
+    // all other flags as properties
+    addProperty(v, GbifTerm.isInvasive, tp.properties);
+    addProperty(v, GbifTerm.isHybrid, tp.properties);
+    addProperty(v, GbifTerm.ageInDays, tp.properties);
+    addProperty(v, GbifTerm.sizeInMillimeters, tp.properties);
+    addProperty(v, GbifTerm.massInGrams, tp.properties);
+    addProperty(v, GbifTerm.lifeForm, tp.properties);
+    addProperty(v, DwcTerm.habitat, tp.properties);
+    addProperty(v, DwcTerm.sex, tp.properties);
 
-    if (hasData || !envs.isEmpty()) {
-      if (!envs.isEmpty()) {
-        t.setEnvironments(envs);
-      }
+    if (!tp.isEmpty()) {
+      return List.of(tp);
+    }
+    return Collections.emptyList();
+  }
+
+  private void addProperty(VerbatimRecord v, Term term, Map<Term, String> properties) {
+    if (v.hasTerm(term)) {
+      properties.put(term, v.get(term));
+    }
+  }
+
+  public List<Taxon> interpretAltIdentifiers(VerbatimRecord v) {
+    if (v.hasTerm(DcTerm.identifier)) {
+      Taxon t = new Taxon();
+      t.setIdentifier(new ArrayList<>());
+      t.getIdentifier().add(Identifier.parse(v.getRaw(DcTerm.identifier)));
       return List.of(t);
     }
     return Collections.emptyList();
   }
 
-  private void addEnv(VerbatimRecord v, GbifTerm term, Environment env, Set<Environment> envs) {
+  private void addEnv(VerbatimRecord v, GbifTerm term, Environment env, TaxonAndProperties tp) {
     if (v.hasTerm(term)) {
       if (bool(v, Issue.ENVIRONMENT_INVALID, false, term)) {
-        envs.add(env);
+        tp.getEnvironments().add(env);
       }
     }
   }
@@ -175,7 +214,7 @@ public class DwcInterpreter extends InterpreterBase {
         rec, DwcTerm.occurrenceRemarks, this::setReference);
       
     } else {
-      rec.addIssue(Issue.DISTRIBUTION_INVALID);
+      rec.add(Issue.DISTRIBUTION_INVALID);
       return Collections.emptyList();
     }
   }
@@ -309,7 +348,7 @@ public class DwcInterpreter extends InterpreterBase {
       try {
         status = TypeStatusParser.PARSER.parse(rec.get(DwcTerm.typeStatus));
       } catch (UnparsableException e) {
-        rec.addIssue(Issue.TYPE_STATUS_INVALID);
+        rec.add(Issue.TYPE_STATUS_INVALID);
         status = Optional.of(TypeStatus.OTHER);
       }
 
@@ -324,7 +363,7 @@ public class DwcInterpreter extends InterpreterBase {
         try {
           CoordParser.PARSER.parse(rec.get(DwcTerm.decimalLatitude), rec.get(DwcTerm.decimalLongitude)).ifPresent(m::setCoordinate);
         } catch (UnparsableException e) {
-          rec.addIssue(Issue.LAT_LON_INVALID);
+          rec.add(Issue.LAT_LON_INVALID);
         }
         m.setAltitude(rec.getFirst(DwcTerm.minimumElevationInMeters, DwcTerm.maximumElevationInMeters));
         m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(DwcTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));

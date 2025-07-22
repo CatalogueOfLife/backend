@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Consumer of an entire tree in depth first order (!) of accepted names, validates taxa and resolves data.
+ * Consumer of an entire tree in depth first order (!) of accepted names with or without synonyms, validates taxa and resolves data.
  * It tracks the parent classification as it goes and makes it available for validations.
  * In particular this is:
  *
@@ -84,6 +84,24 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
         }
       });
     }
+    // add stack handler that counts species and flags all supraspecific taxa without species
+    // see also an alternative implementation in PgImport.insertUsages()
+    // which gets applied to external dataset during imports
+    parents.addHandler(new ParentStack.StackHandler<>() {
+      @Override
+      public void start(XLinneanNameUsage n) {
+        if (n.getRank() == Rank.SPECIES) {
+          parents.getParents(false).forEach(p -> p.numSpecies++);
+        }
+      }
+      @Override
+      public void end(ParentStack.SNC<XLinneanNameUsage> taxon) {
+        if (taxon.usage.getRank().higherThan(Rank.SPECIES_AGGREGATE) && taxon.usage.numSpecies == 0) {
+          LOG.debug("Flag taxon without species: {}", taxon.usage);
+          issueAdder.addIssue(taxon.usage.getVerbatimSourceKey(), taxon.usage.getId(), Issue.NO_SPECIES_INCLUDED);
+        }
+      }
+    });
   }
 
   ParentStack<XLinneanNameUsage> stack() {
@@ -92,6 +110,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
 
   public static class XLinneanNameUsage extends LinneanNameUsage {
     Integer authorYear;
+    int numSpecies = 0;
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
     }
@@ -114,58 +133,66 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       // already flagged by name validator above!
     }
 
-    if (sn.getRank().isSpeciesOrBelow()) {
-      // flag parent mismatches
-      if (sn.isParsed()) {
-        var genus = parents.getByRank(Rank.GENUS);
-        if (sn.getRank().isInfraspecific()) {
-          // we have a trinomial, compare species
-          var sp = parents.find(Rank.SPECIES);
-          if (sp == null) {
-            issues.addIssue(Issue.PARENT_SPECIES_MISSING);
-          } else if (sp.isParsed() && (
-              !Objects.equals(sn.getGenus(), sp.getGenus()) ||
-              !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
-          ) {
-            issues.addIssue(Issue.PARENT_NAME_MISMATCH);
+    if (sn.getStatus() != null && sn.getStatus().isSynonym()) {
+      // validate syn vs acc rank
+      var p = parents.secondLast();
+      if (p != null && sn.getRank() != p.getRank()) {
+        issues.add(Issue.SYNONYM_RANK_DIFFERS);
+      }
+
+    } else {
+      if (sn.getRank().isSpeciesOrBelow()) {
+        // flag parent mismatches
+        if (sn.isParsed()) {
+          var genus = parents.getByRank(Rank.GENUS);
+          if (sn.getRank().isInfraspecific()) {
+            // we have a trinomial, compare species
+            var sp = parents.getByRank(Rank.SPECIES);
+            if (sp == null) {
+              issues.add(Issue.PARENT_SPECIES_MISSING);
+            } else if (sp.isParsed() && (
+                !Objects.equals(sn.getGenus(), sp.getGenus()) ||
+                !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
+            ) {
+              issues.add(Issue.PARENT_NAME_MISMATCH);
+            }
+          } else {
+            // we have a binomial, compare genus only
+            if (genus == null) {
+              issues.add(Issue.PARENT_GENUS_MISSING);
+            } else if (genus.isParsed() &&
+                // genus should only have uninomial populated, but play safe here
+                !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
+            ) {
+              issues.add(Issue.PARENT_NAME_MISMATCH);
+            }
           }
-        } else {
-          // we have a binomial, compare genus only
-          if (genus == null) {
-            issues.addIssue(Issue.MISSING_GENUS);
-          } else if (genus.isParsed() &&
-              // genus should only have uninomial populated, but play safe here
-              !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
+          // flag if published before the genus
+          if (!issues.contains(Issue.PARENT_NAME_MISMATCH)
+              && !issues.contains(Issue.MISSING_GENUS)
+              && !issues.contains(Issue.UNLIKELY_YEAR)
+              && genus != null && genus.authorYear != null
+              && sn.authorYear != null
+              && genus.authorYear > sn.authorYear
           ) {
-            issues.addIssue(Issue.PARENT_NAME_MISMATCH);
+              // flag if the accepted bi/trinomial the ones that have an earlier publication date!
+              issues.add(Issue.PUBLISHED_BEFORE_GENUS);
           }
-        }
-        // flag if published before the genus
-        if (!issues.hasIssue(Issue.PARENT_NAME_MISMATCH)
-            && !issues.hasIssue(Issue.MISSING_GENUS)
-            && !issues.hasIssue(Issue.UNLIKELY_YEAR)
-            && genus != null && genus.authorYear != null
-            && sn.authorYear != null
-            && genus.authorYear > sn.authorYear
-        ) {
-            // flag if the accepted bi/trinomial the ones that have an earlier publication date!
-            issues.addIssue(Issue.PUBLISHED_BEFORE_GENUS);
         }
       }
-    }
-    parents.push(sn);
-
-    // validate next higher concrete parent rank
-    if (!sn.getRank().isUncomparable()) {
-      parents.getLowestConcreteRank(true).ifPresent(r -> {
-        if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
-          issues.addIssue(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
-        }
-      });
-    }
-    // track maximum depth of accepted taxa
-    if (sn.getStatus() != null && sn.getStatus().isTaxon() && maxDepth < parents.depth()) {
-      maxDepth = parents.depth();
+      parents.push(sn);
+      // validate next higher concrete parent rank
+      if (!sn.getRank().isUncomparable()) {
+        parents.getLowestConcreteRank(true).ifPresent(r -> {
+          if (r.lowerOrEqualsTo(sn.getRank()) && sn.getType() != NameType.OTU) {
+            issues.add(Issue.CLASSIFICATION_RANK_ORDER_INVALID);
+          }
+        });
+      }
+      // track maximum depth of accepted taxa
+      if (maxDepth < parents.depth()) {
+        maxDepth = parents.depth();
+      }
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {

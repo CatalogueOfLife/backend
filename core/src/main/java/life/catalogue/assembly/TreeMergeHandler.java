@@ -7,6 +7,7 @@ import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
@@ -257,7 +258,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
     UsageMatch match = matcher.matchWithParents(targetDatasetKey, nu, parents.classificationSN(), true, unique);
-    LOG.debug("{} matches {}", nu.getLabel(), match);
+    // remove matches to genera for unranked source names as genera often are homonyms with higher names and can cause serious trouble
+    if (match.isMatch() && nu.getRank().otherOrUnranked() && match.usage.getRank().isGenusGroup()) {
+      LOG.info("Ignore {} [{}] because it is unranked and matches a genus which can be a bad homonym match: {}", nu.getName().getLabel(), nu.getId(), match.usage.getLabel());
+      match = UsageMatch.empty(targetDatasetKey);
+    } else {
+      LOG.debug("{} matches {}", nu.getLabel(), match);
+    }
     if (!match.isMatch() && unique) {
       for (var alt : match.alternatives) {
         if (alt.getRank() == nu.getName().getRank() && alt.getName().equalsIgnoreCase(nu.getName().getScientificName())) {
@@ -315,7 +322,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
 
     // check if usage should be ignored AFTER matching as we need the parents matched to attach child taxa correctly
-    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), true)) {
+    if (match.ignore || ignoreUsage(nu, decisions.get(nu.getId()), mod, true)) {
       // skip this taxon, but include children
       ignored++;
       return;
@@ -445,6 +452,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
       LOG.warn("Ignore synonym without a parent: {}", nu.getLabel());
       ignored++;
       return null;
+
+    } else if (nu.isTaxon() && parent != null && parent.rank.notOtherOrUnranked() && nu.getRank().higherOrEqualsTo(parent.rank)) {
+      LOG.info("Avoid bad rank ordering. Do not create {} {} with parent: {}", nu.getRank(), nu.getLabel(), parent.rank);
+      ignored++;
+      return null;
     }
 
     // add well known identifiers
@@ -489,15 +501,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
-    var ignore =  super.ignoreUsage(u, decision, true);
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
+    var ignore =  super.ignoreUsage(u, decision, issues, true);
     if (!ignore) {
       // additional checks - we dont want any unranked unless they are OTU names
       ignore = u.getRank() == Rank.UNRANKED && u.getName().getType() != NameType.OTU
         || (cfg != null && cfg.isBlocked(u.getName()));
-      // if issues are to be excluded we need to load the verbatim records
+      // check the dynamically generated name validation issues without loading
+      if (issues.contains(Issue.INCONSISTENT_NAME)) {
+        LOG.debug("Ignore {} because it is an inconsistent name", u.getLabel());
+        return true;
+      }
+      // if custom issues are to be excluded we need to load the verbatim records
       if (cfg != null && !cfg.xCfg.issueExclusion.isEmpty() && u.getName().getVerbatimKey() != null) {
-        var issues = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        var issues2 = vrmRO.getIssues(vKey.id(u.getName().getVerbatimKey()));
+        issues.add(issues2);
         if (issues != null && CollectionUtils.overlaps(issues.getIssues(), cfg.xCfg.issueExclusion)) {
           LOG.debug("Ignore {} because of excluded issues: {}", u.getLabel(), StringUtils.join(issues, ","));
           return true;
@@ -531,6 +549,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   private boolean proposedParentDoesNotConflict(SimpleName existing, SimpleName existingParent, SimpleName proposedParent) {
+    // shortcut for special case of incertae sedis parent
+    // regardless of its rank we should always update the classification!
+    if (cfg != null && cfg.incertae != null && cfg.incertae.getId().equals(existingParent.getId())) {
+      return true;
+    }
     boolean existingParentFound = false;
     if (existingParent.getRank().higherThan(proposedParent.getRank())
         && proposedParent.getRank().higherThan(existing.getRank())
@@ -563,16 +586,21 @@ public class TreeMergeHandler extends TreeBaseHandler {
     }
     return v.getId();
   }
+  private void updateParent(NameUsageBase nu, DSID<String> existingUsageKey, UsageMatch existing, SimpleNameWithNidx existingParent, SimpleNameWithNidx parent, Set<InfoGroup> upd) {
+    LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
+    numRO.updateParentId(existingUsageKey, parent.getId(), user);
+    upd.add(InfoGroup.PARENT);
+  }
 
-  private void update(NameUsageBase src, UsageMatch existing) {
-    if (src.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
-      LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), src.getId(), src.getStatus());
+  private void update(NameUsageBase nu, UsageMatch existing) {
+    if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
+      LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 
       // we need to
       // 1) load the primary source and add secondary sources if we update anything
       // 2) create a new verbatim source for all newly added supplementary records like vernaculars, distributions, etc
       //    we do only create the VS record when it is actually needed, so we start with just the instance without persisted key:
-      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), src.getId(), EntityType.NAME_USAGE);
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), nu.getId(), EntityType.NAME_USAGE);
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
       // set targetKey to the existing usage
@@ -585,15 +613,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
             var parent = matchedParents.getLast().match;
             if (parent != null) {
               if (parent.getStatus().isSynonym()) {
-                LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), src);
+                LOG.info("Do not update {} with a closer synonym parent {} {} from {}", existing.usage, parent.getRank(), parent.getId(), nu);
 
               } else {
                 var existingParent = existing.usage.getClassification() == null || existing.usage.getClassification().isEmpty() ? null : existing.usage.getClassification().get(0);
+                var parent2 = matchedParents.size() < 2 ? null : matchedParents.get(matchedParents.size()-2).match;
                 batchSession.commit(); // we need to flush the write session to avoid broken foreign key constraints
                 if (existingParent == null || proposedParentDoesNotConflict(existing.usage, existingParent, parent)) {
-                  LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, src);
-                  numRO.updateParentId(existingUsageKey, parent.getId(), user);
-                  upd.add(InfoGroup.PARENT);
+                  updateParent(nu, existingUsageKey, existing, existingParent, parent, upd);
+                } else if (parent.getRank() == Rank.SERIES && parent2 != null && proposedParentDoesNotConflict(existing.usage, existingParent, parent2)) {
+                  // series in zoology are placed differently than in botany which we consider as series
+                  // See https://github.com/CatalogueOfLife/data/issues/1023
+                  updateParent(nu, existingUsageKey, existing, existingParent, parent2, upd);
                 }
               }
             }
@@ -604,7 +635,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           final var mapper = batchSession.getMapper(VernacularNameMapper.class);
           List<VernacularName> existingVNames = null;
           vnloop:
-          for (var vn : mapper.listByTaxon(src)) {
+          for (var vn : mapper.listByTaxon(nu)) {
             // we only want to add vernaculars with a name & language
             if (vn.getName() == null || vn.getLanguage() == null) continue;
 
@@ -638,7 +669,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
       // try to also update the name - conditional checks within the subroutine
-      Name pn = updateName(null, src.getName(), vs, upd, existing);
+      Name pn = updateName(null, nu.getName(), vs, upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
@@ -653,7 +684,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         } else {
           vsKey = createSecondaryVS();
         }
-        vsm.insertSources(vsKey, src, upd);
+        vsm.insertSources(vsKey, nu, upd);
         if (pn.getVerbatimSourceKey() == null) {
           pn.setVerbatimSourceKey(vsKey.getId());
         }
@@ -666,12 +697,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
     } else {
-      LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), src.getId(), src.getStatus());
+      LOG.debug("Ignore update of {} {} {} from source {}:{} with different status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
     }
 
     // add well know name and usage ids
     if (usageIdScope != null) {
-      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, src.getId())));
+      num.addIdentifier(existing, List.of(new Identifier(usageIdScope, nu.getId())));
     }
   }
 
@@ -751,6 +782,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
         n.setNamesIndexId(src.getNamesIndexId());
         if (existingUsage != null) {
           existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
+
+          // also update the usage identifier for changes in authorship !!!
+          // https://github.com/CatalogueOfLife/backend/issues/1407
+          final var canonicalNidx = usageIdGen.nidx2canonical(src.getNamesIndexId());
+          var sNidx = new SimpleNameWithNidx(existingUsage.usage);
+          sNidx.setCanonicalId(canonicalNidx); // the canonicalId changes during issuing a stable ID (dirty) - so we store it before to reuse it
+          sNidx.setNamesIndexMatchType(src.getNamesIndexType());
+          // assign new id based on the new nidx
+          final var oldID = existingUsage.usage.getId();
+          final var newID = usageIdGen.issue(sNidx);
+          existingUsage.usage.setId(newID);
+          TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
+          matcher.updateCacheParent(targetDatasetKey, oldID, newID);
         }
         // update name match in db
         nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
@@ -819,7 +863,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // TODO: implement basionym/name rel updates
     }
     // well known name identifier
-    if (nameIdScope != null) {
+    if (existingUsage != null && nameIdScope != null) {
       var nid = DSID.of(existingUsage.getDatasetKey(), nm.getNameIdByUsage(existingUsage.getDatasetKey(), existingUsage.getId()));
       nm.addIdentifier(nid, List.of(new Identifier(nameIdScope, src.getId())));
     }

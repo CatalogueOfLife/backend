@@ -13,16 +13,19 @@
  */
 package life.catalogue.matching;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import life.catalogue.matching.util.IOUtils;
+
+import org.gbif.api.model.checklistbank.NameUsageMatch;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 import java.util.TreeSet;
 
-import life.catalogue.matching.util.IOUtils;
-import org.gbif.api.model.checklistbank.NameUsageMatch;
 import org.junit.jupiter.api.Assertions;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Manual utility to generate a list of unique canonical names from the test index json files and

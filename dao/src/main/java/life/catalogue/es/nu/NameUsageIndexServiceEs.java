@@ -1,14 +1,11 @@
 package life.catalogue.es.nu;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.SimpleNameClassification;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.search.SimpleDecision;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
@@ -17,10 +14,10 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DecisionMapper;
 import life.catalogue.db.mapper.NameUsageWrapperMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,11 +25,9 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
@@ -40,6 +35,9 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.elasticsearch.client.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -77,7 +75,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     final AtomicInteger counter = new AtomicInteger(0);
     ExecutorService exec = Executors.newFixedThreadPool(esConfig.indexingThreads, new NamedThreadFactory("ES-Indexer"));
     for (Integer datasetKey : keys) {
-      CompletableFuture.supplyAsync(() -> indexDatasetWithMDC(datasetKey, true), exec)
+      CompletableFuture.supplyAsync(() -> indexDatasetInternal(datasetKey, true), exec)
         .exceptionally(ex -> {
           counter.incrementAndGet();
           LOG.error("Error indexing dataset {}", datasetKey, ex.getCause());
@@ -95,26 +93,36 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
   }
 
   @Override
-  public BatchConsumer<NameUsageWrapper> buildDatasetIndexingHandler(int datasetKey) {
+  public IndexerBatchConsumer buildDatasetIndexingHandler(int datasetKey) {
     LOG.info("Start indexing dataset {}", datasetKey);
     try {
       LOG.info("Remove dataset {} from index", datasetKey);
       createOrEmptyIndex(datasetKey);
 
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
-      return new BatchConsumer<>(indexer, BATCH_SIZE) {
-        @Override
-        public void close() {
-          super.close();
-          EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-        }
-      };
+      return new IndexerBatchConsumer(indexer);
 
     } catch (IOException e) {
       throw new EsException(e);
     }
   }
 
+  public SqlSessionFactory getFactory() {
+    return factory;
+  }
+
+  public static class IndexerBatchConsumer extends BatchConsumer<NameUsageWrapper> {
+    public final NameUsageIndexer indexer;
+    public IndexerBatchConsumer(NameUsageIndexer indexer) {
+      super(indexer, BATCH_SIZE);
+      this.indexer = indexer;
+    }
+    @Override
+    public void close() {
+      super.close();
+      EsUtil.refreshIndex(indexer.getEsClient(), indexer.getIndexName());
+    }
+  }
   private void index(Cursor<NameUsageWrapper> cursor, NameUsageIndexer indexer) throws IOException {
     try (BatchConsumer<NameUsageWrapper> handler = new BatchConsumer<>(indexer, BATCH_SIZE)) {
       PgUtils.consume(
@@ -124,17 +132,9 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
     }
   }
 
-  private Stats indexDatasetWithMDC(int datasetKey, boolean clearIndex) {
-    try {
-      LoggingUtils.setDatasetMDC(datasetKey, getClass());
-      var stats = indexDatasetInternal(datasetKey, clearIndex);
-      return stats;
-    } finally {
-      LoggingUtils.removeDatasetMDC();
-    }
-  }
   private Stats indexDatasetInternal(int datasetKey, boolean clearIndex) {
     try {
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
       Stats stats = new Stats();
       NameUsageIndexer indexer = new NameUsageIndexer(client, esConfig.nameUsage.name);
       if (clearIndex) {
@@ -158,28 +158,44 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
 
+      // taxon groups dataset scope
+      try (SqlSession session = factory.openSession(true)) {
+        var dm = session.getMapper(DatasetMapper.class);
+        dm.updateTaxonomicGroupScope(datasetKey, indexer.getTaxGroups());
+      }
+
       LOG.info("Successfully indexed dataset {} into index {}. Usages: {}. Bare names: {}. Total: {}.",
         datasetKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
       return stats;
 
     } catch (IOException e) {
       throw new EsException(e);
+
+    } finally {
+      LoggingUtils.removeDatasetMDC();
     }
   }
 
   @Override
   public int deleteDataset(int datasetKey) {
-    LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
-    int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
-    LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    return cnt;
+    try {
+      LoggingUtils.setDatasetMDC(datasetKey, getClass());
+      LOG.info("Removing dataset {} from index {}", datasetKey, esConfig.nameUsage.name);
+      int cnt = EsUtil.deleteDataset(client, esConfig.nameUsage.name, datasetKey);
+      LOG.info("Deleted all {} documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      return cnt;
+
+    } finally {
+      LoggingUtils.removeDatasetMDC();
+    }
   }
 
   @Override
   public Stats indexSector(DSID<Integer> sectorKey) {
     Stats stats = new Stats();
     try (SqlSession session = factory.openSession()) {
+      LoggingUtils.setSectorMDC(sectorKey);
       Sector s = session.getMapper(SectorMapper.class).get(sectorKey);
       if (s == null) throw NotFoundException.notFound(Sector.class, sectorKey);
 
@@ -200,28 +216,42 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
       EsUtil.refreshIndex(client, esConfig.nameUsage.name);
       stats.names = indexer.documentsIndexed();
 
+      LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
+        sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
+      return stats;
+
     } catch (IOException e) {
       throw new EsException(e);
-    }
 
-    LOG.info("Successfully indexed sector {}. Index: {}. Usages: {}. Bare names: {}. Total: {}.",
-      sectorKey, esConfig.nameUsage.name, stats.usages, stats.names, stats.total());
-    return stats;
+    } finally {
+      LoggingUtils.removeSectorMDC();
+    }
   }
 
   @Override
   public void deleteSector(DSID<Integer> sectorKey) {
-    int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
-    LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+    try {
+      LoggingUtils.setSectorMDC(sectorKey);
+      int cnt = EsUtil.deleteSector(client, esConfig.nameUsage.name, sectorKey);
+      LOG.info("Deleted all {} documents from sector {} from index {}", cnt, sectorKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+
+    } finally {
+      LoggingUtils.removeSectorMDC();
+    }
   }
 
   @Override
   public int deleteBareNames(int datasetKey) {
-    int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
-    LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
-    EsUtil.refreshIndex(client, esConfig.nameUsage.name);
-    return cnt;
+    try {
+      LoggingUtils.setDatasetMDC(datasetKey);
+      int cnt = EsUtil.deleteBareNames(client, esConfig.nameUsage.name, datasetKey);
+      LOG.info("Deleted all {} bare name documents from dataset {} from index {}", cnt, datasetKey, esConfig.nameUsage.name);
+      EsUtil.refreshIndex(client, esConfig.nameUsage.name);
+      return cnt;
+    } finally {
+      LoggingUtils.removeDatasetMDC();
+    }
   }
 
   @Override

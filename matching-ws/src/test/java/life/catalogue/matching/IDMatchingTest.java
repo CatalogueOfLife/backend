@@ -3,10 +3,10 @@ package life.catalogue.matching;
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.Dataset;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,7 +15,7 @@ public class IDMatchingTest {
   @Test
   public void testWithoutPrefix() {
     Dataset dataset = Dataset.builder()
-      .key(1)
+      .clbKey(1)
       .prefix("urn:lsid:ipni.org:names:")
       .prefixMapping(List.of("urn:lsid:ipni.org:names:", "ipni:"))
       .removePrefixForMatching(true)
@@ -26,7 +26,7 @@ public class IDMatchingTest {
   @Test
   public void testWithoutPrefix2() {
     Dataset dataset = Dataset.builder()
-      .key(1)
+      .clbKey(1)
       .prefix("gbif:")
       .prefixMapping(List.of("gbif:"))
       .removePrefixForMatching(true)
@@ -37,7 +37,7 @@ public class IDMatchingTest {
   @Test
   public void testWithPrefix() {
     Dataset dataset = Dataset.builder()
-      .key(1)
+      .clbKey(1)
       .prefix("urn:lsid:marinespecies.org:taxname:")
       .prefixMapping(List.of("worms:"))
       .removePrefixForMatching(false)
@@ -50,7 +50,7 @@ public class IDMatchingTest {
   @Test
   public void testWithUnrecognisedPrefix() {
     Dataset dataset = Dataset.builder()
-      .key(1)
+      .clbKey(1)
       .prefix("urn:lsid:marinespecies.org:taxname:")
       .prefixMapping(List.of("worms:"))
       .removePrefixForMatching(false)
@@ -63,7 +63,7 @@ public class IDMatchingTest {
   @Test
   public void testWithUnrecognisedPrefix2() {
     Dataset dataset = Dataset.builder()
-      .key(1)
+      .clbKey(1)
       .prefix("urn:lsid:marinespecies.org:taxname:")
       .prefixMapping(List.of("worms:"))
       .removePrefixForMatching(false)

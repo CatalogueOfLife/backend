@@ -11,7 +11,9 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
+import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TabWriter;
+import life.catalogue.common.io.TempFile;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
@@ -68,11 +70,11 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  */
 public class IdProvider {
   protected final Logger LOG = LoggerFactory.getLogger(IdProvider.class);
-
   private final int projectKey;
   private final int attempt;
   private final DatasetOrigin origin;
-  private final int releaseDatasetKey;
+  private final int mappedDatasetKey; // from
+  private final int releaseDatasetKey; // to
   private final Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
@@ -104,8 +106,10 @@ public class IdProvider {
       this.attempt = attempt;
     }
   }
-  public IdProvider(int projectKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+  public IdProvider(int projectKey, int mappedDatasetKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+    LOG.info("Setup ID provider for project {}, mapping dataset {}", projectKey, mappedDatasetKey);
     this.releaseDatasetKey = releaseDatasetKey;
+    this.mappedDatasetKey = mappedDatasetKey;
     this.projectKey = projectKey;
     this.origin = origin;
     this.attempt = attempt;
@@ -203,16 +207,15 @@ public class IdProvider {
   }
 
   protected void report() {
-    try {
-      File dir = cfg.reportDir(projectKey, attempt);
+    try (var tmp = TempFile.directory()){
       // read the following IDs from previous releases
-      reportFile(dir,"deleted.tsv", deleted.keySet(), deleted, true);
-      reportFile(dir,"resurrected.tsv", resurrected.keySet(), deleted, false);
+      reportFile(tmp.file,"deleted.tsv", deleted.keySet(), deleted, true);
+      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), deleted, false);
       // read ID from this release & ID mapping
-      reportFile(dir,"created.tsv", created, id -> -1, false);
+      reportFile(tmp.file,"created.tsv", created, id -> -1, false);
       // clear instable names, removing the ones with just deletions
       unstable.entrySet().removeIf(entry -> entry.getValue().parallelStream().allMatch(n -> n.del));
-      final var unstableFile = new File(dir, "unstable.txt");
+      final var unstableFile = new File(tmp.file, "unstable.txt");
       LOG.info("Writing unstable ID report for project release {}-{} to {}", projectKey, attempt, unstableFile);
       try (Writer writer = UTF8IoUtils.writerFromFile(unstableFile);
           SqlSession session = factory.openSession(true)
@@ -224,6 +227,9 @@ public class IdProvider {
           entry.getValue().forEach(n -> writeInstableName(writer, n));
         }
       }
+      final var idZip = new File(cfg.reportDir(projectKey, attempt), "id-reports.gz");
+      LOG.info("Zipping up id reports for project release {}-{} to {}", projectKey, attempt, idZip);
+      CompressionUtil.zipDir(tmp.file, idZip);
     } catch (IOException e) {
       LOG.error("Failed to write ID reports for project "+projectKey, e);
     }
@@ -297,7 +303,7 @@ public class IdProvider {
         sn = num.getSimple(key);
       } else {
         // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
-        sn = num.getSimpleByIdMap(DSID.of(projectKey, ID));
+        sn = num.getSimpleByIdMap(DSID.of(mappedDatasetKey, ID));
         if (sn != null) {
           key = DSID.of(releaseDatasetKey, ID);
         }
@@ -470,14 +476,18 @@ public class IdProvider {
   }
 
   protected void mapIds(){
-    try (SqlSession readSession = factory.openSession(true)) {
-      mapIds(readSession.getMapper(NameUsageMapper.class).processNxIds(projectKey));
+    try (SqlSession readSession = factory.openSession(true);
+         var cursor = readSession.getMapper(NameUsageMapper.class).processNxIds(mappedDatasetKey);
+    ) {
+      mapIds(cursor);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 
   @VisibleForTesting
   protected void mapIds(Iterable<SimpleNameWithNidx> names){
-    LOG.info("Map name usage IDs");
+    LOG.info("Map name usage IDs from dataset {}", mappedDatasetKey);
     final int lastRelIds = ids.lastAttemptIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
@@ -596,7 +606,7 @@ public class IdProvider {
           issueNewId(sn);
         }
         if (persistIdMapping) {
-          idm.mapUsage(projectKey, sn.getId(), encode(sn.getCanonicalId()));
+          idm.mapUsage(mappedDatasetKey, sn.getId(), encode(sn.getCanonicalId()));
         }
       }
     }
@@ -626,7 +636,7 @@ public class IdProvider {
       final AtomicInteger counter = new AtomicInteger(0);
       final AtomicInteger removed = new AtomicInteger(0);
       final AtomicInteger other = new AtomicInteger(0);
-      PgUtils.consume(() -> num.processIds(datasetKey, true), id -> {
+      PgUtils.consume(() -> num.processIds(datasetKey, true, null), id -> {
         try {
           int intID = IdConverter.LATIN29.decode(id);
           if (ids.remove(intID) != null) {

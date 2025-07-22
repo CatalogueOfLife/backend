@@ -1,10 +1,5 @@
 package life.catalogue.matching.nidx;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.FastUtilsSerializers;
 
@@ -15,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
+
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 /**
  * We use a separate kryo pool for the names index to avoid too often changes to the serialisation format

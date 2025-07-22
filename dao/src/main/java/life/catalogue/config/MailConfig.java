@@ -4,10 +4,10 @@ package life.catalogue.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.simplejavamail.api.mailer.config.TransportStrategy;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
-import org.simplejavamail.api.mailer.config.TransportStrategy;
 
 public class MailConfig {
 
@@ -48,6 +48,12 @@ public class MailConfig {
    */
   @NotNull
   public String replyTo;
+
+  /**
+   * URL to the COL user mailing list
+   */
+  @NotNull
+  public String mailinglist;
 
   /**
    * Optional address to sent mails to when background jobs throw an error

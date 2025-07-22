@@ -10,9 +10,8 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.neo.NeoDb;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.UnknownTerm;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,8 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.gbif.dwc.terms.UnknownTerm;
-
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +109,7 @@ public class CslJsonInserter {
 
     } catch (JsonProcessingException | RuntimeException e) {
       LOG.warn("Failed to convert verbatim csl json {} into Reference: {}", v.getId(), e.getMessage(), e);
-      v.addIssue(Issue.UNPARSABLE_REFERENCE);
+      v.add(Issue.UNPARSABLE_REFERENCE);
       store.put(v);
     }
   }

@@ -1,6 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.event.FlushDatasetCache;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -8,16 +8,15 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.event.EventBroker;
+import life.catalogue.matching.nidx.NameIndex;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.matching.nidx.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 /**
  * Rematches entire datasets, using 2 separate db connections for read & write
@@ -25,11 +24,11 @@ import com.google.common.eventbus.EventBus;
  */
 public class DatasetMatcher extends BaseMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
-  private final EventBus bus;
+  private final EventBroker bus;
   private int archived = 0;
   private int datasets = 0;
 
-  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBus bus) {
+  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBroker bus) {
     super(factory, ni);
     this.bus = bus;
   }
@@ -97,7 +96,7 @@ public class DatasetMatcher extends BaseMatcher {
       }
     } finally {
       if (bus != null) {
-        bus.post(new FlushDatasetCache(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey));
       }
     }
   }

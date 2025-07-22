@@ -121,13 +121,13 @@ public class AcefInserter extends NeoCsvInserter {
         }
         if (accIds.contains(aID)) {
           LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
-          v.addIssue(Issue.DUPLICATE_NAME);
-          v.addIssue(Issue.TAXON_ID_INVALID);
+          v.add(Issue.DUPLICATE_NAME);
+          v.add(Issue.TAXON_ID_INVALID);
           
         } else {
           NeoUsage acc = store.usages().objByID(aID);
           if (acc == null) {
-            v.addIssue(Issue.ACCEPTED_ID_INVALID);
+            v.add(Issue.ACCEPTED_ID_INVALID);
             
           } else {
             // create synonym relations in post process
@@ -215,7 +215,7 @@ public class AcefInserter extends NeoCsvInserter {
         case NomRef:
           NeoName nn = store.nameByUsage(u.node);
           if (nn.getName().getPublishedInId() != null) {
-            rec.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
+            rec.add(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
           }
           nn.getName().setPublishedInId(ref.getId());
           // we extract the page from CSL and also store it in the name
@@ -242,7 +242,7 @@ public class AcefInserter extends NeoCsvInserter {
     }
     // persist new issue?
     if (!issues.isEmpty()) {
-      rec.addIssues(issues);
+      rec.add(issues);
       store.put(rec);
     }
   }

@@ -672,7 +672,7 @@ public class NeoDb {
       } else {
         for (Issue is : issue) {
           if (is != null) {
-            v.addIssue(is);
+            v.add(is);
           }
         }
         put(v);

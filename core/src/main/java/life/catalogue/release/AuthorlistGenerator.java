@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import life.catalogue.db.mapper.DatasetSourceMapper;
+
 public class AuthorlistGenerator {
   private final Validator validator;
   private final DatasetSourceDao dao;
@@ -37,7 +39,7 @@ public class AuthorlistGenerator {
     if (cfg.authorSourceExclusion != null) {
       exclusion.addAll(cfg.authorSourceExclusion);
     }
-    var sources = dao.listSimple(d.getKey(), true);
+    var sources = dao.listSimple(d.getKey(), true, false);
     // prepare unique agents for appending to release
     final List<Agent> agents = new ArrayList<>();
     // add some configured authors in alphabetical order
@@ -111,7 +113,8 @@ public class AuthorlistGenerator {
       }
       result.addAll(0, existing);
     }
-    return result;
+    // replace SrcAgent which troubles kryo
+    return result.stream().map(Agent::new).collect(Collectors.toList());
   }
 
   private static List<SrcAgent> addSourceNote(Dataset d, List<Agent> agents) {

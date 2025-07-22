@@ -9,10 +9,10 @@ import org.gbif.nameparser.api.Rank;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
@@ -234,6 +234,7 @@ public class MatchedParentStack {
       }
     }
     // if the classification ordering is wrong, mark it as doubtful
+    // this does NOT flag rank ordering issues in matches!
     Rank pRank = null;
     if (!parents.isEmpty()) {
       pRank = parents.getLast().usage.getRank();

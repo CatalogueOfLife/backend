@@ -6,13 +6,13 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
-
 import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.txtree.Tree;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -21,12 +21,10 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.txtree.Tree;
-
-import javax.annotation.Nullable;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.

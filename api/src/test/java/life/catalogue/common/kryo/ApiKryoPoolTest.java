@@ -5,20 +5,22 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.*;
-import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.dwc.terms.*;
+import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.List;
-import java.util.UUID;
+import java.util.Set;
 
 import org.junit.Test;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.collect.Lists;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -29,12 +31,31 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class ApiKryoPoolTest {
-  Kryo kryo = new ApiKryoPool(1).create();
+  Pool<Kryo> kryo = new ApiKryoPool(1);
   
   @Test
   public void testName() throws Exception {
     Name n = TestEntityGenerator.newName("1234567");
     assertSerde(n);
+  }
+
+  @Test
+  public void testSector() throws Exception {
+    Sector s = new Sector();
+    s.setId(1234);
+    s.setDatasetKey(77);
+    s.setSubject(new SimpleNameLink());
+    s.setSubjectDatasetKey(123);
+    s.setTarget(new SimpleNameLink());
+    s.setMode(Sector.Mode.ATTACH);
+    s.setRanks(Set.of(Rank.SPECIES, Rank.GENUS));
+    s.setEntities(Set.of(EntityType.NAME, EntityType.TAXON));
+    s.setExtinctFilter(true);
+    s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.VIRUS));
+    s.setPriority(12);
+    s.applyUser(TestEntityGenerator.USER_EDITOR);
+    s.applyCreatedNow();
+    assertSerde(s);
   }
   
   @Test
@@ -93,12 +114,7 @@ public class ApiKryoPoolTest {
 
   @Test
   public void testDataset() throws Exception {
-    Dataset d = TestEntityGenerator.newDataset("Unmut");
-    d.setKey(1234);
-    d.setIssued(FuzzyDate.now());
-    d.setGbifKey(UUID.randomUUID());
-    d.setCreator(Agent.parse(List.of("Karl", "Frank")));
-    d.setEditor(Agent.parse(List.of("Karlo", "Franko")));
+    Dataset d = TestEntityGenerator.newFullDataset(1234);
     assertSerde(d);
   }
 
@@ -142,7 +158,7 @@ public class ApiKryoPoolTest {
 
     VerbatimRecord rec = TestEntityGenerator.createVerbatim();
     for (Issue issue : Issue.values()) {
-      rec.addIssue(issue);
+      rec.add(issue);
     }
     assertSerde(rec);
   }
@@ -165,17 +181,26 @@ public class ApiKryoPoolTest {
     assertSerde(n);
   }
 
-  private void assertSerde(Object obj) {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
-    Output output = new Output(buffer);
-    kryo.writeObject(output, obj);
-    output.close();
-    byte[] bytes = buffer.toByteArray();
+  public void assertSerde(Object obj) {
+    assertSerde(kryo, obj);
+  }
 
-    final Input input = new Input(bytes);
-    Object obj2 = kryo.readObject(input, obj.getClass());
+  public static void assertSerde(Pool<Kryo> pool, Object obj) {
+    Kryo kryo = pool.obtain();
+    try {
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream(128);
+      Output output = new Output(buffer);
+      kryo.writeObject(output, obj);
+      output.close();
+      byte[] bytes = buffer.toByteArray();
 
-    assertEquals(obj, obj2);
+      final Input input = new Input(bytes);
+      Object obj2 = kryo.readObject(input, obj.getClass());
+
+      assertEquals(obj, obj2);
+    } finally {
+      pool.free(kryo);
+    }
   }
 
 }

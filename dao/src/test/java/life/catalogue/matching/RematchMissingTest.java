@@ -4,17 +4,15 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-
 import life.catalogue.matching.nidx.NamesIndexConfig;
+
+import java.io.IOException;
 
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import java.io.IOException;
 
 public class RematchMissingTest {
 

@@ -5,10 +5,9 @@ import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.neo.model.RankedName;
-
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -17,7 +16,6 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.LinkedList;
@@ -530,10 +528,10 @@ public class PgImportIT extends PgImportITBase {
     assertEquals(1, (int) di.getMediaCount());
     assertEquals(11, (int) di.getReferenceCount());
     assertEquals(2, (int) di.getVernacularCount());
-    assertEquals(23, (int) di.getTaxonCount());
+    assertEquals(24, (int) di.getTaxonCount());
     assertEquals(3, (int) di.getTypeMaterialCount());
-    assertEquals(28, (int) di.getNameCount());
-    assertEquals(94, (int) di.getVerbatimCount());
+    assertEquals(29, (int) di.getNameCount());
+    assertEquals(96, (int) di.getVerbatimCount());
     assertEquals(2, (int) di.getEstimateCount());
 
     assertEquals(1, di.getTaxonConceptRelationsByTypeCount().size());
@@ -544,7 +542,7 @@ public class PgImportIT extends PgImportITBase {
     // 1 provisional status taxon
     assertEquals((int) metrics().getTaxonCount(), 1 + di.getUsagesByStatusCount().get(TaxonomicStatus.ACCEPTED));
     assertEquals(1,  (int) di.getMediaByTypeCount().get(MediaType.IMAGE));
-    assertEquals(2,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
+    assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.FAMILY));
     assertEquals(4,  (int) di.getNamesByRankCount().get(Rank.GENUS));
     assertEquals(12, (int) di.getNamesByRankCount().get(Rank.SPECIES));
     assertEquals(3,  (int) di.getNamesByRankCount().get(Rank.SUBSPECIES));
@@ -628,11 +626,11 @@ public class PgImportIT extends PgImportITBase {
     dataset.setType(DatasetType.TAXONOMIC);
 
     //normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/iucn-test.zip"), DWCA);
+    normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-305823.zip"), COLDP);
 
     //normalizeAndImport(URI.create("https://hosted-datasets.gbif.org/datasets/iucn/iucn-latest.zip"), DWCA);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);
-    //normalizeAndImport(URI.create("https://github.com/mdoering/data-ina/archive/master.zip"), COLDP);
+    //normalizeAndImport(URI.create("https://ipt.biodiversidad.co/sib/archive.do?r=jbm_lista_epifitas"), DWCA);
 
     System.out.println("Print tree to import.txtree");
     try (Writer writer = UTF8IoUtils.writerFromFile(new File("/Users/markus/Downloads/import.txtree"))) {

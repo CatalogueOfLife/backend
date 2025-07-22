@@ -5,6 +5,7 @@ import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.Exceptions;
@@ -173,8 +174,8 @@ public class GbifSyncJob extends GlobalBlockingJob {
             DOI doi = gbif.dataset.getDoi();
             if (doi != null) {
               gbif.dataset.setDoi(null);
-              dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
-              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+              var dk = dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
+              LOG.warn("Removed non unique DOI {} from newly created dataset {}: {}", doi, dk, gbif.getTitle());
             } else {
               throw e;
             }
@@ -216,12 +217,18 @@ public class GbifSyncJob extends GlobalBlockingJob {
             if (doi != null) {
               curr.setDoi(null);
               dao.update(curr, Users.GBIF_SYNC);
-              LOG.warn("Non unique DOI {} in dataset {}: {}", doi, gbif.getKey(), gbif.getTitle());
+              LOG.warn("Removed non unique DOI {} from updated dataset {}: {}", doi, curr.getKey(), gbif.getTitle());
             } else {
               throw e;
             }
           }
           updated++;
+        } else if (curr.getType() == DatasetType.ARTICLE &&
+          (curr.getAlias() == null || curr.getAlias() != null && curr.getAlias().endsWith(curr.getKey().toString()))
+        ) {
+          // set new alias if we have the old form with dataset key still for articles
+          curr.setAlias(null);
+          dao.update(curr, Users.GBIF_SYNC);
         }
         // let the registry track CLB dataset keys
         if (cfg.bidirectional) {

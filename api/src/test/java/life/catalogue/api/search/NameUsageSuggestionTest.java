@@ -31,12 +31,13 @@ public class NameUsageSuggestionTest {
     assertEquals("Acanthocephala (phylum in Animalia)", s.getSuggestion());
 
     s.setStatus(TaxonomicStatus.SYNONYM);
-    assertEquals("Acanthocephala (synonym of Animalia)", s.getSuggestion());
+    s.setAcceptedName("Tummillione");
+    assertEquals("Acanthocephala (synonym of Tummillione, Animalia)", s.getSuggestion());
 
 
     s.setMatch("Acanthos forte");
     s.setRank(Rank.SPECIES);
-    assertEquals("Acanthos forte (synonym of Animalia)", s.getSuggestion());
+    assertEquals("Acanthos forte (synonym of Tummillione, Animalia)", s.getSuggestion());
 
     s.setStatus(TaxonomicStatus.ACCEPTED);
     assertEquals("Acanthos forte (Animalia)", s.getSuggestion());

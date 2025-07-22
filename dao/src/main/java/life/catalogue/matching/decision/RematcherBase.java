@@ -1,7 +1,10 @@
 package life.catalogue.matching.decision;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.DatasetScopedEntity;
+import life.catalogue.api.model.NameUsage;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -92,7 +95,7 @@ public abstract class RematcherBase<
     try(SqlSession session = factory.openSession(true)) {
       this.session = session;
       if (!req.isAllowImmutableDatasets()) {
-        DaoUtils.assertMutable(projectKey, "matched", session);
+        DaoUtils.notReleased(projectKey, "matched");
       }
       mdao = new MatchingDao(session);
       mapper = session.getMapper(mapperClass);

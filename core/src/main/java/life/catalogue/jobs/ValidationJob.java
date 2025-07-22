@@ -10,15 +10,14 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
-
 import life.catalogue.release.TreeCleanerAndValidator;
+
+import java.time.LocalDateTime;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.time.LocalDateTime;
 
 /**
  * Resets all dataset sector counts for an entire catalogue, see param datasetKey,
@@ -54,7 +53,7 @@ public class ValidationJob extends DatasetBlockingJob {
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
-      params.setSynonyms(false);
+      params.setSynonyms(true);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), consumer);
       LOG.info("Maximum depth of {} found for accepted tree of project {}", consumer.getMaxDepth(), datasetKey);

@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='utf-8'?><eml:eml packageId="FFDAFFE15E17FFE3FFA1FFCCFC433739/eml-1732815892511.xml" scope="system" system="Plazi" xmlns:d="eml://ecoinformatics.org/dataset-2.0.1" xmlns:dc="http://purl.org/dc/terms/" xmlns:eml="eml://ecoinformatics.org/eml-2.0.1" xmlns:md="eml://ecoinformatics.org/methods-2.0.1" xmlns:proj="eml://ecoinformatics.org/project-2.0.1" xmlns:res="eml://ecoinformatics.org/resource-2.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dataset><alternateIdentifier>FFDAFFE15E17FFE3FFA1FFCCFC433739</alternateIdentifier><citation author="Huo, Qing-Bo; Chen, Zhen-Ning; Kong, Xiang-Bo; Du, Yu-Zhou" issued="2020" title="New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)" containerTitle="Zootaxa" volume="4808" issue="3" page="455-474" doi="10.11646/zootaxa.4808.3.3" issn="1175-5326">Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3</citation><title>New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)</title><creator><individualName><givenName>Qing-Bo</givenName><surName>Huo</surName></individualName></creator><creator><individualName><givenName>Zhen-Ning</givenName><surName>Chen</surName></individualName></creator><creator><individualName><givenName>Xiang-Bo</givenName><surName>Kong</surName></individualName></creator><creator><individualName><givenName>Yu-Zhou</givenName><surName>Du</surName></individualName></creator><pubDate>2020-07-03</pubDate><language>en</language><abstract><para>This dataset contains the digitized treatments in Plazi based on the original journal article Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3</para></abstract><intellectualRights><para>To the extent possible under law, the publisher has waived all copyright and related or neighboring rights to these data, and has released them under<ulink url="https://creativecommons.org/publicdomain/zero/1.0/"><citetitle>CC0 Public Domain Dedication</citetitle></ulink>.
+        Users may copy, modify, distribute and use the work, including for commercial purposes.</para><para>No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53<ulink url="https://doi.org/10.1186/1756-0500-2-53"><citetitle>https://doi.org/10.1186/1756-0500-2-53</citetitle></ulink>for further explanation.</para></intellectualRights><distribution scope="document"><online><url function="information">https://tb.plazi.org/GgServer/summary/FFDAFFE15E17FFE3FFA1FFCCFC433739</url></online></distribution><contact><individualName><givenName>Guido</givenName><surName>Sautter</surName></individualName><electronicMailAddress>sautter@plazi.org</electronicMailAddress><onlineUrl>https://plazi.org</onlineUrl></contact><associatedParty><organizationName>Magnolia Press</organizationName><address><deliveryPoint>St. Lukes 1346</deliveryPoint><city>Auckland</city><country>New Zealand</country></address><electronicMailAddress>magnolia@mapress.com</electronicMailAddress><onlineUrl>https://www.mapress.com/</onlineUrl><role>publisher</role></associatedParty><associatedParty><organizationName>Plazi</organizationName><address><city>Bern</city><country>Switzerland</country></address><electronicMailAddress>info@plazi.org</electronicMailAddress><onlineUrl>https://plazi.org/</onlineUrl><role>distributor</role></associatedParty><metadataProvider><organizationName>Plazi</organizationName><individualName><surName>plazi</surName></individualName></metadataProvider></dataset><additionalMetadata><metadata><gbif><dateStamp>2024-11-28T17:44:52+0000</dateStamp><bibliography><citation author="Huo, Qing-Bo; Chen, Zhen-Ning; Kong, Xiang-Bo; Du, Yu-Zhou" issued="2020" title="New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)" containerTitle="Zootaxa" volume="4808" issue="3" page="455-474" doi="10.11646/zootaxa.4808.3.3" issn="1175-5326">Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3</citation></bibliography></gbif><plaziMods><mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:titleInfo>
+        <mods:title>New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae)</mods:title>
+    </mods:titleInfo>
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Author</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Huo, Qing-Bo</mods:namePart>
+        <mods:affiliation>School of Horticulture and Plant Protection &amp; Institute of Applied Entomology, Yangzhou University, Yangzhou 225009, China.</mods:affiliation>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Author</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Chen, Zhen-Ning</mods:namePart>
+        <mods:affiliation>Key Laboratory of Medicinal Animal and Plant Resources of Qinghai-Tibetan Plateau in Qinghai Province, School of Life Science, Qinghai Normal University, Xining, 810008, China.</mods:affiliation>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Author</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Kong, Xiang-Bo</mods:namePart>
+        <mods:affiliation>Key Laboratory of Forest Protection of the National Forestry and Grassland Administration of China, Research Institute of Forest Ecology, Environment and Protection, Chinese Academy of Forestry, Beijing, 100091, China.</mods:affiliation>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Author</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Du, Yu-Zhou</mods:namePart>
+        <mods:affiliation>School of Horticulture and Plant Protection &amp; Institute of Applied Entomology, Yangzhou University, Yangzhou 225009, China. &amp; Joint International Research Laboratory of Agriculture and Agri-Product Safety, the Ministry of Education, Yangzhou University, Yangzhou 225009, China.</mods:affiliation>
+    </mods:name>
+    <mods:typeOfResource>text</mods:typeOfResource>
+    <mods:relatedItem type="host">
+        <mods:titleInfo>
+            <mods:title>Zootaxa</mods:title>
+        </mods:titleInfo>
+        <mods:part>
+            <mods:date>2020</mods:date>
+            <mods:detail type="pubDate">
+                <mods:number>2020-07-03</mods:number>
+            </mods:detail>
+            <mods:detail type="volume">
+                <mods:number>4808</mods:number>
+            </mods:detail>
+            <mods:detail type="issue">
+                <mods:number>3</mods:number>
+            </mods:detail>
+            <mods:extent unit="page">
+                <mods:start>455</mods:start>
+                <mods:end>474</mods:end>
+            </mods:extent>
+        </mods:part>
+    </mods:relatedItem>
+    <mods:classification>journal article</mods:classification>
+    <mods:identifier type="CLB-Dataset">21551</mods:identifier>
+    <mods:identifier type="DOI">10.11646/zootaxa.4808.3.3</mods:identifier>
+    <mods:identifier type="GBIF-Dataset">8841c556-aaf5-487b-a913-2126b523e3ea</mods:identifier>
+    <mods:identifier type="ISSN">1175-5326</mods:identifier>
+    <mods:identifier type="Zenodo-Dep">3933641</mods:identifier>
+    <mods:identifier type="ZooBank">6959759F-351E-48EB-BA7A-62B6E9A1D4FF</mods:identifier>
+</mods:mods></plaziMods></metadata></additionalMetadata></eml:eml>

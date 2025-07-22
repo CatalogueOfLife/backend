@@ -1,5 +1,6 @@
 package life.catalogue.assembly;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.YamlUtils;
@@ -17,7 +18,6 @@ import life.catalogue.release.XReleaseConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import org.apache.ibatis.io.Resources;
@@ -76,6 +76,8 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {
+      {"metopiinae", List.of("taxref", "uksi")},
+      {"machaeridia", List.of("pbdb")},
       {"africasia", List.of("systema-dipterorum", "plz20443", "plz37588")},
       {"literature", List.of("bionames", "afd-lit")},
       {"carcharhinus", List.of("worms", "itis", "taxref", "iucn", "dutch")},
@@ -190,6 +192,12 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     }
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      // project dataset settings
+      var dsm = session.getMapper(DatasetMapper.class);
+      var settings = new DatasetSettings();
+      settings.enable(Setting.SECTOR_REMOVE_ORDINALS);
+      dsm.updateSettings(Datasets.COL, settings, Users.TESTER);
+
       SectorMapper sm = session.getMapper(SectorMapper.class);
       for (var s : info.sectors) {
         s.applyUser(Users.TESTER);
@@ -221,7 +229,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       if (info.rematchSectors) {
         var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
         SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
         var req = new SectorRematchRequest();
         req.setTarget(true);
@@ -340,7 +348,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
     if (decRes != null) {
       LOG.info("Test project {} again with decisions!", project);
       // reset project
-      DatasetDao ddao = new DatasetDao(null, null, null, null);
+      DatasetDao ddao = new DatasetDao(null, null, null, null, TestUtils.mockedBroker());
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(false)) {
         ddao.deleteData(Datasets.COL, session);
         session.commit();

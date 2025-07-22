@@ -1,6 +1,7 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
@@ -15,17 +16,14 @@ import life.catalogue.img.ImageService;
 
 import java.util.UUID;
 
-import life.catalogue.printer.DwcTreePrinter;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.eventbus.Subscribe;
 
-public class ExportManager {
+public class ExportManager implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(ExportManager.class);
 
   private final ExporterConfig cfg;
@@ -81,13 +79,13 @@ public class ExportManager {
     switch (req.getFormat()) {
       case COLDP:
         job = req.isExtended() ? new ColdpExtendedExport(req, userKey, factory, cfg, imageService) :
-                                ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
+                Boolean.TRUE.equals(req.isClassification()) ? new ColdpTreeExport(req, userKey, factory, cfg, imageService) :
+                  ColdpSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case DWCA:
         job = req.isExtended() ? new DwcaExtendedExport(req, userKey, factory, cfg, imageService) :
-                    req.isAddClassification() ?
-                      new DwcTreeExport(req, userKey, factory, cfg, imageService) :
-                      DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
+              Boolean.TRUE.equals(req.isClassification()) ? new DwcTreeExport(req, userKey, factory, cfg, imageService) :
+                    DwcaSimpleExport.build(req, userKey, factory, cfg, imageService);
         break;
       case ACEF:
         job = new AcefExport(req, userKey, factory, cfg, imageService);
@@ -165,8 +163,8 @@ public class ExportManager {
     }
   }
 
-  @Subscribe
-  public void datasetDeleted(DatasetChanged event){
+  @Override
+  public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var jobs = executor.getQueueByDataset(event.key);
       if (!jobs.isEmpty()) {

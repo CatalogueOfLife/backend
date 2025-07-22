@@ -6,12 +6,12 @@ import life.catalogue.api.model.SimpleNameClassified;
 
 import org.gbif.nameparser.api.Rank;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class UsageMatchTest {
 

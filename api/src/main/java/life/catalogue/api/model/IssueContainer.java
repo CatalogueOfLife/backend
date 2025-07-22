@@ -2,11 +2,12 @@ package life.catalogue.api.model;
 
 import life.catalogue.api.vocab.Issue;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public interface IssueContainer {
   
@@ -20,21 +21,23 @@ public interface IssueContainer {
   
   void setIssues(Set<Issue> issues);
 
-  default void addIssue(Issue issue) {
-    getIssues().add(issue);
-  }
-
-  default void addIssues(Issue... issues) {
+  default void add(Issue... issues) {
     if (issues != null && issues.length > 0) {
-      addIssues(Arrays.asList(issues));
+      for (var iss : issues) {
+        getIssues().add(iss);
+      }
     }
   }
 
-  default void addIssues(Collection<Issue> issues) {
+  default void add(IssueContainer issues) {
+    getIssues().addAll(issues.getIssues());
+  }
+
+  default void add(Collection<Issue> issues) {
     getIssues().addAll(issues);
   }
 
-  default boolean removeIssue(Issue issue) {
+  default boolean remove(Issue issue) {
     return getIssues().remove(issue);
   }
 
@@ -46,11 +49,6 @@ public interface IssueContainer {
     return getIssues().contains(issue);
   }
 
-  @Deprecated
-  default boolean hasIssue(Issue issue) {
-    return getIssues().contains(issue);
-  }
-  
   default boolean hasIssues() {
     return !getIssues().isEmpty();
   }
@@ -73,17 +71,12 @@ public interface IssueContainer {
     }
 
     @Override
-    public void addIssue(Issue issue) {
-      issues.add(issue);
-    }
-
-    @Override
-    public boolean removeIssue(Issue issue) {
+    public boolean remove(Issue issue) {
       return issues.remove(issue);
     }
 
     @Override
-    public boolean hasIssue(Issue issue) {
+    public boolean contains(Issue issue) {
       return issues.contains(issue);
     }
 
@@ -122,66 +115,34 @@ public interface IssueContainer {
     public void setIssues(Set<Issue> issues) {
       // ignore
     }
-    
+
     @Override
-    public void addIssue(Issue issue) {
+    public void add(Issue... issues) {
       // ignore
     }
-  
-    @Override
-    public boolean removeIssue(Issue issue) {
-      return false;
-    }
-  
-    @Override
-    public boolean hasIssue(Issue issue) {
-      return false;
-    }
-  }
-  
-  /**
-   * Reusable issue container that does not store anything but logs added issues.
-   */
-  class DevNullLogging implements IssueContainer {
-    private static final Logger LOG = LoggerFactory.getLogger(IssueContainer.class);
-    private final String context;
-  
-    public static DevNullLogging dataset(int datasetKey) {
-      return new DevNullLogging("Dataset " + datasetKey);
-    }
 
-    public DevNullLogging(String context) {
-      this.context = context;
+    @Override
+    public void add(IssueContainer issues) {
+      // ignore
     }
 
     @Override
-    public Set<Issue> getIssues() {
-      return Collections.EMPTY_SET;
+    public void add(Collection<Issue> issues) {
+      // ignore
     }
-    
-    private void log(Issue issue) {
-      LOG.debug("Added issue {} to {}", issue, context);
-    }
-    
+
     @Override
-    public void setIssues(Set<Issue> issues) {
-      for (Issue iss : issues) {
-        log(iss);
-      }
+    public void clear() {
+      // ignore
     }
-    
+
     @Override
-    public void addIssue(Issue issue) {
-      log(issue);
-    }
-    
-    @Override
-    public boolean removeIssue(Issue issue) {
+    public boolean remove(Issue issue) {
       return false;
     }
-    
+  
     @Override
-    public boolean hasIssue(Issue issue) {
+    public boolean contains(Issue issue) {
       return false;
     }
   }

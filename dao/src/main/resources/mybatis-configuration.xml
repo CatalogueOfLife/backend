@@ -19,6 +19,8 @@
         <typeAlias type="life.catalogue.api.model.Duplicate$IntKeys" alias="DuplicateIntKeys" />
         <typeAlias type="life.catalogue.api.model.IssueContainer$SimpleWithID" alias="SimpleWithID" />
         <typeAlias type="life.catalogue.db.mapper.ArchivedNameUsageMapper$ArchivedSimpleNameWithNidx" alias="ArchivedSimpleNameWithNidx" />
+        <typeAlias type="life.catalogue.db.mapper.DatasetSourceMapper$SourceDataset" alias="SourceDataset" />
+
         <package name="life.catalogue.api.model" />
         <package name="life.catalogue.api.search" />
         <package name="org.gbif.nameparser.api" />

@@ -11,6 +11,7 @@
     de.tab_format,
     de.extended,
     de.add_classification,
+    de.add_tax_group,
     de.extinct,
     de.excel,
     de.root,
@@ -41,6 +42,7 @@
     tab_format,
     extended,
     add_classification,
+    add_tax_group,
     extinct,
     excel,
     root,
@@ -69,7 +71,8 @@
     #{request.format}::DATAFORMAT,
     #{request.tabFormat}::TABFORMAT,
     #{request.extended},
-    #{request.addClassification},
+    coalesce(#{request.classification}, false),
+    coalesce(#{request.taxGroups}, false),
     #{request.extinct},
     #{request.excel},
     #{request.root, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
@@ -112,6 +115,7 @@
   <resultMap id="exportRequestResultMap" type="ExportRequest" autoMapping="true">
     <id column="key"/>
     <result property="root" column="root" typeHandler="life.catalogue.db.type2.SimpleNameTypeHandler"/>
+    <result property="classification" column="add_classification"/>
   </resultMap>
 
 
@@ -165,6 +169,8 @@
       <if test="req.excel != null">AND de.excel = #{req.excel}</if>
       <if test="req.extended != null">AND de.extended = #{req.extended}</if>
       AND <if test="req.extinct == null">de.extinct IS NULL</if><if test="req.extinct != null">de.extinct = #{req.extinct}</if>
+      <if test="req.classification != null">AND de.add_classification = #{req.classification}</if>
+      <if test="req.taxGroups != null">AND de.add_tax_group = #{req.taxGroups}</if>
     </where>
   </sql>
 

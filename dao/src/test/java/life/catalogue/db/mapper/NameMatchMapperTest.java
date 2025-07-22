@@ -35,6 +35,11 @@ public class NameMatchMapperTest extends MapperTestBase<NameMatchMapper> {
   }
 
   @Test
+  public void getCanonicalNidx() throws Exception {
+    mapper().getCanonicalNidx(DSID.of(appleKey, "1"));
+  }
+
+  @Test
   public void copyDataset() throws Exception {
     // we also need other entities to not validate constraints
     CopyDatasetTestComponent.copy(mapper(VerbatimRecordMapper.class), datasetKey, false);

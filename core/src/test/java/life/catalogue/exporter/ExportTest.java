@@ -1,17 +1,17 @@
 package life.catalogue.exporter;
 
 import life.catalogue.TestConfigs;
-import life.catalogue.common.io.PathUtils;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

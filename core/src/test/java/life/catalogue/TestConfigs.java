@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import com.google.common.io.Files;
-
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
@@ -12,9 +10,11 @@ import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.img.ImgConfig;
 
+import java.net.URI;
+
 import org.apache.commons.io.FileUtils;
 
-import java.net.URI;
+import com.google.common.io.Files;
 
 public class TestConfigs implements ExporterConfig {
   public URI apiURI = ApiUtils.API;

@@ -1,11 +1,12 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
+import life.catalogue.api.model.TypeMaterial;
+import life.catalogue.api.vocab.Country;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class TaxonDaoTest {
 

@@ -207,7 +207,7 @@ public enum Issue {
   ACCEPTED_NAME_MISSING(NAME_USAGE, Level.ERROR,
       "Synonym lacking an accepted name. These will be treated as bare names in the datastore"),
 
-  PARENT_SPECIES_MISSING(NAME_USAGE, Level.WARNING,
+  PARENT_SPECIES_MISSING(NAME_USAGE, Level.INFO,
     "The accepted infraspecific name does not have an accepted species in it's classification."),
 
   TAXONOMIC_STATUS_INVALID(NAME_USAGE, Level.ERROR,
@@ -264,7 +264,7 @@ public enum Issue {
       "A synonym which originally had some associated data (descriptions distributions, media items, vernacular names, bibliography) " +
           "but which was moved to its accepted taxon."),
   
-  SYNONYM_DATA_REMOVED(NAME_USAGE, Level.INFO,
+  SYNONYM_DATA_REMOVED(NAME_USAGE, Level.WARNING,
       "A synonym which originally had some associated data (descriptions distributions, media items, vernacular names, bibliography) " +
           "but which was removed as it lacks an accepted taxon."),
 
@@ -464,6 +464,17 @@ public enum Issue {
   VERNACULAR_NAME_UNLIKELY(VERNACULAR, Level.WARNING,
     "A vernacular name which is rather unlikely a true, single vernacular name."),
 
+  PARENT_GENUS_MISSING(NAME_USAGE, Level.INFO,
+    "The accepted species does not have an accepted genus in it's classification."),
+
+  NO_SPECIES_INCLUDED(NAME_USAGE, Level.INFO,
+    "The higher taxon does not include any accepted species."),
+
+  SYNONYM_RANK_DIFFERS(NAME_USAGE, Level.INFO,
+    "The rank of the synonym and it's accepted name is different."),
+
+  SYNONYM_WITH_TAXON_PROPERTY(SYNONYM, Level.WARNING,
+    "A synonym has linked information which applies only to taxa, e.g. distributions, media items or species estimates."),
   ;
 
   /**

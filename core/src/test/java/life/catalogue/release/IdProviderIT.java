@@ -6,6 +6,12 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.*;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
+
+import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,17 +19,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-
-import life.catalogue.junit.TestDataRule;
-
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.NameType;
-
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
@@ -56,7 +56,7 @@ public class IdProviderIT {
 
   public void init(ReleaseConfig cfg) throws IOException {
     this.cfg = cfg;
-    provider = new IdProvider(projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);

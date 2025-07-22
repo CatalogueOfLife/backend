@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import com.google.common.base.Supplier;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -15,9 +13,7 @@ import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.db.mapper.NameUsageMapper;
-
 import life.catalogue.matching.authorship.AuthorComparator;
-
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
@@ -38,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Supplier;
 
 /**
  * Matches usages against a given dataset. Matching is primarily based on names index matches,
@@ -275,10 +272,6 @@ public class UsageMatcherGlobal {
     return eq == Equality.DIFFERENT;
   }
 
-  private static boolean supraGenericOrUnranked(Rank r) {
-    return r == Rank.UNRANKED || r.isSuprageneric();
-  }
-
   private static List<SimpleNameClassified<SimpleNameCached>> buildAlternatives(List<SimpleNameCached> alt) {
     return alt == null ? null : alt.stream()
                                      .map(sn -> new SimpleNameClassified<SimpleNameCached>(sn))
@@ -362,15 +355,15 @@ public class UsageMatcherGlobal {
       return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
     }
 
-    // tax group matching based on classification for all but Supragenerics
-    if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() == 1) {
-      // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
-      // snap to that single higher taxon right away!
-
-    } else if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() > 1){
-      return matchSupragenerics(datasetKey, existingWithCl, parents, alt);
-
+    // Avoid tax group comparison for supragenerics if they both are properly accepted
+    // no homonyms above genus level unless given in configured homonym sources (e.g. backbone patch, col)
+    // snap to that single higher taxon right away!
+    if (nu.getRank() != null && nu.getRank().isSuprageneric() && existingWithCl.size() == 1 &&
+        nu.getStatus() == TaxonomicStatus.ACCEPTED && existingWithCl.get(0).getStatus() == TaxonomicStatus.ACCEPTED
+    ) {
+      LOG.debug("Avoid tax group filtering for accepted suprageneric {} {} with single match", nu.getRank(), nu.getLabel());
     } else {
+      // tax group matching based on classification for everything else!
       // replace alternatives with instances that have a classification
       updateAlt(alt, existingWithCl);
       // check classification for all others
@@ -388,6 +381,11 @@ public class UsageMatcherGlobal {
       }
     }
 
+    // shortcut if no candidates are left
+    if (existingWithCl.isEmpty()) {
+      return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
+    }
+
     // remove non matching codes if more than 1 exist
     // there are issues with ambiregnal taxa and mixed codes and we would create many duplicates otherwise
     if (nu.getRank().isSupraspecific() && existingWithCl.size() > 1 && nu.getName().getCode() != null) {
@@ -400,7 +398,7 @@ public class UsageMatcherGlobal {
       });
     }
 
-    // first try exact single match with authorship
+    // first try exact single match with authorship - dont remove matches from the candidate list!
     if (qualifiedName) {
       boolean matchExact = false;
       boolean onlyUseIfExact = false;
@@ -461,6 +459,7 @@ public class UsageMatcherGlobal {
       });
     }
 
+    // return a match if we have exactly one candidate left!
     if (existingWithCl.size() == 1) {
       if (snap) {
         return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
@@ -505,23 +504,15 @@ public class UsageMatcherGlobal {
       return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
     }
 
-    // prefer accepted over synonyms
-    long accMatches = existingWithCl.stream().filter(u -> u.getStatus().isTaxon()).count();
-    if (accMatches == 1) {
-      existingWithCl.removeIf(u -> !u.getStatus().isTaxon());
-      LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existingWithCl.size(), nu.getLabel(), datasetKey);
-      return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
-    }
-
     if (existingWithCl.isEmpty()) {
       return UsageMatch.empty(MatchType.NONE, alt, datasetKey);
 
     } else {
-      // match to best=lowest rank possible
+      // compare exact classification, not just group, and match to best=lowest rank possible
       Rank lowest = null;
       SimpleNameClassified<SimpleNameCached> best = null;
       for (var ex : existingWithCl) {
-        var lowestMatch = findLowestMatch(ex, parents);
+        var lowestMatch = lowestClassificationMatch(ex, parents);
         if (lowestMatch != null) {
           if (lowest == null || lowest.higherThan(lowestMatch)) {
             best = ex;
@@ -535,6 +526,14 @@ public class UsageMatcherGlobal {
       if (best != null) {
         LOG.debug("{} ambiguous matches encountered for {} in source {}, picking closest classified usage with rank {}", existingWithCl.size(), nu.getLabel(), datasetKey, lowest);
         return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
+      }
+
+      // prefer accepted over synonyms
+      long accMatches = existingWithCl.stream().filter(u -> u.getStatus().isTaxon()).count();
+      if (accMatches == 1) {
+        existingWithCl.removeIf(u -> !u.getStatus().isTaxon());
+        LOG.debug("{} ambiguous homonyms encountered for {} in source {}, picking single accepted name", existingWithCl.size(), nu.getLabel(), datasetKey);
+        return UsageMatch.snap(existingWithCl.get(0), datasetKey, alt);
       }
 
       // now look for the candidate with the lowest classification - no matter if it matches
@@ -590,19 +589,20 @@ public class UsageMatcherGlobal {
     return fam1.isPresent() && fam2.isPresent() && fam1.get().getName().equalsIgnoreCase(fam2.get().getName());
   }
 
-  private Rank findLowestMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
+  private Rank lowestClassificationMatch(SimpleNameClassified<SimpleNameCached> candidate, List<SimpleNameCached> parents) {
+    Rank lowest = null;
     if (parents != null) {
-      //TODO: find other solution without matched parents !!!
-      //for (var cp : candidate.getClassification()) {
-      //  // does the exact same usage exist in the parents list?
-      //  for (var p : parents) {
-      //    if (p.match != null && p.match.getId().equals(cp.getId())) {
-      //      return cp.getRank();
-      //    }
-      //  }
-      //}
+      for (var p : parents) {
+        // does the exact same name & rank exist in the parents list?
+        if (p.getRank() != null && p.getRank().notOtherOrUnranked()) {
+          var cp = candidate.getByRank(p.getRank());
+          if (cp != null && cp.getName().equalsIgnoreCase(p.getName()) && (lowest == null || lowest.higherThan(p.getRank()))) {
+            lowest = p.getRank();
+          }
+        }
+      }
     }
-    return null;
+    return lowest;
   }
 
   private static boolean contains(Collection<? extends SimpleNameWithNidx> usages, Rank rank) {
@@ -623,44 +623,6 @@ public class UsageMatcherGlobal {
     }
     var candidateGroup = groupAnalyzer.analyze(candidate, candidate.getClassification());
     return !group.isDisparateTo(candidateGroup);
-  }
-
-  /**
-   * The classification comparison below is rather strict
-   * require a match to one of the higher rank homonyms (the old code even did not allow for higher rank homonyms at all!)
-   */
-  private UsageMatch matchSupragenerics(int datasetKey, List<SimpleNameClassified<SimpleNameCached>> homonyms,
-                                        List<SimpleNameCached> parents,
-                                        List<SimpleNameClassified<SimpleNameCached>> alt
-  ) {
-    if (parents == null || parents.isEmpty()) {
-      // pick first
-      var first = homonyms.get(0);
-      LOG.debug("No parent given for homomym match {}. Pick first", first);
-      return UsageMatch.match(MatchType.AMBIGUOUS, first, datasetKey, alt);
-    }
-
-    // TODO: use tax group comparison !!!
-
-    // count number of equal parent names and pick most matching homonym by comparing canonical names index ids
-    Set<Integer> parentCNidx = parents.stream()
-                                      .map(SimpleNameWithNidx::getCanonicalId)
-                                      .filter(Objects::nonNull)
-                                      .collect(Collectors.toSet());
-    SimpleNameClassified<SimpleNameCached> best = homonyms.get(0);
-    int max = 0;
-    for (var hom : homonyms) {
-      Set<Integer> cNidx = hom.getClassification().stream()
-                                        .map(SimpleNameWithNidx::getCanonicalId)
-                                        .filter(Objects::nonNull)
-                                        .collect(Collectors.toSet());
-      cNidx.retainAll(parentCNidx);
-      if (cNidx.size() > max) {
-        best = hom;
-        max = cNidx.size();
-      }
-    }
-    return UsageMatch.match(MatchType.AMBIGUOUS, best, datasetKey, alt);
   }
 
   /**
@@ -692,7 +654,7 @@ public class UsageMatcherGlobal {
    * If it is not cached yet, nothing will happen.
    * @param nidx any names index id
    */
-  public void clear(int datasetKey, int nidx) {
+  public void clearCache(int datasetKey, int nidx) {
     var n = nameIndex.get(nidx);
     if (n != null) {
       if (n.getCanonicalId() != null && !n.isCanonical()) {
@@ -703,9 +665,31 @@ public class UsageMatcherGlobal {
   }
 
   /**
+   * Updates the parentID of the cached names belonging to the given datasetKey
+   * and having the given oldParentID.
+   * @param datasetKey
+   * @param oldParentID
+   * @param newParentID
+   */
+  public void updateCacheParent(int datasetKey, String oldParentID, String newParentID) {
+    int count = 0;
+    for (var entry : usages.asMap().entrySet()) {
+      if (entry.getKey().getDatasetKey() == datasetKey) {
+        for (var sn : entry.getValue()) {
+          if (Objects.equals(oldParentID, sn.getParent())) {
+            sn.setParent(newParentID);
+            count++;
+          }
+        }
+      }
+    }
+    LOG.debug("Updated {} usages from datasetKey {} with new parentID {} in the cache", count, datasetKey, newParentID);
+  }
+
+  /**
    * Removes all usages from the given dataset from the matcher cache.
    */
-  public void clear(int datasetKey) {
+  public void clearCache(int datasetKey) {
     int count = 0;
     for (var k : usages.asMap().keySet()) {
       if (datasetKey == k.getDatasetKey()) {
@@ -719,7 +703,7 @@ public class UsageMatcherGlobal {
   /**
    * Wipes the entire cache.
    */
-  public void clear() {
+  public void clearCache() {
     usages.invalidateAll();
     uCache.clear();
     LOG.warn("Cleared entire cache");

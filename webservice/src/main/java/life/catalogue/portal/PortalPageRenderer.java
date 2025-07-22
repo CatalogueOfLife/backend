@@ -4,13 +4,15 @@ import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.cache.LatestDatasetKeyCache;
-import life.catalogue.common.io.InputStreamUtils;
+import life.catalogue.api.vocab.Environment;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.metadata.FmUtil;
@@ -20,14 +22,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -39,65 +35,85 @@ import com.google.common.base.Preconditions;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static life.catalogue.api.util.ObjectUtils.checkFound;
 
 public class PortalPageRenderer {
   private static final Logger LOG = LoggerFactory.getLogger(PortalPageRenderer.class);
 
+  private static final String RELEASE_KEY_FILE = "releaseKey";
   public enum PortalPage {
-    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA, CLB_DATASET;
-    public boolean isChecklistBank() {
-      return this == CLB_DATASET;
-    }
+    NOT_FOUND, TAXON, TOMBSTONE, DATASET, METADATA;
   }
 
   public enum Environment {PROD, PREVIEW, DEV};
 
+  private final boolean requireCOL;
   private final SqlSessionFactory factory;
   private final DatasetDao datasetDao;
   private final DatasetSourceDao sourceDao;
   private final TaxonDao tdao;
-  private final LatestDatasetKeyCache cache;
+  private final Map<Environment, Integer> releaseKeys = new HashMap<>();
   private final Map<Environment, Map<PortalPage, Template>> portalTemplates = Map.copyOf(
     Arrays.stream(Environment.values())
           .collect(Collectors.toMap(e -> e, e -> new HashMap<>()))
   );
   private Path portalTemplateDir = Path.of("/tmp");
+  private final List<DatasetRelease> annualReleases;
+  private final List<DatasetRelease> annualXReleases;
 
-  public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, LatestDatasetKeyCache cache, Path portalTemplateDir) throws IOException {
+  public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, Path portalTemplateDir, boolean requireCOL) throws IOException {
+    this.requireCOL = requireCOL;
     this.datasetDao = datasetDao;
     this.sourceDao = sourceDao;
     this.factory = tdao.getFactory();
     this.tdao = tdao;
-    this.cache = cache;
-    setTemplateFolder(portalTemplateDir);
+    this.portalTemplateDir = Preconditions.checkNotNull(portalTemplateDir);
+    if (!Files.exists(portalTemplateDir)) {
+      Files.createDirectories(portalTemplateDir);
+    }
+    loadReleases();
+    loadTemplates();
+    List<DatasetRelease> annuals = new ArrayList<>();;
+    if (factory != null) {
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        annuals = dm.listReleasesQuick(Datasets.COL).stream()
+          .filter(d -> !d.isDeleted())
+          .filter(DatasetRelease::hasLongTermSupport)
+          .collect(Collectors.toList());
+      }
+    }
+    annualReleases = annuals.stream()
+      .filter(d -> d.getOrigin()== DatasetOrigin.RELEASE)
+      .collect(Collectors.toList());
+    annualXReleases = annuals.stream()
+      .filter(d -> d.getOrigin()== DatasetOrigin.XRELEASE)
+      .collect(Collectors.toList());
   }
 
   public Path getPortalTemplateDir() {
     return portalTemplateDir;
   }
 
-  public Response renderClbDataset(int datasetKey, Environment env) throws TemplateException, IOException {
-    try {
-      var d = datasetDao.getOr404(datasetKey);
-      return render(env, PortalPage.CLB_DATASET, d);
-
-    } catch (NotFoundException e) {
-      return Response
-        .status(Response.Status.NOT_FOUND)
-        .type(MediaType.TEXT_HTML)
-        .entity(readClbIndexPage())
-        .build();
-    }
+  private static Response noReleaseDeployed(Environment env) {
+    return Response
+      .status(Response.Status.NOT_FOUND)
+      .type(MediaType.TEXT_PLAIN)
+      .entity(String.format("No COL release has been deployed to %s", env))
+      .build();
   }
 
   /**
    * @param id a COL checklist taxon or synonym ID. In case of synonyms redirect to the taxon page.
    * @param env
    */
-  public Response renderTaxon(String id, Environment env, boolean extended) throws TemplateException, IOException {
-    final int datasetKey = releaseKey(env, extended);
+  public Response renderTaxon(String id, Environment env) throws TemplateException, IOException {
+    if (!releaseKeys.containsKey(env)) return noReleaseDeployed(env);
+
+    final int datasetKey = releaseKeys.get(env);
     final Map<String, Object> data = buildData(datasetKey);
 
     try {
@@ -106,7 +122,7 @@ public class PortalPageRenderer {
       Taxon t = tdao.getOr404(key);
       UsageInfo info = new UsageInfo(t);
       data.put("info", info);
-      try (SqlSession session = tdao.getFactory().openSession()) {
+      try (SqlSession session = factory.openSession()) {
         tdao.fillUsageInfo(session, info, null,
           false,
           true,
@@ -117,6 +133,7 @@ public class PortalPageRenderer {
           false,
           false,
           true,
+          false,
           false,
           false,
           false,
@@ -144,14 +161,35 @@ public class PortalPageRenderer {
     } catch (ArchivedException e) {
       // render tombstone page
       data.put("usage", e.usage);
-      data.put("first", datasetDao.get(e.usage.getFirstReleaseKey()));
-      data.put("last", datasetDao.get(e.usage.getLastReleaseKey()));
+      data.put("first", datasetDao.getRelease(e.usage.getFirstReleaseKey()));
+      data.put("last", datasetDao.getRelease(e.usage.getLastReleaseKey()));
       // load verbatim source from last release
       if (e.usage.getLastReleaseKey() != null) {
         var v = tdao.getSourceByUsageKey(DSID.of(e.usage.getLastReleaseKey(), id));
         data.put("verbatim", v);
         data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
       }
+      // list all annual releases this id appears in
+      List<DatasetRelease> appearsIn = new ArrayList<>();
+      List<SimpleNameCached> alternatives = new ArrayList<>();
+      if (factory != null) {
+        try (SqlSession session = factory.openSession()) {
+          var num = session.getMapper(NameUsageMapper.class);
+          for (DatasetRelease r : annualReleases) {
+            if (num.exists(DSID.of(r.getKey(), id))) {
+              appearsIn.add(r);
+            }
+          }
+          // load alternative names in case we switched authors
+          var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+          var cNidx = amm.getCanonicalNidx(e.usage);
+          if (cNidx != null) {
+            alternatives = num.listByCanonNIDX(datasetKey, cNidx);
+          }
+        }
+      }
+      data.put("annualReleases", appearsIn);
+      data.put("alternatives", alternatives);
       return render(env, PortalPage.TOMBSTONE, data);
 
     } catch (NotFoundException e) {
@@ -159,9 +197,10 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderDatasource(int id, Environment env, boolean extended) throws TemplateException, IOException {
+  public Response renderDatasource(int id, Environment env) throws TemplateException, IOException {
+    if (!releaseKeys.containsKey(env)) return noReleaseDeployed(env);
     try {
-      final int datasetKey = releaseKey(env, extended);
+      final int datasetKey = releaseKeys.get(env);
       final Map<String, Object> data = buildData(datasetKey);
 
       var d = checkFound(
@@ -176,9 +215,11 @@ public class PortalPageRenderer {
     }
   }
 
-  public Response renderMetadata(Environment env, boolean extended) throws TemplateException, IOException {
+  public Response renderMetadata(Environment env) throws TemplateException, IOException {
+    if (!releaseKeys.containsKey(env)) return noReleaseDeployed(env);
+
     try {
-      final int datasetKey = releaseKey(env, extended);
+      final int datasetKey = releaseKeys.get(env);
       final Map<String, Object> data = buildData(datasetKey);
 
       Dataset d;
@@ -202,6 +243,13 @@ public class PortalPageRenderer {
 
   private Response render(Environment env, PortalPage pp, Object data) throws TemplateException, IOException {
     var temp = portalTemplates.get(env).get(pp);
+    if (temp == null) {
+      return Response
+        .status(Response.Status.NOT_FOUND)
+        .type(MediaType.TEXT_PLAIN)
+        .entity(String.format("No portal template has been deployed for %s/%s", env, pp))
+        .build();
+    }
     Writer out = new StringWriter();
     temp.process(data, out);
 
@@ -212,64 +260,82 @@ public class PortalPageRenderer {
       .build();
   }
 
-  public void setTemplateFolder(Path portalTemplateDir) throws IOException {
-    this.portalTemplateDir = Preconditions.checkNotNull(portalTemplateDir);
-    if (!Files.exists(portalTemplateDir)) {
-      Files.createDirectories(portalTemplateDir);
-    }
+  /**
+   * Reads all release keys for all environments from the file system and stores them in the internal map
+   * @throws IOException
+   */
+  private void loadReleases() throws IOException {
     for (Environment env : Environment.values()) {
+      loadRelease(env);
+    }
+  }
+
+  /**
+   * Reads all portal templates for all environments keys from the file system and store it in the internal map
+   * @throws IOException
+   */
+  public void loadTemplates() throws IOException {
+    for (Environment env : Environment.values()) {
+      if (!releaseKeys.containsKey(env)) {
+        LOG.warn("No portal release deployed for environment {}", env);
+        continue;
+      }
       for (PortalPage pp : PortalPage.values()) {
         loadTemplate(env, pp);
       }
     }
   }
 
+  private void loadRelease(Environment env) throws IOException {
+    var p = releaseFile(env);
+    if (Files.exists(p)) {
+      var in = Files.newInputStream(p);
+      var strKey = UTF8IoUtils.readString(in);
+      int releaseKey = Integer.parseInt(strKey.trim());
+      releaseKeys.put(env, releaseKey);
+      LOG.info("Use release {} for environment {}", releaseKey, env);
+    } else {
+      LOG.warn("No release deployed for environment {}", env);
+    }
+  }
+
   private void loadTemplate(Environment env, PortalPage pp) throws IOException {
     var p = template(env, pp);
-    InputStream in;
     if (Files.exists(p)) {
       LOG.info("Load {} {} portal template from {}", env, pp, p);
-      in = Files.newInputStream(p);
+      try (BufferedReader br = UTF8IoUtils.readerFromPath(p)) {
+        Template temp = new Template(pp.name(), br, FmUtil.FMK);
+        portalTemplates.get(env).put(pp, temp);
+      }
     } else {
-      if (pp.isChecklistBank()) {
-        LOG.info("Prepare checklistbank {} template from resources", pp);
-        // for CLB pages we first need to inject the freemarker template
-        var html = readClbIndexPage();
-        // storing does the injection
-        store(env, pp, html);
-        // now read the generated file just as we do above
-        in = Files.newInputStream(p);
-      } else {
-        LOG.info("Load {} portal template from resources", pp);
-        in = getClass().getResourceAsStream("/freemarker-templates/portal/"+pp.name()+".ftl");
+      LOG.warn("{} {} portal template missing", env, pp);
+    }
+  }
+
+  public Integer getReleaseKey(Environment env) {
+    return releaseKeys.get(env);
+  }
+
+  public void setReleaseKey(Environment env, int releaseKey) throws IOException {
+    if (requireCOL) {
+      try {
+        var info = DatasetInfoCache.CACHE.info(releaseKey, DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE);
+        if (info.sourceKey != Datasets.COL) {
+          throw new IllegalArgumentException("Not a COL release key: " + info.sourceKey);
+        }
+      } catch (NotFoundException e) {
+        throw new IllegalArgumentException(e.getMessage());
       }
     }
-    loadTemplate(env, pp, in);
-  }
-
-  private String readClbIndexPage() {
-    return readTemplateResource("clb/index.html");
-  }
-
-  private String readTemplateResource(String resourceName) {
-    var in = getClass().getResourceAsStream("/freemarker-templates/portal/"+resourceName);
-    return InputStreamUtils.readEntireStream(in);
-  }
-
-  private void loadTemplate(Environment env, PortalPage pp, InputStream stream) throws IOException {
-    try (BufferedReader br = UTF8IoUtils.readerFromStream(stream)) {
-      Template temp = new Template(pp.name(), br, FmUtil.FMK);
-      portalTemplates.get(env).put(pp, temp);
+    LOG.info("Update environment {} to COL release {}", env, releaseKey);
+    releaseKeys.put(env, releaseKey);
+    try (Writer w = UTF8IoUtils.writerFromPath(releaseFile(env))) {
+      w.write(String.valueOf(releaseKey));
     }
   }
 
   public boolean store(Environment env, PortalPage pp, String template) throws IOException {
-    if (pp.isChecklistBank()) {
-      // inject SEO!
-      var seo = readTemplateResource("clb/"+pp.name().toLowerCase()+".ftl");
-      template = template.replaceFirst("<!-- REPLACE_WITH_SEO -->", Matcher.quoteReplacement(seo));
-    }
-    LOG.info("Store new portal page template {}", pp);
+    LOG.info("Store new portal page template {} for {} environment", pp, env);
     try (Writer w = UTF8IoUtils.writerFromPath(template(env, pp))) {
       // enforce xhtml freemarker setting which we cannot keep in Jekyll
       w.write("<#ftl output_format=\"XHTML\">");
@@ -283,11 +349,7 @@ public class PortalPageRenderer {
     return portalTemplateDir.resolve(Path.of(env.name(), pp.name()+".ftl"));
   }
 
-  private int releaseKey(Environment env, boolean extended) {
-    boolean preview = env == Environment.PREVIEW;
-    //TODO: for now we only have private extended releases, so show them also in non preview ENVs
-    Integer key = preview || extended ? cache.getLatestReleaseCandidate(Datasets.COL, extended) : cache.getLatestRelease(Datasets.COL, extended);
-    if (key == null) throw new NotFoundException("No COL " + (preview ? "preview " : "") + (extended ? "X-":"") + "release existing");
-    return key;
+  private Path releaseFile(Environment env) {
+    return portalTemplateDir.resolve(Path.of(env.name(), RELEASE_KEY_FILE));
   }
 }

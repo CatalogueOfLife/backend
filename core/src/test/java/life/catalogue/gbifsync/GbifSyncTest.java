@@ -1,8 +1,10 @@
 package life.catalogue.gbifsync;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.vocab.JobStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.junit.PgSetupRule;
@@ -35,6 +37,7 @@ public class GbifSyncTest {
   @ClassRule
   public static final PgSetupRule pg = new PgSetupRule();
   private static final GbifConfig cfg = new GbifConfig();
+  private static final ImporterConfig iCfg = new ImporterConfig();
   private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   @Mock
   DatasetImportDao diDao;
@@ -58,12 +61,12 @@ public class GbifSyncTest {
 
   @Before
   public void initTest() {
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, diDao, validator, TestUtils.mockedBroker());
   }
 
   @Test
   public void syncNow() {
-    GbifSyncManager gbif = new GbifSyncManager(cfg, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), client);
+    GbifSyncManager gbif = new GbifSyncManager(cfg, iCfg, ddao, SqlSessionFactoryRule.getSqlSessionFactory(), client);
     gbif.syncNow();
   }
 

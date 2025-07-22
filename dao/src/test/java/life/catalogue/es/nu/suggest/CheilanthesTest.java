@@ -1,7 +1,6 @@
 package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
 import life.catalogue.es.EsReadTestBase;
 import life.catalogue.es.EsTestUtils;
 
@@ -29,30 +28,30 @@ public class CheilanthesTest extends EsReadTestBase {
     query.setDatasetFilter(3);
     query.setQ("Cheilant");
     query.setFuzzy(true);
-    NameUsageSuggestResponse nur = suggest(query);
-    assertEquals(1, nur.getSuggestions().size());
+    var nur = suggest(query);
+    assertEquals(1, nur.size());
 
     query.setMinRank(Rank.GENUS);
     nur = suggest(query);
-    assertEquals(1, nur.getSuggestions().size());
+    assertEquals(1, nur.size());
 
     query.setMinRank(Rank.FAMILY);
     nur = suggest(query);
-    assertEquals(0, nur.getSuggestions().size());
+    assertEquals(0, nur.size());
 
     query.setMinRank(Rank.GENUS);
     query.setMaxRank(Rank.GENUS);
     nur = suggest(query);
-    assertEquals(1, nur.getSuggestions().size());
+    assertEquals(1, nur.size());
 
     query.setMinRank(null);
     query.setMaxRank(Rank.SPECIES);
     nur = suggest(query);
-    assertEquals(0, nur.getSuggestions().size());
+    assertEquals(0, nur.size());
 
     query.setMaxRank(Rank.FAMILY);
     nur = suggest(query);
-    assertEquals(1, nur.getSuggestions().size());
+    assertEquals(1, nur.size());
   }
 
   @Test
@@ -62,8 +61,8 @@ public class CheilanthesTest extends EsReadTestBase {
     query.setDatasetFilter(3);
     query.setQ("Che");
     query.setFuzzy(false);
-    NameUsageSuggestResponse nur = suggest(query);
-    assertEquals(1, nur.getSuggestions().size());
+    var nur = suggest(query);
+    assertEquals(1, nur.size());
   }
 
 }

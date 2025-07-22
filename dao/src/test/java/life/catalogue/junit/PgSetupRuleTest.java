@@ -1,5 +1,6 @@
 package life.catalogue.junit;
 
+import life.catalogue.api.model.ApiLog;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.User;
@@ -91,6 +92,7 @@ public class PgSetupRuleTest {
       enums.add(Sector.Mode.class);
       enums.add(EditorialDecision.Mode.class);
       enums.add(User.Role.class);
+      enums.add(ApiLog.HttpMethod.class);
     }
     // not needed for persistency
     enums.remove(BioGeoRealm.class);
@@ -106,7 +108,6 @@ public class PgSetupRuleTest {
     enums.remove(NameField.class);
     enums.remove(DoiResolution.class);
     enums.remove(TabularFormat.class);
-    enums.remove(TaxGroup.class);
     // remove enums not used in coldp
     if (coldpOnly) {
       enums.remove(DataFormat.class);

@@ -6,14 +6,14 @@ import org.gbif.dwc.terms.TermFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import jakarta.ws.rs.ext.ParamConverter;
-import jakarta.ws.rs.ext.ParamConverterProvider;
-import jakarta.ws.rs.ext.Provider;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+
+import jakarta.ws.rs.ext.ParamConverter;
+import jakarta.ws.rs.ext.ParamConverterProvider;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Jersey parameter converter & provider that uses our jackson Mapper

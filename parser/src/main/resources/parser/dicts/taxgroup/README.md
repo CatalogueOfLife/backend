@@ -33,6 +33,7 @@ The following taxon names are found as suprageneric names across different kingd
 - Urostylidae: Protist & Hemiptera -> Eukaryote
 - Cepolidae: Gastropod & Chordate -> Animals
 - Leptosomatidae: Nematod & Bird -> Animals
+- Machaeridia: Orthoptera & Annelidae -> Animals
 
 
 

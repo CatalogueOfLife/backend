@@ -224,7 +224,7 @@ public class TestDataGenerator {
       TestConfigs cfg = TestConfigs.build();
 
       var validator = Validation.buildDefaultValidatorFactory().getValidator();
-      DatasetDao     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator);
+      DatasetDao ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator, TestUtils.mockedBroker());
       ReferenceDao rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
       var projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
         syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),

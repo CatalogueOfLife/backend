@@ -1,0 +1,93 @@
+identifier	taxonID	type	CVterm	format	language	title	description	additionalInformationURL	UsageTerms	rights	Owner	contributor	creator	bibliographicCitation
+03E387995E16FFE1FF36FE59F8AF37C3.text	03E387995E16FFE1FF36FE59F8AF37C3.taxon	http://purl.org/dc/dcmitype/Text	http://rs.tdwg.org/ontology/voc/SPMInfoItems#GeneralDescription	text/html	en	Isoperla asiatica : Rauser 1968	<html xmlns:mods="http://www.loc.gov/mods/v3">
+    <body>
+        <div>
+            <p> Isoperla asiatica Raušer, 1968</p>
+            <p> Isoperla asiatica: Raušer, 1968 , Entomol. Abhandl., 34(5):364. </p>
+            <p> Isoperla asiatica: Zwick, 1973 , Das Tierreich, 94:242. </p>
+            <p> Isoperla asiatica: Zwick &amp; Surenkhorloo, 2005 , Acta Zool. Acad. Sci. Hung., 51(3):264. </p>
+            <p> Isoperla asiatica: Teslenko, 2006 , Zootaxa, 1130:5. </p>
+            <p> Isoperla asiatica: Teslenko &amp; Bazova, 2009 , Entomol. Rev., 89(9):1063. </p>
+            <p> Isoperla asiatica: Teslenko &amp; Zhiltzova, 2009 , Russian Academy of Sciences, Vladivostok: Dalnauka, 34. </p>
+            <p> Isoperla asiatica: Judson &amp; Nelson, 2012 , Zootaxa, 3541:46. </p>
+            <p>Diagnosis: Male head mostly yellowish except the areas between ocelli to occiput with a darker brown spot; a pale oval spot between the posterior ocelli. Antennae, palpi and cerci dark brown. Pronotum disc yellowish medially and dark brown rugosities present laterally. Paraprocts short and slightly sclerotized. Vesicle of sternum 8 reduced (Figs. 1–2). Aedeagus (not fully everted) membranous, without obvious sclerites; fine asperities present on surface (Fig. 3). Female with a semicircular dark subgenital plate (Fig. 4). Head and pronotal maculations, male and female terminalia match well the illustrations of Zwick &amp; Surenkhorloo (2005) and Teslenko &amp; Zhiltzova (2009).</p>
+            <p>Distribution: China (Inner Mongolia Autonomous Region), Mongolia, Russia.</p>
+            <p>
+                 Material examined:   3 ♂♂, 2 ♀♀, China, Inner Mongolia Autonomous Region, Hinggan League, outskirts of  
+                <a title="Search Plazi for locations around (long 119.89/lat 47.17)" href="https://tb.plazi.org/GgServer/search?materialsCitation.longitude=119.89&amp;materialsCitation.latitude=47.17">Arxan City</a>
+                 , ca. 47.17°N, 119.89°E (UTM: 50 N 719009 5228108), 2018-V-28, leg. Xue Hai-Yang. 
+            </p>
+        </div>
+    </body>
+</html>
+	https://treatment.plazi.org/id/03E387995E16FFE1FF36FE59F8AF37C3	Public Domain	No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53 for further explanation.		MagnoliaPress via Plazi	Huo, Qing-Bo;Chen, Zhen-Ning;Kong, Xiang-Bo;Du, Yu-Zhou	Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3
+03E387995E15FFE0FF36F93FFD2935BE.text	03E387995E15FFE0FF36F93FFD2935BE.taxon	http://purl.org/dc/dcmitype/Text	http://rs.tdwg.org/ontology/voc/SPMInfoItems#GeneralDescription	text/html	en	Isoperla eximia : Zapekina-Dulkeit 1975	<html xmlns:mods="http://www.loc.gov/mods/v3">
+    <body>
+        <div>
+            <p> Isoperla eximia Zapekina-Dulkeit, 1975</p>
+            <p> Isoperla eximia: Zapekina-Dulkeit, 1975 , Tr. Gosud. Sapow. “Stolby”, 10:211. </p>
+            <p> Isoperla eximia: Teslenko &amp; Zhiltzova, 2006 , Zootaxa, 1130:1–33. </p>
+            <p> Isoperla eximia: Teslenko &amp; Bazova, 2009 , Entomol. Rev., 89(9):1063. </p>
+            <p> Isoperla eximia: Teslenko &amp; Zhiltzova, 2009 , Russian Academy of Sciences, Vladivostok: Dalnauka, 272. </p>
+            <p> Isoperla eximia: Judson &amp; Nelson, 2012 , Zootaxa, 3541:47. </p>
+            <p> Isoperla eximia: Yang &amp; Li, 2018 , Species Catalogue of China. Vol. 2. Animals,  Insecta (III),  Plecoptera , 49. </p>
+            <p>Diagnosis: Male head mostly yellowish except area between posterior ocelli to occiput brown; antennae, palpi and cerci brown. Head without pale occipital mark, Pronotum disc yellowish medially and dark brown rugosities present laterally; middle of mesoscutum paler than sides. Paraprocts unciform, strong and heavily sclerotized. Vesicle on sternum 8 developed and hairy (Figs. 5–6). Aedeagus mostly membranous; aedeagal sclerite basally less wide, not distinctly crested; apex with few fine grooves (Fig. 7).</p>
+            <p>Distribution: China (Jilin Province), Mongolia, Russia.</p>
+            <p>
+                 Material examined:   1 ♂, China, Jilin Province,  
+                <a title="Search Plazi for locations around (long 128.11/lat 42.38)" href="https://tb.plazi.org/GgServer/search?materialsCitation.longitude=128.11&amp;materialsCitation.latitude=42.38">Research Station of Changbai Mountain Forest Ecosystem</a>
+                 , ca. 42.38°N, 128.11°E (UTM: 52 N 426732 4692352), 2005-VIII-1, leg. Wang Zhi-Jie. 
+            </p>
+            <p> Remark: A nymph of  I. eximia collected in China (Yuhualin Area, Antu Country, Jilin Prov., Chanbai Mnts., Erdaobaine R., 1770 m above sea level, 30. IV 1994, Eu. Makarchenko, 1 nymph) was indicated by Teslenko &amp; Zhiltzova (2006), but not mentioned by Teslenko &amp; Zhiltzova (2009) and Judson &amp; Nelson (2012). Yang &amp; Li (2018) indicated that this species was known from “northeast of China ” citing Teslenko &amp; Zhiltzova (2009) and Judson &amp; Nelson (2012). With the inclusion of  I. eximia , 13 species of  Isoperla are now known to occur in China (Chen et al. 2019). </p>
+        </div>
+    </body>
+</html>
+	https://treatment.plazi.org/id/03E387995E15FFE0FF36F93FFD2935BE	Public Domain	No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53 for further explanation.		MagnoliaPress via Plazi	Huo, Qing-Bo;Chen, Zhen-Ning;Kong, Xiang-Bo;Du, Yu-Zhou	Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3
+03E387995E13FFE5FF36F8E8FE22367A.text	03E387995E13FFE5FF36F8E8FE22367A.taxon	http://purl.org/dc/dcmitype/Text	http://rs.tdwg.org/ontology/voc/SPMInfoItems#GeneralDescription	text/html	en	Mesoperlina capnoptera (McLachlan 1886)	<html xmlns:mods="http://www.loc.gov/mods/v3">
+    <body>
+        <div>
+            <p> Mesoperlina capnoptera (McLachlan, 1886)</p>
+            <p> Chloroperla capnoptera: McLachlan, 1886 [1885–1886], Tijdschr. Entomol., 29:157. </p>
+            <p> Isoperla capnoptera: Claassen, 1940 , Mem. Agri. Exp. Sta., Cornell Univ., 232:199. </p>
+            <p> Isoperla capnoptera: Illies, 1966 , Das Tierreich, 82:397. </p>
+            <p> Mesoperlina monae: Joost, 1970 , Entomol. Nach., 14(8):120. </p>
+            <p> Mesoperlina capnoptera: Zhiltzova, 1970 , Entomol. Obozr., 49(3):578. </p>
+            <p> Mesoperlina capnoptera: Zwick, 1973 , Das Tierreich, 94:253. </p>
+            <p> Mesoperlina capnoptera: Teslenko &amp; Zhiltzova, 2009 , Russian Academy of Sciences, Vladivostok: Dalnauka, 48. </p>
+            <p>Diagnosis: Male tergum 10 divided behind by a longitudinal division ½ the length; medial edge of each half produced into an acute forward and upward hook, with a small rhomboid-like sclerite located between bases. Median sclerite on the posterior margin of male tergum 10 not separated. Aedeagus short, wide at base, apex in profile plumb-like, small number spines scattered over the surface of aedeagus not forming distinct clusters (Figs. 8–10).</p>
+            <p>Distribution: China (Xinjiang Uygur Autonomous Region), Mongolia, Russia.</p>
+            <p>
+                 Material examined:   3 ♂♂, China, Xinjiang Uygur Autonomous Region, Shawan County,  
+                <a title="Search Plazi for locations around (long 85.35/lat 43.88)" href="https://tb.plazi.org/GgServer/search?materialsCitation.longitude=85.35&amp;materialsCitation.latitude=43.88">Shuanglonggou</a>
+                 scenic spot, ca. 43.88°N, 85.35°E (UTM: 45 N 367446 4859868), 2011-VII-16  . 
+            </p>
+            <p> Remark: A single species of  Mesoperlina has been previously recorded from China,  M. ochracea Klapálek, 1921 also from the northwestern Xinjiang Uygur Autonomous Region and Afghanistan, Iran, and Russia (Wu 1938, Du 1999, DeWalt et al. 2020). The male of  M. ochracea compared to  M. capnoptera , has a larger area of sensilla on male tergum 9, and the median rhomboid sclerite of tergum 10 is smaller than that of  M. ochracea , without a complete surrounding membranous area. </p>
+        </div>
+    </body>
+</html>
+	https://treatment.plazi.org/id/03E387995E13FFE5FF36F8E8FE22367A	Public Domain	No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53 for further explanation.		MagnoliaPress via Plazi	Huo, Qing-Bo;Chen, Zhen-Ning;Kong, Xiang-Bo;Du, Yu-Zhou	Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3
+03E387995E11FFEFFF36F9FFFEC430D2.text	03E387995E11FFEFFF36F9FFFEC430D2.taxon	http://purl.org/dc/dcmitype/Text	http://rs.tdwg.org/ontology/voc/SPMInfoItems#GeneralDescription	text/html	en	Rauserodes epiproctalis (Zwick 1997)	<html xmlns:mods="http://www.loc.gov/mods/v3">
+    <body>
+        <div>
+            <p> Rauserodes epiproctalis (Zwick, 1997)</p>
+            <p> Rauserella epiproctalis: Zwick, 1997 ,  Ephemeroptera &amp;  Plecoptera , Biology-Ecology-Systematics: 489–496. </p>
+            <p> Rauserodes epiproctalis: Zwick, 1999 , Aquatic Insects, 21 (3):168. </p>
+            <p>Male: Micropterous, forewing length ca. 3 mm, hindwing length 3 mm, body length 14 mm. General color reddish brown to brown (Fig. 12). Head mostly yellowish to light brown, laterally frontoclypeus brown and median occiput with several dark brown spots. Antennae and palpi dark brown. Pronotum disc dark brown, with a yellowish medial longitudinal stripe, with several dispersed yellow spots near its lateral margin (Fig. 13). Legs yellowish to brown; wings smoky gray, bearing fine hairs on the surface, pores on veins and area around anal veins larger than the others; veins brown and thick (Fig. 14). Abdomen brown or dark brown, slightly sclerotized, bearing yellowish long hairs; terga 1–6 with a large triangle dark spot medially; terga 1–9 with proximal dark spots and small, round lateral sclerites (Figs. 12, 15, 16).</p>
+            <p>Tergum 7–9 without median dark spots (Fig. 15). Tergum 8 with a patch of developed median basiconica sensilla (Fig. 15). Tergum 9 posteriorly membranous, bearing sensilla basiconica of two types, separate or connected by irregular sclerites on the anterior or posterior of the membranous area (Fig. 17). Tergum 10 with a pair of dark lateral spots, and a dark longitudinal median band, sometimes lacking not; posterior margin heavily sclerotized, curved upward and fully covered with sensilla basiconica (Fig. 18). Paraprocts triangle, inner margin membranous and bearing fine spines, sclerotized apically and basally (Fig. 19).</p>
+            <p>The membranous epiproct divided into two lobes: the basal lobe swollen, dorsally with a pair of short process near tergum 10, and a pair of fingerlike process extended from the apex; apical lobe short, approximately rhombic in shape, blunt apically (Fig. 20). Aedeagus (Fig. 21) a membranous tube with narrow base, with a subterminal ring-like swelling which is roughened by cuticular asperities on its outer face; apex heart-shaped and smooth, as described by Zwick (1997).</p>
+            <p>Female: Macropterous, forewing length 21 mm, hindwing length 18 mm, body length 19 mm. Coloration of head, thorax dark brown to black (Fig. 22). Area between hind ocelli and median occiput with a yellow spot; occiput with lateral rugosities; palpi light brown. Pronotum disc dark brown, rugosities present laterally, and a yellowish longitudinal band among the centerline (Fig. 23). Legs brown. Wings smoky gray and translucence; veins dark brown (Fig. 24). Some individuals have more cross veins between subcosta and radius veins of forewing, or additional branches of the anal veins of hindwing (Fig. 25). Abdomen brown; subgenital plate short and sclerotized, variable; median posterior margin heavily sclerotized and bilobate (Fig. 26).</p>
+            <p>Egg: See Zwick (1997). No mature eggs were present in the below material.</p>
+            <p>Nymph: Unknown.</p>
+            <p>
+                 Material examined:   10 ♂♂, 4 ♀♀ (ICYZU), China, Qinghai Province, Haibei Tibetan Autonomous Prefecture, Menyuan Hui Autonomous County,  
+                <a title="Search Plazi for locations around (long 101.35445/lat 37.772778)" href="https://tb.plazi.org/GgServer/search?materialsCitation.longitude=101.35445&amp;materialsCitation.latitude=37.772778">Liuhuanggou</a>
+                 , 3720 m, 101°21'16"E, 37°46'22"N (UTM: 47 N 707365 4183215), 2019-VIII-14, leg. Wang Lu-Yu, Chen Zhen-Ning  ;   4♂♂, 2 ♀♀ (CAF),  
+                <a title="Search Plazi for locations around (long 101.30222/lat 37.69889)" href="https://tb.plazi.org/GgServer/search?materialsCitation.longitude=101.30222&amp;materialsCitation.latitude=37.69889">Liuhuanggou</a>
+                 , 101°18'8"E, 37°41'56"N (UTM: 47 N 702967 4174901), 2019-VII-29, leg. Kong Xiang-Bo, Fang Jia-Xing, He Yun-Chuan  . 
+            </p>
+            <p>Distribution: China (Qinghai Province).</p>
+            <p>Remarks. This species apparently inhabits pristine cool valley streams and nymphs occur under mats of instream vegetation and under rocks (Fig. 27).</p>
+        </div>
+    </body>
+</html>
+	https://treatment.plazi.org/id/03E387995E11FFEFFF36F9FFFEC430D2	Public Domain	No known copyright restrictions apply. See Agosti, D., Egloff, W., 2009. Taxonomic information exchange and copyright: the Plazi approach. BMC Research Notes 2009, 2:53 for further explanation.		MagnoliaPress via Plazi	Huo, Qing-Bo;Chen, Zhen-Ning;Kong, Xiang-Bo;Du, Yu-Zhou	Huo, Qing-Bo, Chen, Zhen-Ning, Kong, Xiang-Bo, Du, Yu-Zhou (2020): New records and a confirmation of three perlodid species in China, with additional notes and images of Rauserodes epiproctalis (Zwick, 1997) (Plecoptera: Perlodidae). Zootaxa 4808 (3): 455-474, DOI: 10.11646/zootaxa.4808.3.3

@@ -1,15 +1,17 @@
 package life.catalogue.api.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.common.collection.CountMap;
 
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Metrics about descendants for a single taxon, i.e. accepted name usage.

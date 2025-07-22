@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class LHigherName implements LName {
   private static Pattern RANK_MATCHER = Pattern.compile("^(.+[a-z]) [a-z]{1,6}\\. ([a-z]{2}.+)$");
-  private static String BASE_URL = "https://www.catalogue.life/data/taxon/";
+  private static String BASE_URL = "https://www.catalogueoflife.org/data/taxon/";
   protected String author;
 
   private String id;

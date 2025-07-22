@@ -1,11 +1,7 @@
 package life.catalogue.importer;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.interpreter.RanKnName;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
@@ -25,8 +21,9 @@ import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.interpreter.ExtinctName;
-import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.NameValidator;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
@@ -45,7 +42,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.Iterables;
@@ -53,6 +49,8 @@ import org.neo4j.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -61,6 +59,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import jakarta.validation.Validator;
 
 /**
  *
@@ -294,6 +293,14 @@ public class Normalizer implements Callable<Boolean> {
             if (sp == null) {
               store.addIssues(nnn, Issue.PARENT_SPECIES_MISSING);
             }
+          }
+        }
+
+        // validate synonyms
+        for (Node sn : Traversals.SYNONYMS.traverse(n).nodes()) {
+          RankedUsage su = NeoProperties.getRankedUsage(sn);
+          if (su.rank != ru.rank) {
+            store.addUsageIssues(sn, Issue.SYNONYM_RANK_DIFFERS);
           }
         }
       }

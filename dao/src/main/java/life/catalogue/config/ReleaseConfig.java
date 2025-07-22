@@ -5,12 +5,10 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.api.model.JobResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  *

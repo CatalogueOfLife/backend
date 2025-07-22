@@ -1,18 +1,17 @@
 package life.catalogue.matching;
 
-import io.swagger.v3.oas.models.ExternalDocumentation;
-
-import io.swagger.v3.oas.models.OpenAPI;
-import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.info.License;
-
 import life.catalogue.matching.index.DatasetIndex;
 import life.catalogue.matching.model.APIMetadata;
 import life.catalogue.matching.service.IndexingService;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.NameParsers;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -24,9 +23,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 
-import java.io.IOException;
-import java.text.NumberFormat;
-import java.util.*;
+import io.swagger.v3.oas.models.ExternalDocumentation;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import lombok.extern.slf4j.Slf4j;
 
 import static life.catalogue.matching.Main.*;
 
@@ -198,10 +199,10 @@ public class MatchingApplication implements ApplicationRunner {
             .name(licence)
             .url(licenceUrl)));
 
-      if (m.getMainIndex().getDatasetKey() != null) {
+      if (m.getMainIndex().getClbDatasetKey() != null) {
         openAPI.externalDocs(new ExternalDocumentation()
           .description(m.getMainIndex().getDatasetTitle())
-          .url("https://checklistbank.org/dataset/" + m.getMainIndex().getDatasetKey()));
+          .url("https://checklistbank.org/dataset/" + m.getMainIndex().getClbDatasetKey()));
       }
     });
 

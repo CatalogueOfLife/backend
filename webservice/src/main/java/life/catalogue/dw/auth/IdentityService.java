@@ -161,7 +161,7 @@ public class IdentityService {
     return optUser;
   }
 
-  public int flush() {
+  public int flushCache() {
     int num = cache.size();
     cache.clear();
     return num;

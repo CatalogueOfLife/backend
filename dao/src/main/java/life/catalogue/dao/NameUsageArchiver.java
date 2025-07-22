@@ -1,17 +1,16 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.util.stream.Collectors;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.stream.Collectors;
 
 /**
  * Service that builds the name usage archive for projects.

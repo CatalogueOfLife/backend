@@ -1,9 +1,5 @@
 package life.catalogue.dw.jersey.writers;
 
-import com.fasterxml.jackson.databind.ObjectWriter;
-
-import de.undercouch.citeproc.csl.CSLItemData;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Reference;
 import life.catalogue.common.csl.CslUtil;
@@ -14,6 +10,9 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import de.undercouch.citeproc.csl.CSLItemData;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;

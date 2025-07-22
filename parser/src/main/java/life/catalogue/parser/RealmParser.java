@@ -2,7 +2,6 @@ package life.catalogue.parser;
 
 
 import life.catalogue.api.vocab.BioGeoRealm;
-import life.catalogue.api.vocab.Gazetteer;
 
 /**
  * Parses area standards

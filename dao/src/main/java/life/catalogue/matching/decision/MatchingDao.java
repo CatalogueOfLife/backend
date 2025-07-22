@@ -1,5 +1,7 @@
 package life.catalogue.matching.decision;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.model.*;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.db.mapper.NameMapper;
@@ -18,6 +20,8 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static life.catalogue.common.text.StringUtils.removePunctWS;
+
 public class MatchingDao {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingDao.class);
   
@@ -31,7 +35,16 @@ public class MatchingDao {
     uMapper = session.getMapper(NameUsageMapper.class);
     nMapper = session.getMapper(NameMapper.class);
   }
-  
+
+  @VisibleForTesting
+  protected static String norm(String x) {
+    x = removePunctWS(x);
+    if (x != null) {
+      x = x.toLowerCase();
+    }
+    return StringUtils.trimToEmpty(x);
+  }
+
   /**
    * Strictly matches a simple name to name usages from a given dataset
    * @param name
@@ -42,7 +55,8 @@ public class MatchingDao {
     // https://github.com/Sp2000/colplus-backend/issues/283
     for (NameUsageBase t : uMapper.listByName(datasetKey, name.getName(), name.getRank(), new Page(0,1000))) {
       // take authorship, code, status and parent as optional filters, i.e. if null accept any value
-      if (StringUtils.trimToNull(name.getAuthorship()) != null && !name.getAuthorship().equalsIgnoreCase(t.getName().getAuthorship())) {
+      String normedAuthorship = norm(name.getAuthorship());
+      if (StringUtils.isNotBlank(normedAuthorship) && !normedAuthorship.equals(norm(t.getName().getAuthorship()))) {
         result.ignore(t, "Authorship differs");
         continue;
       }
@@ -54,7 +68,7 @@ public class MatchingDao {
         result.ignore(t, "Code differs");
         continue;
       }
-      if (name.getParent() != null) {
+      if (StringUtils.isNotBlank(name.getParent())) {
         // synonyms already have their parent name. For taxa we need to look that up
         // https://github.com/Sp2000/colplus-backend/issues/349
         Name parent;

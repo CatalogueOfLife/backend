@@ -2,16 +2,18 @@ package life.catalogue.pgcopy;
 
 import life.catalogue.common.io.TempFile;
 
-import org.gbif.nameparser.api.Rank;
-
-import org.junit.*;
-import org.postgresql.jdbc.PgConnection;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.postgresql.jdbc.PgConnection;
+
 import static life.catalogue.pgcopy.PgBinaryReaderTest.GENDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

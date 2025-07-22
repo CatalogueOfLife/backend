@@ -1,8 +1,5 @@
 package life.catalogue.matching.nidx;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.Managed;
 
@@ -10,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Function;
 
 public interface NameIndexStore extends Managed {

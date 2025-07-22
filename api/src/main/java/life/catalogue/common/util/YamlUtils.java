@@ -1,9 +1,5 @@
 package life.catalogue.common.util;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.common.io.UTF8IoUtils;
 
@@ -13,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
@@ -28,6 +25,10 @@ public class YamlUtils {
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MAPPER.registerModule(new ApiModule());
+  }
+
+  public static void setFailOnUnknownProperties(boolean failOnUnknownProperties) {
+    MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, failOnUnknownProperties);
   }
 
   /**

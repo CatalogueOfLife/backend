@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
 
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 /**
  * Print to the graphviz dot format

@@ -6,8 +6,6 @@ import life.catalogue.parser.UnparsableException;
 
 import java.io.IOException;
 
-import org.gbif.dwc.terms.Term;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

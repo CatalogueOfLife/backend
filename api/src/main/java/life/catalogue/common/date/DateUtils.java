@@ -1,5 +1,7 @@
 package life.catalogue.common.date;
 
+import life.catalogue.common.io.Resources;
+
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -9,11 +11,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
-
-import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.io.Resources;
-import life.catalogue.common.io.TabReader;
-import life.catalogue.common.io.UTF8IoUtils;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;

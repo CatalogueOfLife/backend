@@ -3,6 +3,8 @@ package life.catalogue.api.event;
 import life.catalogue.api.model.User;
 
 public class UserChanged extends EntityChanged<Integer, User> {
+  public UserChanged() {
+  }
 
   private UserChanged(EventType type, Integer key, User obj, User old, int user) {
     super(type, key, obj, old, user, User.class);

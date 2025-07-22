@@ -2,6 +2,8 @@ package life.catalogue.db;
 
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import jakarta.validation.constraints.NotNull;
 
 public class PgDbConfig {
@@ -13,7 +15,10 @@ public class PgDbConfig {
   public String user = "postgres";
   
   public String password;
-  
+
+  @Nullable
+  public String applicationName;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

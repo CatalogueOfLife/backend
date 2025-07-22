@@ -9,12 +9,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Utility class to read files and streams into various data structures.

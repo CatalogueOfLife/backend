@@ -4,10 +4,10 @@ import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.search.QuerySearchRequest;
 import life.catalogue.db.Searchable;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
-
-import java.util.List;
 
 public interface ParserConfigMapper extends Searchable<ParserConfig, QuerySearchRequest> {
 

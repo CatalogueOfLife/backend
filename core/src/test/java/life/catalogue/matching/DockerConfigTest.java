@@ -1,17 +1,14 @@
 package life.catalogue.matching;
 
-import com.github.dockerjava.api.model.Info;
-
 import life.catalogue.common.lang.Exceptions;
+
+import java.net.UnknownHostException;
 
 import org.junit.Test;
 
-import jakarta.ws.rs.ProcessingException;
+import com.github.dockerjava.api.model.Info;
 
-import java.net.UnknownHostException;
-import java.util.Optional;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 public class DockerConfigTest {
 

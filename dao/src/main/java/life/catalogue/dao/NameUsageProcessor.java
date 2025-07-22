@@ -9,6 +9,7 @@ import life.catalogue.cache.UsageCache;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;

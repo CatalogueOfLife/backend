@@ -254,6 +254,27 @@ public class ReferenceFactoryTest {
     assertEquals("B.", a.getGiven());
     assertNull(a.getNonDroppingParticle());
     assertEquals("Ingole", a.getFamily());
+
+    // single author with comma
+    // https://github.com/CatalogueOfLife/backend/issues/1406
+    authors = ReferenceFactory.parseAuthors("Graf von Attems, C. M. T.", issues);
+    assertEquals(1, authors.length);
+
+    authors = ReferenceFactory.parseAuthors("von Attems, C. M. T.", issues);
+    assertEquals(1, authors.length);
+
+    authors = ReferenceFactory.parseAuthors("Attems, C. M. T. von", issues);
+    assertEquals(1, authors.length);
+    assertEquals("Attems, C. M. T. von", authors[0].toString());
+
+    authors = ReferenceFactory.parseAuthors("Attems, C. M. T. Graf von", issues);
+    assertEquals(1, authors.length);
+    a = authors[0];
+    assertEquals("Attems, C. M. T. Graf von", a.toString());
+    assertNull(a.getGiven());
+    assertNull(a.getNonDroppingParticle());
+    assertEquals("Attems, C. M. T. Graf von", a.getFamily());
+
   }
 
   @Test

@@ -2,12 +2,6 @@ package life.catalogue.dw.jersey.exception;
 
 import java.util.Set;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
-
 import org.glassfish.jersey.server.model.Invocable;
 
 import com.google.common.base.Joiner;
@@ -16,6 +10,11 @@ import com.google.common.collect.ImmutableList;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import io.dropwizard.jersey.validation.ConstraintMessage;
 import io.dropwizard.jersey.validation.JerseyViolationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 /**
  * Converts a JerseyViolationException into a http 400 or 422 if its a request based violation.

@@ -1,55 +1,74 @@
 package life.catalogue.dao;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.search.NameUsageSearchParameter;
+import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.*;
 import life.catalogue.db.NameProcessable;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.printer.JsonTreePrinter;
+import life.catalogue.printer.PrinterFactory;
 
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.util.RankUtils;
+
+import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.Rank;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.annotations.VisibleForTesting;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
+import jakarta.validation.Validator;
 
 public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonCounter {
   private static final Logger LOG = LoggerFactory.getLogger(TaxonDao.class);
   private static final Pattern TAG = Pattern.compile("(?<!<)([ib])>(.+)</\\1(?!>)");
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
+  private final NameUsageSearchService searchService;
+  private final MetricsDao metricsDao;
+  private final TaxonCounter esCounter = new TaxonCounter() {
+    @Override
+    public int count(DSID<String> key, Rank countRank) {
+      if (searchService == null) return 1; // should be in tests only
+      var req = new NameUsageSearchRequest();
+      req.setDatasetFilter(key.getDatasetKey());
+      req.addFilter(NameUsageSearchParameter.TAXON_ID, key.getId());
+      req.addFilter(NameUsageSearchParameter.RANK, countRank);
+      req.addFilter(NameUsageSearchParameter.STATUS, TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      var resp = searchService.search(req, new Page(0,0));
+      return resp.getTotal();
+    }
+  };
 
   /**
    * Warn: you must set a sector dao manually before using the TaxonDao.
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
-  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, NameUsageIndexService indexService, Validator validator) {
+  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, MetricsDao metricsDao, NameUsageIndexService indexService, NameUsageSearchService searchService, Validator validator) {
     super(Taxon.class, TaxonMapper.class, factory, nameDao, indexService, validator);
+    this.searchService = searchService;
+    this.metricsDao = metricsDao;
   }
 
   // dependency loop :( so cant populate this in the constructor
@@ -74,6 +93,30 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
    */
   public static void copyTaxon(SqlSession session, final Taxon t, final DSID<String> target, int user, Set<EntityType> include) {
     CopyUtil.copyUsage(session, t, target, user, include, TaxonDao::devNull, TaxonDao::devNull);
+  }
+
+  /**
+   * Updates the primary key of a usage and all foreign keys pointing to the (accepted) taxon.
+   * Make sure the session is not in auto commit mode as we need to run it all in a transaction with deferred constraints
+   *
+   * @param key usage key to change
+   * @param newID the new identifier for the usage
+   * @param isSynonym flag to indicate the usage is a synonym and thus has no foreign keys that need to be updated.
+   * @param user making the change
+   * @param session to do the change under. Make sure it is not in auto commit mode
+   */
+  public static void changeUsageID(DSID<String> key, String newID, boolean isSynonym, int user, SqlSession session) {
+    LOG.debug("Change {} ID from {} to {}", isSynonym ? "synonym" : "taxon", key, newID);
+    if (!isSynonym) {
+      for (var tp : TaxonProcessable.MAPPERS) {
+        if (!tp.equals(VerbatimSourceMapper.class)) { // we do this one below also for synonyms
+          session.getMapper(tp).updateTaxonID(key, newID, user);
+        }
+      }
+      session.getMapper(NameUsageMapper.class).updateParentIds(key.getDatasetKey(), key.getId(), newID, null, user);
+    }
+    // the actual PK change
+    session.getMapper(NameUsageMapper.class).updateId(key, newID, user);
   }
 
   /**
@@ -186,7 +229,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
   }
   private List<SimpleName> classificationSimple(DSID<String> key, SqlSession session) {
-    if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isMutable()) {
+    if (!DatasetInfoCache.CACHE.info(key.getDatasetKey()).isProject()) {
       var m = session.getMapper(TaxonMetricsMapper.class).get(key);
       if (m == null) {
         LOG.warn("Missing taxon metrics for {}", key);
@@ -236,7 +279,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     }
     UsageInfo info = new UsageInfo(usage);
     fillUsageInfo(session, info, null, true, true, true, true, true, true, true,
-      true, true, true, true, true, true, true);
+      true, true, true, true, true, false, true, true);
     return info;
   }
 
@@ -266,10 +309,11 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
                             boolean loadProperties,
                             boolean loadConceptRelations,
                             boolean loadSpeciesInteractions,
+                            boolean loadEstimates,
                             boolean loadDecisions,
                             boolean loadSectorModes
                             ) {
-    var usage = info.getUsage();
+    final var usage = info.getUsage();
     final boolean isTaxon = usage.isTaxon();
     // we don't expect too many different sectors to show up, so lets fetch them as we go and reuse them
     // sectors only exist in projects and releases anyways
@@ -317,6 +361,9 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         var vsm = session.getMapper(VerbatimSourceMapper.class);
         var v = vsm.getByUsage(usage);
         info.setSource(vsm.addSources(v));
+      }
+      if (usage.getVerbatimKey() != null) {
+        info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));
       }
     }
 
@@ -475,6 +522,11 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
           addSectorMode(r, sectorModes, sm);
         });
       }
+
+      if (loadEstimates) {
+        var mapper = session.getMapper(EstimateMapper.class);
+        //TODO: see https://github.com/CatalogueOfLife/backend/issues/1412
+      }
     }
 
     // make sure we did not add null by accident
@@ -494,6 +546,15 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         addSectorMode(r, sectorModes, sm);
         cleanReference(r);
       });
+
+      // copy over into full reference the details and link
+      info.setPublishedIn(info.getReferences().getOrDefault(usage.getName().getPublishedInId(), null));
+      if (info.getPublishedIn() != null && info.getUsage().getName().getPublishedInPage() != null) {
+        info.getPublishedIn().setPage(info.getUsage().getName().getPublishedInPage());
+      }
+      if (info.getPublishedIn() != null && info.getUsage().getName().getPublishedInPageLink() != null) {
+        info.getPublishedIn().getCsl().setURL(info.getUsage().getName().getPublishedInPageLink());
+      }
     }
 
     if (!nameIds.isEmpty()) {
@@ -702,5 +763,43 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   private static String devNull(String r) {
     return null;
   }
-  
+
+  public JsonTreePrinter childrenBreakdownPrinter(int datasetKey, String id, Writer writer) {
+    var key = DSID.of(datasetKey, id);
+    var tax = getSimpleOr404(key);
+    var rank = tax.getRank();
+    // lookup lowest concrete parent rank or default to kingdom
+    if (rank.otherOrUnranked()) {
+      rank = classificationSimple(key).stream()
+        .map(SimpleName::getRank)
+        .filter(Rank::notOtherOrUnranked)
+        .findFirst().orElse(Rank.DOMAIN);
+    }
+    if (Rank.GENUS.higherOrEqualsTo(rank)) {
+      throw new NotFoundException("Breakdown only available for suprageneric names, not " + tax);
+    }
+    // figure out the next lower 2 linnean ranks to breakdown to
+    Set<Rank> ranks = new HashSet<>();
+    var nextRank = RankUtils.nextLowerLinneanRank(rank);
+    ranks.add(nextRank);
+    // for families and alike just show the genera and stop at the first level
+    if (nextRank != Rank.GENUS) {
+      ranks.add(RankUtils.nextLowerLinneanRank(nextRank));
+    }
+    var ttp = TreeTraversalParameter.dataset(datasetKey);
+    ttp.setTaxonID(id);
+    ttp.setSynonyms(false);
+    ttp.setLowestRank(RankUtils.lowestRank(ranks));
+
+    // we need to count differently for projects than other datasets with taxon metrics
+    TaxonCounter taxonCounter;
+    if (DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT) {
+      // use elastic to do project counts
+      taxonCounter = esCounter;
+    } else {
+      taxonCounter = metricsDao;
+    }
+
+    return PrinterFactory.dataset(JsonTreePrinter.class, ttp, ranks, null, Rank.SPECIES, taxonCounter, factory, writer);
+  }
 }

@@ -1,17 +1,17 @@
 package life.catalogue.matching.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.io.InputStream;
-
-import lombok.extern.slf4j.Slf4j;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+import lombok.extern.slf4j.Slf4j;
 
 /** Utility class knowing the url layout of rs.gbif.org to access authority and dictionary files. */
 @Service
@@ -40,6 +40,11 @@ public class Dictionaries {
    * @throws IOException If an I/O error occurs.
    */
   public InputStream getDictionaryInputStream(String domain, String filename) throws IOException {
+
+    if (dictionaryPath.endsWith("/")) {
+      dictionaryPath = dictionaryPath.substring(0, dictionaryPath.length() - 1);
+    }
+
     String filePath = String.join("/", dictionaryPath, domain, filename);
 
     if (!dictionaryPath.startsWith("http")) {

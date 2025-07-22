@@ -3,9 +3,7 @@ package life.catalogue.matching;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
 import jakarta.validation.constraints.NotNull;

@@ -1,6 +1,7 @@
 package life.catalogue.csv;
 
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.collection.MapUtils;
@@ -84,16 +85,7 @@ public class DwcaReader extends CsvReader {
   
   private DwcaReader(Path folder) throws IOException {
     super(folder, "dwc", "dwca");
-    detectMappedClassification(ColdpTerm.Taxon, ImmutableMap.<Term, Rank>builder()
-                                                            .put(DwcTerm.kingdom, Rank.KINGDOM)
-                                                            .put(DwcTerm.phylum, Rank.PHYLUM)
-                                                            .put(DwcTerm.class_, Rank.CLASS)
-                                                            .put(DwcTerm.order, Rank.ORDER)
-                                                            .put(DwcTerm.family, Rank.FAMILY)
-                                                            .put(DwcTerm.genus, Rank.GENUS)
-                                                            .put(DwcTerm.subgenus, Rank.SUBGENUS)
-                                                            .build()
-    );
+    detectMappedClassification(ColdpTerm.Taxon, RankUtils.RANK2DWC.inverse());
   }
   
   public static DwcaReader from(Path folder) throws IOException {
@@ -203,6 +195,14 @@ public class DwcaReader extends CsvReader {
   private void buildSchema(XMLStreamReader2 parser, boolean core) throws XMLStreamException, IOException {
     // rowType
     final Term rowType = VocabularyUtils.TF.findClassTerm(attr(parser, "rowType"));
+    if (rowType == null) {
+      if (core) {
+        throw new IllegalArgumentException("core rowType missing");
+      } else {
+        LOG.warn("No extension rowType found! Ignore");
+        return;
+      }
+    }
     if (core) {
       coreRowType = rowType;
     }
@@ -308,7 +308,7 @@ public class DwcaReader extends CsvReader {
     }
     // assert we got at least one file
     if (files.isEmpty()) {
-      throw new IllegalArgumentException("at least one file location must be given for " + rowType);
+      throw new IllegalArgumentException("at least one existing file location must be given for " + rowType);
     }
 
     // final encoding

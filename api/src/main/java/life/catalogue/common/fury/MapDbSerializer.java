@@ -1,18 +1,12 @@
 package life.catalogue.common.fury;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-import com.esotericsoftware.kryo.util.Pool;
+import java.io.IOException;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.mapdb.DataIO;
 import org.mapdb.DataInput2;
 import org.mapdb.DataOutput2;
 import org.mapdb.serializer.GroupSerializerObjectArray;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 
 /**
  * A mapDB serializer that uses fury under the hood to quickly serialize objects into the mapdb data output/input.

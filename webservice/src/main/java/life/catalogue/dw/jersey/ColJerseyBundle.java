@@ -2,6 +2,7 @@ package life.catalogue.dw.jersey;
 
 import life.catalogue.WsServerConfig;
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dw.jersey.exception.IllegalArgumentExceptionMapper;
@@ -11,8 +12,6 @@ import life.catalogue.dw.jersey.writers.BufferedImageBodyWriter;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 import io.dropwizard.core.ConfiguredBundle;
 import io.dropwizard.core.setup.Bootstrap;
 import io.dropwizard.core.setup.Environment;
@@ -20,7 +19,7 @@ import io.dropwizard.core.setup.Environment;
 /**
  * Various custom jersey providers bundled together for CoL.
  */
-public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
+public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig>, DatasetListener {
 
   private DatasetKeyRewriteFilter lrFilter;
   private CacheControlResponseFilter ccFilter;
@@ -42,8 +41,8 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     env.jersey().register(lrFilter);
     ccFilter = new CacheControlResponseFilter();
     env.jersey().register(ccFilter);
-    env.jersey().register(new DeprecatedWarningResponseFilter(cfg.support, cfg.sunset));
-    env.jersey().register(new DelayRequestFilter(cfg.legacyDelay));
+    env.jersey().register(new DeprecatedWarningResponseFilter(cfg.legacy));
+    env.jersey().register(new DelayRequestFilter(cfg.legacy.delay));
 
     // exception mappers via @Provides
     env.jersey().packages(IllegalArgumentExceptionMapper.class.getPackage().getName());
@@ -61,7 +60,7 @@ public class ColJerseyBundle implements ConfiguredBundle<WsServerConfig> {
     return cache;
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged d){
     if (d.obj!=null && d.obj.getOrigin().isRelease()) {
       if (d.obj.getSourceKey() != null) {

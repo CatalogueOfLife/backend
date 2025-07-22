@@ -1,22 +1,24 @@
 package life.catalogue.matching.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import life.catalogue.matching.model.ExternalID;
 import life.catalogue.matching.service.MatchingService;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * ID lookup services, largely for debug purposes to check identifiers
- * have been indexed.
+ * ID lookup services, largely for debug purposes to check that identifiers
+ * have been indexed and linked to the main index.
  */
 @RestController
 @Slf4j

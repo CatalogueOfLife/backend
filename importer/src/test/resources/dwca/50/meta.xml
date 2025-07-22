@@ -20,6 +20,8 @@
     <field index="2" term="http://rs.gbif.org/terms/1.0/isMarine"/>
     <field index="3" term="http://rs.gbif.org/terms/1.0/isTerrestrial"/>
     <field index="4" term="http://rs.gbif.org/terms/1.0/livingPeriod"/>
+    <field index="5" term="http://rs.gbif.org/terms/1.0/massInGrams"/>
+    <field default="Karl (2025). Very important article" term="http://purl.org/dc/terms/source"/>
 
 </extension>
 </archive>

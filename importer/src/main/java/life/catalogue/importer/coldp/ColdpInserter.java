@@ -1,6 +1,8 @@
 package life.catalogue.importer.coldp;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.Treatment;
+import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.InputStreamUtils;
@@ -233,14 +235,14 @@ public class ColdpInserter extends NeoCsvInserter {
           nu.treatment = t;
           store.usages().update(nu);
         } else {
-          v.addIssue(Issue.TAXON_ID_INVALID);
+          v.add(Issue.TAXON_ID_INVALID);
         }
       } else {
-        v.addIssue(Issue.UNPARSABLE_TREATMENT);
+        v.add(Issue.UNPARSABLE_TREATMENT);
       }
     } catch (IOException | RuntimeException e) {
       LOG.warn("Failed to read treatment {}", e.getMessage(), e);
-      v.addIssue(Issue.UNPARSABLE_TREATMENT);
+      v.add(Issue.UNPARSABLE_TREATMENT);
     }
     store.put(v);
   }

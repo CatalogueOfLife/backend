@@ -119,7 +119,7 @@ public class InitCmd extends AbstractPromptCmd {
     if (cfg.es != null) {
       final var index = cfg.es.nameUsage;
       final String indexAlias = cfg.es.nameUsage.name;
-      final String indexToday = IndexCmd.indexNameToday();
+      final String indexToday = IndexCmd.indexNameToday(cfg.es);
       LOG.info("Create new elasticsearch index {} with alias {}", indexToday, indexAlias);
       try (RestClient client = new EsClientFactory(cfg.es).createClient()) {
         if (EsUtil.indexExists(client, index.name)) {

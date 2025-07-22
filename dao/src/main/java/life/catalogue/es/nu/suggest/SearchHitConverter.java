@@ -22,12 +22,18 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
   private static final Logger LOG = LoggerFactory.getLogger(SearchHitConverter.class);
 
   NameUsageSuggestion createSuggestion(SearchHit<EsNameUsage> hit) {
+    EsNameUsage doc = hit.getSource();
     NameUsageSuggestion suggestion = new NameUsageSuggestion();
     suggestion.setScore(hit.getScore());
-    EsNameUsage doc = hit.getSource();
+    suggestion.setMatch(doc.getScientificName());
+    suggestion.setUsageId(doc.getUsageId());
+    suggestion.setNameId(doc.getNameId());
+    suggestion.setGroup(doc.getGroup());
+    suggestion.setNomCode(doc.getNomCode());
+    suggestion.setRank(doc.getRank());
+    suggestion.setStatus(doc.getStatus());
     if (doc.getStatus() != null && doc.getStatus().isSynonym()) { // a synonym
-      suggestion.setMatch(doc.getScientificName());
-      suggestion.setContext(doc.getAcceptedName());
+      suggestion.setAcceptedName(doc.getAcceptedName());
       if (doc.getClassificationIds() == null || doc.getClassificationIds().size() < 2) {
         // That's corrupt data but let's not make the suggestion service trip over it
         LOG.warn("Missing classification for synonym {} {}", doc.getScientificName(), doc.getUsageId());
@@ -35,35 +41,38 @@ class SearchHitConverter implements UpwardConverter<SearchHit<EsNameUsage>, Name
         // the first entry is the synonym itself, the 2nd the accepted name
         suggestion.setAcceptedUsageId(doc.getClassificationIds().get(doc.getClassificationIds().size() - 2));
       }
-    } else {
-      suggestion.setMatch(doc.getScientificName());
-      if (doc.getClassification() == null) {
-        // That's corrupt data but let's not make the suggestion service trip over it
-        LOG.warn("Missing classification for {} {}", doc.getScientificName(), doc.getUsageId());
-      } else if (doc.getClassification().size() > 1) { // not a kingdom
-        EsMonomial parent = findFirstAboveGenus(doc.getClassification());
-        if (parent != null) {
-          suggestion.setContext(parent.getName());
-        }
+    }
+    // figure out best classification context. Aim at family if possible
+    if (doc.getClassification() == null) {
+      // That's corrupt data but let's not make the suggestion service trip over it
+      LOG.warn("Missing classification for {} {}", doc.getScientificName(), doc.getUsageId());
+    } else if (doc.getClassification().size() > 1) { // not a kingdom
+      EsMonomial parent = findContext(doc.getClassification());
+      if (parent != null) {
+        suggestion.setContext(parent.getName());
       }
     }
-    suggestion.setUsageId(doc.getUsageId());
-    suggestion.setNomCode(doc.getNomCode());
-    suggestion.setRank(doc.getRank());
-    suggestion.setStatus(doc.getStatus());
-    suggestion.setGroup(doc.getGroup());
     return suggestion;
   }
 
-  EsMonomial findFirstAboveGenus(List<EsMonomial> classification) {
+  EsMonomial findContext(List<EsMonomial> classification) {
+    EsMonomial best = null;
     // Iterate in reverse order, start from second last
     ListIterator<EsMonomial> li = classification.listIterator(classification.size()-1);
     while(li.hasPrevious()) {
       EsMonomial mono = li.previous();
-      if (mono.getRank() == null || mono.getRank().higherThan(Rank.GENUS)) {
+      if (mono.getRank() == Rank.FAMILY) {
         return mono;
       }
+      if (best == null) {
+        best = mono;
+      } else if (mono.getRank() != null && (
+            best.getRank() == null ||
+            Rank.GENUS.higherOrEqualsTo(best.getRank()) && mono.getRank().higherThan(Rank.GENUS)
+      )) {
+        best = mono;
+      }
     }
-    return null;
+    return best;
   }
 }

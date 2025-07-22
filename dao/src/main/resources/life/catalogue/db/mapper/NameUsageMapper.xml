@@ -851,6 +851,9 @@
     <if test="!synonyms">
       AND NOT is_synonym(status)
     </if>
+    <if test="minLength != null">
+      AND length(id) >= #{minLength}
+    </if>
   </select>
 
   <delete id="delete" parameterType="map">
@@ -902,6 +905,16 @@
     UPDATE name_usage
     SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
+  <update id="updateId" parameterType="map">
+    UPDATE name_usage SET id=#{newID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE name_usage SET parent_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND parent_id=#{key.id}
   </update>
 
 </mapper>

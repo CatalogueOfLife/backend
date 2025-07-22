@@ -1,18 +1,18 @@
 package life.catalogue.common.io;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CompressionUtilTest {
 

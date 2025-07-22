@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
@@ -37,8 +38,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 
 /**
  * Class to listen to dataset changes and act if a COL release was changed from private to public.
@@ -47,7 +46,7 @@ import com.google.common.eventbus.Subscribe;
  *  - inserts deleted ids from the reports into the names archive
  *  - removes resurrected ids from the names archive
  */
-public class PublicReleaseListener {
+public class PublicReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublicReleaseListener.class);
 
   private final ReleaseConfig cfg;
@@ -70,7 +69,7 @@ public class PublicReleaseListener {
     this.archiver = new NameUsageArchiver(factory);
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
       && event.obj.getOrigin().isRelease()
@@ -83,12 +82,15 @@ public class PublicReleaseListener {
         doiService.publishSilently(event.obj.getDoi());
       }
 
-      // COL specifics, for now we do not issue DOI to XCOL sources or provide prepared downloads
-      if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
-        LOG.info("Publish COL release specifics");
-        publishColSourceDois(event.obj);
-        updateColDoiUrls(event.obj);
+      // COL specifics
+      if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin().isRelease()) {
+        LOG.info("Publish COL {} specifics", event.obj.getOrigin());
         copyExportsToColDownload(event.obj, true);
+        // for now we do not issue DOIs to XCOL sources
+        if (event.obj.getOrigin() == DatasetOrigin.RELEASE) {
+          publishColSourceDois(event.obj);
+          updateColDoiUrls(event.obj);
+        }
       }
 
       // When a release gets published we need to modify the projects name archive:
@@ -115,8 +117,9 @@ public class PublicReleaseListener {
     LOG.debug("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
-    try {
-      for (Dataset d : dao.listReleaseSources(release.getKey(), false)) {
+    try (SqlSession session = factory.openSession()) {
+      var dsm = session.getMapper(DatasetSourceMapper.class);
+      for (Dataset d : dsm.listReleaseSourcesSimple(release.getKey(), false)) {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {
@@ -203,16 +206,20 @@ public class PublicReleaseListener {
       }
       if (symLinkLatest && dataset.getAttempt() != null) {
         try {
-          // set latest_logs -> /srv/releases/3/50
+          // set latest_logs -> /mnt/auto/col/releases/3/410
           File logs = cfg.reportDir(projectKey, dataset.getAttempt());
-          File symlink = new File(cfg.colDownloadDir, "latest_logs");
+          File symlink = new File(cfg.colDownloadDir, prefix(dataset) + "latest_logs");
           PathUtils.symlink(symlink, logs);
         } catch (IOException e) {
-          LOG.error("Failed to symlink latest release logs", e);
+          LOG.error("Failed to symlink latest {} logs", dataset.getOrigin(), e);
         }
       }
       LOG.info("Copied {} COL exports to downloads at {}", done.size(), cfg.colDownloadDir);
     }
+  }
+
+  private static String prefix(Dataset dataset) {
+    return dataset.getOrigin() == DatasetOrigin.XRELEASE ? "xr_" : "";
   }
 
   public void copyExportToColDownload(Dataset dataset, DataFormat df, UUID exportKey, boolean symLinkLatest) {
@@ -223,7 +230,7 @@ public class PublicReleaseListener {
         LOG.info("Copy COL {} export {} to {}", df, exportKey, target);
         FileUtils.copyFile(source, target);
         if (symLinkLatest) {
-          File symlink = colLatestFile(cfg.colDownloadDir, df);
+          File symlink = colLatestFile(cfg.colDownloadDir, dataset, df);
           LOG.info("Symlink COL {} export {} at {} to {}", df, exportKey, target, symlink);
           PathUtils.symlink(symlink, target);
         }
@@ -235,13 +242,13 @@ public class PublicReleaseListener {
     }
   }
 
-  public static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
+  private static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
     String iso = DateTimeFormatter.ISO_DATE.format(dataset.getIssued().getDate());
-    return new File(colDownloadDir, "monthly/" + iso + "_" + format.getFilename() + ".zip");
+    return new File(colDownloadDir, "monthly/" + iso + "_" + prefix(dataset) + format.getFilename() + ".zip");
   }
 
-  public static File colLatestFile(File colDownloadDir, DataFormat format) {
-    return new File(colDownloadDir, "latest_" + format.getFilename() + ".zip");
+  private static File colLatestFile(File colDownloadDir, Dataset dataset, DataFormat format) {
+    return new File(colDownloadDir, prefix(dataset) + "latest_" + format.getFilename() + ".zip");
   }
 
 }

@@ -1,15 +1,9 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IndexName;
 import life.catalogue.api.vocab.Datasets;
-import life.catalogue.api.vocab.MatchType;
 
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -24,6 +18,11 @@ public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNam
   @Test
   public void get() throws Exception {
     mapper().get(DSID.of(appleKey, "xxx"));
+  }
+
+  @Test
+  public void getCanonicalNidx() throws Exception {
+    mapper().getCanonicalNidx(DSID.of(appleKey, "xxx"));
   }
 
   @Test

@@ -26,12 +26,12 @@ public class ColdpRelationInserter extends RelationInserterBase {
       if (u.isSynonym()) {
         if (p != null) {
           if (!store.createSynonymRel(u.node, p)) {
-            v.addIssue(Issue.ACCEPTED_ID_INVALID);
+            v.add(Issue.ACCEPTED_ID_INVALID);
           }
         } else {
           // if we ain't got no idea of the accepted flag it
           // the orphan synonym usage will be removed later by the normalizer
-          v.addIssues(Issue.ACCEPTED_NAME_MISSING);
+          v.add(Issue.ACCEPTED_NAME_MISSING);
         }
 
       } else {

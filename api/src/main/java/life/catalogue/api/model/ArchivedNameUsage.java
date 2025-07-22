@@ -3,9 +3,6 @@ package life.catalogue.api.model;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Even though ArchivedNameUsage inherits from NameUsageBase, not all properties are persisted.
  * Especially there are no sector & verbatim keys and modified/created timestamps.

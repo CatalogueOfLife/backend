@@ -1,22 +1,21 @@
 package life.catalogue.jobs;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
-
-import org.apache.ibatis.session.SqlSessionFactory;
+import life.catalogue.event.EventBroker;
 
 import javax.annotation.Nullable;
+
+import org.apache.ibatis.session.SqlSessionFactory;
 
 public class ReindexSchedulerJob extends DatasetSchedulerJob {
   private final NameUsageSearchService nuService;
   private final NameUsageIndexService indexService;
-  private final EventBus bus;
+  private final EventBroker bus;
 
   /**
    * @param threshold the lowest percentage of names already matched that triggers a reindex.
@@ -24,7 +23,7 @@ public class ReindexSchedulerJob extends DatasetSchedulerJob {
    * @param bus event bus to send varnish cache flushes. If null no caches will be flushed
    */
   public ReindexSchedulerJob(int userKey, double threshold, SqlSessionFactory factory, JobExecutor exec, NameUsageSearchService nuService,
-                             NameUsageIndexService indexService, @Nullable EventBus bus) {
+                             NameUsageIndexService indexService, @Nullable EventBroker bus) {
     super(userKey, threshold, factory, exec);
     this.nuService = nuService;
     this.indexService = indexService;

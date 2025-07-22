@@ -22,9 +22,11 @@ public class ExportRequest {
   private TabularFormat tabFormat = TabularFormat.TSV;
   private boolean excel;
   private boolean extended;
+  // only relevant for simple dwc & coldp exports
+  private Boolean classification; // triggers a simple dwc tree export
+  private Boolean taxGroups;
+  // workflow
   private boolean force; // this makes sure we run a new export
-  private boolean addClassification; // non public option to trigger a simple dwc tree download
-  private boolean addTaxGroups; // non public option for simple downloads
 
   public ExportRequest() {
   }
@@ -66,20 +68,20 @@ public class ExportRequest {
     this.extended = extended;
   }
 
-  public boolean isAddClassification() {
-    return addClassification;
+  public Boolean isClassification() {
+    return classification;
   }
 
-  public void setAddClassification(boolean addClassification) {
-    this.addClassification = addClassification;
+  public void setClassification(Boolean classification) {
+    this.classification = classification;
   }
 
-  public boolean isAddTaxGroups() {
-    return addTaxGroups;
+  public Boolean isTaxGroups() {
+    return taxGroups;
   }
 
-  public void setAddTaxGroups(boolean addTaxGroups) {
-    this.addTaxGroups = addTaxGroups;
+  public void setTaxGroups(Boolean taxGroups) {
+    this.taxGroups = taxGroups;
   }
 
   public boolean isExcel() {
@@ -135,6 +137,7 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
+  @JsonIgnore
   public boolean isForce() {
     return force;
   }
@@ -144,22 +147,45 @@ public class ExportRequest {
   }
 
   /**
+   * @return true if the requested output requires ordered tree traversal.
+   * Typically when the full classification per row is required.
+   */
+  @JsonIgnore
+  public boolean isTreeRequest() {
+    return Boolean.TRUE.equals(classification) || Boolean.TRUE.equals(taxGroups);
+  }
+
+  /**
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
+  @JsonIgnore
   public boolean hasFilter() {
     return !synonyms || extinct!=null || bareNames || root!=null || minRank!=null;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ExportRequest)) return false;
+
     ExportRequest that = (ExportRequest) o;
-    return synonyms == that.synonyms && bareNames == that.bareNames && excel == that.excel && extended == that.extended && force == that.force && addClassification == that.addClassification && addTaxGroups == that.addTaxGroups && Objects.equals(datasetKey, that.datasetKey) && Objects.equals(root, that.root) && Objects.equals(extinct, that.extinct) && minRank == that.minRank && format == that.format && tabFormat == that.tabFormat;
+    return synonyms == that.synonyms &&
+      bareNames == that.bareNames &&
+      excel == that.excel &&
+      extended == that.extended &&
+      force == that.force &&
+      Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(root, that.root) &&
+      Objects.equals(extinct, that.extinct) &&
+      minRank == that.minRank &&
+      format == that.format &&
+      tabFormat == that.tabFormat &&
+      Objects.equals(classification, that.classification) &&
+      Objects.equals(taxGroups, that.taxGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, excel, extended, force, addClassification, addTaxGroups);
+    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, excel, extended, classification, taxGroups, force);
   }
 
   @Override

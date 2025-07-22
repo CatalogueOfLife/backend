@@ -3,6 +3,7 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.search.DecisionSearchRequest;
+import life.catalogue.api.search.FacetValue;
 
 import java.util.List;
 
@@ -50,4 +51,12 @@ public interface DecisionMapper extends BaseDecisionMapper<EditorialDecision, De
                                                   @Nullable @Param("subjectDatasetKey") Integer subjectDatasetKey,
                                                   @Param("limit") int limit);
 
+  List<FacetValue<?>> searchModeFacet(@Param("req") DecisionSearchRequest request);
+
+  class ModeValue extends FacetValue<EditorialDecision.Mode> {
+
+    public ModeValue(EditorialDecision.Mode value, long count) {
+      super(value, (int)count);
+    }
+  }
 }

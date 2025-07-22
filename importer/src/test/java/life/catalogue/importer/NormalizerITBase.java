@@ -33,8 +33,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -44,6 +42,9 @@ import org.neo4j.graphdb.*;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.*;
 
@@ -303,7 +304,7 @@ abstract class NormalizerITBase {
   public boolean hasIssues(VerbatimEntity ent, Issue... issues) {
     VerbatimRecord ic = store.getVerbatim(ent.getVerbatimKey());
     for (Issue is : issues) {
-      if (!ic.hasIssue(is))
+      if (!ic.contains(is))
         return false;
     }
     return true;

@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.dao.DatasetDao;
@@ -11,6 +12,7 @@ import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.NameMatchingRule;
@@ -24,8 +26,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import com.google.common.eventbus.EventBus;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -57,7 +57,7 @@ public abstract class ProjectBaseIT {
     TestConfigs cfg = TestConfigs.build();
     cfg.apiURI = null;
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
-    EventBus bus = mock(EventBus.class);
+    EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
@@ -67,7 +67,7 @@ public abstract class ProjectBaseIT {
     LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
     DoiUpdater doiUpdater = new DoiUpdater(SqlSessionFactoryRule.getSqlSessionFactory(), doiService, lrCache, converter);
     validator = Validation.buildDefaultValidatorFactory().getValidator();
-    dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.importer, cfg.gbif,
+    dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
       null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator
     );
     projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),

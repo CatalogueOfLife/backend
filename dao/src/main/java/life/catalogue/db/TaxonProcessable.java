@@ -30,4 +30,10 @@ public interface TaxonProcessable<T> extends TempNameUsageRelated {
 
   int deleteByTaxon(@Param("key") DSID<String> key);
 
+  /**
+   * Updates the taxonID of all associated entities that point to the given taxon.
+   * @param key the old taxonID to be updated
+   * @param newTaxonID
+   */
+  void updateTaxonID(@Param("key") DSID<String> key, @Param("newTaxonID") String newTaxonID, @Param("userKey") int userKey);
 }

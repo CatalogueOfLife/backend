@@ -1,18 +1,29 @@
 package life.catalogue.release;
 
-import java.net.URI;
-
 import life.catalogue.api.vocab.DatasetType;
 
-import life.catalogue.config.ReleaseConfig;
+import life.catalogue.common.util.YamlUtils;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.net.URI;
+
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+/**
+ * WARNING !!!
+ * These test make use of some production configurations and need to be adjusted if these change considerably!
+ */
 public class ReleaseConfigTest {
+
+  @Before
+  public void init() {
+    YamlUtils.setFailOnUnknownProperties(true);
+  }
 
   @Test
   public void testCfgBase() throws Exception {
