@@ -669,13 +669,14 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
       // try to also update the name - conditional checks within the subroutine
+      // this can hange the existing usage ID if the authorship changes !!!
       Name pn = updateName(null, nu.getName(), vs, upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
         // update name & usage vsKey
         // both name and usage can have a key to a verbatim source. Ideally they are the same
-        Integer uvsKey = vsm.getVSKeyByUsage(existingUsageKey);
+        Integer uvsKey = vsm.getVSKeyByUsage(existing);
         DSID<Integer> vsKey;
         if (uvsKey != null) {
           vsKey = DSID.of(targetDatasetKey, uvsKey);

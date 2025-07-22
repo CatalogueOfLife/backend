@@ -151,16 +151,18 @@ UPDATE name_usage SET verbatim_source_key=v.id
 FROM verbatim_source v
 WHERE name_usage.dataset_key=v.dataset_key AND name_usage.id=v.usage_id;
 
-WITH nvs AS (
-  SELECT distinct(n.dataset_key, n.id), n.dataset_key, n.id, u.verbatim_source_key 
-  FROM name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id;
-)
-UPDATE name SET verbatim_source_key=nvs.verbatim_source_key 
-FROM nvs
-WHERE name.dataset_key=nvs.dataset_key AND name.id=nvs.id;
+CREATE TABLE _tmp_nvs AS (
+  SELECT distinct on (n.dataset_key, n.id) n.dataset_key, n.id, u.verbatim_source_key 
+  FROM name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
+);
+CREATE INDEX ON _tmp_nvs (dataset_key,id);
+ANALYZE _tmp_nvs;
+UPDATE name n SET verbatim_source_key=vs.verbatim_source_key 
+ FROM _tmp_nvs vs 
+ WHERE n.dataset_key=vs.dataset_key AND n.id=vs.id;
+DROP TABLE _tmp_nvs;
 
 UPDATE type_material tm SET verbatim_source_key = n.verbatim_source_key 
-SELECT dataset_key, source_dataset_key, source_id, id as usage_id 
 FROM _tmp_holotypes h 
   JOIN name_usage u ON u.dataset_key=h.dataset_key AND h.usage_id=u.id
   JOIN name n ON n.dataset_key=h.dataset_key AND n.id=u.name_id
@@ -174,7 +176,7 @@ CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
 CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
 
 CREATE INDEX ON reference (dataset_key, verbatim_source_key);
-CREATE INDEX ON name (dataset_key, verbatim_source_key);
+ CREATE INDEX ON name (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
@@ -187,18 +189,18 @@ CREATE INDEX ON estimate (dataset_key, verbatim_source_key);
 CREATE INDEX ON media (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_property (dataset_key, verbatim_source_key);
 
-ALTER TABLE name ADD CONSTRAINT name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE estimate ADD CONSTRAINT estimate_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE media ADD CONSTRAINT media_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
-ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ ALTER TABLE name ADD CONSTRAINT name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE estimate ADD CONSTRAINT estimate_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE media ADD CONSTRAINT media_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
 
 
 DROP SEQUENCE tmp_verbatim_source_id_seq;

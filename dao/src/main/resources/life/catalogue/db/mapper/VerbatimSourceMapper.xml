@@ -92,8 +92,8 @@
     FROM verbatim_source v
     WHERE dataset_key = #{datasetKey};
 
-    INSERT INTO verbatim_source_secondary (verbatim_source_key,dataset_key,source_id,source_dataset_key)
-    SELECT v.verbatim_source_key,#{newDatasetKey}, source_id,source_dataset_key
+    INSERT INTO verbatim_source_secondary (verbatim_source_key,dataset_key,type,source_id,source_dataset_key)
+    SELECT v.verbatim_source_key,#{newDatasetKey}, type,source_id,source_dataset_key
     FROM verbatim_source_secondary v
     WHERE dataset_key = #{datasetKey}
   </insert>
