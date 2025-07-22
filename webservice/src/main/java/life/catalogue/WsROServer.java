@@ -281,7 +281,8 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(factory, tdao, txtrDao));
     j.register(new TreeResource(tdao, trDao));
-    j.register(new VerbatimResource());
+    j.register(new VerbatimResource(factory));
+    j.register(new VerbatimSourceResource(factory));
     j.register(new VernacularResource());
 
     // global resources

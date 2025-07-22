@@ -8,6 +8,8 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.LogicalOperator;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -42,7 +44,12 @@ public class VerbatimResource {
   
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(VerbatimResource.class);
-  
+  private final SqlSessionFactory factory;
+
+  public VerbatimResource(SqlSessionFactory factory) {
+    this.factory = factory;
+  }
+
   @GET
   public ResultPage<VerbatimRecord> list(@PathParam("key") int datasetKey,
                                          @QueryParam("type") List<Term> types,
@@ -51,14 +58,15 @@ public class VerbatimResource {
                                          @QueryParam("issue") List<Issue> issues,
                                          @QueryParam("q") String q,
                                          @Valid @BeanParam Page page,
-                                         @Context UriInfo uri,
-                                         @Context SqlSession session) {
+                                         @Context UriInfo uri) {
     Map<Term, String> termValues = termFilter(uri.getQueryParameters());
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return new ResultPage<>(page,
-        mapper.count(datasetKey, types, termValues, termOp, terms, issues, q),
-        mapper.list(datasetKey, types, termValues, termOp, terms, issues, q, page)
-    );
+    try (SqlSession session = factory.openSession()) {
+      VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+      return new ResultPage<>(page,
+          mapper.count(datasetKey, types, termValues, termOp, terms, issues, q),
+          mapper.list(datasetKey, types, termValues, termOp, terms, issues, q, page)
+      );
+    }
   }
   
   private Map<Term, String> termFilter(MultivaluedMap<String, String> filter) {
@@ -79,9 +87,11 @@ public class VerbatimResource {
   
   @GET
   @Path("{id}")
-  public VerbatimRecord get(@PathParam("key") int datasetKey, @PathParam("id") int id, @Context SqlSession session) {
-    VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
-    return mapper.get(DSID.of(datasetKey, id));
+  public VerbatimRecord get(@PathParam("key") int datasetKey, @PathParam("id") int id) {
+    try (SqlSession session = factory.openSession()) {
+      VerbatimRecordMapper mapper = session.getMapper(VerbatimRecordMapper.class);
+      return mapper.get(DSID.of(datasetKey, id));
+    }
   }
   
 }
