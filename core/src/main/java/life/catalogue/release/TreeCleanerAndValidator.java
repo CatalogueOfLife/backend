@@ -98,7 +98,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       public void end(ParentStack.SNC<XLinneanNameUsage> taxon) {
         if (taxon.usage.getRank().higherThan(Rank.SPECIES_AGGREGATE) && taxon.usage.numSpecies == 0) {
           LOG.debug("Flag taxon without species: {}", taxon.usage);
-          issueAdder.addIssue(taxon.usage.getVerbatimSourceKey(), taxon.usage.getId(), Issue.NO_SPECIES_INCLUDED);
+          issueAdder.addIssue(taxon.usage.getId(), Issue.NO_SPECIES_INCLUDED);
         }
       }
     });
@@ -196,7 +196,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {
-      issueAdder.addIssues(sn.getVerbatimSourceKey(), sn.getId(), issues.getIssues());
+      issueAdder.addIssues(sn.getId(), issues.getIssues());
       flagged.incrementAndGet();
     }
   }

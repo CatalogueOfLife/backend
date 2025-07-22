@@ -56,8 +56,12 @@ public class IssueAdder implements AutoCloseable {
   }
 
   public void addIssue(String usageID, Issue issue) {
+    addIssues(usageID, Set.of(issue));
+  }
+
+  public void addIssues(String usageID, Set<Issue> issues) {
     var vsKey = vsm.getVSKeyByUsage(ukey.id(usageID));
-    addIssue(vsKey, usageID, issue);
+    addIssues(vsKey, usageID, issues);
   }
 
   @Override
