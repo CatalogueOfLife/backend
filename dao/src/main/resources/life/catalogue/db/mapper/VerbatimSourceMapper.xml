@@ -25,7 +25,7 @@
   <sql id="PROPS">
     #{sectorKey},
     #{sourceId},
-    #{sourceEntity}::entitytype,
+    #{sourceEntity}::ENTITYTYPE,
     #{sourceDatasetKey},
     #{issues, typeHandler=life.catalogue.db.type.IssueSetTypeHandler}::ISSUE[]
   </sql>
@@ -61,6 +61,30 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE v.dataset_key = #{key.datasetKey} AND v.id = #{key.id}
+  </select>
+
+  <select id="list" resultMap="verbatimResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    <if test="secondarySourceKey != null || secondarySourceGroup != null">
+      JOIN verbatim_source_secondary vss ON vss.verbatim_source_key = v.id
+    </if>
+    WHERE v.dataset_key = #{key.datasetKey}
+    <if test="sourceDatasetKey != null">
+      AND v.source_dataset_key = #{sourceDatasetKey}
+    </if>
+    <if test="sectorKey != null">
+      AND v.sector_key = #{sectorKey}
+    </if>
+    <if test="sourceEntity != null">
+      AND v.source_entity = #{sourceEntity}::ENTITYTYPE
+    </if>
+    <if test="secondarySourceKey != null">
+      AND vss.source_dataset_key = #{secondarySourceKey}
+    </if>
+    <if test="secondarySourceGroup != null">
+      AND vss.type = #{secondarySourceGroup}::INFOGROUP
+    </if>
   </select>
 
   <select id="getByEntity" resultMap="verbatimResultMap">

@@ -2,12 +2,14 @@ package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.LogicalOperator;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.dwc.terms.Term;
@@ -37,6 +39,20 @@ public class VerbatimSourceResource {
 
   public VerbatimSourceResource(SqlSessionFactory factory) {
     this.factory = factory;
+  }
+
+  @GET
+  public List<VerbatimSource> list(@PathParam("key") int datasetKey,
+                                   @QueryParam("sourceDatasetKey") Integer sourceDatasetKey,
+                                   @QueryParam("sectorKey") Integer sectorKey,
+                                   @QueryParam("sourceEntity") EntityType sourceEntity,
+                                   @QueryParam("secondarySourceKey") Integer secondarySourceKey,
+                                   @QueryParam("secondarySourceGroup") InfoGroup secondarySourceGroup
+  ) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(VerbatimSourceMapper.class);
+      return mapper.list(datasetKey, sourceDatasetKey, sectorKey, sourceEntity, secondarySourceKey, secondarySourceGroup);
+    }
   }
 
   @GET

@@ -1350,6 +1350,9 @@ CREATE TABLE verbatim_source (
    PRIMARY KEY (dataset_key, id)
 ) PARTITION BY HASH (dataset_key);
 
+CREATE INDEX on verbatim_source (dataset_key, sector_key);
+CREATE INDEX on verbatim_source (dataset_key, source_entity);
+CREATE INDEX on verbatim_source (dataset_key, source_dataset_key);
 CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
 CREATE INDEX on verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
 
@@ -1364,6 +1367,7 @@ CREATE TABLE verbatim_source_secondary (
 
 CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
 CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, type);
 
 CREATE TABLE reference (
   id TEXT NOT NULL,

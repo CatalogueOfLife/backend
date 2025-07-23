@@ -3,11 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SecondarySource;
 import life.catalogue.api.model.VerbatimSource;
+import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +27,14 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   int getMaxID(@Param("datasetKey") int datasetKey);
 
   VerbatimSource get(@Param("key") DSID<Integer> key);
+
+  List<VerbatimSource> list(@Param("datasetKey") int datasetKey,
+                            @Param("sourceDatasetKey") Integer sourceDatasetKey,
+                            @Param("sectorKey") Integer sectorKey,
+                            @Param("sourceEntity") EntityType sourceEntity,
+                            @Param("secondarySourceKey") Integer secondarySourceKey,
+                            @Param("secondarySourceGroup") InfoGroup secondarySourceGroup
+  );
 
   default VerbatimSource getByUsage(@Param("key") DSID<String> key) {
     return getByEntity(key, "name_usage");
