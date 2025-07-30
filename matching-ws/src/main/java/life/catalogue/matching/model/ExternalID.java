@@ -1,5 +1,6 @@
 package life.catalogue.matching.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -30,6 +31,7 @@ public class ExternalID {
     private String parentID;
     @Schema(description = "The scientific name associated with the external identifier")
     private String scientificName;
+    @JsonIgnore private String canonicalName;
     @Schema(description = "The accepted taxon ID of the external identifier")
     private String acceptedTaxonID;
     @Schema(description = "The rank of the external identifier")

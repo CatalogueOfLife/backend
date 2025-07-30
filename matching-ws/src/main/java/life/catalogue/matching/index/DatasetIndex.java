@@ -623,6 +623,7 @@ public class DatasetIndex {
       .datasetKey(dataset.getDatasetKey())
       .datasetTitle(dataset.getTitle())
       .scientificName(doc.get(FIELD_SCIENTIFIC_NAME))
+      .canonicalName(doc.get(FIELD_CANONICAL_NAME))
       .rank(doc.get(FIELD_RANK))
       .parentID(doc.get(FIELD_PARENT_ID))
       .status(doc.get(FIELD_STATUS))
@@ -670,6 +671,7 @@ public class DatasetIndex {
               NameUsageMatch idMatch = fromDoc(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
               idMatch.getDiagnostics().setConfidence(100);
               idMatch.getDiagnostics().setMatchType(MatchType.EXACT);
+              idMatch.getDiagnostics().setMatchedID(toExternalID(identifierDoc, dataset));
               return idMatch;
             } else {
               log.warn("Cannot find usage {} in main lucene index after " +

@@ -150,6 +150,8 @@ public class NameUsageMatch implements RankNameResolver {
     List<NameUsageMatch> alternatives;
     @Schema(description = "A set of timings for the different steps of the match process")
     Map<String, Long> timings;
+    @Schema(description = "The ID match taxon. Present if the match is based on an external ID")
+    ExternalID matchedID;
 
     public MatchType getMatchType() {
       return matchType;

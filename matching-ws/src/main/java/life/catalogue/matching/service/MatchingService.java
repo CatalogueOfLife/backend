@@ -232,7 +232,8 @@ public class MatchingService {
   }
 
   /**
-   * Match an external ID to a name usage using .
+   * Match an external ID to a name usage using.
+   *
    * @param datasetID the dataset key
    * @param identifier the external ID to match
    * @return the list of matches
@@ -330,7 +331,7 @@ public class MatchingService {
         query.taxonID,
         MatchingIssue.TAXON_ID_NOT_FOUND,
         MatchingIssue.TAXON_MATCH_TAXON_ID_IGNORED
-        );
+      );
       timings.put("idMatchTaxonID", System.currentTimeMillis() - idMatchStart);
 
       log.debug(
@@ -401,12 +402,22 @@ public class MatchingService {
   /**
    * Check if the taxonID match is consistent with the scientific name match.
    * If not, add an issue to the diagnostics.
-   * @param idMatch
-   * @param sciNameMatch
+   *
+   * @param idMatch the match with ID
+   * @param sciNameMatch the match with scientific name
    */
   private void checkConsistencyWithClassificationMatch(NameUsageMatch idMatch, NameUsageMatch sciNameMatch) {
     if (isMatch(idMatch) && isMatch(sciNameMatch)) {
-      if (!Objects.equals(idMatch.getUsage().getKey(), sciNameMatch.getUsage().getKey())) {
+
+      // check if the usage keys are the same
+      boolean inconsistent = !Objects.equals(idMatch.getUsage().getKey(), sciNameMatch.getUsage().getKey());
+
+      // if it is a synonym check if the accepted usage is the same
+      if (inconsistent && sciNameMatch.getAcceptedUsage() != null){
+        inconsistent = !Objects.equals(idMatch.getUsage().getKey(), sciNameMatch.getAcceptedUsage().getKey());
+      }
+
+      if (inconsistent) {
         log.warn("Inconsistent match for taxonID[{}]: {} vs {}",
           idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), sciNameMatch.getUsage().getCanonicalName());
         idMatch.addMatchIssue(MatchingIssue.TAXON_MATCH_NAME_AND_ID_AMBIGUOUS);
@@ -427,7 +438,10 @@ public class MatchingService {
       try {
         ParsedName name = NameParsers.INSTANCE.parse(scientificName, rank, null);
         String canonicalName = name.canonicalNameMinimal();
-        if (!idMatch.getUsage().getCanonicalName().equalsIgnoreCase(canonicalName)) {
+
+        if (!idMatch.getUsage().getCanonicalName().equalsIgnoreCase(canonicalName) &&
+          !idMatch.getDiagnostics().getMatchedID().getCanonicalName().equalsIgnoreCase(canonicalName)
+        ) {
           log.warn("Inconsistent scientific name for taxonID[{}]: {} vs {}",
             idMatch.getUsage().getKey(), idMatch.getUsage().getCanonicalName(), scientificName);
           idMatch.addMatchIssue(MatchingIssue.SCIENTIFIC_NAME_AND_ID_INCONSISTENT);
