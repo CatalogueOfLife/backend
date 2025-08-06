@@ -1115,7 +1115,7 @@ public class MatchingService {
         ParsedName mpn = NameParsers.INSTANCE.parse(m.getUsage().getName(), m.getUsage().getRank(), null);
         var smn = ScientificName.wrap(mpn);
         // authorship comparison was requested!
-        Equality eq = authComp.compare(spn, smn);
+        Equality eq = authComp.compareAuthorsFirst(spn, smn);
         similarity = equality2Similarity(eq, factor);
         // small penalty if query has authorship, but match doesn't - excluding autonyms which should not have any authorship
         if (spn.hasAuthorship() && !smn.hasAuthorship() && !mpn.isAutonym()) {

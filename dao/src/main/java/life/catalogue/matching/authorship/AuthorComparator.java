@@ -11,6 +11,7 @@ import org.gbif.nameparser.api.NomCode;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -114,22 +115,38 @@ public class AuthorComparator {
    * Does a comparison of recombination and basionym authorship using the author compare method once for the recombination authorship and once for the basionym.
    */
   public Equality compare(ScientificName n1, ScientificName n2) {
-    Equality recomb = compare(n1.getCombinationAuthorship(), n2.getCombinationAuthorship());
+    return compare(n1, n2, this::compare);
+  }
+
+  /**
+   * Alternative to {@link #compare(ScientificName, ScientificName)} that places less weight on the year in the authorship comparison.
+   * This is used by GBIF matching algorithm.
+   */
+  public Equality compareAuthorsFirst(ScientificName n1, ScientificName n2) {
+    return compare(n1, n2, this::compareAuthorsFirst);
+  }
+
+  private Equality compare(
+    ScientificName n1,
+    ScientificName n2,
+    BiFunction<Authorship, Authorship, Equality> comparator
+  ) {
+    Equality recomb = comparator.apply(n1.getCombinationAuthorship(), n2.getCombinationAuthorship());
     if (recomb != Equality.UNKNOWN) {
-      // in case the recomb author differs or is the same we are done, no need for basionym authorship comparison
       return recomb;
     }
-    Equality original = compare(n1.getBasionymAuthorship(), n2.getBasionymAuthorship());
+
+    Equality original = comparator.apply(n1.getBasionymAuthorship(), n2.getBasionymAuthorship());
     if (original == Equality.UNKNOWN) {
-      // a common error is missing brackets, so if all is unknown we compare authorship across brackets and return a possible match
       Equality across = Equality.UNKNOWN;
       if (n1.getCombinationAuthorship().isEmpty()) {
-        across = compare(n1.getBasionymAuthorship(), n2.getCombinationAuthorship());
+        across = comparator.apply(n1.getBasionymAuthorship(), n2.getCombinationAuthorship());
       } else if (n1.getBasionymAuthorship().isEmpty()) {
-        across = compare(n1.getCombinationAuthorship(), n2.getBasionymAuthorship());
+        across = comparator.apply(n1.getCombinationAuthorship(), n2.getBasionymAuthorship());
       }
       return across == Equality.EQUAL ? Equality.EQUAL : Equality.UNKNOWN;
     }
+
     return recomb.and(original);
   }
 
