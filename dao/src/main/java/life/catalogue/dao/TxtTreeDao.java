@@ -111,15 +111,15 @@ public class TxtTreeDao {
 
     LOG.info("Insert tree with {} nodes by {} under parent {} ", tree.size(), user, parent);
     int counter = 0;
-    var docs = new ArrayList<NameUsageWrapper>();
+    final var docs = new ArrayList<NameUsageWrapper>();
     var typeNameRelations = new ArrayList<NameRelation>();
     for (SimpleTreeNode t : tree.getRoot()) {
       counter += insertTaxon(parent, t, 0, classification, code, user, typeNameRelations, docs);
     }
     // finally we can lookup related name ids and insert the relations
     insertNameRelations(datasetKey, typeNameRelations, code, user);
-    // push remaining docs to ES
-    if (docs.size() >= INDEX_BATCH_SIZE) {
+    // finally push remaining docs to ES
+    if (!docs.isEmpty()) {
       indexService.add(docs);
     }
 
@@ -209,7 +209,7 @@ public class TxtTreeDao {
    * @param code
    * @param user
    * @param typeNameRelations
-   * @param docs
+   * @param docs list of docs to submit to ES at some point
    * @return number of total inserts done
    */
   private int insertTaxon(Taxon parent, SimpleTreeNode t, int ordinal, LinkedList<SimpleName> classification, NomCode code, User user, ArrayList<NameRelation> typeNameRelations, List<NameUsageWrapper> docs) throws InterruptedException {
