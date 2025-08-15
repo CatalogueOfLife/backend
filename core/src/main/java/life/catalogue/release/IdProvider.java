@@ -57,7 +57,7 @@ import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
  *
  * 1) Generate a ReleasedIds view on all previous releases,
  *    keyed on their usage id and names index id (nxId).
- *    For each id only use the version from its latest release.
+ *    For each id only use the version from its earliest release.
  *    Include ALL ids, also deleted ones.
  *    Convert ids to their int representation to save memory and simplify comparison etc.
  *    Expose only properties needed for matching, i.e. id (int), nxId (int), status, parentID (int), ???
@@ -78,11 +78,11 @@ public class IdProvider {
   private final Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
+  private final ProjectReleaseConfig prCfg;
   private final ReleasedIds ids;
   private final Int2IntBiMap dataset2attempt = new Int2IntBiMap();
   private final Int2ObjectMap<Release> dataset2release = new Int2ObjectOpenHashMap<>();
-  private final List<Integer> ignoredReleases = new ArrayList<>();
-  private final IntList additionalReleases = new IntArrayList();
+  private final IntList additionalReleasesToLoad = new IntArrayList();
   private final AtomicInteger keySequence = new AtomicInteger();
   private final File reportDir;
   // id changes in this release
@@ -106,7 +106,9 @@ public class IdProvider {
       this.attempt = attempt;
     }
   }
-  public IdProvider(int projectKey, int mappedDatasetKey, DatasetOrigin origin, int attempt, int releaseDatasetKey, ReleaseConfig cfg, SqlSessionFactory factory) {
+  public IdProvider(int projectKey, int mappedDatasetKey, DatasetOrigin origin, int attempt, int releaseDatasetKey,
+                    ReleaseConfig cfg, ProjectReleaseConfig prCfg, SqlSessionFactory factory
+  ) {
     LOG.info("Setup ID provider for project {}, mapping dataset {}", projectKey, mappedDatasetKey);
     this.releaseDatasetKey = releaseDatasetKey;
     this.mappedDatasetKey = mappedDatasetKey;
@@ -115,6 +117,8 @@ public class IdProvider {
     this.attempt = attempt;
     this.factory = factory;
     this.cfg = cfg;
+    this.prCfg = prCfg;
+    if (prCfg.ignoredReleases == null) prCfg.ignoredReleases = new ArrayList<>(); // avoid NPEs down the line, simpler
     reportDir = cfg.reportDir(projectKey, attempt);
     reportDir.mkdirs();
     dataset2attempt.put(releaseDatasetKey, attempt);
@@ -357,20 +361,17 @@ public class IdProvider {
   @VisibleForTesting
   protected Integer loadReleaseAttempts() {
     Integer lrkey = null; // latest release key
-    if (cfg.ignoredReleases != null && cfg.ignoredReleases.containsKey(projectKey)) {
-      ignoredReleases.addAll(cfg.ignoredReleases.get(projectKey));
-    }
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
 
       for (DatasetOrigin o : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
-        var rkey = dm.latestRelease(projectKey, true, ignoredReleases, o);
+        var rkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, o);
         if (rkey != null) {
           if (o == origin) {
             lrkey = rkey;
           } else {
             LOG.info("Add previous {} {} to list of releases to load", o, rkey);
-            additionalReleases.add(rkey);
+            additionalReleasesToLoad.add(rkey);
           }
         }
       }
@@ -378,7 +379,7 @@ public class IdProvider {
       dm.listReleasesQuick(projectKey).forEach(d -> {
         dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
         if (d.getKey() != releaseDatasetKey) {
-          if (ignoredReleases.contains(d.getKey())) {
+          if (prCfg.ignoredReleases.contains(d.getKey())) {
             LOG.info("Configured to ignore release {}", d.getKey());
           } else {
             dataset2attempt.put(d.getKey(), d.getAttempt());
@@ -402,7 +403,7 @@ public class IdProvider {
   }
 
   /**
-   * Loads all ever issued identifiers for this project, preferring the latest version of any id.
+   * Loads all ever issued identifiers for this project, preferring the earliest version of any id.
    * It starts by loading the entire last public release and then adds on all archived names that have been used in earlier releases,
    * even if their dataset has been deleted by now.
    */
@@ -423,11 +424,12 @@ public class IdProvider {
       }
 
       // load additional releases if configured - used to read both regular and extended releases
-      for (var rk : additionalReleases) {
+      for (int rk : additionalReleasesToLoad) {
         final LoadStats stats = new LoadStats();
+        final var relOrigin = dataset2release.get(rk).origin;
         PgUtils.consume(
           () -> session.getMapper(NameUsageMapper.class).processNxIds(rk),
-          sn -> addReleaseId(rk, dataset2release.get(rk).origin, sn, stats)
+          sn -> addReleaseId(rk, relOrigin, sn, stats)
         );
         LOG.info("Read {} from past release {}. Total ids={}", stats, rk, ids.size());
       }

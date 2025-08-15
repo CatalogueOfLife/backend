@@ -54,9 +54,9 @@ public class IdProviderIT {
   private ReleaseConfig cfg;
 
 
-  public void init(ReleaseConfig cfg) throws IOException {
+  public void init(ReleaseConfig cfg, ProjectReleaseConfig prCfg) throws IOException {
     this.cfg = cfg;
-    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -76,7 +76,7 @@ public class IdProviderIT {
 
   @Test
   public void mapIds() throws Exception {
-    init(new ReleaseConfig());
+    init(new ReleaseConfig(), new ProjectReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
@@ -116,8 +116,9 @@ public class IdProviderIT {
   @Test
   public void ignoreLastRelease() throws Exception {
     var cfg = new ReleaseConfig();
-    cfg.ignoredReleases = Map.of(projectKey, List.of(13));
-    init(cfg);
+    var prCfg = new ProjectReleaseConfig();
+    prCfg.ignoredReleases = List.of(13);
+    init(cfg, prCfg);
 
     provider.mapIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {

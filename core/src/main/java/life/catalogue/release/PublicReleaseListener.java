@@ -103,11 +103,9 @@ public class PublicReleaseListener implements DatasetListener {
       }
 
       // generic hooks
-      if (cfg.actions != null && cfg.actions.containsKey(event.obj.getSourceKey())) {
-        for (var action : cfg.actions.get(event.obj.getSourceKey())) {
-          if (action.onPublish) {
-            action.call(httpClient, event.obj);
-          }
+      if (cfg.onPublish != null && cfg.onPublish.containsKey(event.obj.getSourceKey())) {
+        for (var action : cfg.onPublish.get(event.obj.getSourceKey())) {
+          action.call(httpClient, event.obj);
         }
       }
     }

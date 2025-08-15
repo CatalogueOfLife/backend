@@ -26,10 +26,6 @@ public class ReleaseActionTest {
     var act = new ReleaseAction();
     act.method = "GET";
     act.url = "http://www.gbif.org/dataset/{key}";
-    act.only = DatasetOrigin.XRELEASE;
-    assertEquals(0, act.call(httpClient, d));
-
-    d.setOrigin(DatasetOrigin.XRELEASE);
     assertEquals(404, act.call(httpClient, d));
   }
 }

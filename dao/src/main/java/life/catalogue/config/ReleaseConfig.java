@@ -2,6 +2,7 @@ package life.catalogue.config;
 
 import java.io.File;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,12 +23,6 @@ public class ReleaseConfig {
 
   public boolean deleteOnError = true;
 
-  // project -> list of dataset keys of releases to ignore (e.g. they contain bad ids)
-  public Map<Integer, List<Integer>> ignoredReleases;
-
-  // project -> list of action hook URLs to be called after successful releases
-  public Map<Integer, List<ReleaseAction>> actions;
-
   @NotNull
   public File reportDir = new File("/tmp/col/release");
 
@@ -40,6 +35,10 @@ public class ReleaseConfig {
 
   // the COL download directory with monthly and annual subfolder
   public File colDownloadDir = new File("/tmp/col");
+
+  // project -> list of action hook URLs to be called once a release has been published
+  @NotNull
+  public Map<Integer, List<ReleaseAction>> onPublish = new HashMap<>();
 
   public static File reportDir(File reportRoot, int datasetKey, int attempt) {
     return new File(reportDir(reportRoot, datasetKey), String.valueOf(attempt));

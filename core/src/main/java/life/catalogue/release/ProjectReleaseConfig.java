@@ -1,9 +1,13 @@
 package life.catalogue.release;
 
+import jakarta.validation.constraints.NotNull;
+
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetType;
+import life.catalogue.config.ReleaseAction;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectReleaseConfig {
@@ -79,5 +83,13 @@ public class ProjectReleaseConfig {
    * If true a release will prepare exports for the entire release in all common formats.
    */
   public boolean prepareDownloads = false;
+
+  // list of dataset keys of releases to ignore (e.g. they contain bad ids)
+  @NotNull
+  public List<Integer> ignoredReleases = new ArrayList<>();
+
+  // list of action hook URLs to be called after successful releases
+  @NotNull
+  public List<ReleaseAction> actions = new ArrayList<>();
 
 }

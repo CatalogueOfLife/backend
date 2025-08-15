@@ -12,6 +12,8 @@ import life.catalogue.img.ImgConfig;
 
 import java.net.URI;
 
+import life.catalogue.release.ProjectReleaseConfig;
+
 import org.apache.commons.io.FileUtils;
 
 import com.google.common.io.Files;
@@ -25,6 +27,7 @@ public class TestConfigs implements ExporterConfig {
   public NormalizerConfig normalizer = new NormalizerConfig();
   public ImgConfig img = new ImgConfig();
   public ReleaseConfig release = new ReleaseConfig();
+  public ProjectReleaseConfig projectRelease = new ProjectReleaseConfig();
   public JobConfig job = new JobConfig();
   public GbifConfig gbif = new GbifConfig();
   public DoiConfig doi;

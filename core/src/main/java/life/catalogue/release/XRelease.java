@@ -180,7 +180,7 @@ public class XRelease extends ProjectRelease {
     copyData();
 
     // setup id generator
-    usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, ni, factory);
+    usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();

@@ -73,7 +73,7 @@ public class XReleaseBasicIT {
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, cfg.projectRelease, factory);
 
     EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);

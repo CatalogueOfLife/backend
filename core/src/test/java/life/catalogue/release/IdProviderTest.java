@@ -34,6 +34,7 @@ public class IdProviderTest {
   final int projectKey = dataRule.testData.key;
 
   ReleaseConfig cfg;
+  ProjectReleaseConfig prCfg;
   Map<Integer, List<SimpleNameWithNidx>> prevIdsByAttempt = new HashMap<>();
   List<SimpleNameWithNidx> testNames = new ArrayList<>();
 
@@ -41,6 +42,7 @@ public class IdProviderTest {
   @Before
   public void init() throws IOException {
     cfg = new ReleaseConfig();
+    prCfg = new ProjectReleaseConfig();
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -61,7 +63,9 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+      super(projectKey, projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1,
+        cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory()
+      );
     }
 
     @Override

@@ -30,31 +30,11 @@ public class ReleaseAction {
   public String url;
 
   /**
-   * If true the action will only be called when the release is being published
-   */
-  public boolean onPublish = false;
-
-  /**
-   * Filter for release origin, so the hook can only be applied to Releases or XReleases.
-   * If none id given it applies to all.
-   */
-  public DatasetOrigin only;
-
-  /**
    * Call the action URI and return the http response code.
    * Any exceptions are converted into a return code -1
    * If the origin or private status does not match the action is not executed and zero is returned instead
    */
   public int call(CloseableHttpClient client, Dataset release) {
-    if (onPublish && release.isPrivat()) {
-      LOG.info("Do not execute onPublish release action {} {}", method, url);
-      return 0;
-    }
-    if (only != null && only != release.getOrigin()) {
-      LOG.info("Do not execute {} only action {} {}", only, method, url);
-      return 0;
-    }
-
     URI uri = null;
     String x = null;
     try {

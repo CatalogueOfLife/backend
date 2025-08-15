@@ -88,6 +88,7 @@ public class ProjectRelease extends AbstractProjectCopy {
                  int baseReleaseOrProjectKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI,
                  CloseableHttpClient client, ExportManager exportManager,
                  DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
+    // this loads and validates already the project release config
     super(action, factory, diDao, dDao, indexService, validator, userKey, baseReleaseOrProjectKey, true, cfg.deleteOnError);
     this.cfg = cfg;
     this.doiCfg = doiCfg;
@@ -268,7 +269,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, factory);
+    IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
     idp.mapIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
@@ -427,16 +428,14 @@ public class ProjectRelease extends AbstractProjectCopy {
       }
     }
     // generic hooks
-    if (cfg.actions != null && cfg.actions.containsKey(projectKey)) {
+    if (prCfg.actions != null) {
       // reload dataset metadata
       final Dataset d;
       try (SqlSession session = factory.openSession(true)) {
         d = session.getMapper(DatasetMapper.class).get(newDatasetKey);
       }
-      for (var action : cfg.actions.get(projectKey)) {
-        if (!action.onPublish) {
-          action.call(client, d);
-        }
+      for (var action : prCfg.actions) {
+        action.call(client, d);
       }
     }
   }
