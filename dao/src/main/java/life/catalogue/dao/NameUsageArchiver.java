@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Service that builds the name usage archive for projects.
+ * All name usages of all public releases will be included in the archive.
+ *
  * If you want to rebuild an existing archive please manually delete the existing archive records first.
  * This guarantees that no existing archive is deleted or overwritten accidently by this tool.
  */
@@ -87,7 +89,7 @@ public class NameUsageArchiver {
 
       var anum = session.getMapper(ArchivedNameUsageMapper.class);
       LOG.info("Updating last release key of all archive records which still exist in release {} of project {}", releaseKey, projectKey);
-      int updated = anum.updateLastReleaseKey(projectKey, releaseKey);
+      int updated = anum.addReleaseKey(projectKey, releaseKey);
       LOG.info("Updated {} archive records which still exist in release {} of project {}", updated, releaseKey, projectKey);
 
       LOG.info("Copy missing archive records from release {} of project {}", releaseKey, projectKey);

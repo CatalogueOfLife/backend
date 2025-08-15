@@ -1256,15 +1256,13 @@ CREATE TABLE name_usage_archive (
   accepted SIMPLE_NAME,
   classification SIMPLE_NAME[],
   published_in TEXT,
-  first_release_key INTEGER,
-  last_release_key INTEGER,
+  release_keys INT[],
 
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key) REFERENCES dataset,
-  FOREIGN KEY (first_release_key) REFERENCES dataset,
-  FOREIGN KEY (last_release_key) REFERENCES dataset
+  FOREIGN KEY (dataset_key) REFERENCES dataset
 );
 
+CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
 
 CREATE TABLE parser_config (
   id TEXT PRIMARY KEY,

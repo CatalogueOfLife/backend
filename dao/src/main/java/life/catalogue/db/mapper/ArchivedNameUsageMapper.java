@@ -46,13 +46,13 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   );
 
   /**
-   * Sets the last_release_key to the given releaseKey
+   * Adds the release_key to the list of existing release keys
    * for all archived usages for a given project that still exist in the given release (based on the usage ID alone)
    * @param projectKey
    * @param releaseKey
    * @return number of updated archive records
    */
-  int updateLastReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
+  int addReleaseKey(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
    * Create new archive records for all usages in the given release
@@ -71,14 +71,23 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {
-    private int lastReleaseKey; // release datasetKey
+    private int[] releaseKeys; // release datasetKey
+
+    public int[] getReleaseKeys() {
+      return releaseKeys;
+    }
+
+    public void setReleaseKeys(int[] releaseKeys) {
+      this.releaseKeys = releaseKeys;
+    }
+
+    public int getFirstReleaseKey() {
+      return releaseKeys[0];
+    }
 
     public int getLastReleaseKey() {
-      return lastReleaseKey;
+      return releaseKeys[releaseKeys.length-1];
     }
 
-    public void setLastReleaseKey(int lastReleaseKey) {
-      this.lastReleaseKey = lastReleaseKey;
-    }
   }
 }

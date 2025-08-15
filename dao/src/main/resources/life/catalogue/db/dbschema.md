@@ -13,6 +13,13 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+#### 2025-08-15 store all release keys in archive
+```sql
+ALTER TABLE name_usage_archive ADD COLUMN release_keys INT[];
+UPDATE name_usage_archive SET release_keys = array[first_release_key] WHERE first_release_key = last_release_key;
+UPDATE name_usage_archive SET release_keys = array[first_release_key, last_release_key] WHERE release_keys IS NULL;
+CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
+```
 
 #### 2025-07-11 add tax groups to export props
 ```sql

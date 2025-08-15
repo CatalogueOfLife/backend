@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -34,6 +35,15 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
   }
 
   @Test
+  public void processArchivedUsages() throws Exception {
+    mapper().processArchivedUsages(999).forEach(o -> fail("should never reach here"));
+    mapper().processArchivedUsages(appleKey).forEach(o -> {
+      assertNotNull(o);
+      assertTrue(o.getReleaseKeys().length>0);
+    });
+  }
+
+  @Test
   public void indexGroupIds() throws Exception {
     var res = mapper().indexGroupIds(1);
     assertEquals(0, res.size());
@@ -55,9 +65,18 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     Taxon t = TestEntityGenerator.newTaxon(n);
     t.addIdentifier("col:DF2R");
     t.addIdentifier("gbif:456789");
+    ArchivedNameUsage u = getArchivedNameUsage(t);
+    // clear unsupported fields
+    TestEntityGenerator.setUserDate(u, null, null);
+    TestEntityGenerator.setUserDate(u.getName(), null, null);
+    return u;
+  }
+
+  @NotNull
+  private static ArchivedNameUsage getArchivedNameUsage(Taxon t) {
     ArchivedNameUsage u = new ArchivedNameUsage(t);
     u.setDatasetKey(3); // belongs to project
-    u.setLastReleaseKey(12);
+    u.setReleaseKeys(new int[]{12});
     u.setExtinct(true);
     u.setClassification(List.of(
       new SimpleName("a", "Aster spicata", "Döring", Rank.SPECIES),
@@ -67,9 +86,6 @@ public class ArchivedNameUsageMapperTest extends MapperTestBase<ArchivedNameUsag
     ));
     u.setPublishedIn("published in sth");
     u.setStatus(TaxonomicStatus.SYNONYM);
-    // clear unsupported fields
-    TestEntityGenerator.setUserDate(u, null, null);
-    TestEntityGenerator.setUserDate(u.getName(), null, null);
     return u;
   }
 

@@ -70,8 +70,7 @@ public class PortalPageRendererTest {
     ArchivedNameUsage anu = new ArchivedNameUsage();
     anu.setId(ID_DEAD.getId());
     anu.setDatasetKey(projectKey);
-    anu.setLastReleaseKey(dr1.getKey());
-    anu.setFirstReleaseKey(dr2.getKey());
+    anu.setReleaseKeys(new int[]{dr2.getKey(), dr1.getKey()});
     anu.setStatus(TaxonomicStatus.ACCEPTED);
     Name n = new Name();
     n.setRank(Rank.SPECIES);

@@ -164,11 +164,9 @@ public class PortalPageRenderer {
       data.put("first", datasetDao.getRelease(e.usage.getFirstReleaseKey()));
       data.put("last", datasetDao.getRelease(e.usage.getLastReleaseKey()));
       // load verbatim source from last release
-      if (e.usage.getLastReleaseKey() != null) {
-        var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
-        data.put("verbatim", v);
-        data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
-      }
+      var v = tdao.getSource(DSID.of(e.usage.getLastReleaseKey(), id));
+      data.put("verbatim", v);
+      data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
       // list all annual releases this id appears in
       List<DatasetRelease> appearsIn = new ArrayList<>();
       List<SimpleNameCached> alternatives = new ArrayList<>();

@@ -57,8 +57,7 @@
     accepted,
     classification,
     published_in,
-    first_release_key,
-    last_release_key
+    release_keys
   </sql>
 
 
@@ -71,6 +70,7 @@
 
   <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="releaseKeys" column="release_keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
   </resultMap>
 
 
@@ -103,7 +103,7 @@
 
   <select id="processArchivedUsages" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT u.id,
-      u.last_release_key,
+      u.release_keys,
       u.n_scientific_name AS name,
       u.n_authorship AS authorship,
       u.name_phrase AS phrase,
@@ -177,9 +177,9 @@
     WHERE m.index_id = #{nidx}
   </select>
 
-  <update id="updateLastReleaseKey" parameterType="map">
+  <update id="addReleaseKey" parameterType="map">
     UPDATE name_usage_archive a
-    SET last_release_key=#{releaseKey}
+    SET release_keys = array_append(release_keys, #{releaseKey})
     FROM name_usage u
     WHERE a.dataset_key=#{projectKey}
       AND u.dataset_key=#{releaseKey}
@@ -237,8 +237,7 @@
       CASE WHEN is_synonym(u.status) THEN (up.id,np.rank,np.scientific_name,np.authorship)::simple_name END, -- accepted
       CASE WHEN is_synonym(u.status) THEN mp.classification ELSE m.classification END, --classification
       rp.citation, --published_in
-      #{releaseKey}, --first_release_key
-      #{releaseKey} --last_release_key
+      array[#{releaseKey}] --release_keys
     FROM name_usage u
       JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
       LEFT JOIN reference ra ON ra.dataset_key=u.dataset_key AND ra.id=u.according_to_id

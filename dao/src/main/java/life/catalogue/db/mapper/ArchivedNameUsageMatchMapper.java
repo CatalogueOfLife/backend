@@ -17,7 +17,7 @@ public interface ArchivedNameUsageMatchMapper extends MatchMapper, DatasetProces
 
   /**
    * Copy new match records from the release to the archive
-   * for all archive usages that have been created in the given release, i.e. which have the same first_release_key as the given release key
+   * for all archive usages that do not yet have a match.
    * @param projectKey
    * @param releaseKey
    * @return number of new archived match records
@@ -25,7 +25,9 @@ public interface ArchivedNameUsageMatchMapper extends MatchMapper, DatasetProces
   int createMissingMatches(@Param("projectKey") int projectKey, @Param("releaseKey") int releaseKey);
 
   /**
-   * Copies all matches for all archive records from the respective releases.
+   * Copies all matches for all archive records from the first release.
+   * Note that this requires all original releases to still be present.
+   * It can only be used when rebuilding archive!
    * @return number of new archived match records
    */
   int createAllMatches();

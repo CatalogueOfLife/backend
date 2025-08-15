@@ -95,7 +95,7 @@ public class PublicReleaseListener implements DatasetListener {
 
       // When a release gets published we need to modify the projects name archive:
       // a) Usages with new ids need to be added
-      // b) For all still existing usages the last_release_key needs to be updated
+      // b) For all still existing usages the release_key needs to be added
       try {
         archiver.archiveRelease(event.obj.getKey(), true);
       } catch (Exception e) {
