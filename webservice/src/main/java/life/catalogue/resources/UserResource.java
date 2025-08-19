@@ -1,5 +1,9 @@
 package life.catalogue.resources;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+
+import jakarta.ws.rs.core.*;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -27,10 +31,6 @@ import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -103,6 +103,16 @@ public class UserResource {
       throw new WebApplicationException(Response.Status.UNAUTHORIZED);
     }
     return jwt.generate(user);
+  }
+
+  /**
+   * Makes surer a user has authenticated with BasicAuth and then returns a new JWT token if successful.
+   */
+  @DELETE
+  @Path("/logout")
+  public void logout(@Auth User user, @Context ContainerRequestContext req) {
+    final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    jwt.invalidate(auth);
   }
   
   @PUT

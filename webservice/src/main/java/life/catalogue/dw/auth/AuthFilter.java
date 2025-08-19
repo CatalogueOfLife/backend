@@ -51,7 +51,7 @@ public class AuthFilter implements ContainerRequestFilter {
   private static final String BEARER = "Bearer";
   private static final String TOKEN_PARAM = "token";
 
-  private static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
+  static final Pattern AUTH_PATTERN = Pattern.compile("^(Basic|Bearer)\\s+(.+)$");
   private static final Pattern DATASET_PATTERN = Pattern.compile("/dataset/([0-9]+)");
   private final IdentityService idService;
   private final JwtCodec jwt;
