@@ -6,10 +6,13 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -35,7 +38,7 @@ public class IdProviderTest {
 
   ReleaseConfig cfg;
   ProjectReleaseConfig prCfg;
-  Map<Integer, List<SimpleNameWithNidx>> prevIdsByAttempt = new HashMap<>();
+  Map<Integer, List<ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx>> prevIdsByAttempt = new HashMap<>();
   List<SimpleNameWithNidx> testNames = new ArrayList<>();
 
 
@@ -63,7 +66,9 @@ public class IdProviderTest {
   class IdTestProvider extends IdProvider {
 
     public IdTestProvider() {
-      super(projectKey, projectKey, DatasetOrigin.RELEASE, prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1, -1,
+      super(projectKey, projectKey, DatasetOrigin.RELEASE,
+        prevIdsByAttempt.isEmpty() ? 1 : Collections.max(prevIdsByAttempt.keySet())+1,
+        prevIdsByAttempt.isEmpty() ? -1 : Collections.max(prevIdsByAttempt.keySet())+1000,
         cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory()
       );
     }
@@ -79,24 +84,39 @@ public class IdProviderTest {
       mapIds(testNames);
     }
 
+    private int datasetKey(int attempt) {
+      return 1000 + attempt;
+    }
+
     @Override
     protected void loadPreviousReleaseIds() {
       // dont do anything. load release ids manually
       final LoadStats stats = new LoadStats();
-      for (Map.Entry<Integer, List<SimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
+      // go through all names and aggregate them on their id
+      Map<String,ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx> names = new  HashMap<>();
+      for (Map.Entry<Integer, List<ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx>> rel : prevIdsByAttempt.entrySet()) {
         int attempt = rel.getKey();
-        int datasetKey = 1000 + attempt;
+        int datasetKey = datasetKey(attempt);
         getDatasetAttemptMap().put(datasetKey, attempt);
-        for (SimpleNameWithNidx sn : rel.getValue()) {
-          addReleaseId(datasetKey, DatasetOrigin.RELEASE, sn, stats);
+        for (var sn : rel.getValue()) {
+          if (names.containsKey(sn.getId())) {
+            sn.setReleaseKeys(ArrayUtils.add(sn.getReleaseKeys(), datasetKey));
+          } else {
+            sn.setReleaseKeys(new int[] {datasetKey});
+            names.put(sn.getId(), sn);
+          }
         }
+      }
+      // finally add
+      for (var sn : names.values()) {
+        addReleaseId(sn, stats);
       }
     }
 
     @Override
     protected Integer loadReleaseAttempts() {
-      int lastReleaseKey = 999;
       int attempt = prevIdsByAttempt.isEmpty() ? 0 : prevIdsByAttempt.keySet().stream().mapToInt(Integer::intValue).max().getAsInt();
+      int lastReleaseKey = datasetKey(attempt);
       addRelease(new Release(lastReleaseKey, DatasetOrigin.RELEASE, attempt)); // we add the max attempt as the last release
       super.loadReleaseAttempts();
       return lastReleaseKey;
@@ -208,20 +228,22 @@ public class IdProviderTest {
   void assertID(int id, SimpleNameWithNidx n){
     assertEquals((Integer)id, n.getCanonicalId());
   }
-  static SimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+
+  static ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
     return sn(id, nidx, rank, name, authorship, status, null);
   }
-  static SimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn(int id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     return sn(IdConverter.LATIN29.encode(id), nidx, rank, name, authorship, status, parent);
   }
-  static SimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
+  static ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status){
     return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, null);
   }
-  static SimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+  static ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn(Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
     return sn(UUID.randomUUID().toString(), nidx, rank, name, authorship, status, parent);
   }
-  static SimpleNameWithNidx sn(String id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
-    SimpleNameWithNidx sn = new SimpleNameWithNidx();
+  static ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn(String id, Integer nidx, Rank rank, String name, String authorship, TaxonomicStatus status, String parent){
+    var sn = new ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx();
+    // nidx
     sn.setNamesIndexId(nidx);
     sn.setNamesIndexMatchType(MatchType.EXACT);
     // simple name

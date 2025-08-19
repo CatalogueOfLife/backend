@@ -19,7 +19,7 @@ public class ReleasedIdsTest {
   ReleasedIds ids;
 
   void init(int max){
-    ids = new ReleasedIds(max);
+    ids = new ReleasedIds();
     counter = 0;
     while (counter < max) {
       ids.add(gen());

@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.common.collection.CountMap;

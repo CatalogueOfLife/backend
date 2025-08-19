@@ -70,6 +70,11 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
    */
   List<DSID<String>> indexGroupIds(@Param("nidx") int nidx);
 
+  /**
+   * Truncate entire name usage archive table
+   */
+  void truncate();
+
   class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {
     private int[] releaseKeys; // release datasetKey
 

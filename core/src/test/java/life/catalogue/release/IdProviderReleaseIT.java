@@ -51,6 +51,7 @@ public class IdProviderReleaseIT {
 
   final ReleaseConfig cfg = new ReleaseConfig();
   final ProjectReleaseConfig prCfg = new ProjectReleaseConfig();
+  final NameUsageArchiver archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
 
   String project;
   final List<Release> releases = new ArrayList<>();
@@ -104,7 +105,7 @@ public class IdProviderReleaseIT {
       rules.add(new TxtTreeDataRule.TreeDataset(key, relResource, "COL Release "+i, origin));
     }
     LOG.info("Found {} releases for project {}", attempt-1, project);
-    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(rules)) {
+    try (TxtTreeDataRule treeRule = new TxtTreeDataRule(rules, false, true)) {
       treeRule.before();
     }
 
@@ -142,7 +143,6 @@ public class IdProviderReleaseIT {
   public void mapIDs() throws Throwable {
     LOG.info("Match project {} using attempt {} and dataset key {}", project, attempt, newDatasetKey);
     // rebuild project archive
-    var archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
     archiver.rebuildProject(Datasets.COL, true);
     // rematch
     matchingRule.rematchAll();

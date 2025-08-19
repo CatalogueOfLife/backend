@@ -50,6 +50,7 @@ public class IdProviderIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(PROJECT_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule);
   private ReleaseConfig cfg;
 
@@ -136,12 +137,14 @@ public class IdProviderIT {
         maxID.set(Math.max(val, maxID.get()));
       });
       // largest id issued is:
-      assertEquals("35", IdConverter.LATIN29.encode(maxID.get()));
+      assertEquals("3K", IdConverter.LATIN29.encode(maxID.get()));
 
       // assert
       assertEquals(25, idm.countUsage(projectKey));
       assertEquals("M", idm.getUsage(projectKey, "21"));
       assertEquals("D", idm.getUsage(projectKey, "13"));
+      assertEquals("35", idm.getUsage(projectKey, "10")); // Lynx
+      assertEquals("38", idm.getUsage(projectKey, "12")); // Lynx lynx (Linnaeus, 1758)
     }
   }
 

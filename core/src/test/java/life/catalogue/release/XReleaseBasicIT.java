@@ -62,6 +62,7 @@ public class XReleaseBasicIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(XRELEASE_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule)
     .around(syncFactoryRule);
 

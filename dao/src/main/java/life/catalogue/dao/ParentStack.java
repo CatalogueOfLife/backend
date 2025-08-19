@@ -1,4 +1,4 @@
-package life.catalogue.release;
+package life.catalogue.dao;
 
 import life.catalogue.api.model.NameUsageCore;
 
@@ -38,9 +38,9 @@ public class ParentStack<T extends NameUsageCore> {
   }
 
   public static class SNC<T> {
-    T usage;
-    int children = 0;
-    int synonyms = 0;
+    public T usage;
+    public int children = 0;
+    public int synonyms = 0;
 
     public SNC(T nu) {
       usage = nu;

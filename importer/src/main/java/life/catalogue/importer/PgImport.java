@@ -5,7 +5,6 @@ import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
-import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
@@ -23,7 +22,7 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
-import life.catalogue.release.MetricsBuilder;
+import life.catalogue.dao.MetricsBuilder;
 
 import org.gbif.nameparser.api.Rank;
 

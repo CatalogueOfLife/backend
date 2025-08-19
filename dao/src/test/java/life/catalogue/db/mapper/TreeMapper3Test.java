@@ -22,7 +22,7 @@ public class TreeMapper3Test extends MapperTestBase<TreeMapper> {
   @ClassRule
   public static TxtTreeDataRule treeRule = TxtTreeDataRule.create(Map.of(
     dkey, TxtTreeDataRule.TreeData.AVES
-  ), true);
+  ), true, true);
 
   public TreeMapper3Test() {
     super(TreeMapper.class, TestDataRule.keep());

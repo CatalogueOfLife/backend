@@ -34,6 +34,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(IdProviderIT.PROJECT_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule);
 
   final int projectKey = IdProviderIT.PROJECT_DATA.key;

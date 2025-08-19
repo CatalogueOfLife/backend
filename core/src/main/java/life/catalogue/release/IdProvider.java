@@ -40,6 +40,9 @@ import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
+
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
 import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
@@ -75,21 +78,20 @@ public class IdProvider {
   private final DatasetOrigin origin;
   private final int mappedDatasetKey; // from
   private final int releaseDatasetKey; // to
-  private final Integer lastReleaseKey;
+  private final @Nullable Integer lastReleaseKey;
   private final SqlSessionFactory factory;
   private final ReleaseConfig cfg;
   private final ProjectReleaseConfig prCfg;
   private final ReleasedIds ids;
   private final Int2IntBiMap dataset2attempt = new Int2IntBiMap();
   private final Int2ObjectMap<Release> dataset2release = new Int2ObjectOpenHashMap<>();
-  private final IntList additionalReleasesToLoad = new IntArrayList();
   private final AtomicInteger keySequence = new AtomicInteger();
   private final File reportDir;
   // id changes in this release
   private int reused = 0;
-  private IntSet created = new IntOpenHashSet();
+  private final IntSet created = new IntOpenHashSet();
   private Int2IntMap deleted = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
-  private Int2IntMap resurrected = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
+  private final Int2IntMap resurrected = new Int2IntOpenHashMap(); // maps to release attempt for reporting!
   private final SortedMap<String, List<InstableName>> unstable = new TreeMap<>();
   protected IdMapMapper idm;
   protected NameUsageMapper num;
@@ -125,7 +127,7 @@ public class IdProvider {
     // load a map of all releases to their attempts and figure out last release
     lastReleaseKey = loadReleaseAttempts();
     // now build the main release identifier store
-    ids = new ReleasedIds(lastReleaseKey == null ? null : dataset2attempt.getValue(lastReleaseKey));
+    ids = new ReleasedIds();
     // create report dirs
     File dir = cfg.reportDir(projectKey, attempt);
     dir.mkdirs();
@@ -137,9 +139,9 @@ public class IdProvider {
     } else {
       // populate ids from db
       loadPreviousReleaseIds();
-      LOG.info("Last release attempt={} with {} IDs", ids.getLastAttempt(), ids.lastAttemptIdCount());
+      LOG.info("Last release {} with {} IDs", lastReleaseKey, ids.currentIdCount());
       keySequence.set(ids.maxKey());
-      LOG.info("Max existing id = {}. Start ID sequence with {} ({})", ids.maxKey(), keySequence, encode(keySequence.get()));
+      LOG.info("Max existing id = {} ({}). Start ID sequence with {} ({})", ids.maxKey(), encode(ids.maxKey()), previewNextKey(), encode(previewNextKey()));
     }
   }
 
@@ -147,7 +149,7 @@ public class IdProvider {
    * @return the key that will be issued next
    */
   public int previewNextKey() {
-    return keySequence.get();
+    return keySequence.get()+1;
   }
 
   public static class InstableName implements DSID<String> {
@@ -363,18 +365,7 @@ public class IdProvider {
     Integer lrkey = null; // latest release key
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-
-      for (DatasetOrigin o : List.of(DatasetOrigin.RELEASE, DatasetOrigin.XRELEASE)) {
-        var rkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, o);
-        if (rkey != null) {
-          if (o == origin) {
-            lrkey = rkey;
-          } else {
-            LOG.info("Add previous {} {} to list of releases to load", o, rkey);
-            additionalReleasesToLoad.add(rkey);
-          }
-        }
-      }
+      lrkey = dm.latestRelease(projectKey, true, prCfg.ignoredReleases, origin);
       // we now load all known release attempts as the usage archive can contain any of them
       dm.listReleasesQuick(projectKey).forEach(d -> {
         dataset2release.put(d.getKey(), new Release(d.getKey(), d.getOrigin(), d.getAttempt()));
@@ -395,55 +386,30 @@ public class IdProvider {
     AtomicInteger counter = new AtomicInteger();
     AtomicInteger nomatches = new AtomicInteger();
     AtomicInteger temporary = new AtomicInteger();
+    AtomicInteger ignored = new AtomicInteger();
 
     @Override
     public String toString() {
-      return String.format("%s usages with %s temporary ids and %s missing matches ", counter, nomatches, temporary);
+      return String.format("%s usages ignoring %s with %s temporary ids and %s missing matches", counter, ignored, nomatches, temporary);
     }
   }
 
   /**
-   * Loads all ever issued identifiers for this project, preferring the earliest version of any id.
-   * It starts by loading the entire last public release and then adds on all archived names that have been used in earlier releases,
-   * even if their dataset has been deleted by now.
+   * Loads all archived usages with all ever issued identifiers for this project, preferring the earliest version of any id.
    */
   @VisibleForTesting
   protected void loadPreviousReleaseIds(){
+    // read the entire names archive
     try (SqlSession session = factory.openSession(true)) {
-      // load entire last release
-      if (lastReleaseKey == null) {
-        LOG.info("There has been no previous {}, start without existing ids", origin);
-
-      } else {
-        final LoadStats stats = new LoadStats();
-        PgUtils.consume(
-          () -> session.getMapper(NameUsageMapper.class).processNxIds(lastReleaseKey),
-          sn -> addReleaseId(lastReleaseKey, origin, sn, stats)
-        );
-        LOG.info("Read {} from last {} {}. Total ids={}", stats, origin, lastReleaseKey, ids.size());
-      }
-
-      // load additional releases if configured - used to read both regular and extended releases
-      for (int rk : additionalReleasesToLoad) {
-        final LoadStats stats = new LoadStats();
-        final var relOrigin = dataset2release.get(rk).origin;
-        PgUtils.consume(
-          () -> session.getMapper(NameUsageMapper.class).processNxIds(rk),
-          sn -> addReleaseId(rk, relOrigin, sn, stats)
-        );
-        LOG.info("Read {} from past release {}. Total ids={}", stats, rk, ids.size());
-      }
-
-      // always also include the archived names if they have not been processed before yet
       final int sizeBefore = ids.size();
       final LoadStats stats = new LoadStats();
-      LOG.info("Add archived names");
+      LOG.info("Read all archived names");
       PgUtils.consume(
         () -> session.getMapper(ArchivedNameUsageMapper.class).processArchivedUsages(projectKey),
-        sn -> addReleaseId(sn.getLastReleaseKey(), null, sn, stats)
+        sn -> addReleaseId(sn, stats)
       );
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
-      //ids.log();
+      ids.log();
     }
   }
 
@@ -451,16 +417,37 @@ public class IdProvider {
    * @param sn simple name with parent being a scientificName, not ID!
    */
   @VisibleForTesting
-  protected void addReleaseId(int releaseDatasetKey, DatasetOrigin origin, SimpleNameWithNidx sn, LoadStats stats){
+  protected void addReleaseId(ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn, LoadStats stats){
     stats.counter.incrementAndGet();
-    if (sn.getNamesIndexId() == null) {
+    // use the first not ignored release
+    int firstReleaseKey = -1;
+    boolean isCurrent = false;
+    // make sure keys are sorted chronologically, starting with earliest
+    var rkeys = sn.getReleaseKeys();
+    Arrays.sort(rkeys);
+    for (int key : rkeys) {
+      if (firstReleaseKey < 0 && !prCfg.ignoredReleases.contains(key)) {
+        firstReleaseKey = key;
+        if (isCurrent || lastReleaseKey == null) break;
+      }
+      if (lastReleaseKey != null && key == lastReleaseKey) {
+        isCurrent = true;
+        if (firstReleaseKey > 0) break;
+      }
+    }
+    if (firstReleaseKey == -1) {
+      stats.ignored.incrementAndGet();
+      LOG.info("Ignoring ID {} from all releases: {}", sn.getId(), sn.getLabel());
+
+    } else if (sn.getNamesIndexId() == null) {
       stats.nomatches.incrementAndGet();
-      LOG.info("Existing release id {}:{} without a names index id. Skip {}", releaseDatasetKey, sn.getId(), sn.getLabel());
+      LOG.info("Existing release id {}:{} without a names index id. Skip {}", firstReleaseKey, sn.getId(), sn.getLabel());
+
     } else {
       try {
-        var rl = ReleasedId.create(sn, dataset2attempt.getValue(releaseDatasetKey), origin == this.origin);
+        var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
         ids.add(rl);
-        LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, releaseDatasetKey, sn);
+        LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
       } catch (IllegalArgumentException e) {
         // expected for temp identifiers, swallow and count
         stats.temporary.incrementAndGet();
@@ -490,7 +477,7 @@ public class IdProvider {
   @VisibleForTesting
   protected void mapIds(Iterable<SimpleNameWithNidx> names){
     LOG.info("Map name usage IDs from dataset {}", mappedDatasetKey);
-    final int lastRelIds = ids.lastAttemptIdCount();
+    final int lastRelIds = ids.currentIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
          Writer nomatchWriter = buildNomatchWriter()
@@ -519,7 +506,7 @@ public class IdProvider {
       LOG.error("Failed to write ID reports for project " + projectKey, e);
     }
     // ids remaining from the current attempt will be deleted
-    deleted = ids.lastAttemptIds();
+    deleted = ids.currentIDs();
     reused = lastRelIds - deleted.size();
     LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
   }
@@ -618,9 +605,9 @@ public class IdProvider {
     if (!ids.containsId(rm.rid.id)) {
       throw new IllegalArgumentException("Cannot release " + rm.rid.id + " which does not exist (anymore)");
     }
-    var rid = ids.remove(rm.rid.id);
+    ids.remove(rm.rid.id);
     rm.name.setCanonicalId(rm.rid.id);
-    if (rm.rid.attempt != ids.getLastAttempt()) {
+    if (!rm.rid.isCurrent) {
       resurrected.put(rm.rid.id, rm.rid.attempt);
     }
     scores.remove(rm);

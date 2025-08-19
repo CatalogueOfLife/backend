@@ -1,10 +1,14 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.model.DatasetRelease;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.ibatis.session.SqlSession;
@@ -28,13 +32,48 @@ public class NameUsageArchiver {
   }
 
   /**
+   *
+   * @param truncate if true deletes the name usage archive before rebuilding
+   */
+  public void rebuildAll(boolean truncate) {
+    List<Integer> projects;
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var req = new DatasetSearchRequest();
+      req.setOrigin(List.of(DatasetOrigin.PROJECT));
+      req.setSortBy(DatasetSearchRequest.SortBy.KEY);
+      projects = dm.searchKeys(req, Users.SUPERUSER);
+      if (truncate) {
+        LOG.warn("Truncate entire name usage archive");
+        session.getMapper(ArchivedNameUsageMatchMapper.class).truncate();
+        session.getMapper(ArchivedNameUsageMapper.class).truncate();
+      }
+    }
+
+    LOG.info("Total number of projects found to rebuild: {}", projects.size());
+    for (var key : projects) {
+      LOG.info("Rebuild name usage archive for project {}", key);
+      rebuildProject(key, false);
+    }
+
+    LOG.info("Copy all name matches for all archived projects");
+    try (SqlSession session = factory.openSession(true)) {
+      var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+      var matches = amm.createAllMatches();
+      LOG.info("Copied {} name matches", matches);
+    }
+  }
+
+  /**
    * Rebuilds the name usage archive for a given project if it does not yet exist.
    * If a single archived record exists already an IAE will be thrown.
    *
    * The rebuild uses only the currently existing, non deleted releases to decide which usages will have to be archived.
    * @param copyMatches if true also copies the existing name matches for the newly created archive records
+   * @throws IllegalArgumentException if the project key is not a project or the archive already contains usages
    */
   public void rebuildProject(int projectKey, boolean copyMatches) {
+    List<DatasetRelease> releases;
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var project = dm.get(projectKey);
@@ -50,7 +89,10 @@ public class NameUsageArchiver {
       }
       // finally allow the rebuild for each release
       var datasets = dm.listReleasesQuick(projectKey);
-      var releases = datasets.stream().filter(d -> !d.isDeleted() && !d.isPrivat()).collect(Collectors.toList());
+      releases = datasets.stream().filter(d -> !d.isDeleted() && !d.isPrivat()).collect(Collectors.toList());
+    }
+
+    try {
       LOG.info("Archiving name usages for {} public releases of PROJECT {}", releases.size(), projectKey);
       int archived = 0;
       for (var d : releases) {
@@ -88,13 +130,13 @@ public class NameUsageArchiver {
       LOG.info("Updating names archive for project {} with release {}", projectKey, releaseKey);
 
       var anum = session.getMapper(ArchivedNameUsageMapper.class);
-      LOG.info("Updating last release key of all archive records which still exist in release {} of project {}", releaseKey, projectKey);
+      LOG.info("Adding release key of all archive records which also exist in release {} of project {}", releaseKey, projectKey);
       int updated = anum.addReleaseKey(projectKey, releaseKey);
-      LOG.info("Updated {} archive records which still exist in release {} of project {}", updated, releaseKey, projectKey);
+      LOG.info("Updated {} archive records which exist in release {} of project {}", updated, releaseKey, projectKey);
 
-      LOG.info("Copy missing archive records from release {} of project {}", releaseKey, projectKey);
+      LOG.info("Creating missing archive records from release {} of project {}", releaseKey, projectKey);
       created = anum.createMissingUsages(projectKey, releaseKey);
-      LOG.info("Copied {} new archive records from release {} of project {}", created, releaseKey, projectKey);
+      LOG.info("Created {} new archive records from release {} of project {}", created, releaseKey, projectKey);
 
       if (copyMatches) {
         LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);

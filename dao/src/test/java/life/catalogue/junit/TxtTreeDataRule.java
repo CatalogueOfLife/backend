@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.CopyUtil;
+import life.catalogue.dao.MetricsBuilder;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
@@ -53,6 +54,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   private static final String KEY_PRIO = "PRIO";
 
   final private boolean keepOrder;
+  final private boolean buildMetrics;
   final private List<TreeDataset> datasets;
   final private Set<Integer> sectors = new HashSet<>();
   private SqlSession session;
@@ -79,16 +81,17 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public TxtTreeDataRule(List<TreeDataset> treeData) {
-    this(treeData, false);
+    this(treeData, false, false);
   }
 
   /**
    * @param keepOrder if true stores the original txtree child order as the usages ordinal property
    */
-  public TxtTreeDataRule(List<TreeDataset> treeData, boolean keepOrder) {
+  public TxtTreeDataRule(List<TreeDataset> treeData, boolean keepOrder, boolean buildMetrics) {
     this.datasets = treeData;
     sqlSessionFactorySupplier = SqlSessionFactoryRule::getSqlSessionFactory;
     this.keepOrder = keepOrder;
+    this.buildMetrics = buildMetrics;
   }
 
   public static class TreeDataset {
@@ -122,15 +125,15 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
   }
 
   public static TxtTreeDataRule create(Map<Integer, TreeData> treeData) {
-    return create(treeData, false);
+    return create(treeData, false, false);
   }
 
-  public static TxtTreeDataRule create(Map<Integer, TreeData> treeData, boolean keepOrder) {
+  public static TxtTreeDataRule create(Map<Integer, TreeData> treeData, boolean keepOrder, boolean buildMetrics) {
     var data = new ArrayList<TreeDataset>();
     for (Map.Entry<Integer, TreeData> x : treeData.entrySet()) {
       data.add(new TreeDataset(x.getKey(), x.getValue().resource(), x.getValue().name()));
     }
-    return new TxtTreeDataRule(data, keepOrder);
+    return new TxtTreeDataRule(data, keepOrder, buildMetrics);
   }
 
   @Override
@@ -145,6 +148,9 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       loadRefs(x);
       loadTree(x);
       createSequences(x);
+      if (buildMetrics) {
+        MetricsBuilder.rebuildMetrics(sqlSessionFactorySupplier.get(), x.key);
+      }
       //printTree(x.key);
     }
   }

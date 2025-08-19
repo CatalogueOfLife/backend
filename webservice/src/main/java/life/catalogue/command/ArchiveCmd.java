@@ -42,29 +42,9 @@ public class ArchiveCmd extends AbstractMybatisCmd {
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {
       archiver.rebuildProject(projectKey, true);
-
     } else {
-      List<Integer> projects;
-      try (SqlSession session = factory.openSession()) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        var req = new DatasetSearchRequest();
-        req.setOrigin(List.of(DatasetOrigin.PROJECT));
-        req.setSortBy(DatasetSearchRequest.SortBy.KEY);
-        projects = dm.searchKeys(req, userKey);
-      }
-
-      System.out.println("Total number of projects found to rebuild: " + projects.size());
-      for (var key : projects) {
-        System.out.println("Rebuild name usage archive for project " + key);
-        archiver.rebuildProject(key, false);
-      }
-
-      System.out.println("Copy all name matches for all archived projects");
-      try (SqlSession session = factory.openSession(true)) {
-        var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
-        var matches = amm.createAllMatches();
-        System.out.println("Copied "+matches+" name matches");
-      }
+      System.out.println("Rebuild entire usage archive");
+      archiver.rebuildAll(false);
     }
     System.out.println("Archive rebuild completed.");
   }

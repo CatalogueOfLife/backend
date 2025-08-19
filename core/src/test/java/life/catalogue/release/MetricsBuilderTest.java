@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
+import life.catalogue.dao.MetricsBuilder;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TaxonMetricsMapper;
 import life.catalogue.junit.PgSetupRule;

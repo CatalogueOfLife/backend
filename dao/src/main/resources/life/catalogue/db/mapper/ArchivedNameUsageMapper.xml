@@ -110,7 +110,7 @@
       u.n_rank AS rank,
       u.n_code AS code,
       u.status,
-      u.classification[1].name AS parent,
+      CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
       ni.canonical_id,
       ni.id AS namesIndexId,
       m.type AS namesIndexMatchType
@@ -251,4 +251,8 @@
     WHERE u.dataset_key=#{releaseKey}
       AND NOT EXISTS (SELECT true FROM name_usage_archive a WHERE a.dataset_key=#{projectKey} AND a.id=u.id)
   </insert>
+
+  <update id="truncate">
+    TRUNCATE name_usage_archive
+  </update>
 </mapper>

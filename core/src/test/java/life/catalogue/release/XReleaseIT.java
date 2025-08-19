@@ -71,6 +71,7 @@ public class XReleaseIT extends SectorSyncTestBase {
   final TestDataRule dataRule = TestDataRule.empty();
   final NameMatchingRule matchingRule = new NameMatchingRule();
 
+  final NameUsageArchiver archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
   CloseableHttpClient hc;
   ProjectCopyFactory projectCopyFactory;
 
@@ -206,6 +207,8 @@ public class XReleaseIT extends SectorSyncTestBase {
       d.setPrivat(false);
       dm.update(d);
     }
+    // archive release for ids
+    archiver.archiveRelease(releaseKey, true);
 
     // extended release
     XRelease xrel = projectCopyFactory.buildExtendedRelease(releaseKey, Users.RELEASER);
