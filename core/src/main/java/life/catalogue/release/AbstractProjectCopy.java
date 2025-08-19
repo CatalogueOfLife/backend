@@ -175,6 +175,10 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     metrics();
     checkIfCancelled();
 
+    checkIfCancelled();
+    postMetrics();
+    checkIfCancelled();
+
     try {
       // ES index
       LOG.info("Index dataset {} into ES", newDatasetKey);
@@ -260,6 +264,10 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     // metrics.maxClassificationDepth needs to be set before!
     diDao.updateMetrics(metrics, newDatasetKey);
     diDao.update(metrics);
+  }
+
+  protected void postMetrics() {
+    // nothing by default
   }
 
   protected void copyData() throws InterruptedException {

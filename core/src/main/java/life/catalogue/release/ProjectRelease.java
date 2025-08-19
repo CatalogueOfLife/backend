@@ -415,7 +415,11 @@ public class ProjectRelease extends AbstractProjectCopy {
       VarnishUtils.ban(client, api);
       VarnishUtils.ban(client, portalURI); // flush also /colseo which also points to latest releases
     }
-    // kick off exports
+  }
+
+  @Override
+  protected void postMetrics() {
+    // kick off exports - this requires metrics to already exist!!!
     if (prCfg.prepareDownloads) {
       LOG.info("Prepare exports for release {}", newDatasetKey);
       for (DataFormat df : EXPORT_FORMATS) {
