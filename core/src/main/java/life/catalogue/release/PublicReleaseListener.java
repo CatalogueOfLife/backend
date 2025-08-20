@@ -86,7 +86,7 @@ public class PublicReleaseListener implements DatasetListener {
       if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin().isRelease()) {
         LOG.info("Publish COL {} specifics", event.obj.getOrigin());
         copyExportsToColDownload(event.obj, true);
-        // for now we do not issue DOIs to XCOL sources
+        // for now we do not point XR DOIs to the portal, so no need to change them
         if (event.obj.getOrigin() == DatasetOrigin.RELEASE) {
           publishColSourceDois(event.obj);
           updateColDoiUrls(event.obj);
