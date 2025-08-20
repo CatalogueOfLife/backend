@@ -29,6 +29,7 @@ import jakarta.validation.Validator;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
+import static life.catalogue.api.vocab.DatasetOrigin.XRELEASE;
 
 /**
  * Tool for managing / updating DOIs for projects and it's releases.
@@ -91,26 +92,34 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   }
 
   private void updateProject(Integer projectKey) throws Exception {
+    Dataset project;
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset d = dm.get(projectKey);
-      if (d == null) {
+      project = dm.get(projectKey);
+      if (project == null) {
         throw NotFoundException.notFound(Dataset.class, projectKey);
-      } else if (d.getOrigin() != PROJECT) {
-        throw new IllegalArgumentException("Dataset " + projectKey + " is not a project but a " + d.getOrigin() + " dataset");
+      } else if (project.getOrigin() != PROJECT) {
+        throw new IllegalArgumentException("Dataset " + projectKey + " is not a project but a " + project.getOrigin() + " dataset");
       }
-      // update project DOI
-      Dataset project = dm.get(projectKey);
-      LOG.info("Update all DOIs for releases of project {}: {}", projectKey, project.getTitle());
-      //TODO: what about extended releases?
+      LOG.info("Update DOI {} for project {}: {}", project.getDoi(), projectKey, project.getTitle());
       updateReleaseOrProject(project, false, null, null, dm);
-      final var latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
-      LOG.info("Latest release of project {} is {}", projectKey, latestReleaseKey);
+    }
+    // update releases, keeping the origins separate
+    updateReleases(project, DatasetOrigin.RELEASE);
+    updateReleases(project, DatasetOrigin.XRELEASE);
+  }
+
+  private void updateReleases(Dataset project, DatasetOrigin origin) {
+    LOG.info("Update DOIs for all {} of project {}: {}", origin, project.getKey(), project.getTitle());
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      final var latestReleaseKey = dm.latestRelease(project.getKey(), true, origin);
+      LOG.info("Latest {} of project {} is {}", origin, project.getKey(), latestReleaseKey);
       // list all releases in chronological order, starting with the very first release
       DOI prev = null;
-      for (Dataset release : dm.listReleases(projectKey)) {
+      for (Dataset release : dm.listReleases(project.getKey())) {
         // ignore private releases, only public ones have a DOI
-        if (release.isPrivat()) continue;
+        if (release.isPrivat() || release.getOrigin() != origin) continue;
 
         final boolean isLatest = Objects.equals(latestReleaseKey, release.getKey());
         updateReleaseOrProject(release, isLatest, project.getDoi(), prev, dm);
@@ -122,7 +131,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
   }
 
-  private void updateDOI(DOI doi) {
+  private void updateDOI(DOI doi) throws DoiException {
     if (!doi.isCOL()) {
       throw new IllegalArgumentException("DOI needs to be a Catalogue of Life DOI");
     }
@@ -138,7 +147,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       Dataset project = dm.get(release.getSourceKey());
       Dataset prev = dm.getPreviousRelease(release.getKey());
       Dataset next = dm.getNextRelease(release.getKey());
-      updateReleaseOrProject(release, next==null, project.getDoi(), prev==null ? null : prev.getDoi(), dm);
+      updateDOI(doi, release, next==null, project.getDoi(), prev==null ? null : prev.getDoi());
     }
   }
   private void updateReleaseOrProject(Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
@@ -184,6 +193,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   }
 
   private void updateReleaseSources(Dataset release, boolean isLatest) {
+    // we don't assign DOIs to XRelease sources at this stage
+    if (release.getOrigin() == XRELEASE) {
+      return;
+    }
+
     try (SqlSession session = factory.openSession()) {
       LOG.info("Updating DOIs for {}release {} {}", isLatest ? "latest " : "", release.getKey(), release.getAlias());
       var dsm = session.getMapper(DatasetSourceMapper.class);
