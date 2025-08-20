@@ -62,7 +62,6 @@ public class PortalPageRenderer {
   );
   private Path portalTemplateDir = Path.of("/tmp");
   private final List<DatasetRelease> annualReleases;
-  private final List<DatasetRelease> annualXReleases;
 
   public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, Path portalTemplateDir, boolean requireCOL) throws IOException {
     this.requireCOL = requireCOL;
@@ -88,9 +87,6 @@ public class PortalPageRenderer {
     }
     annualReleases = annuals.stream()
       .filter(d -> d.getOrigin()== DatasetOrigin.RELEASE)
-      .collect(Collectors.toList());
-    annualXReleases = annuals.stream()
-      .filter(d -> d.getOrigin()== DatasetOrigin.XRELEASE)
       .collect(Collectors.toList());
   }
 

@@ -65,6 +65,7 @@
     <id property="id" column="id"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="releaseKeys" column="release_keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
