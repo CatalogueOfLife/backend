@@ -29,6 +29,7 @@ import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
+import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -269,6 +270,12 @@ public class AdminResource {
     } else {
       throw new IllegalArgumentException("At least one datasetKey or sectorKey parameter is required");
     }
+  }
+
+  @POST
+  @Path("/rematch/archive")
+  public BackgroundJob rematch(@Auth User user) {
+    return runJob(new RematchArchiveJob(user.getKey(),factory, namesIndex));
   }
 
   @GET

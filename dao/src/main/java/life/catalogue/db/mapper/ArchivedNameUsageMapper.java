@@ -39,6 +39,7 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   /**
    * Process all archived name usages as Name instances with names index match infos.
    * Not the "Name" key is exceptionally a usage key!
+   * @param datasetKey the project key to process releases from. If null processes all archive records!
    * @param onlyMissingMatches if true only names without an existing matching record will be re-matched
    */
   Cursor<Name> processArchivedNames(@Nullable @Param("datasetKey") Integer datasetKey,

@@ -23,6 +23,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -61,7 +62,7 @@ public class PortalPageRenderer {
           .collect(Collectors.toMap(e -> e, e -> new HashMap<>()))
   );
   private Path portalTemplateDir = Path.of("/tmp");
-  private final List<DatasetRelease> annualReleases;
+  private final Map<Integer, DatasetRelease> releases = new HashMap<>();
 
   public PortalPageRenderer(DatasetDao datasetDao, DatasetSourceDao sourceDao, TaxonDao tdao, Path portalTemplateDir, boolean requireCOL) throws IOException {
     this.requireCOL = requireCOL;
@@ -75,19 +76,14 @@ public class PortalPageRenderer {
     }
     loadReleases();
     loadTemplates();
-    List<DatasetRelease> annuals = new ArrayList<>();;
     if (factory != null) {
       try (SqlSession session = factory.openSession()) {
         var dm = session.getMapper(DatasetMapper.class);
-        annuals = dm.listReleasesQuick(Datasets.COL).stream()
-          .filter(d -> !d.isDeleted())
-          .filter(DatasetRelease::hasLongTermSupport)
-          .collect(Collectors.toList());
+        for (var r : dm.listReleasesQuick(Datasets.COL)) {
+          releases.put(r.getKey(), r);
+        }
       }
     }
-    annualReleases = annuals.stream()
-      .filter(d -> d.getOrigin()== DatasetOrigin.RELEASE)
-      .collect(Collectors.toList());
   }
 
   public Path getPortalTemplateDir() {
@@ -164,14 +160,25 @@ public class PortalPageRenderer {
       data.put("verbatim", v);
       data.put("source", v == null ? null : datasetDao.get(v.getSourceDatasetKey()));
       // list all annual releases this id appears in
-      List<DatasetRelease> appearsIn = new ArrayList<>();
+      List<DatasetRelease> annualReleases = new ArrayList<>();
       List<SimpleNameCached> alternatives = new ArrayList<>();
       if (factory != null) {
         try (SqlSession session = factory.openSession()) {
+          var dm = session.getMapper(DatasetMapper.class);
           var num = session.getMapper(NameUsageMapper.class);
-          for (DatasetRelease r : annualReleases) {
-            if (num.exists(DSID.of(r.getKey(), id))) {
-              appearsIn.add(r);
+          for (int r : e.usage.getReleaseKeys()) {
+            if (!releases.containsKey(r)) {
+              // try to load missing release
+              var rel = dm.getRelease(r);
+              if (rel == null) {
+                LOG.warn("No COL release exists with key {}. Source taxon: {}", r, id);
+                continue;
+              }
+              releases.put(r, rel);
+            }
+            var rel = releases.get(r);
+            if (rel.hasLongTermSupport()) {
+              annualReleases.add(releases.get(r));
             }
           }
           // load alternative names in case we switched authors
@@ -182,7 +189,7 @@ public class PortalPageRenderer {
           }
         }
       }
-      data.put("annualReleases", appearsIn);
+      data.put("annualReleases", annualReleases);
       data.put("alternatives", alternatives);
       return render(env, PortalPage.TOMBSTONE, data);
 
