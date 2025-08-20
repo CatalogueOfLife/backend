@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.*;
 
 public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, DatasetMapper> {
@@ -813,6 +815,12 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   private int createSearchableDataset(String title, String author, String organisation, String description) {
+    return createSearchableDataset(title, author, organisation, description, DatasetOrigin.PROJECT, null, null).getKey();
+  }
+
+  private Dataset createSearchableDataset(String title, String author, String organisation, String description,
+                            DatasetOrigin origin, @Nullable Integer sourceKey, @Nullable DOI doi
+  ) {
     Dataset ds = new Dataset();
     ds.setPrivat(false);
     ds.setTitle(title);
@@ -824,16 +832,19 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     }
     ds.setDescription(description);
     ds.setType(DatasetType.TAXONOMIC);
-    ds.setOrigin(DatasetOrigin.PROJECT);
+    ds.setOrigin(origin);
     ds.setContact(Agent.person("Frank", "Furter", "frank@mailinator.com", "0000-0003-0857-1679"));
     ds.setEditor(List.of(
       Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
       Agent.person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
     ));
+
+    ds.setDoi(doi);
+    ds.setSourceKey(sourceKey);
     mapper().create(TestEntityGenerator.setUserDate(ds));
 
     mapper(DatasetPartitionMapper.class).createSequences(ds.getKey());
-    return ds.getKey();
+    return ds;
   }
 
   @Test
@@ -859,6 +870,27 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     assertEquals(5, resp.size()); // 2+3 from apple.sql
   }
 
+  @Test
+  public void doi() throws Exception {
+    final var d1 = createSearchableDataset("ITIS", "Mike;Bob", "ITIS", "Also contains worms",
+      DatasetOrigin.RELEASE, Datasets.COL, DOI.test("123456-a")
+    );
+    final var d2 = createSearchableDataset("BIZ", "bob;jim", "CUIT", "A sentence with worms and worms",
+      DatasetOrigin.RELEASE, Datasets.COL, DOI.test("123456-b")
+    );
+    final var d3 = createSearchableDataset("WORMS", "Bart", "WORMS", "The Worms dataset",
+      DatasetOrigin.RELEASE, Datasets.COL, DOI.test("123456-c")
+    );
+
+    commit();
+
+    var d2b = mapper().getByDoi(DOI.test("123456-b"));
+    assertEquals(removeDbCreatedProps(d2), removeDbCreatedProps(d2b));
+
+    assertEquals(removeDbCreatedProps(d1), removeDbCreatedProps(mapper().getPreviousRelease(d2.getKey())));
+    assertEquals(removeDbCreatedProps(d3), removeDbCreatedProps(mapper().getNextRelease(d2.getKey())));
+  }
+
   @Override
   Dataset createTestEntity(int dkey) {
     return create();
@@ -870,6 +902,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   public static Dataset rmDbCreatedProps(Dataset d) {
+    d.setSize(0);
     return d;
   }
 

@@ -36,9 +36,9 @@ import static life.catalogue.api.vocab.DatasetOrigin.PROJECT;
 public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdateCmd.class);
   private static final String ARG_KEY = "key";
+  private static final String ARG_DOI = "doi";
   private DoiService doiService;
   private DatasetConverter converter;
-  private int key;
   private int releaseUpdated = 0;
   private int releaseCreated = 0;
   private int releasePublished = 0;
@@ -55,8 +55,13 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     subparser.addArgument("--"+ ARG_KEY, "-k")
       .dest(ARG_KEY)
       .type(Integer.class)
-      .required(true)
+      .required(false)
       .help("Dataset key for project to update");
+    subparser.addArgument("--"+ ARG_DOI)
+      .dest(ARG_DOI)
+      .type(DOI.class)
+      .required(false)
+      .help("Dataset release DOI to update");
   }
 
   @Override
@@ -71,25 +76,39 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     UserDao udao = new UserDao(factory, cfg.mail, null, new EventBroker(cfg.broker), validator);
     converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
 
+    var doiStr = ns.getString(ARG_DOI);
+    if (doiStr != null) {
+      var doi = new DOI(doiStr);
+      updateDOI(doi);
+    } else {
+      var key = ns.getInt(ARG_KEY);
+      if (key == null) {
+        throw new IllegalArgumentException("Either project key or doi needed to be specified");
+      }
+      updateProject(key);
+    }
+    LOG.info("Done");
+  }
+
+  private void updateProject(Integer projectKey) throws Exception {
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      key = ns.getInt(ARG_KEY);
-      Dataset d = dm.get(key);
+      Dataset d = dm.get(projectKey);
       if (d == null) {
-        throw NotFoundException.notFound(Dataset.class, key);
+        throw NotFoundException.notFound(Dataset.class, projectKey);
       } else if (d.getOrigin() != PROJECT) {
-        throw new IllegalArgumentException("Dataset "+key+" is not a project but a "+d.getOrigin()+" dataset");
+        throw new IllegalArgumentException("Dataset " + projectKey + " is not a project but a " + d.getOrigin() + " dataset");
       }
       // update project DOI
-      Dataset project = dm.get(key);
-      LOG.info("Update all DOIs for releases of project {}: {}", key, project.getTitle());
+      Dataset project = dm.get(projectKey);
+      LOG.info("Update all DOIs for releases of project {}: {}", projectKey, project.getTitle());
       //TODO: what about extended releases?
       updateReleaseOrProject(project, false, null, null, dm);
       final var latestReleaseKey = dm.latestRelease(d.getKey(), true, DatasetOrigin.RELEASE);
-      LOG.info("Latest release of project {} is {}", key, latestReleaseKey);
+      LOG.info("Latest release of project {} is {}", projectKey, latestReleaseKey);
       // list all releases in chronological order, starting with the very first release
       DOI prev = null;
-      for (Dataset release : dm.listReleases(key)) {
+      for (Dataset release : dm.listReleases(projectKey)) {
         // ignore private releases, only public ones have a DOI
         if (release.isPrivat()) continue;
 
@@ -103,6 +122,25 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     }
   }
 
+  private void updateDOI(DOI doi) {
+    if (!doi.isCOL()) {
+      throw new IllegalArgumentException("DOI needs to be a Catalogue of Life DOI");
+    }
+
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      Dataset release = dm.getByDoi(doi);
+      if (release == null) {
+        throw NotFoundException.notFound(Dataset.class, doi);
+      } else if (!release.getOrigin().isRelease()) {
+        throw new IllegalArgumentException("Dataset " + doi + " is not a release but a " + release.getOrigin() + " dataset");
+      }
+      Dataset project = dm.get(release.getSourceKey());
+      Dataset prev = dm.getPreviousRelease(release.getKey());
+      Dataset next = dm.getNextRelease(release.getKey());
+      updateReleaseOrProject(release, next==null, project.getDoi(), prev==null ? null : prev.getDoi(), dm);
+    }
+  }
   private void updateReleaseOrProject(Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
     DOI doi = release.getDoi();
     try {

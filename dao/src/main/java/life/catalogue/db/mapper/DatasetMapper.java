@@ -36,6 +36,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   DatasetSimple getSimple(@Param("key") int key);
 
+  Dataset getByDoi(@Param("doi") DOI doi);
+
   void deletePhysically(@Param("key") int key);
 
   default void createAll(DatasetWithSettings d) {
@@ -230,6 +232,20 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param defaultFrequency number in days to between import attempts when no explicit frequency is configured
    */
   List<DatasetAttempt> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
+
+  /**
+   * Retrieves the public release preceeding the given release key, which has the same origin
+   * @param key
+   * @return
+   */
+  Dataset getPreviousRelease(@Param("key") Integer key);
+
+  /**
+   * Retrieves the public release following the given release key, which has the same origin
+   * @param key
+   * @return
+   */
+  Dataset getNextRelease(@Param("key") Integer key);
 
   class DatasetAttempt {
     private int key;

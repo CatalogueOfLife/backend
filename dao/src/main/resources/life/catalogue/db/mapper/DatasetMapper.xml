@@ -520,6 +520,36 @@
     WHERE key = #{key}
   </select>
 
+  <select id="getByDoi" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE doi = #{doi}
+  </select>
+
+  <select id="getPreviousRelease" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
+    WHERE rel.key = #{key}
+        AND d.key &lt; #{key}
+        AND d.deleted IS NULL
+        AND NOT d.private
+    ORDER BY d.key DESC
+    LIMIT 1
+  </select>
+
+  <select id="getNextRelease" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
+    WHERE rel.key = #{key}
+    AND d.key > #{key}
+    AND d.deleted IS NULL
+    AND NOT d.private
+    ORDER BY d.key ASC
+    LIMIT 1
+  </select>
+
   <select id="getMaxKey" parameterType="map" resultType="integer">
     SELECT max(key) FROM dataset
     <if test="limit">
