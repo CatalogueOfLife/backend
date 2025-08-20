@@ -121,10 +121,10 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         // ignore private releases, only public ones have a DOI
         if (release.isPrivat() || release.getOrigin() != origin) continue;
 
-        final boolean isLatest = Objects.equals(latestReleaseKey, release.getKey());
-        updateReleaseOrProject(release, isLatest, project.getDoi(), prev, dm);
+        final boolean portal = Objects.equals(latestReleaseKey, release.getKey()) && origin != XRELEASE; // point XR always at CLB for now !!!
+        updateReleaseOrProject(release, portal, project.getDoi(), prev, dm);
         if (release.getDoi() != null) {
-          updateReleaseSources(release, isLatest);
+          updateReleaseSources(release, portal);
           prev = release.getDoi();
         }
       }
@@ -150,7 +150,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       updateDOI(doi, release, next==null, project.getDoi(), prev==null ? null : prev.getDoi());
     }
   }
-  private void updateReleaseOrProject(Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
+  private void updateReleaseOrProject(Dataset release, boolean portal, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
     DOI doi = release.getDoi();
     try {
       if (doi == null) {
@@ -158,7 +158,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         doi = doiService.fromDataset(release.getKey());
         release.setDoi(doi);
         dm.update(release); // persist doi
-        var attr = converter.release(release, isLatest, project, prev);
+        var attr = converter.release(release, portal, project, prev);
         LOG.info("Issue new DOI {} for release {}", doi, release.getKey());
         try {
           doiService.create(attr);
@@ -167,11 +167,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
           releasePublished++;
         } catch (DoiException e) {
           LOG.info("Failed to create DOI {} for release {}. Try to do an update instead", doi, release.getKey(), e);
-          updateDOI(doi, release, isLatest, project, prev);
+          updateDOI(doi, release, portal, project, prev);
         }
 
       } else {
-        updateDOI(doi, release, isLatest, project, prev);
+        updateDOI(doi, release, portal, project, prev);
       }
     } catch (DoiException e) {
       LOG.error("Error updating DOIs for release {} with DOI {}", release.getKey(), doi, e);

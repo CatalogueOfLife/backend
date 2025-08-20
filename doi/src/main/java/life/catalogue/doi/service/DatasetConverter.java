@@ -51,11 +51,11 @@ public class DatasetConverter {
    *  - url
    *
    * @param release
-   * @param latest if true points to the COL portal, not checklist bank
+   * @param portal if true points to the COL portal, not checklist bank
    * @return
    */
-  public DoiAttributes release(Dataset release, boolean latest, @Nullable DOI project, @Nullable DOI previousVersion) {
-    DoiAttributes attr = common(release, latest, previousVersion);
+  public DoiAttributes release(Dataset release, boolean portal, @Nullable DOI project, @Nullable DOI previousVersion) {
+    DoiAttributes attr = common(release, portal, previousVersion);
     // other relations
     if (project != null) {
       for (RelationType rt : List.of(RelationType.IS_VERSION_OF, RelationType.IS_DERIVED_FROM)) {
@@ -113,7 +113,7 @@ public class DatasetConverter {
     return attr;
   }
 
-  private DoiAttributes common(Dataset d, boolean latest, @Nullable DOI previousVersion) {
+  private DoiAttributes common(Dataset d, boolean portal, @Nullable DOI previousVersion) {
     DoiAttributes attr = new DoiAttributes(d.getDoi());
     // title
     attr.setTitles(List.of(new Title(d.getTitle())));
@@ -173,7 +173,7 @@ public class DatasetConverter {
     }
     attr.setContributors(contribs);
     // url
-    attr.setUrl(datasetURI(d.getKey(), latest).toString());
+    attr.setUrl(datasetURI(d.getKey(), portal).toString());
     // ids
     if (d.getIdentifier() != null) {
       List<Identifier> ids = new ArrayList<>();
