@@ -93,7 +93,7 @@ public class DatasetSourceDao {
    * @return
    */
   public List<DatasetSourceMapper.SourceDataset> listSimple(int datasetKey, boolean inclPublisherSources, boolean splitMerge){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey, true).requireOrigin(RELEASE, XRELEASE, PROJECT);
     List<DatasetSourceMapper.SourceDataset> sources;
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
