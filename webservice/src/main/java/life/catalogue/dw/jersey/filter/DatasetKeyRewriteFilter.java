@@ -194,6 +194,7 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
     Integer releaseKey;
     // candidate requested? (\\d+)(?:LX?RC?|R(\\d+))$
     final boolean extended = m.group().contains("X");
+    String errMsg = "Dataset " + projectKey + " was never released";
     if (m.group().endsWith("RC")) {
       releaseKey = cache.getLatestReleaseCandidate(projectKey, extended);
     } else if (m.group().endsWith("R")) {
@@ -202,10 +203,11 @@ public class DatasetKeyRewriteFilter implements ContainerRequestFilter {
       // parsing cannot fail, we have a pattern
       int attempt = Integer.parseInt(m.group(2));
       releaseKey = cache.getReleaseByAttempt(projectKey, attempt);
+      errMsg = "Release "+attempt+" from project " + projectKey + " not found";
     }
 
     if (releaseKey == null) {
-      throw new NotFoundException("Dataset " + projectKey + " was never released");
+      throw new NotFoundException(errMsg);
     }
     return releaseKey;
   }

@@ -504,7 +504,7 @@
 
   <select id="releaseAttempt" resultType="integer">
     SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL AND attempt = #{attempt}
+    WHERE source_key = #{key} AND attempt = #{attempt}
     LIMIT 1
   </select>
 
