@@ -16,12 +16,14 @@ and done it manually. So we can as well log changes here.
 
 #### 2025-08-21 verbatim_source refactoring
 ```
-CREATE TABLE _tmp_holotypes AS (
+CREATE SCHEMA vs;
+
+CREATE TABLE vs.holotypes AS (
   SELECT dataset_key, source_dataset_key, source_id, id as usage_id
   FROM verbatim_source_secondary 
   WHERE type='HOLOTYPE'
 );
-create index on _tmp_holotypes (dataset_key, usage_id);
+create index on vs.holotypes (dataset_key, usage_id);
 DELETE FROM verbatim_source_secondary WHERE type='HOLOTYPE';
 
 ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE TEXT;
@@ -37,10 +39,7 @@ CREATE TYPE INFOGROUP AS ENUM (
 );
 ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;
 
-ALTER TABLE verbatim_source RENAME TO verbatim_source_old;
-ALTER TABLE verbatim_source_secondary RENAME TO verbatim_source_secondary_old;
-
-CREATE TABLE verbatim_source (
+CREATE TABLE vs.verbatim_source (
    id INTEGER NOT NULL,
    dataset_key INTEGER NOT NULL,
    sector_key INTEGER,
@@ -52,72 +51,19 @@ CREATE TABLE verbatim_source (
    PRIMARY KEY (dataset_key, id)
 ) PARTITION BY HASH (dataset_key);
 
-CREATE TABLE verbatim_source_secondary (
+CREATE TABLE vs.verbatim_source_secondary (
    verbatim_source_key INTEGER NOT NULL,
    dataset_key INTEGER NOT NULL,
    type INFOGROUP NOT NULL,
    source_id TEXT,
    source_dataset_key INTEGER,
-   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source
+   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES vs.verbatim_source
 ) PARTITION BY HASH (dataset_key);
 ```
 In the existing dbs we then need to create the actual partition tables.
 We can use the partition command for that, i.e. to create 24 partitions:
-> ./partition.sh verbatim_source 24
-> ./partition.sh verbatim_source_secondary 24
-
-Before that you need to rename all old partitions unfortunately:
-```
-ALTER TABLE verbatim_source_mod0 RENAME TO verbatim_source_mod0_old;
-ALTER TABLE verbatim_source_mod1 RENAME TO verbatim_source_mod1_old;
-ALTER TABLE verbatim_source_mod10 RENAME TO verbatim_source_mod10_old;
-ALTER TABLE verbatim_source_mod11 RENAME TO verbatim_source_mod11_old;
-ALTER TABLE verbatim_source_mod12 RENAME TO verbatim_source_mod12_old;
-ALTER TABLE verbatim_source_mod13 RENAME TO verbatim_source_mod13_old;
-ALTER TABLE verbatim_source_mod14 RENAME TO verbatim_source_mod14_old;
-ALTER TABLE verbatim_source_mod15 RENAME TO verbatim_source_mod15_old;
-ALTER TABLE verbatim_source_mod16 RENAME TO verbatim_source_mod16_old;
-ALTER TABLE verbatim_source_mod17 RENAME TO verbatim_source_mod17_old;
-ALTER TABLE verbatim_source_mod18 RENAME TO verbatim_source_mod18_old;
-ALTER TABLE verbatim_source_mod19 RENAME TO verbatim_source_mod19_old;
-ALTER TABLE verbatim_source_mod2 RENAME TO verbatim_source_mod2_old;
-ALTER TABLE verbatim_source_mod20 RENAME TO verbatim_source_mod20_old;
-ALTER TABLE verbatim_source_mod21 RENAME TO verbatim_source_mod21_old;
-ALTER TABLE verbatim_source_mod22 RENAME TO verbatim_source_mod22_old;
-ALTER TABLE verbatim_source_mod23 RENAME TO verbatim_source_mod23_old;
-ALTER TABLE verbatim_source_mod3 RENAME TO verbatim_source_mod3_old;
-ALTER TABLE verbatim_source_mod4 RENAME TO verbatim_source_mod4_old;
-ALTER TABLE verbatim_source_mod5 RENAME TO verbatim_source_mod5_old;
-ALTER TABLE verbatim_source_mod6 RENAME TO verbatim_source_mod6_old;
-ALTER TABLE verbatim_source_mod7 RENAME TO verbatim_source_mod7_old;
-ALTER TABLE verbatim_source_mod8 RENAME TO verbatim_source_mod8_old;
-ALTER TABLE verbatim_source_mod9 RENAME TO verbatim_source_mod9_old;
-
-ALTER TABLE verbatim_source_secondary_mod0 RENAME TO verbatim_source_secondary_mod0_old;
-ALTER TABLE verbatim_source_secondary_mod1 RENAME TO verbatim_source_secondary_mod1_old;
-ALTER TABLE verbatim_source_secondary_mod10 RENAME TO verbatim_source_secondary_mod10_old;
-ALTER TABLE verbatim_source_secondary_mod11 RENAME TO verbatim_source_secondary_mod11_old;
-ALTER TABLE verbatim_source_secondary_mod12 RENAME TO verbatim_source_secondary_mod12_old;
-ALTER TABLE verbatim_source_secondary_mod13 RENAME TO verbatim_source_secondary_mod13_old;
-ALTER TABLE verbatim_source_secondary_mod14 RENAME TO verbatim_source_secondary_mod14_old;
-ALTER TABLE verbatim_source_secondary_mod15 RENAME TO verbatim_source_secondary_mod15_old;
-ALTER TABLE verbatim_source_secondary_mod16 RENAME TO verbatim_source_secondary_mod16_old;
-ALTER TABLE verbatim_source_secondary_mod17 RENAME TO verbatim_source_secondary_mod17_old;
-ALTER TABLE verbatim_source_secondary_mod18 RENAME TO verbatim_source_secondary_mod18_old;
-ALTER TABLE verbatim_source_secondary_mod19 RENAME TO verbatim_source_secondary_mod19_old;
-ALTER TABLE verbatim_source_secondary_mod2 RENAME TO verbatim_source_secondary_mod2_old;
-ALTER TABLE verbatim_source_secondary_mod20 RENAME TO verbatim_source_secondary_mod20_old;
-ALTER TABLE verbatim_source_secondary_mod21 RENAME TO verbatim_source_secondary_mod21_old;
-ALTER TABLE verbatim_source_secondary_mod22 RENAME TO verbatim_source_secondary_mod22_old;
-ALTER TABLE verbatim_source_secondary_mod23 RENAME TO verbatim_source_secondary_mod23_old;
-ALTER TABLE verbatim_source_secondary_mod3 RENAME TO verbatim_source_secondary_mod3_old;
-ALTER TABLE verbatim_source_secondary_mod4 RENAME TO verbatim_source_secondary_mod4_old;
-ALTER TABLE verbatim_source_secondary_mod5 RENAME TO verbatim_source_secondary_mod5_old;
-ALTER TABLE verbatim_source_secondary_mod6 RENAME TO verbatim_source_secondary_mod6_old;
-ALTER TABLE verbatim_source_secondary_mod7 RENAME TO verbatim_source_secondary_mod7_old;
-ALTER TABLE verbatim_source_secondary_mod8 RENAME TO verbatim_source_secondary_mod8_old;
-ALTER TABLE verbatim_source_secondary_mod9 RENAME TO verbatim_source_secondary_mod9_old;
-```
+> ./partition.sh vs.verbatim_source 24
+> ./partition.sh vs.verbatim_source_secondary 24
 
 Now further changes and data migration...
 ```
@@ -135,53 +81,53 @@ ALTER TABLE estimate ADD COLUMN verbatim_source_key INTEGER;
 ALTER TABLE media ADD COLUMN verbatim_source_key INTEGER;
 ALTER TABLE taxon_property ADD COLUMN verbatim_source_key INTEGER;
 
-CREATE SEQUENCE tmp_verbatim_source_id_seq START 1;
-INSERT INTO verbatim_source (id, usage_id, dataset_key, sector_key, source_id, source_entity, source_dataset_key, issues) 
-SELECT nextval('tmp_verbatim_source_id_seq'::regclass), v.id, v.dataset_key, u.sector_key, v.source_id, 'NAME_USAGE', v.source_dataset_key, v.issues
-FROM verbatim_source_old v LEFT JOIN name_usage u ON u.dataset_key=v.dataset_key AND u.id=v.id;
+CREATE SEQUENCE vs.tmp_verbatim_source_id_seq START 1;
+INSERT INTO vs.verbatim_source (id, usage_id, dataset_key, sector_key, source_id, source_entity, source_dataset_key, issues) 
+SELECT nextval('vs.tmp_verbatim_source_id_seq'::regclass), v.id, v.dataset_key, u.sector_key, v.source_id, 'NAME_USAGE', v.source_dataset_key, v.issues
+FROM public.verbatim_source v LEFT JOIN name_usage u ON u.dataset_key=v.dataset_key AND u.id=v.id;
 
-CREATE INDEX ON verbatim_source (usage_id);
+CREATE INDEX ON vs.verbatim_source (dataset_key, usage_id);
 
-INSERT INTO verbatim_source_secondary (verbatim_source_key, dataset_key, type, source_id, source_dataset_key) 
+INSERT INTO vs.verbatim_source_secondary (verbatim_source_key, dataset_key, type, source_id, source_dataset_key) 
 SELECT v.id, v.dataset_key, vs.type, vs.source_id, vs.source_dataset_key
-FROM verbatim_source_secondary_old vs 
-  JOIN verbatim_source v ON vs.dataset_key=v.dataset_key AND vs.id=v.usage_id;
+FROM verbatim_source_secondary vs 
+  JOIN vs.verbatim_source v ON vs.dataset_key=v.dataset_key AND vs.id=v.usage_id;
 
 UPDATE name_usage SET verbatim_source_key=v.id 
-FROM verbatim_source v
+FROM vs.verbatim_source v
 WHERE name_usage.dataset_key=v.dataset_key AND name_usage.id=v.usage_id;
-
-CREATE TABLE _tmp_nvs AS (
+CREATE TABLE vs.tmp_nvs AS (
   SELECT distinct on (n.dataset_key, n.id) n.dataset_key, n.id, u.verbatim_source_key 
   FROM name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
 );
-CREATE INDEX ON _tmp_nvs (dataset_key,id);
-ANALYZE _tmp_nvs;
+###1
+CREATE INDEX ON vs.tmp_nvs (dataset_key,id);
+ANALYZE vs.tmp_nvs;
 UPDATE name n SET verbatim_source_key=vs.verbatim_source_key 
- FROM _tmp_nvs vs 
+ FROM vs.tmp_nvs vs 
  WHERE n.dataset_key=vs.dataset_key AND n.id=vs.id;
-DROP TABLE _tmp_nvs;
+DROP TABLE vs.tmp_nvs;
+--- #1 stop here
 
 UPDATE type_material tm SET verbatim_source_key = n.verbatim_source_key 
-FROM _tmp_holotypes h 
+FROM vs.holotypes h 
   JOIN name_usage u ON u.dataset_key=h.dataset_key AND h.usage_id=u.id
   JOIN name n ON n.dataset_key=h.dataset_key AND n.id=u.name_id
 WHERE tm.dataset_key=h.dataset_key AND tm.name_id=n.id;
 
+CREATE INDEX ON vs.verbatim_source USING GIN(dataset_key, issues);
+CREATE INDEX on vs.verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
+CREATE INDEX on vs.verbatim_source (dataset_key, sector_key);
+CREATE INDEX on vs.verbatim_source (dataset_key, source_entity);
+CREATE INDEX on vs.verbatim_source (dataset_key, source_dataset_key);
 
-CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
-CREATE INDEX on verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
-CREATE INDEX on verbatim_source (dataset_key, sector_key);
-CREATE INDEX on verbatim_source (dataset_key, source_entity);
-CREATE INDEX on verbatim_source (dataset_key, source_dataset_key);
-
-CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
-CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
-CREATE INDEX ON verbatim_source_secondary (dataset_key, type);
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, verbatim_source_key);
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, source_dataset_key);
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, type);
 
 CREATE INDEX ON reference (dataset_key, verbatim_source_key);
-CREATE INDEX ON name (dataset_key, verbatim_source_key);
-CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
+#CREATE INDEX ON name (dataset_key, verbatim_source_key);
+#CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_source_key);
@@ -192,8 +138,21 @@ CREATE INDEX ON treatment (dataset_key, verbatim_source_key);
 CREATE INDEX ON estimate (dataset_key, verbatim_source_key);
 CREATE INDEX ON media (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_property (dataset_key, verbatim_source_key);
+```
 
- ALTER TABLE name ADD CONSTRAINT name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+bring the schema live.
+the next step is disruptive!
+Deploy the new application
+```
+ALTER TABLE verbatim_source RENAME TO verbatim_source_old;
+ALTER TABLE verbatim_source_secondary RENAME TO verbatim_source_secondary_old;
+ALTER TABLE vs.verbatim_source set schema public;
+ALTER TABLE vs.verbatim_source_secondary set schema public;
+```
+
+finally some new constraints & cleanup
+```
+ALTER TABLE name ADD CONSTRAINT name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
 ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
@@ -207,9 +166,11 @@ ALTER TABLE media ADD CONSTRAINT media_dataset_key_verbatim_source_key_fkey FORE
 ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
 
 
-DROP SEQUENCE tmp_verbatim_source_id_seq;
+DROP SEQUENCE vs.tmp_verbatim_source_id_seq;
+DROP TABLE vs.holotypes;
+DROP SCHEMA vs;
+
 ALTER TABLE verbatim_source DROP COLUMN usage_id;
-DROP TABLE _tmp_holotypes;
 DROP TABLE verbatim_source_secondary_old;
 DROP TABLE verbatim_source_old;
 ```
