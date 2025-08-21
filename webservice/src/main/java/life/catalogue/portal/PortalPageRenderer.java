@@ -158,7 +158,7 @@ public class PortalPageRenderer {
       // load verbatim source from last release
       var v = tdao.getSourceByUsageKey(DSID.of(e.usage.getLastReleaseKey(), id));
       data.put("verbatim", v);
-      if (v.getSourceDatasetKey() != null) {
+      if (v != null && v.getSourceDatasetKey() != null) {
         data.put("source", datasetDao.get(v.getSourceDatasetKey()));
       }
       // list all annual releases this id appears in

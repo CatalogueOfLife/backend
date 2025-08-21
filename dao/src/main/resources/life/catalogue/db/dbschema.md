@@ -100,20 +100,21 @@ CREATE TABLE vs.tmp_nvs AS (
   SELECT distinct on (n.dataset_key, n.id) n.dataset_key, n.id, u.verbatim_source_key 
   FROM name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
 );
-###1
+
 CREATE INDEX ON vs.tmp_nvs (dataset_key,id);
 ANALYZE vs.tmp_nvs;
 UPDATE name n SET verbatim_source_key=vs.verbatim_source_key 
  FROM vs.tmp_nvs vs 
  WHERE n.dataset_key=vs.dataset_key AND n.id=vs.id;
 DROP TABLE vs.tmp_nvs;
---- #1 stop here
 
 UPDATE type_material tm SET verbatim_source_key = n.verbatim_source_key 
 FROM vs.holotypes h 
   JOIN name_usage u ON u.dataset_key=h.dataset_key AND h.usage_id=u.id
   JOIN name n ON n.dataset_key=h.dataset_key AND n.id=u.name_id
 WHERE tm.dataset_key=h.dataset_key AND tm.name_id=n.id;
+
+ALTER TABLE vs.verbatim_source DROP COLUMN usage_id;
 
 CREATE INDEX ON vs.verbatim_source USING GIN(dataset_key, issues);
 CREATE INDEX on vs.verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
@@ -126,8 +127,8 @@ CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, source_dataset_key);
 CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, type);
 
 CREATE INDEX ON reference (dataset_key, verbatim_source_key);
-#CREATE INDEX ON name (dataset_key, verbatim_source_key);
-#CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
+CREATE INDEX ON name (dataset_key, verbatim_source_key);
+CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_source_key);
@@ -149,14 +150,105 @@ ALTER TABLE verbatim_source set schema vsold;
 ALTER TABLE verbatim_source_secondary set schema vsold;
 ALTER TABLE vs.verbatim_source set schema public;
 ALTER TABLE vs.verbatim_source_secondary set schema public;
+
+ALTER TABLE verbatim_source_mod0  set schema vsold;
+ALTER TABLE verbatim_source_mod1  set schema vsold;
+ALTER TABLE verbatim_source_mod10 set schema vsold;
+ALTER TABLE verbatim_source_mod11 set schema vsold;
+ALTER TABLE verbatim_source_mod12 set schema vsold;
+ALTER TABLE verbatim_source_mod13 set schema vsold;
+ALTER TABLE verbatim_source_mod14 set schema vsold;
+ALTER TABLE verbatim_source_mod15 set schema vsold;
+ALTER TABLE verbatim_source_mod16 set schema vsold;
+ALTER TABLE verbatim_source_mod17 set schema vsold;
+ALTER TABLE verbatim_source_mod18 set schema vsold;
+ALTER TABLE verbatim_source_mod19 set schema vsold;
+ALTER TABLE verbatim_source_mod2  set schema vsold;
+ALTER TABLE verbatim_source_mod20 set schema vsold;
+ALTER TABLE verbatim_source_mod21 set schema vsold;
+ALTER TABLE verbatim_source_mod22 set schema vsold;
+ALTER TABLE verbatim_source_mod23 set schema vsold;
+ALTER TABLE verbatim_source_mod3  set schema vsold;
+ALTER TABLE verbatim_source_mod4  set schema vsold;
+ALTER TABLE verbatim_source_mod5  set schema vsold;
+ALTER TABLE verbatim_source_mod6  set schema vsold;
+ALTER TABLE verbatim_source_mod7  set schema vsold;
+ALTER TABLE verbatim_source_mod8  set schema vsold;
+ALTER TABLE verbatim_source_mod9  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod0  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod1  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod10 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod11 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod12 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod13 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod14 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod15 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod16 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod17 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod18 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod19 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod2  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod20 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod21 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod22 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod23 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod3  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod4  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod5  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod6  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod7  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod8  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod9  set schema vsold;
+
+ALTER TABLE vs.verbatim_source_mod0  set schema public;
+ALTER TABLE vs.verbatim_source_mod1  set schema public;
+ALTER TABLE vs.verbatim_source_mod10 set schema public;
+ALTER TABLE vs.verbatim_source_mod11 set schema public;
+ALTER TABLE vs.verbatim_source_mod12 set schema public;
+ALTER TABLE vs.verbatim_source_mod13 set schema public;
+ALTER TABLE vs.verbatim_source_mod14 set schema public;
+ALTER TABLE vs.verbatim_source_mod15 set schema public;
+ALTER TABLE vs.verbatim_source_mod16 set schema public;
+ALTER TABLE vs.verbatim_source_mod17 set schema public;
+ALTER TABLE vs.verbatim_source_mod18 set schema public;
+ALTER TABLE vs.verbatim_source_mod19 set schema public;
+ALTER TABLE vs.verbatim_source_mod2  set schema public;
+ALTER TABLE vs.verbatim_source_mod20 set schema public;
+ALTER TABLE vs.verbatim_source_mod21 set schema public;
+ALTER TABLE vs.verbatim_source_mod22 set schema public;
+ALTER TABLE vs.verbatim_source_mod23 set schema public;
+ALTER TABLE vs.verbatim_source_mod3  set schema public;
+ALTER TABLE vs.verbatim_source_mod4  set schema public;
+ALTER TABLE vs.verbatim_source_mod5  set schema public;
+ALTER TABLE vs.verbatim_source_mod6  set schema public;
+ALTER TABLE vs.verbatim_source_mod7  set schema public;
+ALTER TABLE vs.verbatim_source_mod8  set schema public;
+ALTER TABLE vs.verbatim_source_mod9  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod0  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod1  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod10 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod11 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod12 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod13 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod14 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod15 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod16 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod17 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod18 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod19 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod2  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod20 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod21 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod22 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod23 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod3  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod4  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod5  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod6  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod7  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod8  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod9  set schema public;
 ```
-
--- revert
-ALTER TABLE verbatim_source set schema vs;
-ALTER TABLE verbatim_source_secondary set schema vs;
-ALTER TABLE vsold.verbatim_source set schema public;
-ALTER TABLE vsold.verbatim_source_secondary set schema public;
-
 
 finally some new constraints & cleanup
 ```
@@ -178,7 +270,6 @@ DROP SEQUENCE vs.tmp_verbatim_source_id_seq;
 DROP TABLE vs.holotypes;
 DROP SCHEMA vs;
 
-ALTER TABLE verbatim_source DROP COLUMN usage_id;
 DROP TABLE verbatim_source_secondary_old;
 DROP TABLE verbatim_source_old;
 ```
