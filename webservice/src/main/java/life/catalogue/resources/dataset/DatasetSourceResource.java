@@ -36,6 +36,12 @@ public class DatasetSourceResource {
     this.sourceDao = sourceDao;
   }
 
+  /**
+   * @param datasetKey project or release key
+   * @param inclPublisherSources if true includes also every source from sector publishers
+   * @param splitMerge if true potentially lists a source twice with different counts in case it has both merge and non merge sectors
+   * @param notCurrentOnly if true list only those sources that have a more recent import attempt in their main dataset
+   */
   @GET
   public List<DatasetSourceMapper.SourceDataset> projectOrReleaseSources(@PathParam("key") int datasetKey,
                                                                          @QueryParam("inclPublisherSources") boolean inclPublisherSources,

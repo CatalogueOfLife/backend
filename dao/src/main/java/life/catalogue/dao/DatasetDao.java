@@ -331,6 +331,23 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       .forEach(d -> bus.publish(ChangeDoi.delete(d.getDoi())));
   }
 
+  /**
+   * Method to completely delete all information related to a dataset.
+   * Should be used only to completely delete all releases when a project gets deleted.
+   * @param key
+   * @param user
+   */
+  private void deleteEntirely(Integer key, int user) {
+    delete(key, user);
+    // now also delete things we usually keep for published releases
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(SectorMapper.class).deleteByDataset(key);
+      session.getMapper(PublisherMapper.class).deleteByDataset(key);
+      session.getMapper(CitationMapper.class).deleteByRelease(key);
+      session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
+    }
+  }
+
   @Override
   protected void deleteBefore(Integer key, Dataset old, int user, DatasetMapper mapper, SqlSession session) {
     if (Datasets.COL == key) {
@@ -350,27 +367,27 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       throw new IllegalArgumentException("You cannot delete public annual releases of the COL project");
     }
 
-    DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+    DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.PROJECT) {
       // This is a recursive project delete.
       List<Dataset> releases = mapper.listReleases(key);
-      LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
+      LOG.warn("Deleting project {} with all its {} releases and source information!", key, releases.size());
 
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
       LOG.warn("Request deletion of all DOIs from project {}", key);
-      postDoiDeletionForSources(psm, key);
+      postDoiDeletionForSources(dsm, key);
       // cascade to releases first before we remove the mother project dataset
       for (var d : releases) {
         LOG.info("Deleting release {} of project {}", d.getKey(), key);
-        postDoiDeletionForSources(psm, d.getKey());
-        delete(d.getKey(), user);
+        postDoiDeletionForSources(dsm, d.getKey());
+        deleteEntirely(d.getKey(), user);
       }
     }
     // remove source citations
     var cm = session.getMapper(CitationMapper.class);
     cm.delete(key);
     // remove decisions, estimates, dataset patches, archived usages, name matches,
-    // but NOT sectors which are referenced from data tables
+    // but NOT sectors or sector_publisher which are referenced from data tables and which we want to keep for public release
     for (Class<DatasetProcessable<?>> mClass : new Class[]{
       DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameUsageMapper.class, NameMatchMapper.class
     }) {
@@ -379,7 +396,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       session.commit();
     }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
-    Set<DOI> dois = psm.listReleaseSourcesSimple(key, false).stream()
+    Set<DOI> dois = dsm.listReleaseSourcesSimple(key, false).stream()
         .map(DatasetSourceMapper.SourceDataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
@@ -395,9 +412,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // delete all partitioned data
     deleteData(key, session);
     session.commit();
-    // now also remove sectors
-    session.getMapper(SectorMapper.class).deleteByDataset(key);
-    // now also clear filesystem
+    // now also remove sectors, unless it was a published release.
+    // We want to keep the sector and sector_publisher entries for deleted, public release !!!
+    if (old == null || old.isPrivat() || old.getOrigin() == DatasetOrigin.PROJECT) {
+      session.getMapper(SectorMapper.class).deleteByDataset(key);
+      session.getMapper(PublisherMapper.class).deleteByDataset(key);
+    }
+    // now also clear filesystem - again release metrics are stored with the project so this is safe
     diDao.removeMetrics(key);
     FileUtils.deleteQuietly(nCfg.scratchDir(key));
     FileUtils.deleteQuietly(nCfg.archiveDir(key));
@@ -408,7 +429,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (old != null && old.isPrivat()) {
       // project source dataset archives & its citations
       LOG.info("Delete archived sources for private dataset {}", key);
-      psm.deleteByRelease(key);
+      dsm.deleteByRelease(key);
       cm.deleteByRelease(key);
       // exports
       if (exportDao == null) {

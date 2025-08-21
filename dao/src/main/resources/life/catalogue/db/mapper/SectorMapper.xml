@@ -250,7 +250,7 @@
   <select id="listByDatasetPublisher" resultMap="sectorResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-      JOIN dataset d ON d.key = s.subject_dataset_key
+      JOIN dataset_source d ON d.dataset_key=s.dataset_key AND d.key = s.subject_dataset_key
     WHERE s.dataset_key = #{datasetKey}
     AND d.gbif_publisher_key = #{publisherKey}
   </select>
