@@ -144,11 +144,19 @@ bring the schema live.
 the next step is disruptive!
 Deploy the new application
 ```
-ALTER TABLE verbatim_source RENAME TO verbatim_source_old;
-ALTER TABLE verbatim_source_secondary RENAME TO verbatim_source_secondary_old;
+CREATE SCHEMA vsold;
+ALTER TABLE verbatim_source set schema vsold;
+ALTER TABLE verbatim_source_secondary set schema vsold;
 ALTER TABLE vs.verbatim_source set schema public;
 ALTER TABLE vs.verbatim_source_secondary set schema public;
 ```
+
+-- revert
+ALTER TABLE verbatim_source set schema vs;
+ALTER TABLE verbatim_source_secondary set schema vs;
+ALTER TABLE vsold.verbatim_source set schema public;
+ALTER TABLE vsold.verbatim_source_secondary set schema public;
+
 
 finally some new constraints & cleanup
 ```
