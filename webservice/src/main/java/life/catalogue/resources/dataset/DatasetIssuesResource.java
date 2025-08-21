@@ -3,7 +3,7 @@ package life.catalogue.resources.dataset;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.common.text.StringUtils;
 import life.catalogue.common.ws.MoreMediaTypes;
-import life.catalogue.db.mapper.VerbatimRecordMapper;
+import life.catalogue.db.mapper.TmpIssueMapper;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
 import java.util.stream.Stream;
@@ -47,11 +47,11 @@ public class DatasetIssuesResource {
   public Stream<Object[]> exportCsv(@PathParam("key") int datasetKey,
                                     @Context SqlSession session) {
     // export entire dataset with issues
-    VerbatimRecordMapper vm = session.getMapper(VerbatimRecordMapper.class);
-    vm.createTmpIssuesTable(datasetKey, null);
+    var ism = session.getMapper(TmpIssueMapper.class);
+    ism.createTmpIssuesTable(datasetKey, null);
     return Stream.concat(
       Stream.of(EXPORT_HEADERS),
-      Streams.stream(vm.processIssues(datasetKey))
+      Streams.stream(ism.processIssues())
              .map(this::map)
     );
   }

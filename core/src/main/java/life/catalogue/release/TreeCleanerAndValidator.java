@@ -6,15 +6,14 @@ import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
+import life.catalogue.dao.IssueAdder;
 import life.catalogue.dao.ParentStack;
 import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.NameValidator;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -48,9 +47,10 @@ import org.slf4j.LoggerFactory;
 public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, AutoCloseable {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
-  final SqlSessionFactory factory;
-  final int datasetKey;
-  final ParentStack<XLinneanNameUsage> parents;
+  private final SqlSessionFactory factory;
+  private final IssueAdder issueAdder;
+  private final int datasetKey;
+  private final ParentStack<XLinneanNameUsage> parents;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
   private int maxDepth = 0;
@@ -59,6 +59,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     this.factory = factory;
     this.datasetKey = datasetKey;
     this.parents = new ParentStack<>();
+    this.issueAdder = new IssueAdder(datasetKey, factory);
     if (removeEmptyGenera) {
       // add stack handler that considers to remove empty genera and creates missing autonyms
       parents.addHandler(new ParentStack.StackHandler<>() {
@@ -72,16 +73,13 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
             LOG.info("Remove empty {}", taxon.usage);
             final var key = DSID.of(datasetKey, taxon.usage.getId());
             try (SqlSession session = factory.openSession(true)) {
-              var vm = session.getMapper(VerbatimSourceMapper.class);
               var um = session.getMapper(NameUsageMapper.class);
               // first remove all synonyms
               for (var c : um.childrenIds(key)) {
-                vm.delete(key.id(c));
                 um.delete(key);
               }
-              vm.delete(key.id(taxon.usage.getId()));
               um.delete(key);
-              // names, references and related are removed as orphans at the end of the release
+              // names, references, verbatim source and related are removed as orphans at the end of the release
             }
           }
         }
@@ -101,11 +99,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
       public void end(ParentStack.SNC<XLinneanNameUsage> taxon) {
         if (taxon.usage.getRank().higherThan(Rank.SPECIES_AGGREGATE) && taxon.usage.numSpecies == 0) {
           LOG.debug("Flag taxon without species: {}", taxon.usage);
-          final var key = DSID.of(datasetKey, taxon.usage.getId());
-          try (SqlSession session = factory.openSession(true)) {
-            var vm = session.getMapper(VerbatimSourceMapper.class);
-            vm.addIssue(key, Issue.NO_SPECIES_INCLUDED);
-          }
+          issueAdder.addIssue(taxon.usage.getId(), Issue.NO_SPECIES_INCLUDED);
         }
       }
     });
@@ -203,16 +197,9 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     }
     // persist if we have flagged issues
     if (issues.hasIssues()) {
-      try (SqlSession session = factory.openSession(true)) {
-        var vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssues(dsid(sn), issues.getIssues());
-        flagged.incrementAndGet();
-      }
+      issueAdder.addIssues(sn.getId(), issues.getIssues());
+      flagged.incrementAndGet();
     }
-  }
-
-  DSID<String> dsid(LinneanNameUsage u){
-    return DSID.of(datasetKey, u.getId());
   }
 
   public int getCounter() {
@@ -228,7 +215,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     // nothing so far
+    issueAdder.close();
   }
 }

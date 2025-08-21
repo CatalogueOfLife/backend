@@ -87,7 +87,7 @@ public class PortalPageRendererTest {
     var v = new VerbatimSource();
     v.setDatasetKey(anu.getLastReleaseKey());
     v.setSourceDatasetKey(ds.getKey());
-    when(tdao.getSource(any())).thenReturn(v);
+    when(tdao.getSourceByUsageKey(any())).thenReturn(v);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
     renderer = new PortalPageRenderer(ddao, sdao, tdao, p, false);

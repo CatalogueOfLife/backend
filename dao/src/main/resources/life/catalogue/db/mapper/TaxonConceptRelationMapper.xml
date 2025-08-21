@@ -29,6 +29,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -42,6 +43,7 @@
     #{taxonId},
     #{relatedTaxonId},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::TAXONCONCEPTRELTYPE,
     #{referenceId},
     #{remarks},
@@ -125,7 +127,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE taxon_concept_rel SET sector_key = NULL
+    UPDATE taxon_concept_rel SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

@@ -32,6 +32,7 @@
   <sql id="COLS_COPY">
     related_taxon_scientific_name,
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -46,6 +47,7 @@
     #{relatedTaxonId},
     #{relatedTaxonScientificName},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::SPECIESINTERACTIONTYPE,
     #{referenceId},
     #{remarks},
@@ -128,7 +130,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE species_interaction SET sector_key = NULL
+    UPDATE species_interaction SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

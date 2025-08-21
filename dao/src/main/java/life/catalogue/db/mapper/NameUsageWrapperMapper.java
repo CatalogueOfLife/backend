@@ -20,10 +20,11 @@ public interface NameUsageWrapperMapper {
    * Issues and decisions are included, but publisherKey and sector information is not retrieved!
    *
    * @param datasetKey
+   * @param isProjectOrRelease true if the dataset is a project or release. Used to retrieve the correct issues
    * @param taxonId
    * @return
    */
-  NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("id") String taxonId);
+  NameUsageWrapper get(@Param("datasetKey") int datasetKey, @Param("isProjectOrRelease") boolean isProjectOrRelease, @Param("id") String taxonId);
 
   /**
    * Get bare name by its name id. If a usage with the name exists no bare name can be retrieved!

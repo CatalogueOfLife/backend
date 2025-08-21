@@ -246,9 +246,9 @@ public class XReleaseIT extends SectorSyncTestBase {
       try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
         var num = session.getMapper(NameUsageMapper.class);
         var vm = session.getMapper(VerbatimSourceMapper.class);
-        var res = num.findOne(xrel.newDatasetKey, Rank.FAMILY, "Anguidae");
-        assertNotNull(res);
-        var v = vm.get(key.id(res.getId()));
+        var nu = num.findOne(xrel.newDatasetKey, Rank.FAMILY, "Anguidae");
+        assertNotNull(nu);
+        var v = vm.getByUsage(key.id(nu.getId()));
         assertTrue(v.getIssues().contains(Issue.CLASSIFICATION_RANK_ORDER_INVALID));
       }
     }

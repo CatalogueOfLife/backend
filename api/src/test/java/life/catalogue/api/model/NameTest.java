@@ -54,6 +54,16 @@ public class NameTest extends SerdeTestBase<Name> {
     assertEquals("Toleria aegerides (Strand, [1916])", n.getLabel());
   }
 
+  @Test
+  public void equals() throws Exception {
+    Name n1 = new Name();
+    Name n2 = new Name();
+    assertEquals(n1, n2);
+
+    n2 = TestEntityGenerator.newName();
+    assertNotEquals(n1, n2);
+  }
+
   /**
    * https://github.com/CatalogueOfLife/checklistbank/issues/1122
    */

@@ -31,6 +31,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     area,
     gazetteer,
     status,
@@ -45,6 +46,7 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     coalesce(#{obj.area.id}, #{obj.area.name}),
     #{obj.area.gazetteer}::GAZETTEER,
     #{obj.status}::DISTRIBUTIONSTATUS,
@@ -141,7 +143,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE distribution SET sector_key = NULL
+    UPDATE distribution SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

@@ -29,6 +29,7 @@
   <sql id="COLS_COPY">
     ${alias}id,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}csl,
     ${alias}citation,
     ${alias}year,
@@ -41,6 +42,7 @@
     #{sectorKey},
     #{id},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{csl, typeHandler=life.catalogue.db.type.CslJsonHandler}::jsonb,
     #{citation},
     #{year},
@@ -180,6 +182,12 @@
     WHERE id = #{id} AND dataset_key=#{datasetKey}
   </update>
 
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE reference
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <delete id="delete" parameterType="map">
     DELETE FROM reference
     WHERE dataset_key=#{key.datasetKey} AND id = #{key.id}
@@ -202,7 +210,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE reference SET sector_key = NULL
+    UPDATE reference SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

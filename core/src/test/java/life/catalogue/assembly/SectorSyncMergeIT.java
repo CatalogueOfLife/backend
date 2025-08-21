@@ -301,12 +301,10 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             assertEquals("https://bionames.org/references/08f3a09b1eb3a4e3c8a83c26b7911de9", ref.getCsl().getURL());
             assertEquals("A new genus and ten new species of jumping plant lice (Hemiptera: Triozidae) from Allocasuarina (Casuarinaceae) in Australia", ref.getCsl().getTitle());
             var u = getOneUsage(num, n);
-            var v = vsm.getWithSources(u);
+            var vs = vsm.getByName(u.getName());
+            var v = vsm.addSources(vs);
             assertNotNull(v);
             assertEquals(1, v.getSecondarySources().size());
-            for (var ss : v.getSecondarySources().values()) {
-              assertEquals(EntityType.NAME, ss.getEntity());
-            }
             break;
 
           case "Aacanthocnema dobsoni":

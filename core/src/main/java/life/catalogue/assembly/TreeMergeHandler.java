@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;
@@ -401,17 +402,16 @@ public class TreeMergeHandler extends TreeBaseHandler {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       if (candidates.size() == 1) {
         Name existing = candidates.get(0);
-        var pn = updateName(existing, n, upd, null);
+        VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
+        var pn = updateName(existing, n, vs, upd, null);
 
         if (!upd.isEmpty()) {
           updated++;
+          // make sure name has a vs key
+          var vskey = vsKey(pn);
+          vsm.insertSources(vskey, n, upd);
           // update name
           nm.update(pn);
-          // track source - we can track name sources, but need to link them to a usage - or several ;)
-          for (var u : num.listByNameID(existing.getDatasetKey(), existing.getId(), new Page())) {
-            vsm.insertSources(u, EntityType.NAME, n, upd);
-          }
-
           // commit in batches
           if (updated % 1000 == 0) {
             interruptIfCancelled();
@@ -419,6 +419,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
             batchSession.commit();
           }
         }
+      } else {
+        LOG.debug("Cannot merge {} into {} matching names", n, candidates.size());
       }
     }
   }
@@ -573,6 +575,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
     return existingParentFound;
   }
 
+  /**
+   * Lazily persist a new verbatim source if the key is not existing yet
+   */
+  private int verbatimSourceKey(VerbatimSource v) {
+    if (v.getId() == null) {
+      // first persist to create the key
+      v.setId(vsIdGen++);
+      vsm.create(v);
+    }
+    return v.getId();
+  }
   private void updateParent(NameUsageBase nu, DSID<String> existingUsageKey, UsageMatch existing, SimpleNameWithNidx existingParent, SimpleNameWithNidx parent, Set<InfoGroup> upd) {
     LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
     numRO.updateParentId(existingUsageKey, parent.getId(), user);
@@ -583,7 +596,13 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (nu.getStatus().getMajorStatus() == existing.usage.getStatus().getMajorStatus()) {
       LOG.debug("Update {} {} {} from source {}:{} with status {}", existing.usage.getStatus(), existing.usage.getRank(), existing.usage.getLabel(), sector.getSubjectDatasetKey(), nu.getId(), nu.getStatus());
 
+      // we need to
+      // 1) load the primary source and add secondary sources if we update anything
+      // 2) create a new verbatim source for all newly added supplementary records like vernaculars, distributions, etc
+      //    we do only create the VS record when it is actually needed, so we start with just the instance without persisted key:
+      VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), nu.getId(), EntityType.NAME_USAGE);
       Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
+
       // set targetKey to the existing usage
       final var existingUsageKey = DSID.of(targetDatasetKey, existing.usage.getId());
       if (existing.usage.getStatus().isTaxon()) {
@@ -635,7 +654,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
             }
             // a new vernacular
             vn.setId(null);
-            vn.setVerbatimKey(null);
+            vn.setVerbatimSourceKey(verbatimSourceKey(vs));
             vn.setSectorKey(sector.getId());
             vn.setDatasetKey(targetDatasetKey);
             vn.applyUser(user);
@@ -650,14 +669,30 @@ public class TreeMergeHandler extends TreeBaseHandler {
       }
 
       // try to also update the name - conditional checks within the subroutine
-      Name pn = updateName(null, nu.getName(), upd, existing);
+      // this can hange the existing usage ID if the authorship changes !!!
+      Name pn = updateName(null, nu.getName(), vs, upd, existing);
 
       if (!upd.isEmpty()) {
         this.updated++;
-        // update name
+        // update name & usage vsKey
+        // both name and usage can have a key to a verbatim source. Ideally they are the same
+        Integer uvsKey = vsm.getVSKeyByUsage(existing);
+        DSID<Integer> vsKey;
+        if (uvsKey != null) {
+          vsKey = DSID.of(targetDatasetKey, uvsKey);
+        } else if (pn.getVerbatimSourceKey() != null) {
+          vsKey = DSID.of(targetDatasetKey, pn.getVerbatimSourceKey());
+        } else {
+          vsKey = createSecondaryVS();
+        }
+        vsm.insertSources(vsKey, nu, upd);
+        if (pn.getVerbatimSourceKey() == null) {
+          pn.setVerbatimSourceKey(vsKey.getId());
+        }
         nm.update(pn);
-        // track source
-        vsm.insertSources(DSID.of(targetDatasetKey, existing.usage.getId()), EntityType.NAME_USAGE, nu, upd);
+        if (uvsKey == null) {
+          num.updateVerbatimSourceKey(existingUsageKey, vsKey.getId());
+        }
         batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
         matcher.invalidate(targetDatasetKey, existing.usage.getCanonicalId());
       }
@@ -673,22 +708,51 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   /**
+   * Creates a new verbatim source record to hold issues and secondary sources.
+   * But do not link to a primary source, i.e. not populate sector, sourceId & source dataset
+   */
+  private VerbatimSource createSecondaryVS() {
+    var vs = new VerbatimSource(targetDatasetKey, vsIdGen++, null, null, null, null);
+    vsm.create(vs);
+    return vs;
+  }
+
+  /**
+   * Use the verbatim source key from a name instance or create a new emtpy VS record with no source link.
+   * The name.verbatimSourceKey property is set, but not persisted yet!
+   * @return the VS key
+   */
+  private DSID<Integer> vsKey(Name n) {
+    // we can see usages and names that were manually created and have not been synced, this do not have a verbatim source!
+    // So we need to create missing ones in such cases...
+    if (n.getVerbatimSourceKey() != null) {
+      return DSID.of(targetDatasetKey, n.getVerbatimSourceKey());
+    }
+    var vs = createSecondaryVS();
+    n.setVerbatimSourceKey(vs.getId());
+    return vs;
+  }
+
+  /**
    * Either the Name n or the existing usage must be given!
    */
   private Name lazilyLoad(@Nullable Name n, @Nullable UsageMatch existingUsage) {
     return n != null ? n : loadFromDB(existingUsage.usage.getId());
   }
+
   /**
+   * Updates an existing name.
    * Either the Name n or the existing usage must be given!
    *
    * @param n name to be updated
    * @param src source for updates
-   * @param upd
+   * @param vs verbatim source for the source record, but might not have been persisted yet with a key. Will only be used for newly created records like type material!
+   * @param upd set of info groups that have been updated from this verbatim source. Will be persisted in the calling method.
    * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
    *                 Not needed for bare name merging
    * @return
    */
-  private Name updateName(@Nullable Name n, Name src, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
+  private Name updateName(@Nullable Name n, Name src, VerbatimSource vs, Set<InfoGroup> upd, @Nullable UsageMatch existingUsage) {
     if (n == null && existingUsage == null) return null;
 
     if (syncNames) {
@@ -777,7 +841,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
         // a new type
         tm.setNameId(n.getId());
-        tm.setVerbatimKey(null);
+        tm.setVerbatimSourceKey(verbatimSourceKey(vs));
         tm.setSectorKey(sector.getId());
         tm.setDatasetKey(targetDatasetKey);
         tm.applyUser(user);
@@ -792,9 +856,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
           mapper.create(tm);
         }
         existingTMs.add(tm);
-        if (tm.getStatus().getRoot() == TypeStatus.HOLOTYPE) {
-          upd.add(InfoGroup.HOLOTYPE);
-        }
       }
     }
 

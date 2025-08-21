@@ -107,7 +107,7 @@ public class NameMapperTest extends CRUDDatasetScopedStringTestBase<Name, NameMa
     
     n1 = removeDbCreatedProps(n1);
     Name n1b = removeDbCreatedProps(nameMapper.get(n1.getKey()));
-    printDiff(n1, n1b);
+    //printDiff(n1, n1b);
     assertEquals(n1, n1b);
     
     // with explicit homotypic group

@@ -1,14 +1,12 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 
 import java.util.Objects;
 
 public class SecondarySource implements DSID<String> {
-  private String id;
-  private Integer datasetKey;
-  private EntityType entity; // currently only NameUsage, Name or Reference is supported!
+  private String id; // the secondary source's name usage identifier
+  private Integer datasetKey; // the secondary source's dataset key
   private InfoGroup type;
 
   @Override
@@ -31,14 +29,6 @@ public class SecondarySource implements DSID<String> {
     this.datasetKey = datasetKey;
   }
 
-  public EntityType getEntity() {
-    return entity;
-  }
-
-  public void setEntity(EntityType entity) {
-    this.entity = entity;
-  }
-
   public InfoGroup getType() {
     return type;
   }
@@ -51,11 +41,11 @@ public class SecondarySource implements DSID<String> {
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) return false;
     SecondarySource that = (SecondarySource) o;
-    return Objects.equals(id, that.id) && Objects.equals(datasetKey, that.datasetKey) && entity == that.entity && type == that.type;
+    return Objects.equals(id, that.id) && Objects.equals(datasetKey, that.datasetKey) && type == that.type;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, datasetKey, entity, type);
+    return Objects.hash(id, datasetKey, type);
   }
 }

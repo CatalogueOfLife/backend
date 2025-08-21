@@ -98,7 +98,7 @@
       LEFT JOIN reference r ON r.dataset_key=#{datasetKey} AND n.published_in_id=r.id
     <choose>
       <when test="addSrc">
-        LEFT JOIN verbatim_source v ON v.dataset_key=#{datasetKey} AND v.id=u.id
+        LEFT JOIN verbatim_source v ON v.dataset_key=#{datasetKey} AND v.id=u.verbatim_source_key
         LEFT JOIN decision ed ON ed.subject_id=v.source_id AND ed.subject_dataset_key=v.source_dataset_key AND ed.dataset_key=#{projectKey}
       </when>
       <otherwise>

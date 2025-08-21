@@ -30,6 +30,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -43,6 +44,7 @@
     #{nameId},
     #{relatedNameId},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::NOMRELTYPE,
     #{referenceId},
     #{remarks},
@@ -194,7 +196,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE name_rel SET sector_key = NULL
+    UPDATE name_rel SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

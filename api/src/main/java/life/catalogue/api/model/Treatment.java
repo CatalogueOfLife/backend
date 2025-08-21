@@ -11,6 +11,7 @@ import java.util.Objects;
 public class Treatment extends DatasetScopedEntity<String> implements VerbatimEntity {
 
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private TreatmentFormat format;
   private String document;
 
@@ -22,6 +23,14 @@ public class Treatment extends DatasetScopedEntity<String> implements VerbatimEn
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public TreatmentFormat getFormat() {
@@ -42,17 +51,18 @@ public class Treatment extends DatasetScopedEntity<String> implements VerbatimEn
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof Treatment)) return false;
     if (!super.equals(o)) return false;
+
     Treatment treatment = (Treatment) o;
     return Objects.equals(verbatimKey, treatment.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, treatment.verbatimSourceKey) &&
       format == treatment.format &&
       Objects.equals(document, treatment.document);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, format, document);
+    return Objects.hash(super.hashCode(), verbatimKey, verbatimSourceKey, format, document);
   }
 }

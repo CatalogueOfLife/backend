@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.junit.TestDataRule;
@@ -13,13 +12,13 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import static life.catalogue.api.vocab.Issue.DOI_NOT_FOUND;
 import static org.junit.Assert.*;
 
 public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMapper> {
 
   int datasetKey = testDataRule.testData.key;
-  String uid = "u100";
-  DSID<String> key = DSID.of(datasetKey,uid);
+  int id = 1;
 
   public VerbatimSourceMapperTest() {
     super(VerbatimSourceMapper.class, TestDataRule.fish());
@@ -27,7 +26,8 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
   VerbatimSource create(){
     VerbatimSource v = new VerbatimSource();
-    v.setKey(key);
+    v.setId(id++);
+    v.setDatasetKey(datasetKey);
     v.setSourceId("source77");
     v.setSourceDatasetKey(77);
     v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE, Issue.BASIONYM_DERIVED);
@@ -66,37 +66,23 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
 
     var issues = new HashSet<>(v1.getIssues());
     var iss = mapper().getIssues(v1).getIssues();
-    assertEquals(iss, issues);
+    assertEquals(issues, iss);
 
+    // add already existing issue - no change
     mapper().addIssue(v1, Issue.BASIONYM_DERIVED);
-    issues.add(Issue.BASIONYM_DERIVED);
-
     iss = mapper().getIssues(v1).getIssues();
-    assertEquals(iss, issues);
+    assertEquals(issues, iss);
 
-    // now without a pre-existing record
-    DSID<String> key = DSID.of(datasetKey, "u1");
-    mapper().addIssue(key, Issue.BASIONYM_DERIVED);
-    iss = mapper().getIssues(key).getIssues();
-    assertEquals(iss, Set.of(Issue.BASIONYM_DERIVED));
+    // new issue
+    mapper().addIssue(v1, DOI_NOT_FOUND);
+    iss = mapper().getIssues(v1).getIssues();
+    issues.add(DOI_NOT_FOUND);
+    assertEquals(issues, iss);
   }
 
   @Test
   public void delete() {
-    Taxon t = new Taxon(mapper(TaxonMapper.class).get(key));
-
-    VerbatimSource v1 = new VerbatimSource();
-    v1.setKey(t);
-    v1.setSourceId("source77");
-    v1.setSourceDatasetKey(77);
-    mapper().create(v1);
-
-    commit();
-    assertNotNull(mapper().get(v1));
-
-    // non existing sector
-    mapper().deleteBySector(DSID.of(datasetKey, 789456));
-    assertNotNull(mapper().get(v1));
+    var t = createTaxon();
 
     Sector s = new Sector();
     s.setDatasetKey(datasetKey);
@@ -106,8 +92,15 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     TestEntityGenerator.setUser(s);
     mapper(SectorMapper.class).create(s);
 
-    t.setSectorKey(s.getId());
-    mapper(TaxonMapper.class).update(t);
+    VerbatimSource v1 = create();
+    v1.setSectorKey(s.getId());
+    mapper().create(v1);
+
+    commit();
+    assertNotNull(mapper().get(v1));
+
+    // non existing sector
+    mapper().deleteBySector(DSID.of(datasetKey, 789456));
     assertNotNull(mapper().get(v1));
 
     mapper().deleteBySector(s);
@@ -122,17 +115,23 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     CopyDatasetTestComponent.copy(mapper(), datasetKey, true);
   }
 
+  Taxon createTaxon() {
+    Taxon t = TestEntityGenerator.newTaxon(datasetKey);
+    mapper(NameMapper.class).create(t.getName());
+    mapper(TaxonMapper.class).create(t);
+    return t;
+  }
 
   @Test
   public void secondarySources() {
-    Taxon t = new Taxon(mapper(TaxonMapper.class).get(key));
-
+    var t = createTaxon();
     VerbatimSource v1 = create();
     mapper().create(v1);
     commit();
 
     // non existing vsource
-    mapper().deleteSources(DSID.of(datasetKey, "notThere"));
+    assertNotNull(mapper().get(v1));
+    mapper().deleteSources(DSID.of(datasetKey, 123456789));
     assertNotNull(mapper().get(v1));
 
     // get
@@ -144,7 +143,7 @@ public class VerbatimSourceMapperTest extends MapperTestBase<VerbatimSourceMappe
     // add sources
     var groups = Set.of(InfoGroup.PARENT, InfoGroup.PUBLISHED_IN, InfoGroup.AUTHORSHIP);
     final var srcKey = DSID.of(34, "dtfgzhn");
-    mapper().insertSources(v1, EntityType.NAME_USAGE, srcKey, groups);
+    mapper().insertSources(v1, srcKey, groups);
 
     srcs = mapper().getSources(v1);
     var k = srcs.keySet();

@@ -211,7 +211,7 @@ public class DatasetInfoCache implements DatasetListener {
       update(event.key, event.old, true);
 
     } else if (event.isUpdated()) {
-      LOG.info("Update event registered for dataset {}", event.key);
+      LOG.debug("Update event registered for dataset {}", event.key);
       update(event.key, event.obj, event.obj.hasDeletedDate());
     }
   }

@@ -35,6 +35,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     url,
     type,
     format,
@@ -54,6 +55,7 @@
     #{obj.sectorKey},
     #{taxonId},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.url},
     #{obj.type}::MEDIATYPE,
     #{obj.format},
@@ -139,7 +141,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE media SET sector_key = NULL
+    UPDATE media SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

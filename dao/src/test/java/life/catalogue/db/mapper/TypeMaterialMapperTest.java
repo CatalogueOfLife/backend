@@ -48,7 +48,7 @@ public class TypeMaterialMapperTest extends CRUDEntityTestBase<DSID<String>, Typ
 
     removeDbCreatedProps(u1);
     TypeMaterial u2 = removeDbCreatedProps(mapper().get(u1.getKey()));
-    printDiff(u1, u2);
+    //printDiff(u1, u2);
     assertEquals(u1, u2);
   }
 

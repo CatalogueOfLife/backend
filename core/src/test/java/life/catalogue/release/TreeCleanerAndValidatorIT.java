@@ -79,7 +79,7 @@ public class TreeCleanerAndValidatorIT {
     assertNotNull(u);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      var v = vm.get(DSID.of(datasetKey, u.getId()));
+      var v = vm.getByUsage(DSID.of(datasetKey, u.getId()));
       if (issues == null || issues.length == 0) {
         assertFalse(v != null && v.hasIssues());
       } else {

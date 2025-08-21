@@ -58,9 +58,15 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
     }
   }
 
-  public VerbatimSource getSource(final DSID<String> key) {
+  /**
+   * @param key name usage key
+   * @return the verbatim source record with 2ndary sources for the given name usage key or null if none exists
+   */
+  public VerbatimSource getSourceByUsageKey(final DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
-      return session.getMapper(VerbatimSourceMapper.class).getWithSources(key);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var v = vsm.getByUsage(key);
+      return vsm.addSources(v);
     }
   }
 

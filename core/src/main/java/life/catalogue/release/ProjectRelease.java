@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -16,10 +17,7 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.db.mapper.CitationMapper;
-import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
@@ -64,6 +62,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   protected final ReferenceDao rDao;
   protected final NameDao nDao;
   protected final SectorDao sDao;
+  protected final VerbatimDao vDao;
   private final UriBuilder datasetApiBuilder;
   private final URI portalURI;
   private final CloseableHttpClient client;
@@ -105,6 +104,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.client = client;
     this.exportManager = exportManager;
     this.doiUpdater = doiUpdater;
+    this.vDao = new VerbatimDao(factory);
   }
 
   @Override
@@ -249,6 +249,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     final LocalDateTime start = LocalDateTime.now();
     nDao.deleteOrphans(dKey, null, user);
     rDao.deleteOrphans(dKey, null, user);
+    vDao.deleteOrphans(dKey, user);
     DateUtils.logDuration(LOG, "Removing orphans", start);
   }
 

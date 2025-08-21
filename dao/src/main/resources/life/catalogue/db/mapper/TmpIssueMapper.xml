@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.TmpIssueMapper">
+
+  <resultMap id="issueResultMap" type="SimpleWithID" autoMapping="false">
+    <id property="id" column="id" />
+    <result property="issues" column="issues" typeHandler="life.catalogue.db.type.IssueSetTypeHandler"/>
+  </resultMap>
+
+  <sql id="usageIssues">
+    SELECT nu.id, v.issues
+      FROM nu JOIN ${vtable} v ON nu.uvkey=v.id
+      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN ${vtable} v ON nu.nvkey=v.id
+      WHERE v.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN taxon_concept_rel x ON x.taxon_id=nu.id   JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN species_interaction x ON x.taxon_id=nu.id JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN distribution x ON x.taxon_id=nu.id        JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN media x ON x.taxon_id=nu.id               JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN vernacular_name x ON x.taxon_id=nu.id     JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN type_material x ON x.name_id=nu.name_id   JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+    UNION
+    SELECT nu.id, v.issues
+      FROM nu JOIN name_rel x ON x.name_id=nu.name_id        JOIN ${vtable} v ON x.${vfk}=v.id
+      WHERE v.dataset_key=#{datasetKey} AND x.dataset_key=#{datasetKey} AND array_length(v.issues, 1) > 0
+  </sql>
+
+  <!-- VERBATIM -->
+  <sql id="usageIssuesVerbatim">
+    <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssues">
+      <property name="vtable" value="verbatim"/>
+      <property name="vfk" value="verbatim_key"/>
+    </include>
+  </sql>
+
+  <update id="createTmpIssuesTableFromVerbatim" parameterType="map">
+    WITH nu AS (
+    SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+    FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+    WHERE u.dataset_key=#{datasetKey}
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    )
+    SELECT iss.id, array_cat_agg(iss.issues) AS issues
+    INTO TEMPORARY TABLE tmp_usage_issues
+    FROM (<include refid="usageIssuesVerbatim"/>) iss
+    GROUP BY iss.id;
+
+    CREATE INDEX ON tmp_usage_issues (id);
+    ANALYZE tmp_usage_issues;
+  </update>
+
+  <update id="createTmpSourcesTableFromVerbatim" parameterType="map">
+    CREATE TEMPORARY TABLE tmp_usage_sources (id TEXT, groups INFOGROUP[], sources int[]);
+  </update>
+
+
+  <!-- VERBATIM SOURCE issues by usage id -->
+  <sql id="usageIssuesVerbatimSource">
+    <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssues">
+      <property name="vtable" value="verbatim_source"/>
+      <property name="vfk" value="verbatim_source_key"/>
+    </include>
+  </sql>
+
+  <update id="createTmpIssuesTableFromVerbatimSource" parameterType="map">
+    WITH nu AS (
+      SELECT u.id, u.name_id, u.verbatim_source_key AS uvkey, n.verbatim_source_key AS nvkey
+      FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
+      WHERE u.dataset_key=#{datasetKey}
+      <if test="sectorKey != null">
+        AND u.sector_key = #{sectorKey}
+      </if>
+    )
+    SELECT iss.id, array_cat_agg(iss.issues) AS issues
+      INTO TEMPORARY TABLE tmp_usage_issues
+      FROM (<include refid="usageIssuesVerbatimSource"/>) iss
+      GROUP BY iss.id;
+
+    CREATE INDEX ON tmp_usage_issues (id);
+    ANALYZE tmp_usage_issues;
+  </update>
+
+  <update id="createTmpSourcesTableFromVerbatimSource" parameterType="map">
+    SELECT u.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
+    INTO TEMPORARY TABLE tmp_usage_sources
+    FROM verbatim_source_secondary v
+      JOIN name_usage u ON u.dataset_key = v.dataset_key AND u.verbatim_source_key = v.verbatim_source_key
+    WHERE v.dataset_key=#{datasetKey}
+    <if test="sectorKey != null">
+      AND u.sector_key = #{sectorKey}
+    </if>
+    GROUP BY u.id;
+
+    CREATE INDEX ON tmp_usage_sources (id);
+    ANALYZE tmp_usage_sources;
+  </update>
+
+  <select id="processIssues" parameterType="map" resultMap="issueResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
+    SELECT id, issues
+    FROM tmp_usage_issues
+  </select>
+</mapper>

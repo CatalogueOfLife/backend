@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.dao.NameDao;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 
@@ -37,6 +38,12 @@ public class NameResource extends AbstractDatasetScopedResource<String, Name, Na
   @Override
   ResultPage<Name> searchImpl(int datasetKey, NameMapper.NameSearchRequest req, Page page) {
     return dao.search(datasetKey, req, page);
+  }
+
+  @GET
+  @Path("{id}/source")
+  public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
+    return session.getMapper(VerbatimSourceMapper.class).getByName(DSID.of(datasetKey, id));
   }
 
   @GET

@@ -14,6 +14,7 @@ public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements 
   private Sector.Mode sectorMode;
   private Integer sectorKey;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private SpeciesInteractionType type;
   private String taxonId;
   private String relatedTaxonId;
@@ -55,7 +56,15 @@ public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements 
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -118,15 +127,25 @@ public class SpeciesInteraction extends DatasetScopedEntity<Integer> implements 
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof SpeciesInteraction)) return false;
     if (!super.equals(o)) return false;
+
     SpeciesInteraction that = (SpeciesInteraction) o;
-    return Objects.equals(datasetKey, that.datasetKey) && sectorMode == that.sectorMode && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(verbatimKey, that.verbatimKey) && type == that.type && Objects.equals(taxonId, that.taxonId) && Objects.equals(relatedTaxonId, that.relatedTaxonId) && Objects.equals(relatedTaxonScientificName, that.relatedTaxonScientificName) && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(datasetKey, that.datasetKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      type == that.type &&
+      Objects.equals(taxonId, that.taxonId) &&
+      Objects.equals(relatedTaxonId, that.relatedTaxonId) &&
+      Objects.equals(relatedTaxonScientificName, that.relatedTaxonScientificName) &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), datasetKey, sectorMode, sectorKey, verbatimKey, type, taxonId, relatedTaxonId, relatedTaxonScientificName, referenceId, remarks);
+    return Objects.hash(super.hashCode(), datasetKey, sectorMode, sectorKey, verbatimKey, verbatimSourceKey, type, taxonId, relatedTaxonId, relatedTaxonScientificName, referenceId, remarks);
   }
 }

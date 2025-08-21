@@ -115,9 +115,6 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       }
       session.getMapper(NameUsageMapper.class).updateParentIds(key.getDatasetKey(), key.getId(), newID, null, user);
     }
-    var vsm = session.getMapper(VerbatimSourceMapper.class);
-    vsm.updateTaxonID(key, newID, user);
-    vsm.updateSecondaryTaxonID(key, newID, user);
     // the actual PK change
     session.getMapper(NameUsageMapper.class).updateId(key, newID, user);
   }
@@ -361,7 +358,9 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
       var d = DatasetInfoCache.CACHE.info(usage.getDatasetKey());
       if (d.origin.isProjectOrRelease()) {
         // only managed and releases have this table - we'll yield an exception for external datasets!
-        info.setSource(session.getMapper(VerbatimSourceMapper.class).getWithSources(usage));
+        var vsm = session.getMapper(VerbatimSourceMapper.class);
+        var v = vsm.getByUsage(usage);
+        info.setSource(vsm.addSources(v));
       }
       if (usage.getVerbatimKey() != null) {
         info.setVerbatim(session.getMapper(VerbatimRecordMapper.class).get(DSID.of(usage.getDatasetKey(), usage.getVerbatimKey())));

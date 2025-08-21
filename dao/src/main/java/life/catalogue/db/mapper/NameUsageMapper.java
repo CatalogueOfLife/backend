@@ -55,6 +55,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id
    * @param key
@@ -66,7 +67,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * SimpleName.parent=parent.id
    * @param key of the child to fetch the parent from
    */
-  SimpleName getSimpleParent(@Param("key") DSID<String> key);
+  SimpleNameVerbatim getSimpleParent(@Param("key") DSID<String> key);
 
   /**
    * Lists all accepted, direct children of a taxon
@@ -282,6 +283,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("parentId") String parentId,
                       @Param("status") TaxonomicStatus status,
                       @Param("userKey") int userKey);
+
+  /**
+   * Updates only the verbatimSourceKey of the usage
+   * @param key
+   * @param verbatimSourceKey
+   */
+  void updateVerbatimSourceKey(@Param("key") DSID<String> key, @Param("vsKey") Integer verbatimSourceKey);
 
   /**
    * Creates a new temp table for usage & name ids in the current transaction.

@@ -152,7 +152,9 @@ public class NameUsageResource {
   public VerbatimSource source(@PathParam("key") int datasetKey, @PathParam("id") String id, @Context SqlSession session) {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin.isProjectOrRelease()) {
-      return session.getMapper(VerbatimSourceMapper.class).getWithSources(DSID.of(datasetKey, id));
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var v = vsm.getByUsage(DSID.of(datasetKey, id));
+      return vsm.addSources(v);
     }
     throw new NotFoundException(info.origin + " datasets do not have verbatim source records.");
   }

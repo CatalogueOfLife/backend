@@ -96,7 +96,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     commit();
 
     DatasetSettings ds2 = mapper().getSettings(d1.getKey());
-    printDiff(ds2, ds);
+    //printDiff(ds2, ds);
     assertEquals(ds2, ds);
 
     ds.put(Setting.REMATCH_DECISIONS, true);

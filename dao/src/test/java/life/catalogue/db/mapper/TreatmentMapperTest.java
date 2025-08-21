@@ -39,7 +39,7 @@ public class TreatmentMapperTest extends MapperTestBase<TreatmentMapper> {
     commit();
 
     Treatment t2 = mapper().get(t1.getKey());
-    printDiff(t1, t2);
+    //printDiff(t1, t2);
     assertEquals(t1, t2);
   }
 }

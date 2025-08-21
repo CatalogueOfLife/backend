@@ -18,8 +18,15 @@ import org.apache.ibatis.annotations.Param;
  *
  */
 public interface ReferenceMapper extends CRUD<DSID<String>, Reference>, DatasetProcessable<Reference>, DatasetPageable<Reference>, SectorProcessable<Reference>, CopyDataset {
-	
-	/**
+
+  /**
+   * Updates only the verbatimSourceKey of the name
+   * @param key
+   * @param verbatimSourceKey
+   */
+  void updateVerbatimSourceKey(@Param("key") DSID<String> key, @Param("vsKey") Integer verbatimSourceKey);
+
+  /**
    * Selects a number of distinct references from a single dataset by their keys
    *
    * @param ids must contain at least one value, not allowed to be empty !!!

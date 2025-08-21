@@ -11,11 +11,11 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
+import life.catalogue.dao.IssueAdder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
@@ -43,7 +43,7 @@ import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.Pair;
 
-public class HomotypicConsolidator {
+public class HomotypicConsolidator implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
@@ -51,6 +51,7 @@ public class HomotypicConsolidator {
 
   private final SqlSessionFactory factory;
   private final int datasetKey;
+  private final IssueAdder issueAdder;
   private final List<SimpleName> taxa;
   private Map<String, Set<String>> basionymExclusions = new HashMap<>();
   private final AuthorComparator authorComparator;
@@ -97,6 +98,7 @@ public class HomotypicConsolidator {
     this.taxa = taxa;
     authorComparator = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     basSorter = new BasionymSorter<>(authorComparator, priorityFunc);
+    issueAdder = new IssueAdder(datasetKey, factory);
   }
 
   public void setBasionymExclusions(Map<String, Set<String>> basionymExclusions) {
@@ -114,6 +116,11 @@ public class HomotypicConsolidator {
       exec.submit(task);
     }
     ExecutorUtils.shutdown(exec);
+  }
+
+  @Override
+  public void close() {
+    issueAdder.close();
   }
 
   /**
@@ -391,11 +398,7 @@ public class HomotypicConsolidator {
     }
 
     private void flagConsolidationIssue(Pair<LinneanNameUsage, Issue> obj) {
-      try (SqlSession session = factory.openSession(false)) {
-        VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-        vsm.addIssue(dsid.id(obj.key().getId()), obj.value());
-        session.commit();
-      }
+      issueAdder.addIssue(obj.key().getVerbatimSourceKey(), obj.key().getId(), obj.value());
     }
 
     private boolean createRelationIfNotExisting(LinneanNameUsage from, LinneanNameUsage to, NomRelType relType, NameRelationMapper mapper) {
@@ -438,14 +441,10 @@ public class HomotypicConsolidator {
         final LinneanNameUsage primary = findPrimaryUsage(group);
         if (primary == null) {
           // we did not find a usage to trust. skip, but mark accepted names with issues
-          try (SqlSession session = factory.openSession(false)) {
-            VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-            for (var u : group.getAll()) {
-              if (u.getStatus().isTaxon()) {
-                vsm.addIssue(dsid.id(u.getId()), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
-              }
+          for (var u : group.getAll()) {
+            if (u.getStatus().isTaxon()) {
+              issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
             }
-            session.commit();
           }
           return;
         }
@@ -485,7 +484,7 @@ public class HomotypicConsolidator {
                 LOG.debug("Same priority, keep usage: {}", u);
               } else {
                 LOG.warn("Unexpected priorities. Keep usage: {}", u);
-                addIssue(u, Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED, session);
+                issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
               }
             }
           }
@@ -494,16 +493,9 @@ public class HomotypicConsolidator {
       }
     }
 
-    private void addIssue(LinneanNameUsage u, Issue issue, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
-      vsm.addIssue(dsid.id(u.getId()), issue);
-    }
-
     private void delete(LinneanNameUsage u, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-      vsm.delete(dsid.id(u.getId()));
-      num.delete(dsid);
+      num.delete(dsid.id(u.getId()));
     }
 
     /**
@@ -517,7 +509,6 @@ public class HomotypicConsolidator {
      * @param issue    optional issue to flag
      */
     public void convertToSynonym(LinneanNameUsage u, LinneanNameUsage accepted, @Nullable Issue issue, SqlSession session) {
-      VerbatimSourceMapper vsm = session.getMapper(VerbatimSourceMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
 
       if (!accepted.getStatus().isTaxon()) {
@@ -549,7 +540,7 @@ public class HomotypicConsolidator {
 
       // convert to synonym, removing old parent relation
       if (issue != null) {
-        vsm.addIssue(dsid.id(u.getId()), issue);
+        issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), issue);
       }
 
       // move all descendants!
@@ -600,7 +591,7 @@ public class HomotypicConsolidator {
 
     private SimpleName loadSN(String id) {
       try (SqlSession session = factory.openSession()) {
-        return session.getMapper(NameUsageMapper.class).getSimple(DSID.of(datasetKey, id));
+        return session.getMapper(NameUsageMapper.class).getSimple(dsid.id(id));
       }
     }
 

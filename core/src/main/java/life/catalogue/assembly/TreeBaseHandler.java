@@ -69,6 +69,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> nameIdGen;
   protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
+  protected int vsIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
@@ -137,6 +138,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     nm = batchSession.getMapper(NameMapper.class);
     nmm= batchSession.getMapper(NameMatchMapper.class);
     num= batchSession.getMapper(NameUsageMapper.class);
+
+    // update verbatim source id generator - use current max
+    vsIdGen=vsm.getMaxID(targetDatasetKey)+1;
+    LOG.info("Start new verbatim source ids from {}", vsIdGen);
   }
 
   @Override
@@ -280,16 +285,18 @@ public abstract class TreeBaseHandler implements TreeHandler {
         parent = createImplicit(parent, (Taxon) u);
       }
     }
+    // track source
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen++, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
+    v.add(issues);
+    vsm.create(v);
+    u.setVerbatimSourceKey(v.getId());
+    u.getName().setVerbatimSourceKey(v.getId());
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
       nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
       this::lookupOrCreateReference, this::lookupOrCreateReference
     );
-    // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
-    v.add(issues);
-    vsm.create(v);
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());
@@ -732,6 +739,13 @@ public abstract class TreeBaseHandler implements TreeHandler {
         ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
         ref.applyUser(user);
+
+        // track source
+        VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen++, sector.getId(), sector.getSubjectDatasetKey(), ref.getId(), EntityType.REFERENCE);
+        vsm.create(v);
+        ref.setVerbatimSourceKey(v.getId());
+
+        // copy
         DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user);
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();

@@ -46,6 +46,7 @@
   <sql id="COLS_COPY">
     ${alias}id,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}citation,
     ${alias}status,
     ${alias}locality,
@@ -74,6 +75,7 @@
     #{nameId},
     #{id},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{citation},
     #{status}::TYPESTATUS,
     #{locality},
@@ -177,7 +179,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE type_material SET sector_key = NULL
+    UPDATE type_material SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

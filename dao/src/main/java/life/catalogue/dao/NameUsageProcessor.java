@@ -121,11 +121,10 @@ public class NameUsageProcessor {
         sm.listByDataset(datasetKey, null, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
       }
 
-      // build temporary table collecting issues from all usage related tables
+      // build temporary table within the session, collecting issues from all usage related tables
       // we do this in a separate step to not overload postgres with gigantic joins later on
-      var vm = session.getMapper(VerbatimRecordMapper.class);
-      vm.createTmpIssuesTable(datasetKey, sectorKey);
-      vm.createTmpVSourcesTable(datasetKey, sectorKey);
+      var ism = session.getMapper(TmpIssueMapper.class);
+      ism.createTmpIssuesTable(datasetKey, null);
 
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
            UsageCache usageCache = buildUsageCache()

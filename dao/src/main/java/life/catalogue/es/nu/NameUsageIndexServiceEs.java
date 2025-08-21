@@ -10,6 +10,7 @@ import life.catalogue.common.func.BatchConsumer;
 import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.NameUsageProcessor;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -382,10 +383,11 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
       // the following code populates individual name usage wrappers
       // Important! This always needs to match the logic for the bulk dataset/sector handling in NameUsageProcessor.processTree !!!
+      final boolean isProjectOrRelease = DatasetInfoCache.CACHE.info(datasetKey).origin.isProjectOrRelease();
       List<NameUsageWrapper> usages = usageIds.stream()
         .map(id -> {
           // this already contains the classification, issues, decisions & secondary sources
-          var nuw = mapper.get(datasetKey, id);
+          var nuw = mapper.get(datasetKey, isProjectOrRelease, id);
           if (nuw != null) {
             nuw.setPublisherKey(publisher);
             if (nuw.getUsage().getSectorKey() != null) {

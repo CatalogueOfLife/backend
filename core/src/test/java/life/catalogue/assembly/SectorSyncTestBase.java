@@ -53,9 +53,9 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static VerbatimSource getSource(DSID<String> key) {
+  public static VerbatimSource getSource(DSID<String> usageID) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      return session.getMapper(VerbatimSourceMapper.class).get(key);
+      return session.getMapper(VerbatimSourceMapper.class).getByUsage(usageID);
     }
   }
 
@@ -282,7 +282,6 @@ public abstract class SectorSyncTestBase {
 
   protected void assertHasVerbatimSource(DSID<String> id, String expectedSourceId) {
     VerbatimSource v = getSource(id);
-    assertEquals(id.getId(), v.getId());
     assertEquals(id.getDatasetKey(), v.getDatasetKey());
     assertNotNull(v.getSourceDatasetKey());
     assertEquals(expectedSourceId, v.getSourceId());
