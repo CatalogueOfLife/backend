@@ -10,7 +10,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
@@ -26,7 +25,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -337,15 +335,22 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param key
    * @param user
    */
-  private void deleteEntirely(Integer key, int user) {
+  private void deleteEntirely(int key, int user) {
     delete(key, user);
     // now also delete things we usually keep for published releases
     try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(SectorMapper.class).deleteByDataset(key);
-      session.getMapper(PublisherMapper.class).deleteByDataset(key);
-      session.getMapper(CitationMapper.class).deleteByRelease(key);
-      session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
+      deleteKeptReleaseData(key, session);
     }
+  }
+
+  /**
+   * Remove the data we keep for deleted, public releases
+   */
+  private void deleteKeptReleaseData(int key, SqlSession session) {
+    session.getMapper(SectorMapper.class).deleteByDataset(key);
+    session.getMapper(PublisherMapper.class).deleteByDataset(key);
+    session.getMapper(CitationMapper.class).deleteByRelease(key);
+    session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
   }
 
   @Override
@@ -475,6 +480,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // physically delete dataset if its temporary
     if (key >= TEMP_KEY_START) {
+      deleteKeptReleaseData(key, session);
       mapper.deletePhysically(key);
     }
     session.close();

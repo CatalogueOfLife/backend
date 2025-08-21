@@ -977,6 +977,9 @@ CREATE TABLE dataset_import (
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
+  -- releases only
+  merged_taxa_by_rank_count HSTORE,
+  merged_synonyms_by_rank_count HSTORE,
   -- extra
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
