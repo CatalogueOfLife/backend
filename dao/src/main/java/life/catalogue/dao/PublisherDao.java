@@ -51,7 +51,8 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
   }
 
   /**
-   * Returns aggregated metrics for all sectors of datasets published by the given publisher
+   * Returns aggregated metrics for all sectors of datasets published by the given publisher.
+   * This methods works also for deleted releases as we keep metrics with the project.
    * @param datasetKey project or release key
    * @param id sector publisher UUID
    * @return aggregated metrics for all sectors of datasets published
@@ -61,7 +62,7 @@ public class PublisherDao extends DatasetEntityDao<UUID, Publisher, PublisherMap
 
     try (SqlSession session = factory.openSession()) {
       // could throw not found
-      var info = DatasetInfoCache.CACHE.info(datasetKey);
+      var info = DatasetInfoCache.CACHE.info(datasetKey, true);
       Integer projectKey;
       if (info.origin.isRelease()) {
         projectKey = info.sourceKey;
