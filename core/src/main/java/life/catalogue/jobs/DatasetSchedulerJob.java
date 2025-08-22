@@ -80,7 +80,7 @@ public abstract class DatasetSchedulerJob extends BackgroundJob {
     try (SqlSession session = factory.openSession()) {
       this.dm = session.getMapper(DatasetMapper.class);
       init(session);
-      for (int key : dm.keys(origins)) {
+      for (int key : dm.keys(false, origins)) {
         var usages = countToBeDone(key);
         var done = countDone(key);
         consumer.accept(new DatasetMetrics(key, usages, done));

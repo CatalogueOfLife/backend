@@ -376,22 +376,26 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     List<Integer> all = mapper().list(new Page(100)).stream().map(Dataset::getKey).collect(Collectors.toList());
     Collections.sort(all);
 
-    List<Integer> actual = mapper().keys();
+    List<Integer> actual = mapper().keys(false);
     Collections.sort(actual);
     assertEquals(all, actual);
 
-    actual = mapper().keys(DatasetOrigin.EXTERNAL);
+    actual = mapper().keys(true);
+    Collections.sort(actual);
+    assertEquals(all, actual);
+
+    actual = mapper().keys(false, DatasetOrigin.EXTERNAL);
     Collections.sort(actual);
     assertEquals(external, actual);
 
-    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE);
+    actual = mapper().keys(false, DatasetOrigin.EXTERNAL, DatasetOrigin.RELEASE);
     Collections.sort(actual);
     assertEquals(external, actual);
 
-    actual = mapper().keys(DatasetOrigin.RELEASE);
+    actual = mapper().keys(false, DatasetOrigin.RELEASE);
     assertTrue(actual.isEmpty());
 
-    actual = mapper().keys(DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
+    actual = mapper().keys(false, DatasetOrigin.EXTERNAL, DatasetOrigin.PROJECT);
     Collections.sort(actual);
     assertEquals(all, actual);
 

@@ -87,7 +87,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
            PreparedStatement pStmt = con.prepareStatement("SELECT DISTINCT tg FROM tax_groups WHERE dataset_key=?")
       ) {
         var dm = session.getMapper(DatasetMapper.class);
-        for (int key : dm.keys()) {
+        for (int key : dm.keys(false)) {
           Set<TaxGroup> groups = EnumSet.noneOf(TaxGroup.class);
           pStmt.setInt(1, key);
           var rs = pStmt.executeQuery();

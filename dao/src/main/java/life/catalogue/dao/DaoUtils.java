@@ -103,7 +103,7 @@ public class DaoUtils {
   public static IntSet listDatasetWithNames(SqlSession session) {
     DatasetMapper dm = session.getMapper(DatasetMapper.class);
     NameMapper nm = session.getMapper(NameMapper.class);
-    IntSet keys = new IntOpenHashSet(dm.keys());
+    IntSet keys = new IntOpenHashSet(dm.keys(false));
     // only keep the dataset with at least one name
     keys.removeIf((IntPredicate) key -> !nm.hasData(key));
     return keys;

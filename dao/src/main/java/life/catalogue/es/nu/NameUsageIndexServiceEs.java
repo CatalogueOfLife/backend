@@ -330,7 +330,7 @@ public class NameUsageIndexServiceEs implements NameUsageIndexService {
 
     final List<Integer> keys;
     try (SqlSession session = factory.openSession(true)) {
-      keys = session.getMapper(DatasetMapper.class).keys();
+      keys = session.getMapper(DatasetMapper.class).keys(false);
       int allDatasets = keys.size();
       if (excludedDatasetKeys != null) {
         for (Integer dk : excludedDatasetKeys) {

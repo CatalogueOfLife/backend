@@ -202,10 +202,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param origin optional dataset origin filter, combined with OR if multiple
    * @return list of all dataset keys which have not been deleted
    */
-  default List<Integer> keys(@Param("origin") DatasetOrigin... origin) {
+  default List<Integer> keys(@Param("inclDeleted") boolean inclDeleted, @Param("origin") DatasetOrigin... origin) {
     DatasetSearchRequest req = new DatasetSearchRequest();
     if (origin != null) {
       req.setOrigin(List.of(origin));
+      req.setInclDeleted(inclDeleted);
     }
     return searchKeys(req, MAGIC_ADMIN_USER_KEY);
   }

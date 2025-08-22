@@ -70,10 +70,4 @@ public class DatasetImportResource {
                                               @PathParam("attempt") int attempt) {
     return diDao.getFileMetricsDao().getNames(key, attempt);
   }
-
-  @GET
-  @Path("releases")
-  public ImportMetrics getReleaseMetrics(@PathParam("key") int key) {
-    return diDao.getReleaseMetrics(key, false);
-  }
 }

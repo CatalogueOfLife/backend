@@ -61,7 +61,7 @@ public class UpdSequencesCmd extends AbstractMybatisCmd {
     LOG.info("Start sequence update for all datasets");
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      keys = dm.keys(DatasetOrigin.PROJECT);
+      keys = dm.keys(false, DatasetOrigin.PROJECT);
     }
     for (int key : keys) {
       updateDataset(key);

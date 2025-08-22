@@ -72,12 +72,18 @@
   </sql>
 
   <sql id="SEARCH_WHERE">
-    d.deleted IS NULL AND <include refid="NOT_TEMP"/>
+    <include refid="NOT_TEMP"/>
     <include refid="PRIVATE">
       <property name="alias" value="d"/>
       <property name="projAlias" value="proj"/>
     </include>
+    <if test="req == null">
+      AND d.deleted IS NULL
+    </if>
     <if test="req != null">
+      <if test="!req.inclDeleted">
+        AND d.deleted IS NULL
+      </if>
       <if test="req.q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
         AND d.doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${req.q}%$Grtz5$))
@@ -254,19 +260,6 @@
     )
     WHERE key = #{key}
   </update>
-
-  <select id="keys" resultType="integer">
-    SELECT key
-    FROM dataset d
-    WHERE deleted IS NULL AND <include refid="NOT_TEMP"/>
-    <if test="type != null">
-      AND type = #{type}::DATASETTYPE
-    </if>
-    <if test="origin != null and origin.length > 0">
-      AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
-    </if>
-    ORDER BY key
-  </select>
 
   <select id="keysByPublisher" resultType="integer">
     SELECT key

@@ -56,6 +56,12 @@ public class DatasetSearchRequest {
   private Boolean privat;
 
   /**
+   * Optionally include deleted datasets
+   */
+  @QueryParam("inclDeleted")
+  private boolean inclDeleted;
+
+  /**
    * Filters release datasets by their parent project.
    * Automatically also restricts datasets to origin=released
    */
@@ -206,6 +212,14 @@ public class DatasetSearchRequest {
 
   public void setPrivat(Boolean privat) {
     this.privat = privat;
+  }
+
+  public boolean isInclDeleted() {
+    return inclDeleted;
+  }
+
+  public void setInclDeleted(boolean inclDeleted) {
+    this.inclDeleted = inclDeleted;
   }
 
   public Integer getMinSize() {
@@ -459,6 +473,7 @@ public class DatasetSearchRequest {
       Objects.equals(alias, that.alias) &&
       code == that.code &&
       Objects.equals(privat, that.privat) &&
+      inclDeleted == that.inclDeleted &&
       Objects.equals(releasedFrom, that.releasedFrom) &&
       Objects.equals(contributesTo, that.contributesTo) &&
       Objects.equals(hasSourceDataset, that.hasSourceDataset) &&
@@ -489,6 +504,6 @@ public class DatasetSearchRequest {
 
   @Override
   public int hashCode() {
-    return Objects.hash(q, alias, code, codeIsNull, privat, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, gbifPublisherKeyExclusion, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, group, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
+    return Objects.hash(q, alias, code, codeIsNull, privat, inclDeleted, releasedFrom, contributesTo, hasSourceDataset, hasGbifKey, gbifKey, gbifPublisherKey, gbifPublisherKeyExclusion, withoutSectorInProject, lastImportState, editor, reviewer, origin, type, license, group, rowType, modified, modifiedBefore, modifiedBy, created, createdBefore, createdBy, issued, issuedBefore, minSize, sortBy, reverse);
   }
 }

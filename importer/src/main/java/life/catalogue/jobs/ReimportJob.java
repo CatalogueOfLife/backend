@@ -52,7 +52,7 @@ public class ReimportJob extends GlobalBlockingJob {
     final List<Integer> keys;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      keys = dm.keys(DatasetOrigin.EXTERNAL);
+      keys = dm.keys(false, DatasetOrigin.EXTERNAL);
     }
 
     LOG.warn("Reimporting all {} datasets from their last local copy", keys.size());
