@@ -130,6 +130,16 @@ public class ImporterResource {
 
   @POST
   @Path("{key}")
+  // trigger an import with the existing access url
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest triggerImport(@PathParam("key") int datasetKey, @QueryParam("force") boolean force, @Auth User user) throws IOException {
+    var req = ImportRequest.external(datasetKey, user.getKey(), force);
+    return importManager.submit(req);
+  }
+
+  @POST
+  @Path("{key}")
   // there are many unofficial mime types around for zip and gzip
   // these can show up via the upload component of the CLB UI if used from Windows for example, so we add them all
   @Consumes({
