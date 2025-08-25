@@ -14,7 +14,7 @@ import com.esotericsoftware.kryo.io.Output;
 
 public class AreaSerializer extends Serializer<Area> {
   private static final Logger LOG = LoggerFactory.getLogger(AreaSerializer.class);
-  private static final Pattern PREFIX  = Pattern.compile("^([a-z]+)\\s*:\\s*(.+)$");
+  private static final Pattern PREFIX  = Pattern.compile("^(?!http)([a-z]+)\\s*:\\s*(.+)$");
 
   public AreaSerializer() {
     // dont accept null values
@@ -36,7 +36,7 @@ public class AreaSerializer extends Serializer<Area> {
     try {
       return parse(value);
     } catch (IllegalArgumentException e) {
-      LOG.warn("Unknown area scheme or bad enumeration: {}", value, e);
+      LOG.warn("Unknown area scheme or bad enumeration: {}", value);
       return new AreaImpl(value);
     }
   }
