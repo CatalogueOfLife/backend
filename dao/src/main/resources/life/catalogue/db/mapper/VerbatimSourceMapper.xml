@@ -213,6 +213,10 @@
 
   <delete id="deleteOrphans" parameterType="map">
     <include refid="tmpIdTable"/>
+    DELETE FROM verbatim_source_secondary v
+    WHERE v.dataset_key=#{datasetKey} AND NOT EXISTS (
+        SELECT TRUE FROM vs_fks_${datasetKey} vsfk WHERE v.verbatim_source_key=vsfk.id
+    );
     DELETE FROM verbatim_source v
     WHERE v.dataset_key=#{datasetKey} AND NOT EXISTS (
       SELECT TRUE FROM vs_fks_${datasetKey} vsfk WHERE v.id=vsfk.id
