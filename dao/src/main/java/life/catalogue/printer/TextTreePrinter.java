@@ -63,12 +63,14 @@ public class TextTreePrinter extends AbstractTreePrinter {
   }
 
 
-  public void showIDs() {
+  public TextTreePrinter showIDs() {
     this.showIDs = true;
+    return this;
   }
 
-  public void showExtendedInfos() {
+  public TextTreePrinter showExtendedInfos() {
     extended = true;
+    return this;
   }
 
   protected void start(SimpleName u) throws IOException {

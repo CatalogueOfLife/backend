@@ -47,9 +47,8 @@ public class ValidationJob extends DatasetBlockingJob {
 
     LOG.info("Clean and validate entire project {}", datasetKey);
     final LocalDateTime start = LocalDateTime.now();
-    try (SqlSession session = factory.openSession(true);
-         var consumer = new TreeCleanerAndValidator(factory, datasetKey, false)
-    ) {
+    try (SqlSession session = factory.openSession(true)) {
+      var consumer = new TreeCleanerAndValidator(session, datasetKey, false);
       var num = session.getMapper(NameUsageMapper.class);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);

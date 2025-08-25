@@ -12,39 +12,32 @@ import org.apache.ibatis.session.SqlSessionFactory;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class IssueAdder implements AutoCloseable {
+public class IssueAdder {
   private final int datasetKey;
   private final DSID<Integer> vkey;
   private final DSID<String> ukey;
   private final VerbatimSourceMapper vsm;
   private final NameUsageMapper um;
-  private final SqlSession session;
-  private final int start;
-  private int vsIdGen;
-  private boolean closed = false;
+  private AtomicInteger vsIdGen;
 
-  public IssueAdder(int datasetKey, SqlSessionFactory factory) {
-    this.session = factory.openSession(ExecutorType.BATCH, false);
+  public IssueAdder(int datasetKey, SqlSession session) {
     this.datasetKey = datasetKey;
     this.ukey = DSID.root(datasetKey);
     this.vkey = DSID.root(datasetKey);
     this.vsm = session.getMapper(VerbatimSourceMapper.class);
     this.um = session.getMapper(NameUsageMapper.class);
-    vsIdGen = vsm.getMaxID(datasetKey)+1;
-    start = vsIdGen;
+    vsIdGen = new AtomicInteger(vsm.getMaxID(datasetKey)+1);
   }
 
   public void addIssues(Integer verbatimSourceKey, String usageID, Set<Issue> issues) {
     if (verbatimSourceKey == null) {
       // create new record attached to used
-      var vs = new VerbatimSource(datasetKey, vsIdGen++, null, null, null, null);
+      var vs = new VerbatimSource(datasetKey, vsIdGen.incrementAndGet(), null, null, null, null);
       vs.setIssues(issues);
       vsm.create(vs);
       um.updateVerbatimSourceKey(ukey.id(usageID), vs.getId());
-      if (vsIdGen-start % 10_000 == 0) {
-        session.commit();
-      }
     } else {
       // reuse
       vsm.addIssues(vkey.id(verbatimSourceKey), issues);
@@ -62,14 +55,5 @@ public class IssueAdder implements AutoCloseable {
   public void addIssues(String usageID, Set<Issue> issues) {
     var vsKey = vsm.getVSKeyByUsage(ukey.id(usageID));
     addIssues(vsKey, usageID, issues);
-  }
-
-  @Override
-  public void close() {
-    if (!closed) {
-      session.commit();
-      session.close();
-    }
-    closed = true;
   }
 }

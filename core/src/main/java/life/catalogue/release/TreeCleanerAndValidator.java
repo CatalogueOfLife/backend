@@ -44,22 +44,22 @@ import org.slf4j.LoggerFactory;
  *  5) flag species that have been described before the genus was published
  *
  */
-public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, AutoCloseable {
+public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
-  private final SqlSessionFactory factory;
   private final IssueAdder issueAdder;
   private final int datasetKey;
   private final ParentStack<XLinneanNameUsage> parents;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
+  private final SqlSession session  ;
   private int maxDepth = 0;
 
-  public TreeCleanerAndValidator(SqlSessionFactory factory, int datasetKey, boolean removeEmptyGenera) {
-    this.factory = factory;
+  public TreeCleanerAndValidator(SqlSession session, int datasetKey, boolean removeEmptyGenera) {
+    this.session = session;
     this.datasetKey = datasetKey;
     this.parents = new ParentStack<>();
-    this.issueAdder = new IssueAdder(datasetKey, factory);
+    this.issueAdder = new IssueAdder(datasetKey, session);
     if (removeEmptyGenera) {
       // add stack handler that considers to remove empty genera and creates missing autonyms
       parents.addHandler(new ParentStack.StackHandler<>() {
@@ -72,15 +72,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
           if (taxon.usage.getRank().isGenusGroup() && taxon.children == 0 && fromXSource(taxon.usage)) {
             LOG.info("Remove empty {}", taxon.usage);
             final var key = DSID.of(datasetKey, taxon.usage.getId());
-            try (SqlSession session = factory.openSession(true)) {
-              var um = session.getMapper(NameUsageMapper.class);
-              // first remove all synonyms
-              for (var c : um.childrenIds(key)) {
-                um.delete(key);
-              }
+            var um = session.getMapper(NameUsageMapper.class);
+            // first remove all synonyms
+            for (var c : um.childrenIds(key)) {
               um.delete(key);
-              // names, references, verbatim source and related are removed as orphans at the end of the release
             }
+            um.delete(key);
+            // names, references, verbatim source and related are removed as orphans at the end of the release
+            session.commit();
           }
         }
       });
@@ -214,9 +213,4 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage>, Auto
     return maxDepth;
   }
 
-  @Override
-  public void close() {
-    // nothing so far
-    issueAdder.close();
-  }
 }

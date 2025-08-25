@@ -43,20 +43,20 @@ import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.Pair;
 
-public class HomotypicConsolidator implements AutoCloseable {
+public class HomotypicConsolidator {
   private static final Logger LOG = LoggerFactory.getLogger(HomotypicConsolidator.class);
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
 
-  private final SqlSessionFactory factory;
+  private final SqlSession session;
   private final int datasetKey;
-  private final IssueAdder issueAdder;
   private final List<SimpleName> taxa;
   private Map<String, Set<String>> basionymExclusions = new HashMap<>();
   private final AuthorComparator authorComparator;
   private final BasionymSorter<LinneanNameUsage> basSorter;
   private final ToIntFunction<LinneanNameUsage> priorityFunc;
+  private final IssueAdder issueAdder;
 
   /**
    * @return a consolidator that will group an entire dataset family by family
@@ -92,13 +92,13 @@ public class HomotypicConsolidator implements AutoCloseable {
   }
 
   private HomotypicConsolidator(SqlSessionFactory factory, int datasetKey, List<SimpleName> taxa, ToIntFunction<LinneanNameUsage> priorityFunc) {
-    this.factory = factory;
+    this.session = factory.openSession(true);
     this.datasetKey = datasetKey;
     this.priorityFunc = priorityFunc;
     this.taxa = taxa;
     authorComparator = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
     basSorter = new BasionymSorter<>(authorComparator, priorityFunc);
-    issueAdder = new IssueAdder(datasetKey, factory);
+    issueAdder = new IssueAdder(datasetKey, session);
   }
 
   public void setBasionymExclusions(Map<String, Set<String>> basionymExclusions) {
@@ -109,18 +109,19 @@ public class HomotypicConsolidator implements AutoCloseable {
     consolidate(4);
   }
   public void consolidate(int threads) {
-    LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
-    var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
-    for (var tax : taxa) {
-      var task = new ConsolidatorTask(tax);
-      exec.submit(task);
-    }
-    ExecutorUtils.shutdown(exec);
-  }
+    try {
+      LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
+      var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
+      for (var tax : taxa) {
+        var task = new ConsolidatorTask(tax);
+        exec.submit(task);
+      }
+      ExecutorUtils.shutdown(exec);
 
-  @Override
-  public void close() {
-    issueAdder.close();
+    } finally {
+      session.commit();
+      session.close();
+    }
   }
 
   /**
@@ -152,27 +153,25 @@ public class HomotypicConsolidator implements AutoCloseable {
       final Map<String, List<LinneanNameUsage>> epithets = Maps.newHashMap();
       final Set<String> ignore = basionymExclusions.get(tax.getName());
       // key all names by their normalised, terminal epithet
-      try (SqlSession session = factory.openSession(true)) {
-        NameUsageMapper num = session.getMapper(NameUsageMapper.class);
-
-        TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
-        traversal.setSynonyms(true);
-        PgUtils.consume(() -> num.processTreeLinneanUsage(traversal, false, false), nu -> {
-          if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()) {
-            // ignore all supra specific names, autonyms and unparsed OTUs
-          } else if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
-            LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      TreeTraversalParameter traversal = TreeTraversalParameter.dataset(datasetKey, tax.getId());
+      traversal.setSynonyms(true);
+      PgUtils.consume(() -> num.processTreeLinneanUsage(traversal, false, false), nu -> {
+        if (nu.getType() == NameType.OTU || nu.getRank().isSupraspecific() || nu.isAutonym()) {
+          // ignore all supra specific names, autonyms and unparsed OTUs
+        } else if (ignore != null && ignore.contains(nu.getTerminalEpithet())) {
+          LOG.info("Ignore epithet {} in {} because of configs", nu.getTerminalEpithet(), tax);
+        } else {
+          String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
+          if (!epithets.containsKey(epithet)) {
+            epithets.put(epithet, Lists.newArrayList(nu));
           } else {
-            String epithet = SciNameNormalizer.normalizeEpithet(nu.getTerminalEpithet());
-            if (!epithets.containsKey(epithet)) {
-              epithets.put(epithet, Lists.newArrayList(nu));
-            } else {
-              epithets.get(epithet).add(nu);
-            }
+            epithets.get(epithet).add(nu);
           }
-        });
-        LOG.debug("{} distinct epithets found in {}", epithets.size(), tax);
-      }
+        }
+      });
+      session.commit();
+      LOG.debug("{} distinct epithets found in {}", epithets.size(), tax);
 
       // keep identity map of all usages
       usages = new HashMap<>();
@@ -191,32 +190,30 @@ public class HomotypicConsolidator implements AutoCloseable {
         for (var group : groups) {
           // we only need to work on groups with at least 2 names
           if (group.size() > 1) {
-            try (SqlSession session = factory.openSession(false)) {
-              NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
-              // create relations for basionym & variations + recombinations
-              if (group.hasRecombinations() || group.hasBasionymVariations()) {
-                // if we have a basionym creating relations is straight forward
-                if (group.hasBasionym()) {
-                  LinneanNameUsage basionym = group.getBasionym();
-                  for (var u : group.getRecombinations()) {
-                    if (createRelationIfNotExisting(u, basionym, NomRelType.BASIONYM, nrm)) {
-                      newBasionymRelations++;
-                    }
+            NameRelationMapper nrm = session.getMapper(NameRelationMapper.class);
+            // create relations for basionym & variations + recombinations
+            if (group.hasRecombinations() || group.hasBasionymVariations()) {
+              // if we have a basionym creating relations is straight forward
+              if (group.hasBasionym()) {
+                LinneanNameUsage basionym = group.getBasionym();
+                for (var u : group.getRecombinations()) {
+                  if (createRelationIfNotExisting(u, basionym, NomRelType.BASIONYM, nrm)) {
+                    newBasionymRelations++;
                   }
-                  for (var u : group.getBasionymVariations()) {
-                    if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
-                      newSpellingRelations++;
-                    }
+                }
+                for (var u : group.getBasionymVariations()) {
+                  if (createRelationIfNotExisting(basionym, u, NomRelType.SPELLING_CORRECTION, nrm)) {
+                    newSpellingRelations++;
                   }
-                } else {
-                  // if no basionym exists it cannot have basionym variations, hence just pick the first recombination which must exist
-                  var iter = group.getRecombinations().listIterator();
-                  var hom = iter.next();
-                  while (iter.hasNext()) {
-                    var u = iter.next();
-                    if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
-                      newHomotypicRelations++;
-                    }
+                }
+              } else {
+                // if no basionym exists it cannot have basionym variations, hence just pick the first recombination which must exist
+                var iter = group.getRecombinations().listIterator();
+                var hom = iter.next();
+                while (iter.hasNext()) {
+                  var u = iter.next();
+                  if (createRelationIfNotExisting(u, hom, NomRelType.HOMOTYPIC, nrm)) {
+                    newHomotypicRelations++;
                   }
                 }
               }
@@ -241,7 +238,10 @@ public class HomotypicConsolidator implements AutoCloseable {
             LOG.debug("Skip single name group {}", group);
           }
         }
+        session.commit();
       }
+
+      session.commit();
       LOG.info("Discovered {} new basionym, {} homotypic, {} based on and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}",
         newBasionymRelations, newHomotypicRelations, newBasedOnRelations, newSpellingRelations, newBasionyms, synCounter, tax);
       usages = null;
@@ -453,43 +453,41 @@ public class HomotypicConsolidator implements AutoCloseable {
         final var primaryAcc = primary.getStatus().isSynonym() ? load(primary.getParentId()) : primary;
         // use the highest priority from either primary or the accepted usage of it if its different
         final int primaryPrio = Math.min(priorityFunc.applyAsInt(primary), priorityFunc.applyAsInt(primaryAcc));
-        try (SqlSession session = factory.openSession(false)) {
-          TaxonMapper tm = session.getMapper(TaxonMapper.class);
-          var num = session.getMapper(NameUsageMapper.class);
+        TaxonMapper tm = session.getMapper(TaxonMapper.class);
+        var num = session.getMapper(NameUsageMapper.class);
 
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
-          }
-          Set<String> parents = Set.copyOf(tm.classificationIds(dsid.id(primaryAcc.getId())));
-          for (LinneanNameUsage u : group.getAll()) {
-            if (u.equals(primary)) continue;
-            if (parents.contains(u.getId())) { // this should catch autonym cases with an accepted species above
-              LOG.debug("Exclude parent {} from homotypic consolidation of {}", u.getLabel(), primary.getLabel());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Consolidating homotypic group with {} primary usage {}: {}", primary.getStatus(), primary.getLabel(), names(group.getAll()));
+        }
+        Set<String> parents = Set.copyOf(tm.classificationIds(dsid.id(primaryAcc.getId())));
+        for (LinneanNameUsage u : group.getAll()) {
+          if (u.equals(primary)) continue;
+          if (parents.contains(u.getId())) { // this should catch autonym cases with an accepted species above
+            LOG.debug("Exclude parent {} from homotypic consolidation of {}", u.getLabel(), primary.getLabel());
 
-            } else {
-              final int prio = priorityFunc.applyAsInt(u);
-              if (prio > primaryPrio) {
-                convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
-                // delete synonym with identical name? We have moved all children and changed the usage to a synonym, so there are no related records any longer
-                if (u.getLabel().equalsIgnoreCase(primaryAcc.getLabel())) {
-                  delete(u, session);
-                } else {
-                  // does the accepted already have the exact same synonym?
-                  var syns = num.listSimpleSynonyms(dsid.id(primaryAcc.getId()));
-                  if (syns.stream().anyMatch(s -> !u.getId().equals(s.getId()) && u.getLabel().equalsIgnoreCase(s.getLabel()))) {
-                    delete(u, session);
-                  }
-                }
-              } else if (prio == primaryPrio) {
-                LOG.debug("Same priority, keep usage: {}", u);
+          } else {
+            final int prio = priorityFunc.applyAsInt(u);
+            if (prio > primaryPrio) {
+              convertToSynonym(u, primaryAcc, Issue.HOMOTYPIC_CONSOLIDATION, session);
+              // delete synonym with identical name? We have moved all children and changed the usage to a synonym, so there are no related records any longer
+              if (u.getLabel().equalsIgnoreCase(primaryAcc.getLabel())) {
+                delete(u, session);
               } else {
-                LOG.warn("Unexpected priorities. Keep usage: {}", u);
-                issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
+                // does the accepted already have the exact same synonym?
+                var syns = num.listSimpleSynonyms(dsid.id(primaryAcc.getId()));
+                if (syns.stream().anyMatch(s -> !u.getId().equals(s.getId()) && u.getLabel().equalsIgnoreCase(s.getLabel()))) {
+                  delete(u, session);
+                }
               }
+            } else if (prio == primaryPrio) {
+              LOG.debug("Same priority, keep usage: {}", u);
+            } else {
+              LOG.warn("Unexpected priorities. Keep usage: {}", u);
+              issueAdder.addIssue(u.getVerbatimSourceKey(), u.getId(), Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED);
             }
           }
-          session.commit();
         }
+        session.commit();
       }
     }
 
@@ -590,9 +588,7 @@ public class HomotypicConsolidator implements AutoCloseable {
     }
 
     private SimpleName loadSN(String id) {
-      try (SqlSession session = factory.openSession()) {
-        return session.getMapper(NameUsageMapper.class).getSimple(dsid.id(id));
-      }
+      return session.getMapper(NameUsageMapper.class).getSimple(dsid.id(id));
     }
 
   }
@@ -704,14 +700,8 @@ public class HomotypicConsolidator implements AutoCloseable {
 
   private LinneanNameUsage load(String id) {
     final var dsid = DSID.of(datasetKey, id);
-    try (SqlSession session = factory.openSession()) {
-      var nub = session.getMapper(NameUsageMapper.class).get(dsid);
-      return new LinneanNameUsage(nub);
-
-    } catch (Exception e) {
-      LOG.error("Failed to load usage {}", dsid, e);
-      throw new RuntimeException(e);
-    }
+    var nub = session.getMapper(NameUsageMapper.class).get(dsid);
+    return new LinneanNameUsage(nub);
   }
 
 }

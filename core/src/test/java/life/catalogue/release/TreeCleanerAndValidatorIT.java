@@ -39,10 +39,9 @@ public class TreeCleanerAndValidatorIT {
   @Test
   public void parentMismatch() throws IOException {
     final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    try (SqlSession session = factory.openSession(true);
-         TreeCleanerAndValidator tcv = new TreeCleanerAndValidator(factory, datasetKey, false)
-    ) {
+    try (SqlSession session = factory.openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
+      var tcv = new TreeCleanerAndValidator(session, datasetKey, false);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
       params.setSynonyms(true);

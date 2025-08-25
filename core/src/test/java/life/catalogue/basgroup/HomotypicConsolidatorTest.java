@@ -32,10 +32,12 @@ public class HomotypicConsolidatorTest {
   public void findPrimaryUsage() {
     var vsm = mock(VerbatimSourceMapper.class);
     when(vsm.getMaxID(anyInt())).thenReturn(100);
+
     var session = mock(SqlSession.class);
     when(session.getMapper(VerbatimSourceMapper.class)).thenReturn(vsm);
+
     var factory = mock(SqlSessionFactory.class);
-    when(factory.openSession(any(), anyBoolean())).thenReturn(session);
+    when(factory.openSession(anyBoolean())).thenReturn(session);
 
     var hc = HomotypicConsolidator.forTaxa(factory, 3, List.of(), u -> 1);
 

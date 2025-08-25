@@ -265,7 +265,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                 @Param("userKey") int userKey);
 
   /**
-   * Sets a taxon as provisional
+   * Updates a taxon status
    * @param key
    * @param status
    * @param userKey
