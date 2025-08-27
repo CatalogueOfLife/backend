@@ -132,5 +132,16 @@ public interface VerbatimSourceMapper extends Create<VerbatimSource>, CopyDatase
   void removeAllIssues(@Param("projectKey") int projectKey);
 
   int deleteOrphans(@Param("datasetKey") int datasetKey);
+
+  @Override
+  default int copyDataset(@Param("datasetKey") int datasetKey, @Param("newDatasetKey") int newDatasetKey, @Param("mapIds") boolean mapIds) {
+    var cnt = copyDatasetVS(datasetKey, newDatasetKey, mapIds);
+    copyDatasetVS2(datasetKey, newDatasetKey, mapIds);
+    return cnt;
+  }
+
+  int copyDatasetVS(@Param("datasetKey") int datasetKey, @Param("newDatasetKey") int newDatasetKey, @Param("mapIds") boolean mapIds);
+
+  int copyDatasetVS2(@Param("datasetKey") int datasetKey, @Param("newDatasetKey") int newDatasetKey, @Param("mapIds") boolean mapIds);
 }
 

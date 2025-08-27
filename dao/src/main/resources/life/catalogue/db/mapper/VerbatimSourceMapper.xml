@@ -110,12 +110,14 @@
     VALUES (#{id}, #{datasetKey}, <include refid="PROPS"/>)
   </insert>
 
-  <insert id="copyDataset" parameterType="map">
+  <insert id="copyDatasetVS" parameterType="map">
     INSERT INTO verbatim_source (id,dataset_key,<include refid="COLS_COPY"/>)
     SELECT v.id,#{newDatasetKey},<include refid="COLS_COPY"/>
     FROM verbatim_source v
-    WHERE dataset_key = #{datasetKey};
+    WHERE dataset_key = #{datasetKey}
+  </insert>
 
+  <insert id="copyDatasetVS2" parameterType="map">
     INSERT INTO verbatim_source_secondary (verbatim_source_key,dataset_key,type,source_id,source_dataset_key)
     SELECT v.verbatim_source_key,#{newDatasetKey}, type,source_id,source_dataset_key
     FROM verbatim_source_secondary v
