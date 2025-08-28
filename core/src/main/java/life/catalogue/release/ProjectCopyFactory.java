@@ -76,6 +76,11 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
+    return new XRelease(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+  }
+
+  public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
     return new XReleaseDebug(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
   }

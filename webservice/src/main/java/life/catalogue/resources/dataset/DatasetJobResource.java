@@ -95,4 +95,20 @@ public class DatasetJobResource {
     var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
     exec.submit(job);
   }
+
+  @POST
+  @Path("{key}/xrdebug")
+  @ProjectOnly
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public void xrDebug(@PathParam("key") int key, @Auth User user) {
+    Integer releaseKey;
+    try (SqlSession session = factory.openSession(true)) {
+      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
+    }
+    if (releaseKey == null) {
+      throw new IllegalArgumentException("Project " + key + " was never released in public");
+    }
+    var job = jobFactory.buildDebugXRelease(releaseKey, user.getKey());
+    exec.submit(job);
+  }
 }
