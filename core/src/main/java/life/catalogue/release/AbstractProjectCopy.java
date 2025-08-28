@@ -278,9 +278,8 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(EditorialDecision.class, DecisionMapper.class, session);
       copyTable(SpeciesEstimate.class, EstimateMapper.class, session);
       copyTable(Publisher.class, PublisherMapper.class, session);
-      //TODO: projects should not have verbatim records - remove?
-      copyTable(VerbatimRecord.class, VerbatimRecordMapper.class, session);
       copyTable(VerbatimSource.class, VerbatimSourceMapper.class, session);
+      copyTable("VerbatimSourceSecondary", VerbatimSourceSecondaryMapper.class, session);
 
       copyTable(Reference.class, ReferenceMapper.class, session);
 
@@ -317,9 +316,12 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   }
 
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) throws InterruptedException {
+    copyTable(entity.getSimpleName(), mapperClass, session);
+  }
+  <M extends CopyDataset> void copyTable(String entityName, Class<M> mapperClass, SqlSession session) throws InterruptedException {
     checkIfCancelled();
     int count = session.getMapper(mapperClass).copyDataset(projectKey, newDatasetKey, mapIds);
-    LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), projectKey, newDatasetKey);
+    LOG.info("Copied {} {}s from {} to {}", count, entityName, projectKey, newDatasetKey);
   }
 
   public int getAttempt() {

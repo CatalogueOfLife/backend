@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.VerbatimSourceSecondaryMapper">
+
+  <insert id="copyDataset" parameterType="map">
+    INSERT INTO verbatim_source_secondary (verbatim_source_key,dataset_key,type,source_id,source_dataset_key)
+    SELECT v.verbatim_source_key,#{newDatasetKey}, type,source_id,source_dataset_key
+    FROM verbatim_source_secondary v
+    WHERE dataset_key = #{datasetKey}
+  </insert>
+
+</mapper>
