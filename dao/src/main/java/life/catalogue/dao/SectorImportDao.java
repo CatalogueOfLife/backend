@@ -70,7 +70,6 @@ public class SectorImportDao {
     si.setTypeMaterialCount(mapper.countTypeMaterial(datasetKey, key));
     si.setVernacularCount(mapper.countVernacular(datasetKey, key));
 
-    si.setSecondarySourceByInfoCount(countMap(InfoGroup.class, mapper.countSecondarySourceByInfo(datasetKey, key)));
     si.setDistributionsByGazetteerCount(countMap(Gazetteer.class, mapper.countDistributionsByGazetteer(datasetKey, key)));
     si.setExtinctTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countExtinctTaxaByRank(datasetKey, key)));
     si.setIssuesCount(countMap(Issue.class, mapper.countIssues(datasetKey, key)));
@@ -90,6 +89,9 @@ public class SectorImportDao {
     si.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
     si.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));
     si.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(datasetKey, key)));
+    si.setSecondarySourceByInfoCount(countMap(InfoGroup.class, mapper.countSecondarySourceByInfo(datasetKey, key)));
+    // we don't need to store mergedTaxon/SynonymByRank as its the same as the non merged one and just depends on the sector type
+    // instead we have overriden the SectorImport methods
   }
 
   /**

@@ -258,7 +258,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     }
     // build taxon metrics
     if (newDataset.getOrigin().isRelease()) {
-      MetricsBuilder.rebuildMetrics(factory, newDatasetKey);
+      TaxonMetricsBuilder.rebuildMetrics(factory, newDatasetKey);
     }
     // create new dataset "import" metrics in mother project
     // metrics.maxClassificationDepth needs to be set before!

@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -637,7 +636,7 @@ public class XRelease extends ProjectRelease {
       var consumer = new TreeCleanerAndValidator(session, newDatasetKey, xCfg.removeEmptyGenera);
       // add metrics generator to tree traversal
       var stack = consumer.stack();
-      MetricsBuilder mb = new MetricsBuilder(MetricsBuilder.tracker(stack), newDatasetKey, session);
+      TaxonMetricsBuilder mb = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(stack), newDatasetKey, session);
       stack.addHandler(new ParentStack.StackHandler<>() {
         @Override
         public void start(TreeCleanerAndValidator.XLinneanNameUsage n) {

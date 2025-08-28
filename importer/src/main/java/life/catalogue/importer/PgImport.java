@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.Create;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
@@ -22,7 +23,6 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
 import life.catalogue.importer.neo.traverse.StartEndHandler;
 import life.catalogue.importer.neo.traverse.TreeWalker;
-import life.catalogue.dao.MetricsBuilder;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -412,7 +412,7 @@ public class PgImport implements Callable<Boolean> {
         TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
           final Stack<NodeNXtra> parentsN = new Stack<>();
-          final MetricsBuilder mBuilder = new MetricsBuilder(MetricsBuilder.tracker(parents), dataset.getKey(), session);
+          final TaxonMetricsBuilder mBuilder = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
           public void start(Node n) {

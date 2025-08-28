@@ -11,7 +11,6 @@
     si.attempt,
     si.dataset_attempt,
     si.warnings,
-    si.secondary_source_by_info_count,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value="si."/>
     </include>
@@ -23,7 +22,6 @@
     sector_key,
     dataset_attempt,
     warnings,
-    secondary_source_by_info_count,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsCols">
       <property name="alias" value=""/>
     </include>
@@ -35,7 +33,6 @@
     #{imp.sectorKey},
     #{imp.datasetAttempt},
     #{imp.warnings, typeHandler=life.catalogue.db.type2.StringCollectionArrayTypeHandler},
-    #{imp.secondarySourceByInfoCount, typeHandler=life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler}::hstore,
     <include refid="life.catalogue.db.mapper.DatasetImportMapper.metricsProps"/>
   </sql>
 

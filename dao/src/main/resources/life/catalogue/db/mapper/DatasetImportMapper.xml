@@ -19,9 +19,12 @@
     di.max_classification_depth,
     di.verbatim_count,
     di.verbatim_by_term_count,
-    di.verbatim_by_row_type_count
+    di.verbatim_by_row_type_count,
+    di.merged_taxa_by_rank_count,
+    di.merged_synonyms_by_rank_count
   </sql>
 
+  <!-- shared with sector import metrics -->
   <sql id="metricsCols">
     ${alias}job,
     ${alias}error,
@@ -59,7 +62,8 @@
     ${alias}type_material_by_status_count,
     ${alias}usages_by_origin_count,
     ${alias}usages_by_status_count,
-    ${alias}vernaculars_by_language_count
+    ${alias}vernaculars_by_language_count,
+    ${alias}secondary_source_by_info_count
   </sql>
 
   <sql id="COLS">
@@ -76,7 +80,9 @@
     max_classification_depth,
     verbatim_count,
     verbatim_by_term_count,
-    verbatim_by_row_type_count
+    verbatim_by_row_type_count,
+    merged_taxa_by_rank_count,
+    merged_synonyms_by_rank_count
   </sql>
 
   <sql id="metricsProps">
@@ -116,7 +122,8 @@
     #{imp.typeMaterialByStatusCount, typeHandler=life.catalogue.db.type2.HstoreRankCountTypeHandler}::hstore,
     #{imp.usagesByOriginCount, typeHandler=life.catalogue.db.type2.HstoreOriginCountTypeHandler}::hstore,
     #{imp.usagesByStatusCount, typeHandler=life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler}::hstore,
-    #{imp.vernacularsByLanguageCount, typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore
+    #{imp.vernacularsByLanguageCount, typeHandler=life.catalogue.db.type2.HstoreStringCountTypeHandler}::hstore,
+    #{imp.secondarySourceByInfoCount, typeHandler=life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler}::hstore
   </sql>
 
   <sql id="PROPS">
@@ -131,7 +138,9 @@
     #{imp.maxClassificationDepth},
     #{imp.verbatimCount},
     #{imp.verbatimByTermCount},
-    #{imp.verbatimByRowTypeCount, typeHandler=life.catalogue.db.type2.NestedTermMapTypeHandler}::jsonb
+    #{imp.verbatimByRowTypeCount, typeHandler=life.catalogue.db.type2.NestedTermMapTypeHandler}::jsonb,
+    #{imp.mergedTaxaByRankCount, typeHandler=life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler}::hstore,
+    #{imp.mergedSynonymsByRankCount, typeHandler=life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler}::hstore
   </sql>
 
   <sql id="FROM">
@@ -166,6 +175,8 @@
   <resultMap id="datasetImportResultMap" type="DatasetImport" autoMapping="true" extends="importMetricsResultMap">
     <result property="verbatimByTermCount" column="verbatim_by_term_count" typeHandler="life.catalogue.db.type2.HstoreTermCountTypeHandler"/>
     <result property="verbatimByRowTypeCount" column="verbatim_by_row_type_count" typeHandler="life.catalogue.db.type2.NestedTermMapTypeHandler"/>
+    <result property="mergedTaxaByRankCount" column="merged_taxa_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
+    <result property="mergedSynonymsByRankCount" column="merged_synonyms_by_rank_count" typeHandler="life.catalogue.db.type2.HstoreRankCountTypeHandler"/>
   </resultMap>
 
   <!--  shared mapping for the base ImportMetrics -->
@@ -190,6 +201,7 @@
     <result property="usagesByOriginCount" column="usages_by_origin_count" typeHandler="life.catalogue.db.type2.HstoreOriginCountTypeHandler"/>
     <result property="usagesByStatusCount" column="usages_by_status_count" typeHandler="life.catalogue.db.type2.HstoreTaxStatusCountTypeHandler"/>
     <result property="vernacularsByLanguageCount" column="vernaculars_by_language_count" typeHandler="life.catalogue.db.type2.HstoreStringCountTypeHandler"/>
+    <result property="secondarySourceByInfoCount" column="secondary_source_by_info_count" typeHandler="life.catalogue.db.type2.HstoreInfoGroupCountTypeHandler"/>
   </resultMap>
 
   <select id="get" resultMap="datasetImportResultMap">
@@ -302,6 +314,30 @@
     FROM media WHERE dataset_key = #{key}
     GROUP BY type
   </select>
+
+  <select id="countMergedSynonymsByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage t
+           JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
+           JOIN sector s ON s.id=t.sector_key AND s.dataset_key=t.dataset_key
+    WHERE t.dataset_key=#{key} AND is_synonym(t.status) AND s.mode='MERGE'
+    GROUP BY n.rank
+  </select>
+  <select id="countMergedTaxaByRank" resultType="StringCount">
+    SELECT n.rank AS key, count(*) AS count
+    FROM name_usage t
+           JOIN name n ON t.name_id=n.id AND n.dataset_key=t.dataset_key
+           JOIN sector s ON s.id=t.sector_key AND s.dataset_key=t.dataset_key
+    WHERE t.dataset_key=#{key} AND NOT is_synonym(t.status) AND s.mode='MERGE'
+    GROUP BY n.rank
+  </select>
+  <select id="countSecondarySourceByInfo" resultType="StringCount">
+    SELECT type AS key, count(*) AS count
+    FROM verbatim_source_secondary x
+    WHERE x.dataset_key=#{key}
+    GROUP BY type
+  </select>
+
   <select id="countNamesByType" resultType="StringCount">
     SELECT type AS key, count(*) AS count
     FROM name WHERE dataset_key = #{key}

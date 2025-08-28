@@ -1,6 +1,6 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.InfoGroup;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 
@@ -10,7 +10,6 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer datasetAttempt;
-  private Map<InfoGroup, Integer> secondarySourceByInfoCount = new HashMap<>();
 
   private final List<String> warnings = new ArrayList<>();
 
@@ -59,12 +58,30 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
     this.datasetAttempt = datasetAttempt;
   }
 
-  public Map<InfoGroup, Integer> getSecondarySourceByInfoCount() {
-    return secondarySourceByInfoCount;
+  @Override
+  public void setMergedSynonymsByRankCount(Map<Rank, Integer> mergedSynonymsByRankCount) {
+    // ignore
   }
 
-  public void setSecondarySourceByInfoCount(Map<InfoGroup, Integer> secondarySourceByInfoCount) {
-    this.secondarySourceByInfoCount = secondarySourceByInfoCount;
+  @Override
+  public Map<Rank, Integer> getMergedSynonymsByRankCount() {
+    if (Boolean.TRUE.equals(isMerged())) {
+      return getSynonymsByRankCount();
+    }
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void setMergedTaxaByRankCount(Map<Rank, Integer> mergedTaxaByRankCount) {
+    // ignore
+  }
+
+  @Override
+  public Map<Rank, Integer> getMergedTaxaByRankCount() {
+    if (Boolean.TRUE.equals(isMerged())) {
+      return getTaxaByRankCount();
+    }
+    return Collections.emptyMap();
   }
 
   @Override
@@ -72,12 +89,12 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
     if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(secondarySourceByInfoCount, that.secondarySourceByInfoCount) && Objects.equals(warnings, that.warnings);
+    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(warnings, that.warnings);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, datasetAttempt, secondarySourceByInfoCount, warnings);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, datasetAttempt, warnings);
   }
 
   @Override

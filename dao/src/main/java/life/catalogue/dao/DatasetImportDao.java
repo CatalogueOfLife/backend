@@ -196,12 +196,15 @@ public class DatasetImportDao {
       di.setIssuesCount(countMap(Issue.class, mapper.countIssues(key)));
     }
     di.setMediaByTypeCount(countMap(MediaType.class, mapper.countMediaByType(key)));
+    di.setMergedSynonymsByRankCount(countMap(Rank.class, mapper.countMergedSynonymsByRank(key)));
+    di.setMergedTaxaByRankCount(countMap(Rank.class, mapper.countMergedTaxaByRank(key)));
     di.setNameRelationsByTypeCount(countMap(NomRelType.class, mapper.countNameRelationsByType(key)));
     di.setNamesByCodeCount(countMap(NomCode.class, mapper.countNamesByCode(key)));
+    di.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(key)));
     di.setNamesByRankCount(countMap(DatasetImportDao::parseRank, mapper.countNamesByRank(key)));
     di.setNamesByStatusCount(countMap(NomStatus.class, mapper.countNamesByStatus(key)));
     di.setNamesByTypeCount(countMap(NameType.class, mapper.countNamesByType(key)));
-    di.setNamesByMatchTypeCount(countMap(MatchType.class, mapper.countNamesByMatchType(key)));
+    di.setSecondarySourceByInfoCount(countMap(InfoGroup.class, mapper.countSecondarySourceByInfo(key)));
     di.setSpeciesInteractionsByTypeCount(countMap(SpeciesInteractionType.class, mapper.countSpeciesInteractionsByType(key)));
     di.setSynonymsByRankCount(countMap(DatasetImportDao::parseRank, mapper.countSynonymsByRank(key)));
     di.setTaxaByRankCount(countMap(DatasetImportDao::parseRank, mapper.countTaxaByRank(key)));

@@ -1,7 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
-import life.catalogue.dao.MetricsBuilder;
+import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TaxonMetricsMapper;
 import life.catalogue.junit.PgSetupRule;
@@ -16,7 +16,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MetricsBuilderTest {
+public class TaxonMetricsBuilderTest {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -26,7 +26,7 @@ public class MetricsBuilderTest {
 
   @Test
   public void rebuildMetrics() {
-    MetricsBuilder.rebuildMetrics(SqlSessionFactoryRule.getSqlSessionFactory(), testDataRule.testData.key);
+    TaxonMetricsBuilder.rebuildMetrics(SqlSessionFactoryRule.getSqlSessionFactory(), testDataRule.testData.key);
     var key = DSID.<String>root(testDataRule.testData.key);
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {

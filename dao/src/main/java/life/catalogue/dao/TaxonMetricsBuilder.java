@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-public class MetricsBuilder {
-  private static final Logger LOG = LoggerFactory.getLogger(MetricsBuilder.class);
+public class TaxonMetricsBuilder {
+  private static final Logger LOG = LoggerFactory.getLogger(TaxonMetricsBuilder.class);
   private final ClassificationTracker clTracker;
   private final DSID<String> key;
   private int nestedSetIdx = 1;
@@ -82,7 +82,7 @@ public class MetricsBuilder {
     ) {
       // add metrics generator to tree traversal
       final var stack = new ParentStack<LinneanNameUsage>();
-      MetricsBuilder mb = new MetricsBuilder(tracker(stack), datasetKey, session);
+      TaxonMetricsBuilder mb = new TaxonMetricsBuilder(tracker(stack), datasetKey, session);
       stack.addHandler(new ParentStack.StackHandler<>() {
         @Override
         public void start(LinneanNameUsage n) {
@@ -111,7 +111,7 @@ public class MetricsBuilder {
     LOG.info("Finished rebuilding {} taxon metrics for dataset {}", counter, datasetKey);
   }
 
-  public MetricsBuilder(ClassificationTracker classificationTracker, int datasetKey, SqlSession session) {
+  public TaxonMetricsBuilder(ClassificationTracker classificationTracker, int datasetKey, SqlSession session) {
     this.clTracker = classificationTracker;
     this.key = DSID.root(datasetKey);
     this.metricsMapper = session.getMapper(TaxonMetricsMapper.class);

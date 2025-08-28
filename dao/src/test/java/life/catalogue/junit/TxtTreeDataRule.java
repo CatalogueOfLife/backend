@@ -7,7 +7,7 @@ import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.io.Resources;
 import life.catalogue.dao.CopyUtil;
-import life.catalogue.dao.MetricsBuilder;
+import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.db.mapper.*;
 import life.catalogue.parser.NameParser;
@@ -149,7 +149,7 @@ public class TxtTreeDataRule extends ExternalResource implements AutoCloseable {
       loadTree(x);
       createSequences(x);
       if (buildMetrics) {
-        MetricsBuilder.rebuildMetrics(sqlSessionFactorySupplier.get(), x.key);
+        TaxonMetricsBuilder.rebuildMetrics(sqlSessionFactorySupplier.get(), x.key);
       }
       //printTree(x.key);
     }

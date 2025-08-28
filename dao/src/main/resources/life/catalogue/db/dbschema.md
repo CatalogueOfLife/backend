@@ -14,6 +14,14 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-08-28 XR metrics
+```
+ALTER TABLE dataset_import
+  ADD COLUMN merged_taxa_by_rank_count HSTORE,
+  ADD COLUMN merged_synonyms_by_rank_count HSTORE,
+  ADD COLUMN secondary_source_by_info_count HSTORE;
+```
+
 #### 2025-08-21 verbatim_source refactoring
 ```
 CREATE SCHEMA vs;

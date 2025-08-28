@@ -977,7 +977,10 @@ CREATE TABLE dataset_import (
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
+  secondary_source_by_info_count HSTORE,
   -- extra
+  merged_taxa_by_rank_count HSTORE,
+  merged_synonyms_by_rank_count HSTORE,
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
   job TEXT NOT NULL,
@@ -1081,7 +1084,6 @@ CREATE TABLE sector_import (
   finished TIMESTAMP WITHOUT TIME ZONE,
   created_by INTEGER NOT NULL,
   state IMPORTSTATE NOT NULL,
-  secondary_source_by_info_count HSTORE,
   -- shared
   applied_decision_count INTEGER,
   bare_name_count INTEGER,
@@ -1115,6 +1117,7 @@ CREATE TABLE sector_import (
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
+  secondary_source_by_info_count HSTORE,
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
