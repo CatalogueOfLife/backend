@@ -14,6 +14,13 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Convenience class for adding issues to project or releases.
+ * It manages missing verbatim source records under the hood.
+ *
+ * As it relies on a serial verbatim source id generator looking at the current maximum at startup,
+ * do not use this class in parallel for the same dataset!
+ */
 public class IssueAdder {
   private final int datasetKey;
   private final DSID<Integer> vkey;
@@ -23,6 +30,7 @@ public class IssueAdder {
   private AtomicInteger vsIdGen;
 
   public IssueAdder(int datasetKey, SqlSession session) {
+    DaoUtils.requireProjectOrRelease(datasetKey);
     this.datasetKey = datasetKey;
     this.ukey = DSID.root(datasetKey);
     this.vkey = DSID.root(datasetKey);

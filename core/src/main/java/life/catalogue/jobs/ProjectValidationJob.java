@@ -20,16 +20,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Resets all dataset sector counts for an entire catalogue, see param datasetKey,
- * and rebuilds the counts from the currently mapped sectors
+ * Validates a given project using the TreeCleanerAndValidator
  */
-public class ValidationJob extends DatasetBlockingJob {
-  private static final Logger LOG = LoggerFactory.getLogger(ValidationJob.class);
+public class ProjectValidationJob extends DatasetBlockingJob {
+  private static final Logger LOG = LoggerFactory.getLogger(ProjectValidationJob.class);
 
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
 
-  public ValidationJob(int userKey, SqlSessionFactory factory, NameUsageIndexService indexService, int datasetKey) {
+  public ProjectValidationJob(int userKey, SqlSessionFactory factory, NameUsageIndexService indexService, int datasetKey) {
     super(datasetKey, userKey, JobPriority.HIGH);
     this.factory = factory;
     this.indexService = indexService;
@@ -70,8 +69,8 @@ public class ValidationJob extends DatasetBlockingJob {
 
   @Override
   public boolean isDuplicate(BackgroundJob other) {
-    if (other instanceof ValidationJob) {
-      ValidationJob job = (ValidationJob) other;
+    if (other instanceof ProjectValidationJob) {
+      ProjectValidationJob job = (ProjectValidationJob) other;
       return datasetKey == job.datasetKey;
     }
     return false;

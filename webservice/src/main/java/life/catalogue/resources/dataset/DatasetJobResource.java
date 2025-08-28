@@ -10,7 +10,7 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
-import life.catalogue.jobs.ValidationJob;
+import life.catalogue.jobs.ProjectValidationJob;
 import life.catalogue.release.ProjectCopyFactory;
 
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class DatasetJobResource {
   @Path("{key}/validate")
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
   public void validate(@PathParam("key") int key, @Auth User user) {
-    exec.submit(new ValidationJob(user.getKey(), factory, dao.getIndexService(), key));
+    exec.submit(new ProjectValidationJob(user.getKey(), factory, dao.getIndexService(), key));
   }
 
   @POST

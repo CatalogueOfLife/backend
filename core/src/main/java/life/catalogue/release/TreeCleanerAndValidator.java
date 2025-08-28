@@ -6,6 +6,7 @@ import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
+import life.catalogue.dao.DaoUtils;
 import life.catalogue.dao.IssueAdder;
 import life.catalogue.dao.ParentStack;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -23,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Validates a project or release and creates issues in the verbatim source table.
+ *
  * Consumer of an entire tree in depth first order (!) of accepted names with or without synonyms, validates taxa and resolves data.
  * It tracks the parent classification as it goes and makes it available for validations.
  * In particular this is:
@@ -47,16 +50,13 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   static final Logger LOG = LoggerFactory.getLogger(TreeCleanerAndValidator.class);
 
   private final IssueAdder issueAdder;
-  private final int datasetKey;
   private final ParentStack<XLinneanNameUsage> parents;
   private final AtomicInteger counter = new AtomicInteger(0);
   private final AtomicInteger flagged = new AtomicInteger(0);
-  private final SqlSession session  ;
   private int maxDepth = 0;
 
   public TreeCleanerAndValidator(SqlSession session, int datasetKey, boolean removeEmptyGenera) {
-    this.session = session;
-    this.datasetKey = datasetKey;
+    DaoUtils.requireProjectOrRelease(datasetKey);
     this.parents = new ParentStack<>();
     this.issueAdder = new IssueAdder(datasetKey, session);
     if (removeEmptyGenera) {

@@ -37,10 +37,10 @@ public class DaoUtils {
   }
 
   /**
-   * Makes sure the datasets origin is a project and is either managed or released
+   * Makes sure the datasets origin is a project or a release type
    */
   public static void requireProjectOrRelease(int datasetKey) throws NotFoundException {
-    requireProjectOrRelease(datasetKey, "Only data from projects or releases can be modified.");
+    requireProjectOrRelease(datasetKey, "A project or release is required.");
   }
 
   /**
