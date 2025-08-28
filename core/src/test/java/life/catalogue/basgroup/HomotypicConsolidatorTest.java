@@ -1,8 +1,12 @@
 package life.catalogue.basgroup;
 
+import life.catalogue.TestUtils;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.LinneanNameUsage;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
@@ -29,7 +33,7 @@ import static org.mockito.Mockito.when;
 public class HomotypicConsolidatorTest {
 
   @Test
-  public void findPrimaryUsage() {
+  public void findPrimaryUsage() throws Exception {
     var vsm = mock(VerbatimSourceMapper.class);
     when(vsm.getMaxID(anyInt())).thenReturn(100);
 
@@ -38,6 +42,10 @@ public class HomotypicConsolidatorTest {
 
     var factory = mock(SqlSessionFactory.class);
     when(factory.openSession(anyBoolean())).thenReturn(session);
+
+    var infoCache = TestUtils.mockedInfoCache();
+    var info = new DatasetInfoCache.DatasetInfo(3, DatasetOrigin.PROJECT,3, null, false);
+    when(infoCache.info(anyInt())).thenReturn(info);
 
     var hc = HomotypicConsolidator.forTaxa(factory, 3, List.of(), u -> 1);
 

@@ -71,7 +71,7 @@ public class DatasetInfoCache implements DatasetListener {
     public final UUID publisherKey; // this can change, so we listen to update events.
     public final boolean deleted; // this can change, so we listen to deletion events. But once deleted it can never be reverted.
 
-    DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, UUID publisherKey, boolean deleted) {
+    public DatasetInfo(int key, DatasetOrigin origin, Integer sourceKey, UUID publisherKey, boolean deleted) {
       this.key = key;
       this.origin = Preconditions.checkNotNull(origin, "origin is required");
       this.sourceKey = sourceKey;
