@@ -310,7 +310,7 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void homotypicGrouping() throws InterruptedException {
+  protected void homotypicGrouping() throws InterruptedException {
     checkIfCancelled();
     final var prios = new SectorPriority(getDatasetKey(), factory);
     // detect and group basionyms
@@ -358,7 +358,7 @@ public class XRelease extends ProjectRelease {
   /**
    * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
-  private void flagLoops() throws InterruptedException {
+  protected void flagLoops() throws InterruptedException {
     checkIfCancelled();
     // any chained synonyms?
     try (SqlSession session = factory.openSession(false)) {
@@ -505,10 +505,14 @@ public class XRelease extends ProjectRelease {
     super.onFinishLocked();
   }
 
+  protected void mergeSectors() throws Exception {
+    mergeSectors(Integer.MAX_VALUE);
+  }
+
   /**
    * We do all extended work here, e.g. sector merging
    */
-  private void mergeSectors() throws Exception {
+  protected void mergeSectors(int maxSectors) throws Exception {
     checkIfCancelled();
     // prepare merge handler config instance
     LOG.info("Start merging {} sectors", sectors.size());
@@ -522,6 +526,11 @@ public class XRelease extends ProjectRelease {
     final Supplier<String> typeMaterialIdGen = new XIdGen();
     updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
+      if (counter >= maxSectors) {
+        LOG.warn("Stop merging as we reached the debug limit of {} sectors", maxSectors);
+        break;
+      }
+
       LOG.info("Merge {}. #{} out of {}", s, counter++, size);
       // the sector might not have been copied to the xrelease yet - we only copied all sectors from the base release, not the project.
       // create only if missing
@@ -617,7 +626,7 @@ public class XRelease extends ProjectRelease {
    *
    * Updates implicit names to be accepted (not doubtful) and removes implicit taxa with no children if configured to do so.
    */
-  private void cleanImplicitTaxa() throws InterruptedException {
+  protected void cleanImplicitTaxa() throws InterruptedException {
     checkIfCancelled();
     LOG.warn("Clean implicit taxa - not implemented");
   }
@@ -625,7 +634,7 @@ public class XRelease extends ProjectRelease {
   /**
    * Iterates over the entire tree of accepted names, validates taxa and resolves data.
    */
-  private void validateAndCleanTree() throws InterruptedException {
+  protected void validateAndCleanTree() throws InterruptedException {
     checkIfCancelled();
     LOG.info("Clean, validate & produce taxon metrics for entire xrelease {}", newDatasetKey);
     final AtomicInteger counter = new AtomicInteger();
