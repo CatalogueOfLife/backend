@@ -434,15 +434,16 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Iterate over all usages ordered by their canonical names index id.
    * The parent property is filled with the parent name, not its ID.
+   * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
    */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Param("minLength") int minLength);
 
   /**
    * Iterates over all usage ids for a given dataset, optionally filtered by a minimum string length,
    * e.g. to only list temporary UUIDs
    * @param datasetKey
    * @param includeSynonyms
-   * @param minLength
+   * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
    * @return
    */
   Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);

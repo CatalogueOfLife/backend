@@ -83,7 +83,7 @@ public class IdProviderIT {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
-    provider.mapIds();
+    provider.mapAllIds();
     //provider.report();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
@@ -121,7 +121,7 @@ public class IdProviderIT {
     prCfg.ignoredReleases = List.of(13);
     init(cfg, prCfg);
 
-    provider.mapIds();
+    provider.mapAllIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);

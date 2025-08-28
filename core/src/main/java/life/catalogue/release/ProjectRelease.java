@@ -3,7 +3,6 @@ package life.catalogue.release;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.ExportRequest;
-import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.ImportState;
@@ -271,7 +270,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
     IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
-    idp.mapIds();
+    idp.mapAllIds();
     idp.report();
     DateUtils.logDuration(LOG, "ID provider", start);
   }

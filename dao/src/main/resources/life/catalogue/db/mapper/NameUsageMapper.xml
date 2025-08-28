@@ -842,7 +842,7 @@
       LEFT JOIN name np ON np.dataset_key=#{datasetKey} AND np.id=up.name_id
       LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       LEFT JOIN names_index ni ON ni.id=nm.index_id
-    WHERE u.dataset_key=#{datasetKey}
+    WHERE u.dataset_key=#{datasetKey} AND length(u.id) >= #{minLength}
     ORDER BY ni.canonical_id, ni.id
   </select>
 

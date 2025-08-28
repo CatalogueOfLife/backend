@@ -79,7 +79,7 @@ public class IdProviderTest {
     }
 
     @Override
-    protected void mapIds() {
+    protected void mapAllIds() {
       // map ids from test, not from DB
       mapIds(testNames);
     }
@@ -157,7 +157,7 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    provider.mapIds();
+    provider.mapAllIds();
     IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(1, report.deleted.size());
@@ -187,7 +187,7 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    provider.mapIds();
+    provider.mapAllIds();
     IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(2, report.deleted.size());
@@ -215,7 +215,7 @@ public class IdProviderTest {
     ));
 
     IdTestProvider provider = new IdTestProvider();
-    provider.mapIds();
+    provider.mapAllIds();
     IdProvider.IdReport report = provider.getReport();
     assertEquals(1, report.created.size());
     assertEquals(0, report.deleted.size());

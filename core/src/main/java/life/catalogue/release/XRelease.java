@@ -586,9 +586,9 @@ public class XRelease extends ProjectRelease {
   private void mapTmpIDs() throws InterruptedException {
     checkIfCancelled();
     var start = LocalDateTime.now();
-    final int startKey = usageIdGen.previewNextKey();
+    final int startKey = usageIdGen.peek();
     LOG.debug("Next key for stable IDs before mapping will be {}", startKey);
-    usageIdGen.mapIds();
+    usageIdGen.mapTempIds();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
 

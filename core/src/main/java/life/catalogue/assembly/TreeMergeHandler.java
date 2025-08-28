@@ -743,6 +743,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   /**
    * Updates an existing name.
    * Either the Name n or the existing usage must be given!
+   * If a new authorship is added the key of the existingUsage will change to a new temp id !
    *
    * @param n name to be updated
    * @param src source for updates

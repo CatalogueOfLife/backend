@@ -151,10 +151,10 @@ public class IdProviderReleaseIT {
     // map ids
     LOG.info("Map IDs for project {}", project);
     IdProvider idp = new IdProvider(Datasets.COL, Datasets.COL, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory());
-    final int nextKey = idp.previewNextKey();
-    idp.mapIds();
+    final int nextKey = idp.peek();
+    idp.mapAllIds();
     idp.report();
-    LOG.info("{} new IDs have been issued", idp.previewNextKey()-nextKey);
+    LOG.info("{} new IDs have been issued", idp.peek()-nextKey);
 
     // copy usages to new dataset
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {

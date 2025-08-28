@@ -11,6 +11,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.Int2IntBiMap;
 import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
+import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.CompressionUtil;
 import life.catalogue.common.io.TabWriter;
 import life.catalogue.common.io.TempFile;
@@ -41,7 +42,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
@@ -141,14 +141,14 @@ public class IdProvider {
       loadPreviousReleaseIds();
       LOG.info("Last release {} with {} IDs", lastReleaseKey, ids.currentIdCount());
       keySequence.set(ids.maxKey());
-      LOG.info("Max existing id = {} ({}). Start ID sequence with {} ({})", ids.maxKey(), encode(ids.maxKey()), previewNextKey(), encode(previewNextKey()));
+      LOG.info("Max existing id = {} ({}). Start ID sequence with {} ({})", ids.maxKey(), encode(ids.maxKey()), peek(), encode(peek()));
     }
   }
 
   /**
-   * @return the key that will be issued next
+   * @return preview the key that will be issued next without changing the sequence
    */
-  public int previewNextKey() {
+  public int peek() {
     return keySequence.get()+1;
   }
 
@@ -464,9 +464,16 @@ public class IdProvider {
     return UTF8IoUtils.writerFromFile(new File(reportDir, "nomatch.txt"));
   }
 
-  protected void mapIds(){
+  protected void mapAllIds(){
+    mapIds(-1);
+  }
+  protected void mapTempIds(){
+    mapIds(ShortUUID.MIN_LEN);
+  }
+
+  private void mapIds(int minIdLength){
     try (SqlSession readSession = factory.openSession(true);
-         var cursor = readSession.getMapper(NameUsageMapper.class).processNxIds(mappedDatasetKey);
+         var cursor = readSession.getMapper(NameUsageMapper.class).processNxIds(mappedDatasetKey, minIdLength);
     ) {
       mapIds(cursor);
     } catch (IOException e) {
