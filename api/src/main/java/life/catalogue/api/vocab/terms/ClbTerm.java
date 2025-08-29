@@ -11,7 +11,8 @@ import java.net.URI;
  */
 public enum ClbTerm implements Term, AlternativeNames {
   taxGroup,
-  taxGroupFromName;
+  taxGroupFromName,
+  merged;
 
   private static final String PREFIX = "clb";
   private static final String NS = "http://rs.checklistbank.org/terms/";

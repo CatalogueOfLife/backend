@@ -6,6 +6,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -57,7 +58,8 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   Term[] define(EntityType entity) {
     if (ColdpTerm.RESOURCES.containsKey(entity.coldp)) {
-      var terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
+      LinkedList<Term> terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
+      terms.add(ClbTerm.merged);
       terms.push(entity.coldp);
       return terms.toArray(Term[]::new);
     }
@@ -82,6 +84,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     // see taxon specifics below
     writer.set(ColdpTerm.link, u.getLink());
     writer.set(ColdpTerm.remarks, u.getRemarks());
+    writer.set(ClbTerm.merged, u.isMerged());
 
     if (!u.isSynonym()) {
       TaxonWithClassification t = (TaxonWithClassification) u;
@@ -123,6 +126,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.ID, bareID);
     writer.set(ColdpTerm.status, TaxonomicStatus.BARE_NAME);
     writer.set(ColdpTerm.remarks, u.getRemarks());
+    writer.set(ClbTerm.merged, u.isMerged());
   }
 
   void write(Name n) {
@@ -180,6 +184,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.area, vn.getArea());
     writer.set(ColdpTerm.sex, vn.getSex());
     writer.set(ColdpTerm.remarks, vn.getRemarks());
+    writer.set(ClbTerm.merged, vn.isMerged());
   }
 
   @Override
@@ -202,6 +207,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.page, tp.getPage());
     writer.set(ColdpTerm.ordinal, tp.getOrdinal());
     writer.set(ColdpTerm.remarks, tp.getRemarks());
+    writer.set(ClbTerm.merged, tp.isMerged());
   }
 
   @Override
@@ -242,6 +248,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
     writer.set(ColdpTerm.remarks, r.getRemarks());
+    writer.set(ClbTerm.merged, r.isMerged());
     // BibTex
     bibWriter.write( CslUtil.toBibTexString(r) );
     bibWriter.write("\n");
@@ -297,6 +304,7 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.type, rel.getType());
       writer.set(ColdpTerm.referenceID, rel.getReferenceId());
       writer.set(ColdpTerm.remarks, rel.getRemarks());
+      writer.set(ClbTerm.merged, rel.isMerged());
     }
   }
 
@@ -322,6 +330,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.catalogNumber, tm.getCatalogNumber());
     writer.set(ColdpTerm.link, tm.getLink());
     writer.set(ColdpTerm.remarks, tm.getRemarks());
+    writer.set(ClbTerm.merged, tm.isMerged());
   }
 
   @Override
@@ -332,6 +341,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.type, rel.getType());
     writer.set(ColdpTerm.referenceID, rel.getReferenceId());
     writer.set(ColdpTerm.remarks, rel.getRemarks());
+    writer.set(ClbTerm.merged, rel.isMerged());
   }
 
   @Override
@@ -347,6 +357,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.license, m.getLicense());
     writer.set(ColdpTerm.link, m.getLink());
     writer.set(ColdpTerm.remarks, m.getRemarks());
+    writer.set(ClbTerm.merged, m.isMerged());
   }
 
   @Override
@@ -358,6 +369,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.type, si.getType());
     writer.set(ColdpTerm.referenceID, si.getReferenceId());
     writer.set(ColdpTerm.remarks, si.getRemarks());
+    writer.set(ClbTerm.merged, si.isMerged());
   }
 
   @Override
@@ -373,6 +385,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.status, d.getStatus());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
     writer.set(ColdpTerm.remarks, d.getRemarks());
+    writer.set(ClbTerm.merged, d.isMerged());
   }
 
   @Override
