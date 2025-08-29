@@ -3,6 +3,7 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.img.ImageService;
@@ -107,25 +108,29 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.genus,
           DwcTerm.subgenus,
           DwcTerm.taxonRemarks,
-          DcTerm.references
+          DcTerm.references,
+          ClbTerm.merged
         };
       case VERNACULAR:
         return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID,
           DcTerm.language,
-          DwcTerm.vernacularName};
+          DwcTerm.vernacularName,
+          ClbTerm.merged};
       case DISTRIBUTION:
         return new Term[]{GbifTerm.Distribution, DwcTerm.taxonID,
           DwcTerm.occurrenceStatus,
           DwcTerm.locationID,
           DwcTerm.locality,
           DwcTerm.countryCode,
-          DcTerm.source};
+          DcTerm.source,
+          ClbTerm.merged};
       case TAXON_PROPERTY:
         return new Term[]{DwcTerm.MeasurementOrFact, DwcTerm.taxonID,
           DwcTerm.measurementID,
           DwcTerm.measurementType,
           DwcTerm.measurementValue,
-          DwcTerm.measurementRemarks};
+          DwcTerm.measurementRemarks,
+          ClbTerm.merged};
     }
     return null;
   }
@@ -194,6 +199,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
     writer.set(DwcTerm.namePublishedIn, citationByID(n.getPublishedInId()));
+    writer.set(ClbTerm.merged, u.isMerged());
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
       writer.set(DwcTerm.infragenericEpithet, n.getInfragenericEpithet());
@@ -216,6 +222,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DcTerm.language, vn.getLanguage());
     writer.set(DwcTerm.vernacularName, vn.getName());
+    writer.set(ClbTerm.merged, vn.isMerged());
   }
 
   void write(String taxonID, Distribution d) {
@@ -230,6 +237,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     if (d.getReferenceId() != null) {
       writer.set(DcTerm.source, refCache.get(d.getReferenceId()));
     }
+    writer.set(ClbTerm.merged, d.isMerged());
   }
 
   @Override
@@ -239,6 +247,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.measurementType, tp.getProperty());
     writer.set(DwcTerm.measurementValue, tp.getValue());
     writer.set(DwcTerm.measurementRemarks, tp.getRemarks());
+    writer.set(ClbTerm.merged, tp.isMerged());
 }
 
   @Override
