@@ -21,6 +21,7 @@ public enum TxtTreeTerm implements Term, AlternativeNames {
   REF, // taxonomic referenceIDs, concatenated by |
   SRC, // source datasetID
   LINK,
+  MERGED, // merged flag for extended releases
 
   // value fields, underscores are decoded into spaces
   ENV,
