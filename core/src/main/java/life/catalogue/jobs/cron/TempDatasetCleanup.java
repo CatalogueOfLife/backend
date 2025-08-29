@@ -8,18 +8,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TempDatasetCleanup extends CronJob {
-  private static final Logger LOG = LoggerFactory.getLogger(TempDatasetCleanup.class);
-  DatasetDao dao;
-  public TempDatasetCleanup() {
+
+  final DatasetDao dao;
+
+  public TempDatasetCleanup(DatasetDao dao) {
     super(1, TimeUnit.DAYS);
+    this.dao = dao;
   }
 
   @Override
   public void run() {
-    LOG.info("Looking for temporary datasets to be removed");
-    int cnt = dao.deleteTempDatasets();
-    if (cnt > 0) {
-      LOG.info("Removed {} temporary datasets", cnt);
-    }
+    dao.deleteTempDatasets();
   }
 }

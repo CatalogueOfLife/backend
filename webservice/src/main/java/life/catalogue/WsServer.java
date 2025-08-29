@@ -252,13 +252,6 @@ public class WsServer extends Application<WsServerConfig> {
     JobExecutor executor = new JobExecutor(cfg.job, env.metrics(), mail.getEmailNotification(), udao);
     managedService.manage(Component.JobExecutor, executor);
 
-    // cron jobs
-    var cron = CronExecutor.startWith(
-      new TempDatasetCleanup(),
-      new ProjectCounterUpdate(getSqlSessionFactory())
-    );
-    managedService.manage(Component.CronExecutor, cron);
-
     // name parser
     NameParser.PARSER.register(env.metrics());
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
@@ -355,6 +348,14 @@ public class WsServer extends Application<WsServerConfig> {
 
     // matcher
     final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
+
+
+    // cron jobs
+    var cron = CronExecutor.startWith(
+      new TempDatasetCleanup(ddao),
+      new ProjectCounterUpdate(getSqlSessionFactory())
+    );
+    managedService.manage(Component.CronExecutor, cron);
 
     // DOI
     DoiService doiService;

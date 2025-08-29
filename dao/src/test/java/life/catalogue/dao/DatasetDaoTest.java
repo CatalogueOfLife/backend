@@ -87,6 +87,11 @@ public class DatasetDaoTest extends DaoTestBase {
   }
 
   @Test
+  public void deleteTempDatasets() throws Exception {
+    assertEquals(0, dao.deleteTempDatasets());
+  }
+
+  @Test
   public void roundtrip() throws Exception {
     Dataset d1 = DatasetMapperTest.create();
     d1.setSource(List.of(

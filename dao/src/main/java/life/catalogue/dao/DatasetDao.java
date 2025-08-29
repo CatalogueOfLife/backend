@@ -752,6 +752,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public int deleteTempDatasets() {
     List<Integer> toDelete;
     LocalDateTime expiryDate = LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS);
+    LOG.info("Looking for temporary datasets to be removed and created before {}", expiryDate);
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       toDelete = dm.keysAbove(TEMP_KEY_START, expiryDate);
