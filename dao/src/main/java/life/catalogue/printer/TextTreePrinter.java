@@ -137,7 +137,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
       addInfos(TxtTreeTerm.CODE, u.getCode(), infos.props);
       var nu = session.getMapper(NameUsageMapper.class).get(key);
       if (nu != null) {
-        if (nu.isMerged()) {
+        if (Boolean.TRUE.equals(nu.isMerged())) {
           addInfos(TxtTreeTerm.MERGED, "true", infos.props);
         }
         addInfos(TxtTreeTerm.PUB, escape(nu.getName().getPublishedInId()), infos.props);
