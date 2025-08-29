@@ -51,20 +51,19 @@ public class ValidatorResource {
     MoreMediaTypes.APP_GZIP, MoreMediaTypes.APP_GZIP_ALT1, MoreMediaTypes.APP_GZIP_ALT2, MoreMediaTypes.APP_GZIP_ALT3,
     MoreMediaTypes.APP_ZIP, MoreMediaTypes.APP_ZIP_ALT1, MoreMediaTypes.APP_ZIP_ALT2, MoreMediaTypes.APP_ZIP_ALT3
   })
-  public Dataset uploadArchive(@Auth User user, @Context HttpHeaders headers, InputStream archive) throws IOException {
+  public Dataset uploadArchive(@Auth User user, InputStream archive) throws IOException {
     if (archive == null) throw new IllegalArgumentException("archive required");
 
-    String fn = ResourceUtils.filenameFromHeaders(headers);
     // create new temp dataset
     Dataset d = new Dataset();
-    d.setTitle("Archive Validation "+fn);
+    d.setTitle("Archive Validation by " + user);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setPrivat(true);
     d.setType(DatasetType.OTHER);
     d.setLicense(License.CC0);
     int key = ddao.createTemp(d, user.getKey());
     // validate uploaded archive
-    importManager.upload(key, archive, false, fn, null, user);
+    importManager.upload(key, archive, false, null, null, user);
     return d;
   }
 
