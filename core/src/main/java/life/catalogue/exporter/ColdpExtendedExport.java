@@ -75,7 +75,7 @@ public class ColdpExtendedExport extends ArchiveExport {
 
     write(u.getName());
     writer.set(ColdpTerm.ID, u.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(u.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(u.getSectorKey()));
     writer.set(ColdpTerm.parentID, u.getParentId());
     writer.set(ColdpTerm.status, u.getStatus());
     writer.set(ColdpTerm.namePhrase, u.getNamePhrase());
@@ -130,7 +130,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   }
 
   void write(Name n) {
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(n.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(n.getSectorKey()));
     for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
       writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
     }
@@ -176,7 +176,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, VernacularName vn) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(vn.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(vn.getSectorKey()));
     writer.set(ColdpTerm.name, vn.getName());
     writer.set(ColdpTerm.transliteration, vn.getLatin());
     writer.set(ColdpTerm.language, vn.getLanguage());
@@ -200,7 +200,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, TaxonProperty tp) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(tp.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tp.getSectorKey()));
     writer.set(ColdpTerm.property, tp.getProperty());
     writer.set(ColdpTerm.value, tp.getValue());
     writer.set(ColdpTerm.referenceID, tp.getReferenceId());
@@ -245,7 +245,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(Reference r) throws IOException {
     // tabular
     writer.set(ColdpTerm.ID, r.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
     writer.set(ColdpTerm.remarks, r.getRemarks());
     writer.set(ClbTerm.merged, r.isMerged());
@@ -300,7 +300,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     } else {
       writer.set(ColdpTerm.nameID, nameID);
       writer.set(ColdpTerm.relatedNameID, relatedNameID);
-      writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+      writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(rel.getSectorKey()));
       writer.set(ColdpTerm.type, rel.getType());
       writer.set(ColdpTerm.referenceID, rel.getReferenceId());
       writer.set(ColdpTerm.remarks, rel.getRemarks());
@@ -311,7 +311,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(TypeMaterial tm) {
     writer.set(ColdpTerm.ID, tm.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(tm.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tm.getSectorKey()));
     writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(tm.getNameId()));
     writer.set(ColdpTerm.citation, tm.getCitation());
     writer.set(ColdpTerm.status, tm.getStatus());
@@ -337,7 +337,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(TaxonConceptRelation rel) {
     writer.set(ColdpTerm.taxonID, rel.getTaxonId());
     writer.set(ColdpTerm.relatedTaxonID, rel.getRelatedTaxonId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(rel.getSectorKey()));
     writer.set(ColdpTerm.type, rel.getType());
     writer.set(ColdpTerm.referenceID, rel.getReferenceId());
     writer.set(ColdpTerm.remarks, rel.getRemarks());
@@ -347,7 +347,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, Media m) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(m.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(m.getSectorKey()));
     writer.set(ColdpTerm.url, m.getUrl());
     writer.set(ColdpTerm.type, m.getType());
     writer.set(ColdpTerm.format, m.getFormat());
@@ -364,7 +364,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(SpeciesInteraction si) {
     writer.set(ColdpTerm.taxonID, si.getTaxonId());
     writer.set(ColdpTerm.relatedTaxonID, si.getRelatedTaxonId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(si.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(si.getSectorKey()));
     writer.set(ColdpTerm.relatedTaxonScientificName, si.getRelatedTaxonScientificName());
     writer.set(ColdpTerm.type, si.getType());
     writer.set(ColdpTerm.referenceID, si.getReferenceId());
@@ -375,7 +375,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, Distribution d) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(d.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(d.getSectorKey()));
     var area = d.getArea();
     if (area != null) {
       writer.set(ColdpTerm.area, area.getName());

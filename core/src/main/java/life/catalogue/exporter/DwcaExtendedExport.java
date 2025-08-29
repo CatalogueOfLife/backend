@@ -146,7 +146,7 @@ public class DwcaExtendedExport extends ArchiveExport {
 
   void write(NameUsageBase u) {
     writer.set(DwcTerm.taxonID, u.getId());
-    writer.set(DwcTerm.datasetID, sector2datasetKey(u.getSectorKey()));
+    writer.set(DwcTerm.datasetID, sectorInfoCache.sector2datasetKey(u.getSectorKey()));
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());

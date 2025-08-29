@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
+import life.catalogue.db.SectorInfoCache;
 import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonExtensionMapper;
@@ -54,12 +55,14 @@ public class TextTreePrinter extends AbstractTreePrinter {
   private boolean showIDs;
   private boolean extended;
   private final DSID<String> key;
+  private final SectorInfoCache sectorInfoCache;
 
   public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
                          SqlSessionFactory factory, Writer writer) {
     super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
     key = DSID.root(params.getDatasetKey());
+    sectorInfoCache = new SectorInfoCache(factory, params.getDatasetKey());
   }
 
 
@@ -137,6 +140,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
       addInfos(TxtTreeTerm.CODE, u.getCode(), infos.props);
       var nu = session.getMapper(NameUsageMapper.class).get(key);
       if (nu != null) {
+        nu.setSectorMode(sectorInfoCache.sector2mode(nu.getSectorKey()));
         if (Boolean.TRUE.equals(nu.isMerged())) {
           addInfos(TxtTreeTerm.MERGED, "true", infos.props);
         }
