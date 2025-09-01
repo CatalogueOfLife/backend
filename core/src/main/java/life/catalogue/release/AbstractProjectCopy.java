@@ -273,7 +273,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   protected void copyData() throws InterruptedException {
     LOG.info("Copy data into dataset {}", newDatasetKey);
     updateState(ImportState.INSERTING);
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(false)) {
       copyTable(Sector.class, SectorMapper.class, session);
       copyTable(EditorialDecision.class, DecisionMapper.class, session);
       copyTable(SpeciesEstimate.class, EstimateMapper.class, session);
@@ -294,6 +294,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
       copyTable(Distribution.class, DistributionMapper.class, session);
       copyTable(Treatment.class, TreatmentMapper.class, session);
       copyTable(Media.class, MediaMapper.class, session);
+      session.commit();
     }
   }
 
@@ -318,6 +319,7 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
   <M extends CopyDataset> void copyTable(Class entity, Class<M> mapperClass, SqlSession session) throws InterruptedException {
     checkIfCancelled();
     int count = session.getMapper(mapperClass).copyDataset(projectKey, newDatasetKey, mapIds);
+    session.commit();
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), projectKey, newDatasetKey);
   }
 

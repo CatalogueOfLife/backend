@@ -473,6 +473,7 @@ public class XRelease extends ProjectRelease {
     }
 
     int count = session.getMapper(mapperClass).copyDataset(from, newDatasetKey, map);
+    session.commit();
     LOG.info("Copied {} {}s from {} to {}", count, entity.getSimpleName(), from, newDatasetKey);
   }
 
