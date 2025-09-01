@@ -21,7 +21,7 @@ public class DeleteTmpDatasetsTask extends Task {
 
   @Override
   public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-    int num = dao.deleteTempDatasets();
+    int num = dao.deleteTempDatasets(null);
     output.println("Deleted "+num+" temporary datasets.");
     output.flush();
   }
