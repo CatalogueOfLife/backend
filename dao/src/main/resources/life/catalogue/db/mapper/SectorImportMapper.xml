@@ -199,8 +199,8 @@
 
   <select id="countSecondarySourceByInfo" resultType="StringCount">
     SELECT type AS key, count(*) AS count
-    FROM verbatim_source_secondary x
-           JOIN verbatim_source v ON v.id=x.verbatim_source_key AND v.dataset_key=x.dataset_key
+    FROM verbatim_source v
+      JOIN verbatim_source_secondary x ON x.dataset_key=v.dataset_key AND x.verbatim_source_key=v.id
     WHERE v.dataset_key=#{datasetKey} AND v.sector_key=#{sectorKey}
     GROUP BY type
   </select>

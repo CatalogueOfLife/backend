@@ -14,6 +14,11 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-09-01 XR hangs on copy
+```
+ALTER TABLE verbatim_source_secondary drop constraint verbatim_source_secondary_dataset_key_verbatim_source_key_fkey;
+```
+
 #### 2025-08-28 XR metrics
 ```
 ALTER TABLE dataset_import

@@ -41,17 +41,18 @@ public class SectorImportDao {
    * @param datasetKey the dataset key to analyze the data from. Should be the releases datasetKey if its a release
    */
   public void updateMetrics(SectorImport si, int datasetKey) {
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(false)) {
       LOG.debug("Start metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       populateCounts(mapper, si, datasetKey);
       mapper.update(si);
+      session.commit();
       LOG.debug("Updated counts for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
-
-      DSID<Integer> sectorKey = DSID.of(datasetKey, si.getSectorKey());
-      fileMetricsDao.updateNames(sectorKey, si.getSectorDSID(), si.getAttempt());
-      LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
     }
+
+    DSID<Integer> sectorKey = DSID.of(datasetKey, si.getSectorKey());
+    fileMetricsDao.updateNames(sectorKey, si.getSectorDSID(), si.getAttempt());
+    LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
   }
 
 

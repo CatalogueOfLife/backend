@@ -1362,8 +1362,7 @@ CREATE TABLE verbatim_source_secondary (
    dataset_key INTEGER NOT NULL,
    type INFOGROUP NOT NULL,
    source_id TEXT,
-   source_dataset_key INTEGER,
-   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source
+   source_dataset_key INTEGER
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
