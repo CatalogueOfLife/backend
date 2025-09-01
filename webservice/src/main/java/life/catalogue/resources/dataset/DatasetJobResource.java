@@ -21,6 +21,8 @@ import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 
+import java.util.UUID;
+
 @Path("/dataset")
 @SuppressWarnings("static-method")
 public class DatasetJobResource {
@@ -84,7 +86,7 @@ public class DatasetJobResource {
   @Path("{key}/xrelease")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void xRelease(@PathParam("key") int key, @Auth User user) {
+  public UUID xRelease(@PathParam("key") int key, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
       releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
@@ -94,13 +96,14 @@ public class DatasetJobResource {
     }
     var job = jobFactory.buildExtendedRelease(releaseKey, user.getKey());
     exec.submit(job);
+    return job.getKey();
   }
 
   @POST
   @Path("{key}/xrdebug")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void xrDebug(@PathParam("key") int key, @Auth User user) {
+  public UUID xrDebug(@PathParam("key") int key, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
       releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
@@ -110,13 +113,14 @@ public class DatasetJobResource {
     }
     var job = jobFactory.buildDebugXRelease(releaseKey, user.getKey());
     exec.submit(job);
+    return job.getKey();
   }
 
   @POST
   @Path("{key}/xrcontinue")
   @ProjectOnly
   @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
-  public void xrContinue(@PathParam("key") int key, @QueryParam("tmpKey") int tmpKey, @Auth User user) {
+  public UUID xrContinue(@PathParam("key") int key, @QueryParam("tmpKey") int tmpKey, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
       releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
@@ -126,5 +130,6 @@ public class DatasetJobResource {
     }
     var job = jobFactory.buildContinueXRelease(releaseKey, tmpKey, user.getKey());
     exec.submit(job);
+    return job.getKey();
   }
 }
