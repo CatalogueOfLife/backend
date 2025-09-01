@@ -53,6 +53,10 @@ public class XReleaseContinue extends XRelease{
     LoggingUtils.setDatasetMDC(projectKey, attempt, getClass());
     updateState(ImportState.PREPARING);
 
+    // create new dataset, e.g. release
+    newDataset = dDao.copy(projectKey, user, this::modifyDataset);
+    newDatasetKey = newDataset.getKey();
+
     // point to release in CLB - this requires the datasetKey to exist already
     newDataset.setUrl(UriBuilder.fromUri(clbURI)
       .path("dataset")
@@ -60,9 +64,6 @@ public class XReleaseContinue extends XRelease{
       .build());
     dDao.update(newDataset, user);
 
-    // create new dataset, e.g. release
-    newDataset = dDao.copy(projectKey, user, this::modifyDataset);
-    newDatasetKey = newDataset.getKey();
   }
 
   @Override
