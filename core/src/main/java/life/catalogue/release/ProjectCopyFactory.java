@@ -85,6 +85,11 @@ public class ProjectCopyFactory {
       cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
   }
 
+  public XRelease buildContinueXRelease(final int releaseKey, final int tmpKey, final int userKey) {
+    return new XReleaseContinue(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, tmpKey, userKey,
+      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+  }
+
   /**
    * Release the catalogue into a new dataset
    * @param projectKey the draft catalogue to be released, e.g. 3 for the CoL draft

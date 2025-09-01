@@ -1,5 +1,7 @@
 package life.catalogue.release;
 
+import jakarta.ws.rs.core.UriBuilder;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -57,12 +59,12 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
-  private final NameIndex ni;
+  protected final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
-  private XIdProvider usageIdGen;
+  protected XIdProvider usageIdGen;
   private int failedSyncs;
-  private int tmpProjectKey;
+  protected int tmpProjectKey;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -262,7 +264,7 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void loadMergeSectors() {
+  protected void loadMergeSectors() {
     // note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -330,7 +332,7 @@ public class XRelease extends ProjectRelease {
     flagDuplicatesAsProvisional(prios);
   }
 
-  private void updateMetadata() throws InterruptedException {
+  protected void updateMetadata() throws InterruptedException {
     checkIfCancelled();
     // update description
     if (prCfg.metadata.description != null) {
@@ -462,7 +464,7 @@ public class XRelease extends ProjectRelease {
     } else {
       map = false;
       if (entity.equals(Publisher.class)) {
-        // we copy publisher entities from the project, all the rest from the base release with the new ids already
+        // we copy publisher entities from the project and all the rest from the base release with the new ids already
         from = projectKey;
       } else {
         // copy all data from the base release
