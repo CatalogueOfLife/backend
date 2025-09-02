@@ -360,7 +360,7 @@ public class XRelease extends ProjectRelease {
   /**
    * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
-  private void flagLoops() throws InterruptedException {
+  protected void flagLoops() throws InterruptedException {
     checkIfCancelled();
     // any chained synonyms?
     try (SqlSession session = factory.openSession(false)) {

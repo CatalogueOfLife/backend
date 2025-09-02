@@ -88,7 +88,7 @@ public class DatasetDaoTest extends DaoTestBase {
 
   @Test
   public void deleteTempDatasets() throws Exception {
-    assertEquals(0, dao.deleteTempDatasets());
+    assertEquals(0, dao.deleteTempDatasets(null));
   }
 
   @Test
