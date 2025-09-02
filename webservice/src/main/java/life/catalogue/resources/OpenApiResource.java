@@ -35,7 +35,7 @@ public class OpenApiResource {
   @GET
   @Path("/openapi")
   @Produces({MediaType.APPLICATION_JSON, MoreMediaTypes.APP_YAML, MoreMediaTypes.APP_X_YAML, MoreMediaTypes.TEXT_YAML})
-  public OpenAPI openApi(@Context HttpHeaders headers, @Context UriInfo uriInfo) {
+  public OpenAPI openApi() {
     return openApi;
   }
 

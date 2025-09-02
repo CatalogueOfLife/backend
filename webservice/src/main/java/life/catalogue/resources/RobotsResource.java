@@ -17,9 +17,9 @@ import jakarta.ws.rs.core.MediaType;
 public class RobotsResource {
 
   @GET
-  @Path("/robots.txt")
+  @Path("/robots")
   @Produces(MediaType.TEXT_PLAIN)
-  public InputStream docs() {
+  public InputStream robots2() {
     return Resources.stream("robots.txt");
   }
 
