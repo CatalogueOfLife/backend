@@ -365,7 +365,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // avoid deletions of annual releases of COL
     if (old != null
         && old.getOrigin().isRelease()
-        && old.getSourceKey().equals(Datasets.COL)
+        && java.util.Objects.equals(old.getSourceKey(), Datasets.COL)
         && !old.isPrivat()
         && old.getVersion().startsWith("Annual")
     ) {
