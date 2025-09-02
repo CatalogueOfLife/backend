@@ -387,7 +387,12 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         postDoiDeletionForSources(dsm, d.getKey());
         deleteEntirely(d.getKey(), user);
       }
+    } else if (old != null) {
+      LOG.info("Delete {} dataset {}: {}", old.getOrigin(), key, old.getTitle());
+    } else {
+      LOG.info("Delete dataset {}", key);
     }
+
     // remove source citations
     var cm = session.getMapper(CitationMapper.class);
     cm.delete(key);
@@ -480,9 +485,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // physically delete dataset if its temporary
     if (key >= TEMP_KEY_START) {
+      LOG.info("Physically delete temporary dataset {}", key);
       deleteKeptReleaseData(key, session);
       mapper.deletePhysically(key);
     }
+    session.commit();
     session.close();
 
     // clear search index asynchroneously
