@@ -119,21 +119,4 @@ public class DatasetJobResource {
     return job.getKey();
   }
 
-  @POST
-  @Hidden
-  @Path("{key}/xrcontinue")
-  @ProjectOnly
-  @RolesAllowed({Roles.ADMIN})
-  public UUID xrContinue(@PathParam("key") int key, @QueryParam("tmpKey") int tmpKey, @Auth User user) {
-    Integer releaseKey;
-    try (SqlSession session = factory.openSession(true)) {
-      releaseKey = session.getMapper(DatasetMapper.class).latestRelease(key, true, DatasetOrigin.RELEASE);
-    }
-    if (releaseKey == null) {
-      throw new IllegalArgumentException("Project " + key + " was never released in public");
-    }
-    var job = jobFactory.buildContinueXRelease(releaseKey, tmpKey, user.getKey());
-    exec.submit(job);
-    return job.getKey();
-  }
 }
