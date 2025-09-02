@@ -1,5 +1,7 @@
 package life.catalogue.resources.dataset;
 
+import io.swagger.v3.oas.annotations.Hidden;
+
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.SyncManager;
@@ -100,9 +102,10 @@ public class DatasetJobResource {
   }
 
   @POST
+  @Hidden
   @Path("{key}/xrdebug")
   @ProjectOnly
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @RolesAllowed({Roles.ADMIN})
   public UUID xrDebug(@PathParam("key") int key, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
@@ -117,9 +120,10 @@ public class DatasetJobResource {
   }
 
   @POST
+  @Hidden
   @Path("{key}/xrcontinue")
   @ProjectOnly
-  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  @RolesAllowed({Roles.ADMIN})
   public UUID xrContinue(@PathParam("key") int key, @QueryParam("tmpKey") int tmpKey, @Auth User user) {
     Integer releaseKey;
     try (SqlSession session = factory.openSession(true)) {
