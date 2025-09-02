@@ -59,12 +59,12 @@ public class XRelease extends ProjectRelease {
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
   private final UsageMatcherGlobal matcher;
-  protected final NameIndex ni;
+  private final NameIndex ni;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
-  protected XIdProvider usageIdGen;
+  private XIdProvider usageIdGen;
   private int failedSyncs;
-  protected int tmpProjectKey;
+  private int tmpProjectKey;
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -264,7 +264,7 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  protected void loadMergeSectors() {
+  private void loadMergeSectors() {
     // note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
     try (SqlSession session = factory.openSession(true)) {
       SectorMapper sm = session.getMapper(SectorMapper.class);
@@ -332,7 +332,7 @@ public class XRelease extends ProjectRelease {
     flagDuplicatesAsProvisional(prios);
   }
 
-  protected void updateMetadata() throws InterruptedException {
+  private void updateMetadata() throws InterruptedException {
     checkIfCancelled();
     // update description
     if (prCfg.metadata.description != null) {
@@ -360,7 +360,7 @@ public class XRelease extends ProjectRelease {
   /**
    * flag loops, synonyms pointing to synonyms and nonexisting parents
    */
-  protected void flagLoops() throws InterruptedException {
+  private void flagLoops() throws InterruptedException {
     checkIfCancelled();
     // any chained synonyms?
     try (SqlSession session = factory.openSession(false)) {
