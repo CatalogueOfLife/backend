@@ -2,12 +2,14 @@ package life.catalogue.jobs.cron;
 
 import life.catalogue.dao.DatasetDao;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TempDatasetCleanup extends CronJob {
+  private static final int TEMP_EXPIRY_DAYS = 7;
 
   final DatasetDao dao;
 
@@ -18,6 +20,6 @@ public class TempDatasetCleanup extends CronJob {
 
   @Override
   public void run() {
-    dao.deleteTempDatasets();
+    dao.deleteTempDatasets(LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS));
   }
 }

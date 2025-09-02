@@ -75,7 +75,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
   public static final int TEMP_KEY_START = 100_000_000;
-  private static final int TEMP_EXPIRY_DAYS = 7;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
   private final DownloadUtil downloader;
@@ -754,10 +753,6 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
       return d;
     }
-  }
-
-  public int deleteTempDatasets() {
-    return deleteTempDatasets(LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS));
   }
 
   public int deleteTempDatasets(@Nullable LocalDateTime expiryDate) {
