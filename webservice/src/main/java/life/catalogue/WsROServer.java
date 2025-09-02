@@ -288,6 +288,7 @@ public class WsROServer extends Application<WsServerConfig> {
     // global resources
     j.register(new ExportResource(exdao, cfg));
     j.register(new NameUsageSearchResource(searchService));
+    j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
     j.register(new VersionResource(cfg, LocalDateTime.now()));
     j.register(new VocabResource());
