@@ -382,7 +382,13 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.areaID, area.getId());
       writer.set(ColdpTerm.gazetteer, area.getGazetteer());
     }
-    writer.set(ColdpTerm.status, d.getStatus());
+    writer.set(ColdpTerm.establishmentMeans, d.getEstablishmentMeans());
+    writer.set(ColdpTerm.degreeOfEstablishment, d.getDegreeOfEstablishment());
+    writer.set(ColdpTerm.pathway, d.getPathway());
+    writer.set(ColdpTerm.threatStatus, d.getThreatStatus());
+    writer.set(ColdpTerm.year, d.getYear());
+    writer.set(ColdpTerm.season, d.getSeason());
+    writer.set(ColdpTerm.lifeStage, d.getLifeStage());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
     writer.set(ColdpTerm.remarks, d.getRemarks());
     writer.set(ClbTerm.merged, d.isMerged());

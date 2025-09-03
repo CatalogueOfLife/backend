@@ -196,22 +196,45 @@ public class DwcInterpreter extends InterpreterBase {
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
-      return createDistributions(null,
-          rec.getRaw(DwcTerm.locationID),
-          rec.get(DwcTerm.occurrenceStatus),
-          rec, DwcTerm.occurrenceRemarks, this::setReference);
+      return createDistributions(null, rec.getRaw(DwcTerm.locationID), rec,
+          DwcTerm.occurrenceStatus,
+          DwcTerm.establishmentMeans,
+          DwcTerm.degreeOfEstablishment,
+          DwcTerm.pathway,
+          IucnTerm.threatStatus,
+          null,
+          null,
+          DwcTerm.lifeStage,
+          DwcTerm.occurrenceRemarks,
+          this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.countryCode) || rec.hasTerm(DwcTerm.country)) {
       return createDistributions(Gazetteer.ISO,
-          rec.getFirst(DwcTerm.countryCode, DwcTerm.country),
-          rec.get(DwcTerm.occurrenceStatus),
-        rec, DwcTerm.occurrenceRemarks, this::setReference);
+          rec.getFirst(DwcTerm.countryCode, DwcTerm.country), rec,
+          DwcTerm.occurrenceStatus,
+          DwcTerm.establishmentMeans,
+          DwcTerm.degreeOfEstablishment,
+          DwcTerm.pathway,
+          IucnTerm.threatStatus,
+          null,
+          null,
+          DwcTerm.lifeStage,
+          DwcTerm.occurrenceRemarks,
+          this::setReference);
       
     } else if (rec.hasTerm(DwcTerm.locality)) {
       return createDistributions(Gazetteer.TEXT,
-          rec.get(DwcTerm.locality),
-          rec.get(DwcTerm.occurrenceStatus),
-        rec, DwcTerm.occurrenceRemarks, this::setReference);
+          rec.get(DwcTerm.locality),rec,
+          DwcTerm.occurrenceStatus,
+          DwcTerm.establishmentMeans,
+          DwcTerm.degreeOfEstablishment,
+          DwcTerm.pathway,
+          IucnTerm.threatStatus,
+          null,
+          null,
+          DwcTerm.lifeStage,
+          DwcTerm.occurrenceRemarks,
+          this::setReference);
       
     } else {
       rec.add(Issue.DISTRIBUTION_INVALID);

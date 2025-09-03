@@ -153,8 +153,8 @@ public class TxtTreeInterpreter implements TxtTreeDao.TxTreeNodeInterpreter {
             var area = SafeParser.parse(AreaParser.PARSER, m.group(1)).orNull(Issue.DISTRIBUTION_AREA_INVALID, u.issues);
             if (area != null) {
               d.setArea(area);
-              var dstat = SafeParser.parse(DistributionStatusParser.PARSER, m.group(2)).orNull(Issue.DISTRIBUTION_STATUS_INVALID, u.issues);
-              d.setStatus(dstat);
+              var means = SafeParser.parse(EstablishmentMeansParser.PARSER, m.group(2)).orNull(Issue.DISTRIBUTION_STATUS_INVALID, u.issues);
+              d.setEstablishmentMeans(means);
               u.distributions.add(d);
             } else {
               u.issues.add(Issue.DISTRIBUTION_INVALID);

@@ -82,11 +82,12 @@ public class AcefInterpreter extends InterpreterBase {
   }
   
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
-    return super.interpretDistributionByGazetteer(rec, this::setReference,
+    var dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         AcefTerm.DistributionElement,
         AcefTerm.StandardInUse,
         AcefTerm.DistributionStatus,
-      null);
+        null,null,null,null,null, null, null, null);
+    return dists;
   }
   
   private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {

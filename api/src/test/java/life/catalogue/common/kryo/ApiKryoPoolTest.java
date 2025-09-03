@@ -99,7 +99,7 @@ public class ApiKryoPoolTest {
     var d = new Distribution();
     d.setId(1234);
     d.setReferenceId("1984");
-    d.setStatus(DistributionStatus.NATIVE);
+    d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
     d.setSectorKey(13);
     d.setVerbatimKey(6789);
     d.setArea(new AreaImpl("Berlin"));
