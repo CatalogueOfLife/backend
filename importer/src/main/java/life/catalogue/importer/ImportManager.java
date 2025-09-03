@@ -220,6 +220,12 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     for (AbstractProjectCopy projJob : jobExecutor.getQueueByJobClass(AbstractProjectCopy.class)) {
       running.add(projJob.getMetrics());
     }
+    //TODO: remove debug logs once solved why we null dates
+    for (var di : running) {
+      if (di.getStarted()==null) {
+        LOG.warn("Running job {} {}#{} without started timestamp: {}", di.getJob(), di.getDatasetKey(), di.attempt(), di);
+      }
+    }
     running.sort(DI_STARTED_COMPARATOR);
 
     // then add the priority queue from the executor, filtered for queued imports only keeping the queues priority order
