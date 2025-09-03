@@ -69,7 +69,7 @@ import jakarta.validation.Validator;
 public class ImportManager implements Managed, Idle, DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(ImportManager.class);
   public static final String THREAD_NAME = "dataset-importer";
-  static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted);
+  static final Comparator<DatasetImport> DI_STARTED_COMPARATOR = Comparator.comparing(DatasetImport::getStarted, Comparator.nullsFirst(Comparator.naturalOrder()));
 
   private PBQThreadPoolExecutor<ImportJob> exec;
   private SyncManager assemblyCoordinator;
