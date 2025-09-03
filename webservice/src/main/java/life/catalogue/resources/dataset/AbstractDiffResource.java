@@ -1,5 +1,7 @@
 package life.catalogue.resources.dataset;
 
+import jakarta.ws.rs.*;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DSIDValue;
 import life.catalogue.printer.BaseDiffService;
@@ -10,10 +12,6 @@ import java.io.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.ws.rs.BeanParam;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @SuppressWarnings("static-method")
@@ -32,9 +30,11 @@ public abstract class AbstractDiffResource<K> {
 
   @GET
   @Produces(MediaType.TEXT_PLAIN)
-  public Reader diffNames(@BeanParam DSIDValue<Integer> key,
+  public Reader diffNames(@PathParam("key") int key,
+                          @PathParam("id") int id,
                           @QueryParam("attempts") String attempts) throws IOException {
-    return diff.diff(keyFromPath(key), attempts);
+    var dsid = DSID.of(key, id);
+    return diff.diff(keyFromPath(dsid), attempts);
   }
 
 }
