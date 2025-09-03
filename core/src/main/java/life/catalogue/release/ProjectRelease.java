@@ -97,6 +97,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     this.rDao = rDao;
     this.nDao = nDao;
     this.sDao = sDao;
+    // this also bans the candidate C version of it...
     String latestRelease = String.format("L%sR", getClass().equals(XRelease.class) ? "X" : "");
     this.datasetApiBuilder = apiURI == null ? null : UriBuilder.fromUri(apiURI).path("dataset/{key}"+latestRelease);
     this.portalURI = apiURI == null ? null : UriBuilder.fromUri(apiURI).path("portal").build();

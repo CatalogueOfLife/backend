@@ -78,7 +78,7 @@ public class DatasetInfoCache implements DatasetListener {
       this.publisherKey = publisherKey;
       this.deleted = deleted;
       if (origin.isRelease()) {
-        Preconditions.checkNotNull(sourceKey, "sourceKey is required for release " + key);
+        Preconditions.checkNotNull(sourceKey, "sourceKey is required for " + origin + " " + key);
       }
     }
 
@@ -221,7 +221,14 @@ public class DatasetInfoCache implements DatasetListener {
    * @param key
    */
   private void update(int key, Dataset d, boolean deleted) {
-    infos.put(key, new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), deleted));
+    try {
+      infos.put(key, new DatasetInfo(key, d.getOrigin(), d.getSourceKey(), d.getGbifPublisherKey(), deleted));
+    } catch (Exception e) {
+      // we sometimes see this for yet unknown reasons - lets rather remove the entry
+      // java.lang.NullPointerException: sourceKey is required for release 100000003
+      var old = infos.remove(key);
+      LOG.error("Error updating dataset info for dataset {}. Former info={}", key, old, e);
+    }
   }
 
 }

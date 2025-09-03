@@ -107,7 +107,6 @@ public class EventBroker implements Managed {
   private class Polling implements Runnable {
     @Override
     public void run() {
-      try {
         long lastDeleteCheck = System.currentTimeMillis();
         // we create a unique tailer for every webapp instance
         // this allows us to deploy several aps in parallel and still read all messages
@@ -116,30 +115,31 @@ public class EventBroker implements Managed {
         tailer.toEnd();
         // Continuously read messages and distribute them to listeners
         while (true) {
-          // If no message was available, pause for a short time to avoid busy-waiting
-          var dc = tailer.readingDocument();
-          if (dc.wire() == null) {
-            // check for rolling file deletions once a day
-            if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
-              removeUnusedFiles();
-              lastDeleteCheck = System.currentTimeMillis();
-            } else {
-              try {
-                Thread.sleep(cfg.pollingLatency);
-              } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                LOG.warn("Event polling interrupted");
-                break;
+          try {
+            // If no message was available, pause for a short time to avoid busy-waiting
+            var dc = tailer.readingDocument();
+            if (dc.wire() == null) {
+              // check for rolling file deletions once a day
+              if (System.currentTimeMillis() - lastDeleteCheck > 24*60*60*1000) {
+                removeUnusedFiles();
+                lastDeleteCheck = System.currentTimeMillis();
+              } else {
+                try {
+                  Thread.sleep(cfg.pollingLatency);
+                } catch (InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  LOG.warn("Event polling interrupted");
+                  break;
+                }
               }
-            }
 
-          } else {
-            broker(io.read(dc.wire().bytes().inputStream()));
+            } else {
+              broker(io.read(dc.wire().bytes().inputStream()));
+            }
+          } catch (Exception e) {
+            LOG.error("Event polling throws exception", e);
           }
         }
-      } catch (Exception e) {
-        LOG.error("Event polling throws exception", e);
-      }
       LOG.warn("Event polling stopped!");
     }
 
@@ -155,37 +155,65 @@ public class EventBroker implements Managed {
       if (obj instanceof DatasetLogoChanged) {
         DatasetLogoChanged event = (DatasetLogoChanged) obj;
         for (DatasetListener l : datasetListeners) {
-          l.datasetLogoChanged(event);
+          try {
+            l.datasetLogoChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker logo change event: {}", event, e);
+          }
         }
       } else if (obj instanceof DatasetChanged) {
         DatasetChanged event = (DatasetChanged) obj;
         for (DatasetListener l : datasetListeners) {
-          l.datasetChanged(event);
+          try {
+            l.datasetChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker dataset change event: {}", event, e);
+          }
         }
       } else if (obj instanceof DatasetDataChanged) {
         DatasetDataChanged event = (DatasetDataChanged) obj;
         for (DatasetListener l : datasetListeners) {
-          l.datasetDataChanged(event);
+          try {
+            l.datasetDataChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker dataset data change event: {}", event, e);
+          }
         }
       } else if (obj instanceof DeleteSector) {
         DeleteSector event = (DeleteSector) obj;
         for (SectorListener l : sectorListeners) {
-          l.sectorDeleted(event);
+          try {
+            l.sectorDeleted(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker sector delete event: {}", event, e);
+          }
         }
       } else if (obj instanceof ChangeDoi) {
         ChangeDoi event = (ChangeDoi) obj;
         for (DoiListener l : doiListeners) {
-          l.doiChanged(event);
+          try {
+            l.doiChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker DOI change event: {}", event, e);
+          }
         }
       } else if (obj instanceof UserChanged) {
         UserChanged event = (UserChanged) obj;
         for (UserListener l : userListeners) {
-          l.userChanged(event);
+          try {
+            l.userChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker user change event: {}", event, e);
+          }
         }
       } else if (obj instanceof UserPermissionChanged) {
         UserPermissionChanged event = (UserPermissionChanged) obj;
         for (UserListener l : userListeners) {
-          l.userPermissionChanged(event);
+          try {
+            l.userPermissionChanged(event);
+          } catch (Exception e) {
+            LOG.error("Failed to broker user permission change event: {}", event, e);
+          }
         }
 
       } else {

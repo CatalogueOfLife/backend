@@ -716,7 +716,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   /**
    * Convenience method to publish a dataset.
-   * Interally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * Internally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
    * @return true if the private flag has changed and the dataset was published
    */
   public boolean publish(int key, User user) {
@@ -731,7 +731,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   /**
    * Convenience method to make a dataset private again.
-   * Interally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * Internally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
    * @return true if the private flag has changed and the dataset was unpublished
    */
   public boolean unpublish(int key, User user) {
