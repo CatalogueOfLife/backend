@@ -302,8 +302,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name (dataset_key,sector_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey},n.sector_key,coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
+    INSERT INTO name (dataset_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
     FROM name n
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m ON m.id=n.id
