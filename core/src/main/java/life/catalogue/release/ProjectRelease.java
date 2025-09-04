@@ -436,6 +436,7 @@ public class ProjectRelease extends AbstractProjectCopy {
     }
     // generic hooks
     if (prCfg.actions != null) {
+      LOG.info("{} post release actions to execute on release {}", prCfg.actions.size(), newDatasetKey);
       // reload dataset metadata
       final Dataset d;
       try (SqlSession session = factory.openSession(true)) {
