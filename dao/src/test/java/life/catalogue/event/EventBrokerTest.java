@@ -15,20 +15,40 @@ public class EventBrokerTest extends EventBrokerTestBase {
   public void publish() throws Exception {
     init();
     try {
-      var d = TestEntityGenerator.newDataset("test D1");
-      d.setKey(1);
-      broker.publish(DatasetChanged.deleted(d, Users.TESTER));
+      assertPublishEvents();
+    } finally {
+      stop();
+    }
+  }
 
-      broker.publish(new DatasetLogoChanged(d.getKey()));
+  private void assertPublishEvents() throws InterruptedException {
+    var d = TestEntityGenerator.newDataset("test D1");
+    d.setKey(1);
+    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
-      d = TestEntityGenerator.newDataset("test D2");
-      d.setKey(2);
-      broker.publish(DatasetChanged.deleted(d, Users.TESTER));
+    broker.publish(new DatasetLogoChanged(d.getKey()));
 
-      Thread.sleep(100);
+    d = TestEntityGenerator.newDataset("test D2");
+    d.setKey(2);
+    broker.publish(DatasetChanged.deleted(d, Users.TESTER));
 
-      assertEquals(2, cntD.get());
-      assertEquals(1, cntDL.get());
+    Thread.sleep(100);
+    assertEquals(2, cntD.get());
+    assertEquals(1, cntDL.get());
+  }
+
+  @Test
+  public void restart() throws Exception {
+    init();
+    try {
+      assertPublishEvents();
+    } finally {
+      broker.stop();
+    }
+
+    try {
+      broker.start();
+      assertPublishEvents();
     } finally {
       stop();
     }

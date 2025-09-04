@@ -124,7 +124,7 @@ public class EventBroker implements Managed {
       // we wind to the end to only consume new messages as the queue likely already exists
       tailer.toEnd();
       // Continuously read messages and distribute them to listeners
-      while (true) {
+      while (!Thread.currentThread().isInterrupted() && !tailer.isClosing()) {
         try {
           // If no message was available, pause for a short time to avoid busy-waiting
           var dc = tailer.readingDocument();
@@ -138,7 +138,6 @@ public class EventBroker implements Managed {
                 Thread.sleep(cfg.pollingLatency);
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.info("Event polling interrupted");
                 break;
               }
             }
