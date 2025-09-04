@@ -27,12 +27,12 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
     verbatim_source_key,
     name,
@@ -49,8 +49,8 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
-    #{obj.sectorKey},
     #{taxonId},
+    #{obj.sectorKey},
     #{obj.verbatimKey},
     #{obj.verbatimSourceKey},
     #{obj.name},

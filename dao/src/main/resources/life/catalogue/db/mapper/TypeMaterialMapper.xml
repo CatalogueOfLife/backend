@@ -37,7 +37,6 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     name_id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
@@ -46,6 +45,7 @@
 
   <sql id="COLS_COPY">
     ${alias}id,
+    ${alias}sector_key,
     ${alias}verbatim_key,
     ${alias}verbatim_source_key,
     ${alias}citation,
@@ -72,9 +72,9 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{nameId},
     #{id},
+    #{sectorKey},
     #{verbatimKey},
     #{verbatimSourceKey},
     #{citation},

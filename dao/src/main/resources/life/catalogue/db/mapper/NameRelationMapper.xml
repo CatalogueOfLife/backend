@@ -23,13 +23,13 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     name_id,
     related_name_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
     verbatim_source_key,
     type,
@@ -41,9 +41,9 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{nameId},
     #{relatedNameId},
+    #{sectorKey},
     #{verbatimKey},
     #{verbatimSourceKey},
     #{type}::NOMRELTYPE,

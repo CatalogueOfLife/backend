@@ -24,13 +24,13 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     related_taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     related_taxon_scientific_name,
     verbatim_key,
     verbatim_source_key,
@@ -43,9 +43,9 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{taxonId},
     #{relatedTaxonId},
+    #{sectorKey},
     #{relatedTaxonScientificName},
     #{verbatimKey},
     #{verbatimSourceKey},

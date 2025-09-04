@@ -77,7 +77,6 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
@@ -85,6 +84,7 @@
   </sql>
 
   <sql id="COLS_COPY">
+    ${alias}sector_key,
     ${alias}identifier,
     ${alias}verbatim_key,
     ${alias}verbatim_source_key,
@@ -130,8 +130,8 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{id},
+    #{sectorKey},
     #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
     #{verbatimKey},
     #{verbatimSourceKey},

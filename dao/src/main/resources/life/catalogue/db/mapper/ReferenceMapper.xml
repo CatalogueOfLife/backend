@@ -21,7 +21,6 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
     </include>
@@ -29,6 +28,7 @@
 
   <sql id="COLS_COPY">
     ${alias}id,
+    ${alias}sector_key,
     ${alias}verbatim_key,
     ${alias}verbatim_source_key,
     ${alias}csl,
@@ -40,8 +40,8 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{id},
+    #{sectorKey},
     #{verbatimKey},
     #{verbatimSourceKey},
     #{csl, typeHandler=life.catalogue.db.type.CslJsonHandler}::jsonb,
