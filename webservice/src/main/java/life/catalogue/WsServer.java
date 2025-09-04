@@ -105,6 +105,8 @@ import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import jakarta.ws.rs.client.Client;
 
+import static life.catalogue.WsROServer.registerReadOnlyHealthChecks;
+
 public class WsServer extends Application<WsServerConfig> {
   private static final Logger LOG = LoggerFactory.getLogger(WsServer.class);
 
@@ -255,7 +257,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // name parser
     NameParser.PARSER.register(env.metrics());
-    env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
     env.lifecycle().addServerLifecycleListener(server -> {
       try {
@@ -265,22 +266,20 @@ public class WsServer extends Application<WsServerConfig> {
       }
     });
 
-    // CSL Util
-    env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
-
     // ES
     NameUsageIndexService indexService;
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
+    final RestClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
+      esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       indexService = NameUsageIndexService.passThru();
       searchService = NameUsageSearchService.passThru();
       suggestService = NameUsageSuggestionService.passThru();
     } else {
-      final RestClient esClient = new EsClientFactory(cfg.es).createClient();
+      esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(ManagedUtils.from(esClient));
-      env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       indexService = new NameUsageIndexServiceEs(esClient, cfg.es, cfg.normalizer.scratchDir("nuproc"), getSqlSessionFactory());
       searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
@@ -288,7 +287,6 @@ public class WsServer extends Application<WsServerConfig> {
 
     // Docker
     DockerClient docker = cfg.docker.newDockerClient();
-    env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
@@ -311,8 +309,6 @@ public class WsServer extends Application<WsServerConfig> {
     // diff
     DatasetDiffService dDiff = new DatasetDiffService(getSqlSessionFactory(), fmdDao, cfg.diffTimeout);
     SectorDiffService sDiff = new SectorDiffService(getSqlSessionFactory(), fmsDao, cfg.diffTimeout);
-    env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
-    env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
 
     // update db lookups
     try (Connection c = mybatis.getConnection()) {
@@ -459,6 +455,13 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));
     j.register(new ValidatorResource(importManager, ddao, http));
+
+    // healthchecks
+    registerReadOnlyHealthChecks(env, broker, esClient, cfg);
+    env.healthChecks().register("csl-utils", new CslUtilsHealthCheck());
+    env.healthChecks().register("dataset-diff", new DiffHealthCheck(dDiff));
+    env.healthChecks().register("sector-diff", new DiffHealthCheck(sDiff));
+    env.healthChecks().register("docker", new DockerHealthCheck(docker, cfg.docker));
 
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));

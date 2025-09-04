@@ -10,6 +10,7 @@ import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.EsHealthCheck;
+import life.catalogue.dw.health.EventBrokerHealthCheck;
 import life.catalogue.dw.health.NameParserHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.logging.pg.PgLogBundle;
@@ -183,7 +184,6 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // name parser
     NameParser.PARSER.register(env.metrics());
-    env.healthChecks().register("name-parser", new NameParserHealthCheck());
     env.lifecycle().manage(ManagedUtils.from(NameParser.PARSER));
     env.lifecycle().addServerLifecycleListener(server -> {
       try {
@@ -197,14 +197,15 @@ public class WsROServer extends Application<WsServerConfig> {
     NameUsageIndexService indexService = NameUsageIndexService.passThru();
     NameUsageSearchService searchService;
     NameUsageSuggestionService suggestService;
+    final RestClient esClient;
     if (cfg.es == null || cfg.es.isEmpty()) {
+      esClient = null;
       LOG.warn("No Elastic Search configured, use pass through indexing & searching");
       searchService = NameUsageSearchService.passThru();
       suggestService = NameUsageSuggestionService.passThru();
     } else {
-      final RestClient esClient = new EsClientFactory(cfg.es).createClient();
+      esClient = new EsClientFactory(cfg.es).createClient();
       env.lifecycle().manage(ManagedUtils.from(esClient));
-      env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
       searchService = new NameUsageSearchServiceEs(cfg.es.nameUsage.name, esClient);
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }
@@ -245,6 +246,9 @@ public class WsROServer extends Application<WsServerConfig> {
       FeedbackService.passThru(), doiResolver, coljersey
     );
 
+    // healthchecks
+    registerReadOnlyHealthChecks(env, broker, esClient, cfg);
+
     // tasks
     env.admin().addTask(new ClearCachesTask(auth, coljersey.getCache()));
     env.admin().addTask(new EventQueueTask(broker));
@@ -256,6 +260,14 @@ public class WsROServer extends Application<WsServerConfig> {
     broker.register(DatasetInfoCache.CACHE);
     // startup broker, poll from queue
     env.lifecycle().manage(ManagedUtils.from(broker));
+  }
+
+  static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable RestClient esClient, WsServerConfig cfg) {
+    env.healthChecks().register("event-broker", new EventBrokerHealthCheck(broker));
+    env.healthChecks().register("name-parser", new NameParserHealthCheck());
+    if (esClient != null) {
+      env.healthChecks().register("elastic", new EsHealthCheck(esClient, cfg.es));
+    }
   }
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
