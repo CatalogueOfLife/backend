@@ -32,22 +32,17 @@ public class EventBroker implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);
 
   private final BrokerConfig cfg;
-  private final SingleChronicleQueue queue;
-  private final ExcerptAppender appender;
-  private final List<DatasetListener> datasetListeners = new ArrayList<>();
   private final List<DoiListener> doiListeners = new ArrayList<>();
   private final List<UserListener> userListeners = new ArrayList<>();
   private final List<SectorListener> sectorListeners = new ArrayList<>();
+  private final List<DatasetListener> datasetListeners = new ArrayList<>();
   private final KryoHelper io;
   private Thread polling;
+  private SingleChronicleQueue queue;
+  private ExcerptAppender appender;
 
   public EventBroker(BrokerConfig cfg) {
     this.cfg = cfg;
-    this.queue = SingleChronicleQueueBuilder
-      .single(cfg.queueDir)
-      .rollCycle(RollCycles.FAST_DAILY)
-      .build();
-    this.appender = queue.acquireAppender();
     this.io = new KryoHelper(cfg);
   }
 
@@ -74,20 +69,16 @@ public class EventBroker implements Managed {
     // the chronicle appender remembers which thread wrote the last message
     // it only allows the same thread to write to the queue
     // we disable this check as we synchronize the method, so we never have multiple threads writing to the queue at the same time
-    appender.singleThreadedCheckReset();
-    try (DocumentContext dc = appender.writingDocument()) {
-      io.write(event, dc.wire().bytes().outputStream());
-    } catch (Exception e) {
-      LOG.error("Failed to publish event {}", event, e);
-    }
-  }
+    if (appender != null) {
+      appender.singleThreadedCheckReset();
+      try (DocumentContext dc = appender.writingDocument()) {
+        io.write(event, dc.wire().bytes().outputStream());
+      } catch (Exception e) {
+        LOG.error("Failed to publish event {}", event, e);
+      }
 
-  @Override
-  public void stop() {
-    if (polling != null) {
-      LOG.info("Stop event broker with queue at {}", cfg.queueDir);
-      polling.interrupt();
-      queue.close();
+    } else {
+      LOG.warn("Broker not started yet, cannot publish event {}", event);
     }
   }
 
@@ -97,20 +88,33 @@ public class EventBroker implements Managed {
   }
 
   public boolean isAlive() {
-    return polling.isAlive();
+    return polling != null && polling.isAlive();
+  }
+
+  @Override
+  public void stop() {
+    if (polling != null) {
+      LOG.info("Stop event broker with queue at {}", cfg.queueDir);
+      queue.close();
+      polling.interrupt();
+      polling = null;
+    }
   }
 
   @Override
   public void start() {
-    if (polling == null) {
-      LOG.info("Start event broker with queue at {}", cfg.queueDir);
+    if (polling == null || !polling.isAlive()) {
+      queue = SingleChronicleQueueBuilder
+        .single(cfg.queueDir)
+        .rollCycle(RollCycles.FAST_DAILY)
+        .build();
+      appender = queue.acquireAppender();
       polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
+      LOG.info("Started event broker with queue at {}", cfg.queueDir);
     }
   }
 
   private class Polling implements Runnable {
-    private boolean stopped = false;
-
     @Override
     public void run() {
       long lastDeleteCheck = System.currentTimeMillis();
@@ -134,7 +138,7 @@ public class EventBroker implements Managed {
                 Thread.sleep(cfg.pollingLatency);
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LOG.warn("Event polling interrupted");
+                LOG.info("Event polling interrupted");
                 break;
               }
             }
@@ -147,7 +151,6 @@ public class EventBroker implements Managed {
         }
       }
       LOG.warn("Event polling stopped!");
-      stopped=true;
     }
 
     private void removeUnusedFiles() {
