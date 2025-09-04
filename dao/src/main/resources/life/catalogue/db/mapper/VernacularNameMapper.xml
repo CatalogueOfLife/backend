@@ -10,6 +10,7 @@
     vn.dataset_key,
     vn.sector_key,
     vn.verbatim_key,
+    vn.verbatim_source_key,
     vn.name,
     vn.latin,
     vn.language,

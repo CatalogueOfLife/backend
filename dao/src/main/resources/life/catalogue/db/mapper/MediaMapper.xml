@@ -10,6 +10,7 @@
     m.sector_key,
     m.taxon_id,
     m.verbatim_key,
+    m.verbatim_source_key,
     m.url,
     m.type,
     m.format,

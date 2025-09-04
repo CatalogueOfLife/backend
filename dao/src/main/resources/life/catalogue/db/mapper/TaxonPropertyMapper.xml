@@ -10,6 +10,7 @@
     p.dataset_key,
     p.sector_key,
     p.verbatim_key,
+    p.verbatim_source_key,
     p.property,
     p.value,
     p.reference_id,

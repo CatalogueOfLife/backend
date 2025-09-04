@@ -1,7 +1,6 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.cache.CacheLoader;
 import life.catalogue.cache.UsageCache;

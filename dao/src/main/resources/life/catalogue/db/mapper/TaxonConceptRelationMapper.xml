@@ -7,6 +7,7 @@
   <sql id="SELECT">
     tc.id,
     tc.verbatim_key,
+    tc.verbatim_source_key,
     tc.dataset_key,
     tc.type,
     tc.taxon_id,

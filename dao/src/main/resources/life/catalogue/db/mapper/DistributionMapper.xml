@@ -10,6 +10,7 @@
     d.dataset_key,
     d.sector_key,
     d.verbatim_key,
+    d.verbatim_source_key,
     d.area,
     d.gazetteer,
     d.status,

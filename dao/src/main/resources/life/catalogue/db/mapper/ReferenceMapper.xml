@@ -9,6 +9,7 @@
     r.dataset_key,
     r.sector_key,
     r.verbatim_key,
+    r.verbatim_source_key,
     r.csl,
     r.citation,
     r.year,

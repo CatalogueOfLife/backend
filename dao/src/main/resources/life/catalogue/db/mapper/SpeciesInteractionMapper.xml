@@ -9,6 +9,7 @@
     si.dataset_key,
     si.sector_key,
     si.verbatim_key,
+    si.verbatim_source_key,
     si.type,
     si.taxon_id,
     si.related_taxon_id,

@@ -9,6 +9,7 @@
     m.dataset_key,
     m.sector_key,
     m.verbatim_key,
+    m.verbatim_source_key,
     m.name_id,
     m.citation,
     m.status,

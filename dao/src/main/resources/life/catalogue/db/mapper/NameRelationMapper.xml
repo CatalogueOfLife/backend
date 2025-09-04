@@ -11,6 +11,7 @@
     nr.name_id,
     nr.related_name_id,
     nr.verbatim_key,
+    nr.verbatim_source_key,
     nr.type,
     nr.reference_id,
     nr.remarks,
