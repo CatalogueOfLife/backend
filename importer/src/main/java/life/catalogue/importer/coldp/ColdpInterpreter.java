@@ -16,13 +16,11 @@ import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.base.Splitter;
@@ -250,23 +248,39 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
+    List<Distribution> dists;
     if (rec.hasTerm(ColdpTerm.areaID)) {
-      return super.interpretDistributionByGazetteer(rec, this::setReference,
+      dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         ColdpTerm.areaID,
         ColdpTerm.gazetteer,
-        ColdpTerm.status,
+        ColdpTerm.status, // legacy
+        ColdpTerm.establishmentMeans,
+        ColdpTerm.degreeOfEstablishment,
+        ColdpTerm.pathway,
+        ColdpTerm.threatStatus,
+        ColdpTerm.year,
+        ColdpTerm.season,
+        ColdpTerm.lifeStage,
         ColdpTerm.remarks
       );
 
     } else if (rec.hasTerm(ColdpTerm.area)) {
-      return createDistributions(Gazetteer.TEXT,
-        rec.get(ColdpTerm.area),
-        rec.get(ColdpTerm.status),
-        rec, ColdpTerm.remarks,
+      dists = createDistributions(Gazetteer.TEXT, rec.get(ColdpTerm.area), rec,
+        ColdpTerm.status, // legacy
+        ColdpTerm.establishmentMeans,
+        ColdpTerm.degreeOfEstablishment,
+        ColdpTerm.pathway,
+        ColdpTerm.threatStatus,
+        ColdpTerm.year,
+        ColdpTerm.season,
+        ColdpTerm.lifeStage,
+        ColdpTerm.remarks,
         this::setReference
       );
+    } else {
+      dists = Collections.emptyList();
     }
-    return Collections.emptyList();
+    return dists;
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {

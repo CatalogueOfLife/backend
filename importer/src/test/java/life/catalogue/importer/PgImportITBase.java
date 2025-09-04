@@ -185,22 +185,22 @@ public class PgImportITBase {
   public static List<Distribution> expectedDwca24Distributions() {
     // TDWG:MOR-CE & TDWG:MOR-ME do not exist - will be removed
     List<Distribution> expD = new ArrayList<>();
-    expD.add(dist(new AreaImpl("All of Austria and the alps"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("DE"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FR"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("DK"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("GB"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("NG"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("KE"), DistributionStatus.NATIVE));
-    expD.add(dist(TdwgArea.of("AGS"), DistributionStatus.NATIVE));
-    expD.add(dist(new AreaImpl(Gazetteer.FAO, "37.4.1"), DistributionStatus.NATIVE));
-    expD.add(dist(TdwgArea.of("MOR-MO"), DistributionStatus.NATIVE));
-    expD.add(dist(TdwgArea.of("CPP"), DistributionStatus.NATIVE));
-    expD.add(dist(TdwgArea.of("NAM"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("IT"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("ES"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FR"), DistributionStatus.NATIVE));
-    expD.add(dist(Country.fromIsoCode("FM"), DistributionStatus.NATIVE));
+    expD.add(dist(new AreaImpl("All of Austria and the alps"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("DE"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FR"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("DK"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("GB"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("NG"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("KE"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(TdwgArea.of("AGS"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(new AreaImpl(Gazetteer.FAO, "37.4.1"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(TdwgArea.of("MOR-MO"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(TdwgArea.of("CPP"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(TdwgArea.of("NAM"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("IT"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("ES"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FR"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
+    expD.add(dist(Country.fromIsoCode("FM"), EstablishmentMeans.NATIVE, DegreeOfEstablishment.NATIVE));
     return expD;
   }
   
@@ -208,16 +208,17 @@ public class PgImportITBase {
     return new RankedName(null, name, null, rank);
   }
 
-  static Distribution dist(Optional<? extends Area> area, DistributionStatus status) {
-    return dist(area.get(), status);
+  static Distribution dist(Optional<? extends Area> area, EstablishmentMeans means, DegreeOfEstablishment degree) {
+    return dist(area.get(), means, degree);
   }
-  static Distribution dist(Area area, DistributionStatus status) {
+  static Distribution dist(Area area, EstablishmentMeans means, DegreeOfEstablishment degree) {
     Distribution d = new Distribution();
     d.setArea(area);
-    d.setStatus(status);
+    d.setEstablishmentMeans(means);
+    d.setDegreeOfEstablishment(degree);
     return d;
   }
-  
+
   void assertParents(TaxonDao tdao, String taxonID, String... parentIds) {
     final LinkedList<String> expected = new LinkedList<String>(Arrays.asList(parentIds));
     Taxon t = tdao.get(key(dataset.getKey(), taxonID));

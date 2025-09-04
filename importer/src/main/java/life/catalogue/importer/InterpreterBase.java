@@ -249,7 +249,8 @@ public class InterpreterBase {
   }
 
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                                Term tArea, Term tGazetteer, Term tStatus, Term tRemarks) {
+                                                                Term tArea, Term tGazetteer, Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                                Term tYear, Term tSeason, Term tLifeStage, Term tRemarks) {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
@@ -260,20 +261,20 @@ public class InterpreterBase {
         gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
             .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
       }
-      return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, tRemarks, addReference);
+      return createDistributions(gazetteer, rec.get(tArea), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
     }
     return Collections.emptyList();
   }
   
-  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
-                                                   Term tRemarks,
-                                                   BiConsumer<Distribution, VerbatimRecord> addReference) {
+  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, VerbatimRecord rec,
+                              Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                              Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
+                               BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
-
-      final DistributionStatus status = parse(DistributionStatusParser.PARSER, statusRaw).orNull(Issue.DISTRIBUTION_STATUS_INVALID, rec);
-
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, tRemarks, addReference) );
+        return Lists.newArrayList(
+          createDistribution(rec, new AreaImpl(locRaw), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+        );
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
@@ -298,7 +299,9 @@ public class InterpreterBase {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
                 area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
-            distributions.add(createDistribution(rec, area, status, tRemarks, addReference));
+            distributions.add(
+              createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+            );
           }
         }
         return distributions;
@@ -317,15 +320,51 @@ public class InterpreterBase {
     return words;
   }
 
-  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, Term tRemarks, BiConsumer<Distribution, VerbatimRecord> addReference) {
+  private static Distribution createDistribution(VerbatimRecord rec, Area area,
+                                                 @Nullable Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                 @Nullable Term tYear, @Nullable Term tSeason, Term tLifeStage, Term tRemarks,
+                                                 BiConsumer<Distribution, VerbatimRecord> addReference) {
+    final var means  = parse(EstablishmentMeansParser.PARSER, rec.get(tEstablishmentMeans)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var degree = parse(DegreeOfEstablishmentParser.PARSER, rec.get(tDegreeOfEstablishment)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var threat = parse(ThreatStatusParser.PARSER, rec.get(tThreatStatus)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var season = tSeason == null ? null : parse(SeasonParser.PARSER, rec.get(tSeason)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var year   = tYear == null ? null : parse(IntegerParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
     d.setArea(area);
-    d.setStatus(status);
+    d.setEstablishmentMeans(means);
+    d.setDegreeOfEstablishment(degree);
+    d.setThreatStatus(threat);
+    d.setSeason(season);
+    d.setYear(year);
+    d.setLifeStage(rec.get(tLifeStage));
+    d.setPathway(rec.get(tPathway));
     d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
+
+    var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
+    if (status.isPresent()) {
+      switch (status.get()) {
+        case NATIVE:
+          d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
+          d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+          break;
+        case DOMESTICATED:
+          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+          d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+          break;
+        case ALIEN:
+          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+          break;
+        case UNCERTAIN:
+          d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
+          break;
+      }
+    }
     return d;
   }
+
 
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                                        Set<Term> type, Set<Term> url, Set<Term> link, Set<Term> license, Set<Term> creator, Set<Term> created, Set<Term> title, Set<Term> format, Set<Term> remarks) {

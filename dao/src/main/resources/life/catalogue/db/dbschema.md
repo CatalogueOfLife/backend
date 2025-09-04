@@ -16,6 +16,74 @@ and done it manually. So we can as well log changes here.
 
 #### 2025-09-01 XR hangs on copy
 ```
+CREATE TYPE DEGREEOFESTABLISHMENT AS ENUM (
+  'NATIVE',
+  'CAPTIVE',
+  'CULTIVATED',
+  'RELEASED',
+  'FAILING',
+  'CASUAL',
+  'REPRODUCING',
+  'ESTABLISHED',
+  'COLONISING',
+  'INVASIVE',
+  'WIDESPREAD_INVASIVE'
+);
+
+CREATE TYPE ESTABLISHMENTMEANS AS ENUM (
+  'NATIVE',
+  'NATIVE_ENDEMIC',
+  'NATIVE_REINTRODUCED',
+  'INTRODUCED',
+  'INTRODUCED_ASSISTED_COLONISATION',
+  'VAGRANT',
+  'UNCERTAIN'
+);
+
+DROP TYPE IDREPORTTYPE;
+
+CREATE TYPE SEASON AS ENUM (
+  'SPRING',
+  'SUMMER',
+  'AUTUMN',
+  'WINTER',
+  'WET',
+  'DRY'
+);
+
+CREATE TYPE THREATSTATUS AS ENUM (
+  'EXTINCT',
+  'EXTINCT_IN_THE_WILD',
+  'CRITICALLY_ENDANGERED',
+  'ENDANGERED',
+  'VULNERABLE',
+  'NEAR_THREATENED',
+  'LEAST_CONCERN',
+  'DATA_DEFICIENT',
+  'NOT_EVALUATED'
+);
+
+ALTER TABLE distribution 
+  ADD COLUMN establishment_means ESTABLISHMENTMEANS,
+  ADD COLUMN degree_of_establishment DEGREEOFESTABLISHMENT,
+  ADD COLUMN pathway TEXT,
+  ADD COLUMN threat_status THREATSTATUS,
+  ADD COLUMN year Integer,
+  ADD COLUMN season SEASON,
+  ADD COLUMN life_stage TEXT;
+
+UPDATE distribution SET establishment_means='NATIVE', degree_of_establishment='NATIVE' WHERE status='NATIVE';
+UPDATE distribution SET establishment_means='INTRODUCED', degree_of_establishment='CULTIVATED' WHERE status='DOMESTICATED';
+UPDATE distribution SET establishment_means='INTRODUCED', degree_of_establishment=NULL WHERE status='ALIEN';
+UPDATE distribution SET establishment_means='UNCERTAIN', degree_of_establishment=NULL WHERE status='UNCERTAIN';
+
+ALTER TABLE distribution DROP COLUMN status;
+DROP TYPE DISTRIBUTIONSTATUS;
+```
+
+
+#### 2025-09-01 XR hangs on copy
+```
 ALTER TABLE verbatim_source_secondary drop constraint verbatim_source_secondary_dataset_key_verbatim_source_key_fkey;
 ```
 

@@ -176,6 +176,10 @@ public class ApiKryoPool extends Pool<Kryo> {
     kryo.register(SimpleNameLink.class);
     kryo.register(SimpleNameClassified.class);
     kryo.register(TaxGroup.class);
+    kryo.register(EstablishmentMeans.class);
+    kryo.register(DegreeOfEstablishment.class);
+    kryo.register(Season.class);
+    kryo.register(ThreatStatus.class);
 
     return kryo;
   }

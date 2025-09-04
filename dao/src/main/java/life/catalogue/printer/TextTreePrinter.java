@@ -199,9 +199,9 @@ public class TextTreePrinter extends AbstractTreePrinter {
       if (d.getArea().getId() != null) {
         StringBuilder sb = new StringBuilder();
         sb.append(d.getArea().getGlobalId());
-        if (d.getStatus() != null) {
+        if (d.getEstablishmentMeans() != null) {
           // iso:de:native
-          sb.append(':').append(d.getStatus().name().toLowerCase());
+          sb.append(':').append(d.getEstablishmentMeans().name().toLowerCase());
         }
         return sb.toString();
       }

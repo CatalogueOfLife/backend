@@ -13,10 +13,7 @@ import org.gbif.dwc.Archive;
 import org.gbif.dwc.ArchiveField;
 import org.gbif.dwc.ArchiveFile;
 import org.gbif.dwc.MetaDescriptorWriter;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -118,6 +115,11 @@ public class DwcaExtendedExport extends ArchiveExport {
           ClbTerm.merged};
       case DISTRIBUTION:
         return new Term[]{GbifTerm.Distribution, DwcTerm.taxonID,
+          DwcTerm.establishmentMeans,
+          DwcTerm.degreeOfEstablishment,
+          IucnTerm.threatStatus,
+          DwcTerm.pathway,
+          DwcTerm.lifeStage,
           DwcTerm.occurrenceStatus,
           DwcTerm.locationID,
           DwcTerm.locality,
@@ -227,7 +229,11 @@ public class DwcaExtendedExport extends ArchiveExport {
 
   void write(String taxonID, Distribution d) {
     writer.set(DwcTerm.taxonID, taxonID);
-    writer.set(DwcTerm.occurrenceStatus, d.getStatus());
+    writer.set(DwcTerm.establishmentMeans, d.getEstablishmentMeans());
+    writer.set(DwcTerm.degreeOfEstablishment, d.getDegreeOfEstablishment());
+    writer.set(IucnTerm.threatStatus, d.getThreatStatus());
+    writer.set(DwcTerm.pathway, d.getPathway());
+    writer.set(DwcTerm.lifeStage, d.getLifeStage());
     writer.set(DwcTerm.locality, d.getArea().getName());
     if (d.getArea().getGazetteer() == Gazetteer.ISO) {
         writer.set(DwcTerm.countryCode, d.getArea().getId());
