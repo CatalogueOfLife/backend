@@ -20,9 +20,9 @@ public class EventBrokerHealthCheck extends HealthCheck {
   protected Result check() throws Exception {
     if (broker.hasStarted()) {
       if (broker.isAlive()) {
-        return Result.unhealthy("Event broker thread is dead");
+        return Result.healthy("Event broker is online and alive");
       }
-      return Result.healthy("Event broker is online and alive");
+      return Result.unhealthy("Event broker thread is dead");
     }
     return Result.healthy("Event broker is offline");
   }
