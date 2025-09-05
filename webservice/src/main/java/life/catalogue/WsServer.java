@@ -243,8 +243,9 @@ public class WsServer extends Application<WsServerConfig> {
 
     HttpUtils http = new HttpUtils();
 
-    // event broker
+    // event broker - starts immediately
     var broker = new EventBroker(cfg.broker);
+    env.lifecycle().manage(ManagedUtils.from(broker));
 
     // validation
     var validator = env.getValidator();
@@ -481,8 +482,6 @@ public class WsServer extends Application<WsServerConfig> {
     broker.register(exportManager);
     broker.register(syncManager);
     broker.register(importManager);
-    // startup broker, poll from queue
-    env.lifecycle().manage(ManagedUtils.from(broker));
   }
 
   @Override
