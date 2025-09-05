@@ -63,6 +63,7 @@ import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
 import life.catalogue.release.PublicReleaseListener;
+import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
@@ -473,10 +474,12 @@ public class WsServer extends Application<WsServerConfig> {
     broker.register(auth);
     broker.register(coljersey);
     broker.register(DatasetInfoCache.CACHE);
+    // listeners for the main webapp only (not present in read-only)
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
     broker.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
+    broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiUpdater);
     broker.register(uCache);
     broker.register(exportManager);

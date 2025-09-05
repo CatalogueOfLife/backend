@@ -175,6 +175,7 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // event broker
     var broker = new EventBroker(cfg.broker);
+    env.lifecycle().manage(ManagedUtils.from(broker));
 
     // validation
     var validator = env.getValidator();
@@ -258,8 +259,6 @@ public class WsROServer extends Application<WsServerConfig> {
     broker.register(auth);
     broker.register(coljersey);
     broker.register(DatasetInfoCache.CACHE);
-    // startup broker, poll from queue
-    env.lifecycle().manage(ManagedUtils.from(broker));
   }
 
   static void registerReadOnlyHealthChecks(Environment env, EventBroker broker, @Nullable RestClient esClient, WsServerConfig cfg) {

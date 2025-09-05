@@ -170,6 +170,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Integer> listReleaseKeys(@Param("projectKey") int projectKey);
 
   /**
+   * List all dataset keys of all project which are not deleted.
+   * This includes both private and public datasets.
+   */
+  List<Integer> listProjectKeys();
+
+  /**
    * List all releases of a project, including deleted and private ones.
    * Ordered chronologically starting with the first release. Sorted by attempt, key
    */

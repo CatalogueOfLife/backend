@@ -377,6 +377,12 @@
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey} AND d.deleted IS NULL
   </select>
 
+  <select id="listProjectKeys" resultType="integer">
+    SELECT d.key
+    FROM dataset d
+    WHERE d.origin='PROJECT'::DATASETORIGIN AND d.deleted IS NULL
+  </select>
+
   <select id="listReleases" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
