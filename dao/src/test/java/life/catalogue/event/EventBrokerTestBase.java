@@ -1,20 +1,12 @@
 package life.catalogue.event;
 
-import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DatasetLogoChanged;
-import life.catalogue.api.vocab.Users;
 import life.catalogue.common.io.TmpIO;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 abstract class EventBrokerTestBase {
 
@@ -50,11 +42,10 @@ abstract class EventBrokerTestBase {
         System.out.println(event);
       }
     });
-    broker.start();
   }
 
   public void stop() throws Exception {
-    broker.stop();
+    broker.close();
     dir.close();
   }
 }

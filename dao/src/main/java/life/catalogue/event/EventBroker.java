@@ -4,6 +4,7 @@ import life.catalogue.api.event.*;
 import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -28,7 +29,10 @@ import net.openhft.chronicle.wire.DocumentContext;
 
 import static java.util.stream.Collectors.toList;
 
-public class EventBroker implements Managed {
+/**
+ * Broker of events being shared between JDKs using a Chronicle queue on disk.
+ */
+public class EventBroker implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(EventBroker.class);
 
   private final BrokerConfig cfg;
@@ -37,13 +41,20 @@ public class EventBroker implements Managed {
   private final List<SectorListener> sectorListeners = new ArrayList<>();
   private final List<DatasetListener> datasetListeners = new ArrayList<>();
   private final KryoHelper io;
-  private Thread polling;
-  private SingleChronicleQueue queue;
-  private ExcerptAppender appender;
+  private final Thread polling;
+  private final SingleChronicleQueue queue;
+  private final ExcerptAppender appender;
 
   public EventBroker(BrokerConfig cfg) {
     this.cfg = cfg;
     this.io = new KryoHelper(cfg);
+    queue = SingleChronicleQueueBuilder
+      .single(cfg.queueDir)
+      .rollCycle(RollCycles.FAST_DAILY)
+      .build();
+    appender = queue.acquireAppender();
+    polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
+    LOG.info("Started event broker with queue at {}", cfg.queueDir);
   }
 
   public void register(Listener listener) {
@@ -82,36 +93,15 @@ public class EventBroker implements Managed {
     }
   }
 
-  @Override
-  public boolean hasStarted() {
-    return polling != null;
-  }
-
   public boolean isAlive() {
-    return polling != null && polling.isAlive();
+    return polling.isAlive();
   }
 
   @Override
-  public void stop() {
-    if (polling != null) {
-      LOG.info("Stop event broker with queue at {}", cfg.queueDir);
-      queue.close();
-      polling.interrupt();
-      polling = null;
-    }
-  }
-
-  @Override
-  public void start() {
-    if (polling == null || !polling.isAlive()) {
-      queue = SingleChronicleQueueBuilder
-        .single(cfg.queueDir)
-        .rollCycle(RollCycles.FAST_DAILY)
-        .build();
-      appender = queue.acquireAppender();
-      polling = ExecutorUtils.runInNewThread(new Polling(), "event-broker-polling");
-      LOG.info("Started event broker with queue at {}", cfg.queueDir);
-    }
+  public void close() throws IOException {
+    LOG.info("Stoping event broker with queue at {} and polling thread {}", cfg.queueDir, polling);
+    polling.interrupt();
+    queue.close();
   }
 
   private class Polling implements Runnable {

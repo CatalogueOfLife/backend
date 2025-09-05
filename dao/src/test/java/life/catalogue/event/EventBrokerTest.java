@@ -37,20 +37,4 @@ public class EventBrokerTest extends EventBrokerTestBase {
     assertEquals(1, cntDL.get());
   }
 
-  @Test
-  public void restart() throws Exception {
-    init();
-    try {
-      assertPublishEvents();
-    } finally {
-      broker.stop();
-    }
-
-    try {
-      broker.start();
-      assertPublishEvents();
-    } finally {
-      stop();
-    }
-  }
 }

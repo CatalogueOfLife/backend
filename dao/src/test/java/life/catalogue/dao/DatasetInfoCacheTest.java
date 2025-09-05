@@ -46,17 +46,19 @@ public class DatasetInfoCacheTest {
     DatasetInfoCache.CACHE.info(999);
   }
 
-  @Test
-  public void deletedEvent() throws InterruptedException, IOException {
-    EventBroker bus = null;
+  public static EventBroker build(TmpIO.Dir dir) {
     var cfg = new BrokerConfig();
     cfg.pollingLatency = 1;
-    try (var dir = new TmpIO.Dir()) {
-      cfg.queueDir = dir.file + "/queue";
+    cfg.queueDir = dir.file + "/queue";
+    return new EventBroker(cfg);
+  }
 
-      bus = new EventBroker(cfg);
+  @Test
+  public void deletedEvent() throws InterruptedException, IOException {
+    try (var dir = new TmpIO.Dir();
+         EventBroker bus = build(dir)
+    ) {
       bus.register(DatasetInfoCache.CACHE);
-      bus.start();
 
       var info = DatasetInfoCache.CACHE.info(3);
       assertFalse(info.deleted);
@@ -78,8 +80,6 @@ public class DatasetInfoCacheTest {
 
       info = DatasetInfoCache.CACHE.info(d.getKey(), true);
       assertTrue(info.deleted);
-
-      bus.stop();
 
     } catch (Exception e) {
       throw new RuntimeException(e);
