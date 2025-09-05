@@ -48,16 +48,14 @@ public class CacheFlush implements DatasetListener {
 
   @Override
   public void datasetChanged(DatasetChanged event){
-    if (event.isDeletion()) {
+    if (!event.isCreated()) {
       VarnishUtils.ban(client, datasetUrlBuilder.build(event.key));
-
-    } else if (event.isUpdated()) {
-      // did visibility of a releases change?
-      if (event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin().isRelease()) {
-        int projectKey = event.obj.getSourceKey();
-        VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
-        VarnishUtils.ban(client, colseo);
-      }
+    }
+    // did visibility of a releases change? ban project URLs
+    if (event.isUpdated() && event.obj.isPrivat() != event.old.isPrivat() && event.obj.getOrigin().isRelease()) {
+      int projectKey = event.obj.getSourceKey();
+      VarnishUtils.ban(client, projectUrlBuilder.build(projectKey));
+      VarnishUtils.ban(client, colseo);
     }
   }
 }
