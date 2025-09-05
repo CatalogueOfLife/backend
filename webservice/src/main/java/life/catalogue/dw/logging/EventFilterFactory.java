@@ -7,12 +7,13 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import io.dropwizard.logging.common.filter.FilterFactory;
 
+import life.catalogue.cache.VarnishUtils;
 import life.catalogue.event.EventBroker;
 
 @JsonTypeName("events-only")
 public class EventFilterFactory implements FilterFactory<ILoggingEvent> {
   @Override
   public Filter<ILoggingEvent> build() {
-    return new PackageFilter(EventBroker.class.getPackageName());
+    return new PackageFilter(EventBroker.class.getPackageName(), VarnishUtils.class.getName());
   }
 }
