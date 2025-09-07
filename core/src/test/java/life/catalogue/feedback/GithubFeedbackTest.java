@@ -44,12 +44,11 @@ class GithubFeedbackTest {
     user.setFirstname("Frank");
     user.setLastname("Streber");
     msg = feedback.buildMessage(Optional.of(user), DSID.of(321, "ABCD"), fb("I cannot find what I am looking for.", "peter@nope.com"), "Puma concolor L.", d);
-    assertTrue(msg.startsWith("Puma concolor L.\n" +
-      "\n" +
-      "I cannot find what I am looking for.\n" +
+    assertTrue(msg.startsWith("I cannot find what I am looking for.\n" +
       "\n" +
       "---\n" +
       "Source: COL22\n" +
+      "Name: Puma concolor L.\n" +
       "Taxon: https://www.checklistbank.org/dataset/321/nameusage/ABCD\n" +
       "Submitted by: 100\n" +
       "Email: https://api.checklistbank.org/admin/email?address="));

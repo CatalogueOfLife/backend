@@ -64,13 +64,12 @@ public class GithubFeedback implements FeedbackService {
   @VisibleForTesting
   protected String buildMessage(Optional<User> user, DSID<String> usageKey, Feedback feedback, @Nullable String name, Dataset source) {
     StringBuilder msg = new StringBuilder();
-    if (name != null) {
-      msg.append(name)
-         .append("\n\n");
-    }
     msg.append(feedback.message);
     msg.append("\n\n---");
     msg.append("\nSource: " + source.getAliasOrTitle());
+    if (name != null) {
+      msg.append("\nName: " + name);
+    }
     msg.append("\nTaxon: " + clbTaxonURI.build(usageKey.getDatasetKey(), usageKey.getId()));
     if (user.isPresent()) {
       msg.append("\nSubmitted by: "+user.get().getKey());
@@ -123,16 +122,20 @@ public class GithubFeedback implements FeedbackService {
     // create a new github issue
     String name;
     StringBuilder title = new StringBuilder("Feedback on ");
+    var tagging = cfg.base;
     try (SqlSession session = factory.openSession()) {
       var num = session.getMapper(NameUsageMapper.class);
-      var tax = num.getSimple(usageKey);
+      var tax = num.get(usageKey);
       if (tax == null) {
         throw NotFoundException.notFound(NameUsage.class, usageKey);
       }
       name = tax.getLabel();
       title.append(name);
+      if (Boolean.TRUE.equals(tax.isMerged())) {
+        tagging = cfg.xr;
+      }
     }
-    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name, dataset), cfg.assignee, cfg.labels);
+    var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name, dataset), tagging);
     var req = issue.request(MediaType.APPLICATION_JSON_TYPE)
       .header(HttpHeaders.AUTHORIZATION, "Bearer "+cfg.token)
       .header("User-Agent", "CatalogueOfLife")
@@ -178,15 +181,14 @@ public class GithubFeedback implements FeedbackService {
     public String title;
     public String body;
     public List<String> assignees;
+    public List<String> labels;
 
-    public GHIssue(String title, String body, List<String> assignees, List<String> labels) {
+    public GHIssue(String title, String body, GithubConfig.Tagging tagging) {
       this.title = title;
       this.body = body;
-      this.assignees = assignees;
-      this.labels = labels;
+      this.assignees = tagging.assignee;
+      this.labels = tagging.labels;
     }
-
-    public List<String> labels;
   }
 
   private static class GHIssueResp {

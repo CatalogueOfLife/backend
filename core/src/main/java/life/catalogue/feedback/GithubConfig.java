@@ -3,7 +3,10 @@ package life.catalogue.feedback;
 import java.net.URI;
 import java.util.List;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import jakarta.validation.constraints.NotNull;
+
+import org.apache.poi.ss.formula.functions.T;
 
 public class GithubConfig {
 
@@ -19,16 +22,30 @@ public class GithubConfig {
   @NotNull
   public String token;
 
-  public List<String> assignee;
-
-  public List<String> labels;
-
   public String encryptPassword;
 
   public String encryptSalt;
 
+  public Tagging base = new Tagging();
+
+  public Tagging xr = new Tagging();
+
   public URI issueURI() {
     return api.resolve("/repos/"+organisation+"/"+repository+"/issues");
+  }
+
+  public static class Tagging {
+    public List<String> assignee;
+
+    public List<String> labels;
+
+    @Override
+    public String toString() {
+      return "{" +
+        "assignee=" + assignee +
+        ", labels=" + labels +
+        '}';
+    }
   }
 
   @Override
@@ -36,7 +53,7 @@ public class GithubConfig {
     return "api=" + api +
       ", organisation='" + organisation + '\'' +
       ", repository='" + repository + '\'' +
-      ", assignee=" + assignee +
-      ", labels=" + labels;
+      ", base=" + base +
+      ", xr=" + xr;
   }
 }
