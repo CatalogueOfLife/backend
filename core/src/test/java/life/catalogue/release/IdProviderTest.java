@@ -159,13 +159,13 @@ public class IdProviderTest {
     IdTestProvider provider = new IdTestProvider();
     provider.mapAllIds();
     IdProvider.IdReport report = provider.getReport();
-    assertEquals(1, report.created.size());
+    assertEquals(0, report.created.size());
     assertEquals(1, report.deleted.size());
     assertEquals(2, report.resurrected.size());
 
     assertID(10, testNames.get(0)); // resurrected
-    assertID(20, testNames.get(1)); // current Mill. matches Mill
-    assertID(21, testNames.get(2)); // different synonym parent
+    assertID(11, testNames.get(1)); // current Mill. matches oldest Mill
+    assertID(20, testNames.get(2)); // different synonym parent
   }
 
   @Test

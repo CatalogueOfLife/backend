@@ -588,7 +588,7 @@ public class IdProvider {
         while (!best.isEmpty()) {
           // best is sorted, issue as they come but avoid already released ids
           for (ScoreMatrix.ReleaseMatch m : best) {
-            if (!ids.contains(m.rid.id)) {
+            if (m.name.getCanonicalId()==null && !ids.contains(m.rid.id)) {
               release(m, scores);
               ids.add(m.rid.id);
             }
@@ -596,7 +596,7 @@ public class IdProvider {
           best = scores.highest();
         }
       }
-      // persist mappings, issuing new ids for missing ones
+      // persist mappings and issue new ids for missing ones
       for (SimpleNameWithNidx sn : names) {
         if (sn.getCanonicalId() == null) {
           issueNewId(sn);

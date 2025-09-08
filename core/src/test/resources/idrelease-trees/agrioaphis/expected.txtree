@@ -12,18 +12,18 @@ Eukaryota [domain] {ID=CS5HF}
                       Agrioaphis Walker, 1870 [genus] {ID=8P364}
                       Myzocallis [genus] {ID=8NVPG}
                         Myzocallis (Myzocallis) [subgenus] {ID=8Q6KW}
-                          =Agrioaphis [genus] {ID=CTN9D}
+                          =Agrioaphis [genus] {ID=CCNZH}
                       Tuberculatus [genus] {ID=83GF}
                         Tuberculatus (Acanthocallis) [subgenus] {ID=8R326}
-                          =Agrioaphis [genus] {ID=CTN9C}
+                          =Agrioaphis [genus] {ID=CCNZK}
                         Tuberculatus (Arakawana) [subgenus] {ID=8QWYD}
-                          =Agrioaphis [genus] {ID=CTN9B}
+                          =Agrioaphis [genus] {ID=CCNZL}
                         Tuberculatus (Tuberculoides) [subgenus] {ID=8QYKW}
-                          =Agrioaphis [genus] {ID=CTN99}
+                          =Agrioaphis [genus] {ID=CCNZJ}
                     Pterocallidini [tribe] {ID=9H2ZF}
                       Pterocallis [genus] {ID=8NYD3}
                         Pterocallis (Pterocallis) [subgenus] {ID=8R23K}
-                          =Agrioaphis [genus] {ID=CTN9F}
+                          =Agrioaphis [genus] {ID=CCNZM}
                     Therioaphidini [tribe] {ID=9GVNR}
                       Takecallis [genus] {ID=8NPCB}
-                        =Agrioaphis [genus] {ID=CRGH7}
+                        =Agrioaphis [genus] {ID=C8RVS}

@@ -87,7 +87,7 @@ public class IdProviderReleaseIT {
     LOG.info("Prepare project {}", project);
     List<TxtTreeDataRule.TreeDataset> rules = new ArrayList<>();
     rules.add(new TxtTreeDataRule.TreeDataset(Datasets.COL, "idrelease-trees/" + project + "/project.txtree", "COL Checklist", DatasetOrigin.PROJECT));
-    for (int i=1; i<100; i++) {
+    for (int i=1; i<10; i++) {
       DatasetOrigin origin = DatasetOrigin.RELEASE;
       String relResourceBase = "idrelease-trees/" + project + "/release"+i;
       String relResource = relResourceBase+".txtree";
