@@ -26,7 +26,7 @@ public class CacheFlush implements DatasetListener {
   public CacheFlush(CloseableHttpClient client, URI api) {
     this.client = client;
     this.projectUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}LR");
-    this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/");
+    this.datasetUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}");
     this.logoUrlBuilder = UriBuilder.fromUri(api).path("dataset/{key}/logo");
     this.colseo = UriBuilder.fromUri(api).path("colseo").build();
     this.dataset= UriBuilder.fromUri(api).path("dataset").build();
