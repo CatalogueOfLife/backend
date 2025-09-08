@@ -28,6 +28,7 @@ public class CopyUtil {
   public static final Supplier<String> ID_GENERATOR = () -> ShortUUID.random().toString();
   private static final Map<EntityType, Class<? extends TaxonExtensionMapper<? extends SectorScopedEntity<Integer>>>> extMapper = new HashMap<>();
   static {
+    extMapper.put(EntityType.TAXON_PROPERTY, TaxonPropertyMapper.class);
     extMapper.put(EntityType.DISTRIBUTION, DistributionMapper.class);
     extMapper.put(EntityType.VERNACULAR, VernacularNameMapper.class);
     extMapper.put(EntityType.MEDIA, MediaMapper.class);
