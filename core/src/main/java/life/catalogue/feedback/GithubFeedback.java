@@ -2,10 +2,7 @@ package life.catalogue.feedback;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.exception.UnavailableException;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.User;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -125,14 +122,18 @@ public class GithubFeedback implements FeedbackService {
     var tagging = cfg.base;
     try (SqlSession session = factory.openSession()) {
       var num = session.getMapper(NameUsageMapper.class);
+      var sm = session.getMapper(SectorMapper.class);
       var tax = num.get(usageKey);
       if (tax == null) {
         throw NotFoundException.notFound(NameUsage.class, usageKey);
       }
       name = tax.getLabel();
       title.append(name);
-      if (Boolean.TRUE.equals(tax.isMerged())) {
-        tagging = cfg.xr;
+      if (tax.getSectorKey() != null) {
+        var s = sm.get(DSID.of(usageKey.getDatasetKey(), tax.getSectorKey()));
+        if (s.getMode() == Sector.Mode.MERGE) {
+          tagging = cfg.xr;
+        }
       }
     }
     var iss = new GHIssue(title.toString(), buildMessage(user, usageKey, feedback, name, dataset), tagging);
