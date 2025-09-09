@@ -11,6 +11,8 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -32,7 +34,7 @@ public class SectorDaoTest extends DaoTestBase {
   @Before
   public void init(){
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
+    TaxonDao tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     dao = new SectorDao(factory(), NameUsageIndexService.passThru(), tDao, validator);
   }
 

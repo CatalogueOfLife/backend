@@ -29,6 +29,7 @@ import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.FeedbackService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
+import life.catalogue.img.ThumborService;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
@@ -211,6 +212,10 @@ public class WsROServer extends Application<WsServerConfig> {
       suggestService = new NameUsageSuggestionServiceEs(cfg.es.nameUsage.name, esClient);
     }
 
+    // images
+    final ImageService imgService = new ImageServiceFS(cfg.img, broker);
+    final ThumborService thumborService = new ThumborService(cfg.thumbor);
+
     // daos
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
@@ -227,14 +232,11 @@ public class WsROServer extends Application<WsServerConfig> {
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
-
-    // images
-    final ImageService imgService = new ImageServiceFS(cfg.img, broker);
 
     // portal html page renderer - only in ROServer !!!
     PortalPageRenderer renderer = new PortalPageRenderer(ddao, dsdao, tdao, cfg.portalTemplateDir.toPath(), true);

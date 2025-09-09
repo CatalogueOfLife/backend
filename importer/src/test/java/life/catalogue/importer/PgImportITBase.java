@@ -11,6 +11,8 @@ import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
 import life.catalogue.importer.neo.model.RankedName;
@@ -84,7 +86,7 @@ public class PgImportITBase {
 
     sdao = new SynonymDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, indexService, validator);
     ndao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, null, indexService, null, validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), ndao, null, new ThumborService(new ThumborConfig()), indexService, null, validator);
     rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null,null, validator, TestUtils.mockedBroker());
   }

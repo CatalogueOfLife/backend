@@ -7,6 +7,8 @@ import life.catalogue.common.util.YamlUtils;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
 import life.catalogue.junit.*;
 import life.catalogue.matching.decision.DecisionRematchRequest;
 import life.catalogue.matching.decision.DecisionRematcher;
@@ -229,7 +231,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
       final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
       if (info.rematchSectors) {
         var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
+        var tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
         SectorDao dao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
         var req = new SectorRematchRequest();
         req.setTarget(true);

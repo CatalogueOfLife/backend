@@ -16,6 +16,7 @@ import life.catalogue.event.BrokerConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
@@ -110,6 +111,10 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   @NotNull
   public ImgConfig img = new ImgConfig();
+
+  @Valid
+  @NotNull
+  public ThumborConfig thumbor = new ThumborConfig();
 
   @Valid
   @NotNull

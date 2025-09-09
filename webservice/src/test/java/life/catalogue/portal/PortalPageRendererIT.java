@@ -40,7 +40,7 @@ public class PortalPageRendererIT {
     var dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null, TestUtils.mockedBroker());
     var srcDao = new DatasetSourceDao(SqlSessionFactoryRule.getSqlSessionFactory());
     var nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, null);
-    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null, null, null);
+    var tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, null, null, null, null);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
     renderer = new PortalPageRenderer(dDao, srcDao, tDao, p, false);

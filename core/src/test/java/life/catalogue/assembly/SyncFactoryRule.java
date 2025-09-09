@@ -4,6 +4,8 @@ import life.catalogue.TestUtils;
 import life.catalogue.cache.UsageCache;
 import life.catalogue.dao.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TreeRepoRule;
@@ -43,7 +45,7 @@ public class SyncFactoryRule extends ExternalResource {
     siDao = new SectorImportDao(factory, TreeRepoRule.getRepo());
     eDao = new EstimateDao(factory, validator);
     nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, NameUsageIndexService.passThru(), null, validator);
+    tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());

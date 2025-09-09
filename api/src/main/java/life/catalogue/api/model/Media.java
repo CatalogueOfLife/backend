@@ -14,6 +14,7 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   private Integer verbatimKey;
   private Integer verbatimSourceKey;
   private URI url;
+  private URI thumbnail;
   private MediaType type;
   private String format;
   private String title;
@@ -69,7 +70,15 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   public void setUrl(URI url) {
     this.url = url;
   }
-  
+
+  public URI getThumbnail() {
+    return thumbnail;
+  }
+
+  public void setThumbnail(URI thumbnail) {
+    this.thumbnail = thumbnail;
+  }
+
   public MediaType getType() {
     return type;
   }
@@ -157,6 +166,7 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
       Objects.equals(verbatimKey, media.verbatimKey) &&
       Objects.equals(verbatimSourceKey, media.verbatimSourceKey) &&
       Objects.equals(url, media.url) &&
+      Objects.equals(thumbnail, media.thumbnail) &&
       type == media.type &&
       Objects.equals(format, media.format) &&
       Objects.equals(title, media.title) &&
@@ -170,6 +180,6 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, url, type, format, title, captured, capturedBy, license, link, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, url, thumbnail, type, format, title, captured, capturedBy, license, link, referenceId, remarks);
   }
 }

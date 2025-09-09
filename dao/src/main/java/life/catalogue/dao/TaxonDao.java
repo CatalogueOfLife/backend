@@ -13,6 +13,7 @@ import life.catalogue.db.TaxonProcessable;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.NameUsageSearchService;
+import life.catalogue.img.ThumborService;
 import life.catalogue.matching.TaxGroupAnalyzer;
 import life.catalogue.printer.JsonTreePrinter;
 import life.catalogue.printer.PrinterFactory;
@@ -46,6 +47,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
   private SectorDao sectorDao;
   private TaxGroupAnalyzer groupAnalyzer = new TaxGroupAnalyzer();
   private final NameUsageSearchService searchService;
+  private final ThumborService thumborService;
   private final MetricsDao metricsDao;
   private final TaxonCounter esCounter = new TaxonCounter() {
     @Override
@@ -65,9 +67,11 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
    * Warn: you must set a sector dao manually before using the TaxonDao.
    * We have circular dependency that cannot be satisfied with final properties through constructors
    */
-  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, MetricsDao metricsDao, NameUsageIndexService indexService, NameUsageSearchService searchService, Validator validator) {
+  public TaxonDao(SqlSessionFactory factory, NameDao nameDao, MetricsDao metricsDao, ThumborService thumborService,
+                  NameUsageIndexService indexService, NameUsageSearchService searchService, Validator validator) {
     super(Taxon.class, TaxonMapper.class, factory, nameDao, indexService, validator);
     this.searchService = searchService;
+    this.thumborService = thumborService;
     this.metricsDao = metricsDao;
   }
 
@@ -478,6 +482,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
         info.getMedia().forEach(m -> {
           refIds.add(m.getReferenceId());
           addSectorMode(m, sectorModes, sm);
+          thumborService.addThumbnail(m);
         });
       }
 

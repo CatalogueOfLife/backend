@@ -8,10 +8,10 @@ import java.nio.file.Path;
 import jakarta.validation.constraints.NotNull;
 
 /**
- * A configuration for the postgres database connection pool as used by the mybatis layer.
+ * A configuration for built in logo cache
  */
 @SuppressWarnings("PublicField")
-public class ImgConfig extends PgDbConfig {
+public class ImgConfig {
   
   public enum Scale {
     ORIGINAL,

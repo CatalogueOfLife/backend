@@ -17,6 +17,8 @@ import life.catalogue.dao.TaxonDao;
 import life.catalogue.es.*;
 import life.catalogue.es.query.TermQuery;
 import life.catalogue.es.query.TermsQuery;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
@@ -118,7 +120,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
     NameDao ndao = new NameDao(getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
     DSID<String> dsid = ndao.create(taxon.getName(), USER_ID);
     LOG.info(">>>>>>> Name inserted into database. ID: {}\n", dsid.getId());
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, null, NameUsageIndexService.passThru(), null, validator);
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     dsid = tdao.create(taxon, USER_ID);
     LOG.info(">>>>>>> Taxon inserted into database. ID: {}\n", EsModule.writeDebug(taxon));
 

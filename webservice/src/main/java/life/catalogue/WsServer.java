@@ -48,6 +48,7 @@ import life.catalogue.feedback.GithubFeedback;
 import life.catalogue.gbifsync.GbifSyncManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
+import life.catalogue.img.ThumborService;
 import life.catalogue.importer.ContinuousImporter;
 import life.catalogue.importer.ImportManager;
 import life.catalogue.interpreter.TxtTreeInterpreter;
@@ -292,6 +293,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // images
     final ImageService imgService = new ImageServiceFS(cfg.img, broker);
+    final ThumborService thumborService = new ThumborService(cfg.thumbor);
 
     // name index
     if (cfg.namesIndex.file != null) {
@@ -334,7 +336,7 @@ public class WsServer extends Application<WsServerConfig> {
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
     PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
-    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, indexService, searchService, validator);
+    TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
     tdao.setSectorDao(secdao);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);

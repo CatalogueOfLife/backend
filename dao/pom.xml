@@ -157,6 +157,10 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 
+        <dependency>
+          <groupId>com.squareup</groupId>
+          <artifactId>pollexor</artifactId>
+        </dependency>
 		<!-- image formats-->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>

@@ -83,6 +83,7 @@
     <neo4j.version>3.4.17</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
+    <pollexor.version>3.0.0</pollexor.version>
     <postgresql.version>42.7.6</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.12.5</simple-mail.version>
@@ -412,6 +413,12 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <!-- thumbor -->
+      <dependency>
+        <groupId>com.squareup</groupId>
+        <artifactId>pollexor</artifactId>
+        <version>${pollexor.version}</version>
       </dependency>
 
       <!-- JWT -->
