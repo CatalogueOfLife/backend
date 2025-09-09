@@ -19,7 +19,11 @@ public class ThumborService {
     if (!cfg.host.endsWith("/")) {
       cfg.host = cfg.host + "/";
     }
-    thumbor = Thumbor.create(cfg.host, cfg.key);
+    if (cfg.key != null) {
+      thumbor = Thumbor.create(cfg.host, cfg.key);
+    } else {
+      thumbor = Thumbor.create(cfg.host);
+    }
   }
 
   public void addThumbnail(Media media) {
@@ -29,12 +33,10 @@ public class ThumborService {
   }
 
   public URI thumbnail(URI url) {
-    return URI.create(
-      thumbor.buildImage(url.toString())
-        .resize(cfg.size*10, cfg.size)
-        .fitIn()
-        .toUrlSafe()
-    );
+    var builder = thumbor.buildImage(url.toString())
+      .resize(cfg.size*10, cfg.size)
+      .fitIn();
+    return URI.create(builder.toUrl());
   }
 
 }

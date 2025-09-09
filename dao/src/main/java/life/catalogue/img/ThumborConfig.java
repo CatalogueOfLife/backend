@@ -15,7 +15,6 @@ public class ThumborConfig {
   @NotNull
   public String host = "https://api.gbif.org/v1/image";
 
-  @NotNull
   public String key;
 
   @NotNull
