@@ -151,7 +151,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
       LOG.info("Relinking {} to new parent {}", mod.usage.getLabel(), parent);
     }
     // make sure we have a genus for species and a species for infraspecific taxa
-    if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow()) {
+    if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow() && allowImplicitName(parent, (Taxon) u)) {
       parent = createImplicit(parent, (Taxon) mod.usage);
     }
     String origNameID= mod.usage.getName().getId();

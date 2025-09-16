@@ -113,12 +113,16 @@ public abstract class TreeBaseHandler implements TreeHandler {
       LOG.info("Consider only ranks: {}", Joiner.on(", ").join(ranks));
     }
 
-    for (Rank r : IMPLICITS) {
-      if (!ranks.isEmpty() && ranks.contains(r)) {
-        implicitRanks.add(r);
+    if (sector.isCreateImplicitNames()) {
+      for (Rank r : IMPLICITS) {
+        if (!ranks.isEmpty() && ranks.contains(r)) {
+          implicitRanks.add(r);
+        }
       }
+      LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
+    } else {
+      LOG.info("Do not create implicit names");
     }
-    LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
 
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     session = factory.openSession(true);
@@ -312,7 +316,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return true;
+    return sector.isCreateImplicitNames();
   }
 
   static String idOrNull(Usage u) {
