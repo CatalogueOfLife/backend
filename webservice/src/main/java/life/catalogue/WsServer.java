@@ -197,6 +197,7 @@ public class WsServer extends Application<WsServerConfig> {
 
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
+    LOG.info("Starting COL server");
     final JerseyEnvironment j = env.jersey();
 
     // remove SSL defaults that prevent correct use of TLS1.3

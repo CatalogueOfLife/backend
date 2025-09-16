@@ -203,6 +203,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // - homepage
           // - doi
           curr.setDataAccess(gbif.getDataAccess());
+          curr.setDataFormat(gbif.getDataFormat());
           curr.setLicense(gbif.dataset.getLicense());
           curr.setPublisher(gbif.dataset.getPublisher());
           curr.setGbifPublisherKey(gbif.dataset.getGbifPublisherKey());

@@ -192,8 +192,13 @@ public class DatasetPager {
     public String getTitle() {
       return dataset.getTitle();
     }
+
     public URI getDataAccess() {
       return settings.getURI(Setting.DATA_ACCESS);
+    }
+
+    public DataFormat getDataFormat() {
+      return settings.getEnum(Setting.DATA_FORMAT);
     }
   }
 
