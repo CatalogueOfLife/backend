@@ -795,7 +795,7 @@ public class TaxonDao extends NameUsageDao<Taxon, TaxonMapper> implements TaxonC
     ttp.setTaxonID(id);
     ttp.setSynonyms(false);
     ttp.setLowestRank(RankUtils.lowestRank(ranks));
-
+    ttp.setIgnoreAmbiguousRanks(true);
     // we need to count differently for projects than other datasets with taxon metrics
     TaxonCounter taxonCounter;
     if (DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT) {

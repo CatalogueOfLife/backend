@@ -733,7 +733,10 @@
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
     </if>
     <if test="param.lowestRank">
-      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank IN ('UNRANKED'::rank, 'OTHER'::rank, 'SUPRAGENERIC_NAME'::rank, 'INFRAGENERIC_NAME'::rank)
+      <if test="param.ignoreAmbiguousRanks">
+        OR n.rank IN ('SUPERSECTION_ZOOLOGY'::rank,'SECTION_ZOOLOGY'::rank,'SUBSECTION_ZOOLOGY'::rank,'SUPERSECTION_BOTANY'::rank,'SECTION_BOTANY'::rank,'SUBSECTION_BOTANY'::rank,'SUPERSERIES'::rank,'SERIES'::rank,'SUBSERIES'::rank)
+      </if>)
     </if>
   </sql>
 
