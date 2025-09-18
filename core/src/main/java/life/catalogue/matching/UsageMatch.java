@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UsageMatch implements DSID<String> {
   @JsonIgnore
-  public final int datasetKey; // dataset key the usage and classification belongs to
+  public int datasetKey; // dataset key the usage and classification belongs to
   public final SimpleNameClassified<SimpleNameCached> usage;
   public final Integer sectorKey; // optional sector key to identify the source of the usage in a project
   @JsonIgnore

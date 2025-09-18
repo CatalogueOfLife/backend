@@ -136,7 +136,7 @@ public abstract class UsageMatcher {
     boolean snap = false;
 
     // if we need to set alternatives keep them before we modify the candidates list
-    final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? List.copyOf(existing) : null;
+    final List<SimpleNameClassified<SimpleNameCached>> alt = verbose ? new ArrayList<>(existing) : null;
 
     // make sure we never have bare names - we want usages!
     existing.removeIf(u -> u.getStatus().isBareName());

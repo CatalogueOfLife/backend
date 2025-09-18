@@ -30,8 +30,17 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other);
   }
 
+  public SimpleNameClassified(NameUsageBase other, Integer canonicalId) {
+    super(other, canonicalId);
+  }
+
   public SimpleNameClassified(SimpleNameCached other) {
     super(other);
+  }
+
+  public SimpleNameClassified(SimpleNameCached other, List<T> classification) {
+    super(other);
+    this.classification = classification;
   }
 
   public boolean hasClassification() {

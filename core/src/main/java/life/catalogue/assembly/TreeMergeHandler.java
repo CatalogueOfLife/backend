@@ -480,7 +480,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // *** CREATE ***
     var sn = super.create(nu, parent, issues);
     parents.setMatch(sn);
-    matcher.add(nu);
+    matcher.add(nu, parents.classificationSN());
     created++;
     return sn;
   }
@@ -540,7 +540,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   protected void cacheImplicit(Taxon t, Usage parent) {
-    matcher.add(t);
+    matcher.add(t, parents.classificationSN());
   }
 
   private Name loadFromDB(String usageID) {

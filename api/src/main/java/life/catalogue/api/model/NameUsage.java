@@ -80,6 +80,10 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceE
     return sn;
   }
 
+  default SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(Integer canonicalNidx) {
+    return new SimpleNameClassified<>(asUsageBase(), canonicalNidx);
+  }
+
   default SimpleNameWithNidx toSimpleNameWithNidx(Function<Integer, Integer> nidx2canonical) {
     SimpleNameWithNidx sn = new SimpleNameWithNidx(getName(), nidx2canonical.apply(getName().getNamesIndexId()));
     sn.setStatus(getStatus());
