@@ -34,6 +34,10 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other);
   }
 
+  public boolean hasClassification() {
+    return classification != null && !classification.isEmpty();
+  }
+
   public List<T> getClassification() {
     return classification;
   }
