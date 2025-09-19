@@ -13,6 +13,8 @@ import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.net.URI;
 
+import life.catalogue.matching.nidx.NameIndex;
+
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -25,8 +27,8 @@ import jakarta.validation.Validator;
 public class XReleaseDebug extends XRelease{
   private static final int SECTOR_SYNCS_LIMIT = 4;
 
-  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
+    super(factory, syncFactory, nidx, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
   }
 
   @Override

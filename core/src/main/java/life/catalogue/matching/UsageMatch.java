@@ -1,9 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;

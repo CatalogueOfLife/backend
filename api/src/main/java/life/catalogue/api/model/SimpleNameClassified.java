@@ -34,13 +34,31 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
     super(other, canonicalId);
   }
 
+  public SimpleNameClassified(SimpleNameWithNidx other) {
+    super(other);
+  }
+
   public SimpleNameClassified(SimpleNameCached other) {
     super(other);
+  }
+
+  public SimpleNameClassified(SimpleNameClassified<T> other) {
+    super(other);
+    this.classification = other.classification;
   }
 
   public SimpleNameClassified(SimpleNameCached other, List<T> classification) {
     super(other);
     this.classification = classification;
+  }
+
+  public static <T extends SimpleName> SimpleNameClassified<T> canonicalCopy(SimpleNameClassified<T> src) {
+    var snc =  new SimpleNameClassified<>(src);
+    snc.setAuthorship(null);
+    snc.setNamesIndexId(null);
+    snc.setCanonicalId(null);
+    snc.setNamesIndexMatchType(null);
+    return snc;
   }
 
   public boolean hasClassification() {

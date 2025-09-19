@@ -12,6 +12,8 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.MatchingUtils;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
@@ -51,7 +53,8 @@ public class SectorSync extends SectorRunnable {
   private final EstimateDao estimateDao;
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
-  private final UsageMatcherGlobal matcher;
+  private final UsageMatcher matcher;
+  private final MatchingUtils utils;
   private final boolean projectTarget;
   private boolean disableAutoBlocking;
   private final int targetDatasetKey; // dataset to sync into
@@ -65,17 +68,18 @@ public class SectorSync extends SectorRunnable {
   private Throwable exception;
 
   SectorSync(DSID<Integer> sectorKey, int targetDatasetKey, boolean projectTarget, @Nullable TreeMergeHandlerConfig mergeCfg,
-             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher, EventBroker bus,
+             SqlSessionFactory factory, NameIndex nameIndex, UsageMatcher matcher, EventBroker bus,
              NameUsageIndexService indexService, SectorDao sdao, SectorImportDao sid, EstimateDao estimateDao,
              Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback,
              Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen,
              int user) throws IllegalArgumentException {
-    super(sectorKey, true, projectTarget, factory, matcher, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
+    super(sectorKey, true, factory, indexService, sdao, sid, bus, successCallback, errorCallback, true, user);
     this.projectTarget = projectTarget;
     this.sid = sid;
     this.estimateDao = estimateDao;
     this.nameIndex = nameIndex;
     this.matcher = matcher;
+    this.utils = new MatchingUtils(nameIndex);
     this.targetDatasetKey = targetDatasetKey;
     if (targetDatasetKey != sectorKey.getDatasetKey()) {
       LOG.info("Syncing sector {} into release {}", sectorKey, targetDatasetKey);
@@ -151,7 +155,7 @@ public class SectorSync extends SectorRunnable {
   void init() throws Exception {
     super.init(true);
     // rematch target to xrelease usage ids
-    XRelease.rematchTarget(sector, targetDatasetKey, matcher);
+    utils.rematchTarget(sector, matcher);
 
     loadForeignChildren();
     if (!disableAutoBlocking) {
@@ -313,7 +317,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, matcher, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

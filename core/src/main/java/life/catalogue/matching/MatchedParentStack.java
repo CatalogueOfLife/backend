@@ -4,6 +4,8 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
+import life.catalogue.assembly.TreeHandler;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;

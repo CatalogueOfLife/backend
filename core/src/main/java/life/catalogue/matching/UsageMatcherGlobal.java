@@ -39,12 +39,11 @@ import com.google.common.base.Preconditions;
 public class UsageMatcherGlobal {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherGlobal.class);
   private final NameIndex nameIndex;
-  private final AuthorComparator authComp;
   private final UsageCache uCache;
   private final CacheLoader defaultLoader;
   private final Map<Integer, CacheLoader> loaders = new HashMap<>();
   private final SqlSessionFactory factory;
-  private final TaxGroupAnalyzer groupAnalyzer;
+  private final MatchingUtils utils;
   // key = datasetKey + canonical nidx
   private final LoadingCache<DSID<Integer>, List<SimpleNameClassified<SimpleNameCached>>> usages = Caffeine.newBuilder()
                                                                                      .maximumSize(100_000)
@@ -79,15 +78,10 @@ public class UsageMatcherGlobal {
 
   public UsageMatcherGlobal(NameIndex nameIndex, UsageCache uCache, SqlSessionFactory factory) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
-    if (nameIndex instanceof NameIndexImpl) {
-      this.authComp = ((NameIndexImpl)nameIndex).getAuthComp();
-    } else {
-      this.authComp = new AuthorComparator(AuthorshipNormalizer.INSTANCE);
-    }
     this.factory = Preconditions.checkNotNull(factory);
     this.uCache = uCache;
     this.defaultLoader = new CacheLoader.MybatisLoader(factory);
-    this.groupAnalyzer = new TaxGroupAnalyzer();
+    this.utils = new MatchingUtils(nameIndex);
   }
 
   /**
@@ -106,6 +100,10 @@ public class UsageMatcherGlobal {
 
   public NameIndex getNameIndex() {
     return nameIndex;
+  }
+
+  public UsageMatcher getMatcher(int datasetKey) {
+    return matcher.get(datasetKey);
   }
 
   /**
@@ -156,7 +154,7 @@ public class UsageMatcherGlobal {
                    .uninomial(sn.getName())
                    .code(nu.getName().getCode())
                    .build();
-      parents.add(toMatchedSimpleName(new Taxon(n)));
+      parents.add(utils.toSimpleNameCached(new Taxon(n)));
     }
     return matchWithParents(datasetKey, nu, parents, allowInserts, verbose);
   }
@@ -172,70 +170,18 @@ public class UsageMatcherGlobal {
   public UsageMatch matchWithParents(int datasetKey, NameUsageBase nu, List<SimpleNameCached> parents,
                                      boolean allowInserts, boolean verbose
   ) throws NotFoundException {
-    var canonNidx = canonNidxAndMatchIfNeeded(datasetKey, nu, allowInserts);
-    if (!canonNidx.hasNidx()) {
-      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, canonNidx.matchType);
+    var nidx = utils.nidxAndMatchIfNeeded(nu, allowInserts);
+    if (!nidx.hasNidx()) {
+      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, nidx.matchType);
     }
     var mx = matcher.get(datasetKey);
-    var snc = new SimpleNameClassified<SimpleNameCached>(nu.toSimpleNameClassified(canonNidx.getId()));
+    var snc = new SimpleNameClassified<SimpleNameCached>(nu.toSimpleNameClassified(nidx.id));
     snc.setClassification(parents);
     return mx.match(snc, allowInserts, verbose);
   }
 
-  public SimpleNameCached toMatchedSimpleName(NameUsageBase nu) {
-    if (nu != null) {
-      var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
-      return new SimpleNameCached(nu, canonNidx.getId());
-    }
-    return null;
-  }
-
   public void invalidate(int targetDatasetKey, Integer canonicalId) {
-    usages.invalidate(new CanonNidxMatch(targetDatasetKey, canonicalId, MatchType.EXACT));
-  }
-
-  private static class CanonNidxMatch extends DSIDValue<Integer> {
-    public MatchType matchType;
-
-    public CanonNidxMatch(int datasetKey, Integer id, MatchType matchType) {
-      super(datasetKey, id);
-      this.matchType = matchType;
-    }
-
-    public boolean hasNidx() {
-      return getId() != null;
-    }
-  }
-
-  /**
-   * @param datasetKey the dataset key of the DSID to be returned
-   * @return a wrapper class that is never null. It holds the canonical names index id or null if it cant be matched
-   */
-  private CanonNidxMatch canonNidxAndMatchIfNeeded(int datasetKey, NameUsageBase nu, boolean allowInserts) {
-    // we check for match type not id because we might have matched to None or ambiguous before already
-    if (nu.getName().getNamesIndexType() == null) {
-      // try to match
-      var match = nameIndex.match(nu.getName(), allowInserts, false);
-      if (match.hasMatch()) {
-        nu.getName().setNamesIndexId(match.getName().getKey());
-        nu.getName().setNamesIndexType(match.getType());
-      }
-      return new CanonNidxMatch(datasetKey, match.hasMatch() ? match.getName().getCanonicalId() : null, match.getType());
-
-    } else if (nu.getName().getNamesIndexType() == MatchType.NONE) {
-      return new CanonNidxMatch(datasetKey, null, nu.getName().getNamesIndexType());
-
-    } else if (nu.getName().getNamesIndexId() == null) {
-      throw new IllegalStateException("Name without names index key but with match type " + nu.getName().getNamesIndexType() + ": " + nu.getName());
-
-    } else {
-      // lookup canonical nidx
-      var xn = nameIndex.get(nu.getName().getNamesIndexId());
-      if (xn == null) { // this is impossible unless data is out of sync
-        throw new IllegalStateException("Missing names index entry " + nu.getName().getNamesIndexId());
-      }
-      return new CanonNidxMatch(datasetKey, xn.getCanonicalId(), nu.getName().getNamesIndexType());
-    }
+    usages.invalidate(DSID.of(targetDatasetKey, canonicalId));
   }
 
   /**
@@ -244,21 +190,25 @@ public class UsageMatcherGlobal {
    */
   public SimpleNameClassified<SimpleNameCached> add(NameUsageBase nu, List<SimpleNameCached> parents) {
     Preconditions.checkNotNull(nu.getDatasetKey(), "DatasetKey required to cache usages");
-    var canonNidx = canonNidxAndMatchIfNeeded(nu.getDatasetKey(), nu, true);
-    if (canonNidx.hasNidx()) {
+    var canonNidx = utils.nidxAndMatchIfNeeded(nu, true);
+    var snc = new SimpleNameClassified<SimpleNameCached>(new SimpleNameCached(nu, canonNidx.id));
+    snc.setClassification(parents);
+    return add(snc, canonNidx.canonicalDSID(nu.getDatasetKey()));
+  }
+
+  public SimpleNameClassified<SimpleNameCached> add(SimpleNameClassified<SimpleNameCached> snc, DSID<Integer> canonNidx) {
+    if (canonNidx.getId() != null) {
       var before = usages.get(canonNidx);
       if (before == null) {
         // nothing existing, even after loading the cache from the db. Create a new list
         before = new ArrayList<>();
         usages.put(canonNidx, before);
       }
-      var snc = new SimpleNameClassified<SimpleNameCached>(new SimpleNameCached(nu, canonNidx.getId()));
-      snc.setClassification(parents);
       before.add(snc);
       return snc;
 
     } else {
-      LOG.debug("No names index key. Cannot add name usage {}", nu);
+      LOG.debug("No names index key. Cannot add name usage {}", snc.getLabel());
     }
     return null;
   }

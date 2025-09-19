@@ -32,7 +32,7 @@ import com.google.common.base.Supplier;
  */
 public abstract class UsageMatcher {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
-  private final int datasetKey;
+  protected final int datasetKey;
   private final NameIndex nameIndex;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
@@ -54,24 +54,32 @@ public abstract class UsageMatcher {
     this.groupAnalyzer = new TaxGroupAnalyzer();
   }
 
+  public int getDatasetKey() {
+    return datasetKey;
+  }
+
+  public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
+    return match(snc, true, false);
+  }
+
   /**
    * Matches the given usage by looking up candidates by their canonical names index id
    * and then filtering them by various properties and the parent classification.
-   * @param nu usage to match. A matched classification should be included
+   * @param snc usage to match. A matched classification must be included!
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
-  public UsageMatch match(SimpleNameClassified<SimpleNameCached> nu, boolean allowInserts, boolean verbose) throws NotFoundException {
-    if (nu.getCanonicalId() == null) {
-      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, nu.getNamesIndexMatchType());
+  public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
+    if (snc.getCanonicalId() == null) {
+      return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, snc.getNamesIndexMatchType());
     }
-    var existing = usagesByCanonicalNidx(nu.getCanonicalId());
+    var existing = usagesByCanonicalNidx(snc.getCanonicalId());
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
-      var match = filterCandidates(nu, new ArrayList<>(existing), verbose);
+      var match = filterCandidates(snc, new ArrayList<>(existing), verbose);
       if (match.isMatch()) {
         // decide about usage match type - the match type we have so far is from names index matching only!
         if (match.type == MatchType.VARIANT || match.type == MatchType.EXACT) {
-          String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(nu.getLabel());
+          String label = SciNameNormalizer.normalizeWhitespaceAndPunctuation(snc.getLabel());
           String matchLabel = SciNameNormalizer.normalizeWhitespaceAndPunctuation(match.usage.getLabel());
           if (match.type == MatchType.VARIANT && matchLabel.equals(label)) {
             match = new UsageMatch(match, MatchType.EXACT);

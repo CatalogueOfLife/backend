@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.common.id.ShortUUID;
@@ -9,6 +11,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
@@ -52,28 +55,30 @@ public class SyncFactory {
    * Creates a new sync into a project dataset
    */
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
+    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
+      matcher.getMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
   /**
    * Creates a new sync into a release dataset
    */
-  public SectorSync release(Sector sector, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg,
+  public SectorSync release(Sector sector, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg, UsageMatcher matcher,
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
     // make sure the sector is a project sector, not from a release
     var skey = DSID.of(DatasetInfoCache.CACHE.keyOrProjectKey(sector.getDatasetKey()), sector.getId());
+    Preconditions.checkArgument(releaseDatasetKey == matcher.getDatasetKey(), "Matcher and release dataset key must be the same");
     return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sector, releaseDatasetKey, e.getMessage(), e),
       nameIdGen, typeMaterialIdGen, usageIdGen, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDelete(sectorKey, factory, matcher, indexService, sd, sid, bus, successCallback, errorCallback, user);
+    return new SectorDelete(sectorKey, factory, indexService, sd, sid, bus, successCallback, errorCallback, user);
   }
 
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDeleteFull(sectorKey, factory, matcher, indexService, bus, sd, sid, successCallback, errorCallback, user);
+    return new SectorDeleteFull(sectorKey, factory, indexService, bus, sd, sid, successCallback, errorCallback, user);
   }
 
   public void assertComponentsOnline() {

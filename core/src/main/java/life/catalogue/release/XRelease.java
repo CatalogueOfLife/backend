@@ -1,6 +1,6 @@
 package life.catalogue.release;
 
-import jakarta.ws.rs.core.UriBuilder;
+import com.google.common.base.Preconditions;
 
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -26,8 +26,7 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.RematchMissing;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.NameType;
@@ -35,7 +34,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -58,23 +60,24 @@ public class XRelease extends ProjectRelease {
   private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final UsageMatcherGlobal matcher;
+  private final MatchingUtils utils;
   private final NameIndex ni;
+  private UsageMatcher matcher;
   private XReleaseConfig xCfg;
   private TreeMergeHandlerConfig mergeCfg;
   private XIdProvider usageIdGen;
   private int failedSyncs;
   private int tmpProjectKey;
 
-  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, ImageService imageService,
+  XRelease(SqlSessionFactory factory, SyncFactory syncFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
            int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager,
            DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
     super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
-    this.matcher = matcher;
-    this.ni = matcher.getNameIndex();
+    this.ni = nidx;
+    utils = new MatchingUtils(nidx);
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     sectorProjectKey = DSID.root(projectKey);
@@ -151,6 +154,8 @@ public class XRelease extends ProjectRelease {
     }
     createIdMapTables();
 
+    // create matcher against temp
+    this.matcher = new UsageMatcherMem(tmpProjectKey, ni);
     LOG.info("Created temporary project {} which will cleanup by itself in a few days", tmpProjectKey);
   }
 
@@ -179,6 +184,9 @@ public class XRelease extends ProjectRelease {
     final int xreleaseDatasetKey = newDatasetKey;
     newDatasetKey = tmpProjectKey;
     copyData();
+
+    // now match the new merge sectors to the tmpProject
+    matchMergeSectors();
 
     // setup id generator
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
@@ -280,26 +288,20 @@ public class XRelease extends ProjectRelease {
           sm.delete(s);
           iter.remove();
         }
-        // move sector to release and rematch targets to base release
-        rematchTarget(s, baseReleaseKey, matcher);
+        // move sector to release
+        // we don't persist the sectors yet - this happens when we sync them in mergeSectors()
         s.setDatasetKey(tmpProjectKey);
       }
     }
   }
 
-  public static void rematchTarget(Sector s, int targetDatasetKey, UsageMatcherGlobal matcher) {
-    if (s.getTarget() != null && targetDatasetKey != s.getDatasetKey()) {
-      LOG.info("Rematch sector target {} to dataset {}", s.getTarget(), targetDatasetKey);
-      s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
-      NameUsageBase nu = new Taxon(s.getTarget());
-      var m = matcher.match(targetDatasetKey, nu, null, true, false);
-      if (m.isMatch()) {
-        s.getTarget().setBroken(false);
-        s.getTarget().setId(m.getId());
-      } else {
-        LOG.warn("Failed to match target {} of sector {}[{}] to dataset {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), targetDatasetKey);
-        s.setTarget(null);
-      }
+  /**
+   * note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
+   */
+  private void matchMergeSectors() {
+    for (var s : sectors) {
+      // rematch target to tmp project
+      utils.rematchTarget(s, matcher);
     }
   }
 
@@ -547,7 +549,7 @@ public class XRelease extends ProjectRelease {
       SectorSync ss;
       try {
         // this loads decisions from the main project, even though the sector dataset key is the xrelease
-        ss = syncFactory.release(s, tmpProjectKey, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
+        ss = syncFactory.release(s, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;

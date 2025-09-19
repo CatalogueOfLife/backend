@@ -709,7 +709,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     syncAll();
     print(Datasets.COL);
 
-    final var sid = createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
       s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTU));
       s.setRanks(null);
       s.setCode(NomCode.BOTANICAL);

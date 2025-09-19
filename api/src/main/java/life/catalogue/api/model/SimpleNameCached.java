@@ -18,6 +18,12 @@ public class SimpleNameCached extends SimpleNameWithNidx {
   public SimpleNameCached(SimpleNameWithNidx other) {
     super(other);
   }
+
+  public SimpleNameCached(SimpleNameWithNidx other, Integer sectorKey) {
+    super(other);
+    this.sectorKey = sectorKey;
+  }
+
   public SimpleNameCached(SimpleNameCached other) {
     super(other);
     this.sectorKey = other.sectorKey;

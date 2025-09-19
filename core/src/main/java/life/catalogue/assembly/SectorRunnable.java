@@ -14,6 +14,7 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
+import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
@@ -50,8 +51,6 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  private final UsageMatcherGlobal matcher;
-  private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
@@ -63,14 +62,12 @@ abstract class SectorRunnable implements Runnable {
   /**
    * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean clearMatcherCache, SqlSessionFactory factory,
-                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
+                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
     this.bus = bus;
-    this.matcher = matcher;
-    this.clearMatcherCache = clearMatcherCache;
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
@@ -134,12 +131,6 @@ abstract class SectorRunnable implements Runnable {
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
 
-      // clear matcher cache?
-      if (clearMatcherCache) {
-        matcher.clearCache(sectorKey.getDatasetKey());
-        bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey()));
-      }
-
       doWork();
 
       state.setState( ImportState.ANALYZING);
@@ -152,6 +143,7 @@ abstract class SectorRunnable implements Runnable {
 
       state.setState( ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
+      bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey()));
       successCallback.accept(this);
       if (updateSectorAttemptOnSuccess) {
         // update sector with latest attempt on success if subclass requested it

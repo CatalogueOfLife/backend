@@ -29,10 +29,10 @@ public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private final Set<Integer> visitedSectors = new HashSet<>();
   
-  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, EventBroker bus,
+  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, EventBroker bus,
                    SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                    BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    super(sectorKey, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
+    super(sectorKey, false, factory, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
   }
 
   @Override

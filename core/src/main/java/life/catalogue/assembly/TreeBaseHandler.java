@@ -257,7 +257,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * @param parent maybe null for accepted names, but must exist for synonyms
    * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
-  protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
+  protected SimpleNameCached create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
     if (parent == null) {
       if (u.isSynonym()) {
         throw new IllegalStateException("Cannot create synonym without a parent: " + u.getRank() +" "+ u.getLabel());
@@ -312,7 +312,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       state.setSynonymCount(++sCounter);
     }
 
-    return new SimpleNameWithNidx(u, nm.getCanonicalNameKey());
+    return new SimpleNameCached(u, nm.getCanonicalNameKey());
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
@@ -426,10 +426,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // finally assign a (stable) id
         t.setId(usageIdGen.issue(t.toSimpleNameWithNidx(usageIdGen::nidx2canonical)));
         tm.create(t);
-
-        parent = usage(t, taxon.getParentId(), null);
         // allow reuse of implicit names
         cacheImplicit(t, parent);
+
+        parent = usage(t, taxon.getParentId(), null);
       }
     }
     return parent;
