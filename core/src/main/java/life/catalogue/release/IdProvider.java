@@ -305,21 +305,17 @@ public class IdProvider {
       int datasetKey = -1;
       if (attempt>0) {
         datasetKey = dataset2attempt.getKey(attempt);
-        key = DSID.of(datasetKey, ID);
-        sn = num.getSimple(key);
       } else {
-        // usages do not exist yet in the release - we gotta use the id map and look them up in the project!
-        sn = num.getSimpleByIdMap(DSID.of(mappedDatasetKey, ID));
-        if (sn != null) {
-          key = DSID.of(releaseDatasetKey, ID);
-        }
+        datasetKey = releaseDatasetKey;
       }
+      key = DSID.of(datasetKey, ID);
+      sn = num.getSimple(key);
 
       if (sn == null) {
         if (attempt>0) {
           LOG.warn("Old ID {}-{} [{}] reported without name usage from attempt {}", datasetKey, ID, id, attempt);
         } else {
-          LOG.warn("ID {} [{}] reported without name usage", ID, id);
+          LOG.warn("ID {} [{}] reported without name usage in release", ID, id);
         }
         tsv.write(new String[]{
           ID,
