@@ -19,13 +19,13 @@ public class ReleaseActionTest {
     d.setKey(1234);
     d.setSourceKey(3);
     d.setOrigin(DatasetOrigin.RELEASE);
-    d.setAlias("COL24");
+    d.setAlias("COL24 XR");
     d.setTitle("Catalogue of Life");
     d.setPublisher(Agent.organisation("Catalogue of Life"));
 
     var act = new ReleaseAction();
     act.method = "GET";
-    act.url = "http://www.gbif.org/dataset/{key}";
+    act.url = "http://www.gbif.org/dataset/{key}?alias={ALIAS}";
     assertEquals(404, act.call(httpClient, d));
   }
 }
