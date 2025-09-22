@@ -216,7 +216,7 @@ public class IdProvider {
     try (var tmp = TempFile.directory()){
       // read the following IDs from previous releases
       reportFile(tmp.file,"deleted.tsv", deleted.keySet(), deleted, true);
-      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), deleted, false);
+      reportFile(tmp.file,"resurrected.tsv", resurrected.keySet(), resurrected, false);
       // read ID from this release & ID mapping
       reportFile(tmp.file,"created.tsv", created, id -> -1, false);
       // clear instable names, removing the ones with just deletions
