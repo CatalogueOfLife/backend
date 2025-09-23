@@ -154,8 +154,6 @@ public class SectorSync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init(true);
-    // rematch target to xrelease usage ids
-    utils.rematchTarget(sector, matcher);
 
     loadForeignChildren();
     if (!disableAutoBlocking) {
@@ -317,7 +315,7 @@ public class SectorSync extends SectorRunnable {
 
   private TreeHandler sectorHandler(){
     if (sector.getMode() == Sector.Mode.MERGE) {
-      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
+      return new TreeMergeHandler(targetDatasetKey, subjectDatasetKey, decisions, factory, matcher, nameIndex, user, sector, state, mergeCfg, nameIdGen, typeMaterialIdGen, usageIdGen);
     }
     return new TreeCopyHandler(targetDatasetKey, decisions, factory, nameIndex, user, sector, state);
   }

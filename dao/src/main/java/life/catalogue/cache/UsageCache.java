@@ -39,6 +39,8 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
   @Override
   void close();
 
+  void updateParent(int datasetKey, String oldParentId, String newParentId);
+
   @Override
   default void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
@@ -177,6 +179,11 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
 
       @Override
       public void close() { }
+
+      @Override
+      public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+
+      }
     };
   }
 
@@ -233,6 +240,18 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
 
       @Override
       public void close() { }
+
+      @Override
+      public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+        for (var k : data.keySet()) {
+          if (datasetKey == k.getDatasetKey()) {
+            var old = data.get(k);
+            if (old.getParentId() != null && old.getParentId().equals(oldParentId)) {
+              data.remove(k);
+            }
+          }
+        }
+      }
 
       @Override
       public boolean hasStarted() {

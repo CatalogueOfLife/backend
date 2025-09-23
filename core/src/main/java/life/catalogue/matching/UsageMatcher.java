@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.cache.UsageCacheSingleDS;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -57,6 +58,17 @@ public abstract class UsageMatcher {
   public int getDatasetKey() {
     return datasetKey;
   }
+
+  /**
+   * @param usageID the id to start retrieving the classification from
+   * @return classification including and starting with the given usageID
+   * @throws NotFoundException
+   */
+  abstract public List<SimpleNameCached> getClassification(String usageID) throws NotFoundException;
+
+  abstract public void add(SimpleNameCached sn);
+
+  abstract public void updateParent(String oldID, String newID);
 
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
     return match(snc, true, false);

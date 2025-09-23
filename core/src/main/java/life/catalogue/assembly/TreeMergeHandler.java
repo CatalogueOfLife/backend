@@ -39,7 +39,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   public static final char ID_PREFIX = '~';
   private static final Set<Rank> LOW_RANKS = Set.of(Rank.FAMILY, Rank.SUBFAMILY, Rank.TRIBE, Rank.GENUS);
   private final MatchedParentStack parents;
-  private final UsageMatcherMem matcher;
+  private final UsageMatcher matcher;
   private final MatchingUtils utils;
   private final TaxGroupAnalyzer groupAnalyzer;
   private int counter = 0;  // all source usages
@@ -53,7 +53,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final Identifier.Scope nameIdScope;
   private final Identifier.Scope usageIdScope;
 
-  TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory, NameIndex nameIndex,
+  TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory,
+                   UsageMatcher matcher, NameIndex nameIndex,
                    int user, Sector sector, SectorImport state, @Nullable TreeMergeHandlerConfig cfg,
                    Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen) {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
@@ -61,8 +62,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
     this.cfg = cfg;
     this.vKey = DSID.root(sourceDatasetKey);
-    this.matcher = new UsageMatcherMem(targetDatasetKey, nameIndex);
-    this.matcher.load(factory);
+    this.matcher = matcher;
     groupAnalyzer = new TaxGroupAnalyzer();
     utils = new MatchingUtils(nameIndex);
 
@@ -254,7 +254,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we have a custom usage loader registered that knows about the open batch session
     // that writes new usages to the release which might not be flushed to the database
     var snc = new SimpleNameClassified<SimpleNameCached>(nusn);
-    snc.setClassification(parents.classificationSN());
+    snc.setClassification(parents.classificationSN(1));
     UsageMatch match = matcher.match(snc, true, unique);
     // remove matches to genera for unranked source names as genera often are homonyms with higher names and can cause serious trouble
     if (match.isMatch() && nu.getRank().otherOrUnranked() && match.usage.getRank().isGenusGroup()) {
@@ -468,7 +468,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     Issue[] issues;
     if (target != null && parent != null
       && !Objects.equals(parent.id, target.getId())
-      && !containsID(matcher.usages().getClassification(parent.id), target.getId())
+      && !containsID(matcher.getClassification(parent.id), target.getId())
     ) {
       issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
     } else {
@@ -536,7 +536,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected void cacheImplicit(Taxon t, Usage parent) {
+  protected void cacheImplicit(Taxon t) {
     var snc = utils.toSimpleNameCached(t);
     matcher.add(snc);
   }
@@ -558,7 +558,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
       // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
-      var proposedClassification = matcher.usages().getClassification(proposedParent.getId());
+      var proposedClassification = matcher.getClassification(proposedParent.getId());
       for (var propHigherTaxon : proposedClassification) {
         if (propHigherTaxon.getId().equals(existing.getId())) {
           LOG.debug("Avoid circular classifications by updating the parent of {} {} to {} {}", existing.getRank(), existing.getLabel(), proposedParent.getRank(), proposedParent.getLabel());
@@ -794,7 +794,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           final var newID = usageIdGen.issue(sNidx);
           existingUsage.usage.setId(newID);
           TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
-          matcher.usages().updateParent(oldID, newID);
+          matcher.updateParent(oldID, newID);
         }
         // update name match in db
         nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());

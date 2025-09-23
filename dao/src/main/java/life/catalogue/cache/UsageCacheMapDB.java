@@ -119,6 +119,18 @@ public class UsageCacheMapDB implements UsageCache {
     }
   }
 
+  @Override
+  public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+    if (datasets.containsKey(datasetKey)) {
+      var d = datasets.get(datasetKey);
+      for (var u : d.values()) {
+        if (u.getParentId() != null && u.getParent().equals(oldParentId)) {
+          u.setParent(newParentId);
+        }
+      }
+    }
+  }
+
   private static String dbname(int datasetKey) {
     return "u"+datasetKey;
   }

@@ -181,12 +181,12 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertTree("cat34.txt");
 
     final int srcKey2 = dataRule.mapKey(DataFormat.COLDP, 35);
-    print(srcKey2);
     src = getByName(srcKey2, Rank.FAMILY, "Chrysomelidae");
     trg = getByName(Datasets.COL, Rank.FAMILY, "Chrysomelidae");
     createSector(Sector.Mode.MERGE, src, trg, s -> {
       s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES, Rank.SUBSPECIES));
     });
+    print(srcKey2);
 
     syncAll();
     assertTree("cat34-35.txt");

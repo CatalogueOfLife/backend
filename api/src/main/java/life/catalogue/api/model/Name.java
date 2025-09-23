@@ -216,6 +216,7 @@ public class Name extends DatasetScopedEntity<String> implements VerbatimEntity,
     setAuthorship(sn.getAuthorship());
     setRank(sn.getRank());
     setCode(sn.getCode());
+    setType(NameType.SCIENTIFIC);
   }
 
   /**

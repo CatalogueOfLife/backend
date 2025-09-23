@@ -201,8 +201,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected void cacheImplicit(Taxon t, Usage parent) {
-    implicits.put(new RanKnName(t.getName().getRank(), t.getName().getScientificName()), parent);
+  protected void cacheImplicit(Taxon t) {
+    implicits.put(new RanKnName(t.getName().getRank(), t.getName().getScientificName()), usage(t, t.getParentId(), null));
   }
 
   @Override

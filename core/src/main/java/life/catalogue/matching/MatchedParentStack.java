@@ -109,13 +109,20 @@ public class MatchedParentStack {
    * List the current classification starting with the root as simple names
    */
   public List<SimpleNameCached> classificationSN() {
+    return classificationSN(0);
+  }
+
+  public List<SimpleNameCached> classificationSN(int remove) {
     var cl = new ArrayList<SimpleNameCached>();
     if (hasRoot()) {
       cl.add(rootMU.usage);
     }
-    parents.stream()
-      .map(u -> u.usage)
-      .forEach(cl::add);
+    int end = parents.size()-remove;
+    if (end > 0) {
+      parents.subList(0, end).stream()
+        .map(u -> u.usage)
+        .forEach(cl::add);
+    }
     return cl;
   }
 

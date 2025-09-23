@@ -58,6 +58,21 @@ public class UsageMatcherGlobal {
       List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
         return usages.get(DSID.of(datasetKey, nidx));
       }
+
+      @Override
+      public List<SimpleNameCached> getClassification(String usageID) throws NotFoundException {
+        return uCache.getClassification(DSID.of(datasetKey, usageID), loaders.getOrDefault(datasetKey, defaultLoader));
+      }
+
+      @Override
+      public void add(SimpleNameCached sn) {
+        uCache.put(datasetKey, sn);
+      }
+
+      @Override
+      public void updateParent(String oldID, String newID) {
+        uCache.updateParent(datasetKey, oldID, newID);
+      }
     };
   }
 
@@ -71,7 +86,9 @@ public class UsageMatcherGlobal {
       // avoid empty lists which get cached
       int datasetKey = nidx.getDatasetKey();
       return result == null || result.isEmpty() ? null : result.stream()
-        .map(u -> new SimpleNameClassified<>(u, uCache.getClassification(u.toDSID(datasetKey), loaders.getOrDefault(datasetKey, defaultLoader))))
+        .map(u -> new SimpleNameClassified<>(u,
+          u.getParent() == null ? null : uCache.getClassification(u.toParentDSID(datasetKey), loaders.getOrDefault(datasetKey, defaultLoader))
+        ))
         .collect(Collectors.toList());
     }
   }

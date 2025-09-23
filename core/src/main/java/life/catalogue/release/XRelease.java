@@ -180,13 +180,10 @@ public class XRelease extends ProjectRelease {
     // make sure the missing matching is completed before we deal with the real data
     thread.join();
 
-    // copy base release to tmp project
+    // copy base release to tmp project - we keep all identifiers
     final int xreleaseDatasetKey = newDatasetKey;
     newDatasetKey = tmpProjectKey;
     copyData();
-
-    // now match the new merge sectors to the tmpProject
-    matchMergeSectors();
 
     // setup id generator
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
@@ -292,16 +289,6 @@ public class XRelease extends ProjectRelease {
         // we don't persist the sectors yet - this happens when we sync them in mergeSectors()
         s.setDatasetKey(tmpProjectKey);
       }
-    }
-  }
-
-  /**
-   * note that target taxa still refer to temp identifiers used in the project, not the stable ids from the base release
-   */
-  private void matchMergeSectors() {
-    for (var s : sectors) {
-      // rematch target to tmp project
-      utils.rematchTarget(s, matcher);
     }
   }
 

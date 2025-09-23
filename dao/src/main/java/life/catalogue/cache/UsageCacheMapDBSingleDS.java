@@ -98,6 +98,15 @@ public class UsageCacheMapDBSingleDS implements UsageCache {
     stop();
   }
 
+  @Override
+  public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+    for (var u : usages.values()) {
+      if (u.getParent() != null && u.getParent().equals(oldParentId)) {
+        u.setParent(newParentId);
+      }
+    }
+  }
+
   private String extractID(DSID<String> key) {
     if (key.getDatasetKey() == datasetKey) {
       return key.getId();

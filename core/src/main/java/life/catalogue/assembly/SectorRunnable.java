@@ -241,7 +241,7 @@ abstract class SectorRunnable implements Runnable {
         }
       }
       if (validate) {
-        // assert that target actually exists. Subject might be bad - not needed for deletes!
+        // assert that target & subject actually exist
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
         SectorDao.verifyTaxon(s, "subject", s::getSubjectAsDSID, tm);

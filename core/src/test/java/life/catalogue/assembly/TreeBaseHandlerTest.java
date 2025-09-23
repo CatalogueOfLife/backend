@@ -97,7 +97,7 @@ public class TreeBaseHandlerTest {
     }
 
     @Override
-    protected void cacheImplicit(Taxon t, Usage parent) {
+    protected void cacheImplicit(Taxon t) {
 
     }
 

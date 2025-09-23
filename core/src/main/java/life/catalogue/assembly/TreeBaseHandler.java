@@ -427,7 +427,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         t.setId(usageIdGen.issue(t.toSimpleNameWithNidx(usageIdGen::nidx2canonical)));
         tm.create(t);
         // allow reuse of implicit names
-        cacheImplicit(t, parent);
+        cacheImplicit(t);
 
         parent = usage(t, taxon.getParentId(), null);
       }
@@ -473,7 +473,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected abstract Usage findExisting(Name n, Usage parent);
 
-  protected abstract void cacheImplicit(Taxon t, Usage parent);
+  protected abstract void cacheImplicit(Taxon t);
 
   /**
    * Matches the name, but does not store anything yet.

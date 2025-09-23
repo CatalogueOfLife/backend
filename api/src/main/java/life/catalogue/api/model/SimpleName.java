@@ -289,6 +289,10 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return DSID.of(datasetKey, id);
   }
 
+  public DSID<String> toParentDSID(int datasetKey){
+    return parent == null ? null : DSID.of(datasetKey, parent);
+  }
+
   @Override
   public String toString() {
     return toStringBuilder().toString();

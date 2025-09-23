@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.cache.UsageCacheSingleDS;
@@ -43,11 +44,22 @@ public class UsageMatcherMem extends UsageMatcher {
     return cnt.intValue();
   }
 
+  @Override
   public void add(SimpleNameCached sn) {
     usages.put(sn);
     if (sn.getCanonicalId() != null) {
       byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new ArrayList<>()).add(sn.getId());
     }
+  }
+
+  @Override
+  public void updateParent(String oldID, String newID) {
+    usages.updateParent(oldID, newID);
+  }
+
+  @Override
+  public List<SimpleNameCached> getClassification(String usageID) throws NotFoundException {
+    return usages.getClassification(usageID);
   }
 
   @Override
@@ -59,9 +71,5 @@ public class UsageMatcherMem extends UsageMatcher {
         .collect(Collectors.toList());
     }
     return Collections.emptyList();
-  }
-
-  public UsageCacheSingleDS usages() {
-    return usages;
   }
 }
