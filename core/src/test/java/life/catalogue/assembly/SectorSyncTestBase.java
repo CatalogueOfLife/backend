@@ -255,7 +255,7 @@ public abstract class SectorSyncTestBase {
     assertTree(project, datasetKey, null, expectedTree);
   }
   public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
-    assertTree(project, datasetKey, rootID, expectedTree, false);
+    assertTree(project, datasetKey, rootID, expectedTree, true);
   }
   public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree, boolean showIDs) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
