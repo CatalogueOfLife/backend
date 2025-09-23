@@ -416,9 +416,7 @@ public class UsageMatcher {
    * @return true if the names, applied with the same rank, match to the same nidx
    */
   private boolean sameNidxWithoutRank(SimpleNameCached u, SimpleNameCached name) {
-    var volName = new Name(name); // we copy the instance to not change the original
-    volName.setRank(u.getRank());
-    var match = nameIndex.match(volName, false, false);
+    var match = nameIndex.match(u, false, false);
     return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
 

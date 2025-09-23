@@ -4,11 +4,14 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+
+import life.catalogue.parser.NameParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,15 @@ public interface NameIndex extends Managed, AutoCloseable {
    * @return a match which is never null, but might have a usageKey=null if nothing could be matched
    */
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
+
+  default NameMatch match(SimpleName sn, boolean allowInserts, boolean verbose) {
+    var opt = NameParser.PARSER.parse(sn);
+      if (opt.isPresent()) {
+      var pnu = opt.get();
+      return match(pnu.getName(), allowInserts, verbose);
+    }
+    return NameMatch.noMatch();
+  }
 
   /**
    * Lookup IndexName by its key

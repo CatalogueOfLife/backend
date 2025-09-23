@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.nidx.NameIndex;
 
+import life.catalogue.parser.NameParser;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
