@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.NomCode;
@@ -55,9 +56,8 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
   public static <T extends SimpleName> SimpleNameClassified<T> canonicalCopy(SimpleNameClassified<T> src) {
     var snc =  new SimpleNameClassified<>(src);
     snc.setAuthorship(null);
-    snc.setNamesIndexId(null);
-    snc.setCanonicalId(null);
-    snc.setNamesIndexMatchType(null);
+    snc.setNamesIndexId(src.getCanonicalId());
+    snc.setNamesIndexMatchType(MatchType.CANONICAL);
     return snc;
   }
 
