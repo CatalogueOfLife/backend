@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import org.gbif.nameparser.api.Rank;
+
 import java.util.Objects;
 
 public class SimpleNameCached extends SimpleNameWithNidx {
@@ -9,6 +11,13 @@ public class SimpleNameCached extends SimpleNameWithNidx {
   public boolean marked;
 
   public SimpleNameCached() {
+  }
+
+  public SimpleNameCached(String id, String name, Rank rank) {
+    super();
+    setId(id);
+    setName(name);
+    setRank(rank);
   }
 
   public SimpleNameCached(SimpleName other) {

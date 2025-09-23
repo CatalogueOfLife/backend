@@ -91,7 +91,7 @@ public class XReleaseBasicIT {
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
     var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
 
-    projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
+    projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, nuIdxService, imgService, doiService, doiUpdater, factory, validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

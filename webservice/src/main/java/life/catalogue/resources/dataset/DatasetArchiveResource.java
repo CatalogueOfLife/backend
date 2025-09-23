@@ -5,6 +5,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dw.jersey.FileStreamingOutput;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
+import life.catalogue.resources.ResourceUtils;
 
 import java.io.File;
 
@@ -12,7 +13,6 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-import life.catalogue.resources.ResourceUtils;
 
 @Path("/dataset/{key}/archive")
 // there are many unofficial mime types around for zip

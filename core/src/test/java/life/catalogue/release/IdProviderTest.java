@@ -12,13 +12,12 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 

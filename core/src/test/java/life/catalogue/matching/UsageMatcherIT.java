@@ -2,9 +2,9 @@ package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.*;
-import life.catalogue.cache.UsageCache;
-import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.junit.*;
 import life.catalogue.parser.NameParser;
 
@@ -13,20 +13,15 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
-import org.apache.ibatis.session.SqlSession;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.*;
 
-/**
- * Parameterized name usage matching against a source in text tree format
- */
-public class UsageMatcherGlobalIT {
+public class UsageMatcherIT {
 
   final static SqlSessionFactoryRule pg = new PgSetupRule(); //PgConnectionRule("col", "postgres", "postgres");
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();
@@ -42,11 +37,12 @@ public class UsageMatcherGlobalIT {
 
   int datasetKey;
   DSID<String> dsid;
-  UsageMatcherGlobal matcher;
+  UsageMatcher matcher;
+  MatchingUtils utils;
 
   @Before
   public void before() {
-    matcher = new UsageMatcherGlobal(NameMatchingRule.getIndex(), UsageCache.hashMap(), SqlSessionFactoryRule.getSqlSessionFactory());
+    utils = new MatchingUtils(NameMatchingRule.getIndex());
   }
 
   void loadDataset(int key) {
@@ -60,6 +56,8 @@ public class UsageMatcherGlobalIT {
     matchingRule.rematch(key);
     datasetKey = key;
     dsid = DSID.root(key);
+    var factory = new UsageMatcherFactory(NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    matcher = factory.memory(datasetKey);
     System.out.println("\n***** Loaded dataset " + key + " *****\n");
   }
 
@@ -128,6 +126,10 @@ public class UsageMatcherGlobalIT {
   }
 
   UsageMatch match(Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
+    return match(matcher, utils, rank, name, authors, status, code, parents);
+  }
+
+  static UsageMatch match(UsageMatcher matcher, MatchingUtils utils, Rank rank, String name, String authors, TaxonomicStatus status, NomCode code, SimpleName... parents) throws InterruptedException {
     var opt = NameParser.PARSER.parse(name, authors, rank, code, VerbatimRecord.VOID);
     Name n = opt.get().getName();
     n.setDatasetKey(Datasets.COL);
@@ -143,7 +145,9 @@ public class UsageMatcherGlobalIT {
     u.setStatus(status);
     u.setNamePhrase(opt.get().getTaxonomicNote());
 
-    var result = matcher.match(datasetKey, u, List.of(parents), false, true);
+    var snc = utils.toSimpleNameClassified(u, MatchingUtils.toSimpleNameCached(parents));
+    var result = matcher.match(snc, false, true);
     return result;
   }
+
 }

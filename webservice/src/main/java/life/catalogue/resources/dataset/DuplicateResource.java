@@ -6,10 +6,10 @@ import life.catalogue.api.model.ResultPage;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.dao.DuplicateDao;
 import life.catalogue.dw.jersey.filter.VaryAccept;
+import life.catalogue.resources.ResourceUtils;
 
 import java.util.stream.Stream;
 
-import life.catalogue.resources.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

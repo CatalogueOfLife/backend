@@ -20,11 +20,8 @@ import life.catalogue.es.NameUsageSearchService;
 import life.catalogue.es.NameUsageSuggestionService;
 import life.catalogue.feedback.Feedback;
 import life.catalogue.feedback.FeedbackService;
-
 import life.catalogue.resources.NameUsageSearchResource;
 import life.catalogue.resources.ResourceUtils;
-
-import org.apache.ibatis.cursor.Cursor;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -36,6 +33,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

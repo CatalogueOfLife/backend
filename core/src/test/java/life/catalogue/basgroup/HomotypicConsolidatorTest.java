@@ -1,18 +1,11 @@
 package life.catalogue.basgroup;
 
 import life.catalogue.TestUtils;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
-
 import life.catalogue.dao.DatasetInfoCache;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-
-import org.apache.ibatis.session.SqlSession;
-
-import org.apache.ibatis.session.SqlSessionFactory;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
@@ -20,12 +13,15 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

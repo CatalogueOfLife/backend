@@ -1,7 +1,6 @@
 package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.DatasetImport;
-import life.catalogue.api.model.ImportMetrics;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.search.JobSearchRequest;
 import life.catalogue.dao.DatasetImportDao;

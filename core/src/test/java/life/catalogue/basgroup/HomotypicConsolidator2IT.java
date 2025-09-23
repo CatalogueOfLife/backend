@@ -15,8 +15,6 @@ import life.catalogue.junit.TestDataRule;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
-import life.catalogue.release.XRelease;
-
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
@@ -25,7 +23,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;

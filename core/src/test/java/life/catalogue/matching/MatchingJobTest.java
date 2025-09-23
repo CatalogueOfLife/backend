@@ -18,7 +18,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,15 +29,18 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   @Rule
   public final TestDataRule dataRule = TestDataRule.apple();
 
-  UsageMatcherGlobal matcher;
+  UsageMatcherFactory matcherFactory;
   TestConfigs cfg;
 
   @Before
   public void setUp() throws Exception {
-    matcher = mock(UsageMatcherGlobal.class);
+    var matcher = mock(UsageMatcher.class);
     int dkey = dataRule.testData.key;
-    when(matcher.match(anyInt(), any(), any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
+    when(matcher.match(any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
     this.cfg = TestConfigs.build();
+
+    matcherFactory = mock(UsageMatcherFactory.class);
+    when(matcherFactory.persistent(anyInt())).thenReturn(matcher);
   }
 
   @Override
@@ -47,7 +49,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
       MatchingRequest req = new MatchingRequest();
       req.setDatasetKey(dataRule.testData.key);
       req.setUpload(tmp.file);
-      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcher, cfg.normalizer);
+      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.normalizer);
     }
   }
 
@@ -56,7 +58,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
     MatchingRequest req = new MatchingRequest();
     req.setDatasetKey(dataRule.testData.key);
     req.setSourceDatasetKey(dataRule.testData.key);
-    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcher, cfg.normalizer);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.normalizer);
     job.run();
     assertTrue(job.isFinished());
   }

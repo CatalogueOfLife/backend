@@ -9,10 +9,9 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.release.ProjectReleaseConfig;
 
 import java.net.URI;
-
-import life.catalogue.release.ProjectReleaseConfig;
 
 import org.apache.commons.io.FileUtils;
 

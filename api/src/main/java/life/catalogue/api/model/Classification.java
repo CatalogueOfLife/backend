@@ -547,6 +547,19 @@ public class Classification {
     return classification;
   }
 
+  /**
+   * @return classification starting from highest rank downwards
+   */
+  public List<SimpleNameCached> asSimpleNameCached() {
+    List<SimpleNameCached> classification = new ArrayList<>();
+    for (Rank r : RANKS) {
+      if (getByRank(r) != null) {
+        classification.add(new SimpleNameCached(null, getByRank(r), r));
+      }
+    }
+    return classification;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

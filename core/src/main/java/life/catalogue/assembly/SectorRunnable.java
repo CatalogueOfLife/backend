@@ -14,8 +14,6 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
-import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
 

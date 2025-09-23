@@ -14,13 +14,11 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.MatchingUtils;
 import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.UsageMatcherGlobal;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
-import life.catalogue.release.XRelease;
 
 import java.io.IOException;
 import java.util.HashMap;

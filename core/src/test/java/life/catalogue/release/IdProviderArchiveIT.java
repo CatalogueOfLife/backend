@@ -2,7 +2,6 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Origin;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.*;
@@ -11,10 +10,7 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import org.gbif.nameparser.api.NameType;
-
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;

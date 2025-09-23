@@ -1,7 +1,5 @@
 package life.catalogue.release;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.SectorSearchRequest;
@@ -60,7 +58,7 @@ public class XRelease extends ProjectRelease {
   private DSID<Integer> sectorProjectKey;
   private final User fullUser = new User();
   private final SyncFactory syncFactory;
-  private final MatchingUtils utils;
+  private final UsageMatcherFactory matcherFactory;
   private final NameIndex ni;
   private UsageMatcher matcher;
   private XReleaseConfig xCfg;
@@ -76,8 +74,8 @@ public class XRelease extends ProjectRelease {
     super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
+    this.matcherFactory = new UsageMatcherFactory(nidx, factory);
     this.ni = nidx;
-    utils = new MatchingUtils(nidx);
     baseReleaseKey = releaseKey;
     fullUser.setKey(userKey);
     sectorProjectKey = DSID.root(projectKey);
@@ -155,7 +153,7 @@ public class XRelease extends ProjectRelease {
     createIdMapTables();
 
     // create matcher against temp
-    this.matcher = new UsageMatcherMem(tmpProjectKey, ni);
+    this.matcher = matcherFactory.memory(tmpProjectKey);
     LOG.info("Created temporary project {} which will cleanup by itself in a few days", tmpProjectKey);
   }
 

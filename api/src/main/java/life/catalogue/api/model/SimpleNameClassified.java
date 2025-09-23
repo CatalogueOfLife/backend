@@ -12,8 +12,8 @@ public class SimpleNameClassified<T extends SimpleName> extends SimpleNameCached
   // classification starting with direct parent
   private List<T> classification;
 
-  public static SimpleNameClassified<SimpleName> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {
-    var sn = new SimpleNameClassified<>();
+  public static SimpleNameClassified<SimpleNameCached> snc(String id, Rank rank, NomCode code, TaxonomicStatus status, String name, String authorship) {
+    var sn = new SimpleNameClassified<SimpleNameCached>();
     sn.setId(id);
     sn.setName(name);
     sn.setAuthorship(authorship);

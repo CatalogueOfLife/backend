@@ -1,9 +1,6 @@
 package life.catalogue.resources.dataset;
 
-import jakarta.ws.rs.*;
-
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.DSIDValue;
 import life.catalogue.printer.BaseDiffService;
 
 import java.io.IOException;
@@ -12,6 +9,10 @@ import java.io.Reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
 @SuppressWarnings("static-method")

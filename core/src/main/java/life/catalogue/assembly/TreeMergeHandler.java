@@ -468,7 +468,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     Issue[] issues;
     if (target != null && parent != null
       && !Objects.equals(parent.id, target.getId())
-      && !containsID(matcher.getClassification(parent.id), target.getId())
+      && !containsID(matcher.store().getClassification(parent.id), target.getId())
     ) {
       issues = new Issue[]{Issue.SYNC_OUTSIDE_TARGET};
     } else {
@@ -478,7 +478,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     var sn = super.create(nu, parent, issues);
     created++;
     parents.setMatch(sn);
-    matcher.add(sn);
+    matcher.store().add(sn);
     return sn;
   }
 
@@ -538,10 +538,11 @@ public class TreeMergeHandler extends TreeBaseHandler {
   @Override
   protected void cacheImplicit(Taxon t) {
     var snc = utils.toSimpleNameCached(t);
-    matcher.add(snc);
+    matcher.store().add(snc);
   }
 
   private Name loadFromDB(String usageID) {
+    batchSession.commit();
     return nm.getByUsage(targetDatasetKey, usageID);
   }
 
@@ -558,7 +559,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     ) {
       // now check the newly proposed classification does also contain the current parent to avoid changes - we only want to patch missing ranks
       // but also make sure the existing name is not part of the proposed classification as this will result in a fatal circular loop!
-      var proposedClassification = matcher.getClassification(proposedParent.getId());
+      var proposedClassification = matcher.store().getClassification(proposedParent.getId());
       for (var propHigherTaxon : proposedClassification) {
         if (propHigherTaxon.getId().equals(existing.getId())) {
           LOG.debug("Avoid circular classifications by updating the parent of {} {} to {} {}", existing.getRank(), existing.getLabel(), proposedParent.getRank(), proposedParent.getLabel());
@@ -586,6 +587,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private void updateParent(NameUsageBase nu, DSID<String> existingUsageKey, UsageMatch existing, SimpleNameWithNidx existingParent, SimpleNameWithNidx parent, Set<InfoGroup> upd) {
     LOG.debug("Update {} with closer parent {} {} than {} from {}", existing.usage, parent.getRank(), parent.getId(), existingParent, nu);
     numRO.updateParentId(existingUsageKey, parent.getId(), user);
+    matcher.store().updateParentId(existingUsageKey.getId(), parent.getId());
     upd.add(InfoGroup.PARENT);
   }
 
@@ -690,9 +692,6 @@ public class TreeMergeHandler extends TreeBaseHandler {
         if (uvsKey == null) {
           num.updateVerbatimSourceKey(existingUsageKey, vsKey.getId());
         }
-        batchSession.commit(); // we need the parsed names to be up to date all the time! cache loaders...
-        //TODO: modify the cached usages !!!
-        //matcher.usages().invalidate(existing.usage.getCanonicalId());
       }
 
     } else {
@@ -747,7 +746,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
    * @param src source for updates
    * @param vs verbatim source for the source record, but might not have been persisted yet with a key. Will only be used for newly created records like type material!
    * @param upd set of info groups that have been updated from this verbatim source. Will be persisted in the calling method.
-   * @param existingUsage usage match instance corresponding to Name n - only used to update cache fields to be in sync with the name.
+   * @param existingUsage usage match instance corresponding to Name n - only used to update the matcher cache to be in sync with the name.
    *                 Not needed for bare name merging
    * @return
    */
@@ -756,6 +755,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
     if (syncNames) {
       n = lazilyLoad(n, existingUsage);
+      final int updSizeStart = upd.size();
       if (src.hasParsedAuthorship() && !n.hasAuthorship()) {
         upd.add(InfoGroup.AUTHORSHIP);
         n.setCombinationAuthorship(src.getCombinationAuthorship());
@@ -778,27 +778,33 @@ public class TreeMergeHandler extends TreeBaseHandler {
         LOG.debug("Updated {} with rank {}", n.getScientificName(), n.getRank());
       }
       // also update the original match as we cache and reuse that
-      if (!upd.isEmpty() && !Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
-        n.setNamesIndexId(src.getNamesIndexId());
-        if (existingUsage != null) {
-          existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
-
-          // also update the usage identifier for changes in authorship !!!
-          // https://github.com/CatalogueOfLife/backend/issues/1407
-          final var canonicalNidx = usageIdGen.nidx2canonical(src.getNamesIndexId());
-          var sNidx = new SimpleNameWithNidx(existingUsage.usage);
-          sNidx.setCanonicalId(canonicalNidx); // the canonicalId changes during issuing a stable ID (dirty) - so we store it before to reuse it
-          sNidx.setNamesIndexMatchType(src.getNamesIndexType());
-          // assign new id based on the new nidx
-          final var oldID = existingUsage.usage.getId();
-          final var newID = usageIdGen.issue(sNidx);
-          existingUsage.usage.setId(newID);
-          TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
-          matcher.updateParent(oldID, newID);
+      if (upd.size() != updSizeStart) {
+        if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
+          final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
+          n.setNamesIndexId(src.getNamesIndexId());
+          if (existingUsage != null) {
+            existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
+            existingUsage.usage.setNamesIndexMatchType(src.getNamesIndexType());
+            if (!Objects.equals(existingUsage.usage.getCanonicalId(), canonicalNidx)) {
+              LOG.warn("Updated name {} changed it's canonical nidx: {} -> {}", n.getLabel(), existingUsage.usage.getCanonicalId(), canonicalNidx);
+              existingUsage.usage.setCanonicalId(canonicalNidx);
+            }
+            // also update the usage identifier for changes in authorship !!!
+            // https://github.com/CatalogueOfLife/backend/issues/1407
+            // assign new id based on the new nidx
+            final var oldID = existingUsage.usage.getId();
+            final var newID = usageIdGen.issue(existingUsage.usage);
+            existingUsage.usage.setId(newID);
+            TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
+            matcher.store().updateUsageID(oldID, newID);
+            // update name match in db
+            nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
+          }
         }
-        // update name match in db
-        nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
-        batchSession.commit(); // we need the matches to be up to date all the time! cache loaders...
+        // keep matcher storage in sync
+        if (existingUsage != null) {
+          matcher.store().add(existingUsage.usage);
+        }
       }
       if (n.getPublishedInId() == null && src.getPublishedInId() != null) {
         setPubInRef(n, src, upd);

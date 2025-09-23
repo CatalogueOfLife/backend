@@ -14,16 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import life.catalogue.resources.ResourceUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import io.dropwizard.auth.Auth;
-import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
 
 @Path("/dataset/{key}/source")
 @SuppressWarnings("static-method")

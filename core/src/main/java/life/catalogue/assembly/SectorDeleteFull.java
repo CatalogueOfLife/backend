@@ -9,7 +9,6 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import java.util.HashSet;
 import java.util.Set;

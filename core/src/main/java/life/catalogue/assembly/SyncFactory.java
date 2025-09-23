@@ -1,7 +1,5 @@
 package life.catalogue.assembly;
 
-import com.google.common.base.Preconditions;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.common.id.ShortUUID;
@@ -12,7 +10,7 @@ import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.UsageMatcher;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
 
@@ -26,6 +24,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 public class SyncFactory {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactory.class);
 
@@ -33,12 +33,12 @@ public class SyncFactory {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
   private final EstimateDao estimateDao;
-  private final UsageMatcherGlobal matcher;
+  private final UsageMatcherFactory matcherFactory;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
   private final EventBroker bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
                      NameUsageIndexService indexService, EventBroker bus) {
     this.bus = bus;
@@ -46,9 +46,9 @@ public class SyncFactory {
     this.sid = sid;
     this.nameIndex = nameIndex;
     this.estimateDao = estimateDao;
-    this.matcher = matcher;
     this.factory = factory;
     this.indexService = indexService;
+    this.matcherFactory = new UsageMatcherFactory(nameIndex, factory);
   }
 
   /**
@@ -56,7 +56,7 @@ public class SyncFactory {
    */
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
-      matcher.getMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
+      matcherFactory.memory(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
@@ -82,6 +82,6 @@ public class SyncFactory {
   }
 
   public void assertComponentsOnline() {
-    matcher.assertComponentsOnline();
+    nameIndex.assertOnline();
   }
 }

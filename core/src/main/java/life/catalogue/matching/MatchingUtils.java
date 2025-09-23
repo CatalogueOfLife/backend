@@ -1,6 +1,7 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.nidx.NameIndex;
@@ -8,7 +9,11 @@ import life.catalogue.matching.nidx.NameIndex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MatchingUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingUtils.class);
@@ -83,6 +88,14 @@ public class MatchingUtils {
     return null;
   }
 
+  public static List<SimpleNameCached> toSimpleNameCached(List<? extends SimpleName> classification) {
+    return classification == null ? null : classification.stream().map(SimpleNameCached::new).collect(Collectors.toList());
+  }
+
+  public static List<SimpleNameCached> toSimpleNameCached(SimpleName[] classification) {
+    return classification == null ? null : Arrays.stream(classification).map(SimpleNameCached::new).collect(Collectors.toList());
+  }
+
   /**
    * @return the classified name, matched to the names index!
    */
@@ -102,10 +115,22 @@ public class MatchingUtils {
   public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(SimpleName sn, List<SimpleNameCached> classification) {
     SimpleNameClassified<SimpleNameCached> snc = null;
     if (sn != null) {
-      var t = new Taxon(sn);
-      var nidx = nidxAndMatchIfNeeded(t, true);
-      snc = new SimpleNameClassified<>(t, nidx.canonicalId);
-      snc.setClassification(classification);
+      var status = ObjectUtils.coalesce(sn.getStatus(), TaxonomicStatus.ACCEPTED);
+      NameUsageBase nu = status.isSynonym() ? new Synonym(sn) : new Taxon(sn);
+      var nidx = nidxAndMatchIfNeeded(nu, true);
+      snc = new SimpleNameClassified<>(nu, nidx.canonicalId);
+      snc.setClassification(classification == null ? Collections.EMPTY_LIST : classification);
+    }
+    return snc;
+  }
+
+  /**
+   * Convert a simple name classification to a cached one.
+   */
+  public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(SimpleNameClassified<SimpleName> sn) {
+    SimpleNameClassified<SimpleNameCached> snc = new SimpleNameClassified<SimpleNameCached>(sn);
+    if (sn.getClassification() != null) {
+      snc.setClassification(sn.getClassification().stream().map(SimpleNameCached::new).collect(Collectors.toList()));
     }
     return snc;
   }

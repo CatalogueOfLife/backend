@@ -1,33 +1,20 @@
 package life.catalogue.resources.dataset;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.DSID;
+import life.catalogue.api.model.VerbatimSource;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.InfoGroup;
-import life.catalogue.api.vocab.Issue;
-import life.catalogue.db.mapper.LogicalOperator;
-import life.catalogue.db.mapper.VerbatimRecordMapper;
-
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.TermFactory;
-import org.gbif.dwc.terms.UnknownTerm;
-
-import java.util.*;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.UriInfo;
 
 @Path("/dataset/{key}/verbatimsource")
 @Produces(MediaType.APPLICATION_JSON)

@@ -22,7 +22,10 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
-import life.catalogue.dw.health.*;
+import life.catalogue.dw.health.CslUtilsHealthCheck;
+import life.catalogue.dw.health.DiffHealthCheck;
+import life.catalogue.dw.health.DockerHealthCheck;
+import life.catalogue.dw.health.NamesIndexHealthCheck;
 import life.catalogue.dw.jersey.ColJerseyBundle;
 import life.catalogue.dw.logging.pg.PgLogBundle;
 import life.catalogue.dw.mail.MailBundle;
@@ -55,7 +58,7 @@ import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.jobs.cron.CronExecutor;
 import life.catalogue.jobs.cron.ProjectCounterUpdate;
 import life.catalogue.jobs.cron.TempDatasetCleanup;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.DoiResolver;
@@ -349,7 +352,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher
-    final var matcher = new UsageMatcherGlobal(ni, uCache, getSqlSessionFactory());
+    final var matcherFactory = new UsageMatcherFactory(ni, getSqlSessionFactory());
 
 
     // cron jobs
@@ -374,8 +377,8 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, matcher, secdao, siDao, edao, indexService, broker);
-    final var copyFactory = new ProjectCopyFactory(httpClient, matcher, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, secdao, siDao, edao, indexService, broker);
+    final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
     );
@@ -439,7 +442,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetJobResource(getSqlSessionFactory(), ddao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
-    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcher));
+    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcherFactory));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));

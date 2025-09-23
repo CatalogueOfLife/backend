@@ -5,7 +5,6 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.UsageCacheSingleDS;
 import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.common.tax.SciNameNormalizer;
@@ -31,21 +30,17 @@ import com.google.common.base.Supplier;
  *
  * This class contains the pure matching code and does not do any persistence or retrieval.
  */
-public abstract class UsageMatcher {
+public class UsageMatcher {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
   protected final int datasetKey;
   private final NameIndex nameIndex;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
+  private final UsageMatcherStore storage;
 
-  /**
-   * @param nidx a canonical names index id
-   * @return list of matching usages that act as candidates for the match
-   */
-  abstract List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx);
-
-  public UsageMatcher(int datasetKey, NameIndex nameIndex) {
+  public UsageMatcher(int datasetKey, NameIndex nameIndex, UsageMatcherStore storage) {
     this.datasetKey = datasetKey;
+    this.storage = Preconditions.checkNotNull(storage);
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
     if (nameIndex instanceof NameIndexImpl) {
       this.authComp = ((NameIndexImpl)nameIndex).getAuthComp();
@@ -59,16 +54,13 @@ public abstract class UsageMatcher {
     return datasetKey;
   }
 
-  /**
-   * @param usageID the id to start retrieving the classification from
-   * @return classification including and starting with the given usageID
-   * @throws NotFoundException
-   */
-  abstract public List<SimpleNameCached> getClassification(String usageID) throws NotFoundException;
+  public NameIndex getNameIndex() {
+    return nameIndex;
+  }
 
-  abstract public void add(SimpleNameCached sn);
-
-  abstract public void updateParent(String oldID, String newID);
+  public UsageMatcherStore store() {
+    return storage;
+  }
 
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
     return match(snc, true, false);
@@ -77,14 +69,14 @@ public abstract class UsageMatcher {
   /**
    * Matches the given usage by looking up candidates by their canonical names index id
    * and then filtering them by various properties and the parent classification.
-   * @param snc usage to match. A matched classification must be included!
+   * @param snc usage to match. The classification does not need to be matched to the nidx!
    * @return the usage match, an empty match if not existing (yet) or an unsupported match in case of names not included in the names index
    */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
     if (snc.getCanonicalId() == null) {
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, snc.getNamesIndexMatchType());
     }
-    var existing = usagesByCanonicalNidx(snc.getCanonicalId());
+    var existing = store().usagesByCanonicalNidx(snc.getCanonicalId());
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(snc, new ArrayList<>(existing), verbose);

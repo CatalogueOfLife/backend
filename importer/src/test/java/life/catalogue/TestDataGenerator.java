@@ -226,7 +226,7 @@ public class TestDataGenerator {
       var validator = Validation.buildDefaultValidatorFactory().getValidator();
       DatasetDao ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator, TestUtils.mockedBroker());
       ReferenceDao rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
-      var projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
+      var projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
         syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
         null, NameUsageIndexService.passThru(), ImageService.passThru(), null, null, SqlSessionFactoryRule.getSqlSessionFactory(),
         validator, cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

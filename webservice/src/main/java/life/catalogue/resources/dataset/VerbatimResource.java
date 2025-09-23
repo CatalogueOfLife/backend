@@ -8,8 +8,6 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.db.mapper.LogicalOperator;
 import life.catalogue.db.mapper.VerbatimRecordMapper;
 
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.TermFactory;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -17,6 +15,7 @@ import org.gbif.dwc.terms.UnknownTerm;
 import java.util.*;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

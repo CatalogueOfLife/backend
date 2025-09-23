@@ -1,7 +1,5 @@
 package life.catalogue.resources.dataset;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.assembly.SyncManager;
@@ -15,15 +13,16 @@ import life.catalogue.dw.jersey.filter.ProjectOnly;
 import life.catalogue.jobs.ProjectValidationJob;
 import life.catalogue.release.ProjectCopyFactory;
 
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
 import io.dropwizard.auth.Auth;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
-
-import java.util.UUID;
 
 @Path("/dataset")
 @SuppressWarnings("static-method")

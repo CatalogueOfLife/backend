@@ -3,11 +3,10 @@ package life.catalogue.release;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.dao.DatasetSourceDao;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import life.catalogue.db.mapper.DatasetSourceMapper;
 
 import org.junit.Test;
 

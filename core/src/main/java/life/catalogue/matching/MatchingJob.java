@@ -1,7 +1,6 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
@@ -71,7 +70,9 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
+  private final UsageMatcherFactory matcherFactory;
+  private UsageMatcher matcher;
+  private final MatchingUtils utils;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final NormalizerConfig cfg;
   // job specifics
@@ -80,12 +81,13 @@ public class MatchingJob extends DatasetBlockingJob {
   private final UsageCounter counter = new UsageCounter();
   private List<SimpleName> rootClassification;
 
-  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NormalizerConfig cfg) {
+  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NormalizerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;
-    this.matcher = matcher;
     this.factory = factory;
+    this.matcherFactory = matcherFactory;
+    this.utils = new MatchingUtils(matcherFactory.getNameIndex());
     this.req = Preconditions.checkNotNull(req);
     this.result = new JobResult(getKey());
     this.dataset = loadDataset(factory, req.getDatasetKey());
@@ -122,11 +124,6 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   @Override
-  public void assertComponentsOnline() throws UnavailableException {
-    matcher.assertComponentsOnline();
-  }
-
-  @Override
   public boolean isDuplicate(BackgroundJob other) {
     if (other instanceof MatchingJob) {
       var mj = (MatchingJob) other;
@@ -137,6 +134,7 @@ public class MatchingJob extends DatasetBlockingJob {
 
   @Override
   public final void runWithLock() throws Exception {
+    matcher = matcherFactory.persistent(req.getDatasetKey());
     try (TempFile tmp = TempFile.created(matchResultFile())) {
       try (ZipOutputStream zos = UTF8IoUtils.zipStreamFromFile(tmp.file)) {
 
@@ -284,8 +282,8 @@ public class MatchingJob extends DatasetBlockingJob {
     UsageMatch match;
     var opt = interpreter.interpret(n.name, n.issues);
     if (opt.isPresent()) {
-      NameUsageBase nu = (NameUsageBase) NameUsage.create(n.name.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, n.name.getClassification(), false, false);
+      var snc = utils.toSimpleNameClassified(n.name);
+      match = matcher.match(snc, false, false);
     } else {
       match = UsageMatch.empty(0);
       n.issues.add(Issue.UNPARSABLE_NAME);

@@ -6,11 +6,10 @@ import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.EntityType;
+import life.catalogue.img.ImageService;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
-import life.catalogue.img.ImageService;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.Test;

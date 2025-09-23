@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.api.vocab.DatasetType;
-
 import life.catalogue.common.util.YamlUtils;
 
 import org.gbif.nameparser.api.Rank;
@@ -9,7 +8,6 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URI;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

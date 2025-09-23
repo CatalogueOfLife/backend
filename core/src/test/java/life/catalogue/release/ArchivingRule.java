@@ -1,7 +1,6 @@
 package life.catalogue.release;
 
 import life.catalogue.dao.NameUsageArchiver;
-
 import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.apache.ibatis.session.SqlSessionFactory;

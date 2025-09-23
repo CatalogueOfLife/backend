@@ -5,14 +5,13 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.common.ws.MoreMediaTypes;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.*;
 import life.catalogue.parser.*;
-
 import life.catalogue.resources.ImporterResource;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -44,19 +43,17 @@ public class NameUsageMatchingResource {
   private final WsServerConfig cfg;
   private final JobExecutor exec;
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
-  private final UsageCache uCache;
+  private final UsageMatcherFactory matcherFactory;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
 
-  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherGlobal matcher) {
+  public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherFactory matcherFactory) {
     this.cfg = cfg;
     this.exec = exec;
     this.factory = factory;
-    this.matcher = matcher;
-    this.uCache = matcher.getUCache();
+    this.matcherFactory = matcherFactory;
   }
 
-  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleName> sn, IssueContainer issues, boolean verbose) {
+  private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleNameCached> sn, IssueContainer issues, boolean verbose) {
     UsageMatch match;
     var opt = interpreter.interpret(sn, issues);
     if (opt.isPresent()) {
@@ -65,7 +62,7 @@ public class NameUsageMatchingResource {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      match = matcher.match(datasetKey, nu, sn.getClassification(), false, verbose);
+      match = matcherFactory.persistent(datasetKey).match(sn, false, verbose);
     } else {
       match = UsageMatch.empty(0);
       issues.add(Issue.UNPARSABLE_NAME);
@@ -74,7 +71,7 @@ public class NameUsageMatchingResource {
   }
 
 
-  private static SimpleNameClassified<SimpleName> interpret(String id,
+  private static SimpleNameClassified<SimpleNameCached> interpret(String id,
                                                             String q,
                                                             String name,
                                                             String sciname,
@@ -98,21 +95,10 @@ public class NameUsageMatchingResource {
       throw new IllegalArgumentException("Missing name");
     }
     if (classification != null) {
-      sn.setClassification(classification.asSimpleNames());
+      sn.setClassification(classification.asSimpleNameCached());
     }
     return sn;
   }
-
-  @GET
-  @Path("{id}")
-  public UsageMatch map(@PathParam("key") int datasetKey,
-                                    @PathParam("id") String id,
-                                    @QueryParam("datasetKey") int targetDatasetKey,
-                                    @QueryParam("verbose") boolean verbose
-  ) throws InterruptedException {
-    return matcher.map(DSID.of(datasetKey, id), targetDatasetKey, verbose);
-  }
-
 
   @GET
   public UsageMatchWithOriginal match(@PathParam("key") int datasetKey,
@@ -128,12 +114,12 @@ public class NameUsageMatchingResource {
                                       @BeanParam Classification classification
   ) throws InterruptedException {
     IssueContainer issues = new IssueContainer.Simple();
-    SimpleNameClassified<SimpleName> orig = interpret(id, q, name, sciname, authorship, code, rank, status, classification, issues);
+    SimpleNameClassified<SimpleNameCached> orig = interpret(id, q, name, sciname, authorship, code, rank, status, classification, issues);
     return match(datasetKey, orig, issues, verbose);
   }
 
   private MatchingJob submit(MatchingRequest req, User user) {
-    MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcher, cfg.getNormalizerConfig());
+    MatchingJob job = new MatchingJob(req, user.getKey(), factory, matcherFactory, cfg.getNormalizerConfig());
     exec.submit(job);
     return job;
   }

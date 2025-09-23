@@ -15,7 +15,6 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
-import life.catalogue.matching.UsageMatcherGlobal;
 
 import org.gbif.nameparser.api.Rank;
 

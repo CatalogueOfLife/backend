@@ -7,7 +7,6 @@ import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TaxonDao;
 import life.catalogue.db.mapper.*;
 import life.catalogue.junit.*;
-
 import life.catalogue.printer.PrinterUtils;
 
 import org.gbif.nameparser.api.NameType;
