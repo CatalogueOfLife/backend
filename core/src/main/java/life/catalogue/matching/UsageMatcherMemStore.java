@@ -1,78 +1,63 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.cache.UsageCacheSingleDS;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class UsageMatcherMemStore implements UsageMatcherStore {
-  private final Int2ObjectMap<List<String>> byCanonNidx = new Int2ObjectOpenHashMap<>();
-  private final UsageCacheSingleDS usages = UsageCacheSingleDS.hashMap();
+public class UsageMatcherMemStore extends UsageMatcherAbstractStore {
+  private final Map<Integer, Set<String>> byCanonNidx;
+
+  public UsageMatcherMemStore(int datasetKey) {
+    super(datasetKey, new HashMap<>(), false);
+    this.byCanonNidx = new Int2ObjectOpenHashMap<>();
+  }
 
   @Override
   public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
     var canonIDs = byCanonNidx.get(nidx);
     if (canonIDs != null) {
       return canonIDs.stream()
-        .map(usages::getSimpleNameClassified)
+        .map(this::getSNClassified)
         .collect(Collectors.toList());
     }
     return Collections.emptyList();
   }
 
   @Override
-  public List<SimpleNameCached> getClassification(String usageID) throws NotFoundException {
-    return usages.getClassification(usageID);
-  }
-
-  @Override
   public void add(SimpleNameCached sn) {
-    if (usages.contains(sn.getId())) {
+    var old = usages.put(sn.getId(), sn);
+    if (old != null) {
       // UPDATE
-      var old = usages.get(sn.getId());
-      usages.put(sn);
-      if (old.getCanonicalId() != null && !Objects.equals(old.getCanonicalId(), sn.getCanonicalId())) {
+      if (Objects.equals(old.getCanonicalId(), sn.getCanonicalId())) {
+        if (!old.getId().equals(sn.getId())) {
+          var ids = byCanonNidx.get(old.getCanonicalId());
+          ids.remove(old.getId());
+          ids.add(sn.getId());
+        }
+      } else {
         byCanonNidx.get(old.getCanonicalId()).remove(old.getId());
-        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new ArrayList<>()).add(sn.getId());
+        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
       }
     } else {
-      usages.put(sn);
       if (sn.getCanonicalId() != null) {
-        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new ArrayList<>()).add(sn.getId());
+        byCanonNidx.computeIfAbsent(sn.getCanonicalId(), k -> new HashSet<>()).add(sn.getId());
       }
     }
   }
 
   @Override
-  public void updateUsageID(String oldID, String newID) {
-    var old = usages.get(oldID);
-    old.setId(newID);
-    add(old);
-    // remove former id
-    usages.remove(oldID);
-    if (old.getCanonicalId() != null){
-      var ids = byCanonNidx.get(old.getCanonicalId());
-      ids.remove(oldID);
-      ids.add(newID);
-    }
-    // update other usages pointing to the old id via parentID
-    usages.updateParent(oldID, newID);
+  protected void replaceByCanonUsageID(Integer canonicalId, String oldID, String newID) {
+    var ids = byCanonNidx.get(canonicalId);
+    ids.remove(oldID);
+    ids.add(newID);
   }
 
   @Override
-  public void updateParentId(String usageID, String parentId) {
-    var old = usages.get(usageID);
-    old.setParent(parentId);
-    add(old);
+  public void close() {
+    // nothing to close
   }
-
 }

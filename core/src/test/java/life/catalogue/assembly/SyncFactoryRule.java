@@ -8,6 +8,8 @@ import life.catalogue.img.ThumborService;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TreeRepoRule;
+import life.catalogue.matching.MatchingConfig;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -26,6 +28,7 @@ public class SyncFactoryRule extends ExternalResource {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactoryRule.class);
 
   private static SyncFactory syncFactory;
+  private UsageMatcherFactory matcherFactory;
   private TaxonDao tdao;
   private SectorDao sdao;
   private NameDao nDao;
@@ -45,7 +48,8 @@ public class SyncFactoryRule extends ExternalResource {
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
+    matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
   }
 
   public static SyncFactory getFactory() {

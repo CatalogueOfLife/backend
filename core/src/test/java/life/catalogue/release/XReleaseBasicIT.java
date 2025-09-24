@@ -22,6 +22,9 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
 
+import life.catalogue.matching.MatchingConfig;
+import life.catalogue.matching.UsageMatcherFactory;
+
 import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
@@ -90,8 +93,8 @@ public class XReleaseBasicIT {
     var imgService = ImageService.passThru();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
     var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
-
-    projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(),
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, nuIdxService, imgService, doiService, doiUpdater, factory, validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

@@ -212,10 +212,4 @@ public class UsageCacheMapDB implements UsageCache {
     start();
   }
 
-  /**
-   * @return set of all datasets that are being cached.
-   */
-  public IntSet listDatasets() {
-    return new IntOpenHashSet(datasets.keySet());
-  }
 }

@@ -18,6 +18,7 @@ import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
+import life.catalogue.matching.MatchingConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
@@ -155,6 +156,10 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   @NotNull
   public NamesIndexConfig namesIndex = new NamesIndexConfig();
+
+  @Valid
+  @NotNull
+  public MatchingConfig matching = new MatchingConfig();
 
   /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.

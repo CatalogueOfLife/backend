@@ -22,6 +22,8 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.*;
+import life.catalogue.matching.MatchingConfig;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NameIndexImpl;
 
@@ -152,7 +154,8 @@ public class XReleaseIT extends SectorSyncTestBase {
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     var broker = TestUtils.mockedBroker();
-    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), NameMatchingRule.getIndex(), sdao, siDao, eDao,
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao,
       NameUsageIndexService.passThru(), broker
     );
     var cfg = TestConfigs.build();
@@ -164,7 +167,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var exportManager = mock(ExportManager.class);
     var doiService = mock(DoiService.class);
     var doiUpdater = mock(DoiUpdater.class);
-    projectCopyFactory = new ProjectCopyFactory(hc, NameMatchingRule.getIndex(), syncFactory, diDao, dDao, siDao, rDao, nDao, sdao,
+    projectCopyFactory = new ProjectCopyFactory(hc, NameMatchingRule.getIndex(), syncFactory, matcherFactory, diDao, dDao, siDao, rDao, nDao, sdao,
       exportManager, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater,
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

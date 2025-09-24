@@ -352,8 +352,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher
-    final var matcherFactory = new UsageMatcherFactory(ni, getSqlSessionFactory());
-
+    final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory());
 
     // cron jobs
     var cron = CronExecutor.startWith(
@@ -377,8 +376,8 @@ public class WsServer extends Application<WsServerConfig> {
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
 
     // syncs and releases
-    final var syncFactory = new SyncFactory(getSqlSessionFactory(), ni, secdao, siDao, edao, indexService, broker);
-    final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, diDao, ddao, siDao, rdao, ndao, secdao,
+    final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker);
+    final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
       exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
     );

@@ -64,10 +64,6 @@
       <groupId>com.esotericsoftware</groupId>
       <artifactId>kryo</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.fury</groupId>
-      <artifactId>fury-core</artifactId>
-    </dependency>
 
     <!-- citeproc CSL / BibTeX -->
     <dependency>

@@ -38,7 +38,7 @@ public class SyncFactory {
   private final NameUsageIndexService indexService;
   private final EventBroker bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex,
+  public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
                      NameUsageIndexService indexService, EventBroker bus) {
     this.bus = bus;
@@ -48,7 +48,7 @@ public class SyncFactory {
     this.estimateDao = estimateDao;
     this.factory = factory;
     this.indexService = indexService;
-    this.matcherFactory = new UsageMatcherFactory(nameIndex, factory);
+    this.matcherFactory = matcherFactory;
   }
 
   /**
