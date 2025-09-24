@@ -479,6 +479,7 @@ public class WsServer extends Application<WsServerConfig> {
     broker.register(auth);
     broker.register(coljersey);
     broker.register(DatasetInfoCache.CACHE);
+    broker.register(matcherFactory);
     // listeners for the main webapp only (not present in read-only)
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));

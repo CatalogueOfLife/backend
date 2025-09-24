@@ -16,10 +16,12 @@ import life.catalogue.release.UsageIdGen;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,23 +54,27 @@ public class SyncFactory {
   }
 
   /**
-   * Creates a new sync into a project dataset
+   * Creates a new sync into a project dataset using a direct postgres matcher with the tree merge handlers write batch session.
    */
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
     return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
-      matcherFactory.memory(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
+      supplyPgMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
+  private Function<SqlSession, UsageMatcher> supplyPgMatcher(int datasetKey) {
+    return sess -> matcherFactory.postgres(datasetKey, sess, false);
+  }
+
   /**
-   * Creates a new sync into a release dataset
+   * Creates a new sync into a release dataset reusing the given matcher.
    */
   public SectorSync release(Sector sector, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg, UsageMatcher matcher,
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
     // make sure the sector is a project sector, not from a release
     var skey = DSID.of(DatasetInfoCache.CACHE.keyOrProjectKey(sector.getDatasetKey()), sector.getId());
     Preconditions.checkArgument(releaseDatasetKey == matcher.getDatasetKey(), "Matcher and release dataset key must be the same");
-    return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
+    return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, session -> matcher, bus, indexService, sd, sid, estimateDao,
       x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sector, releaseDatasetKey, e.getMessage(), e),
       nameIdGen, typeMaterialIdGen, usageIdGen, user);
   }

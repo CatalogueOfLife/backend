@@ -566,6 +566,7 @@ public class XRelease extends ProjectRelease {
 
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, "Merging sectors", start);
+    matcher=null; // release matcher memory
   }
 
   /**

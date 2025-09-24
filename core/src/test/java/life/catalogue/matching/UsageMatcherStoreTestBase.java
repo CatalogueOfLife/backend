@@ -21,7 +21,7 @@ public abstract class UsageMatcherStoreTestBase {
   }
 
   @Test
-  public void basics() {
+  public void basics() throws IOException {
     try (UsageMatcherStore store = createStore(1)) {
       assertEquals(0, store.size());
 
@@ -79,6 +79,6 @@ public abstract class UsageMatcherStoreTestBase {
   }
 
 
-  abstract UsageMatcherStore createStore(int datasetKey);
+  abstract UsageMatcherStore createStore(int datasetKey) throws IOException;
 
 }
