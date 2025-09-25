@@ -46,6 +46,7 @@ public class UsageMatcher2IT {
     utils = new MatchingUtils(NameMatchingRule.getIndex());
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
     matcher = matcherFactory.memory(datasetKey);
+    matcher.load(SqlSessionFactoryRule.getSqlSessionFactory());
   }
 
   @Test

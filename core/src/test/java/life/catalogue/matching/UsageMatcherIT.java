@@ -58,6 +58,7 @@ public class UsageMatcherIT {
     dsid = DSID.root(key);
     var factory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
     matcher = factory.memory(datasetKey);
+    matcher.load(SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("\n***** Loaded dataset " + key + " *****\n");
   }
 

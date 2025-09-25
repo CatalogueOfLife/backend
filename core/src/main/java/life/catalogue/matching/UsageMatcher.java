@@ -13,6 +13,8 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.parser.NameParser;
 
+import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
@@ -63,6 +65,10 @@ public class UsageMatcher implements AutoCloseable {
 
   public UsageMatcherStore store() {
     return storage;
+  }
+
+  public int load(SqlSessionFactory sqlSessionFactory) {
+    return storage.load(sqlSessionFactory);
   }
 
   /**
