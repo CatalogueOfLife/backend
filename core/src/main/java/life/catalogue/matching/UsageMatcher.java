@@ -29,16 +29,19 @@ import com.google.common.base.Supplier;
  * but implements some further logic for canonical names and cross code homonyms.
  *
  * This class contains the pure matching code and does not do any persistence or retrieval.
+ * Make sure to close the matcher after use to free resources!
  */
-public class UsageMatcher {
+public class UsageMatcher implements AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcher.class);
+  protected final boolean keepStoreOpen;
   protected final int datasetKey;
   private final NameIndex nameIndex;
   private final AuthorComparator authComp;
   private final TaxGroupAnalyzer groupAnalyzer;
   private final UsageMatcherStore storage;
 
-  public UsageMatcher(int datasetKey, NameIndex nameIndex, UsageMatcherStore storage) {
+  public UsageMatcher(int datasetKey, NameIndex nameIndex, UsageMatcherStore storage, boolean keepStoreOpen) {
+    this.keepStoreOpen = keepStoreOpen;
     this.datasetKey = datasetKey;
     this.storage = Preconditions.checkNotNull(storage);
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
@@ -488,4 +491,10 @@ public class UsageMatcher {
     return !group.isDisparateTo(candidateGroup);
   }
 
+  @Override
+  public void close() {
+    if (!keepStoreOpen) {
+      store().close();
+    }
+  }
 }

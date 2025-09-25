@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.io.File;
 
 public class MatchingConfig {
@@ -11,5 +9,13 @@ public class MatchingConfig {
    * If null all matching storage is kept in memory only.
    */
   public File storageDir;
+
+  /**
+   * Makes sure all configured directories do actually exist and create them if missing
+   * @return true if at least one dir was newly created
+   */
+  public boolean mkdirs() {
+    return storageDir.mkdirs();
+  }
 
 }

@@ -16,9 +16,7 @@ public class UsageMatcherMapDBStoreTest extends UsageMatcherStoreTestBase {
     DBMaker.Maker maker = DBMaker
       .fileDB(dbFile.file)
       .fileMmapEnableIfSupported();
-
-    var dbMaker = DBMaker.memoryDB();
-    return UsageMatcherMapDBStore.build(datasetKey, dbMaker);
+    return UsageMatcherMapDBStore.build(datasetKey, maker.make());
   }
 
   @After

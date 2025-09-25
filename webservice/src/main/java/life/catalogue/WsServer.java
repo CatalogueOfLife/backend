@@ -351,8 +351,9 @@ public class WsServer extends Application<WsServerConfig> {
     UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
     managedService.manage(Component.UsageCache, uCache);
 
-    // matcher
+    // matcher factory
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory());
+    env.lifecycle().manage(ManagedUtils.from(matcherFactory));
 
     // cron jobs
     var cron = CronExecutor.startWith(
@@ -430,7 +431,7 @@ public class WsServer extends Application<WsServerConfig> {
     // admin resources
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
-      imgService, ni, indexService, searchService,
+      imgService, ni, matcherFactory, indexService, searchService,
       importManager, ddao, gbifSync, executor, broker, encryption)
     );
 

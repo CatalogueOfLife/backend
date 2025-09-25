@@ -31,6 +31,7 @@ import life.catalogue.jobs.*;
 import life.catalogue.matching.GlobalMatcherJob;
 import life.catalogue.matching.RematchArchiveJob;
 import life.catalogue.matching.RematchJob;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
 
 import java.io.*;
@@ -83,15 +84,17 @@ public class AdminResource {
   private final ManagedService componedService;
   private final EventBroker bus;
   private final EmailEncryption encryption;
+  private final UsageMatcherFactory matcherFactory;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
-                       WsServerConfig cfg, ImageService imgService, NameIndex ni,
+                       WsServerConfig cfg, ImageService imgService, NameIndex ni, UsageMatcherFactory matcherFactory,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
                        JobExecutor executor, EventBroker bus, EmailEncryption encryption) {
     this.factory = factory;
     this.encryption = encryption;
     this.bus = bus;
+    this.matcherFactory = matcherFactory;
     this.componedService = managedService;
     this.ddao = ddao;
     this.assembly = assembly;
@@ -121,6 +124,24 @@ public class AdminResource {
     }
     LOG.info("Set maintenance mode={}", maintenance);
     return maintenance;
+  }
+
+  @GET
+  @Path("/matcher/metadata")
+  public UsageMatcherFactory.FactoryMetadata matcherFactoryMetadata() {
+    return matcherFactory.metadata();
+  }
+
+  @GET
+  @Path("/matcher/{key}/metadata")
+  public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
+    return matcherFactory.metadata(key);
+  }
+
+  @POST
+  @Path("/matcher/{key}/build")
+  public boolean buildMatcher(@PathParam("key") int key) {
+    return matcherFactory.prepare(key);
   }
 
   @GET

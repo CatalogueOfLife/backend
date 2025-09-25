@@ -231,12 +231,14 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
     created = normalizer.mkdirs() || created;
     created = importer.mkdirs() || created;
     created = release.mkdirs() || created;
+    created = matching.mkdirs() || created;
     return created;
   }
 
   public void logDirectories() {
     LOG.info("Use archive directory {}", normalizer.archiveDir);
     LOG.info("Use scratch directory {}", normalizer.scratchDir);
+    LOG.info("Use matcher storage directory {}", matching.storageDir);
     LOG.info("Use metrics directory {}", metricsRepo);
     LOG.info("Use download directory {}", job.downloadDir);
     LOG.info("Use release reports directory {}", release.reportDir);

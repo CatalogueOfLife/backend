@@ -24,6 +24,7 @@ public interface UsageMatcherStore extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageMatcherStore.class);
 
   default int load(SqlSessionFactory factory){
+    LOG.info("Start loading all usages from dataset {}", datasetKey());
     var cnt = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       var num = session.getMapper(NameUsageMapper.class);
@@ -39,6 +40,10 @@ public interface UsageMatcherStore extends AutoCloseable {
   int datasetKey();
 
   int size();
+
+  default boolean isEmpty() {
+    return size() < 1;
+  }
 
   /**
    * @param nidx a canonical names index id

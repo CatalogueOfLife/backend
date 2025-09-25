@@ -62,7 +62,9 @@ public class NameUsageMatchingResource {
       if (nu.getRank() == Rank.UNRANKED) {
         nu.getName().setRank(null);
       }
-      match = matcherFactory.persistent(datasetKey).match(sn, false, verbose);
+      try (var matcher = matcherFactory.existingOrPostgres(datasetKey)) {
+        match = matcher.match(sn, false, verbose);
+      }
     } else {
       match = UsageMatch.empty(0);
       issues.add(Issue.UNPARSABLE_NAME);

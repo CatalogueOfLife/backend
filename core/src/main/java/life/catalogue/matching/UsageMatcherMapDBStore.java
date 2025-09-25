@@ -13,11 +13,10 @@ import org.mapdb.Serializer;
 import org.mapdb.serializer.SerializerArray;
 
 public class UsageMatcherMapDBStore extends UsageMatcherAbstractStore {
-  private Map<Integer, String[]> byCanonNidx;
-  private DB db;
+  private final Map<Integer, String[]> byCanonNidx;
+  private final DB db;
 
-  public static UsageMatcherMapDBStore build(int datasetKey, DBMaker.Maker dbMaker) {
-    var db = dbMaker.make();
+  public static UsageMatcherMapDBStore build(int datasetKey, DB db) {
     var usages = db.hashMap("usages")
       .keySerializer(Serializer.STRING)
       .valueSerializer(new MapDbStorageSerializer())
