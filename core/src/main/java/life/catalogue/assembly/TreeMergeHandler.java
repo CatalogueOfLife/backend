@@ -78,18 +78,19 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (target != null) {
       var cl = target.getParentKey() == null ? null : num.getClassificationSN(target.getParentKey());
       trgt = utils.toSimpleNameClassified(target, cl);
-    } else if (cfg != null && cfg.incertae != null) {
-      trgt = utils.toSimpleNameClassified(cfg.incertae, null);
-    }
-    if (trgt != null) {
       // match target to tmp project identifiers, which usually differ from the project
-      UsageMatch match = matcher.match(trgt);
-      if (match.isMatch()) {
-        trgt = match.usage;
-      } else {
-        LOG.warn("Sector target not found in tmp release project: {}", trgt);
-        trgt = null;
+      if (matcher.getDatasetKey() != target.getDatasetKey()) {
+        UsageMatch match = matcher.match(trgt);
+        if (match.isMatch()) {
+          trgt = match.usage;
+        } else {
+          LOG.warn("Sector target not found in tmp release project: {}", trgt);
+          trgt = null;
+        }
       }
+    }
+    if (trgt == null && cfg != null && cfg.incertae != null) {
+      trgt = utils.toSimpleNameClassified(cfg.incertae, null);
     }
     parents = new MatchedParentStack(trgt);
     if (sector.getSubject() != null) {

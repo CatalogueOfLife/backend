@@ -183,6 +183,9 @@ public class XRelease extends ProjectRelease {
     newDatasetKey = tmpProjectKey;
     copyData();
 
+    // prepare configs, create incertae sedis
+    mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
+
     // load matcher
     this.matcher.store().load(factory);
 
@@ -510,7 +513,6 @@ public class XRelease extends ProjectRelease {
     // prepare merge handler config instance
     LOG.info("Start merging {} sectors", sectors.size());
     final LocalDateTime start = LocalDateTime.now();
-    mergeCfg = new TreeMergeHandlerConfig(factory, xCfg, newDatasetKey, user);
     final int size = sectors.size();
     int counter = 0;
     failedSyncs = 0;

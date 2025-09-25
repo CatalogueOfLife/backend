@@ -11,7 +11,6 @@ import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TypeMaterialMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.junit.*;
-import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.release.XReleaseConfig;
 
 import java.io.IOException;
