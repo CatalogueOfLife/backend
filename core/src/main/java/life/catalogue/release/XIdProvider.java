@@ -32,8 +32,12 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
   public String issue(SimpleNameWithNidx usage) {
     try {
       if (usage.hasAuthorship()) {
+        // remember real canonical ID as we use the property to encode the new id internally
+        final var canonID = usage.getCanonicalId();
         issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
-        return encode(usage.getCanonicalId());
+        var id = encode(usage.getCanonicalId());
+        usage.setCanonicalId(canonID);
+        return id;
       } else {
         // for new canonical names we issue a temp id for now, so we can update the authorship later
         // and assign new ids without wasting stable IDs

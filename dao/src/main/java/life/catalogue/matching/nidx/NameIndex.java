@@ -65,6 +65,14 @@ public interface NameIndex extends Managed, AutoCloseable {
   Iterable<IndexName> all();
 
   /**
+   * Prints all names in the index to stdout for debugging purposes
+   */
+  default void printIndex() {
+    System.out.println("Names Index:");
+    all().forEach(System.out::println);
+  }
+
+  /**
    * @return the number of names in the index
    */
   int size();

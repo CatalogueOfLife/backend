@@ -466,8 +466,7 @@ public class NameIndexImplTest {
   }
 
   void dumpIndex() {
-    System.out.println("Names Index:");
-    ni.all().forEach(System.out::println);
+    ni.printIndex();
   }
 
   @Test
