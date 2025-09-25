@@ -90,10 +90,6 @@ public class MatchingUtils {
     return null;
   }
 
-  public static List<SimpleNameCached> toSimpleNameCached(List<? extends SimpleName> classification) {
-    return classification == null ? null : classification.stream().map(SimpleNameCached::new).collect(Collectors.toList());
-  }
-
   public static List<SimpleNameCached> toSimpleNameCached(SimpleName[] classification) {
     return classification == null ? null : Arrays.stream(classification).map(SimpleNameCached::new).collect(Collectors.toList());
   }
@@ -112,21 +108,6 @@ public class MatchingUtils {
   }
 
   /**
-   * @return the classified name, matched to the names index!
-   */
-  public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(SimpleName sn, List<SimpleNameCached> classification) {
-    SimpleNameClassified<SimpleNameCached> snc = null;
-    if (sn != null) {
-      var status = ObjectUtils.coalesce(sn.getStatus(), TaxonomicStatus.ACCEPTED);
-      NameUsageBase nu = status.isSynonym() ? new Synonym(sn) : new Taxon(sn);
-      var nidx = nidxAndMatchIfNeeded(nu, true);
-      snc = new SimpleNameClassified<>(nu, nidx.canonicalId);
-      snc.setClassification(classification == null ? Collections.EMPTY_LIST : classification);
-    }
-    return snc;
-  }
-
-  /**
    * Convert a simple name classification to a cached one.
    */
   public SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(SimpleNameClassified<SimpleName> sn) {
@@ -137,19 +118,4 @@ public class MatchingUtils {
     return snc;
   }
 
-  public void rematchTarget(Sector s, UsageMatcher matcher) {
-    if (s.getTarget() != null) {
-      LOG.info("Rematch sector target {} to dataset {}", s.getTarget(), matcher.datasetKey);
-      s.getTarget().setStatus(TaxonomicStatus.ACCEPTED);
-      var snc = toSimpleNameClassified(s.getTarget(), null);
-      var m = matcher.match(snc);
-      if (m.isMatch()) {
-        s.getTarget().setBroken(false);
-        s.getTarget().setId(m.getId());
-      } else {
-        LOG.warn("Failed to match target {} of sector {}[{}] to dataset {}!", s.getTarget(), s.getId(), s.getSubjectDatasetKey(), matcher.datasetKey);
-        s.setTarget(null);
-      }
-    }
-  }
 }

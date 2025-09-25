@@ -100,10 +100,10 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
-    PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
     SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
-    PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
 
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 

@@ -50,6 +50,26 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   /**
+   * Retrieves all parents and the original taxon in a single list, starting with the highest taxon and the requested taxon last
+   * @param key
+   * @return null in case the given key does not exist, otherwise the entire classification
+   */
+  default LinkedList<SimpleNameCached> getClassificationSN(DSID<String> key) {
+    var classification = new LinkedList<SimpleNameCached>();
+    var u = getSimpleCached(key);
+    if (u == null) return null;
+
+    classification.addLast(u);
+
+    var pid = DSID.<String>root(key.getDatasetKey());
+    while (u.getParentId() != null) {
+      u = getSimpleCached(pid.id(u.getParentId()));
+      classification.addFirst(u);
+    }
+    return classification;
+  }
+
+  /**
    * SimpleName.parent=parent.id
    * @param key
    */

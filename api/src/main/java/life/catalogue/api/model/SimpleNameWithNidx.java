@@ -71,6 +71,19 @@ public class SimpleNameWithNidx extends SimpleName {
     this.canonicalId = canonicalId;
   }
 
+  public void applyMatch(NameMatch m) {
+    if (m.hasMatch()) {
+      setNamesIndexMatchType(m.getType());
+      setNamesIndexId(m.getName().getKey());
+      setCanonicalId(m.getName().getCanonicalId());
+
+    } else {
+      setNamesIndexMatchType(MatchType.NONE);
+      setNamesIndexId(null);
+      setCanonicalId(null);
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

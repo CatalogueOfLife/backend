@@ -35,6 +35,13 @@ public interface NameIndex extends Managed, AutoCloseable {
    */
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
 
+  /**
+   *
+   * @param sn
+   * @param allowInserts
+   * @param verbose
+   * @return
+   */
   default NameMatch match(SimpleName sn, boolean allowInserts, boolean verbose) {
     var opt = NameParser.PARSER.parse(sn);
       if (opt.isPresent()) {

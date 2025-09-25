@@ -111,12 +111,6 @@ public class XReleaseBasicIT {
 
   @Test
   public void release() throws Exception {
-    //PrinterUtils.print(13, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    //PrinterUtils.print(100, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    //PrinterUtils.print(101, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    //PrinterUtils.print(102, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    //PrinterUtils.print(103, true, SqlSessionFactoryRule.getSqlSessionFactory());
-    NameMatchingRule.getIndex().printIndex();
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
     var cfg = new ProjectReleaseConfig();
     cfg.metadata.alias = "COL{date,yy}";

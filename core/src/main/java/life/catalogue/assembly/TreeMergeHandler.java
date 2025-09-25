@@ -11,6 +11,7 @@ import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.*;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.printer.PrinterUtils;
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.NameType;
@@ -53,6 +54,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
   private final DSID<Integer> vKey;
   private final Identifier.Scope nameIdScope;
   private final Identifier.Scope usageIdScope;
+  SqlSessionFactory factory;
 
   TreeMergeHandler(int targetDatasetKey, int sourceDatasetKey, Map<String, EditorialDecision> decisions, SqlSessionFactory factory,
                    Function<SqlSession, UsageMatcher> matcherSupplier, NameIndex nameIndex,
@@ -61,6 +63,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // we use much smaller ids than UUID which are terribly long to iterate over the entire tree - which requires to build a path from all parent IDs
     // this causes postgres to use a lot of memory and creates very large temporary files
     super(targetDatasetKey, decisions, factory, nameIndex, user, sector, state, nameIdGen, typeMaterialIdGen, usageIdGen);
+    this.factory=factory;
     this.cfg = cfg;
     this.vKey = DSID.root(sourceDatasetKey);
     this.matcher = matcherSupplier.apply(batchSession);
@@ -71,11 +74,22 @@ public class TreeMergeHandler extends TreeBaseHandler {
     // a) a target is given
     // b) a subject is given. Match it and see if it is lower and inside the target
     // c) nothing, but there maybe is an incertae sedis taxon configured to collect all unplaced
-    SimpleNameWithNidx trgt = null;
+    SimpleNameClassified<SimpleNameCached> trgt = null;
     if (target != null) {
-      trgt = utils.toSimpleNameCached(target);
+      var cl = target.getParentKey() == null ? null : num.getClassificationSN(target.getParentKey());
+      trgt = utils.toSimpleNameClassified(target, cl);
     } else if (cfg != null && cfg.incertae != null) {
-      trgt = utils.toSimpleNameCached(cfg.incertae);
+      trgt = utils.toSimpleNameClassified(cfg.incertae, null);
+    }
+    if (trgt != null) {
+      // match target to tmp project identifiers, which usually differ from the project
+      UsageMatch match = matcher.match(trgt);
+      if (match.isMatch()) {
+        trgt = match.usage;
+      } else {
+        LOG.warn("Sector target not found in tmp release project: {}", trgt);
+        trgt = null;
+      }
     }
     parents = new MatchedParentStack(trgt);
     if (sector.getSubject() != null) {

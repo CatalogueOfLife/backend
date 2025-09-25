@@ -30,6 +30,10 @@ public class VarnishUtils {
    * @return status code of response or -1 if an exception occurred
    */
   public static int ban(CloseableHttpClient client, URI uri) {
+    return -1;
+  }
+  
+  public static int ban2(CloseableHttpClient client, URI uri) {
     HttpBan ban = new HttpBan(uri);
 
     // execute

@@ -67,7 +67,7 @@ public class SectorSyncNameUpdIT extends SectorSyncTestBase {
   }
 
   private void dumpNidx() {
-    ((NameIndexImpl) NameMatchingRule.getIndex()).printIndex();
+    NameMatchingRule.getIndex().printIndex();
   }
 
   @Test

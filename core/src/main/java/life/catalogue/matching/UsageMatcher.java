@@ -62,6 +62,29 @@ public class UsageMatcher {
     return storage;
   }
 
+  /**
+   * This first parsed the name and matches it to the names index,
+   * before calling the actual match method which requires the names index ids to be present.
+   *
+   * @param sn
+   * @return
+   * @throws NotFoundException
+   */
+  public UsageMatch parseAndMatch(SimpleName sn) throws NotFoundException {
+    return parseAndMatch(new SimpleNameClassified<>(sn));
+  }
+  public UsageMatch parseAndMatch(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
+    var m = nameIndex.match(snc, true, false);
+    snc.applyMatch(m);
+    return match(snc, true, false);
+  }
+
+  /**
+   * Requires names index ids to be set on the usage!
+   * @param snc
+   * @return
+   * @throws NotFoundException
+   */
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc) throws NotFoundException {
     return match(snc, true, false);
   }
@@ -75,6 +98,9 @@ public class UsageMatcher {
   public UsageMatch match(SimpleNameClassified<SimpleNameCached> snc, boolean allowInserts, boolean verbose) throws NotFoundException {
     if (snc.getCanonicalId() == null) {
       return allowInserts ? UsageMatch.unsupported(datasetKey) : UsageMatch.empty(datasetKey, snc.getNamesIndexMatchType());
+    }
+    if (snc.getClassification()==null) {
+      snc.setClassification(Collections.emptyList());
     }
     var existing = store().usagesByCanonicalNidx(snc.getCanonicalId());
     if (existing != null && !existing.isEmpty()) {

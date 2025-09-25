@@ -53,8 +53,7 @@ public class UsageMatcher2IT {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
       var orig = num.getSimpleCached(dsid.id("oen3"));
-
-      var match = matcher.match(utils.toSimpleNameClassified(orig, null), false, false);
+      var match = matcher.parseAndMatch(orig);
       assertEquals(new SimpleNameCached(match.usage), orig);
     }
   }
