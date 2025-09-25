@@ -119,7 +119,7 @@ public class UsageMatcherFactory implements DatasetListener {
       matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store));
       // finally load the store - this can take a while so do it after putting the matcher into the map
       if (store.usages.isEmpty()) {
-        store.load(datasetKey, factory);
+        store.load(factory);
       }
     }
     return matchers.get(datasetKey);
@@ -132,7 +132,7 @@ public class UsageMatcherFactory implements DatasetListener {
   public UsageMatcher memory(int datasetKey) {
     LOG.info("Create new in memory matcher for dataset {}", datasetKey);
     var store = new UsageMatcherMemStore(datasetKey);
-    store.load(datasetKey, factory);
+    store.load(factory);
     return new UsageMatcher(datasetKey, nameIndex, store);
   }
 

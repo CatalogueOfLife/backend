@@ -152,7 +152,7 @@ public class XRelease extends ProjectRelease {
     }
     createIdMapTables();
 
-    // create matcher against temp
+    // create matcher against temp - this has no data yet, so we need to load the matcher once more after copying the base!
     this.matcher = matcherFactory.memory(tmpProjectKey);
     LOG.info("Created temporary project {} which will cleanup by itself in a few days", tmpProjectKey);
   }
@@ -182,6 +182,9 @@ public class XRelease extends ProjectRelease {
     final int xreleaseDatasetKey = newDatasetKey;
     newDatasetKey = tmpProjectKey;
     copyData();
+
+    // load matcher
+    this.matcher.store().load(factory);
 
     // setup id generator
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);

@@ -18,7 +18,8 @@ public abstract class UsageMatcherAbstractStore implements UsageMatcherStore {
     this.immutableMap = immutableMap;
   }
 
-  public int getDatasetKey() {
+  @Override
+  public int datasetKey() {
     return datasetKey;
   }
 

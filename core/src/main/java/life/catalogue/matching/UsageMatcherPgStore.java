@@ -31,6 +31,11 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
   }
 
   @Override
+  public int datasetKey() {
+    return datasetKey;
+  }
+
+  @Override
   public int size() {
     return -1;
   }

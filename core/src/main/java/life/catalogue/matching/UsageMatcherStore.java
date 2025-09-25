@@ -23,18 +23,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 public interface UsageMatcherStore extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageMatcherStore.class);
 
-  default int load(int datasetKey, SqlSessionFactory factory){
+  default int load(SqlSessionFactory factory){
     var cnt = new AtomicInteger();
     try (SqlSession session = factory.openSession()) {
       var num = session.getMapper(NameUsageMapper.class);
-      PgUtils.consume(() -> num.processDatasetSimpleNidx(datasetKey), sn -> {
+      PgUtils.consume(() -> num.processDatasetSimpleNidx(datasetKey()), sn -> {
         add(sn);
         cnt.incrementAndGet();
       });
     }
-    LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey);
+    LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey());
     return cnt.intValue();
   }
+
+  int datasetKey();
 
   int size();
 

@@ -25,6 +25,8 @@ import life.catalogue.junit.*;
 import life.catalogue.matching.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
 
+import life.catalogue.printer.PrinterUtils;
+
 import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
@@ -109,6 +111,11 @@ public class XReleaseBasicIT {
 
   @Test
   public void release() throws Exception {
+    //PrinterUtils.print(13, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(100, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(101, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(102, true, SqlSessionFactoryRule.getSqlSessionFactory());
+    //PrinterUtils.print(103, true, SqlSessionFactoryRule.getSqlSessionFactory());
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
     var cfg = new ProjectReleaseConfig();
     cfg.metadata.alias = "COL{date,yy}";
