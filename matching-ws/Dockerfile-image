@@ -30,12 +30,9 @@ RUN mkdir -p /data/$APP_ARTIFACT && \
 WORKDIR /usr/local/gbif/
 
 # Copy the executable JAR file from the builder image to the new image
-COPY $INDEX_BUILD_PATH/code /usr/local/gbif
-COPY $INDEX_BUILD_PATH/data/ /data/
 COPY $INDEX_BUILD_PATH/timestamp.properties /tmp/timestamp.properties
-
-RUN chown -R $USER:$USER /data/$APP_ARTIFACT && \
-    chown -R $USER:$USER /usr/local/gbif/
+COPY --chown=$USER:$USER $INDEX_BUILD_PATH/code /usr/local/gbif
+COPY --chown=$USER:$USER $INDEX_BUILD_PATH/data/ /data/
 
 EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
 
