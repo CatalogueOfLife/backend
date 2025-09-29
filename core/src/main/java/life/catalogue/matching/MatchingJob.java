@@ -42,6 +42,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -279,16 +282,28 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private UsageMatchWithOriginal match(IssueName n) {
+    UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false, interpreter, utils, matcher);
+    return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
+  }
+
+  public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
+                                       NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+  ) {
     UsageMatch match;
-    var opt = interpreter.interpret(n.name, n.issues);
-    if (opt.isPresent()) {
-      var snc = utils.toSimpleNameClassified(n.name);
-      match = matcher.match(snc, false, false);
+    var opt = interpreter.interpret(sn, issues);
+      if (opt.isPresent()) {
+      NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
+      // replace name parsers unranked with null to let the matcher know its coming from outside
+      if (nu.getRank() == Rank.UNRANKED) {
+        nu.getName().setRank(null);
+      }
+      var snc = utils.toSimpleNameClassified(nu, classification);
+      match = matcher.match(snc, false, verbose);
     } else {
       match = UsageMatch.empty(0);
-      n.issues.add(Issue.UNPARSABLE_NAME);
+      issues.add(Issue.UNPARSABLE_NAME);
     }
-    return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
+      return match;
   }
 
   private static class MappedStream {

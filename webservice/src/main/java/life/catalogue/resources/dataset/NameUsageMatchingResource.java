@@ -46,31 +46,25 @@ public class NameUsageMatchingResource {
   private final SqlSessionFactory factory;
   private final UsageMatcherFactory matcherFactory;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
+  private final MatchingUtils utils;
 
   public NameUsageMatchingResource(WsServerConfig cfg, JobExecutor exec, SqlSessionFactory factory, UsageMatcherFactory matcherFactory) {
     this.cfg = cfg;
     this.exec = exec;
     this.factory = factory;
     this.matcherFactory = matcherFactory;
+    this.utils = new MatchingUtils(matcherFactory.getNameIndex());
   }
 
+  /**
+   * @param sn will be matched to the nidx here, no need for a matched instance
+   */
   private UsageMatchWithOriginal match(int datasetKey, SimpleNameClassified<SimpleNameCached> sn, IssueContainer issues, boolean verbose) {
     UsageMatch match;
-    var opt = interpreter.interpret(sn, issues);
-    if (opt.isPresent()) {
-      NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
-      // replace name parsers unranked with null to let the matcher know its coming from outside
-      if (nu.getRank() == Rank.UNRANKED) {
-        nu.getName().setRank(null);
-      }
-      try (var matcher = matcherFactory.existingOrPostgres(datasetKey)) {
-        match = matcher.match(sn, false, verbose);
-      } catch (IOException e) {
-        throw new UncheckedIOException(e);
-      }
-    } else {
-      match = UsageMatch.empty(0);
-      issues.add(Issue.UNPARSABLE_NAME);
+    try (var matcher = matcherFactory.existingOrPostgres(datasetKey)) {
+      match = MatchingJob.interpretAndMatch(sn, sn.getClassification(), issues, verbose, interpreter, utils, matcher);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
     return new UsageMatchWithOriginal(match, issues, sn, null);
   }

@@ -93,6 +93,9 @@ public class MatchingUtils {
   public static List<SimpleNameCached> toSimpleNameCached(SimpleName[] classification) {
     return classification == null ? null : Arrays.stream(classification).map(SimpleNameCached::new).collect(Collectors.toList());
   }
+  public static List<SimpleNameCached> toSimpleNameCached(List<SimpleName> classification) {
+    return classification == null ? null : classification.stream().map(SimpleNameCached::new).collect(Collectors.toList());
+  }
 
   /**
    * @return the classified name, matched to the names index!
