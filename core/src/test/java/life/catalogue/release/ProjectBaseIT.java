@@ -4,6 +4,7 @@ import life.catalogue.TestConfigs;
 import life.catalogue.TestUtils;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.ReferenceDao;
@@ -33,6 +34,8 @@ import org.junit.rules.TestRule;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import org.mockito.Mock;
+
 import static org.mockito.Mockito.mock;
 
 public abstract class ProjectBaseIT {
@@ -54,6 +57,8 @@ public abstract class ProjectBaseIT {
   DatasetDao dDao;
   ProjectCopyFactory projectCopyFactory;
   Validator validator;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Before
   public void init() throws Exception {
@@ -73,7 +78,7 @@ public abstract class ProjectBaseIT {
     dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
       null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator
     );
-    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, SqlSessionFactoryRule.getSqlSessionFactory(), validator,

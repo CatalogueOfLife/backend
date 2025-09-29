@@ -9,6 +9,7 @@ import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -41,6 +42,8 @@ import org.junit.rules.TestRule;
 
 import jakarta.validation.Validation;
 
+import org.mockito.Mock;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -63,6 +66,8 @@ public class XReleaseBasicIT {
   final SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   ProjectCopyFactory projectCopyFactory;
   private TestConfigs cfg;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Rule
   public final TestRule chain = RuleChain
@@ -95,7 +100,7 @@ public class XReleaseBasicIT {
     var imgService = ImageService.passThru();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
     var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
-    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, nuIdxService, imgService, doiService, doiUpdater, factory, validator,

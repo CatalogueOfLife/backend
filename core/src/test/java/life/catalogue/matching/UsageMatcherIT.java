@@ -5,6 +5,7 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.junit.*;
 import life.catalogue.parser.NameParser;
 
@@ -18,6 +19,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.mockito.Mock;
 
 import static org.junit.Assert.*;
 
@@ -39,6 +41,8 @@ public class UsageMatcherIT {
   DSID<String> dsid;
   UsageMatcher matcher;
   MatchingUtils utils;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Before
   public void before() {
@@ -56,7 +60,7 @@ public class UsageMatcherIT {
     matchingRule.rematch(key);
     datasetKey = key;
     dsid = DSID.root(key);
-    var factory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var factory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     matcher = factory.memory(datasetKey);
     matcher.load(SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("\n***** Loaded dataset " + key + " *****\n");

@@ -4,6 +4,7 @@ import life.catalogue.TestDataRules;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
@@ -19,6 +20,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
+import org.mockito.Mock;
 
 import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;
@@ -40,11 +42,13 @@ public class UsageMatcher2IT {
   final DSID<String> dsid = DSID.root(datasetKey);
   UsageMatcher matcher;
   MatchingUtils utils;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Before
   public void before() {
     utils = new MatchingUtils(NameMatchingRule.getIndex());
-    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     matcher = matcherFactory.memory(datasetKey);
     matcher.load(SqlSessionFactoryRule.getSqlSessionFactory());
   }

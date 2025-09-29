@@ -1,6 +1,7 @@
 package life.catalogue.assembly;
 
 import life.catalogue.TestUtils;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ThumborConfig;
@@ -14,6 +15,7 @@ import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,8 @@ public class SyncFactoryRule extends ExternalResource {
   private EstimateDao eDao;
   private DatasetImportDao diDao;
   private SectorImportDao siDao;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Override
   protected void before() throws Throwable {
@@ -48,7 +52,7 @@ public class SyncFactoryRule extends ExternalResource {
     tdao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
-    matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao, NameUsageIndexService.passThru(), TestUtils.mockedBroker());
   }
 

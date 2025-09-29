@@ -9,6 +9,7 @@ import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.DownloadUtil;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -44,6 +45,7 @@ import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +77,8 @@ public class XReleaseIT extends SectorSyncTestBase {
   final NameUsageArchiver archiver = new NameUsageArchiver(SqlSessionFactoryRule.getSqlSessionFactory());
   CloseableHttpClient hc;
   ProjectCopyFactory projectCopyFactory;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Rule
   public final TestRule testRules = RuleChain
@@ -154,7 +158,7 @@ public class XReleaseIT extends SectorSyncTestBase {
     var sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tdao, validator);
     tdao.setSectorDao(sdao);
     var broker = TestUtils.mockedBroker();
-    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory());
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     var syncFactory = new SyncFactory(SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, NameMatchingRule.getIndex(), sdao, siDao, eDao,
       NameUsageIndexService.passThru(), broker
     );
