@@ -139,7 +139,7 @@ public class AdminResource {
   }
 
   @POST
-  @Path("/matcher/{key}/build")
+  @Path("/matcher/{key}/prepare")
   public boolean buildMatcher(@PathParam("key") int key) {
     return matcherFactory.prepare(key);
   }
