@@ -346,4 +346,5 @@ public class NameIndexChronicleStore implements NameIndexStore {
       }
     }
   }
+
 }

@@ -427,6 +427,14 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="listSN" resultMap="simpleCachedResultMap">
+    SELECT <include refid="SELECT_SIMPLE_CACHED"/>
+    FROM <include refid="FROM_SIMPLE_CACHED"/>
+    WHERE u.dataset_key=#{datasetKey}
+    ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
   <select id="listByNameID" resultMap="usageResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>

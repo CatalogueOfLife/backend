@@ -155,6 +155,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
+  List<SimpleNameCached> listSN(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+
   /**
    * Returns related name usages based on the same name as matched against the names index.
    *

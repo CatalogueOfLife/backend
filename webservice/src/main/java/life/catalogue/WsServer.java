@@ -352,7 +352,7 @@ public class WsServer extends Application<WsServerConfig> {
     managedService.manage(Component.UsageCache, uCache);
 
     // matcher factory
-    final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory());
+    final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
     env.lifecycle().manage(ManagedUtils.from(matcherFactory));
 
     // cron jobs

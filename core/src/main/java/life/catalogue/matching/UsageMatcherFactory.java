@@ -1,47 +1,50 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
+import life.catalogue.api.model.DatasetExport;
+import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.common.Managed;
+import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.concurrent.DatasetBlockingJob;
+import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.fory.config.CompatibleMode;
-import org.apache.ibatis.session.SqlSession;
 
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.fory.Fory;
 import org.apache.fory.ThreadLocalFory;
 import org.apache.fory.ThreadSafeFory;
+import org.apache.fory.config.CompatibleMode;
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.NotNull;
-import org.mapdb.DB;
-import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * Factory to create and reuse persistent usage matchers,
@@ -52,8 +55,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
   private final File dir;
-  private final MatchingConfig cfg;
   private final Int2ObjectMap<UsageMatcher> matchers = new Int2ObjectOpenHashMap<>();
+  private final JobExecutor executor;
 
   static final ThreadSafeFory FURY = new ThreadLocalFory(classLoader -> {
     Fory fury = Fory.builder()
@@ -74,10 +77,10 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return fury;
   }
 
-  public UsageMatcherFactory(MatchingConfig cfg, NameIndex nameIndex, SqlSessionFactory factory) {
+  public UsageMatcherFactory(MatchingConfig cfg, NameIndex nameIndex, SqlSessionFactory factory, JobExecutor executor) {
     this.nameIndex = Preconditions.checkNotNull(nameIndex);
+    this.executor = executor;
     this.factory = Preconditions.checkNotNull(factory);
-    this.cfg = cfg;
     this.dir = cfg.storageDir;
   }
 
@@ -91,7 +94,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * @param datasetKey
    * @return
    */
-  public UsageMatcher build(int datasetKey) {
+  public UsageMatcher build(int datasetKey) throws IOException {
     var info = DatasetInfoCache.CACHE.info(datasetKey);
     if (info.origin == DatasetOrigin.PROJECT) {
       var session = factory.openSession();
@@ -110,9 +113,9 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * @param datasetKey
    * @return true if a matcher is being prepared, false if it already existed.
    */
-  public boolean prepare(int datasetKey) {
+  public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
     if (matchers.containsKey(datasetKey)) {
-      return false;
+      return null;
     }
     if (dir == null) {
       throw new IllegalStateException("Cannot prepare persistent matcher for dataset " + datasetKey + " because no storage dir is configured");
@@ -125,26 +128,27 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     if (!m.store().isEmpty()) {
       throw new IllegalArgumentException("Persistent matcher store for dataset " + datasetKey + " already contains data");
     }
-    ForkJoinPool.commonPool().execute(new AsyncMatchLoader(m));
-    return true;
+    var job = new AsyncMatchLoader(m, userKey);
+    executor.submit(job);
+    return job;
   }
 
-  private class AsyncMatchLoader implements Runnable {
+  private class AsyncMatchLoader extends DatasetBlockingJob {
     private final UsageMatcher matcher;
 
-    public AsyncMatchLoader(UsageMatcher matcher) {
+    public AsyncMatchLoader(UsageMatcher matcher, int userKey) {
+      super(matcher.datasetKey, userKey, JobPriority.MEDIUM);
       this.matcher = matcher;
     }
 
     @Override
-    public void run() {
+    protected void runWithLock() throws Exception {
       try {
         matcher.store().load(factory);
       } finally {
         matcher.close();
       }
     }
-
   }
 
   /**
@@ -155,12 +159,12 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * @param datasetKey
    * @return
    */
-  public UsageMatcher existingOrPostgres(int datasetKey) {
+  public UsageMatcher existingOrPostgres(int datasetKey) throws IOException {
     if (matchers.containsKey(datasetKey)) {
       return matchers.get(datasetKey);
     }
-    var f = dbFile(datasetKey);
-    if (f.exists()) {
+    var f = dbDir(datasetKey);
+    if (f.isDirectory()) {
       return persistent(datasetKey);
     }
     return postgres(datasetKey, factory.openSession(), true);
@@ -179,26 +183,23 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, store, false);
   }
 
-  public UsageMatcher persistent(int datasetKey) {
+  public UsageMatcher persistent(int datasetKey) throws IOException {
     if (matchers.containsKey(datasetKey)) {
       LOG.info("Reuse existing persistent matcher for dataset {}", datasetKey);
 
     } else {
       LOG.info("Create new persistent matcher for dataset {}", datasetKey);
-      var f = dbFile(datasetKey);
-      var dbMaker = DBMaker
-        .fileDB(f)
-        .fileMmapEnableIfSupported();
-      DB db;
-      try {
-        db = dbMaker.make();
-      } catch (Exception e) {
-        LOG.warn("Cannot open mapdb file {} for matcher of dataset {}. Remove and create an empty one: {}", f, datasetKey, e.getMessage());
-        FileUtils.deleteQuietly(f);
-        db = dbMaker.make();
+      var f = dbDir(datasetKey);
+
+      long count;
+      List<SimpleNameCached> samples;
+      try (SqlSession s = factory.openSession()) {
+        var um = s.getMapper(NameUsageMapper.class);
+        count = 1000 + um.count(datasetKey);
+        samples = um.listSN(datasetKey, new Page(0,5));
+        var store = UsageMatcherChronicleStore.build(datasetKey, f, count, samples);
+        matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
       }
-      var store = UsageMatcherMapDBStore.build(datasetKey, db);
-      matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
     }
     return matchers.get(datasetKey);
   }
@@ -209,8 +210,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, store, false);
   }
 
-  private File dbFile(int datasetKey) {
-    return new File(dir, datasetKey + ".db");
+  private File dbDir(int datasetKey) {
+    return new File(dir, datasetKey+"");
   }
 
   @Override
@@ -225,7 +226,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       if (matchers.containsKey(event.datasetKey)) {
         LOG.info("Delete persistent matcher for dataset {} that has changed data", event.datasetKey);
         matchers.remove(event.datasetKey);
-        var file = dbFile(event.datasetKey);
+        var file = dbDir(event.datasetKey);
         FileUtils.deleteQuietly(file);
       }
     }
@@ -262,10 +263,14 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       var m = matchers.get(datasetKey);
       return new MatcherMetadata(datasetKey, true, m.store().size());
     }
-    var f = dbFile(datasetKey);
-    if (f.exists()) {
-      var m = persistent(datasetKey);
-      return new MatcherMetadata(datasetKey, true, m.store().size());
+    var f = dbDir(datasetKey);
+    if (f.isDirectory()) {
+      try {
+        var m = persistent(datasetKey);
+        return new MatcherMetadata(datasetKey, true, m.store().size());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
     return null;
   }
@@ -278,17 +283,18 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       keys.add(e.getIntKey());
     }
     // look for more on disk
-    if (dir != null) {
-      FileUtils.listFiles(dir, new String[]{"db"}, false).forEach(f -> {
+    if (dir != null && dir.isDirectory()) {
+      String[] files = dir.list(DirectoryFileFilter.INSTANCE);
+      for (var fn : files) {
         try {
-          int key = Integer.parseInt(f.getName().substring(0, f.getName().length() - 3));
+          int key = Integer.parseInt(fn);
           if (!keys.contains(key)) {
             matchers.add(new MatcherMetadata(key, false, null));
           }
         } catch (NumberFormatException e) {
           // ignore
         }
-      });
+      }
     }
     Collections.sort(matchers);
     return new FactoryMetadata(matchers);

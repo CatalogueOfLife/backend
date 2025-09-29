@@ -18,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -64,6 +65,8 @@ public class NameUsageMatchingResource {
       }
       try (var matcher = matcherFactory.existingOrPostgres(datasetKey)) {
         match = matcher.match(sn, false, verbose);
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
     } else {
       match = UsageMatch.empty(0);
