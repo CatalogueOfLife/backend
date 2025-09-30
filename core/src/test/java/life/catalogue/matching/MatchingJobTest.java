@@ -35,8 +35,6 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   @Before
   public void setUp() throws Exception {
     var matcher = mock(UsageMatcher.class);
-    int dkey = dataRule.testData.key;
-    when(matcher.match(any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(dkey));
     this.cfg = TestConfigs.build();
 
     matcherFactory = mock(UsageMatcherFactory.class);
