@@ -110,7 +110,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
     addCorsHeaders(origin, method, resp::setHeader);
 
     // CORS handshake (pre-flight request)
-    if (origin.equals("OPTIONS")) {
+    if (method != null && method.equals("OPTIONS")) {
       resp.setStatus(HttpServletResponse.SC_ACCEPTED);
       return;
     }
