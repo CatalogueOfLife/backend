@@ -17,10 +17,14 @@ import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
+import org.apache.commons.io.filefilter.FileFileFilter;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -297,7 +301,8 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     }
     // look for more on disk
     if (dir != null && dir.isDirectory()) {
-      String[] files = dir.list(DirectoryFileFilter.INSTANCE);
+      FilenameFilter ff = cfg.chronicle ? DirectoryFileFilter.INSTANCE : FileFileFilter.INSTANCE;
+      String[] files = dir.list(ff);
       for (var fn : files) {
         try {
           int key = Integer.parseInt(fn);
