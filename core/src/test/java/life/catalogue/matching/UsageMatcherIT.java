@@ -118,6 +118,41 @@ public class UsageMatcherIT {
     assertNoMatch(m);
   }
 
+  /**
+   *  https://github.com/CatalogueOfLife/backend/issues/1441
+    */
+  @Test
+  public void unranked() throws InterruptedException {
+    loadDataset(3);
+
+    var m = match(Rank.GENUS, "Ichneumon", null, cl());
+    assertMatch(m, "Ichneumon");
+    m = match(null, "Ichneumon", null, cl());
+    assertMatch(m, "Ichneumon");
+    m = match(Rank.GENUS, "Ichneumon", "Linnaeus", cl());
+    assertMatch(m, "Ichneumon");
+    m = match(null, "Ichneumon", "Linnaeus", cl());
+    assertMatch(m, "Ichneumon");
+    m = match(null, "Ichneumon", "1758", cl());
+    assertMatch(m, "Ichneumon");
+
+    m = match(Rank.GENUS, "Carria", "Blanchard 1850 (Oct.)", cl());
+    assertMatch(m, "Carria");
+    m = match(Rank.GENUS, "Carria", "Blanchard 1850", cl());
+    assertMatch(m, "Carria");
+    m = match(Rank.GENUS, "Carria", "Blanchard", cl());
+    assertMatch(m, "Carria");
+    m = match(null, "Carria", "Blanchard", cl());
+    assertMatch(m, "Carria");
+    m = match(null, "Carria", null, cl());
+    assertMatch(m, "Carria");
+
+    m = match(Rank.SPECIES, "Ichneumon fuscatus", null, cl());
+    assertMatch(m, "Ichneumon_fuscatus");
+    m = match(Rank.SPECIES, "Ichneumon fuscatta", null, cl());
+    assertMatch(m, "Ichneumon_fuscatus");
+  }
+
   void assertMatch(UsageMatch m, String id) {
     assertTrue(m.isMatch());
     assertEquals(id, m.usage.getId());

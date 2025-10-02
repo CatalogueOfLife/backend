@@ -202,18 +202,12 @@ public class UsageMatcher implements AutoCloseable {
     // remove canonical matches between 2 qualified, non suprageneric names
     // for genus matches we keep the canonical matches and compare their family further down
     if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship()
-        && !u.getNamesIndexId().equals(nu.getNamesIndexId()) // nidx encodes the exact rank,
-        // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
-        && (u.getRank() == nu.getRank()
-          || ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u, nu))
-        )
-      );
+      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) );
     }
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
     if (qualifiedName && nu.getRank() == Rank.GENUS) {
-      existing.removeIf(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getNamesIndexId()) && !sameFamily(u, nu.getClassification()));
+      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu) && !sameFamily(u, nu.getClassification()));
       // snap if there is just one genus left?
       snap = !existing.isEmpty() && existing.stream()
         .allMatch(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getNamesIndexId()));
@@ -424,6 +418,15 @@ public class UsageMatcher implements AutoCloseable {
       return UsageMatch.match(MatchType.AMBIGUOUS, existing.get(0), datasetKey, alt);
     }
   }
+
+  private boolean differentNidxConsidersRank(SimpleNameCached u, SimpleNameCached nu) {
+    return !u.getNamesIndexId().equals(nu.getNamesIndexId()) && // nidx encodes the exact rank,
+      // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
+      (u.getRank() == nu.getRank() ||
+        ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u))
+      );
+  }
+
   private ScientificName parseSciName(SimpleName sn) {
     Name n = new Name();
     try {
@@ -450,7 +453,7 @@ public class UsageMatcher implements AutoCloseable {
    * Rematches with the same rank to see if nidx still differ
    * @return true if the names, applied with the same rank, match to the same nidx
    */
-  private boolean sameNidxWithoutRank(SimpleNameCached u, SimpleNameCached name) {
+  private boolean sameNidxWithoutRank(SimpleNameCached u) {
     var match = nameIndex.match(u, false, false);
     return match.hasMatch() && Objects.equals(u.getNamesIndexId(), match.getNameKey());
   }
