@@ -327,13 +327,7 @@ public class UsageMatcherGlobal {
     // remove canonical matches between 2 qualified, non suprageneric names
     // for genus matches we keep the canonical matches and compare their family further down
     if (qualifiedName && !nu.getRank().isGenusOrSuprageneric()) {
-      existing.removeIf(u -> u.hasAuthorship()
-        && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()) // nidx encodes the exact rank,
-        // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
-        && (u.getRank() == nu.getRank()
-          || ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u, nu.getName()))
-        )
-      );
+      existing.removeIf(u -> u.hasAuthorship() && differentNidxConsidersRank(u, nu.getName()) );
     }
 
     // from here on we need the classification of all candidates
@@ -344,7 +338,10 @@ public class UsageMatcherGlobal {
 
     // remove canonical matches between 2 qualified genus names, UNLESS they are in the exact same family!
     if (qualifiedName && nu.getRank() == Rank.GENUS) {
-      existingWithCl.removeIf(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()) && !sameFamily(u, parents));
+      existingWithCl.removeIf(u -> u.hasAuthorship()
+        && differentNidxConsidersRank(u, nu.getName())
+        && !sameFamily(u, parents)
+      );
       // snap if there is just one genus left?
       snap = !existingWithCl.isEmpty() && existingWithCl.stream()
         .allMatch(u -> u.hasAuthorship() && !u.getNamesIndexId().equals(nu.getName().getNamesIndexId()));
@@ -571,6 +568,14 @@ public class UsageMatcherGlobal {
       .filter(r -> !r.isUncomparable())
       .findFirst();
   }
+
+  private boolean differentNidxConsidersRank(SimpleNameCached u, Name nu) {
+    return !u.getNamesIndexId().equals(nu.getNamesIndexId()) && // nidx encodes the exact rank,
+      // ... but we want uncomparable ranks to potentially match, e.g. infraspecific_name & subspecies
+      (u.getRank() == nu.getRank() ||
+        ((u.getRank().isUncomparable() || nu.getRank().isUncomparable()) && !sameNidxWithoutRank(u, nu))
+      );
+    }
 
   /**
    * Rematches with the same rank to see if nidx still differ
