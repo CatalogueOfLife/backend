@@ -81,9 +81,9 @@ RUN mkdir -p /data/$APP_ARTIFACT && \
 WORKDIR /opt/gbif/$APP_ARTIFACT
 
 # Copy the executable JAR file from the builder image to the new image
-COPY --from=builder /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
-COPY --from=builder /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
-COPY --from=builder /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
+COPY --from=builder --chown=$USER:$USER /app/backend/matching-ws/target/matching-ws-*-SNAPSHOT-exec.jar /opt/gbif/$APP_ARTIFACT/app.jar
+COPY --from=builder --chown=$USER:$USER /app/backend/git.json /opt/gbif/$APP_ARTIFACT/git.json
+COPY --from=builder --chown=$USER:$USER /app/backend/dataset.json /opt/gbif/$APP_ARTIFACT/dataset.json
 
 # CSV export from checklistbank
 RUN if [ -n "$CLB_DATASET_ID" ]; then \
@@ -98,8 +98,6 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
         --clb.user=$CLB_USER \
         --clb.password=$CLB_PASSWORD; \
     fi
-
-RUN chown -R $USER:$USER /opt/gbif/$APP_ARTIFACT
 
 USER $USER
 EXPOSE $SERVER_PORT

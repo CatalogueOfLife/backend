@@ -71,6 +71,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final DoiUpdater doiUpdater;
   private Integer prevReleaseKey;
   protected ProjectReleaseConfig prCfg;
+  private IdProvider idProvider;
 
   ProjectRelease(SqlSessionFactory factory, NameUsageIndexService indexService, ImageService imageService,
                  DatasetImportDao diDao, DatasetDao dDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
@@ -270,9 +271,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     // map ids
     start = LocalDateTime.now();
     updateState(ImportState.MATCHING);
-    IdProvider idp = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
-    idp.mapAllIds();
-    idp.report();
+    idProvider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, attempt, newDatasetKey, cfg, prCfg, factory);
+    idProvider.mapAllIds();
     DateUtils.logDuration(LOG, "ID provider", start);
   }
 
@@ -344,8 +344,14 @@ public class ProjectRelease extends AbstractProjectCopy {
 
   @Override
   void finalWork() throws Exception {
+    // write id reports - XRelease has its own and idProvider will be null
     checkIfCancelled();
+    if (idProvider != null) {
+      idProvider.report();
+    }
+
     // remove orphan sectors and decisions not used in the data, e.g. merge sectors from the XCOL
+    checkIfCancelled();
     try (SqlSession session = factory.openSession(true)) {
       int del = session.getMapper(SectorMapper.class).deleteOrphans(newDatasetKey);
       LOG.info("Removed {} sectors without data in release {}", del, newDatasetKey);

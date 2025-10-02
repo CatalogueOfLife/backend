@@ -98,9 +98,7 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
 
   @Override
   public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
-
     HttpServletRequest request = (HttpServletRequest) servletRequest;
-    System.out.println("CORSFilter HTTP Request: " + request.getMethod());
 
     String origin = request.getHeader("Origin");
     String method = request.getMethod();
