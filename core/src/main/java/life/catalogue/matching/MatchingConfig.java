@@ -4,6 +4,8 @@ import java.io.File;
 
 public class MatchingConfig {
 
+  public boolean chronicle = true;
+
   /**
    * Directory to store matching storage files, one for each dataset.
    * If null all matching storage is kept in memory only.

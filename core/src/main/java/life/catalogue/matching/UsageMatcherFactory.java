@@ -37,6 +37,7 @@ import org.apache.fory.config.CompatibleMode;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.NotNull;
+import org.mapdb.DBMaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private final static Logger LOG = LoggerFactory.getLogger(UsageMatcherFactory.class);
   private final NameIndex nameIndex;
   private final SqlSessionFactory factory;
+  private final MatchingConfig cfg;
   private final File dir;
   private final Int2ObjectMap<UsageMatcher> matchers = new Int2ObjectOpenHashMap<>();
   private final JobExecutor executor;
@@ -84,6 +86,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     this.executor = executor;
     this.factory = Preconditions.checkNotNull(factory);
     this.dir = cfg.storageDir;
+    this.cfg = cfg;
   }
 
   public NameIndex getNameIndex() {
@@ -190,16 +193,26 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       LOG.info("Reuse existing persistent matcher for dataset {}", datasetKey);
 
     } else {
-      LOG.info("Create new persistent matcher for dataset {}", datasetKey);
       var f = dbDir(datasetKey);
 
-      long count;
-      List<SimpleNameCached> samples;
-      try (SqlSession s = factory.openSession()) {
-        var um = s.getMapper(NameUsageMapper.class);
-        count = 1000 + um.count(datasetKey);
-        samples = um.listSN(datasetKey, new Page(0,5));
+      if (cfg.chronicle) {
+        LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
+        long count;
+        List<SimpleNameCached> samples;
+        try (SqlSession s = factory.openSession()) {
+          var um = s.getMapper(NameUsageMapper.class);
+          count = 1000 + um.count(datasetKey);
+          samples = um.listSN(datasetKey, new Page(0,5));
+        }
         var store = UsageMatcherChronicleStore.build(datasetKey, f, count, samples);
+        matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
+
+      } else {
+        LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
+        DBMaker.Maker maker = DBMaker
+          .fileDB(f)
+          .fileMmapEnableIfSupported();
+        var store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
         matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
       }
     }

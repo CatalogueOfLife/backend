@@ -49,12 +49,19 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
     var keysF = new File(dir, "usages");
     var canonicalF = new File(dir, "canonical");
 
+    // make sure we have some samples and limit to 5 max
+    if (samples.isEmpty()) {
+      samples = List.of(UsageMatcherChronicleStore.sample("DRFTGZH"), UsageMatcherChronicleStore.sample("1234562134"));
+    } else if (samples.size() > 5) {
+      samples = samples.subList(0, 5);
+    }
+
     var usages = ChronicleMapBuilder.of(String.class, SimpleNameCached.class)
       .name("usages")
-      .averageKey(samples.get(0).getId())
-      .valueMarshaller(MARSHALLER)
-      .averageValue(samples.get(0))
       .entries(count)
+      .averageKey(samples.get(0).getId())
+      .averageValue(samples.get(0))
+      .valueMarshaller(MARSHALLER)
       .createPersistedTo(keysF);
 
     var byCanonNidx = ChronicleMapBuilder.of(Integer.class, String[].class)
