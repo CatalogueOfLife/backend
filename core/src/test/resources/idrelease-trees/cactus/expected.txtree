@@ -11,13 +11,13 @@ Biota [unranked] {ID=3}
   Plantae [kingdom] {ID=32}
     Tracheophyta [phylum] {ID=33}
       Magnoliopsida [class] {ID=34}
-        Caryophyllales Juss. ex Bercht. & J.Presl [order] {ID=642}
-          Cactaceae Juss. [family] {ID=643}
-            Cactoideae Eaton [subfamily] {ID=644}
-              Cochemiea (K.Brandegee) Walton [genus] {ID=646}
+        Caryophyllales Juss. ex Bercht. & J.Presl [order] {ID=35}
+          Cactaceae Juss. [family] {ID=36}
+            Cactoideae Eaton [subfamily] {ID=37}
+              Cochemiea (K.Brandegee) Walton [genus] {ID=38}
                 Cochemiea conoidea (DC.) P.B.Breslin & Majure [species] {ID=39}
                   =Cactus grandiflorus (Link & Otto ex Pfeiff.) Kuntze [species] {ID=3B}
-              Mammillaria Haw. [genus] {ID=647}
+              Mammillaria Haw. [genus] {ID=3C}
                 =Cactus L. [genus] {ID=3D}
                 Mammillaria discolor Haw. [species] {ID=3F}
                   Mammillaria discolor subsp. discolor [subspecies] {ID=3H}
@@ -25,12 +25,12 @@ Biota [unranked] {ID=3}
                 Mammillaria rhodantha Link & Otto [species] {ID=4B}
                   Mammillaria rhodantha subsp. rhodantha [subspecies] {ID=5B}
                     =Cactus acicularis Kuntze [species] {ID=4D}
-              Selenicereus (Berger) Britton & Rose [genus] {ID=649}
+              Selenicereus (Berger) Britton & Rose [genus] {ID=4H}
                 Selenicereus grandiflorus (L.) Britton & Rose [species] {ID=5T}
                   Selenicereus grandiflorus subsp. grandiflorus [subspecies] {ID=5Z}
                     =Cactus grandiflorus L. [species] {ID=5K}
-            Opuntioideae Burnett [subfamily] {ID=645}
-              Opuntia Mill. [genus] {ID=648}
+            Opuntioideae Burnett [subfamily] {ID=63B}
+              Opuntia Mill. [genus] {ID=63D}
                 =Ficindica St.-Lag. [unranked] {ID=63F}
                 =Platyopuntia (Engelm.) Fric & Schelle ex Kreuz. [genus] {ID=63G}
                 Opuntia acaulis Ekman & Werderm. [species] {ID=63H}

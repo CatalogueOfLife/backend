@@ -122,7 +122,6 @@ public class IdProviderIT {
     prCfg.ignoredReleases = List.of(13);
     init(cfg, prCfg);
 
-    PrinterUtils.print(projectKey, true, SqlSessionFactoryRule.getSqlSessionFactory());
     provider.mapAllIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
@@ -138,7 +137,6 @@ public class IdProviderIT {
         int val = IdConverter.LATIN29.decode(id);
         maxID.set(Math.max(val, maxID.get()));
       });
-      PrinterUtils.print(projectKey, true, SqlSessionFactoryRule.getSqlSessionFactory());
       // largest id issued is:
       assertEquals("3J", IdConverter.LATIN29.encode(maxID.get()));
 
@@ -146,10 +144,19 @@ public class IdProviderIT {
       assertEquals(25, idm.countUsage(projectKey));
       assertEquals("M", idm.getUsage(projectKey, "21"));
       assertEquals("D", idm.getUsage(projectKey, "13"));
+      assertEquals("3", idm.getUsage(projectKey, "2"));
+      assertEquals("4", idm.getUsage(projectKey, "3"));
+      assertEquals("L", idm.getUsage(projectKey, "20"));
+      assertEquals("33", idm.getUsage(projectKey, "12")); // canonical match!
       // assert new ids - which exactly is not deterministic
-      assertTrue("34".compareTo(idm.getUsage(projectKey, "10")) > 0); // Lynx
-      assertTrue("34".compareTo(idm.getUsage(projectKey, "12")) > 0); // Lynx lynx (Linnaeus, 1758)
+      assertNew("11", idm); // Lynx, B1 is not a proper stable ID - 1 is a reserved character!
+      assertNew("10", idm); // Lynx lynx (Linnaeus, 1758)
     }
   }
 
+  private void assertNew(String originalID, IdMapMapper idm) {
+    var mappedID = idm.getUsage(projectKey, originalID);
+    System.out.println(mappedID);
+    assertTrue("34".compareTo(mappedID) < 0);
+  }
 }

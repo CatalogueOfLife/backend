@@ -15,11 +15,11 @@ Eukaryota [domain] {ID=CS5HF}
                           =Agrioaphis [genus] {ID=CCNZH}
                       Tuberculatus [genus] {ID=83GF}
                         Tuberculatus (Acanthocallis) [subgenus] {ID=8R326}
-                          =Agrioaphis [genus] {ID=CCNZK}
-                        Tuberculatus (Arakawana) [subgenus] {ID=8QWYD}
-                          =Agrioaphis [genus] {ID=CCNZL}
-                        Tuberculatus (Tuberculoides) [subgenus] {ID=8QYKW}
                           =Agrioaphis [genus] {ID=CCNZJ}
+                        Tuberculatus (Arakawana) [subgenus] {ID=8QWYD}
+                          =Agrioaphis [genus] {ID=CCNZK}
+                        Tuberculatus (Tuberculoides) [subgenus] {ID=8QYKW}
+                          =Agrioaphis [genus] {ID=CCNZL}
                     Pterocallidini [tribe] {ID=9H2ZF}
                       Pterocallis [genus] {ID=8NYD3}
                         Pterocallis (Pterocallis) [subgenus] {ID=8R23K}
