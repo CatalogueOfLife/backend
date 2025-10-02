@@ -17,7 +17,7 @@ public class MatchingConfig {
    * @return true if at least one dir was newly created
    */
   public boolean mkdirs() {
-    return storageDir.mkdirs();
+    return storageDir != null && storageDir.mkdirs();
   }
 
 }

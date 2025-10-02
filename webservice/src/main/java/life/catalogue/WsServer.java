@@ -21,6 +21,7 @@ import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
+import life.catalogue.dw.cors.CorsFilter;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.CslUtilsHealthCheck;
 import life.catalogue.dw.health.DiffHealthCheck;
@@ -202,6 +203,11 @@ public class WsServer extends Application<WsServerConfig> {
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     LOG.info("Starting COL server");
     final JerseyEnvironment j = env.jersey();
+
+    // enable CORS also for admin backend
+    env.admin()
+      .addFilter("cors", new CorsFilter(cfg.getCorsConfiguration()))
+      .addMappingForUrlPatterns(null, false, "/*");;
 
     // remove SSL defaults that prevent correct use of TLS1.3
     if (cfg.client != null && cfg.client.getTlsConfiguration() != null) {

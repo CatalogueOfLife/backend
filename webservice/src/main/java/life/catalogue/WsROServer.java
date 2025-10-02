@@ -8,6 +8,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
+import life.catalogue.dw.cors.CorsFilter;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.EsHealthCheck;
 import life.catalogue.dw.health.EventBrokerHealthCheck;
