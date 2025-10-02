@@ -239,10 +239,10 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
     // remove any persistent matcher for the dataset that changed
-    if (dir != null) {
-      if (matchers.containsKey(event.datasetKey)) {
-        LOG.info("Delete persistent matcher for dataset {} that has changed data", event.datasetKey);
-        matchers.remove(event.datasetKey);
+    if (matchers.containsKey(event.datasetKey)) {
+      LOG.info("Delete matcher for dataset {} due to changed data", event.datasetKey);
+      matchers.remove(event.datasetKey);
+      if (dir != null) {
         var file = dbDir(event.datasetKey);
         FileUtils.deleteQuietly(file);
       }
