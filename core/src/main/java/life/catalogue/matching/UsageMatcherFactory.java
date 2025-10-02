@@ -8,6 +8,7 @@ import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
@@ -74,6 +75,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     fury.register(Rank.class);
     fury.register(NomCode.class);
     fury.register(TaxonomicStatus.class);
+    fury.register(TaxGroup.class);
     return fury;
   }
 

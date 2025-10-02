@@ -101,10 +101,12 @@ public class TaxGroupAnalyzer {
         pg = parser.parse(name.getName());
         pg.ifPresent(groups::inc);
       }
-      for (var sn : classification) {
-        if (considerName(sn)) {
-          pg = parser.parse(sn.getName());
-          pg.ifPresent(groups::inc);
+      if (classification != null) {
+        for (var sn : classification) {
+          if (considerName(sn)) {
+            pg = parser.parse(sn.getName());
+            pg.ifPresent(groups::inc);
+          }
         }
       }
     } catch (UnparsableException e) {

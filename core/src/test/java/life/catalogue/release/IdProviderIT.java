@@ -137,14 +137,14 @@ public class IdProviderIT {
         maxID.set(Math.max(val, maxID.get()));
       });
       // largest id issued is:
-      assertEquals("3K", IdConverter.LATIN29.encode(maxID.get()));
+      assertEquals("3J", IdConverter.LATIN29.encode(maxID.get()));
 
       // assert
       assertEquals(25, idm.countUsage(projectKey));
       assertEquals("M", idm.getUsage(projectKey, "21"));
       assertEquals("D", idm.getUsage(projectKey, "13"));
       assertEquals("35", idm.getUsage(projectKey, "10")); // Lynx
-      assertEquals("38", idm.getUsage(projectKey, "12")); // Lynx lynx (Linnaeus, 1758)
+      assertEquals("33", idm.getUsage(projectKey, "12")); // Lynx lynx (Linnaeus, 1758)
     }
   }
 

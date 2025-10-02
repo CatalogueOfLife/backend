@@ -17,11 +17,27 @@ public class UsageMatcherMemStore extends UsageMatcherAbstractStore {
   }
 
   @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
-    var canonIDs = byCanonNidx.get(nidx);
+  public Collection<Integer> allCanonicalIds() {
+    return byCanonNidx.keySet();
+  }
+
+  @Override
+  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
     if (canonIDs != null) {
       return canonIDs.stream()
         .map(this::getSNClassified)
+        .collect(Collectors.toList());
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
+    if (canonIDs != null) {
+      return canonIDs.stream()
+        .map(this::get)
         .collect(Collectors.toList());
     }
     return Collections.emptyList();

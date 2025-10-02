@@ -111,7 +111,7 @@ public class UsageMatcher implements AutoCloseable {
     if (snc.getClassification()==null) {
       snc.setClassification(Collections.emptyList());
     }
-    var existing = store().usagesByCanonicalNidx(snc.getCanonicalId());
+    var existing = store().usagesByCanonicalId(snc.getCanonicalId());
     if (existing != null && !existing.isEmpty()) {
       // we modify the existing list, so use a copy
       var match = filterCandidates(snc, new ArrayList<>(existing), verbose);

@@ -40,11 +40,22 @@ public class UsageMatcherMapDBStore extends UsageMatcherAbstractStore {
   }
 
   @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
-    var canonIDs = byCanonNidx.get(nidx);
+  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
     if (canonIDs != null) {
       return Arrays.stream(canonIDs)
         .map(this::getSNClassified)
+        .collect(Collectors.toList());
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
+    if (canonIDs != null) {
+      return Arrays.stream(canonIDs)
+        .map(this::get)
         .collect(Collectors.toList());
     }
     return Collections.emptyList();
@@ -86,6 +97,11 @@ public class UsageMatcherMapDBStore extends UsageMatcherAbstractStore {
     var ids = byCanonNidx.get(canonicalId);
     var idx = ArrayUtils.indexOf(ids, oldID);
     ids[idx] = newID;
+  }
+
+  @Override
+  public Collection<Integer> allCanonicalIds() {
+    return byCanonNidx.keySet();
   }
 
 }

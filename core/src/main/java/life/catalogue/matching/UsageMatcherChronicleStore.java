@@ -21,10 +21,7 @@ import org.gbif.nameparser.api.Rank;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -112,20 +109,30 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   }
 
   @Override
-  public void close() {
-    usageCMap.close();
-    byCanonNidx.close();
-  }
-
-  @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
-    var canonIDs = byCanonNidx.get(nidx);
+  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
     if (canonIDs != null) {
       return Arrays.stream(canonIDs)
         .map(this::getSNClassified)
         .collect(Collectors.toList());
     }
     return Collections.emptyList();
+  }
+
+  @Override
+  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
+    var canonIDs = byCanonNidx.get(canonId);
+    if (canonIDs != null) {
+      return Arrays.stream(canonIDs)
+        .map(this::get)
+        .collect(Collectors.toList());
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public Collection<Integer> allCanonicalIds() {
+    return byCanonNidx.keySet();
   }
 
   @Override
@@ -166,4 +173,9 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
     ids[idx] = newID;
   }
 
+  @Override
+  public void close() {
+    usageCMap.close();
+    byCanonNidx.close();
+  }
 }

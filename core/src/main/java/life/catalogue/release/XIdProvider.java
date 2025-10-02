@@ -34,7 +34,7 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
       if (usage.hasAuthorship()) {
         // remember real canonical ID as we use the property to encode the new id internally
         final var canonID = usage.getCanonicalId();
-        issueIDs(usage.getNamesIndexId(), List.of(usage), nomatchWriter, false);
+        issueIDs(usage.getCanonicalId(), List.of(usage), nomatchWriter, false);
         var id = encode(usage.getCanonicalId());
         usage.setCanonicalId(canonID);
         return id;

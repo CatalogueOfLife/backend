@@ -1,15 +1,11 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.NameMatch;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.collection.Int2IntBiMap;
-import life.catalogue.common.collection.IterUtils;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.io.CompressionUtil;
@@ -20,6 +16,10 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
+import life.catalogue.matching.UsageMatcherChronicleStore;
+import life.catalogue.matching.UsageMatcherMemStore;
+import life.catalogue.matching.UsageMatcherStore;
 import life.catalogue.release.ReleasedIds.ReleasedId;
 
 import org.gbif.nameparser.api.Rank;
@@ -29,6 +29,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -38,13 +41,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
-import javax.annotation.Nullable;
-
-import static java.util.Comparator.naturalOrder;
-import static java.util.Comparator.nullsLast;
 import static life.catalogue.api.vocab.TaxonomicStatus.MISAPPLIED;
 
 /**
@@ -80,6 +77,7 @@ public class IdProvider {
   private final int releaseDatasetKey; // to
   private final @Nullable Integer lastReleaseKey;
   private final SqlSessionFactory factory;
+  private final TaxGroupAnalyzer groupAnalyzer;
   private final ReleaseConfig cfg;
   private final ProjectReleaseConfig prCfg;
   private final ReleasedIds ids;
@@ -112,6 +110,7 @@ public class IdProvider {
                     ReleaseConfig cfg, ProjectReleaseConfig prCfg, SqlSessionFactory factory
   ) {
     LOG.info("Setup ID provider for project {}, mapping dataset {}", projectKey, mappedDatasetKey);
+    groupAnalyzer = new TaxGroupAnalyzer();
     this.releaseDatasetKey = releaseDatasetKey;
     this.mappedDatasetKey = mappedDatasetKey;
     this.projectKey = projectKey;
@@ -417,7 +416,7 @@ public class IdProvider {
    * @param sn simple name with parent being a scientificName, not ID!
    */
   @VisibleForTesting
-  protected void addReleaseId(ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx sn, LoadStats stats){
+  protected void addReleaseId(ArchivedNameUsageMapper.ArchivedSimpleName sn, LoadStats stats){
     stats.counter.incrementAndGet();
     // use the first not ignored release
     int firstReleaseKey = -1;
@@ -445,6 +444,7 @@ public class IdProvider {
 
     } else {
       try {
+        sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
         var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
         ids.add(rl);
         LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
@@ -472,18 +472,27 @@ public class IdProvider {
   }
 
   private void mapIds(int minIdLength){
-    try (SqlSession readSession = factory.openSession(true);
-         var cursor = readSession.getMapper(NameUsageMapper.class).processNxIds(mappedDatasetKey, minIdLength);
+    int count;
+    List<SimpleNameCached> samples;
+    try (SqlSession session = factory.openSession(true)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      count = num.count(mappedDatasetKey);
+      samples = num.listSN(mappedDatasetKey, new Page(0, 10));
+    }
+    try (var tf = TempFile.file();
+         var store = UsageMatcherChronicleStore.build(mappedDatasetKey, tf.file, count+1000, samples)
     ) {
-      mapIds(cursor);
+      store.load(factory);
+      store.analyze(groupAnalyzer);
+      mapIds(store, minIdLength);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
 
   @VisibleForTesting
-  protected void mapIds(Iterable<SimpleNameWithNidx> names){
-    LOG.info("Map name usage IDs from dataset {}", mappedDatasetKey);
+  protected void mapIds(UsageMatcherStore uStore, int minIdLength){
+    LOG.info("Map {} name usage IDs from dataset {}", uStore.size(), mappedDatasetKey);
     final int lastRelIds = ids.currentIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);
@@ -491,22 +500,21 @@ public class IdProvider {
     ) {
       idm = writeSession.getMapper(IdMapMapper.class);
       final int batchSize = 10000;
-      Integer lastCanonID = null;
-      List<SimpleNameWithNidx> group = new ArrayList<>();
-      for (SimpleNameWithNidx u : names) {
-        if (!Objects.equals(lastCanonID, u.getCanonicalId()) && !group.isEmpty()) {
-          mapCanonicalGroup(group, nomatchWriter);
-          int before = counter.get() / batchSize;
-          int after = counter.addAndGet(group.size()) / batchSize;
-          if (before != after) {
-            writeSession.commit();
-          }
-          group.clear();
+
+      for (var canonId : uStore.allCanonicalIds()) {
+        var names = uStore.simpleNamesByCanonicalId(canonId);
+        if (minIdLength > 0 && !names.isEmpty()) {
+          names = names.stream()
+            .filter(n -> n.getId().length() >= minIdLength)
+            .collect(Collectors.toList());
         }
-        lastCanonID = u.getCanonicalId();
-        group.add(u);
+        issueIDs(canonId, names, nomatchWriter, true);
+        int before = counter.get() / batchSize;
+        int after = counter.addAndGet(names.size()) / batchSize;
+        if (before != after) {
+          writeSession.commit();
+        }
       }
-      mapCanonicalGroup(group, nomatchWriter);
       writeSession.commit();
 
     } catch (IOException e) {
@@ -518,60 +526,14 @@ public class IdProvider {
     LOG.info("Done mapping name usage IDs. {} ids from the last release will be deleted, {} have been reused.", deleted.size(), reused);
   }
 
-  private void mapCanonicalGroup(List<SimpleNameWithNidx> group, Writer nomatchWriter) throws IOException {
-    if (!group.isEmpty()) {
-      // workaround for names index duplicates bug
-      if (cfg.nidxDeduplication) {
-        removeDuplicateIdxEntries(group);
-      }
-
-      // make sure we have the names sorted by their nidx
-      group.sort(Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())));
-      // now split the canonical group into subgroups for each nidx to match them individually
-      for (List<SimpleNameWithNidx> idGroup : IterUtils.group(group, Comparator.comparing(SimpleNameWithNidx::getNamesIndexId, nullsLast(naturalOrder())))) {
-        issueIDs(idGroup.get(0).getNamesIndexId(), idGroup, nomatchWriter, true);
-      }
-    }
-  }
-
-  /**
-   * A temporary "hack" to remove the redundant names index entries that get created by the current NamesIndex implementation.
-   * It reduces the names with the exact same name & authorship to a single index id (the lowest).
-   */
-  private void removeDuplicateIdxEntries(List<SimpleNameWithNidx> group) {
-    // first determine which is the lowest nidx for each full name
-    Set<Integer> originalIds = new HashSet<>();
-    Object2IntMap<String> name2nidx = new Object2IntOpenHashMap<>();
-    for (SimpleNameWithNidx n : group) {
-      originalIds.add(n.getNamesIndexId());
-      if (n.getNamesIndexId() == null) continue;
-      String label = n.getLabel().toLowerCase();
-      name2nidx.putIfAbsent(label, n.getNamesIndexId());
-      if (name2nidx.get(label)>n.getNamesIndexId()) {
-        name2nidx.put(label, n.getNamesIndexId());
-      }
-    }
-    if (originalIds.size() != name2nidx.size()) {
-      LOG.info("Reducing canonical group {} with {} distinct nidx values to {}", group.get(0).getName(), originalIds.size(), name2nidx.size());
-      // now update redundant nidx
-      for (SimpleNameWithNidx n : group) {
-        String label = n.getLabel().toLowerCase();
-        if (name2nidx.containsKey(label) && (n.getNamesIndexId() == null || name2nidx.getInt(label) != n.getNamesIndexId())) {
-          LOG.debug("Updated names index match from {} to {} for {}", n.getNamesIndexId(), name2nidx.getInt(label), label);
-          n.setNamesIndexId(name2nidx.getInt(label));
-        }
-      }
-    }
-  }
-
   /**
    * Populates sn.canonicalId with either an existing or new int based ID
-   * @param nidx the concrete names index id that all names are mapped to
+   * @param canonId the canonical names index id that all names are mapped to
    */
-  protected void issueIDs(Integer nidx, List<SimpleNameWithNidx> names, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
-    if (nidx == null) {
+  void issueIDs(final Integer canonId, List<? extends SimpleNameWithNidx> names, Writer nomatchWriter, boolean persistIdMapping) throws IOException {
+    if (canonId == null) {
       LOG.warn("{} usages with no name match, e.g. {} - keep temporary ids", names.size(), names.get(0).getId());
-      for (SimpleNameWithNidx n : names) {
+      for (var n : names) {
         nomatchWriter.write(n.toStringBuilder().toString());
         nomatchWriter.write("\n");
       }
@@ -579,8 +541,8 @@ public class IdProvider {
     } else {
       // convenient "hack": we keep the new identifiers as the canonicalID property of SimpleNameWithNidx
       names.forEach(n->n.setCanonicalId(null));
-      // how many released ids do exist for this names index id?
-      ReleasedId[] rids = ids.byNxId(nidx);
+      // how many released ids do exist for this canonical names index id?
+      ReleasedId[] rids = ids.byCanonId(canonId);
       if (rids != null) {
         IntSet ids = new IntOpenHashSet();
         ScoreMatrix scores = new ScoreMatrix(names, rids, IdProvider::matchScore);
@@ -597,7 +559,7 @@ public class IdProvider {
         }
       }
       // persist mappings and issue new ids for missing ones
-      for (SimpleNameWithNidx sn : names) {
+      for (var sn : names) {
         if (sn.getCanonicalId() == null) {
           issueNewId(sn);
         }
@@ -620,7 +582,7 @@ public class IdProvider {
     scores.remove(rm);
   }
 
-  private void issueNewId(SimpleNameWithNidx n) {
+  private void issueNewId(life.catalogue.api.model.SimpleNameWithNidx n) {
     int id = keySequence.incrementAndGet();
     n.setCanonicalId(id);
     created.add(id);
@@ -682,6 +644,30 @@ public class IdProvider {
         score += 6;
       }
     }
+    // tax group
+    if (n.getGroup() != null) {
+      if (Objects.equals(n.getGroup(), r.group)) {
+        score += 2;
+      } else if (n.getGroup().isDisparateTo(r.group)) {
+        return 0;
+      }
+    }
+    // exact names index
+    if (Objects.equals(n.getNamesIndexId(), r.nxId)) {
+      if (n.isCanonical()) {
+        // both canonical
+        score += 5;
+      } else {
+        // both qualified names
+        score += 10;
+      }
+    } else if (n.isCanonical() || r.isCanonical()) {
+      // one is canonical, the other not
+      score += 2;
+    } else {
+      // both are qualified names but with different names index ids
+      score -= 10;
+    }
     // match type
     score += matchTypeScore(n.getNamesIndexMatchType());
     score += matchTypeScore(r.matchType);
@@ -697,7 +683,8 @@ public class IdProvider {
       return 0;
     }
 
-    return score;
+    // no less than zero
+    return Math.max(0, score);
   }
 
   private static int matchTypeScore(MatchType mt) {

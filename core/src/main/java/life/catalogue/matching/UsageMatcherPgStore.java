@@ -6,7 +6,9 @@ import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
@@ -14,6 +16,8 @@ import org.apache.ibatis.session.SqlSession;
 /**
  * Does not store or cache anything, but reads directly from Postgres
  * relying on external code to keep the DB in sync with the source of truth.
+ *
+ * Note that the all iterators are unsupported.
  */
 public class UsageMatcherPgStore implements UsageMatcherStore {
   private final int datasetKey;
@@ -41,8 +45,8 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
   }
 
   @Override
-  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx) {
-    var sns = num.listByCanonNIDX(datasetKey, nidx);
+  public List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId) {
+    var sns = num.listByCanonNIDX(datasetKey, canonId);
     if (sns != null) {
       List<SimpleNameClassified<SimpleNameCached>> list = new ArrayList<>(sns.size());
       for (SimpleNameCached sn : sns) {
@@ -55,8 +59,28 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
   }
 
   @Override
+  public List<SimpleNameCached> simpleNamesByCanonicalId(int canonId) {
+    return num.listByCanonNIDX(datasetKey, canonId);
+  }
+
+  @Override
   public SimpleNameCached get(String usageID) throws NotFoundException {
     return num.getSimpleCached(key.id(usageID));
+  }
+
+  @Override
+  public Iterable<SimpleNameCached> all() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Iterable<Integer> allCanonicalIds() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void update(String usageID, TaxGroup group) {
+    throw new UnsupportedOperationException();
   }
 
   @Override

@@ -145,7 +145,7 @@ public class MybatisFactory {
     registry.registerAlias("HomonymMybatis", Duplicate.Homonyms.class);
     registry.registerAlias("DuplicateIntKeys", Duplicate.IntKeys.class);
     registry.registerAlias("SimpleWithID", IssueContainer.SimpleWithID.class);
-    registry.registerAlias("ArchivedSimpleNameWithNidx", ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx.class);
+    registry.registerAlias("ArchivedSimpleName", ArchivedNameUsageMapper.ArchivedSimpleName.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {

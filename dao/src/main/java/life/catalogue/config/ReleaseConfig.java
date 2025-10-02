@@ -18,9 +18,6 @@ public class ReleaseConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseConfig.class);
   // id to restart with - keep null unless you know what to do
   public Integer restart;
-  // nidx deduplication workaround - should be fixed by now so not enabled by default
-  public boolean nidxDeduplication = false;
-
   public boolean deleteOnError = true;
 
   @NotNull

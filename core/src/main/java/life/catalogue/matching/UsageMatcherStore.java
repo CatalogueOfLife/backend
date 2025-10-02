@@ -1,10 +1,10 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
 
@@ -13,11 +13,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public interface UsageMatcherStore extends AutoCloseable {
@@ -37,6 +33,18 @@ public interface UsageMatcherStore extends AutoCloseable {
     return cnt.intValue();
   }
 
+  default int analyze(TaxGroupAnalyzer analyzer){
+    int noCounter = 0;
+    LOG.info("Analyze tax groups for all usages for dataset {}", datasetKey());
+    for (var u : all()) {
+      var cl = getClassification(u.getId());
+      var tg = analyzer.analyze(u, cl);
+      update(u.getId(), tg);
+    }
+    LOG.info("Tax groups analyzed for dataset {} with {} usages having no group", datasetKey(), noCounter);
+    return noCounter;
+  }
+
   int datasetKey();
 
   int size();
@@ -46,10 +54,12 @@ public interface UsageMatcherStore extends AutoCloseable {
   }
 
   /**
-   * @param nidx a canonical names index id
+   * @param canonId a canonical names index id
    * @return list of matching usages that act as candidates for the match
    */
-  List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalNidx(int nidx);
+  List<SimpleNameClassified<SimpleNameCached>> usagesByCanonicalId(int canonId);
+
+  List<SimpleNameCached> simpleNamesByCanonicalId(int canonId);
 
   /**
    * @param usageID the id to start retrieving the classification from
@@ -82,6 +92,12 @@ public interface UsageMatcherStore extends AutoCloseable {
   }
 
   SimpleNameCached get(String usageID) throws NotFoundException;
+
+  void update(String usageID, TaxGroup group);
+
+  Iterable<SimpleNameCached> all();
+
+  Iterable<Integer> allCanonicalIds();
 
   default SimpleNameClassified<SimpleNameCached> getSNClassified(String id) throws NotFoundException {
     var snc = new SimpleNameClassified<SimpleNameCached>(get(id));

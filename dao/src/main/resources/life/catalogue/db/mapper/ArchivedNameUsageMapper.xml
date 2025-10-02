@@ -69,9 +69,10 @@
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
-  <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleNameWithNidx" autoMapping="true">
+  <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleName" autoMapping="true">
     <id property="id" column="id"/>
     <result property="releaseKeys" column="release_keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
   </resultMap>
 
 
@@ -112,6 +113,7 @@
       u.n_code AS code,
       u.status,
       CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
+      u.classification,
       ni.canonical_id,
       ni.id AS namesIndexId,
       m.type AS namesIndexMatchType

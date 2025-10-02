@@ -18,7 +18,7 @@
         <typeAlias type="life.catalogue.api.model.Duplicate$Homonyms" alias="HomonymMybatis" />
         <typeAlias type="life.catalogue.api.model.Duplicate$IntKeys" alias="DuplicateIntKeys" />
         <typeAlias type="life.catalogue.api.model.IssueContainer$SimpleWithID" alias="SimpleWithID" />
-        <typeAlias type="life.catalogue.db.mapper.ArchivedNameUsageMapper$ArchivedSimpleNameWithNidx" alias="ArchivedSimpleNameWithNidx" />
+        <typeAlias type="life.catalogue.db.mapper.ArchivedNameUsageMapper$ArchivedSimpleName" alias="ArchivedSimpleName" />
         <typeAlias type="life.catalogue.db.mapper.DatasetSourceMapper$SourceDataset" alias="SourceDataset" />
 
         <package name="life.catalogue.api.model" />

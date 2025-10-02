@@ -1,9 +1,6 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedNameUsage;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Name;
-import life.catalogue.api.model.SimpleNameWithNidx;
+import life.catalogue.api.model.*;
 import life.catalogue.db.Create;
 import life.catalogue.db.DatasetProcessable;
 
@@ -34,7 +31,7 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
   /**
    * Iterate over all archived names ordered by their canonical names index id.
    */
-  Cursor<ArchivedSimpleNameWithNidx> processArchivedUsages(@Param("datasetKey") int datasetKey);
+  Cursor<ArchivedSimpleName> processArchivedUsages(@Param("datasetKey") int datasetKey);
 
   /**
    * Process all archived name usages as Name instances with names index match infos.
@@ -76,8 +73,9 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
    */
   void truncate();
 
-  class ArchivedSimpleNameWithNidx extends SimpleNameWithNidx {
+  class ArchivedSimpleName extends SimpleNameCached {
     private int[] releaseKeys; // release datasetKey
+    private List<SimpleName> classification; // in case of synonyms the first entry is the accepted name
 
     public int[] getReleaseKeys() {
       return releaseKeys;
@@ -95,5 +93,12 @@ public interface ArchivedNameUsageMapper extends Create<ArchivedNameUsage>, Data
       return releaseKeys[releaseKeys.length-1];
     }
 
+    public List<SimpleName> getClassification() {
+      return classification;
+    }
+
+    public void setClassification(List<SimpleName> classification) {
+      this.classification = classification;
+    }
   }
 }

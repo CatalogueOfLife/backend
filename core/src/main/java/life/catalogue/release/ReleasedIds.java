@@ -2,11 +2,13 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.id.IdConverter;
 
 import org.gbif.nameparser.api.Rank;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,11 +28,12 @@ public class ReleasedIds {
 
   private int maxKey = 0;
   private final Int2ObjectMap<ReleasedId> byId = new Int2ObjectOpenHashMap<>();
-  private final Int2ObjectMap<ReleasedId[]> byNxId = new Int2ObjectOpenHashMap<>();
+  private final Int2ObjectMap<ReleasedId[]> byCanonId = new Int2ObjectOpenHashMap<>();
 
   public static class ReleasedId {
     public final int id;
     public final int nxId;
+    public final int canonId;
     public final int attempt;
     public final boolean isCurrent;
     public final MatchType matchType;
@@ -39,6 +42,7 @@ public class ReleasedIds {
     public final String phrase;
     public final TaxonomicStatus status;
     public final String parent; // this should be the scientific name of the parent, not the ID !!!
+    public final TaxGroup group;
 
     /**
      * @param sn simple name with parent being a scientificName, not ID!
@@ -54,6 +58,7 @@ public class ReleasedIds {
     protected ReleasedId(int id, int attempt, boolean isCurrent, SimpleNameWithNidx sn) {
       this.id = id;
       this.nxId = sn.getNamesIndexId();
+      this.canonId = sn.getCanonicalId();
       this.attempt = attempt;
       this.isCurrent = isCurrent;
       this.matchType = sn.getNamesIndexMatchType();
@@ -62,10 +67,15 @@ public class ReleasedIds {
       this.phrase = sn.getPhrase();
       this.status = sn.getStatus();
       this.parent = sn.getParent();
+      this.group = sn.getGroup();
     }
 
     public String id() {
       return IdConverter.LATIN29.encode(id);
+    }
+
+    public boolean isCanonical() {
+      return Objects.equals(canonId, nxId);
     }
   }
 
@@ -90,11 +100,11 @@ public class ReleasedIds {
   public ReleasedId remove(int id) throws IllegalArgumentException {
     ReleasedId r = byId.remove(id);
     if (r != null) {
-      ReleasedId[] rids = ArrayUtils.removeAllOccurences(byNxId.get(r.nxId), r);
+      ReleasedId[] rids = ArrayUtils.removeAllOccurrences(byCanonId.get(r.canonId), r);
       if (rids == null || rids.length == 0) {
-        byNxId.remove(r.nxId);
+        byCanonId.remove(r.canonId);
       } else {
-        byNxId.put(r.nxId, rids);
+        byCanonId.put(r.canonId, rids);
       }
     }
     return r;
@@ -132,18 +142,18 @@ public class ReleasedIds {
       throw new IllegalStateException("Duplicate identifier. ReleaseId "+ id.attempt + ":" + id.id +" already exists in attempt " + byId.get(id.id).attempt);
     }
     byId.put(id.id, id);
-    if (byNxId.containsKey(id.nxId)) {
-      byNxId.put(id.nxId, ArrayUtils.add(byNxId.get(id.nxId), id));
+    if (byCanonId.containsKey(id.canonId)) {
+      byCanonId.put(id.canonId, ArrayUtils.add(byCanonId.get(id.canonId), id));
     } else {
-      byNxId.put(id.nxId, new ReleasedId[]{id});
+      byCanonId.put(id.canonId, new ReleasedId[]{id});
     }
     if (id.id > maxKey) {
       maxKey = id.id;
     }
   }
 
-  public ReleasedId[] byNxId(int nxId) {
-    return byNxId.getOrDefault(nxId, null);
+  public ReleasedId[] byCanonId(int canonId) {
+    return byCanonId.getOrDefault(canonId, null);
   }
 
   public ReleasedId byId(int id) {

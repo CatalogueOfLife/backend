@@ -4,6 +4,7 @@ import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.vocab.TaxGroup;
 
 import java.util.*;
 
@@ -35,6 +36,18 @@ public abstract class UsageMatcherAbstractStore implements UsageMatcherStore {
       throw NotFoundException.notFound(NameUsage.class, DSID.of(datasetKey, usageID));
     }
     return sn;
+  }
+
+  @Override
+  public void update(String usageID, TaxGroup group) {
+    var u = usages.get(usageID);
+    u.setGroup(group);
+    usages.put(usageID, u);
+  }
+
+  @Override
+  public Iterable<SimpleNameCached> all() {
+    return usages.values();
   }
 
   @Override

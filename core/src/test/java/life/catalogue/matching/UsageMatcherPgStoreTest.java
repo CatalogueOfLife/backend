@@ -33,7 +33,7 @@ public class UsageMatcherPgStoreTest {
       var cl = store.getClassification("u2x");
       assertEquals(1, cl.size());
 
-      var usages = store.usagesByCanonicalNidx(u1.getCanonicalId());
+      var usages = store.usagesByCanonicalId(u1.getCanonicalId());
       assertEquals(1, usages.size());
       assertEquals(u1.getId(), usages.get(0).getId());
     }

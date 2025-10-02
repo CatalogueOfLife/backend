@@ -1,12 +1,12 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.SimpleNameWithNidx;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.BiFunction;
+
+import life.catalogue.api.model.SimpleNameWithNidx;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -21,14 +21,14 @@ public class ScoreMatrix {
   // first dimension=names idx, second=candidates idx
   private final int[][] scores;
   private final IntList distinctScores;
-  private final List<SimpleNameWithNidx> names;
+  private final List<? extends SimpleNameWithNidx> names;
   private final ReleasedIds.ReleasedId[] releasedIds;
 
   /**
    * Produces a match score matrix of all names against all candidates.
    * @param scorer function to generate a score with 0=nomatch, the higher the better the match
    */
-  public ScoreMatrix(List<SimpleNameWithNidx> names, ReleasedIds.ReleasedId[] releasedIds,
+  public ScoreMatrix(List<? extends SimpleNameWithNidx> names, ReleasedIds.ReleasedId[] releasedIds,
                      BiFunction<SimpleNameWithNidx, ReleasedIds.ReleasedId,Integer> scorer) {
     this.names = names;
     this.releasedIds = releasedIds;
@@ -37,7 +37,7 @@ public class ScoreMatrix {
     scores = new int[lenN][lenR];
     int ni=0;
     IntSet distinctScores = new IntOpenHashSet();
-    for (SimpleNameWithNidx n : names){
+    for (var n : names){
       int ri=0;
       for (ReleasedIds.ReleasedId r : releasedIds){
         int score = Math.max(scorer.apply(n, r), 0);
@@ -61,10 +61,10 @@ public class ScoreMatrix {
     private final int namesIdx;
     private final int relIdx;
     final int score;
-    final SimpleNameWithNidx name;
+    final life.catalogue.api.model.SimpleNameWithNidx name;
     final ReleasedIds.ReleasedId rid;
 
-    public ReleaseMatch(int namesIdx, int relIdx, int score, SimpleNameWithNidx name, ReleasedIds.ReleasedId rid) {
+    public ReleaseMatch(int namesIdx, int relIdx, int score, life.catalogue.api.model.SimpleNameWithNidx name, ReleasedIds.ReleasedId rid) {
       this.namesIdx = namesIdx;
       this.relIdx = relIdx;
       this.score = score;
