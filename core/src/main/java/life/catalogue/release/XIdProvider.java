@@ -41,6 +41,7 @@ public class XIdProvider extends IdProvider implements UsageIdGen, AutoCloseable
       } else {
         // for new canonical names we issue a temp id for now, so we can update the authorship later
         // and assign new ids without wasting stable IDs
+
         return ShortUUID.ID_GEN.get();
       }
 

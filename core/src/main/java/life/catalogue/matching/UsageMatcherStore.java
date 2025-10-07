@@ -113,13 +113,6 @@ public interface UsageMatcherStore extends AutoCloseable {
   void add(SimpleNameCached sn);
 
   /**
-   * Change an existing usage ID
-   * @param oldID
-   * @param newID
-   */
-  void updateUsageID(String oldID, String newID);
-
-  /**
    * Moves the taxon given to a new parent by updating the parent_id
    * @param usageID the taxon to update
    * @param parentId the new parentId to assign

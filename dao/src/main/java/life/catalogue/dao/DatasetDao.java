@@ -366,7 +366,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         && old.getOrigin().isRelease()
         && java.util.Objects.equals(old.getSourceKey(), Datasets.COL)
         && !old.isPrivat()
-        && old.getVersion().startsWith("Annual")
+        && old.getVersion().contains("Annual")
     ) {
       throw new IllegalArgumentException("You cannot delete public annual releases of the COL project");
     }

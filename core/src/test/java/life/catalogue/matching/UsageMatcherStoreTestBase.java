@@ -39,19 +39,13 @@ public abstract class UsageMatcherStoreTestBase {
       assertEquals(3, cl.size());
       assertEquals(sn5.getParentId(), cl.get(0).getId());
 
-      // expected mutations when the ID 4 changes...
-      sn4.setId("44");
-      sn1.setParent(sn4.getId());
-      sn2.setParent(sn4.getId());
-      store.updateUsageID("4", sn4.getId());
-
       assertEquals(sn2, store.get(sn2.getId()));
       cl = store.getClassification(sn5.getParentId());
       assertEquals(3, cl.size());
       assertEquals(sn5.getParentId(), cl.get(0).getId());
 
       assertEquals(sn4, store.get(sn4.getId()));
-      assertNotFound("4", store);
+      assertNotFound("44", store);
     }
   }
 

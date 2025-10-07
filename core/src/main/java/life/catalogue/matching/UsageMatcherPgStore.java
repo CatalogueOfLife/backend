@@ -89,11 +89,6 @@ public class UsageMatcherPgStore implements UsageMatcherStore {
   }
 
   @Override
-  public void updateUsageID(String oldID, String newID) {
-    // nothing cached - straight db
-  }
-
-  @Override
   public void updateParentId(String usageID, String parentId) {
     // nothing cached - straight db
   }

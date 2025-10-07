@@ -475,10 +475,14 @@ public class IdProvider {
       count = num.count(mappedDatasetKey);
       samples = num.listSN(mappedDatasetKey, new Page(0, 10));
     }
-    try (var tf = TempFile.file();
+    try (var tf = TempFile.directory();
          var store = UsageMatcherChronicleStore.build(mappedDatasetKey, tf.file, count+1000, samples)
     ) {
-      store.load(factory);
+      int cntLoaded = store.load(factory);
+      int cntStore = store.size();
+      if (cntStore != cntLoaded || cntStore != count) {
+        LOG.warn("Mismatch between counted, loaded and stored usage counts: {}/{}/{}", count, cntLoaded, cntStore);
+      }
       store.analyze(groupAnalyzer);
       mapIds(store, minIdLength);
     } catch (IOException e) {
@@ -488,7 +492,7 @@ public class IdProvider {
 
   @VisibleForTesting
   protected void mapIds(UsageMatcherStore uStore, int minIdLength){
-    LOG.info("Map {} name usage IDs from dataset {}", uStore.size(), mappedDatasetKey);
+    LOG.info("Map {} name usage IDs from dataset {} with a minimum length of {}", uStore.size(), mappedDatasetKey, minIdLength);
     final int lastRelIds = ids.currentIdCount();
     AtomicInteger counter = new AtomicInteger();
     try (SqlSession writeSession = factory.openSession(false);

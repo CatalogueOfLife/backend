@@ -796,25 +796,18 @@ public class TreeMergeHandler extends TreeBaseHandler {
       // also update the original match as we cache and reuse that
       if (upd.size() != updSizeStart) {
         if (!Objects.equals(src.getNamesIndexId(), n.getNamesIndexId())) {
-          final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
+          // update name match in db
           n.setNamesIndexId(src.getNamesIndexId());
+          nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
           if (existingUsage != null) {
             existingUsage.usage.setNamesIndexId(src.getNamesIndexId());
             existingUsage.usage.setNamesIndexMatchType(src.getNamesIndexType());
+            // warn if can on canonical nidx changed - this should not be the case
+            final var canonicalNidx = nameIndex.getCanonical(src.getNamesIndexId());
             if (!Objects.equals(existingUsage.usage.getCanonicalId(), canonicalNidx)) {
               LOG.warn("Updated name {} changed it's canonical nidx: {} -> {}", n.getLabel(), existingUsage.usage.getCanonicalId(), canonicalNidx);
               existingUsage.usage.setCanonicalId(canonicalNidx);
             }
-            // also update the usage identifier for changes in authorship !!!
-            // https://github.com/CatalogueOfLife/backend/issues/1407
-            // assign new id based on the new nidx
-            final var oldID = existingUsage.usage.getId();
-            final var newID = usageIdGen.issue(existingUsage.usage);
-            existingUsage.usage.setId(newID);
-            TaxonDao.changeUsageID(DSID.of(targetDatasetKey, oldID), newID, existingUsage.usage.isSynonym(), user, batchSession);
-            matcher.store().updateUsageID(oldID, newID);
-            // update name match in db
-            nmm.update(n, src.getNamesIndexId(), src.getNamesIndexType());
           }
         }
         // keep matcher storage in sync
