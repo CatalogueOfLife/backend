@@ -3,6 +3,7 @@ package life.catalogue.matching;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -13,6 +14,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
@@ -23,7 +25,6 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,6 +90,16 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     this.factory = Preconditions.checkNotNull(factory);
     this.dir = cfg.storageDir;
     this.cfg = cfg;
+    // validate files on disk
+    for (var key : listFS()) {
+      try {
+        DatasetInfoCache.CACHE.info(key);
+      } catch (NotFoundException e) {
+        File f = cfg.dir(key);
+        LOG.warn("Dataset {} not existing, delete matching storage folder {}", key, f);
+        FileUtils.deleteQuietly(f);
+      }
+    }
   }
 
   public NameIndex getNameIndex() {
@@ -170,7 +181,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     if (matchers.containsKey(datasetKey)) {
       return matchers.get(datasetKey);
     }
-    var f = dbDir(datasetKey);
+    var f = cfg.dir(datasetKey);
     if (f.isDirectory()) {
       return persistent(datasetKey);
     }
@@ -195,7 +206,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       LOG.info("Reuse existing persistent matcher for dataset {}", datasetKey);
 
     } else {
-      var f = dbDir(datasetKey);
+      var f = cfg.dir(datasetKey);
 
       if (cfg.chronicle) {
         LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
@@ -227,25 +238,34 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return new UsageMatcher(datasetKey, nameIndex, store, false);
   }
 
-  private File dbDir(int datasetKey) {
-    return new File(dir, datasetKey+"");
-  }
-
   @Override
   public void datasetChanged(DatasetChanged d) {
-    // we don't care
+    if (d.isDeletion()) {
+      remove(d.key);
+    }
   }
 
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
     // remove any persistent matcher for the dataset that changed
-    if (matchers.containsKey(event.datasetKey)) {
-      LOG.info("Delete matcher for dataset {} due to changed data", event.datasetKey);
-      matchers.remove(event.datasetKey);
-      if (dir != null) {
-        var file = dbDir(event.datasetKey);
-        FileUtils.deleteQuietly(file);
+    remove(event.datasetKey);
+  }
+
+  private void remove(int datasetKey) {
+    if (matchers.containsKey(datasetKey)) {
+      LOG.info("Delete matcher for dataset {} due to changed data", datasetKey);
+      var m = matchers.remove(datasetKey);
+      if (m != null) {
+        try {
+          m.close();
+        } catch (Exception e) {
+          LOG.error("Failed to close matcher for dataset {}", datasetKey, e);
+        }
       }
+    }
+    if (dir != null) {
+      var file = cfg.dir(datasetKey);
+      FileUtils.deleteQuietly(file);
     }
   }
 
@@ -280,7 +300,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       var m = matchers.get(datasetKey);
       return new MatcherMetadata(datasetKey, true, m.store().size());
     }
-    var f = dbDir(datasetKey);
+    var f = cfg.dir(datasetKey);
     if (f.isDirectory()) {
       try {
         var m = persistent(datasetKey);
@@ -300,22 +320,31 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
       keys.add(e.getIntKey());
     }
     // look for more on disk
+    for (var key : listFS()) {
+      if (!keys.contains(key)) {
+        matchers.add(new MatcherMetadata(key, false, null));
+        keys.add(key);
+      }
+    }
+    Collections.sort(matchers);
+    return new FactoryMetadata(matchers);
+  }
+
+  private List<Integer> listFS() {
+    List<Integer> keys = new ArrayList<>();
     if (dir != null && dir.isDirectory()) {
       FilenameFilter ff = cfg.chronicle ? DirectoryFileFilter.INSTANCE : FileFileFilter.INSTANCE;
       String[] files = dir.list(ff);
       for (var fn : files) {
         try {
           int key = Integer.parseInt(fn);
-          if (!keys.contains(key)) {
-            matchers.add(new MatcherMetadata(key, false, null));
-          }
+          keys.add(key);
         } catch (NumberFormatException e) {
           // ignore
         }
       }
     }
-    Collections.sort(matchers);
-    return new FactoryMetadata(matchers);
+    return keys;
   }
 
   @Override

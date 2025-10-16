@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.junit.*;
 import life.catalogue.parser.NameParser;
 

@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.JobExecutor;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;

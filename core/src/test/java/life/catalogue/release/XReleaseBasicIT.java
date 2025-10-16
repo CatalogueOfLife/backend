@@ -23,10 +23,8 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
 
-import life.catalogue.matching.MatchingConfig;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
-
-import life.catalogue.printer.PrinterUtils;
 
 import org.gbif.nameparser.api.NameType;
 

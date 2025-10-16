@@ -23,7 +23,7 @@ import life.catalogue.junit.TreeRepoRule;
 
 import java.net.URI;
 
-import life.catalogue.matching.MatchingConfig;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
 
 import org.junit.Before;

@@ -1,4 +1,4 @@
-package life.catalogue.matching;
+package life.catalogue.config;
 
 import java.io.File;
 
@@ -11,6 +11,15 @@ public class MatchingConfig {
    * If null all matching storage is kept in memory only.
    */
   public File storageDir;
+
+  /**
+   * Directory with matching data for a specific dataset
+   * @param datasetKey
+   * @return
+   */
+  public File dir(int datasetKey) {
+    return new File(storageDir, datasetKey+"");
+  }
 
   /**
    * Makes sure all configured directories do actually exist and create them if missing

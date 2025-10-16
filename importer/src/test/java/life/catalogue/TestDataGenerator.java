@@ -15,7 +15,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.junit.*;
-import life.catalogue.matching.MatchingConfig;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.release.ProjectCopyFactory;

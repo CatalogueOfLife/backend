@@ -23,7 +23,7 @@ import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.*;
-import life.catalogue.matching.MatchingConfig;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NameIndexImpl;

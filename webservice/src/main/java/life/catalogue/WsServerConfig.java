@@ -18,15 +18,12 @@ import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
-import life.catalogue.matching.MatchingConfig;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
 
 import life.catalogue.resources.legacy.LegacyConfig;
 
