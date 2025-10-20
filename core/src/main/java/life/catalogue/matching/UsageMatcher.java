@@ -238,7 +238,7 @@ public class UsageMatcher implements AutoCloseable {
           parentsCopy = nu.getClassification().subList(markerIdx, nu.getClassification().size());
         }
         var group = groupAnalyzer.analyze(nu, parentsCopy);
-        if (existing.removeIf(rn -> !classificationMatches(group, rn))) {
+        if (existing.removeIf(rn -> !classificationMatches(group, nu, rn))) {
           LOG.debug("Removed matches for {} usage {} with classifications not in {} group", nu.getRank(), nu.getLabel(), group);
         }
       }
@@ -492,8 +492,13 @@ public class UsageMatcher implements AutoCloseable {
   }
 
   // if authors are missing require the classification to not contradict!
-  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameCached> candidate) {
+  private boolean classificationMatches(TaxGroup group, SimpleNameClassified<SimpleNameCached> nu, SimpleNameClassified<SimpleNameCached> candidate) {
     if (group == null) {
+      return true;
+    }
+    // avoid classification group comparison for species and below which have the exact same authorship
+    // https://github.com/CatalogueOfLife/backend/issues/1430
+    if (nu.getRank().isSpeciesOrBelow() && nu.getAuthorship() != null && nu.getAuthorship().equals(candidate.getAuthorship())) {
       return true;
     }
     var candidateGroup = groupAnalyzer.analyze(candidate, candidate.getClassification());

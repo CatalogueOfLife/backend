@@ -30,7 +30,7 @@ public class TxtTreeDaoTest extends DaoTestBase {
   public void inclParents() throws IOException {
     Writer w = new StringWriter();
     dao.readTxtree(TestDataRule.TREE.key, "t30", false, true, null, w);
-    System.out.println(w.toString());
+    System.out.println(w);
   }
 
 }
