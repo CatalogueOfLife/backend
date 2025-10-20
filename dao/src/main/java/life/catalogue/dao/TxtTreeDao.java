@@ -52,16 +52,24 @@ public class TxtTreeDao {
     this.interpreter = interpreter;
   }
 
-  public void readTxtree(int datasetKey, String id, boolean extended, Set<Rank> ranks, OutputStream os) throws IOException {
+  public void readTxtree(int datasetKey, String id, boolean extended, boolean inclParents, Set<Rank> ranks, OutputStream os) throws IOException {
+    try (Writer writer = UTF8IoUtils.writerFromStream(os)) {
+      readTxtree(datasetKey, id, extended, inclParents, ranks, writer);
+    }
+  }
+
+  public void readTxtree(int datasetKey, String id, boolean extended, boolean inclParents, Set<Rank> ranks, Writer writer) throws IOException {
     var ttp = TreeTraversalParameter.dataset(datasetKey);
     ttp.setTaxonID(id);
     ttp.setSynonyms(true);
 
-    try (Writer writer = UTF8IoUtils.writerFromStream(os);
-         TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, factory, writer)
-    ) {
+    try (TextTreePrinter printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, ranks, null, null, null, factory, writer)) {
       if (extended) {
         printer.showExtendedInfos();
+      }
+      printer.showIDs();
+      if (inclParents) {
+        printer.printParents();
       }
       printer.print();
       writer.flush();

@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorInfoCache;
 import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
@@ -74,6 +75,28 @@ public class TextTreePrinter extends AbstractTreePrinter {
   public TextTreePrinter showExtendedInfos() {
     extended = true;
     return this;
+  }
+
+  /**
+   * Prints the parent classification of the given root taxon and increases the indentation (level) accordingly.
+   * Make sure to call this method only once and before printing any taxa!
+   *
+   * This method will do nothing if no taxonID (root) is set in the traversal parameters.
+   */
+  public void printParents() {
+    if (params.getTaxonID() != null) {
+      try (var sess = factory.openSession(true)){
+        var num = sess.getMapper(NameUsageMapper.class);
+        var cl = num.getClassificationSN(key.id(params.getTaxonID()));
+        if (cl != null) {
+          for (var sn : cl) {
+            if (!sn.getId().equals(params.getTaxonID())) {
+              accept(sn);
+            }
+          }
+        }
+      }
+    }
   }
 
   protected void start(SimpleName u) throws IOException {
