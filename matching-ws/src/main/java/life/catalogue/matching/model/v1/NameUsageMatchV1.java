@@ -83,7 +83,9 @@ public class NameUsageMatchV1 {
         DiagnosticsV1.DiagnosticsV1Builder diagBuilder = DiagnosticsV1.builder();
         diagBuilder.matchType(MatchTypeV1.convert(nameUsageMatch.getDiagnostics().getMatchType()));
         diagBuilder.confidence(nameUsageMatch.getDiagnostics().getConfidence());
-        diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getUsage().getStatus()));
+        if( nameUsageMatch.getUsage() != null ) {
+          diagBuilder.status(TaxonomicStatusV1.convert(nameUsageMatch.getUsage().getStatus()));
+        }
         diagBuilder.note(nameUsageMatch.getDiagnostics().getNote());
         diagBuilder.timeTaken(nameUsageMatch.getDiagnostics().getTimeTaken());
 
