@@ -116,4 +116,39 @@ pipeline {
               }
         }
     }
+    // 🔔 Email notifications
+    post {
+        failure {
+            emailext(
+                to: 'dmartin@gbif.org',
+                subject: "matching-ws docker image FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """\
+                    Build failed!
+
+                    Project: ${env.JOB_NAME}
+                    Build Number: ${env.BUILD_NUMBER}
+                    Branch: ${params.GIT_BRANCH}
+                    Dataset ID: ${params.CLB_DATASET_ID}
+                    URL: ${env.BUILD_URL}
+
+                    Please check the Jenkins logs for details.
+                    """
+            )
+        }
+        success {
+            emailext(
+                to: 'dmartin@gbif.org',
+                subject: "matching-ws docker image SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """\
+                  Build succeeded!
+
+                  Project: ${env.JOB_NAME}
+                  Build Number: ${env.BUILD_NUMBER}
+                  Branch: ${params.GIT_BRANCH}
+                  URL: ${env.BUILD_URL}
+                  """
+            )
+        }
+    }
+
 }
