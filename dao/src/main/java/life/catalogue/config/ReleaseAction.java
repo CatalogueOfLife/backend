@@ -1,7 +1,6 @@
 package life.catalogue.config;
 
 import life.catalogue.api.model.Dataset;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.text.CitationUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -10,11 +9,15 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import life.catalogue.doi.service.BasicAuthenticator;
+
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static life.catalogue.doi.service.BasicAuthenticator.AUTHORIZATION_HEADER;
 
 /**
  * Action to be called after a release with the URL being a templated allowed to contain
@@ -30,6 +33,7 @@ public class ReleaseAction {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseAction.class);
 
   public String method;
+  public String auth;
   public String url;
 
   /**
@@ -51,9 +55,13 @@ public class ReleaseAction {
       return -1;
     }
 
-    var req = ClassicRequestBuilder.create(method.trim().toUpperCase())
-      .setUri(uri)
-      .build();
+    var builder = ClassicRequestBuilder.create(method.trim().toUpperCase()).setUri(uri);
+
+    if (auth != null) {
+      var basicAuth = BasicAuthenticator.basicAuthentication(auth);
+      builder.addHeader(AUTHORIZATION_HEADER, basicAuth);
+    }
+    var req = builder.build();
     // execute
     LOG.info("{} {}", method, uri);
     try (CloseableHttpResponse response = client.execute(req)) {
