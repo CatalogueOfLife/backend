@@ -33,10 +33,6 @@ public class ReleaseConfig {
   // the COL download directory with monthly and annual subfolder
   public File colDownloadDir = new File("/tmp/col");
 
-  // project -> list of action hook URLs to be called once a release has been published
-  @NotNull
-  public Map<Integer, List<ReleaseAction>> onPublish = new HashMap<>();
-
   public static File reportDir(File reportRoot, int datasetKey, int attempt) {
     return new File(reportDir(reportRoot, datasetKey), String.valueOf(attempt));
   }

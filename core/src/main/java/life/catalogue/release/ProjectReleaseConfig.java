@@ -92,4 +92,7 @@ public class ProjectReleaseConfig {
   @NotNull
   public List<ReleaseAction> actions = new ArrayList<>();
 
+  // list of action hook URLs to be called after successful publication of a release
+  @NotNull
+  public List<ReleaseAction> publishActions = new ArrayList<>();
 }

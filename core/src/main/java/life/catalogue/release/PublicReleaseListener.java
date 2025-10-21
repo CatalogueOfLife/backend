@@ -10,6 +10,7 @@ import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.ReleaseConfig;
@@ -24,6 +25,7 @@ import life.catalogue.doi.service.DoiService;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
@@ -72,7 +74,7 @@ public class PublicReleaseListener implements DatasetListener {
   @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
-      && event.obj.getOrigin().isRelease()
+      && event.obj.getOrigin().isRelease() // release or xrelease
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
@@ -100,9 +102,19 @@ public class PublicReleaseListener implements DatasetListener {
         LOG.error("Failed to archive names for published release {}", event.obj.getKey(), e);
       }
 
-      // generic hooks
-      if (cfg.onPublish != null && cfg.onPublish.containsKey(event.obj.getSourceKey())) {
-        for (var action : cfg.onPublish.get(event.obj.getSourceKey())) {
+      // generic hooks for releases?
+      ProjectReleaseConfig rcfg = null;
+      try (SqlSession session = factory.openSession(true)) {
+        var settings = session.getMapper(DatasetMapper.class).getSettings(event.obj.getSourceKey());
+        Setting relSetting = event.obj.getOrigin() == DatasetOrigin.XRELEASE ? Setting.XRELEASE_CONFIG : Setting.RELEASE_CONFIG;
+        if (settings.containsKey(relSetting)) {
+          rcfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, settings.getURI(relSetting), false);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to look for custom publishing actions for release {}", event.obj.getKey(), e);
+      }
+      if (rcfg != null &&   rcfg.publishActions != null) {
+        for (var action : rcfg.publishActions) {
           action.call(httpClient, event.obj);
         }
       }
