@@ -58,10 +58,11 @@ public class TreeResource {
   public List<TreeNode> classification(@PathParam("key") int datasetKey,
                                 @PathParam("id") String id,
                                 @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
+                                @QueryParam("type") TreeNode.Type type,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
-                                @QueryParam("type") TreeNode.Type type) {
-    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, type);
+                                @QueryParam("limit") Integer limit) {
+    return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, type, limit);
   }
 
   @DELETE
@@ -79,9 +80,9 @@ public class TreeResource {
   public ResultPage<TreeNode> children(@PathParam("key") int datasetKey,
                                        @PathParam("id") String id,
                                        @QueryParam("catalogueKey") @DefaultValue(Datasets.COL +"") int catalogueKey,
-                                       @QueryParam("insertPlaceholder") boolean placeholder,
-                                       @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                        @QueryParam("type") TreeNode.Type type,
+                                       @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
+                                       @QueryParam("insertPlaceholder") boolean placeholder,
                                        @QueryParam("limit") Integer limit,
                                        @QueryParam("offset") Integer offset) {
     return tree.children(DSID.of(datasetKey, id), catalogueKey, placeholder, inclExtinct, type, page(limit, offset));

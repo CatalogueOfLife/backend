@@ -45,6 +45,7 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   private EditorialDecision decision;
   private IntSet sourceDatasetKeys;
   private Map<UUID, IntSet> publisherDatasetKeys;
+  private ResultPage<TreeNode> children;
 
   /**
    * Exposes a structured name instance as a full name with html markup
@@ -215,6 +216,14 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
     this.publisherDatasetKeys = publisherDatasetKeys;
   }
 
+  public ResultPage<TreeNode> getChildren() {
+    return children;
+  }
+
+  public void setChildren(ResultPage<TreeNode> children) {
+    this.children = children;
+  }
+
   @JsonIgnore
   public boolean isPlaceholder() {
     return this instanceof PlaceholderNode;
@@ -224,13 +233,28 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof TreeNode)) return false;
+
     TreeNode treeNode = (TreeNode) o;
-    return childCount == treeNode.childCount && Objects.equals(datasetKey, treeNode.datasetKey) && Objects.equals(id, treeNode.id) && Objects.equals(parentId, treeNode.parentId) && rank == treeNode.rank && status == treeNode.status && Objects.equals(count, treeNode.count) && Objects.equals(sectorKey, treeNode.sectorKey) && sectorMode == treeNode.sectorMode && Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) && Objects.equals(sectorRoot, treeNode.sectorRoot) && Objects.equals(decision, treeNode.decision) && Objects.equals(sourceDatasetKeys, treeNode.sourceDatasetKeys) && Objects.equals(publisherDatasetKeys, treeNode.publisherDatasetKeys);
+    return childCount == treeNode.childCount &&
+      Objects.equals(datasetKey, treeNode.datasetKey) &&
+      Objects.equals(id, treeNode.id) &&
+      Objects.equals(parentId, treeNode.parentId) &&
+      rank == treeNode.rank &&
+      status == treeNode.status &&
+      Objects.equals(count, treeNode.count) &&
+      Objects.equals(sectorKey, treeNode.sectorKey) &&
+      sectorMode == treeNode.sectorMode &&
+      Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
+      Objects.equals(sectorRoot, treeNode.sectorRoot) &&
+      Objects.equals(decision, treeNode.decision) &&
+      Objects.equals(sourceDatasetKeys, treeNode.sourceDatasetKeys) &&
+      Objects.equals(publisherDatasetKeys, treeNode.publisherDatasetKeys) &&
+      Objects.equals(children, treeNode.children);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, sectorKey, sectorMode, sectorDatasetKey, sectorRoot, decision, sourceDatasetKeys, publisherDatasetKeys);
+    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, sectorKey, sectorMode, sectorDatasetKey, sectorRoot, decision, sourceDatasetKeys, publisherDatasetKeys, children);
   }
 
   @Override

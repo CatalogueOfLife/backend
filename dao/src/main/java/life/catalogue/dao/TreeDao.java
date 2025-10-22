@@ -67,9 +67,10 @@ public class TreeDao {
   }
 
   /**
+   * @param limit if not null adds children result pages to each node in the classification
    * @return classification starting with the given start id
    */
-  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type) {
+  public List<TreeNode> classification(DSID<String> id, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type, @Nullable Integer limit) {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
@@ -110,7 +111,17 @@ public class TreeDao {
       // figure out which publishers to group by based on the datasetKey
       Set<UUID> publisherKeys = pm.listAllKeys(key.getDatasetKey());
       aggrPublisher(classification, publisherKeys);
+      if (limit != null) {
+        addChildren(classification, session, projectKey, inclExtinct, placeholder, type, limit);
+      }
       return classification;
+    }
+  }
+
+  private void addChildren(LinkedList<TreeNode> classification, SqlSession session, int projectKey, boolean inclExtinct, boolean placeholder, TreeNode.Type type, int limit) {
+    for (var tn : classification) {
+      var childs = rootOrChildren(tn, projectKey, placeholder, inclExtinct, type, new Page(0, limit), session);
+      tn.setChildren(childs);
     }
   }
 
@@ -173,52 +184,56 @@ public class TreeDao {
    */
   private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page) {
     try (SqlSession session = factory.openSession()){
-      TreeMapper trm = session.getMapper(TreeMapper.class);
-      TaxonMapper tm = session.getMapper(TaxonMapper.class);
-      PublisherMapper pm = session.getMapper(PublisherMapper.class);
-
-      // not null, but parent.id might be null
-      final RankID parent = RankID.parseID(id);
-      final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent);
-      final Integer sectorKey = tnParent == null ? null : tnParent.getSectorKey();
-      List<TreeNode> result = placeholder ?
-        trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, page) :
-        trm.children(projectKey, type, parent, inclExtinct, page);
-      Supplier<Integer> countSupplier;
-      if (placeholder && !result.isEmpty()) {
-        countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank(), inclExtinct);
-      } else {
-        countSupplier =  () -> tm.countChildren(parent, inclExtinct);
-      }
-
-      if (placeholder && !result.isEmpty() && result.size() <= page.getLimit()) {
-        // we *might* need a placeholder, check if there are more children of other ranks
-        // look for the highest rank of the result set in the first record - they are ordered by rank!
-        TreeNode firstResult = result.get(0);
-        int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank(), inclExtinct);
-        if (lowerChildren > 0) {
-          List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank(), inclExtinct);
-          TreeNode placeHolder = placeholder(sectorKey, firstResult, lowerChildren, placeholderParentRanks);
-          // does a placeholder sector exist with a matching placeholder rank?
-          if (type == TreeNode.Type.SOURCE) {
-            SectorMapper sm = session.getMapper(SectorMapper.class);
-            Sector s = sm.getBySubject(projectKey, parent);
-            if (s != null && s.getPlaceholderRank() == placeHolder.getRank()) {
-              placeHolder.setSectorKey(s.getId());
-            }
-          }
-          result.add(placeHolder);
-        }
-      }
-      // update parentID to use original input
-      result.forEach(c -> c.setParentId(id.getId()));
-      addPlaceholderSectors(projectKey, result, type, session);
-      updateSectorRootFlags(sectorKey, result);
-      // figure out which publishers to group by based on the datasetKey
-      Set<UUID> publisherKeys = pm.listAllKeys(parent.getDatasetKey());
-      aggrPublisher(result, publisherKeys);
-      return new ResultPage<>(page, result, countSupplier);
+      return rootOrChildren(id, projectKey, placeholder, inclExtinct, type, page, session);
     }
+  }
+
+  private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page, SqlSession session) {
+    TreeMapper trm = session.getMapper(TreeMapper.class);
+    TaxonMapper tm = session.getMapper(TaxonMapper.class);
+    PublisherMapper pm = session.getMapper(PublisherMapper.class);
+
+    // not null, but parent.id might be null
+    final RankID parent = RankID.parseID(id);
+    final TreeNode tnParent = parent.getId() == null ? null : trm.get(projectKey, type, parent);
+    final Integer sectorKey = tnParent == null ? null : tnParent.getSectorKey();
+    List<TreeNode> result = placeholder ?
+      trm.childrenWithPlaceholder(projectKey, type, parent, parent.rank, inclExtinct, page) :
+      trm.children(projectKey, type, parent, inclExtinct, page);
+    Supplier<Integer> countSupplier;
+    if (placeholder && !result.isEmpty()) {
+      countSupplier =  () -> tm.countChildrenWithRank(parent, result.get(0).getRank(), inclExtinct);
+    } else {
+      countSupplier =  () -> tm.countChildren(parent, inclExtinct);
+    }
+
+    if (placeholder && !result.isEmpty() && result.size() <= page.getLimit()) {
+      // we *might* need a placeholder, check if there are more children of other ranks
+      // look for the highest rank of the result set in the first record - they are ordered by rank!
+      TreeNode firstResult = result.get(0);
+      int lowerChildren = tm.countChildrenBelowRank(parent, firstResult.getRank(), inclExtinct);
+      if (lowerChildren > 0) {
+        List<Rank> placeholderParentRanks = trm.childrenRanks(parent, firstResult.getRank(), inclExtinct);
+        TreeNode placeHolder = placeholder(sectorKey, firstResult, lowerChildren, placeholderParentRanks);
+        // does a placeholder sector exist with a matching placeholder rank?
+        if (type == TreeNode.Type.SOURCE) {
+          SectorMapper sm = session.getMapper(SectorMapper.class);
+          Sector s = sm.getBySubject(projectKey, parent);
+          if (s != null && s.getPlaceholderRank() == placeHolder.getRank()) {
+            placeHolder.setSectorKey(s.getId());
+          }
+        }
+        result.add(placeHolder);
+      }
+    }
+    // update parentID to use original input
+    result.forEach(c -> c.setParentId(id.getId()));
+    addPlaceholderSectors(projectKey, result, type, session);
+    updateSectorRootFlags(sectorKey, result);
+    // figure out which publishers to group by based on the datasetKey
+    Set<UUID> publisherKeys = pm.listAllKeys(parent.getDatasetKey());
+    aggrPublisher(result, publisherKeys);
+    return new ResultPage<>(page, result, countSupplier);
   }
 
   static void updateSectorRootFlags(List<TreeNode> classification){

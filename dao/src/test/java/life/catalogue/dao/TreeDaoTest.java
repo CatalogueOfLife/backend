@@ -108,7 +108,7 @@ public class TreeDaoTest {
   public void classification() {
     for (boolean placeholder : List.of(false, true)) {
       for (TreeNode.Type type : TreeNode.types()) {
-        List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, "10"), catKey, true, placeholder, type));
+        List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, "10"), catKey, true, placeholder, type, null));
         assertEquals(6, classification.size());
         assertEquals(Rank.SPECIES, classification.get(0).getRank());
         assertEquals(Rank.GENUS, classification.get(1).getRank());
@@ -118,7 +118,7 @@ public class TreeDaoTest {
 
     // expect placeholders
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, "61"), catKey, true, true, type));
+      List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, "61"), catKey, true, true, type, null));
       verifyClassification(classification);
       assertEquals(5, classification.size());
       assertNode(assertNoSector(classification.get(0)), Rank.SPECIES, "Amechilus palaora");
@@ -135,7 +135,7 @@ public class TreeDaoTest {
 
     // Agnostida family placeholder
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, true, type));
+      List<TreeNode> classification = valid(dao.classification(DSID.of(TRILOBITA, RankID.buildID("2", Rank.FAMILY)), catKey, true, true, type, null));
       verifyClassification(classification);
       assertEquals(4, classification.size());
       assertPlaceholder(assertNoSector(classification.get(0)), Rank.FAMILY);
@@ -154,7 +154,7 @@ public class TreeDaoTest {
 
     // mammalia with 2 placeholders below that should not show up
     for (TreeNode.Type type : TreeNode.types()) {
-      List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "18"), catKey, true, true, type));
+      List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "18"), catKey, true, true, type, null));
       assertEquals(3, classification.size());
       assertNode(assertNoSector(classification.get(0)), Rank.CLASS, "Mammalia");
       assertNode(assertNoSector(classification.get(1)), Rank.PHYLUM, "Chordata");
@@ -162,7 +162,7 @@ public class TreeDaoTest {
     }
 
     // start with genus Amechilus in placeholder sector
-    List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "100:60"), catKey, true, true, TreeNode.Type.PROJECT));
+    List<TreeNode> classification = valid(dao.classification(DSID.of(catKey, "100:60"), catKey, true, true, TreeNode.Type.PROJECT, null));
     assertEquals(6, classification.size());
     assertNode(classification.get(0), Rank.GENUS, "Amechilus");
     assertSector(classification.get(0), sectorRule.sectorKey(0));
