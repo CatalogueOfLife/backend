@@ -215,7 +215,7 @@ public class XRelease extends ProjectRelease {
     updateMetadata();
 
     // DOI
-    createReleaseDOI();
+    prevReleaseKey = createReleaseDOI();
   }
 
   @Override

@@ -29,8 +29,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -69,7 +71,7 @@ public class ProjectRelease extends AbstractProjectCopy {
   private final ExportManager exportManager;
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
-  private Integer prevReleaseKey;
+  protected Integer prevReleaseKey; // of same origin!
   protected ProjectReleaseConfig prCfg;
   private IdProvider idProvider;
 
@@ -368,9 +370,20 @@ public class ProjectRelease extends AbstractProjectCopy {
       // This DOES create source dataset records for aggregated publishers.
       // It does not create source records for merge sectors without data in the release itself!
       final boolean createSourceDOIs = prCfg.issueSourceDOIs && doiCfg != null;
+      Set<UUID> publishers = new HashSet<>();
+      if (createSourceDOIs) {
+        if (prCfg.issuePublisherSourceDOIs) {
+          LOG.info("Create DOIs for all sources, including datasets from sector publishers!");
+        } else {
+          LOG.warn("Do not create DOIs for sources from sector publishers!");
+          var pm = session.getMapper(PublisherMapper.class);
+          publishers.addAll(pm.listAllKeys(projectKey));
+        }
+      }
       LOG.info("{} source DOIs for release {}", createSourceDOIs ? "Create" : "Do not create", newDatasetKey);
       for (var d : srcDao.listSectorBasedSources(projectKey, newDatasetKey, true)) {
-        if (createSourceDOIs) {
+        // avoid creating DOIs for datasets managed by publishers
+        if (createSourceDOIs && !publishers.contains(d.getGbifPublisherKey())) {
           // can we reuse a previous DOI for the source?
           DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
           if (srcDOI == null) {

@@ -61,7 +61,12 @@ public class TreeResource {
                                 @QueryParam("type") TreeNode.Type type,
                                 @QueryParam("extinct") @DefaultValue("true") boolean inclExtinct,
                                 @QueryParam("insertPlaceholder") boolean placeholder,
+                                @QueryParam("addChildren") boolean addChildren,
                                 @QueryParam("limit") Integer limit) {
+    if (!addChildren) {
+      // safeguard that limit is not used accidentally - it becomes an expensive call
+      limit = null;
+    }
     return tree.classification(DSID.of(datasetKey, id), catalogueKey, inclExtinct, placeholder, type, limit);
   }
 

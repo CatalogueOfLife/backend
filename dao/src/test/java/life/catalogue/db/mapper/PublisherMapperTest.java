@@ -10,6 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, PublisherMapper>{
   String KEY = StringUtils.removeLast(UUID.randomUUID().toString(),3);
   AtomicInteger KEY_INC = new AtomicInteger(100);
@@ -20,6 +22,14 @@ public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, P
 
   @Test
   public void list() {
+    mapper().create(createTestEntity(datasetKey));
+    mapper().create(createTestEntity(datasetKey));
+    mapper().create(createTestEntity(datasetKey));
+    var keys = mapper().listAllKeys(datasetKey);
+    assertEquals(3, keys.size());
+
+    keys = mapper().listAllKeys(345654);
+    assertEquals(0, keys.size());
   }
 
 
