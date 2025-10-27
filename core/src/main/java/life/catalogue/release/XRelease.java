@@ -25,6 +25,7 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.*;
+import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.NameType;
@@ -532,6 +533,8 @@ public class XRelease extends ProjectRelease {
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
         if (!sm.exists(s)) {
+          // the targetID points to the project temp ids - we need to map to the tmp project ids incl base release ids
+          rematchSectorTarget(s, session);
           sm.createWithID(s);
         }
       }
@@ -572,6 +575,27 @@ public class XRelease extends ProjectRelease {
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, "Merging sectors", start);
     matcher=null; // release matcher memory
+  }
+
+  private void rematchSectorTarget(Sector s, SqlSession session) {
+    if (s.getTarget() != null) {
+      MatchingDao mdao = new MatchingDao(session);
+      List<Taxon> matches = mdao.matchSector(s.getTarget(), s);
+      if (matches.size()==1) {
+        s.getTarget().setId(matches.get(0).getId());
+
+      } else {
+        String warning;
+        s.getTarget().setId(null);
+        if (matches.isEmpty()) {
+          warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - lost " + s.getTarget();
+        } else {
+          warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - multiple names like  " + s.getTarget();
+        }
+        LOG.warn(warning);
+      }
+      session.commit();
+    }
   }
 
   /**
