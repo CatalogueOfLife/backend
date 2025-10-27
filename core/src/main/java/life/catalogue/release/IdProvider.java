@@ -438,15 +438,15 @@ public class IdProvider {
 
     } else {
       try {
-        sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
-        var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
-
         if (sn.getNamesIndexId() == null) {
-          ids.considerMaxID(rl);
+          var intID = IdConverter.LATIN29.decode(sn.getId());
+          ids.considerMaxID(intID);
           stats.nomatches.incrementAndGet();
           LOG.warn("Existing release id {}:{} without a names index id. Skip {}", firstReleaseKey, sn.getId(), sn.getLabel());
-          
+
         } else {
+          sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
+          var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
           ids.add(rl);
           LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
         }

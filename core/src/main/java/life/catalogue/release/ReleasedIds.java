@@ -147,12 +147,12 @@ public class ReleasedIds {
     } else {
       byCanonId.put(id.canonId, new ReleasedId[]{id});
     }
-    considerMaxID(id);
+    considerMaxID(id.id);
   }
 
-  void considerMaxID(ReleasedId id) {
-    if (id.id > maxKey) {
-      maxKey = id.id;
+  void considerMaxID(int id) {
+    if (id > maxKey) {
+      maxKey = id;
     }
   }
 
