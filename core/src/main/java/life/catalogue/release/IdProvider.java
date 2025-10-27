@@ -406,7 +406,7 @@ public class IdProvider {
         sn -> addReleaseId(sn, stats)
       );
       LOG.info("Read {} from archived names. Adding {} previously used ids to a total of {}", stats, ids.size() - sizeBefore, ids.size());
-      ids.log();
+      //ids.log();
     }
   }
 
@@ -436,16 +436,20 @@ public class IdProvider {
       stats.ignored.incrementAndGet();
       LOG.info("Ignoring ID {} from all releases: {}", sn.getId(), sn.getLabel());
 
-    } else if (sn.getNamesIndexId() == null) {
-      stats.nomatches.incrementAndGet();
-      LOG.info("Existing release id {}:{} without a names index id. Skip {}", firstReleaseKey, sn.getId(), sn.getLabel());
-
     } else {
       try {
         sn.setGroup( groupAnalyzer.analyze(sn, sn.getClassification()) );
         var rl = ReleasedId.create(sn, dataset2attempt.getValue(firstReleaseKey), isCurrent);
-        ids.add(rl);
-        LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
+
+        if (sn.getNamesIndexId() == null) {
+          ids.considerMaxID(rl);
+          stats.nomatches.incrementAndGet();
+          LOG.warn("Existing release id {}:{} without a names index id. Skip {}", firstReleaseKey, sn.getId(), sn.getLabel());
+          
+        } else {
+          ids.add(rl);
+          LOG.debug("Add {} from {}/{}: {}", sn.getId(), rl.attempt, firstReleaseKey, sn);
+        }
       } catch (IllegalArgumentException e) {
         // expected for temp identifiers, swallow and count
         stats.temporary.incrementAndGet();
