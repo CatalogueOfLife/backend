@@ -23,10 +23,7 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -111,26 +108,21 @@ public class SectorSync extends SectorRunnable {
    */
   public static boolean rematchSectorTarget(Sector s, int targetDatasetKey, SqlSession session) {
     if (s.getTarget() != null) {
-      SimpleName trgt = null;
-      if (s.getTargetID() != null) {
-        // see if we can find the target by its old project temp ID first
-        trgt = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(targetDatasetKey, s.getTargetID()));
-      }
-      if (trgt == null) {
-        // try to match by name
-        MatchingDao mdao = new MatchingDao(session);
-        MatchingResult match = mdao.matchDataset(s.getTarget(), targetDatasetKey);
+      // try to match by name
+      MatchingDao mdao = new MatchingDao(session);
+      MatchingResult match = mdao.matchDataset(s.getTarget(), targetDatasetKey);
+      final String oldID = s.getTarget().getId();
+      if (match.isEmpty()) {
         s.getTarget().setId(null);
-        if (match.isEmpty()) {
-          LOG.warn("Target of sector {} cannot be matched to target dataset {} - lost {}", s.getKey(), targetDatasetKey, s.getTarget());
-        } else if (match.getMatches().size() > 1) {
-          LOG.warn("Target of sector {} cannot be matched to target dataset {} - multiple names like {}", s.getKey(), targetDatasetKey, s.getTarget());
-        } else {
-          s.getTarget().setId(match.getMatches().get(0).getId());
-          LOG.info("Target of sector {} matched to {} [{}] in target dataset {}", s.getKey(), s.getTarget().getLabel(), s.getTarget().getId(), targetDatasetKey);
-        }
-        return true;
+        LOG.warn("Target of sector {} cannot be matched to target dataset {} - lost {}", s.getKey(), targetDatasetKey, s.getTarget());
+      } else if (match.getMatches().size() > 1) {
+        s.getTarget().setId(null);
+        LOG.warn("Target of sector {} cannot be matched to target dataset {} - multiple names like {}", s.getKey(), targetDatasetKey, s.getTarget());
+      } else {
+        s.getTarget().setId(match.getMatches().get(0).getId());
+        LOG.info("Target of sector {} matched to {} [{}] in target dataset {}", s.getKey(), s.getTarget().getLabel(), s.getTarget().getId(), targetDatasetKey);
       }
+      return !Objects.equals(oldID, s.getTargetID());
     }
     return false;
   }
