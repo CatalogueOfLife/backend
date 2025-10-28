@@ -38,6 +38,7 @@
     d.modified_by
   </sql>
 
+  <!-- Excludes created_by !!! -->
   <sql id="COLS">
     doi,
     identifier,
@@ -65,11 +66,11 @@
     conversion_description,
     conversion_url,
     notes,
-    created_by,
     modified_by
   </sql>
 
   <!--
+  Excludes created_by
   WARNING! Any changes in the PROPS list below must also be applied in DatasetArchiveMapper.xml PROPS sql fragment!
   -->
   <sql id="PROPS">
@@ -99,7 +100,6 @@
     #{obj.conversion.description},
     #{obj.conversion.url},
     #{obj.notes},
-    #{obj.createdBy},
     #{obj.modifiedBy}
   </sql>
 
@@ -116,8 +116,8 @@
   </select>
 
   <insert id="create" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created, modified)
-    VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, now(), now())
+    INSERT INTO dataset_patch ( key, dataset_key,<include refid="COLS"/>, created_by, created, modified)
+    VALUES ( #{obj.key}, #{datasetKey},<include refid="PROPS"/>, #{obj.createdBy}, now(), now())
   </insert>
 
   <update id="update" parameterType="Dataset">

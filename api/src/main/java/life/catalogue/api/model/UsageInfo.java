@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxGroup;
 
 import java.util.*;
@@ -12,9 +13,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class UsageInfo {
   
   private final NameUsageBase usage;
+  private Reference publishedIn;
   private List<SimpleName> classification;
   private TaxGroup group;
   private VerbatimSource source;
+  private VerbatimRecord verbatim;
   private Treatment treatment;
   private List<NameUsageRelation> nameRelations;
   // taxa only
@@ -25,6 +28,7 @@ public class UsageInfo {
   private List<TaxonProperty> properties;
   private List<TaxonConceptRelation> conceptRelations;
   private List<SpeciesInteraction> speciesInteractions;
+  private List<SpeciesEstimate> estimates;
 
   /**
    * Lookup of types for a given nameID
@@ -65,6 +69,14 @@ public class UsageInfo {
     return usage;
   }
 
+  public Reference getPublishedIn() {
+    return publishedIn;
+  }
+
+  public void setPublishedIn(Reference publishedIn) {
+    this.publishedIn = publishedIn;
+  }
+
   public List<SimpleName> getClassification() {
     return classification;
   }
@@ -81,17 +93,30 @@ public class UsageInfo {
     this.group = group;
   }
 
-  @Deprecated
-  public NameUsageBase getTaxon() {
-    return usage;
-  }
-
   public VerbatimSource getSource() {
     return source;
   }
 
   public void setSource(VerbatimSource source) {
     this.source = source;
+  }
+
+  public VerbatimRecord getVerbatim() {
+    return verbatim;
+  }
+
+  public void setVerbatim(VerbatimRecord verbatim) {
+    this.verbatim = verbatim;
+  }
+
+  public Set<Issue> getIssues() {
+    if (verbatim != null) {
+      return verbatim.getIssues();
+    }
+    if (source != null) {
+      return source.getIssues();
+    }
+    return null;
   }
 
   public Synonymy getSynonyms() {
@@ -136,11 +161,6 @@ public class UsageInfo {
   
   public Reference getReference(String id) {
     return references.getOrDefault(id, null);
-  }
-
-  @JsonIgnore
-  public Reference getPublishedInReference() {
-    return references.getOrDefault(usage.getName().getPublishedInId(), null);
   }
 
   public Map<String, Reference> getReferences() {
@@ -249,16 +269,44 @@ public class UsageInfo {
     this.speciesInteractions = speciesInteractions;
   }
 
+  public List<SpeciesEstimate> getEstimates() {
+    return estimates;
+  }
+
+  public void setEstimates(List<SpeciesEstimate> estimates) {
+    this.estimates = estimates;
+  }
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof UsageInfo)) return false;
+
     UsageInfo usageInfo = (UsageInfo) o;
-    return Objects.equals(usage, usageInfo.usage) && Objects.equals(classification, usageInfo.classification) && group == usageInfo.group && Objects.equals(source, usageInfo.source) && Objects.equals(treatment, usageInfo.treatment) && Objects.equals(nameRelations, usageInfo.nameRelations) && Objects.equals(synonyms, usageInfo.synonyms) && Objects.equals(distributions, usageInfo.distributions) && Objects.equals(vernacularNames, usageInfo.vernacularNames) && Objects.equals(media, usageInfo.media) && Objects.equals(properties, usageInfo.properties) && Objects.equals(conceptRelations, usageInfo.conceptRelations) && Objects.equals(speciesInteractions, usageInfo.speciesInteractions) && Objects.equals(typeMaterial, usageInfo.typeMaterial) && Objects.equals(references, usageInfo.references) && Objects.equals(names, usageInfo.names) && Objects.equals(taxa, usageInfo.taxa) && Objects.equals(decisions, usageInfo.decisions);
+    return Objects.equals(usage, usageInfo.usage) &&
+      Objects.equals(publishedIn, usageInfo.publishedIn) &&
+      Objects.equals(classification, usageInfo.classification) &&
+      group == usageInfo.group &&
+      Objects.equals(source, usageInfo.source) &&
+      Objects.equals(verbatim, usageInfo.verbatim) &&
+      Objects.equals(treatment, usageInfo.treatment) &&
+      Objects.equals(nameRelations, usageInfo.nameRelations) &&
+      Objects.equals(synonyms, usageInfo.synonyms) &&
+      Objects.equals(distributions, usageInfo.distributions) &&
+      Objects.equals(vernacularNames, usageInfo.vernacularNames) &&
+      Objects.equals(media, usageInfo.media) &&
+      Objects.equals(properties, usageInfo.properties) &&
+      Objects.equals(conceptRelations, usageInfo.conceptRelations) &&
+      Objects.equals(speciesInteractions, usageInfo.speciesInteractions) &&
+      Objects.equals(estimates, usageInfo.estimates) &&
+      Objects.equals(typeMaterial, usageInfo.typeMaterial) &&
+      Objects.equals(references, usageInfo.references) &&
+      Objects.equals(names, usageInfo.names) &&
+      Objects.equals(taxa, usageInfo.taxa) &&
+      Objects.equals(decisions, usageInfo.decisions);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(usage, classification, group, source, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, typeMaterial, references, names, taxa, decisions);
+    return Objects.hash(usage, publishedIn, classification, group, source, verbatim, treatment, nameRelations, synonyms, distributions, vernacularNames, media, properties, conceptRelations, speciesInteractions, estimates, typeMaterial, references, names, taxa, decisions);
   }
 }

@@ -20,17 +20,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/parser/name")
 @Produces(MediaType.APPLICATION_JSON)
@@ -108,17 +107,12 @@ public class NameParserResource {
     }
 
     @Override
-    public void addIssue(Issue issue) {
-      issues.add(issue);
-    }
-
-    @Override
-    public boolean removeIssue(Issue issue) {
+    public boolean remove(Issue issue) {
       return issues.remove(issue);
     }
 
     @Override
-    public boolean hasIssue(Issue issue) {
+    public boolean contains(Issue issue) {
       return issues.contains(issue);
     }
   }

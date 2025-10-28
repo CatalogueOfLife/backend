@@ -1,7 +1,5 @@
 package life.catalogue.matching;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
@@ -13,19 +11,16 @@ import life.catalogue.common.text.StringUtils;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.dao.DaoUtils;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.NamesIndexMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.ArchivedNameUsageMapper;
-import life.catalogue.db.mapper.NamesIndexMapper;
+import life.catalogue.junit.TxtTreeDataRule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 import life.catalogue.parser.NameParser;
-
-import life.catalogue.junit.TxtTreeDataRule;
-
-import org.apache.commons.io.FileUtils;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NameType;
@@ -40,11 +35,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 import static org.junit.Assert.*;
 

@@ -8,7 +8,7 @@ import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.event.EventBroker;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,8 +21,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.EventBus;
-
 /**
  * Deletes a sector, all its data and recursively deletes also all included, nested sectors!
  */
@@ -30,10 +28,10 @@ public class SectorDeleteFull extends SectorRunnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorDeleteFull.class);
   private final Set<Integer> visitedSectors = new HashSet<>();
   
-  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NameUsageIndexService indexService, EventBus bus,
+  SectorDeleteFull(DSID<Integer> sectorKey, SqlSessionFactory factory, NameUsageIndexService indexService, EventBroker bus,
                    SectorDao dao, SectorImportDao sid, Consumer<SectorRunnable> successCallback,
                    BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    super(sectorKey, false, true, factory, matcher, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
+    super(sectorKey, false, factory, indexService, dao, sid, bus, successCallback, errorCallback, false, user);
   }
 
   @Override

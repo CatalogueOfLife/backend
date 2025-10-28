@@ -13,17 +13,16 @@
  */
 package life.catalogue.matching;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import life.catalogue.matching.util.Dictionaries;
+import life.catalogue.matching.util.HigherTaxaComparator;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 
-import life.catalogue.matching.util.Dictionaries;
-import life.catalogue.matching.util.HigherTaxaComparator;
-import org.gbif.nameparser.api.Rank;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /** @author markus */
 public class HigherTaxaComparatorTest {

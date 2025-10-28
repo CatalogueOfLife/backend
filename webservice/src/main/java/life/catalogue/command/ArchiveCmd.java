@@ -1,10 +1,9 @@
 package life.catalogue.command;
 
-import life.catalogue.api.model.Dataset;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.NameUsageArchiver;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.util.List;
@@ -42,25 +41,10 @@ public class ArchiveCmd extends AbstractMybatisCmd {
 
     Integer projectKey = ns.get(ARG_KEY);
     if (projectKey != null) {
-      archiver.rebuildProject(projectKey);
-
+      archiver.rebuildProject(projectKey, true);
     } else {
-      List<Dataset> projects;
-      try (SqlSession session = factory.openSession()) {
-        DatasetMapper dm = session.getMapper(DatasetMapper.class);
-        var req = new DatasetSearchRequest();
-        req.setOrigin(List.of(DatasetOrigin.PROJECT));
-        req.setSortBy(DatasetSearchRequest.SortBy.KEY);
-        final int limit = 1000;
-        projects = dm.search(req, userKey, new Page(0, limit));
-        if (projects.size()>=limit) {
-          System.out.println("WARNING! There are more than "+limit+" projects. Only the first 1000 will be archived!");
-        }
-      }
-
-      for (Dataset d : projects) {
-        archiver.rebuildProject(d.getKey());
-      }
+      System.out.println("Rebuild entire usage archive");
+      archiver.rebuildAll(false);
     }
     System.out.println("Archive rebuild completed.");
   }

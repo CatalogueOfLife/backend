@@ -4,17 +4,15 @@ import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.vocab.*;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.sql.SQLException;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import java.sql.SQLException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

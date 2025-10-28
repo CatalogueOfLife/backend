@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 /**
  *
@@ -133,5 +134,14 @@ public class PathUtils {
     perms.add(PosixFilePermission.GROUP_EXECUTE);
 
     Files.setPosixFilePermissions(path, perms);
+  }
+
+  public static void printDir(Path dir) {
+    File dirFile = dir.toFile();
+    for (File f : org.apache.commons.io.FileUtils.listFilesAndDirs(dirFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE)) {
+      if (!f.equals(dirFile)) {
+        System.out.println(f.getAbsolutePath());
+      }
+    }
   }
 }

@@ -25,7 +25,14 @@ public class CountryParserTest extends ParserTestBase<Country> {
     assertParse(Country.GERMANY, "276");
     assertParse(Country.KOSOVO, "Kosovo");
     assertParse(Country.UNITED_KINGDOM, "Great Britain");
-
+    assertParse(Country.CANADA, "Canada");
+    assertParse(Country.UNITED_STATES, "United States");
+    assertParse(Country.MEXICO, "Mexico");
+    assertParse(Country.BELIZE, "Belize");
+    assertParse(Country.HONDURAS, "Honduras");
+    assertParse(Country.GUATEMALA, "Guatemala");
+    assertParse(Country.EL_SALVADOR, "El Salvador");
+    assertParse(Country.COSTA_RICA, "Costa Rica");
     // user defined codes
     assertParse(Country.INTERNATIONAL_WATERS, "xz");
 

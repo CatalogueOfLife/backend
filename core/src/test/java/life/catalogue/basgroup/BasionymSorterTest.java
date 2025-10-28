@@ -1,7 +1,5 @@
 package life.catalogue.basgroup;
 
-import com.google.common.base.Functions;
-
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.common.tax.AuthorshipNormalizer;
@@ -20,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.base.Functions;
 
 import static org.junit.Assert.*;
 

@@ -17,13 +17,14 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.Validator;
 
 public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
   private final static Set<Rank> PUBLISHER_SECTOR_RANKS = Set.of(Rank.GENUS, Rank.SPECIES, Rank.SUBSPECIES, Rank.VARIETY, Rank.FORM);
@@ -198,6 +199,8 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
 
       if (!toCopy.isEmpty()) {
         for (Taxon t : toCopy) {
+          t.setVerbatimSourceKey(createVerbatimSource(s.getDatasetKey(), s.getId(), t, session));
+          t.getName().setVerbatimSourceKey(t.getVerbatimSourceKey());
           t.setSectorKey(s.getId());
           TaxonDao.copyTaxon(session, t, s.getTargetAsDSID(), user);
         }
@@ -216,6 +219,17 @@ public class SectorDao extends DatasetEntityDao<Integer, Sector, SectorMapper> {
     }
   }
 
+  private int createVerbatimSource(int datasetKey, int sectorKey, DSID<String> src, SqlSession session) {
+    var vsm = session.getMapper(VerbatimSourceMapper.class);
+    var vs = new VerbatimSource();
+    vs.setId(vsm.getMaxID(datasetKey)+1);
+    vs.setDatasetKey(datasetKey);
+    vs.setSectorKey(sectorKey);
+    vs.setSourceId(src.getId());
+    vs.setSourceDatasetKey(src.getDatasetKey());
+    vsm.create(vs);
+    return vs.getId();
+  }
   public static Taxon verifyTaxon(Sector s, String kind, Supplier<DSID<String>> getter, TaxonMapper tm) {
     DSID<String> did = getter.get();
     Taxon tax = null;

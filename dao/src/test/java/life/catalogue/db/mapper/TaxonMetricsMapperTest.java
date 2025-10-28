@@ -1,8 +1,5 @@
 package life.catalogue.db.mapper;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.TaxonMetrics;
@@ -11,9 +8,10 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import static life.catalogue.api.model.SimpleName.sn;
 import static org.junit.Assert.assertEquals;
@@ -33,9 +31,12 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
 
   @Test
   public void roundtrip() throws Exception {
+    final int datasetKey=TestEntityGenerator.TAXON1.getDatasetKey();
+    mapper().deleteByDataset(datasetKey);
+
     TaxonMetrics tm1 = new TaxonMetrics();
     tm1.setId(TestEntityGenerator.TAXON1.getId());
-    tm1.setDatasetKey(TestEntityGenerator.TAXON1.getDatasetKey());
+    tm1.setDatasetKey(datasetKey);
     tm1.setTaxonCount(23456);
     tm1.setMaxDepth(67);
     tm1.setDepth(13);
@@ -52,7 +53,7 @@ public class TaxonMetricsMapperTest extends MapperTestBase<TaxonMetricsMapper> {
     commit();
 
     TaxonMetrics tm2 = mapper().get(tm1.getKey());
-    printDiff(tm1, tm2);
+    //printDiff(tm1, tm2);
     assertEquals(tm1, tm2);
   }
 }

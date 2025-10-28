@@ -2,7 +2,6 @@ package life.catalogue.command;
 
 import life.catalogue.api.model.IndexName;
 import life.catalogue.matching.nidx.NameIndexMapDBStore;
-
 import life.catalogue.matching.nidx.NameIndexStore;
 
 import org.gbif.nameparser.api.Rank;

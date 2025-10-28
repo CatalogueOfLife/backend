@@ -6,10 +6,11 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.metadata.DoiResolver;
 
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
-
-import java.util.List;
 
 @Path("/resolver")
 @Produces(MediaType.APPLICATION_JSON)
@@ -41,7 +42,7 @@ public class ResolverResource {
       var val = doiResolver.resolve(doi.get(), issues);
       return new Result<>(q, val, issues);
     }
-    issues.addIssue(Issue.DOI_INVALID);
+    issues.add(Issue.DOI_INVALID);
     return new Result<>(q, null, issues);
   }
 

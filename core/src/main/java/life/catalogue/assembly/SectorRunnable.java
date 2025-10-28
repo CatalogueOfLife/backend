@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -7,15 +9,13 @@ import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.util.LoggingUtils;
-import life.catalogue.concurrent.DatasetBlockedException;
-import life.catalogue.concurrent.DatasetLock;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.event.EventBroker;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -31,8 +31,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 abstract class SectorRunnable implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(SectorRunnable.class);
@@ -53,27 +51,27 @@ abstract class SectorRunnable implements Runnable {
   // maps keyed on taxon ids from this sector
   final Map<String, EditorialDecision> decisions = new HashMap<>();
   List<Sector> childSectors;
-  private final UsageMatcherGlobal matcher;
-  private final boolean clearMatcherCache;
   private final Consumer<SectorRunnable> successCallback;
   private final BiConsumer<SectorRunnable, Exception> errorCallback;
   private final LocalDateTime created = LocalDateTime.now();
-  private final EventBus bus;
+  private final EventBroker bus;
   final int user;
   final SectorImport state;
   final boolean updateSectorAttemptOnSuccess;
 
   /**
-   * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
+   * @throws IllegalArgumentException if the sector key is not of PROJECT origin
    */
-  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, boolean clearMatcherCache, SqlSessionFactory factory,
-                 UsageMatcherGlobal matcher, NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBus bus,
+  SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
+                 NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
+    // make sure the sector is a project sector, not from a release
+    if (sectorKey.getDatasetKey() == null || !DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey()).isProject()) {
+      throw new IllegalArgumentException("Sector required to be a project dataset key");
+    }
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
     this.bus = bus;
-    this.matcher = matcher;
-    this.clearMatcherCache = clearMatcherCache;
     this.validateSector = validateSector;
     this.factory = factory;
     this.indexService = indexService;
@@ -130,16 +128,12 @@ abstract class SectorRunnable implements Runnable {
   @Override
   public void run() {
     try {
+      LoggingUtils.setSourceMDC(subjectDatasetKey);
+      LoggingUtils.setSectorMDC(sectorKey, state.getAttempt());
       state.setStarted(LocalDateTime.now());
       state.setState( ImportState.PREPARING);
       LOG.info("Start {} for sector {}", this.getClass().getSimpleName(), sectorKey);
       init();
-
-      // clear matcher cache?
-      if (clearMatcherCache) {
-        matcher.clear(sectorKey.getDatasetKey());
-        bus.post(new DatasetDataChanged(sectorKey.getDatasetKey()));
-      }
 
       doWork();
 
@@ -153,6 +147,7 @@ abstract class SectorRunnable implements Runnable {
 
       state.setState( ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
+      bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey()));
       successCallback.accept(this);
       if (updateSectorAttemptOnSuccess) {
         // update sector with latest attempt on success if subclass requested it
@@ -210,50 +205,47 @@ abstract class SectorRunnable implements Runnable {
         throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
       var dsInfo = DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey());
-      if (dsInfo.origin != DatasetOrigin.PROJECT && dsInfo.origin != DatasetOrigin.XRELEASE) {
+      if (dsInfo.origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + dsInfo.origin + " dataset");
       }
       // apply dataset defaults if needed
-      if (s.getEntities() == null || s.getEntities().isEmpty()
-          || s.getRanks() == null || s.getRanks().isEmpty()
-          || s.getNameTypes() == null || s.getNameTypes().isEmpty()
-          || s.getNameStatusExclusion() == null || s.getNameStatusExclusion().isEmpty()
-      ) {
-        DatasetSettings ds = ObjectUtils.coalesce(
-          session.getMapper(DatasetMapper.class).getSettings(dsInfo.keyOrProjectKey()),
-          new DatasetSettings()
-        );
+      DatasetSettings ds = ObjectUtils.coalesce(
+        session.getMapper(DatasetMapper.class).getSettings(dsInfo.keyOrProjectKey()),
+        new DatasetSettings()
+      );
 
-        if (ds.has(Setting.SECTOR_COPY_ACCORDING_TO)) {
-          s.setCopyAccordingTo(ds.getBool(Setting.SECTOR_COPY_ACCORDING_TO));
-        }
-        if (ds.has(Setting.SECTOR_REMOVE_ORDINALS)) {
-          s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
-        }
-        addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
-        if (s.getEntities() == null || s.getEntities().isEmpty()) {
-          // as a default sync everything
-          s.setEntities(new HashSet<>(Arrays.asList(EntityType.values())));
-        }
-        addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
-        addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
+      if (ds.has(Setting.SECTOR_CREATE_IMPLICIT_NAMES)) {
+        s.setCreateImplicitNames(ds.getBoolDefault(Setting.SECTOR_CREATE_IMPLICIT_NAMES, true));
+      }
+      if (ds.has(Setting.SECTOR_COPY_ACCORDING_TO)) {
+        s.setCopyAccordingTo(ds.getBool(Setting.SECTOR_COPY_ACCORDING_TO));
+      }
+      if (ds.has(Setting.SECTOR_REMOVE_ORDINALS)) {
+        s.setRemoveOrdinals(ds.getBool(Setting.SECTOR_REMOVE_ORDINALS));
+      }
+      addProjectSettings(ds, Setting.SECTOR_ENTITIES, s::getEntities, s::setEntities);
+      if (s.getEntities() == null || s.getEntities().isEmpty()) {
+        // as a default sync everything
+        s.setEntities(new HashSet<>(Arrays.asList(EntityType.values())));
+      }
+      addProjectSettings(ds, Setting.SECTOR_NAME_TYPES, s::getNameTypes, s::setNameTypes);
+      addProjectSettings(ds, Setting.SECTOR_NAME_STATUS_EXCLUSION, s::getNameStatusExclusion, s::setNameStatusExclusion);
 
-        if (s.getRanks() == null || s.getRanks().isEmpty()) {
-          if(s.getMode() == Sector.Mode.MERGE) {
-            // in merge mode we dont want any higher ranks than family by default!
-            s.setRanks(MERGE_RANKS_DEFAULT);
+      if (s.getRanks() == null || s.getRanks().isEmpty()) {
+        if(s.getMode() == Sector.Mode.MERGE) {
+          // in merge mode we dont want any higher ranks than family by default!
+          s.setRanks(MERGE_RANKS_DEFAULT);
 
-          } else if (ds.has(Setting.SECTOR_RANKS)) {
-            s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
+        } else if (ds.has(Setting.SECTOR_RANKS)) {
+          s.setRanks(Set.copyOf(ds.getEnumList(Setting.SECTOR_RANKS)));
 
-          } else {
-            // all
-            s.setRanks(Set.of(Rank.values()));
-          }
+        } else {
+          // all
+          s.setRanks(Set.of(Rank.values()));
         }
       }
       if (validate) {
-        // assert that target actually exists. Subject might be bad - not needed for deletes!
+        // assert that target & subject actually exist
         TaxonMapper tm = session.getMapper(TaxonMapper.class);
 
         SectorDao.verifyTaxon(s, "subject", s::getSubjectAsDSID, tm);

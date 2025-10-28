@@ -72,9 +72,7 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     export = DatasetExport.createWaiting(getKey(), userKey, req, dataset);
     export.setClassification(classification);
     // create waiting export in db
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetExportMapper.class).create(export);
-    }
+    createExport(export);
     LOG.info("Created {} job {} by user {} for dataset {} to {}", getClass().getSimpleName(), getUserKey(), getKey(), datasetKey, archive);
   }
 
@@ -87,8 +85,8 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
   }
 
   private static List<SimpleName> loadClassification(SqlSessionFactory factory, ExportRequest req){
-    try (SqlSession session = factory.openSession(true)) {
-      if (req.getTaxonID() != null) {
+    if (req.getTaxonID() != null) {
+      try (SqlSession session = factory.openSession(true)) {
         final var key = DSID.of(req.getDatasetKey(), req.getTaxonID());
         SimpleName root = session.getMapper(NameUsageMapper.class).getSimple(key);
         if (root == null) {
@@ -101,6 +99,11 @@ abstract class DatasetExportJob extends DatasetBlockingJob {
     return null;
   }
 
+  protected void createExport(DatasetExport export){
+    try (SqlSession session = factory.openSession(true)) {
+      session.getMapper(DatasetExportMapper.class).create(export);
+    }
+  }
   protected void updateExport(JobStatus status){
     try (SqlSession session = factory.openSession(true)) {
       export.setStatus(status);

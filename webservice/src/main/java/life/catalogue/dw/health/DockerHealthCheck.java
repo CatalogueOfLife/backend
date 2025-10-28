@@ -1,10 +1,10 @@
 package life.catalogue.dw.health;
 
 
+import life.catalogue.matching.DockerConfig;
+
 import com.codahale.metrics.health.HealthCheck;
 import com.github.dockerjava.api.DockerClient;
-
-import life.catalogue.matching.DockerConfig;
 
 /**
  * Checks that the docker environment is accessible.

@@ -1,9 +1,9 @@
 package life.catalogue.api.model;
 
+import org.junit.Test;
+
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-
-import org.junit.Test;
 
 import static life.catalogue.api.model.Agent.person;
 import static org.junit.Assert.*;

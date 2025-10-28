@@ -31,6 +31,7 @@ import jakarta.ws.rs.core.SecurityContext;
  */
 @Priority(Priorities.AUTHORIZATION)
 public class PrivateFilter implements ContainerRequestFilter {
+  public static String DATASET_KEY_PROPERTY = "request.datasetKey";
 
   private SqlSessionFactory factory;
   // is dataset private cache?
@@ -39,6 +40,7 @@ public class PrivateFilter implements ContainerRequestFilter {
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
     Integer datasetKey = AuthFilter.requestedDataset(req.getUriInfo());
+    req.setProperty(DATASET_KEY_PROPERTY, datasetKey);
     if (datasetKey != null) {
       // is this a private dataset?
       boolean priv = cache.computeIfAbsent(datasetKey, (IntPredicate) value -> {
@@ -72,5 +74,9 @@ public class PrivateFilter implements ContainerRequestFilter {
 
   public void updateCache(int datasetKey, boolean privat) {
     cache.put(datasetKey, privat);
+  }
+
+  public void flushCache() {
+    cache.clear();
   }
 }

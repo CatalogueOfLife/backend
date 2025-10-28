@@ -172,7 +172,12 @@ public enum Setting {
   /**
    * If true no merge syncs into the project will be allowed.
    */
-  BLOCK_MERGE_SYNCS(Boolean.class, false, PROJECT);
+  BLOCK_MERGE_SYNCS(Boolean.class, false, PROJECT),
+
+  /**
+   * If null or true creates implicit names during syncs.
+   */
+  SECTOR_CREATE_IMPLICIT_NAMES(Boolean.class, false, PROJECT);
 
   private final Class type;
   private final DatasetOrigin[] origin;

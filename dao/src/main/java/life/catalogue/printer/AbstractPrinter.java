@@ -7,13 +7,9 @@ import life.catalogue.concurrent.UsageCounter;
 import life.catalogue.dao.TaxonCounter;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -22,6 +18,11 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Print an entire dataset in a nested way using start/end calls similar to SAX
@@ -41,7 +42,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
   protected final TaxonCounter taxonCounter; // method to do the counting
   protected final SqlSessionFactory factory;
   protected SqlSession session;
-  protected final boolean ordered;
+  protected final boolean ordered; // ordered for classification processing
 
   /**
    * @param ordered if true does a more expensive depth first traversal with ordered children
@@ -73,7 +74,7 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
    */
   public int print() throws IOException {
     counter.clear();
-    LOG.info("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
+    LOG.debug("print {}tree for dataset {}: {}", ordered ? "ordered ":"", params.getDatasetKey(), params);
     try {
       session = factory.openSession(true);
       if (ordered || params.hasFilter()) {

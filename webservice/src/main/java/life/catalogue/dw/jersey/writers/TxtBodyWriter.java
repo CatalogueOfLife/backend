@@ -11,14 +11,14 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
+import com.google.common.base.Throwables;
+
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.ext.MessageBodyWriter;
 import jakarta.ws.rs.ext.Provider;
-
-import com.google.common.base.Throwables;
 
 @Produces({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV})
 @Provider

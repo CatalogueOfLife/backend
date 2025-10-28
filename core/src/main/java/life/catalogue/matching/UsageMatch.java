@@ -1,9 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
 
 import java.util.List;
@@ -13,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class UsageMatch implements DSID<String> {
   @JsonIgnore
-  public final int datasetKey; // dataset key the usage and classification belongs to
+  public int datasetKey; // dataset key the usage and classification belongs to
   public final SimpleNameClassified<SimpleNameCached> usage;
   public final Integer sectorKey; // optional sector key to identify the source of the usage in a project
   @JsonIgnore

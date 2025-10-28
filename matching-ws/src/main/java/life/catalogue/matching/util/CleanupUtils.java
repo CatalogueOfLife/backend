@@ -1,16 +1,8 @@
 package life.catalogue.matching.util;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-
-import life.catalogue.matching.model.LinneanClassification;
-
+import life.catalogue.matching.model.ClassificationQuery;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.UnparsableException;
-
-import org.apache.commons.lang3.StringUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -20,6 +12,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * Utility class to clean up strings and other objects, typically from
@@ -52,16 +51,17 @@ public class CleanupUtils {
     // remove all content within square or curly brackets
     x = BRACKET_PATTERN.matcher(x).replaceAll("");
     x = SPACE_MATCHER.trimAndCollapseFrom(x, ' ');
+    x = x.replaceAll("_+", " ");
     // normalise unicode into NFC
     x = Normalizer.normalize(x, Normalizer.Form.NFC);
 
     return Strings.emptyToNull(x.trim());
   }
 
-  public static LinneanClassification clean(LinneanClassification cl) {
+  public static ClassificationQuery clean(ClassificationQuery cl) {
     for (Rank rank : HIGHER_RANKS) {
-      if (cl.getHigherRank(rank) != null) {
-        String val = CleanupUtils.clean(cl.getHigherRank(rank));
+      if (cl.nameFor(rank) != null) {
+        String val = CleanupUtils.clean(cl.nameFor(rank));
         if (val != null) {
           Matcher m = FIRST_WORD.matcher(val);
           if (m.find()) {
@@ -73,7 +73,6 @@ public class CleanupUtils {
     cl.setSpecies(clean(cl.getSpecies()));
     return cl;
   }
-
 
   public static String removeNulls(String value) {
     if (value == null) {

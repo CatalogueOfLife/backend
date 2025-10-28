@@ -1,10 +1,10 @@
 package life.catalogue;
 
 import life.catalogue.api.model.Page;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.release.IdProviderIT;
 import life.catalogue.release.XReleaseBasicIT;
 

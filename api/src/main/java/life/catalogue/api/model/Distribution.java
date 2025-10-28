@@ -1,7 +1,6 @@
 package life.catalogue.api.model;
 
-import life.catalogue.api.vocab.Area;
-import life.catalogue.api.vocab.DistributionStatus;
+import life.catalogue.api.vocab.*;
 
 import java.util.Objects;
 
@@ -13,8 +12,15 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private Area area;
-  private DistributionStatus status;
+  private EstablishmentMeans establishmentMeans;
+  private DegreeOfEstablishment degreeOfEstablishment;
+  private String pathway;
+  private ThreatStatus threatStatus;
+  private Integer year;
+  private Season season;
+  private String lifeStage;
   private String referenceId;
   private String remarks;
 
@@ -47,7 +53,15 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public Area getArea() {
     return area;
   }
@@ -56,14 +70,62 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
     this.area = area;
   }
 
-  public DistributionStatus getStatus() {
-    return status;
+  public EstablishmentMeans getEstablishmentMeans() {
+    return establishmentMeans;
   }
-  
-  public void setStatus(DistributionStatus status) {
-    this.status = status;
+
+  public void setEstablishmentMeans(EstablishmentMeans establishmentMeans) {
+    this.establishmentMeans = establishmentMeans;
   }
-  
+
+  public DegreeOfEstablishment getDegreeOfEstablishment() {
+    return degreeOfEstablishment;
+  }
+
+  public void setDegreeOfEstablishment(DegreeOfEstablishment degreeOfEstablishment) {
+    this.degreeOfEstablishment = degreeOfEstablishment;
+  }
+
+  public String getPathway() {
+    return pathway;
+  }
+
+  public void setPathway(String pathway) {
+    this.pathway = pathway;
+  }
+
+  public ThreatStatus getThreatStatus() {
+    return threatStatus;
+  }
+
+  public void setThreatStatus(ThreatStatus threatStatus) {
+    this.threatStatus = threatStatus;
+  }
+
+  public Integer getYear() {
+    return year;
+  }
+
+  public void setYear(Integer year) {
+    this.year = year;
+  }
+
+  public Season getSeason() {
+    return season;
+  }
+
+  public void setSeason(Season season) {
+    this.season = season;
+  }
+
+  public String getLifeStage() {
+    return lifeStage;
+  }
+
+  public void setLifeStage(String lifeStage) {
+    this.lifeStage = lifeStage;
+  }
+
   @Override
   public String getReferenceId() {
     return referenceId;
@@ -86,20 +148,33 @@ public class Distribution extends DatasetScopedEntity<Integer> implements Extens
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Distribution)) return false;
     if (!super.equals(o)) return false;
+
     Distribution that = (Distribution) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(verbatimKey, that.verbatimKey) && Objects.equals(area, that.area) && status == that.status && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(area, that.area) &&
+      establishmentMeans == that.establishmentMeans &&
+      degreeOfEstablishment == that.degreeOfEstablishment &&
+      Objects.equals(pathway, that.pathway) &&
+      threatStatus == that.threatStatus &&
+      Objects.equals(year, that.year) &&
+      season == that.season &&
+      Objects.equals(lifeStage, that.lifeStage) &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, area, status, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, area, establishmentMeans, degreeOfEstablishment, pathway, threatStatus, year, season, lifeStage, referenceId, remarks);
   }
 
   @Override
   public String toString() {
-    return status == null ? "Unknown" : status + " in:" + area;
+    return area.toString();
   }
 }

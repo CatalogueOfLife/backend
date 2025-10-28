@@ -10,9 +10,16 @@
     d.dataset_key,
     d.sector_key,
     d.verbatim_key,
+    d.verbatim_source_key,
     d.area,
     d.gazetteer,
-    d.status,
+    d.establishment_means,
+    d.degree_of_establishment,
+    d.pathway,
+    d.threat_status,
+    d.year,
+    d.season,
+    d.life_stage,
     d.reference_id,
     d.remarks,
     d.created,
@@ -24,16 +31,23 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
+    verbatim_source_key,
     area,
     gazetteer,
-    status,
+    establishment_means,
+    degree_of_establishment,
+    pathway,
+    threat_status,
+    year,
+    season,
+    life_stage,
     reference_id,
     remarks,
     created_by,
@@ -42,12 +56,19 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
-    #{obj.sectorKey},
     #{taxonId},
+    #{obj.sectorKey},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     coalesce(#{obj.area.id}, #{obj.area.name}),
     #{obj.area.gazetteer}::GAZETTEER,
-    #{obj.status}::DISTRIBUTIONSTATUS,
+    #{obj.establishmentMeans}::ESTABLISHMENTMEANS,
+    #{obj.degreeOfEstablishment}::DEGREEOFESTABLISHMENT,
+    #{obj.pathway},
+    #{obj.threatStatus}::THREATSTATUS,
+    #{obj.year},
+    #{obj.season}::SEASON,
+    #{obj.lifeStage},
     #{obj.referenceId},
     #{obj.remarks},
     #{obj.createdBy},
@@ -141,7 +162,12 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE distribution SET sector_key = NULL
+    UPDATE distribution SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE distribution SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 </mapper>

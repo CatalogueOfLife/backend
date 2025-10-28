@@ -6,6 +6,14 @@ import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.common.id.IdConverter;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.*;
+import life.catalogue.junit.NameMatchingRule;
+import life.catalogue.junit.PgSetupRule;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
+
+import life.catalogue.printer.PrinterUtils;
+
+import org.gbif.nameparser.api.NameType;
 
 import java.io.IOException;
 import java.util.List;
@@ -13,22 +21,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-
-import life.catalogue.junit.TestDataRule;
-
 import org.apache.ibatis.session.SqlSession;
-
-import org.gbif.nameparser.api.NameType;
-
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class IdProviderIT {
 
@@ -50,13 +51,14 @@ public class IdProviderIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(PROJECT_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule);
   private ReleaseConfig cfg;
 
 
-  public void init(ReleaseConfig cfg) throws IOException {
+  public void init(ReleaseConfig cfg, ProjectReleaseConfig prCfg) throws IOException {
     this.cfg = cfg;
-    provider = new IdProvider(projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, SqlSessionFactoryRule.getSqlSessionFactory());
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.RELEASE, 1, -1, cfg, prCfg, SqlSessionFactoryRule.getSqlSessionFactory());
     System.out.println("Create id mapping tables for project " + projectKey);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       DatasetPartitionMapper dmp = session.getMapper(DatasetPartitionMapper.class);
@@ -76,13 +78,13 @@ public class IdProviderIT {
 
   @Test
   public void mapIds() throws Exception {
-    init(new ReleaseConfig());
+    init(new ReleaseConfig(), new ProjectReleaseConfig());
     // verify archived names got loaded
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       assertNotNull( session.getMapper(ArchivedNameUsageMapper.class).get(DSID.of(projectKey, "M")));
     }
 
-    provider.mapIds();
+    provider.mapAllIds();
     //provider.report();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
@@ -116,10 +118,11 @@ public class IdProviderIT {
   @Test
   public void ignoreLastRelease() throws Exception {
     var cfg = new ReleaseConfig();
-    cfg.ignoredReleases = Map.of(projectKey, List.of(13));
-    init(cfg);
+    var prCfg = new ProjectReleaseConfig();
+    prCfg.ignoredReleases = List.of(13);
+    init(cfg, prCfg);
 
-    provider.mapIds();
+    provider.mapAllIds();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       IdMapMapper idm = session.getMapper(IdMapMapper.class);
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
@@ -135,13 +138,25 @@ public class IdProviderIT {
         maxID.set(Math.max(val, maxID.get()));
       });
       // largest id issued is:
-      assertEquals("35", IdConverter.LATIN29.encode(maxID.get()));
+      assertEquals("3J", IdConverter.LATIN29.encode(maxID.get()));
 
-      // assert
+      // assert existing ids
       assertEquals(25, idm.countUsage(projectKey));
       assertEquals("M", idm.getUsage(projectKey, "21"));
       assertEquals("D", idm.getUsage(projectKey, "13"));
+      assertEquals("3", idm.getUsage(projectKey, "2"));
+      assertEquals("4", idm.getUsage(projectKey, "3"));
+      assertEquals("L", idm.getUsage(projectKey, "20"));
+      assertEquals("33", idm.getUsage(projectKey, "12")); // canonical match!
+      // assert new ids - which exactly is not deterministic
+      assertNew("11", idm); // Lynx, B1 is not a proper stable ID - 1 is a reserved character!
+      assertNew("10", idm); // Lynx lynx (Linnaeus, 1758)
     }
   }
 
+  private void assertNew(String originalID, IdMapMapper idm) {
+    var mappedID = idm.getUsage(projectKey, originalID);
+    System.out.println(mappedID);
+    assertTrue("34".compareTo(mappedID) < 0);
+  }
 }

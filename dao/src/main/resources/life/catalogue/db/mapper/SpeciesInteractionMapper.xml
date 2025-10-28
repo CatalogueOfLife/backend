@@ -9,6 +9,7 @@
     si.dataset_key,
     si.sector_key,
     si.verbatim_key,
+    si.verbatim_source_key,
     si.type,
     si.taxon_id,
     si.related_taxon_id,
@@ -23,15 +24,16 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     related_taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     related_taxon_scientific_name,
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -41,11 +43,12 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{taxonId},
     #{relatedTaxonId},
+    #{sectorKey},
     #{relatedTaxonScientificName},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::SPECIESINTERACTIONTYPE,
     #{referenceId},
     #{remarks},
@@ -128,8 +131,13 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE species_interaction SET sector_key = NULL
+    UPDATE species_interaction SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE species_interaction SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
 </mapper>

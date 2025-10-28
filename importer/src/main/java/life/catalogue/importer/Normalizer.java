@@ -22,8 +22,9 @@ import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.traverse.Traversals;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.interpreter.ExtinctName;
-import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.NameValidator;
+import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
@@ -42,13 +43,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.validation.Validator;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.internal.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
@@ -57,6 +59,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
+import jakarta.validation.Validator;
 
 /**
  *
@@ -73,6 +76,10 @@ public class Normalizer implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Validator validator;
   private MappingInfos meta;
+  // parsing is expensive so we cache the higher taxa names that we need to parse a lot
+  private final LoadingCache<RanKnName, ExtinctName> parseCache = Caffeine.newBuilder()
+    .maximumSize(10000)
+    .build(this::parse);
 
 
   public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {
@@ -281,6 +288,14 @@ public class Normalizer implements Callable<Boolean> {
             if (sp == null) {
               store.addIssues(nnn, Issue.PARENT_SPECIES_MISSING);
             }
+          }
+        }
+
+        // validate synonyms
+        for (Node sn : Traversals.SYNONYMS.traverse(n).nodes()) {
+          RankedUsage su = NeoProperties.getRankedUsage(sn);
+          if (su.rank != ru.rank) {
+            store.addUsageIssues(sn, Issue.SYNONYM_RANK_DIFFERS);
           }
         }
       }
@@ -687,11 +702,15 @@ public class Normalizer implements Callable<Boolean> {
     Node parent = null;
     Rank parentRank = null;
     // from kingdom to subgenus
-    for (Rank hr : Classification.RANKS) {
+    for (final Rank hr : Classification.RANKS) {
       if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
-        for (Node n : store.usagesByName(cl.getByRankCleaned(hr), null, hr, true)) {
+        // we need to lookup the name by its normed form as we create them via createHigherTaxon
+        // to be safe we query for both versions
+        var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
+        final ExtinctName normedName = parseCache.get(rnn);
+        for (Node n : store.usagesByNames(hr, true, cl.getByRankCleaned(hr), normedName.pname == null ? null : normedName.pname.getScientificName())) {
           // ignore synonyms
           if (n.hasLabel(Labels.SYNONYM)) continue;
           if (parent == null) {
@@ -731,7 +750,7 @@ public class Normalizer implements Callable<Boolean> {
         }
         if (!found) {
           // persistent new higher taxon if not found
-          Node lowerParent = createHigherTaxon(cl.getByRank(hr), hr).node;
+          Node lowerParent = createHigherTaxon(normedName, hr).node;
           // insert parent relationship?
           store.assignParent(parent, lowerParent);
           parent = lowerParent;
@@ -789,25 +808,28 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("{} synonym cycles resolved", counter);
   }
 
+  private ExtinctName parse(RanKnName rnn) throws InterruptedException {
+    var ename = new ExtinctName(rnn.name);
+    ename.pname = new Name();
+    ename.pname.setRank(rnn.rank);
+    ename.pname.setScientificName(rnn.name);
+    ename.pname.setCode(dataset.getCode());
+    // parses the instance and determines the type - can e.g. be placeholders
+    NameParser.PARSER.parse(ename.pname, IssueContainer.VOID);
+    // reset rank as parser might have infered ranks from the name!
+    ename.pname.setRank(rnn.rank);
+    return ename;
+  }
+
   /**
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private NeoUsage createHigherTaxon(String name, Rank rank) throws InterruptedException {
+  private NeoUsage createHigherTaxon(ExtinctName eName, Rank rank) throws InterruptedException {
     NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
-    var eName = new ExtinctName(name);
-
-    Name n = new Name();
-    n.setRank(rank);
-    n.setScientificName(eName.name);
-    n.setCode(dataset.getCode());
-    // parses the instance and determines the type - can e.g. be placeholders
-    NameParser.PARSER.parse(n, IssueContainer.VOID);
-    // reset rank as parser might have infered ranks from the name!
-    n.setRank(rank);
-
-    t.usage.setName(n);
+    eName.pname.setId(null); // we don't want to reuse the name id
+    t.usage.setName(eName.pname);
 
     if (eName.extinct || isExtinctBySetting(rank)) {
       t.asTaxon().setExtinct(true);

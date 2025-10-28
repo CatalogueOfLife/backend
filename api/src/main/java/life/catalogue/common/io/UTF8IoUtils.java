@@ -43,6 +43,9 @@ public class UTF8IoUtils {
     return readerFromStream(new GZIPInputStream(new FileInputStream(f)));
   }
 
+  public static BufferedReader readerFromPath(Path p) throws IOException {
+    return readerFromStream(java.nio.file.Files.newInputStream(p));
+  }
   public static BufferedReader readerFromFile(File f) throws IOException {
     return readerFromStream(new FileInputStream(f));
   }

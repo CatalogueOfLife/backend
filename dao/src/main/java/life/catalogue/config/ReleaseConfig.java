@@ -2,15 +2,14 @@ package life.catalogue.config;
 
 import java.io.File;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.api.model.JobResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  *
@@ -19,16 +18,7 @@ public class ReleaseConfig {
   private static final Logger LOG = LoggerFactory.getLogger(ReleaseConfig.class);
   // id to restart with - keep null unless you know what to do
   public Integer restart;
-  // nidx deduplication workaround - should be fixed by now so not enabled by default
-  public boolean nidxDeduplication = false;
-
   public boolean deleteOnError = true;
-
-  // project -> list of dataset keys of releases to ignore (e.g. they contain bad ids)
-  public Map<Integer, List<Integer>> ignoredReleases;
-
-  // project -> list of action hook URLs to be called after successful releases
-  public Map<Integer, List<ReleaseAction>> actions;
 
   @NotNull
   public File reportDir = new File("/tmp/col/release");

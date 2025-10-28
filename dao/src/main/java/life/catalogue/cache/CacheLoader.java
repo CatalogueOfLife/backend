@@ -2,10 +2,13 @@ package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
+import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.db.mapper.NameUsageMapper;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import java.util.List;
 
 public interface CacheLoader {
 
@@ -17,7 +20,7 @@ public interface CacheLoader {
    */
   void commit();
 
-  class Mybatis implements CacheLoader {
+  class MybatisSession implements CacheLoader {
     private final SqlSession session;
     private final NameUsageMapper num;
     private final boolean retryWithCommit;
@@ -26,7 +29,7 @@ public interface CacheLoader {
      * @param session to use for loading records
      * @param retryWithCommit if true and the initial load results in a null, issues a commit() before trying it one more time
      */
-    public Mybatis(SqlSession session, boolean retryWithCommit) {
+    public MybatisSession(SqlSession session, boolean retryWithCommit) {
       this.retryWithCommit = retryWithCommit;
       this.session = session;
       this.num = session.getMapper(NameUsageMapper.class);
@@ -45,10 +48,10 @@ public interface CacheLoader {
     }
   }
 
-  class MybatisLoader implements CacheLoader {
+  class MybatisFactory implements CacheLoader {
     private final SqlSessionFactory factory;
 
-    public MybatisLoader(SqlSessionFactory factory) {
+    public MybatisFactory(SqlSessionFactory factory) {
       this.factory = factory;
     }
 

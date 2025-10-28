@@ -8,6 +8,7 @@
     id,
     dataset_key,
     verbatim_key,
+    verbatim_source_key,
     format,
     document,
     created,
@@ -24,6 +25,7 @@
 
   <sql id="COLS_COPY">
     verbatim_key,
+    verbatim_source_key,
     format,
     document,
     created_by,
@@ -34,6 +36,7 @@
     #{obj.datasetKey},
     #{obj.id},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.format}::TREATMENTFORMAT,
     #{obj.document},
     #{obj.createdBy},
@@ -96,7 +99,7 @@
   </insert>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE treatment SET sector_key = NULL
+    UPDATE treatment SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
@@ -105,5 +108,10 @@
     FROM <include refid="FROM"/>
     WHERE t.dataset_key=#{datasetKey}
   </select>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE treatment SET id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </update>
 
 </mapper>

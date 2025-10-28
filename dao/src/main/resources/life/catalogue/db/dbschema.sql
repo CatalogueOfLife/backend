@@ -21,6 +21,19 @@ $$  LANGUAGE sql IMMUTABLE PARALLEL SAFE;
 
 
 -- all enum types produces via PgSetupRuleTest.pgEnumSql()
+CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH',
+  'OTHER'
+);
+
 CREATE TYPE CONTINENT AS ENUM (
   'AFRICA',
   'ANTARCTICA',
@@ -57,6 +70,20 @@ CREATE TYPE DATASETTYPE AS ENUM (
   'THEMATIC',
   'IDENTIFICATION',
   'OTHER'
+);
+
+CREATE TYPE DEGREEOFESTABLISHMENT AS ENUM (
+  'NATIVE',
+  'CAPTIVE',
+  'CULTIVATED',
+  'RELEASED',
+  'FAILING',
+  'CASUAL',
+  'REPRODUCING',
+  'ESTABLISHED',
+  'COLONISING',
+  'INVASIVE',
+  'WIDESPREAD_INVASIVE'
 );
 
 CREATE TYPE DISTRIBUTIONSTATUS AS ENUM (
@@ -100,6 +127,16 @@ CREATE TYPE ENVIRONMENT AS ENUM (
   'TERRESTRIAL'
 );
 
+CREATE TYPE ESTABLISHMENTMEANS AS ENUM (
+  'NATIVE',
+  'NATIVE_ENDEMIC',
+  'NATIVE_REINTRODUCED',
+  'INTRODUCED',
+  'INTRODUCED_ASSISTED_COLONISATION',
+  'VAGRANT',
+  'UNCERTAIN'
+);
+
 CREATE TYPE ESTIMATETYPE AS ENUM (
   'SPECIES_LIVING',
   'SPECIES_EXTINCT',
@@ -111,7 +148,7 @@ CREATE TYPE GAZETTEER AS ENUM (
   'ISO',
   'FAO',
   'LONGHURST',
-  'TEOW',
+  'REALM',
   'IHO',
   'MRGID',
   'TEXT'
@@ -121,12 +158,6 @@ CREATE TYPE GENDER AS ENUM (
   'MASCULINE',
   'FEMININE',
   'NEUTER'
-);
-
-CREATE TYPE IDREPORTTYPE AS ENUM (
-  'DELETED',
-  'RESURRECTED',
-  'CREATED'
 );
 
 CREATE TYPE IMPORTSTATE AS ENUM (
@@ -153,8 +184,7 @@ CREATE TYPE INFOGROUP AS ENUM (
   'BASIONYM',
   'EXTINCT',
   'TEMPORAL_RANGE',
-  'RANK',
-  'HOLOTYPE'
+  'RANK'
 );
 
 CREATE TYPE ISSUE AS ENUM (
@@ -286,7 +316,12 @@ CREATE TYPE ISSUE AS ENUM (
   'DOI_INVALID',
   'RANK_NAME_SUFFIX_CONFLICT',
   'AUTHORSHIP_UNLIKELY',
-  'NAME_PHRASE_UNLIKELY'
+  'NAME_PHRASE_UNLIKELY',
+  'VERNACULAR_NAME_UNLIKELY',
+  'PARENT_GENUS_MISSING',
+  'NO_SPECIES_INCLUDED',
+  'SYNONYM_RANK_DIFFERS',
+  'SYNONYM_WITH_TAXON_PROPERTY'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -504,6 +539,15 @@ CREATE TYPE RANK AS ENUM (
   'UNRANKED'
 );
 
+CREATE TYPE SEASON AS ENUM (
+  'SPRING',
+  'SUMMER',
+  'AUTUMN',
+  'WINTER',
+  'WET',
+  'DRY'
+);
+
 CREATE TYPE SECTOR_MODE AS ENUM (
   'ATTACH',
   'UNION',
@@ -562,6 +606,46 @@ CREATE TYPE SPECIESINTERACTIONTYPE AS ENUM (
   'MUTUALIST_OF'
 );
 
+CREATE TYPE TAXGROUP AS ENUM (
+  'Viruses',
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Eukaryotes',
+  'Protists',
+  'Plants',
+  'Algae',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Pseudofungi',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Gastropods',
+  'Bivalves',
+  'OtherMolluscs',
+  'Chordates',
+  'OtherAnimals'
+);
+
 CREATE TYPE TAXONCONCEPTRELTYPE AS ENUM (
   'EQUALS',
   'INCLUDES',
@@ -579,6 +663,18 @@ CREATE TYPE TAXONOMICSTATUS AS ENUM (
   'BARE_NAME'
 );
 
+CREATE TYPE THREATSTATUS AS ENUM (
+  'EXTINCT',
+  'EXTINCT_IN_THE_WILD',
+  'CRITICALLY_ENDANGERED',
+  'ENDANGERED',
+  'VULNERABLE',
+  'NEAR_THREATENED',
+  'LEAST_CONCERN',
+  'DATA_DEFICIENT',
+  'NOT_EVALUATED'
+);
+
 CREATE TYPE TREATMENTFORMAT AS ENUM (
   'PLAIN_TEXT',
   'MARKDOWN',
@@ -586,7 +682,8 @@ CREATE TYPE TREATMENTFORMAT AS ENUM (
   'HTML',
   'TAX_PUB',
   'TAXON_X',
-  'RDF'
+  'RDF',
+  'PDF'
 );
 
 CREATE TYPE TYPESTATUS AS ENUM (
@@ -632,6 +729,10 @@ CREATE TYPE USER_ROLE AS ENUM (
   'ADMIN'
 );
 
+CREATE TYPE TABFORMAT AS ENUM (
+  'CSV',
+  'TSV'
+);
 
 -- a simple compound type corresponding to the basics of SimpleName. Often used for building classifications as arrays
 CREATE TYPE simple_name AS (id text, rank rank, name text, authorship text);
@@ -738,6 +839,7 @@ CREATE TABLE dataset (
   geographic_scope TEXT,
   taxonomic_scope TEXT,
   temporal_scope TEXT,
+  taxonomic_group_scope TAXGROUP[],
   confidence INTEGER CHECK (confidence > 0 AND confidence <= 5),
   completeness INTEGER CHECK (completeness >= 0 AND completeness <= 100),
   license LICENSE,
@@ -786,7 +888,8 @@ CREATE TABLE dataset (
 CREATE INDEX ON dataset (gbif_key);
 CREATE INDEX ON dataset USING GIN (f_unaccent(title) gin_trgm_ops);
 CREATE INDEX ON dataset USING GIN (f_unaccent(alias) gin_trgm_ops);
-CREATE INDEX ON dataset USING GIN (doc);
+CREATE INDEX ON dataset USING GIN (doc) WITH (fastupdate = off);
+CREATE INDEX ON dataset USING GIN (taxonomic_group_scope);
 -- used by import scheduler:
 CREATE INDEX ON dataset (key)
  WHERE deleted IS NULL
@@ -913,7 +1016,10 @@ CREATE TABLE dataset_import (
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
+  secondary_source_by_info_count HSTORE,
   -- extra
+  merged_taxa_by_rank_count HSTORE,
+  merged_synonyms_by_rank_count HSTORE,
   verbatim_by_row_type_count JSONB,
   verbatim_by_term_count HSTORE,
   job TEXT NOT NULL,
@@ -934,12 +1040,15 @@ CREATE TABLE dataset_export (
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   created_by INTEGER NOT NULL REFERENCES "user",
   format DATAFORMAT NOT NULL,
+  tab_format TABFORMAT,
   root SIMPLE_NAME,
   min_rank RANK,
   synonyms BOOLEAN NOT NULL,
   bare_names BOOLEAN NOT NULL,
   excel BOOLEAN NOT NULL,
   extended BOOLEAN NOT NULL,
+  add_classification BOOLEAN NOT NULL,
+  add_tax_group BOOLEAN NOT NULL,
   extinct BOOLEAN,
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
 
@@ -1001,6 +1110,7 @@ CREATE TABLE sector (
 );
 
 CREATE INDEX ON sector (dataset_key);
+CREATE INDEX ON sector (dataset_key, subject_dataset_key);
 CREATE INDEX ON sector (dataset_key, subject_dataset_key, subject_id);
 CREATE INDEX ON sector (dataset_key, target_id);
 
@@ -1046,6 +1156,7 @@ CREATE TABLE sector_import (
   usages_by_origin_count HSTORE,
   usages_by_status_count HSTORE,
   vernaculars_by_language_count HSTORE,
+  secondary_source_by_info_count HSTORE,
   job TEXT NOT NULL,
   warnings TEXT[],
   error TEXT,
@@ -1131,14 +1242,6 @@ CREATE INDEX ON names_index (scientific_name);
 CREATE INDEX ON names_index (scientific_name) WHERE id = canonical_id;
 
 
-CREATE TABLE id_report (
-  id INTEGER NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  type IDREPORTTYPE NOT NULL,
-  PRIMARY KEY (dataset_key, id)
-);
-CREATE INDEX ON id_report (dataset_key);
-
 CREATE TABLE name_usage_archive (
   id TEXT NOT NULL,
   n_id TEXT NOT NULL,
@@ -1191,17 +1294,16 @@ CREATE TABLE name_usage_archive (
   -- archive specifics, will be dropped from partitioned name table
   according_to TEXT,
   basionym SIMPLE_NAME,
+  accepted SIMPLE_NAME,
   classification SIMPLE_NAME[],
   published_in TEXT,
-  first_release_key INTEGER,
-  last_release_key INTEGER,
+  release_keys INT[],
 
   PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key) REFERENCES dataset,
-  FOREIGN KEY (first_release_key) REFERENCES dataset,
-  FOREIGN KEY (last_release_key) REFERENCES dataset
+  FOREIGN KEY (dataset_key) REFERENCES dataset
 );
 
+CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
 
 CREATE TABLE parser_config (
   id TEXT PRIMARY KEY,
@@ -1233,22 +1335,28 @@ CREATE TABLE parser_config (
   remarks TEXT
 );
 
-CREATE TABLE api_analytics(
-  key bigserial NOT NULL PRIMARY KEY,
-  from_datetime TIMESTAMP NOT NULL,
-  to_datetime TIMESTAMP NOT NULL,
-  request_count INTEGER NOT NULL,
-  country_agg HSTORE,
-  response_code_agg HSTORE,
-  agent_agg HSTORE,
-  request_pattern_agg HSTORE,
-  dataset_agg HSTORE,
-  other_metrics HSTORE
-);
+CREATE TABLE api_logs(
+  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  duration INT,
+  method APILOG_HTTPMETHOD,
+  response_code INT,
+  dataset_key INT,
+  "user" INT,
+  request TEXT,
+  agent TEXT
+) PARTITION BY RANGE (date);
 
-CREATE UNIQUE INDEX unique_date_range ON api_analytics(from_datetime, to_datetime);
-CREATE INDEX ON api_analytics(from_datetime);
-CREATE INDEX ON api_analytics(to_datetime);
+CREATE INDEX ON api_logs(date);
+CREATE INDEX ON api_logs(duration);
+CREATE INDEX ON api_logs(method);
+CREATE INDEX ON api_logs(response_code);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs("user");
+CREATE INDEX ON api_logs(request text_pattern_ops);
+
+CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
+CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
 
 --
 -- PARTITIONED DATA TABLES
@@ -1271,12 +1379,41 @@ CREATE INDEX ON verbatim USING GIN (dataset_key, doc);
 CREATE INDEX ON verbatim USING GIN (dataset_key, issues);
 CREATE INDEX ON verbatim USING GIN (dataset_key, terms jsonb_ops);
 
+CREATE TABLE verbatim_source (
+   id INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   sector_key INTEGER,
+   source_id TEXT,
+   source_entity ENTITYTYPE,
+   source_dataset_key INTEGER,
+   issues ISSUE[] DEFAULT '{}',
+   PRIMARY KEY (dataset_key, id)
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX on verbatim_source (dataset_key, sector_key);
+CREATE INDEX on verbatim_source (dataset_key, source_entity);
+CREATE INDEX on verbatim_source (dataset_key, source_dataset_key);
+CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
+CREATE INDEX on verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
+
+CREATE TABLE verbatim_source_secondary (
+   verbatim_source_key INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   type INFOGROUP NOT NULL,
+   source_id TEXT,
+   source_dataset_key INTEGER
+) PARTITION BY HASH (dataset_key);
+
+CREATE INDEX ON verbatim_source_secondary (dataset_key, verbatim_source_key);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
+CREATE INDEX ON verbatim_source_secondary (dataset_key, type);
 
 CREATE TABLE reference (
   id TEXT NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   year INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1291,10 +1428,12 @@ CREATE TABLE reference (
   ) STORED,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON reference (dataset_key, verbatim_key);
+CREATE INDEX ON reference (dataset_key, verbatim_source_key);
 CREATE INDEX ON reference (dataset_key, sector_key);
 CREATE INDEX ON reference USING GIN (dataset_key, doc);
 
@@ -1304,6 +1443,7 @@ CREATE TABLE name (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   -- shared with name_usage_archive, keep in sync!
   rank RANK NOT NULL,
   candidatus BOOLEAN DEFAULT FALSE,
@@ -1349,12 +1489,14 @@ CREATE TABLE name (
 
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, published_in_id) REFERENCES reference
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name (dataset_key, sector_key);
 CREATE INDEX ON name (dataset_key, verbatim_key);
+CREATE INDEX ON name (dataset_key, verbatim_source_key);
 CREATE INDEX ON name (dataset_key, published_in_id);
 CREATE INDEX ON name (dataset_key, lower(scientific_name));
 CREATE INDEX ON name (dataset_key, scientific_name text_pattern_ops);
@@ -1366,6 +1508,7 @@ CREATE TABLE name_rel (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   type NOMRELTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1377,6 +1520,7 @@ CREATE TABLE name_rel (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
   FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED,
@@ -1387,6 +1531,7 @@ CREATE INDEX ON name_rel (dataset_key, name_id);
 CREATE INDEX ON name_rel (dataset_key, related_name_id);
 CREATE INDEX ON name_rel (dataset_key, sector_key);
 CREATE INDEX ON name_rel (dataset_key, verbatim_key);
+CREATE INDEX ON name_rel (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_rel (dataset_key, reference_id);
 
 
@@ -1395,6 +1540,7 @@ CREATE TABLE type_material (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -1420,14 +1566,16 @@ CREATE TABLE type_material (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON type_material (dataset_key, name_id);
 CREATE INDEX ON type_material (dataset_key, sector_key);
 CREATE INDEX ON type_material (dataset_key, verbatim_key);
+CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
 CREATE INDEX ON type_material (dataset_key, reference_id);
 
 
@@ -1439,7 +1587,7 @@ CREATE TABLE name_match (
   type MATCHTYPE NOT NULL,
   PRIMARY KEY (dataset_key, name_id),
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON name_match (dataset_key, sector_key);
@@ -1452,6 +1600,7 @@ CREATE TABLE name_usage (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   -- shared with name_usage_archive, keep in sync!
   extinct BOOLEAN,
   status TAXONOMICSTATUS NOT NULL,
@@ -1478,9 +1627,10 @@ CREATE TABLE name_usage (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, according_to_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, name_id) REFERENCES name DEFERRABLE,
+  FOREIGN KEY (dataset_key, name_id) REFERENCES name,
   FOREIGN KEY (dataset_key, parent_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
@@ -1488,6 +1638,7 @@ ALTER TABLE name_usage ADD CONSTRAINT check_parent_not_self CHECK (parent_id <> 
 CREATE INDEX ON name_usage (dataset_key, name_id);
 CREATE INDEX ON name_usage (dataset_key, parent_id);
 CREATE INDEX ON name_usage (dataset_key, verbatim_key);
+CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
 CREATE INDEX ON name_usage (dataset_key, sector_key);
 CREATE INDEX ON name_usage (dataset_key, according_to_id);
 CREATE INDEX ON name_usage (dataset_key, is_synonym(status));
@@ -1506,41 +1657,18 @@ CREATE TABLE taxon_metrics (
   taxa_by_rank_count HSTORE,
   species_by_source_count HSTORE,
   classification SIMPLE_NAME[],
-  source_dataset_keys INTEGER[]
+  source_dataset_keys INTEGER[],
+  PRIMARY KEY (dataset_key, taxon_id)
 ) PARTITION BY HASH (dataset_key);
-CREATE INDEX ON taxon_metrics (dataset_key, taxon_id);
 CREATE INDEX ON taxon_metrics (dataset_key, lft);
 CREATE INDEX ON taxon_metrics (dataset_key, rgt);
-
-CREATE TABLE verbatim_source (
-  id TEXT NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  source_id TEXT,
-  source_dataset_key INTEGER,
-  issues ISSUE[] DEFAULT '{}',
-  PRIMARY KEY (dataset_key, id),
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
-) PARTITION BY HASH (dataset_key);
-
-CREATE INDEX ON verbatim_source USING GIN(dataset_key, issues);
-
-CREATE TABLE verbatim_source_secondary (
-  id TEXT NOT NULL,
-  dataset_key INTEGER NOT NULL,
-  type INFOGROUP NOT NULL,
-  source_id TEXT,
-  source_dataset_key INTEGER,
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
-) PARTITION BY HASH (dataset_key);
-
-CREATE INDEX ON verbatim_source_secondary (dataset_key, id);
-CREATE INDEX ON verbatim_source_secondary (dataset_key, source_dataset_key);
 
 CREATE TABLE taxon_concept_rel (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   type TAXONCONCEPTRELTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1552,16 +1680,18 @@ CREATE TABLE taxon_concept_rel (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON taxon_concept_rel (dataset_key, taxon_id);
 CREATE INDEX ON taxon_concept_rel (dataset_key, related_taxon_id);
 CREATE INDEX ON taxon_concept_rel (dataset_key, sector_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_concept_rel (dataset_key, reference_id);
 
 
@@ -1570,6 +1700,7 @@ CREATE TABLE species_interaction (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   type SPECIESINTERACTIONTYPE NOT NULL,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1582,16 +1713,18 @@ CREATE TABLE species_interaction (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage,
-  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED,
+  FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON species_interaction (dataset_key, taxon_id);
 CREATE INDEX ON species_interaction (dataset_key, related_taxon_id);
 CREATE INDEX ON species_interaction (dataset_key, sector_key);
 CREATE INDEX ON species_interaction (dataset_key, verbatim_key);
+CREATE INDEX ON species_interaction (dataset_key, verbatim_source_key);
 CREATE INDEX ON species_interaction (dataset_key, reference_id);
 
 
@@ -1600,6 +1733,7 @@ CREATE TABLE vernacular_name (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -1616,14 +1750,16 @@ CREATE TABLE vernacular_name (
   doc tsvector GENERATED ALWAYS AS (to_tsvector('vernacular', coalesce(name, '') || ' ' || coalesce(latin, ''))) STORED,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON vernacular_name (dataset_key, taxon_id);
 CREATE INDEX ON vernacular_name (dataset_key, sector_key);
 CREATE INDEX ON vernacular_name (dataset_key, verbatim_key);
+CREATE INDEX ON vernacular_name (dataset_key, verbatim_source_key);
 CREATE INDEX ON vernacular_name (dataset_key, reference_id);
 CREATE INDEX ON vernacular_name USING GIN (dataset_key, doc);
 
@@ -1633,8 +1769,15 @@ CREATE TABLE distribution (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   gazetteer GAZETTEER NOT NULL,
-  status DISTRIBUTIONSTATUS,
+  establishment_means ESTABLISHMENTMEANS,
+  degree_of_establishment DEGREEOFESTABLISHMENT,
+  pathway TEXT,
+  threat_status THREATSTATUS,
+  year Integer,
+  season SEASON,
+  life_stage TEXT,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
   created TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
@@ -1645,14 +1788,16 @@ CREATE TABLE distribution (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON distribution (dataset_key, taxon_id);
 CREATE INDEX ON distribution (dataset_key, sector_key);
 CREATE INDEX ON distribution (dataset_key, verbatim_key);
+CREATE INDEX ON distribution (dataset_key, verbatim_source_key);
 CREATE INDEX ON distribution (dataset_key, reference_id);
 
 CREATE TABLE treatment (
@@ -1660,6 +1805,7 @@ CREATE TABLE treatment (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   format TREATMENTFORMAT,
   created_by INTEGER NOT NULL,
   modified_by INTEGER NOT NULL,
@@ -1668,18 +1814,21 @@ CREATE TABLE treatment (
   document TEXT NOT NULL,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
-  FOREIGN KEY (dataset_key, id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON treatment (dataset_key, sector_key);
 CREATE INDEX ON treatment (dataset_key, verbatim_key);
+CREATE INDEX ON treatment (dataset_key, verbatim_source_key);
 
 
 CREATE TABLE estimate (
   id INTEGER NOT NULL,
   dataset_key INTEGER NOT NULL REFERENCES dataset,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   target_rank RANK,
   target_code NOMCODE,
   estimate INTEGER,
@@ -1693,12 +1842,16 @@ CREATE TABLE estimate (
   target_authorship TEXT,
   reference_id TEXT,
   remarks TEXT,
-  PRIMARY KEY (dataset_key, id)
+  PRIMARY KEY (dataset_key, id),
+  FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON estimate (dataset_key);
 CREATE INDEX ON estimate (dataset_key, target_id);
 CREATE INDEX ON estimate (dataset_key, reference_id);
+CREATE INDEX ON estimate (dataset_key, verbatim_key);
+CREATE INDEX ON estimate (dataset_key, verbatim_source_key);
 
 
 CREATE TABLE media (
@@ -1706,6 +1859,7 @@ CREATE TABLE media (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   type MEDIATYPE,
   captured DATE,
   license LICENSE,
@@ -1723,14 +1877,16 @@ CREATE TABLE media (
   remarks TEXT,
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON media (dataset_key, taxon_id);
 CREATE INDEX ON media (dataset_key, sector_key);
 CREATE INDEX ON media (dataset_key, verbatim_key);
+CREATE INDEX ON media (dataset_key, verbatim_source_key);
 CREATE INDEX ON media (dataset_key, reference_id);
 
 
@@ -1739,6 +1895,7 @@ CREATE TABLE taxon_property (
   dataset_key INTEGER NOT NULL,
   sector_key INTEGER,
   verbatim_key INTEGER,
+  verbatim_source_key INTEGER,
   taxon_id TEXT NOT NULL,
   property TEXT NOT NULL,
   value TEXT NOT NULL,
@@ -1752,14 +1909,16 @@ CREATE TABLE taxon_property (
   modified TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   PRIMARY KEY (dataset_key, id),
   FOREIGN KEY (dataset_key, verbatim_key) REFERENCES verbatim,
+  FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source,
   FOREIGN KEY (dataset_key, sector_key) REFERENCES sector,
   FOREIGN KEY (dataset_key, reference_id) REFERENCES reference,
-  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage
+  FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage DEFERRABLE INITIALLY DEFERRED
 ) PARTITION BY HASH (dataset_key);
 
 CREATE INDEX ON taxon_property (dataset_key, taxon_id);
 CREATE INDEX ON taxon_property (dataset_key, sector_key);
 CREATE INDEX ON taxon_property (dataset_key, verbatim_key);
+CREATE INDEX ON taxon_property (dataset_key, verbatim_source_key);
 CREATE INDEX ON taxon_property (dataset_key, reference_id);
 CREATE INDEX ON taxon_property (dataset_key, property);
 
@@ -1940,6 +2099,11 @@ CREATE OR REPLACE FUNCTION classification_sn(v_dataset_key INTEGER, v_id TEXT, v
     JOIN name n ON n.dataset_key=v_dataset_key AND n.id=t.name_id
     WHERE t.dataset_key=v_dataset_key AND t.id = x.parent_id AND x.distance < v_max_depth
   ) SELECT array_reverse(array_agg(sn)) FROM x WHERE v_inc_self OR id != v_id;
+$$ LANGUAGE SQL;
+
+-- transform a simple name array into an array of just names
+CREATE OR REPLACE FUNCTION sn2text_array(v_classification simple_name[]) RETURNS text[] AS $$
+  SELECT array_agg((n).name) FROM unnest(v_classification) AS n
 $$ LANGUAGE SQL;
 
 -- return simple_name of parent usage with given rank - or null

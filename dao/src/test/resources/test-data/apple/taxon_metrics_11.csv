@@ -1,0 +1,3 @@
+taxon_id,depth,taxon_count,species_count,child_count,child_extant_count,classification
+root-1,1,1,1,1,1,"{""(1,KINGDOM,Animalia,)"",""(2,PHYLUM,Arthropoda,)""}"
+root-2,1,1,1,1,1,"{""(1,KINGDOM,Animalia,)""}"

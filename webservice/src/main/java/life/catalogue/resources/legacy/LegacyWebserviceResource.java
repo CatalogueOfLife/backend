@@ -1,11 +1,8 @@
 package life.catalogue.resources.legacy;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.id.ShortUUID;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.legacy.LNameMapper;
 import life.catalogue.db.mapper.legacy.LVernacularMapper;
 import life.catalogue.db.mapper.legacy.model.LError;
@@ -17,12 +14,6 @@ import life.catalogue.dw.jersey.filter.VaryAccept;
 import java.net.URI;
 import java.util.List;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -32,12 +23,16 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
 import io.swagger.v3.oas.annotations.Hidden;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 
 /**
  * Old PHP API migrated to the new postgres db and java code.
- * http://webservice.catalogueoflife.org/col/webservice
+ * Formerly exposed under http://webservice.catalogueoflife.org/col/webservice
  */
 @Hidden
 @LegacyAPI
@@ -53,16 +48,12 @@ public class LegacyWebserviceResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(LegacyWebserviceResource.class);
   private final String version;
-  private final IdMap idMap;
-  private final URI portalURI;
   private final Timer searchTimer;
   private final Timer getTimer;
   private final SqlSessionFactory factory;
 
-  public LegacyWebserviceResource(WsServerConfig cfg, IdMap idMap, MetricRegistry registry, SqlSessionFactory factory) {
+  public LegacyWebserviceResource(WsServerConfig cfg, MetricRegistry registry, SqlSessionFactory factory) {
     version = cfg.versionString();
-    portalURI = cfg.portalURI;
-    this.idMap = idMap;
     searchTimer = registry.timer("life.catalogue.resources.legacy.search");
     getTimer = registry.timer("life.catalogue.resources.legacy.get");
     this.factory = factory;
@@ -75,6 +66,10 @@ public class LegacyWebserviceResource {
     ));
   }
 
+  private static boolean isFull(String response) {
+    return response != null && response.equalsIgnoreCase("full");
+  }
+
   @GET
   public LResponse searchOrGet(@PathParam("key") int datasetKey,
                       @QueryParam("id") String id,
@@ -83,7 +78,7 @@ public class LegacyWebserviceResource {
                       @QueryParam("start") @DefaultValue("0") @Min(0) int start,
                       @QueryParam("limit") @Max(1000) Integer limit) {
     try {
-      boolean full = response.equalsIgnoreCase("full");
+      boolean full = isFull(response);
       LResponse resp;
       if (StringUtils.hasContent(id)) {
         resp = get(datasetKey, id, full);
@@ -106,29 +101,8 @@ public class LegacyWebserviceResource {
   @GET
   @Path("{id}")
   @VaryAccept
-  @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
-  public Response redirectPortal(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return redirect(datasetKey, id, true);
-  }
-
-  @GET
-  @Path("{id}")
-  @VaryAccept
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response redirectAPI(@PathParam("key") int datasetKey, @PathParam("id") String id) {
-    return redirect(datasetKey, id, false);
-  }
-
-  private Response redirect(int datasetKey, String id, boolean portal) {
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    if (info.sourceKey != null && info.sourceKey == Datasets.COL && idMap.contains(id)) {
-      String newID = idMap.lookup(id);
-      URI target = portal ?
-        portalURI.resolve("/data/taxon/" + newID) :
-        URI.create("/dataset/"+datasetKey+"/nameusage/" + newID);
-      return Response.status(Response.Status.FOUND).location(target).build();
-    }
-    throw NotFoundException.notFound("COL Legacy ID", id);
+  public LResponse getDetail(@PathParam("key") int datasetKey, @PathParam("id") String id, @QueryParam("response") @DefaultValue("terse") String response) {
+    return get(datasetKey, id, isFull(response));
   }
 
   /**

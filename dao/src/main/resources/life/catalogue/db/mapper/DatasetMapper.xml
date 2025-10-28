@@ -8,6 +8,7 @@
     <include refid="life.catalogue.db.mapper.DatasetArchiveMapper.SELECT"/>,
     d.deleted,
     d.private,
+    d.taxonomic_group_scope,
     d.last_import_attempt,
     dli.state AS last_import_state,
     <include refid="size"/> AS size
@@ -15,10 +16,13 @@
 
   <sql id="SELECT_SIMPLE">
     d.key,
+    d.source_key,
+    d.origin,
     d.alias,
     d.title,
-    d.issued,
-    d.version
+    d.version,
+    d.deleted is not null as deleted,
+    d.gbif_publisher_key
   </sql>
 
   <sql id="size">coalesce(uc.counter, (coalesce(di.taxon_count,0) + coalesce(di.synonym_count,0) + coalesce(di.bare_name_count,0)))</sql>
@@ -60,17 +64,26 @@
     </if>
   </sql>
 
+  <sql id="NOT_TEMP">d.key &lt; 100000000</sql>
+
   <sql id="IS_RELEASE">
     d.origin IN ('RELEASE'::DATASETORIGIN, 'XRELEASE'::DATASETORIGIN)
+    AND <include refid="life.catalogue.db.mapper.DatasetMapper.NOT_TEMP"/>
   </sql>
 
   <sql id="SEARCH_WHERE">
-    d.deleted IS NULL
+    <include refid="NOT_TEMP"/>
     <include refid="PRIVATE">
       <property name="alias" value="d"/>
       <property name="projAlias" value="proj"/>
     </include>
+    <if test="req == null">
+      AND d.deleted IS NULL
+    </if>
     <if test="req != null">
+      <if test="!req.inclDeleted">
+        AND d.deleted IS NULL
+      </if>
       <if test="req.q != null">
         <!-- we use dollar quoted strings with a token ($Grtz5$) to avoid escaping quotes -->
         AND d.doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${req.q}%$Grtz5$))
@@ -86,6 +99,9 @@
       </if>
       <if test="req.codeIsNull">
         AND (d.settings IS NULL OR NOT d.settings ?? 'nomenclatural code')
+      </if>
+      <if test="req.group != null and !req.group.isEmpty()">
+        AND d.taxonomic_group_scope &amp;&amp; ARRAY[<foreach item="o" collection="req.group" separator=",">#{o}::TAXGROUP</foreach>]
       </if>
       <if test="req.type != null and !req.type.isEmpty()">
         AND d.type IN <foreach item="o" collection="req.type" open="(" separator="," close=")">#{o}::DATASETTYPE</foreach>
@@ -196,6 +212,7 @@
     <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="taxonomicGroupScope" column="taxonomic_group_scope" typeHandler="life.catalogue.db.type2.TaxGroupSetTypeHandler"/>
     <association property="conversion" javaType="life.catalogue.api.model.Dataset$UrlDescription">
       <result property="url" column="conversion_url" />
       <result property="description" column="conversion_description" />
@@ -207,8 +224,9 @@
     <id property="key" column="key"/>
   </resultMap>
 
-  <resultMap id="releaseResultMap" type="life.catalogue.db.mapper.DatasetMapper$DatasetRelease" autoMapping="true">
+  <resultMap id="releaseResultMap" type="life.catalogue.api.model.DatasetRelease" autoMapping="true">
     <id property="key" column="key"/>
+    <result property="privat" column="private" />
   </resultMap>
 
   <resultMap id="settingsResultMap" type="DatasetSettings" autoMapping="false">
@@ -243,30 +261,16 @@
     WHERE key = #{key}
   </update>
 
-  <select id="keys" resultType="integer">
-    SELECT key
-    FROM dataset
-    WHERE deleted IS NULL
-    <if test="type != null">
-      AND type = #{type}::DATASETTYPE
-    </if>
-    <if test="origin != null and origin.length > 0">
-      AND origin IN <foreach item="o" collection="origin" open="(" separator="," close=")">#{o}::DATASETORIGIN</foreach>
-    </if>
-    ORDER BY key
-  </select>
-
   <select id="keysByPublisher" resultType="integer">
     SELECT key
     FROM dataset
     WHERE deleted IS NULL AND gbif_publisher_key = #{publisher}
-    ORDER BY key
   </select>
 
   <select id="process" parameterType="map" resultMap="datasetResultMap" resultOrdered="true" fetchSize="100" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE deleted IS NULL
+    WHERE deleted IS NULL AND <include refid="NOT_TEMP"/>
     <if test="filter != null">AND ${filter}</if>
   </select>
 
@@ -293,18 +297,24 @@
           <when test="sortBy == 'RELEVANCE'">
             ts_rank_cd('{0.001, 0.01, 0.1, 1.0}'::float4[], d.doc, plainto_tsquery('dataset', f_unaccent(#{req.q}))) DESC, size DESC, created DESC
           </when>
-          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED' ">
+          <when test="sortBy == 'SIZE' || sortBy == 'CREATED' || sortBy == 'MODIFIED' || sortBy == 'IMPORTED'">
             ${req.sortBy.name().toLowerCase()}
             <bind name="rev" value="!req.reverse"/>
-          </when>
-          <when test="sortBy == 'CREATOR'">
-            lower( coalesce( (d.creator[1]).family, (d.editor[1]).family ))
           </when>
           <when test="sortBy == 'ALIAS'">
             lower(d.alias)
           </when>
           <when test="sortBy == 'TITLE'">
             lower(d.title)
+          </when>
+          <when test="sortBy == 'CREATOR'">
+            lower( coalesce( (d.creator[1]).family, (d.creator[1]).organisation))
+          </when>
+          <when test="sortBy == 'EDITOR'">
+            lower( coalesce( (d.editor[1]).family, (d.editor[1]).organisation))
+          </when>
+          <when test="sortBy == 'PUBLISHER'">
+            lower( coalesce( (d.publisher).organisation, (d.publisher).family))
           </when>
           <otherwise>
             ${req.sortBy.name().toLowerCase()}
@@ -324,7 +334,7 @@
   <select id="suggestInternal" resultMap="datasetSimpleResultMap">
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM dataset d
-    WHERE d.deleted IS NULL
+    WHERE d.deleted IS NULL AND <include refid="NOT_TEMP"/>
       <if test="contributesTo != null">
         AND exists(
         SELECT 1 FROM sector s
@@ -356,8 +366,8 @@
   <select id="list" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
-    WHERE deleted IS NULL AND NOT private
-    ORDER BY key
+    WHERE d.deleted IS NULL AND NOT d.private AND <include refid="NOT_TEMP"/>
+    ORDER BY d.key
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
@@ -365,6 +375,12 @@
     SELECT d.key
     FROM dataset d
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey} AND d.deleted IS NULL
+  </select>
+
+  <select id="listProjectKeys" resultType="integer">
+    SELECT d.key
+    FROM dataset d
+    WHERE d.origin='PROJECT'::DATASETORIGIN AND d.deleted IS NULL
   </select>
 
   <select id="listReleases" resultMap="datasetResultMap">
@@ -375,16 +391,22 @@
   </select>
 
   <select id="listReleasesQuick" resultMap="releaseResultMap">
-    SELECT key, source_key AS projectKey, attempt, origin
+    SELECT key, #{projectKey} AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
     FROM dataset d
     WHERE <include refid="IS_RELEASE"/> AND d.source_key=#{projectKey}
     ORDER BY d.attempt, d.key
   </select>
 
+  <select id="getRelease" resultMap="releaseResultMap">
+    SELECT key, source_key AS projectKey, attempt, origin, alias, version, private, deleted IS NOT NULL AS deleted
+    FROM dataset d
+    WHERE <include refid="IS_RELEASE"/> AND d.key=#{key}
+  </select>
+
   <select id="duplicates" resultMap="duplicateResultMap">
     SELECT title AS name, array_agg(key) AS keys
-    FROM dataset
-    WHERE deleted is null
+    FROM dataset d
+    WHERE deleted is null AND <include refid="NOT_TEMP"/>
     <if test="gbifPublisherKey != null">
       AND gbif_publisher_key = #{gbifPublisherKey}
     </if>
@@ -395,6 +417,7 @@
 
   <sql id="importable">
     d.deleted IS NULL
+    AND <include refid="NOT_TEMP"/>
     AND NOT d.private
     AND d.origin = 'EXTERNAL'
     AND d.settings ->> 'data access' IS NOT NULL
@@ -455,8 +478,8 @@
   </select>
 
   <select id="latestRelease" resultType="integer">
-    SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL
+    SELECT key FROM dataset d
+    WHERE source_key = #{key} AND deleted IS NULL AND <include refid="NOT_TEMP"/>
       <if test="origin != null">AND origin = #{origin}::DATASETORIGIN</if>
       <if test="public">AND NOT private</if>
       <if test="ignore != null and !ignore.isEmpty()">
@@ -480,7 +503,7 @@
 
   <select id="releaseAttempt" resultType="integer">
     SELECT key FROM dataset
-    WHERE source_key = #{key} AND deleted IS NULL AND attempt = #{attempt}
+    WHERE source_key = #{key} AND attempt = #{attempt}
     LIMIT 1
   </select>
 
@@ -488,6 +511,42 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE key = #{key}
+  </select>
+
+  <select id="getSimple" resultMap="datasetSimpleResultMap">
+    SELECT <include refid="SELECT_SIMPLE"/>
+    FROM dataset d
+    WHERE key = #{key}
+  </select>
+
+  <select id="getByDoi" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE doi = #{doi}
+  </select>
+
+  <select id="getPreviousRelease" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+      JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
+    WHERE rel.key = #{key}
+        AND d.key &lt; #{key}
+        AND d.deleted IS NULL
+        AND NOT d.private
+    ORDER BY d.key DESC
+    LIMIT 1
+  </select>
+
+  <select id="getNextRelease" resultMap="datasetResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
+    WHERE rel.key = #{key}
+    AND d.key > #{key}
+    AND d.deleted IS NULL
+    AND NOT d.private
+    ORDER BY d.key ASC
+    LIMIT 1
   </select>
 
   <select id="getMaxKey" parameterType="map" resultType="integer">
@@ -521,21 +580,21 @@
   </select>
 
   <select id="listGBIF" resultMap="datasetGBIFResultMap">
-    SELECT key, alias, title, version, gbif_key, gbif_publisher_key
-    FROM dataset
-    WHERE deleted IS NULL AND gbif_key IS NOT NULL
+    SELECT <include refid="SELECT_SIMPLE"/>, d.gbif_key
+    FROM dataset d
+    WHERE d.deleted IS NULL AND d.gbif_key IS NOT NULL
   </select>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="create" parameterType="Dataset" useGeneratedKeys="true" keyProperty="key">
-    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(), <include refid="aclEditor"/>)
+    INSERT INTO dataset (<include refid="COLS"/>, source_key, origin, created_by, created, modified, acl_editor)
+    VALUES (<include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, #{createdBy}, now(), now(), <include refid="aclEditor"/>)
   </insert>
 
   <!--  makes sure to add creator to editors if its not a bot with key<100 -->
   <insert id="createWithID" parameterType="Dataset" useGeneratedKeys="false">
-    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created, modified, acl_editor)
-    VALUES (#{key}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, now(), now(), <include refid="aclEditor"/>)
+    INSERT INTO dataset (key,<include refid="COLS"/>, source_key, origin, created_by, created, modified, acl_editor)
+    VALUES (#{key}, <include refid="PROPS"/>, #{sourceKey}, #{origin}::DATASETORIGIN, #{createdBy}, now(), now(), <include refid="aclEditor"/>)
   </insert>
 
   <sql id="aclEditor">
@@ -563,6 +622,10 @@
     WHERE key = #{key}
   </update>
 
+  <update id="_updateTaxonomicGroupScope" parameterType="map">
+    UPDATE dataset SET taxonomic_group_scope = #{groups, typeHandler=life.catalogue.db.type2.TaxGroupSetTypeHandler}
+    WHERE key = #{key}
+  </update>
 
   <select id="getReviewer" resultType="it.unimi.dsi.fastutil.ints.IntSet">
     SELECT acl_reviewer FROM dataset WHERE key = #{key}
@@ -650,7 +713,7 @@
   </update>
 
   <update id="delete" parameterType="map">
-    UPDATE dataset SET deleted = now(), attempt=null, alias=null, gbif_key=null, gbif_publisher_key=null
+    UPDATE dataset SET deleted = now(), gbif_key=null, gbif_publisher_key=null
     WHERE key = #{key}
   </update>
 

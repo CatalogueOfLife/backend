@@ -10,6 +10,7 @@
     vn.dataset_key,
     vn.sector_key,
     vn.verbatim_key,
+    vn.verbatim_source_key,
     vn.name,
     vn.latin,
     vn.language,
@@ -26,13 +27,14 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
+    verbatim_source_key,
     name,
     latin,
     language,
@@ -47,9 +49,10 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
-    #{obj.sectorKey},
     #{taxonId},
+    #{obj.sectorKey},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.name},
     #{obj.latin},
     #{obj.language},
@@ -105,10 +108,13 @@
     </association>
   </resultMap>
 
-  <select id="listByTaxon" resultMap="vernacularNameResultMap">
+  <select id="listByTaxonFiltered" resultMap="vernacularNameResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE vn.dataset_key = #{key.datasetKey} AND vn.taxon_id = #{key.id}
+    <if test="lang != null">
+      AND vn.language = #{lang}
+    </if>
     ORDER BY name
   </select>
 
@@ -197,8 +203,13 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE vernacular_name SET sector_key = NULL
+    UPDATE vernacular_name SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE vernacular_name SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
 </mapper>

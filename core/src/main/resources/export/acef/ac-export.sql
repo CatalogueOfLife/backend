@@ -391,7 +391,7 @@ COPY (
     d.taxon_id AS name_code,
     CASE WHEN d.gazetteer = 'ISO'::GAZETTEER THEN c.title ELSE d.area END AS distribution,
     d.gazetteer::text AS StandardInUse,
-    initcap(d.status::text) AS DistributionStatus,
+    initcap(d.establishment_means::text) AS DistributionStatus,
     coalesce(s.subject_dataset_key, {{datasetKey}}) AS database_id
   FROM distribution d
       JOIN name_usage t ON t.id=d.taxon_id AND t.dataset_key={{datasetKey}}

@@ -2,26 +2,16 @@ package life.catalogue.cache;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
-import life.catalogue.dao.DatasetInfoCache;
-
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
@@ -31,8 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
-
-import it.unimi.dsi.fastutil.ints.*;
 
 /**
  * UsageCache implementation that is backed by a mapdb using kryo serialization,
@@ -108,6 +96,15 @@ public class UsageCacheMapDBSingleDS implements UsageCache {
   @Override
   public void close() {
     stop();
+  }
+
+  @Override
+  public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+    for (var u : usages.values()) {
+      if (u.getParent() != null && u.getParent().equals(oldParentId)) {
+        u.setParent(newParentId);
+      }
+    }
   }
 
   private String extractID(DSID<String> key) {

@@ -1,14 +1,13 @@
 package life.catalogue.db;
 
 import life.catalogue.api.vocab.Users;
+import life.catalogue.pgcopy.PgCopyUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import life.catalogue.pgcopy.PgCopyUtils;
 
 import org.postgresql.jdbc.PgConnection;
 import org.slf4j.Logger;

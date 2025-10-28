@@ -16,21 +16,23 @@ import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
+import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
+import org.gbif.nameparser.api.Rank;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
+<<<<<<< HEAD
 import org.gbif.nameparser.api.Rank;
 
 import org.neo4j.graphdb.Transaction;
 
+=======
+>>>>>>> master
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -123,7 +125,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return findName(v, ColdpTerm.nameID, tx).map(n -> {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
       if (!status.isSynonym()) {
-        v.addIssue(Issue.TAXONOMIC_STATUS_INVALID);
+        v.add(Issue.TAXONOMIC_STATUS_INVALID);
         // override status as we require some accepted status on Taxon and some synonym status for
         status = TaxonomicStatus.SYNONYM;
       }
@@ -140,8 +142,8 @@ public class ColdpInterpreter extends InterpreterBase {
   private Optional<NeoName> findName(VerbatimRecord v, Term nameId, Transaction tx) {
     NeoName n = store.names().objByID(v.getRaw(nameId), tx);
     if (n == null) {
-      v.addIssue(Issue.NAME_ID_INVALID);
-      v.addIssue(Issue.NOT_INTERPRETED);
+      v.add(Issue.NAME_ID_INVALID);
+      v.add(Issue.NOT_INTERPRETED);
       return Optional.empty();
     }
     return Optional.of(n);
@@ -211,7 +213,7 @@ public class ColdpInterpreter extends InterpreterBase {
     try {
       CoordParser.PARSER.parse(m.getLatitude(), m.getLongitude()).ifPresent(m::setCoordinate);
     } catch (UnparsableException e) {
-      rec.addIssue(Issue.LAT_LON_INVALID);
+      rec.add(Issue.LAT_LON_INVALID);
     }
     m.setAltitude(rec.get(ColdpTerm.altitude));
     m.setSex(SafeParser.parse(SexParser.PARSER, rec.get(ColdpTerm.sex)).orNull(Issue.TYPE_MATERIAL_SEX_INVALID, rec));
@@ -253,23 +255,39 @@ public class ColdpInterpreter extends InterpreterBase {
   }
 
   List<Distribution> interpretDistribution(VerbatimRecord rec) {
+    List<Distribution> dists;
     if (rec.hasTerm(ColdpTerm.areaID)) {
-      return super.interpretDistributionByGazetteer(rec, this::setReference,
+      dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         ColdpTerm.areaID,
         ColdpTerm.gazetteer,
-        ColdpTerm.status,
+        ColdpTerm.status, // legacy
+        ColdpTerm.establishmentMeans,
+        ColdpTerm.degreeOfEstablishment,
+        ColdpTerm.pathway,
+        ColdpTerm.threatStatus,
+        ColdpTerm.year,
+        ColdpTerm.season,
+        ColdpTerm.lifeStage,
         ColdpTerm.remarks
       );
 
     } else if (rec.hasTerm(ColdpTerm.area)) {
-      return createDistributions(Gazetteer.TEXT,
-        rec.get(ColdpTerm.area),
-        rec.get(ColdpTerm.status),
-        rec, ColdpTerm.remarks,
+      dists = createDistributions(Gazetteer.TEXT, rec.get(ColdpTerm.area), rec,
+        ColdpTerm.status, // legacy
+        ColdpTerm.establishmentMeans,
+        ColdpTerm.degreeOfEstablishment,
+        ColdpTerm.pathway,
+        ColdpTerm.threatStatus,
+        ColdpTerm.year,
+        ColdpTerm.season,
+        ColdpTerm.lifeStage,
+        ColdpTerm.remarks,
         this::setReference
       );
+    } else {
+      dists = Collections.emptyList();
     }
-    return Collections.emptyList();
+    return dists;
   }
   
   List<Media> interpretMedia(VerbatimRecord rec) {
@@ -300,7 +318,7 @@ public class ColdpInterpreter extends InterpreterBase {
         return Lists.newArrayList(est);
 
       } else {
-        rec.addIssue(Issue.ESTIMATE_INVALID);
+        rec.add(Issue.ESTIMATE_INVALID);
       }
     }
     return Collections.emptyList();

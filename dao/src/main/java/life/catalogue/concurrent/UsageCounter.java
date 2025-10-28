@@ -59,6 +59,21 @@ public class UsageCounter {
     inc(u.getStatus(), u.getRank());
   }
 
+  public void dec(TaxonomicStatus status, Rank rank) {
+    if (status == null || status.isBareName()) {
+      bareCounter.decrementAndGet();
+    } else if (status.isSynonym()) {
+      synCounter.decrementAndGet();
+    } else if (status.isTaxon()) {
+      taxCounter.decrementAndGet();
+      rankCounter.get(rank).decrementAndGet();
+    }
+  }
+
+  public void dec(SimpleName u) {
+    dec(u.getStatus(), u.getRank());
+  }
+
   /**
    * @return number of all usages counted, regardless of its status or rank.
    */

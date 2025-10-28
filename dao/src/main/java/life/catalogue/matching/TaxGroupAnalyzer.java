@@ -83,18 +83,31 @@ public class TaxGroupAnalyzer {
     return analyze(name, List.of());
   }
 
+  private boolean considerName(SimpleName sn) {
+    return sn.getRank() == null || sn.getRank().otherOrUnranked() || sn.getRank().higherOrEqualsTo(Rank.SUPRAGENERIC_NAME);
+  }
+
   /**
    * Tries to figure out the taxonomic group this name with classification belongs to.
    * If nothing can be found, null is returned for unknown.
    */
   public TaxGroup analyze(SimpleName name, Collection<? extends SimpleName> classification) {
     CountEnumMap<TaxGroup> groups = new CountEnumMap<>(TaxGroup.class);
+    Optional<? extends TaxGroup> pg;
     try {
-      var pg = parser.parse(name.getName());
-      pg.ifPresent(groups::inc);
-      for (var sn : classification) {
-        pg = parser.parse(sn.getName());
+      // only try to analyze names above genus level
+      // otherwise we will often hit false positives as the group parsers work with higher names only!
+      if (considerName(name)) {
+        pg = parser.parse(name.getName());
         pg.ifPresent(groups::inc);
+      }
+      if (classification != null) {
+        for (var sn : classification) {
+          if (considerName(sn)) {
+            pg = parser.parse(sn.getName());
+            pg.ifPresent(groups::inc);
+          }
+        }
       }
     } catch (UnparsableException e) {
       LOG.error("Error analyzing taxonomic group", e);

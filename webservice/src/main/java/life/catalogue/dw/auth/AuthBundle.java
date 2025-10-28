@@ -1,17 +1,12 @@
 package life.catalogue.dw.auth;
 
 import life.catalogue.WsServerConfig;
-import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.event.UserChanged;
-import life.catalogue.api.event.UserPermissionChanged;
+import life.catalogue.api.event.*;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
-
-import com.google.common.eventbus.Subscribe;
 
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.core.ConfiguredBundle;
@@ -24,10 +19,10 @@ import io.dropwizard.core.setup.Environment;
  * <p/>
  * Authorization is done in 2 parts:
  *  - a filter to protect private datasets by inspecting the requested URI.
- *  - a dynamic feature that reuires some authenticated user if a non Optional @Auth annotation is present on a method
+ *  - a dynamic feature that requires some authenticated user if a non Optional @Auth annotation is present on a method
  *  - the {@RolesAllowedDynamicFeature} that makes sure required user roles do exist on specifically annotated methods
  */
-public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
+public class AuthBundle implements ConfiguredBundle<WsServerConfig>, UserListener, DatasetListener {
   
   private JwtCodec jwtCodec;
   private IdentityService idService;
@@ -35,8 +30,6 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
   
   @Override
   public void run(WsServerConfig cfg, Environment environment) {
-    environment.jersey().register(RolesAllowedDynamicFeature.class);
-    
     jwtCodec = new JwtCodec(cfg.jwtKey);
     idService = new IdentityService(cfg.auth.createAuthenticationProvider());
     privateFilter = new PrivateFilter();
@@ -48,7 +41,7 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     // require authenticated user for methods with @Auth
     environment.jersey().register(RequireAuthDynamicFeature.class);
     // require specific roles annotation
-    environment.jersey().register(RolesAllowedDynamicFeature.class);
+    environment.jersey().register(RolesAllowedDynamicFeature2.class);
     // check access to private datasets based on URI
     environment.jersey().register(privateFilter);
   }
@@ -78,18 +71,18 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     return idService;
   }
 
-  @Subscribe
-  public void permissionChanged(UserPermissionChanged event){
+  @Override
+  public void userPermissionChanged(UserPermissionChanged event){
     idService.invalidate(event.username);
   }
 
-  @Subscribe
+  @Override
   public void userChanged(UserChanged event){
     String username = event.isDeletion() ? event.old.getUsername() : event.obj.getUsername();
     idService.invalidate(username);
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       privateFilter.updateCache(event.key, false);
@@ -110,4 +103,8 @@ public class AuthBundle implements ConfiguredBundle<WsServerConfig> {
     }
   }
 
+  public void flushCache() {
+    privateFilter.flushCache();
+    idService.flushCache();
+  }
 }

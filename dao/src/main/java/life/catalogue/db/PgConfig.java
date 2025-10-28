@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Objects;
 
-import jakarta.validation.constraints.Min;
-
 import org.apache.ibatis.jdbc.ScriptRunner;
 import org.postgresql.jdbc.PgConnection;
 
@@ -15,6 +13,8 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import jakarta.validation.constraints.Min;
 
 /**
  * A configuration for the postgres database connection pool as used by the mybatis layer.
@@ -142,7 +142,7 @@ public class PgConfig extends PgDbConfig {
   }
 
   private String jdbcUrl(PgDbConfig db) {
-    return "jdbc:postgresql://" + location(db.database);
+    return "jdbc:postgresql://" + location(db.database) + (applicationName == null ? "" : "?ApplicationName="+applicationName);
   }
 
   /**
@@ -163,7 +163,7 @@ public class PgConfig extends PgDbConfig {
     hikari.setMinimumIdle(minimumIdle);
     hikari.setIdleTimeout(idleTimeout);
     hikari.setMaxLifetime(maxLifetime);
-    
+
     // connection settings
     StringBuilder sb = new StringBuilder();
     if (workMem > 0) {

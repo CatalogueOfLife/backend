@@ -17,10 +17,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -31,6 +27,10 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.undercouch.citeproc.csl.CSLType;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.UriBuilder;
 
 import static life.catalogue.api.util.ObjectUtils.coalesce;
 /**
@@ -51,12 +51,14 @@ public class DatasetPager {
   private final LoadingCache<UUID, Agent> publisherCache;
   private final LoadingCache<UUID, Agent> hostCache;
   private final Set<UUID> articlePublishers;
+  private final Set<UUID> articleHostInstallations;
   private final LocalDate since;
 
   public DatasetPager(Client client, GbifConfig gbif, @Nullable LocalDate since) {
     this.client = client;
     this.since = since;
     articlePublishers = Set.copyOf(gbif.articlePublishers);
+    articleHostInstallations = Set.copyOf(gbif.articleHostInstallations);
     dataset = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"));
     datasets = client.target(UriBuilder.fromUri(gbif.api).path("/dataset"))
         .queryParam("type", "CHECKLIST");
@@ -190,8 +192,13 @@ public class DatasetPager {
     public String getTitle() {
       return dataset.getTitle();
     }
+
     public URI getDataAccess() {
       return settings.getURI(Setting.DATA_ACCESS);
+    }
+
+    public DataFormat getDataFormat() {
+      return settings.getEnum(Setting.DATA_FORMAT);
     }
   }
 
@@ -232,7 +239,9 @@ public class DatasetPager {
       return null;
     }
     // type
-    if (d.dataset.getGbifPublisherKey() != null && articlePublishers.contains(d.dataset.getGbifPublisherKey())) {
+    if (d.dataset.getGbifPublisherKey() != null && articlePublishers.contains(d.dataset.getGbifPublisherKey())
+        || g.installationKey != null && articleHostInstallations.contains(g.installationKey)
+    ) {
       d.dataset.setType(DatasetType.ARTICLE);
 
     } else if (g.subtype != null) {

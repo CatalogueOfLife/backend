@@ -3,15 +3,14 @@ package life.catalogue.basgroup;
 import life.catalogue.api.model.FormattableName;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
-
-import org.gbif.nameparser.api.NomCode;
-
-import javax.annotation.Nullable;
 
 
 /**

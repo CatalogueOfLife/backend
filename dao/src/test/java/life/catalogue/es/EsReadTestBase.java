@@ -159,7 +159,7 @@ public class EsReadTestBase {
     return new NameUsageSearchServiceEs(indexName(), getEsClient()).search(query, new Page(0, 1000));
   }
 
-  protected NameUsageSuggestResponse suggest(NameUsageSuggestRequest query) {
+  protected List<NameUsageSuggestion> suggest(NameUsageSuggestRequest query) {
     return new NameUsageSuggestionServiceEs(indexName(), getEsClient()).suggest(query);
   }
 
@@ -168,16 +168,19 @@ public class EsReadTestBase {
   }
 
   protected EsNameUsage newDocument(Name n, TaxonomicStatus status, String... classification) {
+    return newDocumentCL(n, status, classification(classification));
+  }
+
+  protected EsNameUsage newDocumentCL(Name n, TaxonomicStatus status, List<EsMonomial> classification) {
     EsNameUsage doc = new EsNameUsage();
     doc.setUsageId(n.getId());
     doc.setDatasetKey(n.getDatasetKey());
     doc.setScientificName(n.getScientificName());
+    doc.setRank(n.getRank());
     doc.setNameStrings(new NameStrings(n));
     doc.setDatasetKey(n.getDatasetKey());
     doc.setStatus(status);
-    if (classification != null) {
-      doc.setClassification(classification(classification));
-    }
+    doc.setClassification(classification);
     return doc;
   }
 

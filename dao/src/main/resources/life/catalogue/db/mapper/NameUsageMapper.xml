@@ -9,6 +9,7 @@
     ${alias}.dataset_key AS ${prefix}dataset_key,
     ${alias}.sector_key AS ${prefix}sector_key,
     ${alias}.verbatim_key AS ${prefix}verbatim_key,
+    ${alias}.verbatim_source_key AS ${prefix}verbatim_source_key,
     ${alias}.status AS ${prefix}status,
     ${alias}.origin AS ${prefix}origin,
     ${alias}.parent_id AS ${prefix}parent_id,
@@ -55,6 +56,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_SIMPLE_VERBATIM">
+    <include refid="SELECT_SIMPLE"/>, u.verbatim_source_key
+  </sql>
+
   <sql id="SELECT_SIMPLE_CACHED">
     <include refid="SELECT_SIMPLE"/>, u.sector_key, nm.index_id, ni.canonical_id, nm.type
   </sql>
@@ -63,6 +68,7 @@
     u.id,
     u.parent_id,
     u.sector_key,
+    u.verbatim_source_key,
     u.status,
     u.extinct,
     u.name_id,
@@ -97,6 +103,7 @@
   <sql id="COLS_COPY">
     ${alias}sector_key,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}status,
     ${alias}origin,
     ${alias}name_phrase,
@@ -122,6 +129,7 @@
     dataset_key,
     sector_key,
     verbatim_key,
+    verbatim_source_key,
     parent_id,
     name_id,
     status,
@@ -139,6 +147,7 @@
     #{datasetKey},
     #{sectorKey},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{parentId},
     #{name.id},
     #{status}::TAXONOMICSTATUS,
@@ -256,12 +265,17 @@
 
   <resultMap id="simpleNidxResultMap" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
-    <result property="parent" column="parent_id"/>
     <result property="name" column="scientific_name"/>
+    <result property="parent" column="parent_id"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
     <result property="canonicalId" column="canonical_id" />
     <result property="namesIndexMatchType" column="type" />
+  </resultMap>
+
+  <resultMap id="simpleVerbatimResultMap" type="SimpleNameVerbatim" autoMapping="true" extends="simpleResultMap">
+    <id property="id" column="id"/>
+    <result property="verbatimSourceKey" column="verbatim_source_key" />
   </resultMap>
 
   <resultMap id="simpleCachedResultMap" type="SimpleNameCached" autoMapping="true" extends="simpleNidxResultMap">
@@ -272,6 +286,7 @@
   <resultMap id="simpleNidxResultMapParentName" type="SimpleNameWithNidx" autoMapping="true">
     <id property="id" column="id"/>
     <result property="name" column="scientific_name"/>
+    <result property="parent" column="parent"/>
     <result property="phrase" column="name_phrase" />
     <result property="namesIndexId" column="index_id" />
     <result property="canonicalId" column="canonical_id" />
@@ -301,14 +316,20 @@
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
+  <select id="getSimpleVerbatim" resultMap="simpleVerbatimResultMap">
+    SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
+    FROM <include refid="FROM_SIMPLE"/>
+    WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
+  </select>
+
   <select id="getSimpleCached" resultMap="simpleCachedResultMap">
     SELECT <include refid="SELECT_SIMPLE_CACHED"/>
     FROM <include refid="FROM_SIMPLE_CACHED"/>
     WHERE u.dataset_key = #{key.datasetKey} AND u.id = #{key.id}
   </select>
 
-  <select id="getSimpleParent" resultMap="simpleResultMap">
-    SELECT <include refid="SELECT_SIMPLE"/>
+  <select id="getSimpleParent" resultMap="simpleVerbatimResultMap">
+    SELECT <include refid="SELECT_SIMPLE_VERBATIM"/>
     FROM <include refid="FROM_SIMPLE"/>
       JOIN name_usage child ON child.dataset_key=u.dataset_key AND child.parent_id=u.id
     WHERE child.dataset_key = #{key.datasetKey} AND child.id = #{key.id}
@@ -402,6 +423,14 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE u.dataset_key = #{datasetKey}
+    ORDER BY u.id
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <select id="listSN" resultMap="simpleCachedResultMap">
+    SELECT <include refid="SELECT_SIMPLE_CACHED"/>
+    FROM <include refid="FROM_SIMPLE_CACHED"/>
+    WHERE u.dataset_key=#{datasetKey}
     ORDER BY u.id
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
@@ -547,6 +576,12 @@
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE name_usage
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
   <insert id="copyDataset" parameterType="map">
     INSERT INTO name_usage
       (id, parent_id, name_id, dataset_key,
@@ -621,7 +656,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE name_usage SET sector_key = NULL
+    UPDATE name_usage SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
@@ -706,18 +741,21 @@
       <foreach item="id" collection="param.exclusion" open="(" separator="," close=")">#{id}</foreach>
     </if>
     <if test="param.lowestRank">
-      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank = 'UNRANKED'::rank)
+      AND (n.rank &lt;= #{param.lowestRank}::rank OR n.rank IN ('UNRANKED'::rank, 'OTHER'::rank, 'SUPRAGENERIC_NAME'::rank, 'INFRAGENERIC_NAME'::rank)
+      <if test="param.ignoreAmbiguousRanks">
+        OR n.rank IN ('SUPERSECTION_ZOOLOGY'::rank,'SECTION_ZOOLOGY'::rank,'SUBSECTION_ZOOLOGY'::rank,'SUPERSECTION_BOTANY'::rank,'SECTION_BOTANY'::rank,'SUBSECTION_BOTANY'::rank,'SUPERSERIES'::rank,'SERIES'::rank,'SUBSERIES'::rank)
+      </if>)
     </if>
   </sql>
 
   <sql id="DEPTH_FIRST_ROOT">
     <if test="depthFirst">
-      ,concat_ws('|',<if test="orderByName">n.scientific_name, n.authorship,</if> u.id) || '|' AS path
+      ,concat_ws('|',<if test="ordered">u.ordinal, n.scientific_name, n.authorship,</if> u.id) || '|' AS path
     </if>
   </sql>
   <sql id="DEPTH_FIRST">
     <if test="depthFirst">
-      ,concat_ws('|', x.path, <if test="orderByName">not is_synonym(u.status),n.scientific_name, n.authorship,</if> u.id) || '|' AS path
+      ,concat_ws('|', x.path, <if test="ordered">not is_synonym(u.status), u.ordinal, n.scientific_name, n.authorship,</if> u.id) || '|' AS path
     </if>
   </sql>
 
@@ -807,7 +845,7 @@
     SELECT * FROM tree;
   </select>
 
-  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMap" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
+  <select id="processNxIds" parameterType="map" resultMap="simpleNidxResultMapParentName" resultOrdered="true" fetchSize="2500" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT_SIMPLE"/>, nm.index_id, ni.canonical_id, nm.type, np.scientific_name AS parent
     FROM name_usage u
       JOIN name n ON n.dataset_key=#{datasetKey} AND n.id=u.name_id
@@ -815,7 +853,7 @@
       LEFT JOIN name np ON np.dataset_key=#{datasetKey} AND np.id=up.name_id
       LEFT JOIN name_match nm ON nm.name_id=n.id AND nm.dataset_key=#{datasetKey}
       LEFT JOIN names_index ni ON ni.id=nm.index_id
-    WHERE u.dataset_key=#{datasetKey}
+    WHERE u.dataset_key=#{datasetKey} AND length(u.id) >= #{minLength}
     ORDER BY ni.canonical_id, ni.id
   </select>
 
@@ -823,6 +861,9 @@
     SELECT id FROM name_usage WHERE dataset_key=#{datasetKey}
     <if test="!synonyms">
       AND NOT is_synonym(status)
+    </if>
+    <if test="minLength != null">
+      AND length(id) >= #{minLength}
     </if>
   </select>
 
@@ -875,6 +916,16 @@
     UPDATE name_usage
     SET identifier = array_cat(identifier, ARRAY[<foreach item="id" collection="ids" separator=",">'${id}'</foreach>])
     WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
+
+  <update id="updateId" parameterType="map">
+    UPDATE name_usage SET id=#{newID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE name_usage SET parent_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND parent_id=#{key.id}
   </update>
 
 </mapper>

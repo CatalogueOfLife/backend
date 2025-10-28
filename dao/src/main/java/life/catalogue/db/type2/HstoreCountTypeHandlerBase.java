@@ -1,13 +1,13 @@
 package life.catalogue.db.type2;
 
+import life.catalogue.common.collection.CountMap;
+
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-
-import life.catalogue.common.collection.CountMap;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.type.BaseTypeHandler;

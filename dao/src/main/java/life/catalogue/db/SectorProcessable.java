@@ -19,7 +19,6 @@ public interface SectorProcessable<V> {
    */
   List<Class<? extends SectorProcessable<?>>> MAPPERS = List.of(
     // usage related
-    VerbatimSourceMapper.class,
     VernacularNameMapper.class,
     DistributionMapper.class,
     MediaMapper.class,
@@ -35,8 +34,10 @@ public interface SectorProcessable<V> {
     // name
     NameMapper.class,
     // refs
-    ReferenceMapper.class
-  );
+    ReferenceMapper.class,
+    // verbatim
+    VerbatimSourceMapper.class
+    );
 
   /**
    * Iterates over all entities of a given sector in a memory friendly way, bypassing the 1st level mybatis cache.

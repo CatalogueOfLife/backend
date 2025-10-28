@@ -6,6 +6,7 @@ import life.catalogue.config.MailConfig;
 import life.catalogue.metadata.FmUtil;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.UUID;
@@ -133,6 +134,7 @@ public class EmailNotification {
     private final String replyTo;
     private final String domain;
     private final String subjectPrefix;
+    private final String mailinglist;
 
     public EmailData(BackgroundJob job, User user, MailConfig cfg) {
       this.job = job;
@@ -144,12 +146,14 @@ public class EmailNotification {
         this.replyTo = cfg.replyTo;
         this.domain = cfg.domain;
         this.subjectPrefix = cfg.subjectPrefix;
+        this.mailinglist = cfg.mailinglist;
       } else {
         this.from = null;
         this.fromName = null;
         this.replyTo = null;
         this.domain = null;
         this.subjectPrefix = null;
+        this.mailinglist = null;
       }
     }
 
@@ -179,6 +183,10 @@ public class EmailNotification {
 
     public String getDomain() {
       return domain;
+    }
+
+    public String getMailinglist() {
+      return mailinglist;
     }
 
     public String getSubjectPrefix() {

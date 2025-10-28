@@ -11,11 +11,10 @@ import java.io.Writer;
 import java.util.stream.Stream;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import com.google.common.annotations.VisibleForTesting;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * DAO giving read and write access to potentially large text trees and name lists

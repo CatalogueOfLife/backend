@@ -2,24 +2,24 @@ package life.catalogue.jobs.cron;
 
 import life.catalogue.dao.DatasetDao;
 
+import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
-
 public class TempDatasetCleanup extends CronJob {
-  private static final Logger LOG = LoggerFactory.getLogger(TempDatasetCleanup.class);
-  DatasetDao dao;
-  public TempDatasetCleanup() {
+  private static final int TEMP_EXPIRY_DAYS = 7;
+
+  final DatasetDao dao;
+
+  public TempDatasetCleanup(DatasetDao dao) {
     super(1, TimeUnit.DAYS);
+    this.dao = dao;
   }
 
   @Override
   public void run() {
-    LOG.info("Looking for temporary datasets to be removed");
-    int cnt = dao.deleteTempDatasets();
-    if (cnt > 0) {
-      LOG.info("Removed {} temporary datasets", cnt);
-    }
+    dao.deleteTempDatasets(LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS));
   }
 }

@@ -6,12 +6,12 @@ import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.SectorSyncIT;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.junit.NameMatchingRule;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.NameUsageMapper;
-import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -59,7 +59,7 @@ public class HomotypicConsolidator2IT {
   }
 
   @Test
-  public void consolidateNoPrios() throws IOException {
+  public void consolidateNoPrios() throws Exception {
     printTree();
     var hc = HomotypicConsolidator.entireDataset(SqlSessionFactoryRule.getSqlSessionFactory(), dataRule.testData.key, u->1);
     hc.consolidate();
@@ -68,9 +68,8 @@ public class HomotypicConsolidator2IT {
     Set<String> skipped = Set.of("1","2","3","4");
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      final DSID<String> key = DSID.root(dataRule.testData.key);
       for (var id : skipped) {
-        var v = vm.get(key.id(id));
+        var v = vm.getByUsage(DSID.of(dataRule.testData.key, id));
         assertTrue(v.getIssues().contains(Issue.HOMOTYPIC_CONSOLIDATION_UNRESOLVED));
       }
     }
@@ -122,7 +121,9 @@ public class HomotypicConsolidator2IT {
 
   void printTree() throws IOException {
     Writer writer = new StringWriter();
-    PrinterFactory.dataset(TextTreePrinter.class, dataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
+    PrinterFactory.dataset(TextTreePrinter.class, dataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory(), writer)
+      .showIDs()
+      .print();
     System.out.println(writer.toString().trim());
   }
 

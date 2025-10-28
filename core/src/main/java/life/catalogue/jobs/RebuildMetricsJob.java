@@ -4,8 +4,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DaoUtils;
-
-import life.catalogue.release.MetricsBuilder;
+import life.catalogue.dao.TaxonMetricsBuilder;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 
@@ -23,7 +22,7 @@ public class RebuildMetricsJob extends DatasetBlockingJob {
 
   @Override
   protected void runWithLock() throws Exception {
-    MetricsBuilder.rebuildMetrics(factory, datasetKey);
+    TaxonMetricsBuilder.rebuildMetrics(factory, datasetKey);
   }
 
   @Override

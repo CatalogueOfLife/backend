@@ -45,11 +45,10 @@ public enum Gazetteer {
     "Longhurst Biogeographical Provinces, a partition of the world oceans into provinces as defined by Longhurst, A.R. (2006). " +
       "Ecological Geography of the Sea. 2nd Edition."),
 
-  TEOW("Terrestrial Ecoregions of the World",
-    "https://www.worldwildlife.org/publications/terrestrial-ecoregions-of-the-world",
+  REALM("Biogeographic Realms",
+    "https://en.wikipedia.org/wiki/Biogeographic_realm",
     null,
-    "Terrestrial Ecoregions of the World is a biogeographic regionalization of the Earth's terrestrial biodiversity. " +
-      "See Olson et al. 2001. Terrestrial ecoregions of the world: a new map of life on Earth. Bioscience 51(11):933-938."),
+    "Enumeration of 8 traditional terrestrial biogeographic realms dividing the Earth's land surface based on distributional patterns of terrestrial organisms."),
 
   IHO("International Hydrographic Organization See Areas",
     null,

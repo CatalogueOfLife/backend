@@ -1,21 +1,20 @@
 package life.catalogue.matching.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.io.Serializable;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-
 import lombok.*;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 
 /**
  * A name usage match with additional classification information and a flag indicating if the name
@@ -27,10 +26,8 @@ import org.gbif.nameparser.api.Rank;
 @Schema(description = "A name usage match returned by the webservices. Includes higher taxonomy and diagnostics", title = "NameUsageMatch", type = "object")
 @AllArgsConstructor
 @NoArgsConstructor
-public class NameUsageMatch implements LinneanClassification {
+public class NameUsageMatch implements RankNameResolver {
 
-  @Schema(description = "If the matched usage is a synonym")
-  boolean synonym;
   @Schema(description = "The matched name usage")
   Usage usage;
   @Schema(description = "The accepted name usage for the match. This will only be populated when we've matched a synonym name usage.")
@@ -41,8 +38,14 @@ public class NameUsageMatch implements LinneanClassification {
   Diagnostics diagnostics;
   @Schema(description = "Status information from external sources such as IUCN Red List")
   List<Status> additionalStatus;
+  @Schema(description = "If the matched usage is a synonym")
+  boolean synonym;
+  @Schema(description = "The left ID of the nested set")
+  Long left;
+  @Schema(description = "The right ID of the nested set")
+  Long right;
 
-  private String nameFor(Rank rank) {
+  public String nameFor(Rank rank) {
     if (classification == null)
       return null;
     return getClassification().stream()
@@ -52,7 +55,7 @@ public class NameUsageMatch implements LinneanClassification {
         .orElse(null);
   }
 
-  private String keyFor(Rank rank) {
+  public String keyFor(Rank rank) {
     if (classification == null)
       return null;
     return getClassification().stream()
@@ -62,7 +65,7 @@ public class NameUsageMatch implements LinneanClassification {
         .orElse(null);
   }
 
-  private void setNameFor(String value, Rank rank) {
+  public void setNameFor(String value, Rank rank) {
     if (classification == null) {
       this.classification = new ArrayList<>();
     }
@@ -80,7 +83,7 @@ public class NameUsageMatch implements LinneanClassification {
     }
   }
 
-  private void setKeyFor(String key, Rank rank) {
+  public void setKeyFor(String key, Rank rank) {
     Optional<RankedName> name =
         this.getClassification().stream().filter(c -> c.getRank().equals(rank)).findFirst();
     if (name.isPresent()) {
@@ -94,6 +97,9 @@ public class NameUsageMatch implements LinneanClassification {
   }
 
   public String getHigherRankKey(Rank rank) {
+    if (this.getClassification() == null || this.getClassification().isEmpty()) {
+      return null;
+    }
     return this.getClassification().stream()
         .filter(c -> c.getRank().equals(rank))
         .findFirst()
@@ -121,177 +127,11 @@ public class NameUsageMatch implements LinneanClassification {
     additionalStatus.add(status);
   }
 
-  @Override
-  @JsonIgnore
-  public String getKingdom() {
-    return nameFor(Rank.KINGDOM);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getPhylum() {
-    return nameFor(Rank.PHYLUM);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getClazz() {
-    return nameFor(Rank.CLASS);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getOrder() {
-    return nameFor(Rank.ORDER);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getFamily() {
-    return nameFor(Rank.FAMILY);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getGenus() {
-    return nameFor(Rank.GENUS);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getSubgenus() {
-    return nameFor(Rank.SUBGENUS);
-  }
-
-  @Override
-  @JsonIgnore
-  public String getSpecies() {
-    return nameFor(Rank.SPECIES);
-  }
-
-  @JsonIgnore
-  public String getKingdomKey() {
-    return keyFor(Rank.KINGDOM);
-  }
-
-  @JsonIgnore
-  public String getPhylumKey() {
-    return keyFor(Rank.PHYLUM);
-  }
-
-  @JsonIgnore
-  public String getClassKey() {
-    return keyFor(Rank.CLASS);
-  }
-
-  @JsonIgnore
-  public String getOrderKey() {
-    return keyFor(Rank.ORDER);
-  }
-
-  @JsonIgnore
-  public String getFamilyKey() {
-    return keyFor(Rank.FAMILY);
-  }
-
-  @JsonIgnore
-  public String getGenusKey() {
-    return keyFor(Rank.GENUS);
-  }
-
-  @JsonIgnore
-  public String getSubgenusKey() {
-    return keyFor(Rank.SUBGENUS);
-  }
-
-  @JsonIgnore
-  public String getSpeciesKey() {
-    return keyFor(Rank.SPECIES);
-  }
-
-  @Override
-  public void setKingdom(String v) {
-    setNameFor(v, Rank.KINGDOM);
-  }
-
-  @Override
-  public void setPhylum(String v) {
-    setNameFor(v, Rank.PHYLUM);
-  }
-
-  @Override
-  public void setClazz(String v) {
-    setNameFor(v, Rank.CLASS);
-  }
-
-  @Override
-  public void setOrder(String v) {
-    setNameFor(v, Rank.ORDER);
-  }
-
-  @Override
-  public void setFamily(String v) {
-    setNameFor(v, Rank.FAMILY);
-  }
-
-  @Override
-  public void setGenus(String v) {
-    setNameFor(v, Rank.GENUS);
-  }
-
-  @Override
-  public void setSubgenus(String v) {
-    setNameFor(v, Rank.SUBGENUS);
-  }
-
-  @Override
-  public void setSpecies(String v) {
-    setNameFor(v, Rank.SPECIES);
-  }
-
-  @JsonIgnore
-  public void setKingdomKey(String v) {
-    setKeyFor(v, Rank.KINGDOM);
-  }
-
-  @JsonIgnore
-  public void setPhylumKey(String v) {
-    setKeyFor(v, Rank.PHYLUM);
-  }
-
-  @JsonIgnore
-  public void setClassKey(String v) {
-    setKeyFor(v, Rank.CLASS);
-  }
-
-  @JsonIgnore
-  public void setOrderKey(String v) {
-    setKeyFor(v, Rank.ORDER);
-  }
-
-  @JsonIgnore
-  public void setFamilyKey(String v) {
-    setKeyFor(v, Rank.FAMILY);
-  }
-
-  @JsonIgnore
-  public void setGenusKey(String v) {
-    setKeyFor(v, Rank.GENUS);
-  }
-
-  @JsonIgnore
-  public void setSubgenusKey(String v) {
-    setKeyFor(v, Rank.SUBGENUS);
-  }
-
-  @JsonIgnore
-  public void setSpeciesKey(String v) {
-    setKeyFor(v, Rank.SPECIES);
-  }
-
   @JsonInclude(JsonInclude.Include.NON_NULL)
   @Data
   @Builder
+  @AllArgsConstructor
+  @NoArgsConstructor
   @Schema(description = "Diagnostics for a name match including the type of match and confidence level", title = "Diagnostics", type = "object")
   public static class Diagnostics {
     @Schema(description = "The match type, e.g. 'exact', 'fuzzy', 'partial', 'none'")
@@ -302,28 +142,16 @@ public class NameUsageMatch implements LinneanClassification {
     List<ProcessFlag> processingFlags;
     @Schema(description = "Confidence level in percent")
     Integer confidence;
-    @Schema(description = "The status of the match e.g. ACCEPTED, SYNONYM, AMBIGUOUS, EXCLUDED, etc.")
-    TaxonomicStatus status;
     @Schema(description = "Additional notes about the match")
     String note;
     @Schema(description = "Time taken to perform the match in milliseconds")
     long timeTaken;
-    @Schema(description = "A list of similar matches with lower confidence scores ")
+    @Schema(description = "A list of similar matches with lower confidence scores")
     List<NameUsageMatch> alternatives;
-
-    public Diagnostics() {
-    }
-
-    public Diagnostics(MatchType matchType, List<MatchingIssue> issues, List<ProcessFlag> processingFlags, Integer confidence, TaxonomicStatus status, String note, long timeTaken, List<NameUsageMatch> alternatives) {
-      this.matchType = matchType;
-      this.issues = issues;
-      this.processingFlags = processingFlags;
-      this.confidence = confidence;
-      this.status = status;
-      this.note = note;
-      this.timeTaken = timeTaken;
-      this.alternatives = alternatives;
-    }
+    @Schema(description = "A set of timings for the different steps of the match process")
+    Map<String, Long> timings;
+    @Schema(description = "The ID match taxon. Present if the match is based on an external ID")
+    ExternalID matchedID;
 
     public MatchType getMatchType() {
       return matchType;
@@ -357,14 +185,6 @@ public class NameUsageMatch implements LinneanClassification {
       this.confidence = confidence;
     }
 
-    public TaxonomicStatus getStatus() {
-      return status;
-    }
-
-    public void setStatus(TaxonomicStatus status) {
-      this.status = status;
-    }
-
     public String getNote() {
       return note;
     }
@@ -388,6 +208,10 @@ public class NameUsageMatch implements LinneanClassification {
     public void setAlternatives(List<NameUsageMatch> alternatives) {
       this.alternatives = alternatives;
     }
+
+    public Map<String, Long> getTimings() {
+      return timings;
+    }
   }
 
   /**
@@ -408,62 +232,31 @@ public class NameUsageMatch implements LinneanClassification {
     private String key;
     @Schema(description = "The name usage")
     private String name;
+    @Schema(description = "The canonical name without authorship")
     private String canonicalName;
+    @Schema(description = "The authorship for the name usage")
     private String authorship;
     @JsonIgnore private String parentID;
     @Schema(description = "The taxonomic rank for the name usage")
     private Rank rank;
     @Schema(description = "The nomenclatural code for the name usage")
     private NomCode code;
+    @Schema(description = "The status of the usage e.g. ACCEPTED, SYNONYM, PROVISIONALLY_ACCEPTED, etc.")
+    private TaxonomicStatus status;
+    @Schema(description = "The unominal name for the name usage")
     private String uninomial;
-    private String genus;
+    @Schema(description = "The genus or genericName for the name usage")
+    private String genericName;
+    @Schema(description = "The infrageneric epithet, typically a subgenus or section within a genus")
     private String infragenericEpithet;
+    @Schema(description = "The specific epithet, forming the second part of a species name")
     private String specificEpithet;
+    @Schema(description = "The infraspecific epithet, used for taxa below the species level (e.g., subspecies)")
     private String infraspecificEpithet;
-    private String cultivarEpithet;
-    private String phrase;
-    private String voucher;
-    private String nominatingParty;
-    private boolean candidatus;
-    private String notho;
-    private Boolean originalSpelling;
-    private Map<String, String> epithetQualifier;
+    @Schema(description = "The nomenclatural type of the name (e.g., scientific, cultivar, informal)")
     private String type;
-    protected boolean extinct;
-    private Authorship combinationAuthorship;
-    private Authorship basionymAuthorship;
-    private String sanctioningAuthor;
-    private String taxonomicNote;
-    private String nomenclaturalNote;
-    private String publishedIn;
-    private String unparsed;
-    private boolean doubtful;
-    private boolean manuscript;
-    private String state;
-    private Set<String> warnings;
-
-    //additional flags
-    private boolean isAbbreviated;
-    private boolean isAutonym;
-    private boolean isBinomial;
-    private boolean isTrinomial;
-    private boolean isIncomplete;
-    private boolean isIndetermined;
-    private boolean isPhraseName;
-    private String terminalEpithet;
-  }
-
-  @Schema(description = "An scientific name authorship for a name usage, split into components", title = "Authorship", type = "object")
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  @Data
-  @AllArgsConstructor
-  @NoArgsConstructor
-  @ToString
-  @Builder
-  public static class Authorship {
-    private List<String> authors = new ArrayList();
-    private List<String> exAuthors = new ArrayList();
-    private String year;
+    @Schema(description = "The name formatted in HTML")
+    private String formattedName;
   }
 
   /**
@@ -501,12 +294,12 @@ public class NameUsageMatch implements LinneanClassification {
   @Schema(description = "A status value derived from a dataset or external source. E.g. IUCN Red List.",
     title = "Status", type = "object")
   public static class Status {
-    @Schema(description = "The dataset key for the dataset that the status is associated with")
-    private String datasetKey;
+    @Schema(description = "The checklistbank dataset key for the dataset that the status is associated with")
+    private String clbDatasetKey;
     @Schema(description = "The dataset alias for the dataset that the status is associated with")
     private String datasetAlias;
-    @Schema(description = "The gbif registry key for the dataset that the status is associated with")
-    private String gbifKey;
+    @Schema(description = "The GBIF registry key (UUID) for the dataset that the status is associated with")
+    private String datasetKey;
     @Schema(description = "The status value")
     private String status;
     @Schema(description = "The status code value")

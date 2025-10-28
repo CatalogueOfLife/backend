@@ -35,8 +35,11 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     
     List<?> cl = mapper(TaxonMapper.class).classificationSimple(DSID.of(NAME4.getDatasetKey(), "t15"));
     assertEquals(7, cl.size());
-    
-    NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), "t15");
+
+    // just to test the different sql
+    NameUsageWrapper tax = mapper().get(NAME4.getDatasetKey(), true, "t15");
+    // real thing for the test
+    tax = mapper().get(NAME4.getDatasetKey(), false, "t15");
     assertFalse(tax.getClassification().isEmpty());
     assertEquals(cl, tax.getClassification());
     
@@ -51,7 +54,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
     dm.create(ed3);
     commit();
     
-    tax = mapper().get(NAME4.getDatasetKey(), "t15");
+    tax = mapper().get(NAME4.getDatasetKey(), false, "t15");
     assertFalse(tax.getClassification().isEmpty());
     assertEquals(cl, tax.getClassification());
     assertEquals(2, tax.getDecisions().size());
@@ -136,8 +139,7 @@ public class NameUsageWrapperMapperTreeTest extends MapperTestBase<NameUsageWrap
 
     // build temporary table collecting issues from all usage related tables
     // we do this in a separate step to not overload postgres with gigantic joins later on
-    mapper(VerbatimRecordMapper.class).createTmpIssuesTable(datasetKey, null);
-    mapper(VerbatimRecordMapper.class).createTmpVSourcesTable(datasetKey, null);
+    mapper(TmpIssueMapper.class).createTmpIssuesTable(datasetKey, null);
 
     final Set<String> ids = new HashSet<>();
     try (var c = mapper().processWithoutClassification(datasetKey, null)) {

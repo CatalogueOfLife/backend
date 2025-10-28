@@ -1,0 +1,53 @@
+FROM openjdk:17-jdk-slim
+
+# this directory should contain a pre-built jar + config, and the generated lucene index
+ARG INDEX_BUILD_PATH=./index-build
+
+# Set environment variables
+ENV SERVER_PORT=8080
+ENV SERVER_ADMIN_PORT=8081
+ENV JVM_OPTIONS="-Xms1g -Xmx4g -XX:+UseZGC -XX:+ParallelRefProcEnabled -XX:+AlwaysPreTouch -XX:+UnlockExperimentalVMOptions"
+ENV SERVLET_CONTEXT_PATH="/"
+ENV USER=matching
+ENV APP_ARTIFACT=matching-ws
+ENV APP_NAME=matching-ws
+ENV APP_VERSION="1.0-SNAPSHOT"
+ENV EXTRA_RUN_ARGS=""
+ENV CONF_DIR="/usr/local/gbif/conf"
+ENV SERVICE_BASE_URL="http://localhost:8080"
+ENV ZK_SERVER_PORT=8080
+ENV ZK_TIMESTAMP=-1
+
+# Directories and perms
+RUN mkdir -p /data/$APP_ARTIFACT && \
+    mkdir -p /usr/local/gbif/ && \
+    groupadd -r $USER -g 1000 && \
+    useradd -r -g $USER -u 1000 -m $USER && \
+    chown -R $USER:$USER /data/$APP_ARTIFACT && \
+    chown -R $USER:$USER /usr/local/gbif/
+
+# Set the working directory in the container
+WORKDIR /usr/local/gbif/
+
+# Copy the executable JAR file from the builder image to the new image
+COPY $INDEX_BUILD_PATH/timestamp.properties /tmp/timestamp.properties
+COPY --chown=$USER:$USER $INDEX_BUILD_PATH/code /usr/local/gbif
+COPY --chown=$USER:$USER $INDEX_BUILD_PATH/data/ /data/
+
+EXPOSE $SERVER_PORT $SERVER_ADMIN_PORT
+
+USER $USER
+
+CMD java $JVM_OPTIONS \
+    -jar app.jar \
+    --server.servlet.context-path=$SERVLET_CONTEXT_PATH \
+    --server.port=$SERVER_PORT \
+    --working.dir=/usr/local/gbif/ \
+    --spring.config.additional-location=/tmp/timestamp.properties \
+    --spring.config.location=optional:$CONF_DIR/application.yml \
+    --spring.cloud.bootstrap.location=optional:$CONF_DIR/bootstrap.yml \
+    --spring.boot.admin.client.instance.service-base-url=$SERVICE_BASE_URL \
+    --spring.cloud.zookeeper.discovery.metadata.httpPort=$ZK_SERVER_PORT \
+    --spring.cloud.zookeeper.discovery.metadata.timestamp=$ZK_TIMESTAMP \
+    --spring.boot.admin.client.instance.metadata.infoUrl=$SERVICE_BASE_URL/v2/species/match/metadata \
+    --mode=RUN $EXTRA_RUN_ARGS

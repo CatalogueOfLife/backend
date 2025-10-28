@@ -1,6 +1,9 @@
 package life.catalogue.common.text;
 
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Agent;
+import life.catalogue.api.model.Citation;
+import life.catalogue.api.model.DOI;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.date.FuzzyDate;
@@ -18,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class CitationUtils {
 
   public static class DatasetWrapper {
-    final Dataset d;
+    protected final Dataset d;
 
     public DatasetWrapper(Dataset dataset) {
       d = dataset;
@@ -244,6 +247,12 @@ public class CitationUtils {
   public static class ReleaseWrapper extends DatasetWrapper {
     final DatasetWrapper base;
     final DatasetWrapper proj;
+
+    public ReleaseWrapper(ReleaseWrapper other) {
+      super(other.d);
+      this.base = other.base;
+      this.proj = other.proj;
+    }
 
     public ReleaseWrapper(Dataset dataset, Dataset base, Dataset project) {
       super(dataset);

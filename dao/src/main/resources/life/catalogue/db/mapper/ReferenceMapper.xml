@@ -9,6 +9,7 @@
     r.dataset_key,
     r.sector_key,
     r.verbatim_key,
+    r.verbatim_source_key,
     r.csl,
     r.citation,
     r.year,
@@ -20,7 +21,6 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
     </include>
@@ -28,7 +28,9 @@
 
   <sql id="COLS_COPY">
     ${alias}id,
+    ${alias}sector_key,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}csl,
     ${alias}citation,
     ${alias}year,
@@ -38,9 +40,10 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{id},
+    #{sectorKey},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{csl, typeHandler=life.catalogue.db.type.CslJsonHandler}::jsonb,
     #{citation},
     #{year},
@@ -168,8 +171,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO reference (dataset_key, sector_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey}, r.sector_key, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified
+    INSERT INTO reference (dataset_key, <include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey}, <include refid="COLS_COPY"><property name="alias" value="r."/></include>, r.created, r.modified
     FROM reference r
     WHERE dataset_key = #{datasetKey}
   </insert>
@@ -178,6 +181,12 @@
     UPDATE reference
     SET (<include refid="COLS"/>, created, modified) = (<include refid="PROPS"/>, now(), now())
     WHERE id = #{id} AND dataset_key=#{datasetKey}
+  </update>
+
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE reference
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
   </update>
 
   <delete id="delete" parameterType="map">
@@ -202,7 +211,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE reference SET sector_key = NULL
+    UPDATE reference SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 
@@ -219,6 +228,8 @@
     SELECT according_to_id FROM name_usage WHERE dataset_key=#{datasetKey} AND according_to_id IS NOT NULL
       UNION
     SELECT reference_id FROM taxon_concept_rel WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
+      UNION
+    SELECT reference_id FROM taxon_property WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
       UNION
     SELECT reference_id FROM species_interaction WHERE dataset_key=#{datasetKey} AND reference_id IS NOT NULL
       UNION
@@ -265,4 +276,10 @@
     WHERE r.dataset_key=#{datasetKey}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT id FROM reference
+      WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+    )
+  </select>
 </mapper>

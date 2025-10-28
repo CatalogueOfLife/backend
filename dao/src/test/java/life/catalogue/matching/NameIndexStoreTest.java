@@ -3,21 +3,19 @@ package life.catalogue.matching;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.io.TempFile;
-
 import life.catalogue.matching.nidx.NameIndexStore;
 import life.catalogue.matching.nidx.NamesIndexConfig;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 abstract class NameIndexStoreTest {
   AtomicInteger keyGen = new AtomicInteger();

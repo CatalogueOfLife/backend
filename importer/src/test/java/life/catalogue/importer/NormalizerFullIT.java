@@ -8,7 +8,6 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
-
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import org.junit.ClassRule;

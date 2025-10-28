@@ -1,6 +1,21 @@
 package life.catalogue.matching.service;
 
-import static life.catalogue.matching.util.IndexConstants.*;
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.ReleaseAttempt;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.db.DatasetMapper;
+import life.catalogue.matching.index.ScientificNameAnalyzer;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
+import life.catalogue.matching.util.NameParsers;
+
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.ParsedName;
+import org.gbif.nameparser.api.Rank;
+import org.gbif.nameparser.api.UnparsableNameException;
+import org.gbif.nameparser.util.NameFormatter;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
@@ -11,34 +26,21 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.CSVWriterBuilder;
-import com.opencsv.ICSVWriter;
-import com.opencsv.bean.*;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.ReleaseAttempt;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.db.DatasetMapper;
-import life.catalogue.matching.index.ScientificNameAnalyzer;
-import life.catalogue.matching.model.Classification;
-import life.catalogue.matching.model.StoredParsedName;
-import life.catalogue.matching.model.Dataset;
-import life.catalogue.matching.model.NameUsage;
-import life.catalogue.matching.model.NameUsageMatch;
-import life.catalogue.matching.util.NameParsers;
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
+
+import javax.sql.DataSource;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.lucene.analysis.Analyzer;
@@ -51,18 +53,27 @@ import org.apache.lucene.search.*;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.ParsedName;
-import org.gbif.nameparser.api.Rank;
-import org.gbif.nameparser.api.UnparsableNameException;
-import org.gbif.nameparser.util.NameFormatter;
+import org.apache.lucene.util.BytesRef;
 import org.jetbrains.annotations.NotNull;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.sql.DataSource;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriterBuilder;
+import com.opencsv.ICSVWriter;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import lombok.extern.slf4j.Slf4j;
+
+import static life.catalogue.matching.util.IndexConstants.*;
 
 /**
  * Service to index a dataset from the Checklist Bank.
@@ -84,35 +95,36 @@ public class IndexingService {
   @Value("${temp.path:/tmp/matching-tmp}")
   String tempIndexPath;
 
-  @Value("${clb.url}")
+  @Value("${clb.url:jdbc:postgresql://localhost:5432/clb}")
   String clbUrl;
 
-  @Value("${clb.user}")
+  @Value("${clb.user:clb}")
   String clbUser;
 
-  @Value("${clb.password}")
+  @Value("${clb.password:not-set}")
   String clPassword;
-
-  @Value("${clb.driver}")
-  String clDriver;
 
   @Value("${indexing.threads:6}")
   Integer indexingThreads;
 
+  @Value("${indexing.batchsize:10000}")
+  Integer indexingBatchSize;
+
   @Value("${indexing.fetchsize:50000}")
   Integer dbFetchSize;
 
-  protected final MatchingService matchingService;
+  protected final IOUtil ioUtil;
 
-  protected static final ObjectMapper MAPPER = new ObjectMapper();
+  protected final MatchingService matchingService;
 
   private static final String REL_PATTERN_STR = "(\\d+)(?:LX?RC?|R(\\d+))";
   private static final Pattern REL_PATTERN = Pattern.compile("^" + REL_PATTERN_STR + "$");
 
   protected static final ScientificNameAnalyzer scientificNameAnalyzer = new ScientificNameAnalyzer();
 
-  public IndexingService(MatchingService matchingService) {
+  public IndexingService(MatchingService matchingService, IOUtil ioUtil) {
     this.matchingService = matchingService;
+    this.ioUtil = ioUtil;
   }
 
   protected static IndexWriterConfig getIndexWriterConfig() {
@@ -120,7 +132,10 @@ public class IndexingService {
     analyzerPerField.put(FIELD_SCIENTIFIC_NAME, new StandardAnalyzer());
     analyzerPerField.put(FIELD_CANONICAL_NAME, scientificNameAnalyzer);
     PerFieldAnalyzerWrapper aWrapper = new PerFieldAnalyzerWrapper( new KeywordAnalyzer(), analyzerPerField);
-    return new IndexWriterConfig(aWrapper);
+    IndexWriterConfig config = new IndexWriterConfig(aWrapper);
+    config.setMaxBufferedDocs(IndexWriterConfig.DISABLE_AUTO_FLUSH);
+    config.setRAMBufferSizeMB(256.0);
+    return config;
   }
 
   /**
@@ -136,7 +151,7 @@ public class IndexingService {
     try {
       datasetKey = Optional.of(Integer.parseInt(datasetKeyInput));
       return lookupDataset(factory, datasetKey.get());
-    } catch (NumberFormatException e) {
+    } catch (NumberFormatException ignored) {
     }
 
     // otherwise, resolve magic key
@@ -244,14 +259,19 @@ public class IndexingService {
         "n.authorship as authorship, " +
         "n.rank as rank, " +
         "nu.status as status, " +
-        "n.code as nomenclaturalCode, " +
+        "n.code as code, " +
+        "n.type as type, " +
+        "n.genus as genericName, " +
+        "n.infrageneric_epithet as infragenericEpithet, " +
+        "n.specific_epithet as specificEpithet, " +
+        "n.infraspecific_epithet as infraspecificEpithet, " +
         "'' as extension, " +
         "'' as category " +
         "FROM name_usage nu " +
         "INNER JOIN " +
-        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getClbKey() +
         " WHERE " +
-        "nu.dataset_key = " + dataset.get().getKey();
+        "nu.dataset_key = " + dataset.get().getClbKey();
 
       try (
         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();
@@ -267,17 +287,23 @@ public class IndexingService {
 
         try (ResultSet rs = st.executeQuery(query)) {
           while (rs.next()) {
-            NameUsage name = new NameUsage(
-              rs.getString("id"),
-              rs.getString("parentId"),
-              rs.getString("scientificName"),
-              rs.getString("authorship"),
-              rs.getString("status"),
-              rs.getString("rank"),
-              rs.getString("nomenclaturalCode"),
-              rs.getString("category"),
-              rs.getString("extension")
-            );
+
+            NameUsage name = NameUsage.builder()
+              .id(rs.getString("id"))
+              .parentId(rs.getString("parentId"))
+              .scientificName(rs.getString("scientificName"))
+              .authorship(rs.getString("authorship"))
+              .status(rs.getString("status"))
+              .rank(rs.getString("rank"))
+              .code(rs.getString("code"))
+              .type(rs.getString("type"))
+              .genericName(rs.getString("genericName"))
+              .infragenericEpithet(rs.getString("infragenericEpithet"))
+              .specificEpithet(rs.getString("specificEpithet"))
+              .infraspecificEpithet(rs.getString("infraspecificEpithet"))
+              .category(rs.getString("category"))
+              .extension(rs.getString("extension"))
+              .build();
 
             sbc.write(cleanNameUsage(name));
             counter.incrementAndGet();
@@ -358,12 +384,7 @@ public class IndexingService {
       }
     }
     Path metadataPath = Paths.get(joinIndexPath + "/" + METADATA_JSON);
-    if (!Files.exists(metadataPath) || Files.size(metadataPath) == 0) {
-      return false;
-    }
-
-    // check for metadata file
-    return true;
+    return Files.exists(metadataPath) && Files.size(metadataPath) != 0;
   }
 
   @Transactional
@@ -404,19 +425,19 @@ public class IndexingService {
         "n.authorship as authorship, " +
         "n.rank as rank, " +
         "nu.status as status, " +
-        "n.code as nomenclaturalCode, " +
+        "n.code as code, " +
         "v.terms as extension, " +
         "'' as category " +
         "FROM " +
         "name_usage nu " +
         " INNER JOIN " +
-        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getKey() +
+        "name n on n.id = nu.name_id AND n.dataset_key = " + dataset.get().getClbKey() +
         " LEFT JOIN " +
-        "distribution d on d.taxon_id = nu.id AND d.dataset_key = " + dataset.get().getKey() +
+        "distribution d on d.taxon_id = nu.id AND d.dataset_key = " + dataset.get().getClbKey() +
         " LEFT JOIN " +
-        "verbatim v on v.id = d.verbatim_key AND v.dataset_key = " + dataset.get().getKey() +
+        "verbatim v on v.id = d.verbatim_key AND v.dataset_key = " + dataset.get().getClbKey() +
         " WHERE " +
-        "nu.dataset_key = " + dataset.get().getKey();
+        "nu.dataset_key = " + dataset.get().getClbKey();
 
       try (
         final ICSVWriter writer = new CSVWriterBuilder(new FileWriter(fileName)).withSeparator('$').build();
@@ -433,20 +454,20 @@ public class IndexingService {
 
         try (ResultSet rs = st.executeQuery(query)) {
           while (rs.next()) {
-            NameUsage nameUsage = new NameUsage(
-              rs.getString("id"),
-              rs.getString("parentId"),
-              rs.getString("scientificName"),
-              rs.getString("authorship"),
-              rs.getString("status"),
-              rs.getString("rank"),
-              rs.getString("nomenclaturalCode"),
-              rs.getString("category"),
-              rs.getString("extension")
-            );
+            NameUsage nameUsage = NameUsage.builder()
+              .id(rs.getString("id"))
+              .parentId(rs.getString("parentId"))
+              .scientificName(rs.getString("scientificName"))
+              .authorship(rs.getString("authorship"))
+              .status(rs.getString("status"))
+              .rank(rs.getString("rank"))
+              .code(rs.getString("code"))
+              .category(rs.getString("category"))
+              .extension(rs.getString("extension"))
+              .build();
             try {
               if (StringUtils.isNotBlank(nameUsage.getExtension())) {
-                // parse it
+                // parse json to retrieve IUCN threat status
                 JsonNode node = objectMapper.readTree(nameUsage.getExtension());
                 nameUsage.setCategory(node.path(IUCN_THREAT_STATUS).asText());
               }
@@ -463,25 +484,55 @@ public class IndexingService {
     }
   }
 
+  /**
+   * Indexes a set of name usages into a new Lucene index in memory.
+   * Only used for testing purposes.
+   *
+   * @param usages the name usages to index
+   * @throws IOException if an error occurs during indexing
+   */
   public static Directory newMemoryIndex(Iterable<NameUsage>... usages) throws IOException {
     log.info("Start building a new RAM index");
-    Directory dir = new ByteBuffersDirectory();
-    IndexWriter writer = getIndexWriter(dir);
+    Directory tempDir = new ByteBuffersDirectory();
+    IndexWriter writer = getIndexWriter(tempDir);
+
+    Directory tempNestedDir = new ByteBuffersDirectory();
+    IndexWriter nestedWriter = getIndexWriter(tempNestedDir);
 
     // creates initial index segments
     writer.commit();
-    int counter = 0;
     for (var iter : usages) {
       for (NameUsage u : iter) {
         if (u != null && u.getId() != null) {
           writer.addDocument(toDoc(u));
-          counter ++;
         }
       }
     }
     writer.close();
-    log.info("Finished building nub index with {} usages", counter);
-    return dir;
+    nestedWriter.close();
+
+    // de-normalise
+    IndexSearcher searcher = new IndexSearcher(DirectoryReader.open(tempDir));
+    IndexSearcher nestedSearcher = new IndexSearcher(DirectoryReader.open(tempNestedDir));
+    TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+    ScoreDoc[] hits = results.scoreDocs;
+
+    Directory denormedDir = new ByteBuffersDirectory();
+    IndexWriter denormedWriter = getIndexWriter(denormedDir);
+    IOUtil ioUtil = new IOUtil();
+
+    List<Document> batch = new ArrayList<>();
+    for (ScoreDoc hit : hits) {
+      batch.add(searcher.storedFields().document(hit.doc));
+    }
+    new DenormIndexTask(searcher, nestedSearcher, denormedWriter, ioUtil, batch).run();
+
+    // optimize the index
+    denormedWriter.flush();
+    denormedWriter.commit();
+    denormedWriter.close();
+
+    return denormedDir;
   }
 
   private static IndexWriter getIndexWriter(Directory dir) throws IOException {
@@ -507,7 +558,7 @@ public class IndexingService {
       Directory ancillaryDirectory = FSDirectory.open(indexDirectory);
 
       // create the join index
-      Long[] counters = createJoinIndex(matchingService, tempDirectory, ancillaryDirectory, acceptedOnly, true, indexingThreads);
+      Long[] counters = createJoinIndex(matchingService, tempDirectory, ancillaryDirectory, acceptedOnly, true, indexingThreads, indexingBatchSize);
 
       // load export metadata
       ObjectMapper mapper = new ObjectMapper();
@@ -535,14 +586,16 @@ public class IndexingService {
    * @param acceptedOnly if true only accepted taxa are indexed
    * @param closeDirectoryOnExit if true the output directory will be closed on exit
    * @param indexingThreads the number of threads to use for indexing
-   * @return the number of documents indexed and the number of documents matched to the main index
+   * @return an array containing the number of documents indexed and the number of documents matched to the main index
    * @throws IOException if the index cannot be created
    */
   public static Long[] createJoinIndex(MatchingService matchingService,
                                        Directory tempUsageIndexDirectory,
                                        Directory outputDirectory,
                                        boolean acceptedOnly,
-                                       boolean closeDirectoryOnExit, int indexingThreads)
+                                       boolean closeDirectoryOnExit,
+                                       int indexingThreads,
+                                       int indexingBatchSize)
     throws IOException {
 
     IndexWriterConfig config = getIndexWriterConfig();
@@ -571,7 +624,7 @@ public class IndexingService {
       Document doc = searcher.storedFields().document(hit.doc);
       batch.add(doc);
 
-      if (batch.size() >= 100000) {
+      if (batch.size() >= indexingBatchSize) {
         log.info("Starting batch: {} taxa", counter.get());
         List<Document> finalBatch = batch;
         exec.submit(new JoinIndexTask(matchingService, searcher, joinIndexWriter, finalBatch, acceptedOnly, matchedCounter));
@@ -612,6 +665,68 @@ public class IndexingService {
     return new Long[]{counter.get(), matchedCounter.get()};
   }
 
+  static class DenormIndexTask implements Runnable {
+    private final IndexWriter writer;
+    private final List<Document> docs;
+    private final IndexSearcher searcher;
+    private final IndexSearcher nestedSearcher;
+    private final IOUtil ioUtil;
+
+    public DenormIndexTask(IndexSearcher searcher, IndexSearcher nestedSearcher, IndexWriter writer, IOUtil ioUtil, List<Document> docs) {
+      this.searcher = searcher;
+      this.nestedSearcher = nestedSearcher;
+      this.writer = writer;
+      this.ioUtil = ioUtil;
+      this.docs = docs;
+    }
+
+    @Override
+    public void run() {
+      try {
+        for (Document doc : docs) {
+          // set the higher classification
+          StoredClassification storedClassification = loadHierarchyWithIDs(searcher, doc);
+
+          addNestedSetIDs(nestedSearcher, doc);
+
+          ioUtil.serialiseField(doc, FIELD_CLASSIFICATION, storedClassification);
+          writer.addDocument(doc);
+        }
+        writer.flush();
+      } catch (Exception e) {
+        log.error("Error writing documents to " + ANCILLARY_DIR + " index: {}", e.getMessage(), e);
+      }
+    }
+
+    private void addNestedSetIDs(IndexSearcher nestedSearcher, Document doc) {
+      try {
+
+        String id = doc.get(FIELD_ID);
+        String parentID = doc.get(FIELD_PARENT_ID);
+        String status = doc.get(FIELD_STATUS);
+        String idToUse = id;
+
+        // if the status is not accepted, use the parent ID (which is the accepted ID)
+        if (status != null && !status.equals(TaxonomicStatus.ACCEPTED.name()) ) {
+          idToUse = parentID;
+        }
+
+        if (idToUse != null) {
+          TopDocs topDocs = nestedSearcher.search(new TermQuery(new Term(FIELD_ID, idToUse)), 1);
+          if (topDocs.totalHits.value > 0) {
+            Document nestedDoc = nestedSearcher.doc(topDocs.scoreDocs[0].doc);
+            doc.add(new LongField(FIELD_LEFT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_LEFT_NESTED_SET_ID)), Field.Store.YES));
+            doc.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, Long.parseLong(nestedDoc.get(FIELD_RIGHT_NESTED_SET_ID)), Field.Store.YES));
+          }
+        } else {
+          log.error("Taxon ID {} has status {}, with parentID {}", id, status, parentID);
+        }
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
   static class JoinIndexTask implements Runnable {
     private final IndexWriter writer;
     private final List<Document> docs;
@@ -635,7 +750,9 @@ public class IndexingService {
       try {
         for (Document doc : docs) {
 
-          Map<String, String> hierarchy = loadHierarchy(searcher, doc.get(FIELD_ID));
+          String id = doc.get(FIELD_ID);
+          var rank = Rank.valueOf(doc.get(FIELD_RANK));
+          Map<String, String> hierarchy = loadHierarchy(searcher, id);
           String scientificName = doc.get(FIELD_SCIENTIFIC_NAME);
           String status = doc.get(FIELD_STATUS);
           if (acceptedOnly && !isAccepted(status)) {
@@ -643,7 +760,7 @@ public class IndexingService {
             continue;
           }
 
-          Classification classification = new Classification();
+          ClassificationQuery classification = new ClassificationQuery();
           classification.setKingdom(hierarchy.getOrDefault(Rank.KINGDOM.name(), ""));
           classification.setPhylum(hierarchy.getOrDefault(Rank.PHYLUM.name(), ""));
           classification.setClazz(hierarchy.getOrDefault(Rank.CLASS.name(), ""));
@@ -655,20 +772,19 @@ public class IndexingService {
           // match to main dataset
           try {
             // use strict matching for classification to classification matching
-            NameUsageMatch nameUsageMatch = matchingService.match(scientificName, classification, true);
-            if (nameUsageMatch.getUsage() != null) {
+            NameUsageMatch nameUsageMatch = matchingService.match(scientificName, rank, classification, true);
+            if (nameUsageMatch.getUsage() != null && nameUsageMatch.getDiagnostics().getMatchType() == MatchType.HIGHERRANK) {
+              log.info("Ignore higher match for {} {} # {}", rank, scientificName, id);
+            } else if (nameUsageMatch.getUsage() != null) {
               doc.add(new StringField(FIELD_JOIN_ID,
                 nameUsageMatch.getAcceptedUsage() != null ? nameUsageMatch.getAcceptedUsage().getKey() :
                   nameUsageMatch.getUsage().getKey(), Field.Store.YES)
               );
 
-              // reduce the side of these indexes by removing the parsed name
-              doc.removeField(FIELD_PARSED_NAME_JSON);
-
               writer.addDocument(doc);
               matchedCounter.incrementAndGet();
             } else {
-              log.debug("No match for {}", scientificName);
+              log.info("No match for {} {} # {}", rank, scientificName, id);
             }
           } catch (Exception e) {
             log.error("Problem matching name from " + ANCILLARY_DIR + " index " + scientificName, e.getMessage(), e);
@@ -700,7 +816,7 @@ public class IndexingService {
     return Optional.empty();
   }
 
-  public static Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
+  private static Map<String, String> loadHierarchy(IndexSearcher searcher, String id) {
     Map<String, String> classification = new HashMap<>();
     while (id != null) {
       Optional<Document> docOpt = getById(searcher, id);
@@ -714,15 +830,240 @@ public class IndexingService {
     return classification;
   }
 
+  public static StoredClassification loadHierarchyWithIDs(IndexSearcher searcher, Document leafDoc) {
+
+    // get leaf node
+    StoredClassification.StoredClassificationBuilder builder = StoredClassification.builder();
+
+    ArrayDeque<StoredName> classification = new ArrayDeque<>();
+    String id = leafDoc.get(FIELD_PARENT_ID);
+    String acceptedId = leafDoc.get(FIELD_ACCEPTED_ID);
+    if (acceptedId != null){
+      id = acceptedId;
+    }
+
+    // get leaf node
+    while (id != null) {
+      Optional<Document> docOpt = getById(searcher, id);
+      if (docOpt.isEmpty()) {
+        break;
+      }
+      Document doc = docOpt.get();
+      classification.addFirst(StoredName.builder()
+        .key(doc.get(FIELD_ID))
+        .rank(doc.get(FIELD_RANK))
+        .name(doc.get(FIELD_CANONICAL_NAME))
+        .build()
+      );
+
+      // for next step
+      id = doc.get(FIELD_PARENT_ID);
+    }
+
+    // add the leaf node
+    if (TaxonomicStatus.ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))
+        || TaxonomicStatus.PROVISIONALLY_ACCEPTED.name().equalsIgnoreCase(leafDoc.get(FIELD_STATUS))
+    ) {
+      classification.addLast(StoredName.builder()
+        .key(leafDoc.get(FIELD_ID))
+        .rank(leafDoc.get(FIELD_RANK))
+        .name(leafDoc.get(FIELD_CANONICAL_NAME))
+        .build()
+      );
+    }
+
+    return builder.names(new ArrayList<>(classification)).build();
+  }
+
   @Transactional
-  public void createMainIndex(String datasetId) throws Exception {
+  public void createMainIndex(String datasetKey) throws Exception {
     final String mainIndexPath = indexPath + "/" + MAIN_INDEX_DIR;
+    final String tempDenormedPath = indexPath + "/denormed";
     if (indexExists(mainIndexPath)){
       log.info("Main index already exists at path {}", mainIndexPath);
       return;
     }
-    writeCLBToFile(datasetId);
-    indexFile(exportPath + "/" + datasetId, mainIndexPath);
+    log.info("Generating index for path {}", mainIndexPath);
+    writeCLBToFile(datasetKey);
+    indexFile(exportPath + "/" + datasetKey, mainIndexPath);
+    denormalizeMainIndex(mainIndexPath, tempDenormedPath);
+  }
+
+  private void nestedSetMainIndex(String mainIndexPath, String nestedTempPath) throws IOException {
+
+    StopWatch watch = new StopWatch();
+    watch.start();
+    log.info("Generating nested set index for main index...");
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+    Directory mainDirectory = FSDirectory.open(Paths.get(mainIndexPath));
+    IndexReader tempReader = DirectoryReader.open(mainDirectory);
+    IndexWriter nestedIndexWriter = new IndexWriter(FSDirectory.open(Paths.get(nestedTempPath)), getIndexWriterConfig());
+
+    IndexSearcher searcher = new IndexSearcher(tempReader);
+    Query query = new BooleanQuery.Builder()
+      .add(new MatchAllDocsQuery(), BooleanClause.Occur.MUST)
+      .add(new FieldExistsQuery(FIELD_PARENT_ID), BooleanClause.Occur.MUST_NOT).build();
+
+    // Execute search
+    TopDocs topDocs = searcher.search(query, 100);
+    long currentIdx = 1;
+    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+      long left = currentIdx;
+      Document rootTaxon = searcher.doc(scoreDoc.doc);
+      if (!rootTaxon.get(FIELD_CANONICAL_NAME).equalsIgnoreCase("incertae sedis")){
+        log.info("[Nested set] Starting Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME));
+        currentIdx = nestedSetTaxon(rootTaxon, searcher, nestedIndexWriter, currentIdx, new ArrayList<>(), 0);
+        log.info("[Nested set] Root taxon: " + rootTaxon.get(FIELD_CANONICAL_NAME) + " left: " + left + " right: " + currentIdx);
+      }
+    }
+
+    // optimize the index
+    finishIndex(nestedIndexWriter);
+    nestedIndexWriter.commit();
+    nestedIndexWriter.close();
+    log.info("Nested set index generated.");
+  }
+
+  private long nestedSetTaxon(Document doc, IndexSearcher searcher, IndexWriter indexWriter, long currentIndex, List<String> idTracking, int currentDepth) throws IOException {
+
+    String id = doc.get(FIELD_ID);
+
+    if (currentDepth >= 50){
+      log.error("Depth {} to great for taxon {}", currentDepth, id);
+      return currentIndex;
+    }
+
+    String status = doc.get(FIELD_STATUS);
+
+    // if it is a synonym, we avoid recursively looking at child nodes
+    if (status != null && !status.equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())) {
+      currentIndex ++;
+      Document nestedSet = new Document();
+      nestedSet.add(new StringField(FIELD_ID, id, Field.Store.YES));
+      nestedSet.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, currentIndex, Field.Store.YES));
+      nestedSet.add(new LongField(FIELD_LEFT_NESTED_SET_ID, currentIndex, Field.Store.YES));
+      indexWriter.addDocument(nestedSet);
+      return currentIndex;
+    }
+
+    // find children
+    Query query = new BooleanQuery.Builder()
+      .add(new TermQuery(new Term(FIELD_PARENT_ID, id)), BooleanClause.Occur.MUST).build();
+
+    TopDocs topDocs = searcher.search(query, 5000);
+
+    // store the left index
+    long left = currentIndex;
+
+    List<Document> children = new ArrayList<>();
+
+    // for each child, increment the index and recurse
+    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+      Document childDoc = searcher.storedFields().document(scoreDoc.doc);
+      if (!childDoc.get(FIELD_CANONICAL_NAME).equalsIgnoreCase("incertae sedis")
+        && childDoc.get(FIELD_STATUS).equalsIgnoreCase(TaxonomicStatus.ACCEPTED.name())
+      ) {
+        currentIndex++;
+        children.add(childDoc);
+      }
+    }
+
+    // sort before minting ids
+    for (Document child : children.stream().sorted(Comparator.comparing(d -> d.get(FIELD_CANONICAL_NAME))).collect(Collectors.toList())) {
+      currentIndex = nestedSetTaxon(child, searcher, indexWriter, currentIndex, idTracking, currentDepth + 1);
+    }
+
+    long right = currentIndex;
+
+    // add this node to the index
+    Document nestedSet = new Document();
+    nestedSet.add(new StringField(FIELD_ID, id, Field.Store.YES));
+    nestedSet.add(new LongField(FIELD_RIGHT_NESTED_SET_ID, right, Field.Store.YES));
+    nestedSet.add(new LongField(FIELD_LEFT_NESTED_SET_ID, left, Field.Store.YES));
+    indexWriter.addDocument(nestedSet);
+    return right;
+  }
+
+  private void denormalizeMainIndex(String mainIndexPath, String denormedTempPath) throws IOException {
+    //generate nested set index
+    nestedSetMainIndex(indexPath + "/" + MAIN_INDEX_DIR, indexPath + "/nested");
+
+    StopWatch watch = new StopWatch();
+    watch.start();
+    log.info("De-normalizing main index...");
+    IndexWriterConfig config = getIndexWriterConfig();
+    config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+    Directory mainDirectory = FSDirectory.open(Paths.get(mainIndexPath));
+    IndexReader tempReader = DirectoryReader.open(mainDirectory);
+    IndexReader nestedSetReader = DirectoryReader.open(FSDirectory.open(Paths.get(indexPath + "/nested")));
+
+    IndexWriter denormIndexWriter = new IndexWriter(FSDirectory.open(
+      Paths.get(denormedTempPath)), getIndexWriterConfig());
+
+    IndexSearcher searcher = new IndexSearcher(tempReader);
+    IndexSearcher nestedSearcher = new IndexSearcher(nestedSetReader);
+    TopDocs results = searcher.search(new MatchAllDocsQuery(), Integer.MAX_VALUE);
+    ScoreDoc[] hits = results.scoreDocs;
+
+    AtomicLong counter = new AtomicLong(0);
+
+    ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
+      5000L, TimeUnit.MILLISECONDS,
+      new ArrayBlockingQueue<Runnable>(indexingThreads * 2, true),
+      new ThreadPoolExecutor.CallerRunsPolicy());
+
+    List<Document> batch = new ArrayList<>();
+    // Write document data
+    for (ScoreDoc hit : hits) {
+
+      counter.incrementAndGet();
+      Document doc = searcher.storedFields().document(hit.doc);
+      batch.add(doc);
+
+      if (batch.size() >= 1000) {
+        log.info("De-normalisation - starting batch: {} taxa", counter.get());
+        List<Document> finalBatch = batch;
+        exec.submit(new DenormIndexTask(searcher, nestedSearcher, denormIndexWriter, ioUtil, finalBatch));
+        batch = new ArrayList<>();
+      }
+    }
+
+    //final batch
+    exec.submit(new DenormIndexTask(searcher, nestedSearcher, denormIndexWriter, ioUtil, batch));
+
+    log.info("Finished reading main index file. Finishing denormalisation of index...");
+
+    exec.shutdown();
+    try {
+      if (!exec.awaitTermination(60, TimeUnit.MINUTES)) {
+        log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
+        exec.shutdownNow();
+      }
+    } catch (InterruptedException var4) {
+      log.error("Forcing shut down of executor service, pending tasks will be lost! {}", exec);
+      exec.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+
+    // close temp
+    tempReader.close();
+    mainDirectory.close();
+
+    // optimize the index
+    log.info("Disk size before optimisation: {}", FileUtils.sizeOfDirectory(new File(denormedTempPath)));
+    finishIndex(denormIndexWriter);
+    denormIndexWriter.commit();
+    log.info("Disk size after optimisation: {}", FileUtils.sizeOfDirectory(new File(denormedTempPath)));
+
+    // remove old index, and move new one into place
+    FileUtils.copyFile(new File(mainIndexPath + "/" + METADATA_JSON), new File(denormedTempPath + "/" + METADATA_JSON));
+    FileUtils.deleteDirectory(new File(mainIndexPath));
+    FileUtils.moveDirectory(new File(denormedTempPath), new File(mainIndexPath));
+    FileUtils.deleteDirectory(new File(indexPath + "/nested"));
+
+    watch.stop();
+    log.info("De-normalisation complete: {} documents written, time taken {} mins", counter.get(), watch.getTime(TimeUnit.MINUTES));
   }
 
   private void indexFile(String exportPath, String indexPath) throws Exception {
@@ -736,10 +1077,12 @@ public class IndexingService {
     config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
 
     // Create a session factory
-    log.info("Indexing dataset from CSV...");
+
     final AtomicLong counter = new AtomicLong(0);
     final String filePath = exportPath + "/" + INDEX_CSV;
     final String metadataPath = exportPath + "/" + METADATA_JSON;
+
+    log.info("Indexing dataset from CSV {} to {}", filePath, indexPath);
 
     ExecutorService exec = new ThreadPoolExecutor(indexingThreads, indexingThreads,
       5000L, TimeUnit.MILLISECONDS,
@@ -762,7 +1105,7 @@ public class IndexingService {
         NameUsage nameUsage = iterator.next();
         counter.incrementAndGet();
         batch.add(nameUsage);
-        if (batch.size() >= 100000) {
+        if (batch.size() >= indexingBatchSize) {
           List<NameUsage> finalBatch = batch;
           exec.submit(new IndexingTask(indexWriter, finalBatch));
           batch = new ArrayList<>();
@@ -820,7 +1163,7 @@ public class IndexingService {
         }
         writer.flush();
         nameUsages.clear();
-      } catch (IOException e) {
+      } catch (Exception e) {
         log.error("Problem writing document to index: {}", e.getMessage(), e);
       }
     }
@@ -855,14 +1198,14 @@ public class IndexingService {
      cultivar or strain information. Infrageneric names are represented without a
      leading genus. Unicode characters are replaced by their matching ASCII characters.
     */
-    Rank rank = Rank.valueOf(nameUsage.getRank());
+    Rank rank = Rank.valueOf(nameUsage.getRank().toUpperCase());
 
     Optional<String> optCanonical = Optional.empty();
     ParsedName pn = null;
     NomCode nomCode = null;
     try {
-      if (!StringUtils.isEmpty(nameUsage.getNomenclaturalCode())) {
-        nomCode = NomCode.valueOf(nameUsage.getNomenclaturalCode());
+      if (!StringUtils.isEmpty(nameUsage.getCode())) {
+        nomCode = NomCode.valueOf(nameUsage.getCode());
       }
       pn = NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
       // canonicalMinimal will construct the name without the hybrid marker and authorship
@@ -875,18 +1218,12 @@ public class IndexingService {
 
     if (pn != null){
       try {
-        // if there an authorship, reparse with it to get the component authorship parts
-        StoredParsedName storedParsedName = StringUtils.isBlank(nameUsage.getAuthorship()) ?
-          getStoredParsedName(pn) : constructParsedName(nameUsage, rank, nomCode);
-        // store the parsed name components in JSON
-        doc.add(new StoredField(
-          FIELD_PARSED_NAME_JSON,
-          MAPPER.writeValueAsString(storedParsedName))
-        );
-      } catch (UnparsableNameException | InterruptedException e) {
-        // do nothing
-        log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
-      } catch ( JsonProcessingException e) {
+        var formattedName = NameFormatter.canonicalCompleteHtml(pn);
+        if (StringUtils.isNotBlank(nameUsage.getAuthorship())) {
+          formattedName += " " + nameUsage.getAuthorship();
+        }
+        doc.add(new StringField(FIELD_FORMATTED, formattedName, Field.Store.YES));
+      } catch (Exception e) {
         // do nothing
         log.debug("Unable to parse name to create canonical: {}", nameUsage.getScientificName());
       }
@@ -909,6 +1246,7 @@ public class IndexingService {
 
     // analyzed name field - this is what we search upon
     doc.add(new TextField(FIELD_CANONICAL_NAME, canonical, Field.Store.YES));
+    doc.add(new SortedDocValuesField(FIELD_CANONICAL_NAME, new BytesRef(canonical)));
 
     // store full name and classification only to return a full match object for hits
     String nameComplete = nameUsage.getScientificName();
@@ -916,7 +1254,6 @@ public class IndexingService {
       nameComplete += " " + nameUsage.getAuthorship();
       doc.add(new TextField(FIELD_AUTHORSHIP, nameUsage.getAuthorship(), Field.Store.YES));
     }
-
     doc.add(new TextField(FIELD_SCIENTIFIC_NAME, nameComplete, Field.Store.YES));
 
     // this lucene index is not persistent, so not risk in changing ordinal numbers
@@ -924,10 +1261,31 @@ public class IndexingService {
 
     if (StringUtils.isNotBlank(nameUsage.getParentId()) && !nameUsage.getParentId().equals(nameUsage.getId())) {
       doc.add(new StringField(FIELD_PARENT_ID, nameUsage.getParentId(), Field.Store.YES));
+      doc.add(new SortedDocValuesField(FIELD_PARENT_ID, new BytesRef(nameUsage.getParentId())));
     }
 
-    if (StringUtils.isNotBlank(nameUsage.getNomenclaturalCode())) {
-      doc.add(new StringField(FIELD_NOMENCLATURAL_CODE, nameUsage.getNomenclaturalCode(), Field.Store.YES));
+    if (StringUtils.isNotBlank(nameUsage.getCode())) {
+      doc.add(new StringField(FIELD_NOMENCLATURAL_CODE, nameUsage.getCode(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getType())) {
+      doc.add(new StringField(FIELD_TYPE, nameUsage.getType(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getGenericName())) {
+      doc.add(new StringField(FIELD_GENERICNAME, nameUsage.getGenericName(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getInfragenericEpithet())) {
+      doc.add(new StringField(FIELD_INFRAGENERIC_EPITHET, nameUsage.getInfragenericEpithet(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getSpecificEpithet())) {
+      doc.add(new StringField(FIELD_SPECIFIC_EPITHET, nameUsage.getSpecificEpithet(), Field.Store.YES));
+    }
+
+    if (StringUtils.isNotBlank(nameUsage.getInfraspecificEpithet())) {
+      doc.add(new StringField(FIELD_INFRASPECIFIC_EPITHET, nameUsage.getInfraspecificEpithet(), Field.Store.YES));
     }
 
     if (StringUtils.isNotBlank(nameUsage.getStatus())) {
@@ -939,62 +1297,5 @@ public class IndexingService {
     }
 
     return doc;
-  }
-
-  @NotNull
-  private static StoredParsedName constructParsedName(NameUsage nameUsage, Rank rank, NomCode nomCode) throws UnparsableNameException, InterruptedException {
-    ParsedName pn = !StringUtils.isBlank(nameUsage.getAuthorship()) ?
-      NameParsers.INSTANCE.parse(nameUsage.getScientificName() + " " + nameUsage.getAuthorship(), rank, nomCode)
-      : NameParsers.INSTANCE.parse(nameUsage.getScientificName(), rank, nomCode);
-    return getStoredParsedName(pn);
-  }
-
-  @NotNull
-  private static StoredParsedName getStoredParsedName(ParsedName pn) {
-    StoredParsedName storedParsedName = new StoredParsedName();
-    storedParsedName.setAbbreviated(pn.isAbbreviated());
-    storedParsedName.setAutonym(pn.isAutonym());
-    storedParsedName.setBinomial(pn.isBinomial());
-    storedParsedName.setCandidatus(pn.isCandidatus());
-    storedParsedName.setCultivarEpithet(pn.getCultivarEpithet());
-    storedParsedName.setDoubtful(pn.isDoubtful());
-    storedParsedName.setGenus(pn.getGenus());
-    storedParsedName.setUninomial(pn.getUninomial());
-    storedParsedName.setUnparsed(pn.getUnparsed());
-    storedParsedName.setTrinomial(pn.isTrinomial());
-    storedParsedName.setIncomplete(pn.isIncomplete());
-    storedParsedName.setIndetermined(pn.isIndetermined());
-    storedParsedName.setTerminalEpithet(pn.getTerminalEpithet());
-    storedParsedName.setInfragenericEpithet(pn.getInfragenericEpithet());
-    storedParsedName.setInfraspecificEpithet(pn.getInfraspecificEpithet());
-    storedParsedName.setExtinct(pn.isExtinct());
-    storedParsedName.setPublishedIn(pn.getPublishedIn());
-    storedParsedName.setSanctioningAuthor(pn.getSanctioningAuthor());
-    storedParsedName.setSpecificEpithet(pn.getSpecificEpithet());
-    storedParsedName.setPhrase(pn.getPhrase());
-    storedParsedName.setPhraseName(pn.isPhraseName());
-    storedParsedName.setVoucher(pn.getVoucher());
-    storedParsedName.setNominatingParty(pn.getNominatingParty());
-    storedParsedName.setNomenclaturalNote(pn.getNomenclaturalNote());
-    storedParsedName.setWarnings(pn.getWarnings());
-    if (pn.getBasionymAuthorship() != null) {
-      storedParsedName.setBasionymAuthorship(
-        StoredParsedName.StoredAuthorship.builder()
-          .authors(pn.getBasionymAuthorship().getAuthors())
-          .exAuthors(pn.getBasionymAuthorship().getExAuthors())
-          .year(pn.getBasionymAuthorship().getYear()).build()
-      );
-    }
-    if (pn.getCombinationAuthorship() != null) {
-      storedParsedName.setCombinationAuthorship(
-        StoredParsedName.StoredAuthorship.builder()
-          .authors(pn.getCombinationAuthorship().getAuthors())
-          .exAuthors(pn.getCombinationAuthorship().getExAuthors())
-          .year(pn.getCombinationAuthorship().getYear()).build()
-      );
-    }
-    storedParsedName.setType(pn.getType() != null ? pn.getType().name() : null);
-    storedParsedName.setNotho(pn.getNotho() != null ? pn.getNotho().name() : null);
-    return storedParsedName;
   }
 }

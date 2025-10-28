@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.NameDao;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 
 public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, TaxonMapper> {
@@ -296,7 +296,7 @@ public class TaxonMapperTest extends CRUDDatasetScopedStringTestBase<Taxon, Taxo
   }
   
   private TreeNode getTreeNode(String id) {
-    return session().getMapper(TreeMapper.class).get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID(id), true);
+    return session().getMapper(TreeMapper.class).get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID(id));
     
   }
 

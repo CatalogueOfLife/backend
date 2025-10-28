@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Email;
 
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsLast;
+import static life.catalogue.common.text.StringUtils.removePunctWS;
 
 public class Agent implements Comparable<Agent> {
   private static final String ORCID_URL = "https://orcid.org/";
@@ -437,10 +438,12 @@ public class Agent implements Comparable<Agent> {
 
   public void addNote(String note) {
     // merge notes if both exist
-    if (this.note != null && note != null) {
-      setNote(this.note + "; " + note);
-    } else if (note != null){
-      setNote(note);
+    if (!StringUtils.isBlank(note)) {
+      if (!StringUtils.isBlank(this.note)) {
+        setNote(this.note + "; " + note.trim());
+      } else {
+        setNote(note);
+      }
     }
   }
 
@@ -565,10 +568,7 @@ public class Agent implements Comparable<Agent> {
 
   private String key() {
     String name = getName();
-    return name == null ? null : name.replaceAll("\\.+", " ")
-                                     .replaceAll("  +", " ")
-                                     .trim()
-                                     .toLowerCase();
+    return name == null ? null : removePunctWS(name).toLowerCase();
   }
 
   public boolean sameAs(Agent other) {

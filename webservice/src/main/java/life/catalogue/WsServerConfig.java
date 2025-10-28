@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import io.dropwizard.core.Configuration;
-
 import life.catalogue.common.io.Resources;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.*;
@@ -11,26 +9,23 @@ import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
+import life.catalogue.dw.logging.pg.PgLogConfig;
 import life.catalogue.dw.mail.MailBundleConfig;
-import life.catalogue.dw.metrics.GangliaBundleConfiguration;
-import life.catalogue.dw.metrics.GangliaConfiguration;
 import life.catalogue.es.EsConfig;
+import life.catalogue.event.BrokerConfig;
 import life.catalogue.exporter.ExporterConfig;
+import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.matching.DockerConfig;
+import life.catalogue.config.MatchingConfig;
+import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.io.File;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-
-import life.catalogue.matching.DockerConfig;
-
-import life.catalogue.matching.nidx.NamesIndexConfig;
+import life.catalogue.resources.legacy.LegacyConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +33,13 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.core.Configuration;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 
-public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, GangliaBundleConfiguration, MailBundleConfig {
+public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
   
   public Properties version;
@@ -53,7 +52,7 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public EsConfig es;
 
   @Valid
-  public EsConfig analytics;
+  public BrokerConfig broker = new BrokerConfig();
 
   @Valid
   @NotNull
@@ -104,16 +103,16 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   @NotNull
-  public GangliaConfiguration ganglia = new GangliaConfiguration();
-
-  @Valid
-  @NotNull
   // https://www.dropwizard.io/en/latest/manual/configuration.html#man-configuration-clients-http
   public JerseyClientConfiguration client = new JerseyClientConfiguration();
 
   @Valid
   @NotNull
   public ImgConfig img = new ImgConfig();
+
+  @Valid
+  @NotNull
+  public ThumborConfig thumbor = new ThumborConfig();
 
   @Valid
   @NotNull
@@ -125,6 +124,19 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
 
   @Valid
   public JobConfig job = new JobConfig();
+
+  @Valid
+  public GithubConfig github;
+
+  @Valid
+  @NotNull
+  public LegacyConfig legacy = new LegacyConfig();
+
+  /**
+   * If null no logging will be done!
+   */
+  @Valid
+  public PgLogConfig pgLog;
 
   /**
    * The name parser timeout in milliseconds
@@ -141,6 +153,10 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @Valid
   @NotNull
   public NamesIndexConfig namesIndex = new NamesIndexConfig();
+
+  @Valid
+  @NotNull
+  public MatchingConfig matching = new MatchingConfig();
 
   /**
    * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.
@@ -177,43 +193,13 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   @NotNull
   public File portalTemplateDir = new File("/tmp/col/life.catalogue.portal-templates");
 
-  /**
-   * Optional URI to a TSV file that contains a mapping of legacy COL IDs to new name usage IDs.
-   * First column must be the legacy ID, second column the new name usage ID.
-   */
-  @Nullable
-  public URI legacyIdMapURI;
-
-  /**
-   * File to persist legacy id map on disk. If empty will use a volatile memory map.
-   */
-  public File legacyIdMapFile;
-
   @NotNull
   public String support = "support@catalogueoflife.org";
-
-  /**
-   * Optional sunset value for the deprecation header.
-   * See https://datatracker.ietf.org/doc/draft-ietf-httpapi-deprecation-header/
-   */
-  public LocalDate sunset;
-
-  /**
-   * Delay in milliseconds to all requests to the legacy API.
-   */
-  @Min(0)
-  public int legacyDelay = 0;
 
   @Override
   @JsonIgnore
   public CorsConfiguration getCorsConfiguration() {
     return cors;
-  }
-
-  @Override
-  @JsonIgnore
-  public GangliaConfiguration getGangliaConfiguration() {
-    return ganglia;
   }
 
   @Override
@@ -242,12 +228,14 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
     created = normalizer.mkdirs() || created;
     created = importer.mkdirs() || created;
     created = release.mkdirs() || created;
+    created = matching.mkdirs() || created;
     return created;
   }
 
   public void logDirectories() {
     LOG.info("Use archive directory {}", normalizer.archiveDir);
     LOG.info("Use scratch directory {}", normalizer.scratchDir);
+    LOG.info("Use matcher storage directory {}", matching.storageDir);
     LOG.info("Use metrics directory {}", metricsRepo);
     LOG.info("Use download directory {}", job.downloadDir);
     LOG.info("Use release reports directory {}", release.reportDir);

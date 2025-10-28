@@ -6,9 +6,9 @@ import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.NameValidator;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.parser.NameParser;
-
 import life.catalogue.release.UsageIdGen;
 
 import org.gbif.nameparser.api.*;
@@ -69,6 +69,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected final Supplier<String> nameIdGen;
   protected final UsageIdGen usageIdGen;
   protected final Supplier<String> typeMaterialIdGen;
+  protected int vsIdGen;
   // counter
   protected final Map<IgnoreReason, Integer> ignoredCounter = new EnumMap<>(IgnoreReason.class);
   protected final Map<NomRelType, Map<String, String>> nameRelsToBeCreated = new HashMap<>();
@@ -112,19 +113,23 @@ public abstract class TreeBaseHandler implements TreeHandler {
       LOG.info("Consider only ranks: {}", Joiner.on(", ").join(ranks));
     }
 
-    for (Rank r : IMPLICITS) {
-      if (!ranks.isEmpty() && ranks.contains(r)) {
-        implicitRanks.add(r);
+    if (sector.isCreateImplicitNames()) {
+      for (Rank r : IMPLICITS) {
+        if (!ranks.isEmpty() && ranks.contains(r)) {
+          implicitRanks.add(r);
+        }
       }
+      LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
+    } else {
+      LOG.info("Do not create implicit names");
     }
-    LOG.info("Create implicit taxa for ranks {}", Joiner.on(", ").join(implicitRanks));
 
     // we open up a separate batch session that we can write to so we do not disturb the open main cursor for processing with this handler
     session = factory.openSession(true);
     numRO = session.getMapper(NameUsageMapper.class);
     vrmRO = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
-    target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
+    target = session.getMapper(TaxonMapper.class).get(targetKey.id(sector.getTargetID()));
     targetUsage = usage(target, null, null);
     // load source dataset
     source = session.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
@@ -137,6 +142,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
     nm = batchSession.getMapper(NameMapper.class);
     nmm= batchSession.getMapper(NameMatchMapper.class);
     num= batchSession.getMapper(NameUsageMapper.class);
+
+    // update verbatim source id generator - use current max
+    vsIdGen=vsm.getMaxID(targetDatasetKey)+1;
+    LOG.info("Start new verbatim source ids from {}", vsIdGen);
   }
 
   @Override
@@ -179,6 +188,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
       var match = nameIndex.match(nu.getName(), true, false);
       nu.getName().applyMatch(match);
     }
+    // validation
+    NameValidator.flagIssues(nu.getName(), mod);
     return mod;
   }
 
@@ -246,7 +257,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
    * @param parent maybe null for accepted names, but must exist for synonyms
    * @return the simple name instance of the newly created & matched usage with parent being the parentID
    */
-  protected SimpleNameWithNidx create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
+  protected SimpleNameCached create(NameUsageBase u, @Nullable Usage parent, Issue... issues) {
     if (parent == null) {
       if (u.isSynonym()) {
         throw new IllegalStateException("Cannot create synonym without a parent: " + u.getRank() +" "+ u.getLabel());
@@ -278,20 +289,22 @@ public abstract class TreeBaseHandler implements TreeHandler {
         parent = createImplicit(parent, (Taxon) u);
       }
     }
+    // track source
+    VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen++, sector.getId(), sector.getSubjectDatasetKey(), origID, EntityType.NAME_USAGE);
+    v.add(issues);
+    vsm.create(v);
+    u.setVerbatimSourceKey(v.getId());
+    u.getName().setVerbatimSourceKey(v.getId());
 
     // copy usage with all associated information. This assigns a new id !!!
     CopyUtil.copyUsage(batchSession, u, targetKey.id(idOrNull(parent)), user, entities,
       nameIdGen, typeMaterialIdGen, usageIdGen::issue, usageIdGen::nidx2canonical,
-      this::lookupReference, this::lookupReference
+      this::lookupOrCreateReference, this::lookupOrCreateReference
     );
-    // track source
-    VerbatimSource v = new VerbatimSource(targetDatasetKey, u.getId(), sector.getSubjectDatasetKey(), origID);
-    v.addIssues(issues);
-    vsm.create(v);
     // match name
     var nm = matchName(u.getName());
     persistMatch(u.getName());
-    LOG.debug("Created {} {} usage {} from source {}:{}", u.getStatus(), u.getRank(), u.getLabel(), sector.getSubjectDatasetKey(), u.getId());
+    LOG.debug("Created {} {} usage {} [ID={}] with parent {} from source {}:{}", u.getStatus(), u.getRank(), u.getLabel(), u.getId(), parent, sector.getSubjectDatasetKey(), origID);
 
     if (u.isTaxon()) {
       state.setTaxonCount(++tCounter);
@@ -299,11 +312,11 @@ public abstract class TreeBaseHandler implements TreeHandler {
       state.setSynonymCount(++sCounter);
     }
 
-    return new SimpleNameWithNidx(u, nm.getCanonicalNameKey());
+    return new SimpleNameCached(u, nm.getCanonicalNameKey());
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return true;
+    return sector.isCreateImplicitNames();
   }
 
   static String idOrNull(Usage u) {
@@ -413,10 +426,10 @@ public abstract class TreeBaseHandler implements TreeHandler {
         // finally assign a (stable) id
         t.setId(usageIdGen.issue(t.toSimpleNameWithNidx(usageIdGen::nidx2canonical)));
         tm.create(t);
+        // allow reuse of implicit names
+        cacheImplicit(t);
 
         parent = usage(t, taxon.getParentId(), null);
-        // allow reuse of implicit names
-        cacheImplicit(t, parent);
       }
     }
     return parent;
@@ -460,7 +473,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
 
   protected abstract Usage findExisting(Name n, Usage parent);
 
-  protected abstract void cacheImplicit(Taxon t, Usage parent);
+  protected abstract void cacheImplicit(Taxon t);
 
   /**
    * Matches the name, but does not store anything yet.
@@ -476,7 +489,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     batchSession.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), n.getNamesIndexId(), n.getNamesIndexType());
   }
 
-  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, boolean filterSynonymsByRank) {
+  protected boolean ignoreUsage(NameUsageBase u, @Nullable EditorialDecision decision, IssueContainer issues, boolean filterSynonymsByRank) {
     // we must ignore synonyms for taxa which have been skipped
     if (u.isSynonym() && ignoredTaxa.contains(u.getParentId())) {
       // https://github.com/CatalogueOfLife/backend/issues/1150
@@ -503,7 +516,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         return incIgnored(IgnoreReason.RANK, u);
       }
       // apply extinct filter if exists
-      if (sector.getExtinctFilter() != null && u.asTaxon().isExtinct() != null && !Objects.equals(sector.getExtinctFilter(), u.asTaxon().isExtinct())) {
+      if (sector.getExtinctFilter() != null && u.isTaxon() && u.asTaxon().isExtinct() != null && !Objects.equals(sector.getExtinctFilter(), u.asTaxon().isExtinct())) {
         return incIgnored(IgnoreReason.EXTINCT, u);
       }
     }
@@ -526,7 +539,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return false;
   }
 
-  public static class ModifiedUsage {
+  public static class ModifiedUsage extends IssueContainer.Simple {
     final NameUsageBase usage;
     boolean createOrthVarRel = true;
     final boolean relink;
@@ -699,7 +712,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return true;
   }
 
-  protected String lookupReference(String refID) {
+  protected String lookupOrCreateReference(String refID) {
     if (refID != null) {
       if (refIds.containsKey(refID)) {
         // we have seen this ref before
@@ -708,7 +721,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       // not seen before, load full reference
       Reference r = rm.get(new DSIDValue<>(sector.getSubjectDatasetKey(), refID));
       if (r != null) {
-        return lookupReference(r);
+        return lookupOrCreateReference(r);
       } else {
         LOG.warn("Reference {} is missing in source dataset {}", refID, sector.getSubjectDatasetKey());
         refIds.put(refID, null);
@@ -717,7 +730,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     return null;
   }
 
-  protected String lookupReference(Reference ref) {
+  protected String lookupOrCreateReference(Reference ref) {
     if (ref != null) {
       if (refIds.containsKey(ref.getId())) {
         // we have seen this ref before
@@ -730,6 +743,13 @@ public abstract class TreeBaseHandler implements TreeHandler {
         ref.setDatasetKey(targetDatasetKey);
         ref.setSectorKey(sector.getId());
         ref.applyUser(user);
+
+        // track source
+        VerbatimSource v = new VerbatimSource(targetDatasetKey, vsIdGen++, sector.getId(), sector.getSubjectDatasetKey(), ref.getId(), EntityType.REFERENCE);
+        vsm.create(v);
+        ref.setVerbatimSourceKey(v.getId());
+
+        // copy
         DSID<String> origID = ReferenceDao.copyReference(batchSession, ref, targetDatasetKey, user);
         refIds.put(origID.getId(), ref.getId());
         return ref.getId();

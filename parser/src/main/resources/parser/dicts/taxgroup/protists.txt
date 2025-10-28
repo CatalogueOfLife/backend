@@ -1311,7 +1311,6 @@ Rzehakinidae
 Saccamminidae
 Saccinobaculidae
 Sagenista
-Sagittariidae
 Sagosphaeridae
 Sainouridae
 Sainouroidea
@@ -1580,7 +1579,6 @@ Uronychiidae
 Urosporidae
 Urosporoidea
 Urostylida
-Urostylidae
 Urotrichidae
 Urozonidae
 Usconophryidae

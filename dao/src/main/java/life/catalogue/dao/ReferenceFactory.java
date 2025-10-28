@@ -14,6 +14,7 @@ import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.DcTerm;
+import org.gbif.dwc.terms.Term;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -23,9 +24,6 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.CharSet;
 import org.apache.commons.lang3.StringUtils;
-
-import org.gbif.dwc.terms.Term;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +53,7 @@ public class ReferenceFactory {
   private static final String initials = "(?:\\p{Lu}(?:\\. ?| ))*";
   // comma separated authors with (initials/firstname) surnames
   private static final Splitter AUTHOR_SPLITTER = Splitter.on(CharMatcher.anyOf(",&")).trimResults();
-  private static final Pattern AUTHOR_PATTERN_FN_SN = Pattern.compile("^(" + initials + ") *(" + name + ")$");
+  private static final Pattern AUTHOR_PATTERN_FN_SN = Pattern.compile("^(" + initials + ") *(" + name + ")(?<!v[oa]n)$");
   private static final Pattern AUTHOR_PATTERN_SN_FN = Pattern.compile("^("+name+") +("+ initials +")$");
   // comma separated authors with surname, initials
   private static final Pattern AUTHOR_PATTERN_SN_C_FN = Pattern.compile("^(" + name + "), *(" + initials + ")$");
@@ -168,7 +166,7 @@ public class ReferenceFactory {
       if (doi.isPresent()) {
         csl.setDOI(doi.get());
       } else {
-        v.addIssue(Issue.DOI_INVALID);
+        v.add(Issue.DOI_INVALID);
       }
     }
 
@@ -292,7 +290,7 @@ public class ReferenceFactory {
           csl.setVolume(ObjectUtils.toString(vip.volume));
           csl.setIssue(ObjectUtils.toString(vip.issue));
           csl.setPage(ObjectUtils.toString(vip.page));
-        }, () -> issues.addIssue(Issue.CITATION_DETAILS_UNPARSED));
+        }, () -> issues.add(Issue.CITATION_DETAILS_UNPARSED));
       }
       return fromCsl(datasetKey, csl, bibliographicCitation, null, issues);
     }
@@ -318,7 +316,7 @@ public class ReferenceFactory {
       ref = newReference(datasetKey, publishedInID);
       if (!StringUtils.isEmpty(publishedIn)) {
         ref.setCitation(citation);
-        issues.addIssue(Issue.CITATION_UNPARSED);
+        issues.add(Issue.CITATION_UNPARSED);
       }
       ref.setYear(parseYear(publishedInYear));
     }
@@ -343,13 +341,13 @@ public class ReferenceFactory {
           if (!StringUtils.isBlank(leftover)) {
             VerbatimRecord authorIssues = new VerbatimRecord();
             CslName[] authors = parseAuthors(StringUtils.removeEnd(leftover, ",").trim(), authorIssues);
-            if (!authorIssues.hasIssue(Issue.CITATION_AUTHORS_UNPARSED)) {
+            if (!authorIssues.contains(Issue.CITATION_AUTHORS_UNPARSED)) {
               // parsed authors
               csl.setAuthor(authors);
             }
           }
         }
-        issues.addIssue(Issue.CITATION_UNPARSED);
+        issues.add(Issue.CITATION_UNPARSED);
       }
     }
     return ref;
@@ -419,7 +417,7 @@ public class ReferenceFactory {
             // nothing works, resort to single string in literal
             CslName name = new CslName();
             name.setFamily(authorStringNormed);
-            issues.addIssue(Issue.CITATION_AUTHORS_UNPARSED);
+            issues.add(Issue.CITATION_AUTHORS_UNPARSED);
             return List.of(name);
           })
         )

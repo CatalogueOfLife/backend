@@ -1,0 +1,53 @@
+Eukaryota (Chatton, 1925) Whittaker & Margulis, 1978 [domain]
+  Animalia [kingdom]
+    Arthropoda [phylum]
+      Insecta [class]
+        Hymenoptera [order]
+          Ichneumonidae [family]
+            Aperileptus [genus] {ID=Aperileptus}
+              Aperileptus inamoenus Förster, 1871
+              Aphanistes bellicosus (Wesmael, 1849)
+              Aphanistes ruficornis (Gravenhorst, 1829)
+            Carria Blanchard 1850 (Oct.) [unranked] {ID=Carria}
+            Chorinaeus [unranked] {ID=Chorinaeus}
+            Exochus [unranked] {ID=Exochus}
+            Ichneumon Linnaeus, 1758 [unranked] {ID=Ichneumon}
+              Ichneumon bucculentus Wesmael, 1844 [species] {ID=Ichneumon_bucculentus}
+              Ichneumon caloscelis Wesmael, 1844 [species] {ID=Ichneumon_caloscelis}
+              Ichneumon camelinus Wesmael, 1844 [species] {ID=Ichneumon_camelinus}
+              Ichneumon caproni Perkins, 1953 [species] {ID=Ichneumon_caproni}
+              Ichneumon cessator Müller, 1776 [species] {ID=Ichneumon_cessator}
+              Ichneumon femorator Kirby, 1802 nom dub. [species] {ID=Ichneumon_femorator}
+              Ichneumon formasus Gravenhorst, 1829 [species] {ID=Ichneumon_formasus}
+              Ichneumon fuscatus Gmelin in Linnaeus, 1790 [species] {ID=Ichneumon_fuscatus}
+              Ichneumon gracilentus Wesmael, 1844 [species] {ID=Ichneumon_gracilentus}
+              Ichneumon gracilicornis Gravenhorst, 1829 [species] {ID=Ichneumon_gracilicornis}
+              Ichneumon haereticus (Wesmael, 1854) [species] {ID=Ichneumon_haereticus}
+              Ichneumon ignobills Wesmael, 1855 [species] {ID=Ichneumon_ignobills}
+              Ichneumon insidiosus Wesmael, 1844 [species] {ID=Ichneumon_insidiosus}
+              Ichneumon latrator Fabricius, 1781 [species] {ID=Ichneumon_latrator}
+              Ichneumon lautatorius Desvignes, 1856 [species] {ID=Ichneumon_lautatorius}
+              Ichneumon ligatorius Thunberg, 1822 [species] {ID=Ichneumon_ligatorius}
+              Ichneumon lugens Gravenhorst, 1829 [species] {ID=Ichneumon_lugens}
+              Ichneumon megapodius Heinrich, 1949 [species] {ID=Ichneumon_megapodius}
+              Ichneumon melanotis Holmgren, 1864 [species] {ID=Ichneumon_melanotis}
+              Ichneumon memorator Wesmael, 1844 [species] {ID=Ichneumon_memorator}
+              Ichneumon minutorius Desvignes, 1856 [species] {ID=Ichneumon_minutorius}
+              Ichneumon molitorius Linnaeus, 1761 [species] {ID=Ichneumon_molitorius}
+              Ichneumon nereni Thomson, 1887 [species] {ID=Ichneumon_nereni}
+              Ichneumon primatorius Forster, 1771 [species] {ID=Ichneumon_primatorius}
+              Ichneumon quartanus Perkins, 1953 [species] {ID=Ichneumon_quartanus}
+              Ichneumon rufidorsatus Bridgman, 1888 [species] {ID=Ichneumon_rufidorsatus}
+              Ichneumon sarcitorius Linnaeus, 1758 [species] {ID=Ichneumon_sarcitorius}
+              Ichneumon septentrionalis Holmgren, 1864 [species] {ID=Ichneumon_septentrionalis}
+              Ichneumon spurius Wesmael, 1848 [species] {ID=Ichneumon_spurius}
+              Ichneumon stramentarius Gravenhorst, 1820 [species] {ID=Ichneumon_stramentarius}
+              Ichneumon subquadratus Thomson, 1887 [species] {ID=Ichneumon_subquadratus}
+              Ichneumon suspiciosus Wesmael, 1844 [species] {ID=Ichneumon_suspiciosus}
+              Ichneumon terminatorius Gravenhorst, 1820 [species] {ID=Ichneumon_terminatorius}
+              Ichneumon tuberculipes Wesmael, 1848 [species] {ID=Ichneumon_tuberculipes}
+              Ichneumon validicornis Holmgren, 1864 [species] {ID=Ichneumon_validicornis}
+              Ichneumon vulneratorius Zetterstedt, 1838 [species] {ID=Ichneumon_vulneratorius}
+              Ichneumon walkeri Wesmael, 1848 [species] {ID=Ichneumon_walkeri}
+              Ichneumon xanthorius Forster, 1771 [species] {ID=Ichneumon_xanthorius}
+            Triclistus [unranked] {ID=Triclistus}

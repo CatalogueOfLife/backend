@@ -54,77 +54,25 @@
     <!-- ArchivedNameUsage -->
     according_to,
     basionym,
+    accepted,
     classification,
     published_in,
-    first_release_key,
-    last_release_key
+    release_keys
   </sql>
 
-  <sql id="PROPS">
-    #{id},
-    #{name.id},
-    #{datasetKey},
-    <!-- Name mappings -->
-    #{name.rank}::RANK,
-    #{name.candidatus},
-    #{name.notho}::NAMEPART,
-    #{name.code}::NOMCODE,
-    #{name.nomStatus}::NOMSTATUS,
-    #{name.originalSpelling},
-    #{name.genderAgreement},
-    #{name.gender}::GENDER,
-    #{name.origin}::ORIGIN,
-    #{name.type}::NAMETYPE,
-    #{name.scientificName},
-    #{name.authorship},
-    #{name.uninomial},
-    #{name.genus},
-    #{name.infragenericEpithet},
-    #{name.specificEpithet},
-    #{name.infraspecificEpithet},
-    #{name.cultivarEpithet},
-    #{name.basionymAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{name.basionymAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{name.basionymAuthorship.year},
-    #{name.combinationAuthorship.authors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{name.combinationAuthorship.exAuthors, typeHandler=life.catalogue.db.type.StringArrayTypeHandler},
-    #{name.combinationAuthorship.year},
-    #{name.sanctioningAuthor},
-    #{name.publishedInId},
-    #{name.publishedInPage},
-    #{name.nomenclaturalNote},
-    #{name.unparsed},
-    #{name.identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
-    #{name.etymology},
-    #{name.link},
-    #{name.remarks},
-    <!-- NameUsageBase -->
-    #{extinct},
-    #{status}::TAXONOMICSTATUS,
-    #{origin}::ORIGIN,
-    #{parentId},
-    #{namePhrase},
-    #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
-    #{link},
-    #{remarks},
-    <!-- ArchivedNameUsage -->
-    #{accordingTo},
-    #{basionym, typeHandler=life.catalogue.db.type2.SimpleNameTypeHandler}::SIMPLE_NAME,
-    #{classification, typeHandler=life.catalogue.db.type2.SimpleNameArrayTypeHandler}::SIMPLE_NAME[],
-    #{publishedIn},
-    #{firstReleaseKey},
-    #{lastReleaseKey}
-  </sql>
 
   <resultMap id="archivedNameResultMap" type="ArchivedNameUsage" autoMapping="true">
     <id property="id" column="id"/>
     <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
+    <result property="releaseKeys" column="release_keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
     <association property="name" javaType="Name" resultMap="life.catalogue.db.mapper.NameMapper.nameResultMap" columnPrefix="n_"/>
   </resultMap>
 
-  <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleNameWithNidx" autoMapping="true">
+  <resultMap id="archivedSimpleResultMap" type="ArchivedSimpleName" autoMapping="true">
     <id property="id" column="id"/>
+    <result property="releaseKeys" column="release_keys" typeHandler="life.catalogue.db.type2.IntArrayTypeHandler"/>
+    <result property="classification" column="classification" typeHandler="life.catalogue.db.type2.SimpleNameArrayTypeHandler"/>
   </resultMap>
 
 
@@ -144,16 +92,6 @@
     FROM name_usage_archive
   </select>
 
-  <insert id="create" parameterType="ArchivedNameUsage">
-    INSERT INTO name_usage_archive (<include refid="COLS"/>)
-    VALUES (<include refid="PROPS"/>)
-  </insert>
-
-  <delete id="delete" parameterType="map">
-    DELETE FROM name_usage_archive
-    WHERE dataset_key=#{key.datasetKey} AND id=#{key.id}
-  </delete>
-
   <delete id="deleteByDataset" parameterType="map">
     DELETE FROM name_usage_archive
     WHERE dataset_key=#{datasetKey}
@@ -167,14 +105,15 @@
 
   <select id="processArchivedUsages" parameterType="map" resultMap="archivedSimpleResultMap" resultOrdered="true" fetchSize="10000" resultSetType="FORWARD_ONLY">
     SELECT u.id,
-      u.last_release_key,
+      u.release_keys,
       u.n_scientific_name AS name,
       u.n_authorship AS authorship,
       u.name_phrase AS phrase,
       u.n_rank AS rank,
       u.n_code AS code,
       u.status,
-      u.classification[1].name AS parent,
+      CASE WHEN is_synonym(u.status) THEN (u.accepted).name ELSE u.classification[array_upper(u.classification, 1)].name END AS parent,
+      u.classification,
       ni.canonical_id,
       ni.id AS namesIndexId,
       m.type AS namesIndexMatchType
@@ -241,4 +180,82 @@
     WHERE m.index_id = #{nidx}
   </select>
 
+  <update id="addReleaseKey" parameterType="map">
+    UPDATE name_usage_archive a
+    SET release_keys = array_append(release_keys, #{releaseKey})
+    FROM name_usage u
+    WHERE a.dataset_key=#{projectKey}
+      AND u.dataset_key=#{releaseKey}
+      AND a.id=u.id
+  </update>
+
+  <insert id="createMissingUsages" parameterType="map">
+    INSERT INTO name_usage_archive (<include refid="COLS"/>)
+    SELECT distinct on (u.id) u.id, n.id, #{projectKey},
+      n.rank,
+      n.candidatus,
+      n.notho,
+      n.code,
+      n.nom_status,
+      n.original_spelling,
+      n.gender_agreement,
+      n.gender,
+      n.origin,
+      n.type,
+      n.scientific_name,
+      n.authorship,
+      n.uninomial,
+      n.genus,
+      n.infrageneric_epithet,
+      n.specific_epithet,
+      n.infraspecific_epithet,
+      n.cultivar_epithet,
+      n.basionym_authors,
+      n.basionym_ex_authors,
+      n.basionym_year,
+      n.combination_authors,
+      n.combination_ex_authors,
+      n.combination_year,
+      n.sanctioning_author,
+      n.published_in_id,
+      n.published_in_page,
+      n.nomenclatural_note,
+      n.unparsed,
+      n.identifier,
+      n.etymology,
+      n.link,
+      n.remarks,
+
+      u.extinct,
+      u.status,
+      u.origin,
+      u.parent_id,
+      u.name_phrase,
+      u.identifier,
+      u.link,
+      u.remarks,
+
+      ra.citation, --according_to
+      CASE WHEN bn.id IS NULL THEN null ELSE (bn.id,bn.rank,bn.scientific_name,bn.authorship)::simple_name END, --basionym
+      CASE WHEN is_synonym(u.status) THEN (up.id,np.rank,np.scientific_name,np.authorship)::simple_name END, -- accepted
+      CASE WHEN is_synonym(u.status) THEN mp.classification ELSE m.classification END, --classification
+      rp.citation, --published_in
+      array[#{releaseKey}] --release_keys
+    FROM name_usage u
+      JOIN name n ON n.dataset_key=u.dataset_key AND n.id=u.name_id
+      LEFT JOIN reference ra ON ra.dataset_key=u.dataset_key AND ra.id=u.according_to_id
+      LEFT JOIN name_rel br ON br.dataset_key=u.dataset_key AND br.name_id=n.id AND br.type='BASIONYM'::nomreltype
+      LEFT JOIN name bn ON bn.dataset_key=u.dataset_key AND bn.id=br.related_name_id
+      LEFT JOIN taxon_metrics m ON m.dataset_key=u.dataset_key AND m.taxon_id=u.id
+      LEFT JOIN taxon_metrics mp ON mp.dataset_key=u.dataset_key AND mp.taxon_id=u.parent_id
+      LEFT JOIN name_usage up ON up.dataset_key=u.dataset_key AND up.id=u.parent_id
+      LEFT JOIN name np ON np.dataset_key=u.dataset_key AND np.id=up.name_id
+      LEFT JOIN reference rp ON rp.dataset_key=u.dataset_key AND rp.id=n.published_in_id
+    WHERE u.dataset_key=#{releaseKey}
+      AND NOT EXISTS (SELECT true FROM name_usage_archive a WHERE a.dataset_key=#{projectKey} AND a.id=u.id)
+  </insert>
+
+  <update id="truncate">
+    TRUNCATE name_usage_archive
+  </update>
 </mapper>

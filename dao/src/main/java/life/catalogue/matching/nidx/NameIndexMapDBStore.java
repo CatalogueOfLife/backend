@@ -1,7 +1,5 @@
 package life.catalogue.matching.nidx;
 
-import com.google.common.base.Function;
-
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
@@ -21,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;

@@ -33,7 +33,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void get() {
-    TreeNode tn = mapper().get(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true);
+    TreeNode tn = mapper().get(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"));
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -46,22 +46,22 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     // this does not create taxon metrics - all null below, but the project calls which use dynamic counts!
     MybatisTestUtils.populateDraftTree(session());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(0, tn.getChildCount());
     assertNull(tn.getCount());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(2, tn.getChildCount());
     assertNull(tn.getCount());
 
-    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"), true);
+    tn = mapper().get(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertEquals(1, tn.getChildCount());
     assertNull(tn.getCount());
 
-    tn = mapper().get(Datasets.COL, null, DSID.colID("t1"), true);
+    tn = mapper().get(Datasets.COL, null, DSID.colID("t1"));
     assertTrue(tn.getSourceDatasetKeys().isEmpty());
     assertNull(tn.getSectorKey());
     assertNull(tn.getSectorMode());
@@ -71,8 +71,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void root() {
-    assertEquals(2, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11, true, true, new Page())).size());
-    TreeNode tn = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  true, true, new Page()).get(0);
+    assertEquals(2, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11, true, new Page())).size());
+    TreeNode tn = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  true, new Page()).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -81,8 +81,8 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     assertEquals("†<i>Larus fuscus</i>", tn.getLabelHtml());
     assertNull(tn.getAuthorship());
 
-    assertEquals(1, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  false, true, new Page())).size());
-    tn = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  false, true, new Page()).get(0);
+    assertEquals(1, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  false, new Page())).size());
+    tn = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, d11,  false, new Page()).get(0);
     assertEquals(dataset11, (int) tn.getDatasetKey());
     assertNotNull(tn.getId());
     assertNull(tn.getParentId());
@@ -94,15 +94,15 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
   
   @Test
   public void parents() {
-    assertEquals(1, valid(mapper().classification(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true)).size());
+    assertEquals(1, valid(mapper().classification(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"))).size());
   }
   
   @Test
   public void children() {
-    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true, true, new Page())).size());
-    assertEquals(0, valid(mapper().childrenWithPlaceholder(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), null, true, true, new Page())).size());
+    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), true, new Page())).size());
+    assertEquals(0, valid(mapper().childrenWithPlaceholder(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "root-1"), null, true, new Page())).size());
 
-    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.of(Datasets.COL, "root-1"), true, true, new Page())).size());
+    assertEquals(0, valid(mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.of(Datasets.COL, "root-1"), true, new Page())).size());
   }
 
   @Test
@@ -185,19 +185,19 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     sm.create(s2);
     commit();
     
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t1"), true, true, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t1"), true, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
   
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"), true, false, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t2"), true, new Page());
     assertEquals(1, nodes.size());
     noSectors(nodes);
     
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"), true, true, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t3"), true, new Page());
     assertEquals(2, nodes.size());
     valid(nodes);
 
-    nodes = mapper().classification(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"), false);
+    nodes = mapper().classification(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID("t4"));
     assertEquals(4, nodes.size());
     valid(nodes);
   }
@@ -233,17 +233,17 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     dm.create(d2);
 
     
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t1"), true, true, new Page());
+    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t1"), true, new Page());
     assertEquals(1, nodes.size());
     assertEquals(s.getId(), nodes.get(0).getSectorKey());
     assertEquals(s.getMode(), nodes.get(0).getSectorMode());
 
     DecisionMapperTest.removeCreatedProps(d1);
     DecisionMapperTest.removeCreatedProps(nodes.get(0).getDecision());
-    printDiff(d1, nodes.get(0).getDecision());
+    //printDiff(d1, nodes.get(0).getDecision());
     equals(d1, nodes.get(0).getDecision());
     
-    nodes = mapper().classification(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t4"), true);
+    nodes = mapper().classification(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t4"));
     assertEquals(4, nodes.size());
   
     assertNull(nodes.get(0).getSectorKey());
@@ -259,7 +259,7 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     equals(d2, nodes.get(1).getDecision());
     equals(d1, nodes.get(2).getDecision());
   
-    nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t2"), true, true, new Page());
+    nodes = mapper().children(Datasets.COL, TreeNode.Type.SOURCE, DSID.of(dataset11, "t2"), true, new Page());
     noSectors(noSectors(nodes));
   }
 
@@ -274,30 +274,6 @@ public class TreeMapperTest extends MapperTestBase<TreeMapper> {
     s.setTarget(SimpleNameLink.of(id, "Abies alba", Rank.SPECIES));
     s.applyUser(TestEntityGenerator.USER_USER);
     return s;
-  }
-  
-  @Test
-  public void withEstimates() {
-    
-    MybatisTestUtils.populateDraftTree(session());
-  
-    EstimateMapper em = mapper(EstimateMapper.class);
-    
-    SpeciesEstimate s1 = newEstimate("t1");
-    em.create(s1);
-  
-    SpeciesEstimate s2 = newEstimate("t1");
-    em.create(s2);
-  
-    SpeciesEstimate s3 = newEstimate("t2");
-    em.create(s3);
-
-    List<TreeNode> nodes = mapper().children(Datasets.COL, TreeNode.Type.PROJECT, DSID.colID(null), true, true, new Page());
-    assertEquals(1, nodes.size());
-    assertEquals(2, nodes.get(0).getEstimates().size());
-    for (SpeciesEstimate s : nodes.get(0).getEstimates()) {
-      assertEquals(s1.getEstimate(), s.getEstimate());
-    }
   }
 
   /**

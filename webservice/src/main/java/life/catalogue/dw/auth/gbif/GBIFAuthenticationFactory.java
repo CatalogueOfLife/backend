@@ -4,9 +4,10 @@ import life.catalogue.dw.auth.AuthenticationProvider;
 import life.catalogue.dw.auth.AuthenticationProviderFactory;
 
 import javax.annotation.Nullable;
-import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Configuration for the GBIF IdentityService.

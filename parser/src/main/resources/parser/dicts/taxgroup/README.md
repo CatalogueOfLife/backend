@@ -15,9 +15,31 @@ For example 'Asteraceae' clearly point to [Angiosperms](https://github.com/Catal
 
 
 ## Ambiguous names
-The following taxon names are found across different kingdoms and are therefore not indicative for any clear taxonomic group:
+The following taxon names are found as suprageneric names across different kingdoms and are therefore not indicative for any clear taxonomic group:
 
 - Acanthocerataceae: Protists & Molluscs
+- Bdelloidea: Rotifera & Arachnid -> Animals
+- Cepheidae: Cnidaria & Arachnid -> Animals
+- Chilodontidae: Gastropod & Chordate -> Animals
+- Clionidae: Gastropod & Porifera -> Animals
+- Heterocheilidae: Diptera & Nematodes -> Animals
+- Heterogynidae: Lepidoptera & Hymenoptera -> Insects
 - Hyperbionycidae: Protists & Arthropods
 - Peranemataceae: Protists & Pteridophytes
-- Sagittariidae: Protists & Birds
+- Personidae: Gastropod & Insetcs -> Animals
+- Phyllophoridae: Echinodermata & Orthoptera -> Animals
+- Sagittariidae: Protists & Chordate
+- Tachinidae: Diptera & Coleoptera -> Insects
+- Urostylidae: Protist & Hemiptera -> Eukaryote
+- Cepolidae: Gastropod & Chordate -> Animals
+- Leptosomatidae: Nematod & Bird -> Animals
+- Machaeridia: Orthoptera & Annelidae -> Animals
+
+
+
+## UNIX tools for managing
+The ```clean.sh``` script goes through all dictionary files, sorts them and makes them unique.
+
+In order to add new entries to a single dictionary and also remove potentially already existing entries from other files,
+you can use the unix ```comm``` tool manually or run the ```merge.sh newnames chordates.txt``` script,
+which requires new names to be added in a file called newnames and list the target dictionary as the 2nd argument.

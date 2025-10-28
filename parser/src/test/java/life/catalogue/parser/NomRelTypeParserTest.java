@@ -4,8 +4,6 @@ import life.catalogue.api.vocab.NomRelType;
 
 import java.util.List;
 
-import life.catalogue.api.vocab.NomStatus;
-
 import org.junit.Test;
 
 import com.google.common.collect.Lists;

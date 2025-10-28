@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -1410,6 +1411,7 @@ public enum Country implements Area {
   }
 
   @Override
+  @JsonIgnore
   public String getId() {
     return alpha2;
   }
@@ -1425,6 +1427,7 @@ public enum Country implements Area {
   /**
    * @return the 2 letter ISO 3166-1 ALPHA2 code in upper case.
    */
+  @JsonIgnore
   public String getIso2LetterCode() {
     return alpha2;
   }
@@ -1432,6 +1435,7 @@ public enum Country implements Area {
   /**
    * @return the 3 letter ISO 3166-1 ALPHA3 code in upper case.
    */
+  @JsonIgnore
   public String getIso3LetterCode() {
     return alpha3;
   }
@@ -1439,6 +1443,7 @@ public enum Country implements Area {
   /**
    * @return the numerical ISO 3166-1 code.
    */
+  @JsonIgnore
   public Integer getIsoNumericalCode() {
     return numericalCode;
   }

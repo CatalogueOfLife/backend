@@ -4,14 +4,16 @@ import life.catalogue.api.BeanPrinter;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.junit.MybatisTestUtils;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.SectorMapperTest;
 import life.catalogue.db.mapper.SynonymMapper;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.img.ThumborConfig;
+import life.catalogue.img.ThumborService;
+import life.catalogue.junit.MybatisTestUtils;
+import life.catalogue.junit.SqlSessionFactoryRule;
+import life.catalogue.junit.TestDataRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Authorship;
@@ -36,7 +38,7 @@ public class TaxonDaoIT extends DaoTestBase {
 
   public TaxonDaoIT() {
     nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), NameIndexFactory.passThru(), validator);
-    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, NameUsageIndexService.passThru(), validator);
+    tDao = new TaxonDao(SqlSessionFactoryRule.getSqlSessionFactory(), nDao, null, new ThumborService(new ThumborConfig()), NameUsageIndexService.passThru(), null, validator);
     SectorDao sdao = new SectorDao(SqlSessionFactoryRule.getSqlSessionFactory(), NameUsageIndexService.passThru(), tDao, validator);
     tDao.setSectorDao(sdao);
   }
@@ -48,15 +50,15 @@ public class TaxonDaoIT extends DaoTestBase {
     BeanPrinter.out(info);
 
     // See apple.sql
-    assertEquals("root-1", info.getTaxon().getId());
-    assertEquals(1, info.getTaxon().getReferenceIds().size());
+    assertEquals("root-1", info.getUsage().getId());
+    assertEquals(1, info.getUsage().getReferenceIds().size());
     assertEquals(3, info.getVernacularNames().size());
     assertEquals(2, info.getReferences().size());
 
     Set<String> refKeys1 = new HashSet<>();
     info.getReferences().values().forEach(r -> refKeys1.add(r.getId()));
 
-    Set<String> refKeys2 = new HashSet<>(info.getTaxon().getReferenceIds());
+    Set<String> refKeys2 = new HashSet<>(info.getUsage().getReferenceIds());
 
     Stream<Referenced> refStream = Stream.concat(
       info.getDistributions().stream(),
@@ -77,21 +79,21 @@ public class TaxonDaoIT extends DaoTestBase {
         case 1:
           assertEquals("Berlin", d.getArea().getName());
           assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
-          assertNull(d.getStatus());
+          assertNull(d.getEstablishmentMeans());
           assertNull(d.getArea().getId());
           assertEquals("ref-1", d.getReferenceId());
           break;
         case 2:
           assertEquals("Leiden", d.getArea().getName());
           assertEquals(Gazetteer.TEXT, d.getArea().getGazetteer());
-          assertNull(d.getStatus());
+          assertNull(d.getEstablishmentMeans());
           assertNull(d.getArea().getId());
           assertEquals("ref-1b" ,d.getReferenceId());
           break;
         case 4:
           assertEquals(new AreaImpl(Country.GERMANY), d.getArea());
           assertEquals(Gazetteer.ISO, d.getArea().getGazetteer());
-          assertNull(d.getStatus());
+          assertNull(d.getEstablishmentMeans());
           assertNotNull(d.getArea().getId());
           assertNotNull(d.getArea().getName());
           assertNull(d.getReferenceId());
@@ -99,7 +101,7 @@ public class TaxonDaoIT extends DaoTestBase {
         case 5:
           assertEquals(TdwgArea.of("BZE"), d.getArea());
           assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
-          assertNull(d.getStatus());
+          assertNull(d.getEstablishmentMeans());
           assertEquals("BZE", d.getArea().getId());
           assertNotNull(d.getArea().getName());
           assertNull(d.getReferenceId());

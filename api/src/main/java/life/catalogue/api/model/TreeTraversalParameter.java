@@ -32,6 +32,8 @@ public class TreeTraversalParameter {
   @QueryParam("lowestRank")
   private Rank lowestRank;
 
+  private boolean ignoreAmbiguousRanks = false;
+
   /**
    * if true includes synonyms (default), otherwise only taxa
    */
@@ -48,6 +50,7 @@ public class TreeTraversalParameter {
     this.exclusion = other.exclusion;
     this.lowestRank = other.lowestRank;
     this.synonyms = other.synonyms;
+    this.ignoreAmbiguousRanks = other.ignoreAmbiguousRanks;
   }
 
   public static TreeTraversalParameter all(int datasetKey, String taxonID, Set<String> exclusion, Rank lowestRank, boolean synonyms) {
@@ -119,6 +122,14 @@ public class TreeTraversalParameter {
     this.lowestRank = lowestRank;
   }
 
+  public boolean isIgnoreAmbiguousRanks() {
+    return ignoreAmbiguousRanks;
+  }
+
+  public void setIgnoreAmbiguousRanks(boolean ignoreAmbiguousRanks) {
+    this.ignoreAmbiguousRanks = ignoreAmbiguousRanks;
+  }
+
   public boolean isSynonyms() {
     return synonyms;
   }
@@ -147,18 +158,19 @@ public class TreeTraversalParameter {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof TreeTraversalParameter)) return false;
+
     TreeTraversalParameter that = (TreeTraversalParameter) o;
-    return datasetKey == that.datasetKey
-           && synonyms == that.synonyms
-           && Objects.equals(taxonID, that.taxonID)
-           && Objects.equals(exclusion, that.exclusion)
-           && lowestRank == that.lowestRank;
+    return datasetKey == that.datasetKey &&
+      ignoreAmbiguousRanks == that.ignoreAmbiguousRanks &&
+      synonyms == that.synonyms &&
+      Objects.equals(taxonID, that.taxonID) &&
+      Objects.equals(exclusion, that.exclusion) &&
+      lowestRank == that.lowestRank;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, taxonID, exclusion, lowestRank, synonyms);
+    return Objects.hash(datasetKey, taxonID, exclusion, lowestRank, ignoreAmbiguousRanks, synonyms);
   }
 }

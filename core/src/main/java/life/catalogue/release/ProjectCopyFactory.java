@@ -9,7 +9,8 @@ import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.matching.UsageMatcherFactory;
+import life.catalogue.matching.nidx.NameIndex;
 
 import java.net.URI;
 
@@ -31,25 +32,27 @@ public class ProjectCopyFactory {
   private final DoiService doiService;
   private final DoiUpdater doiUpdater;
   private final SqlSessionFactory factory;
+  private final UsageMatcherFactory matcherFactory;
   private final SyncFactory syncFactory;
   private final ImageService imageService;
   private final CloseableHttpClient client;
   private final Validator validator;
-  private final UsageMatcherGlobal matcher;
+  private final NameIndex nameIndex;
   private final ReleaseConfig cfg;
   private final DoiConfig doiCfg;
   private final URI apiURI;
   private final URI clbURI;
 
-  public ProjectCopyFactory(CloseableHttpClient client, UsageMatcherGlobal matcher, SyncFactory syncFactory,
+  public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, UsageMatcherFactory matcherFactory,
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
                             DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator,
                             ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI
   ) {
     this.client = client;
-    this.matcher = matcher;
+    this.nameIndex = nameIndex;
     this.syncFactory = syncFactory;
+    this.matcherFactory = matcherFactory;
     this.exportManager = exportManager;
     this.diDao = diDao;
     this.dDao = dDao;
@@ -76,7 +79,12 @@ public class ProjectCopyFactory {
    * @throws IllegalArgumentException if the dataset is not a release
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
-    return new XRelease(factory, syncFactory, matcher, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+    return new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
+      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+  }
+
+  public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
+    return new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
       cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
   }
 

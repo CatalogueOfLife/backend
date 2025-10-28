@@ -1,7 +1,6 @@
 package life.catalogue.db;
 
 import life.catalogue.api.model.DSID;
-
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.TestDataRule;
 

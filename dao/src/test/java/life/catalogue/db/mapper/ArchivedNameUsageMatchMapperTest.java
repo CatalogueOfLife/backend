@@ -1,67 +1,45 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.ArchivedNameUsage;
 import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.Datasets;
 
-import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
  */
 public class ArchivedNameUsageMatchMapperTest extends MapperTestBase<ArchivedNameUsageMatchMapper> {
 
-  private int datasetKey;
-  private ArchivedNameUsage u;
-  IndexName nidx;
-
   public ArchivedNameUsageMatchMapperTest() {
     super(ArchivedNameUsageMatchMapper.class);
   }
-  
-  @Before
-  public void initMappers() {
-    datasetKey = testDataRule.testData.key;
-    u = ArchivedNameUsageMapperTest.create();
-    mapper(ArchivedNameUsageMapper.class).create(u);
 
-    // add names index match
-    var nim = mapper(NamesIndexMapper.class);
-    nidx = new IndexName(u.getName());
-    nim.create(nidx);
-
-    var nmm = mapper(ArchivedNameUsageMatchMapper.class);
-    nmm.create(DSID.of(3, u.getId()), nidx.getKey(), MatchType.EXACT);
-    commit();
-  }
 
   @Test
   public void get() throws Exception {
-    mapper().get(DSID.of(datasetKey, u.getId()));
+    mapper().get(DSID.of(appleKey, "xxx"));
+  }
+
+  @Test
+  public void getCanonicalNidx() throws Exception {
+    mapper().getCanonicalNidx(DSID.of(appleKey, "xxx"));
   }
 
   @Test
   public void deleteOrphaned() throws Exception {
     // no real data to delete but tests valid SQL
-    mapper().deleteOrphans(datasetKey);
+    mapper().deleteOrphans(appleKey);
   }
 
   @Test
   public void processIndexIds() throws Exception {
-    mapper().processIndexIds(datasetKey).forEach(System.out::println);
+    mapper().processIndexIds(appleKey).forEach(System.out::println);
   }
 
   @Test
-  public void updateMatches() throws Exception {
-    Integer nidx = 1;
-    mapper().update(u, nidx, MatchType.EXACT);
-    var n = mapper().get(u);
-    assertEquals(MatchType.EXACT, n.getType());
-    assertEquals(nidx, n.getName().getKey());
+  public void createMissingUsages() throws Exception {
+    mapper().createMissingMatches(Datasets.COL, 1000);
+    mapper().createAllMatches();
   }
-  
+
 }

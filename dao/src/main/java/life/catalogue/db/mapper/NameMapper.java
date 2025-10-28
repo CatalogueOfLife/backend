@@ -2,7 +2,6 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.*;
 
 import org.gbif.api.vocabulary.NomenclaturalStatus;
@@ -15,10 +14,11 @@ import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import jakarta.ws.rs.QueryParam;
 
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.cursor.Cursor;
+
+import jakarta.ws.rs.QueryParam;
 
 /**
  * When creating a new name if the homotypic group key is not yet set the newly created name key will be
@@ -101,6 +101,13 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   boolean hasData(@Param("datasetKey") int datasetKey);
 
   /**
+   * Updates only the verbatimSourceKey of the name
+   * @param key
+   * @param verbatimSourceKey
+   */
+  void updateVerbatimSourceKey(@Param("key") DSID<String> key, @Param("vsKey") Integer verbatimSourceKey);
+
+  /**
    * Deletes all names that do not have at least one name usage, i.e. remove all bare names.
    * @param datasetKey the datasetKey to restrict the deletion to
    * @param before optional timestamp to restrict deletions to orphans before the given time
@@ -124,6 +131,11 @@ public interface NameMapper extends CRUD<DSID<String>, Name>, DatasetProcessable
   List<Name> search(@Param("datasetKey") int datasetKey,
                     @Param("req") NameSearchRequest filter,
                     @Param("page") Page page
+  );
+
+  List<Name> find(@Param("datasetKey") int datasetKey,
+                  @Param("name") String name,
+                  @Param("rank") Rank rank
   );
 
   /**

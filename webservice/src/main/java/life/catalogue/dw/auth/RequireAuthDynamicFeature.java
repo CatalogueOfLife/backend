@@ -18,7 +18,7 @@ import jakarta.ws.rs.container.ResourceInfo;
 import jakarta.ws.rs.core.FeatureContext;
 
 /**
- * Makes sure that if a non optional @Auth annotation exists the securit context is provided.
+ * Makes sure that if a non optional @Auth annotation exists the security context is provided.
  * Works together with RolesAllowedDynamicFeature which checks for the right role to exist, but simply waves requests with PermitAll annotations.
  */
 public class RequireAuthDynamicFeature implements DynamicFeature {

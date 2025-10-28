@@ -4,15 +4,17 @@ import life.catalogue.api.model.EditorialDecision;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameWithNidx;
 
+import life.catalogue.assembly.TreeHandler;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 /**
  * Parent stack that expects breadth first iterations which needs to track more than a depth first one.
@@ -107,13 +109,20 @@ public class MatchedParentStack {
    * List the current classification starting with the root as simple names
    */
   public List<SimpleNameCached> classificationSN() {
+    return classificationSN(0);
+  }
+
+  public List<SimpleNameCached> classificationSN(int remove) {
     var cl = new ArrayList<SimpleNameCached>();
     if (hasRoot()) {
       cl.add(rootMU.usage);
     }
-    parents.stream()
-      .map(u -> u.usage)
-      .forEach(cl::add);
+    int end = parents.size()-remove;
+    if (end > 0) {
+      parents.subList(0, end).stream()
+        .map(u -> u.usage)
+        .forEach(cl::add);
+    }
     return cl;
   }
 
@@ -234,6 +243,7 @@ public class MatchedParentStack {
       }
     }
     // if the classification ordering is wrong, mark it as doubtful
+    // this does NOT flag rank ordering issues in matches!
     Rank pRank = null;
     if (!parents.isEmpty()) {
       pRank = parents.getLast().usage.getRank();

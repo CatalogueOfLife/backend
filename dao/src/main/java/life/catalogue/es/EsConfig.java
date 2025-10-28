@@ -1,10 +1,12 @@
 package life.catalogue.es;
 
 import javax.annotation.Nullable;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 public class EsConfig {
 
@@ -62,4 +64,14 @@ public class EsConfig {
     return hosts == null || nameUsage == null;
   }
 
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+      .add("hosts", hosts)
+      .add("ports", ports)
+      .add("user", user)
+      .add("index", nameUsage)
+      .add("threads", indexingThreads)
+      .toString();
+  }
 }

@@ -1,14 +1,13 @@
 package life.catalogue.postgres;
 
 import life.catalogue.api.model.Name;
-
-import com.google.common.collect.Lists;
-
 import life.catalogue.pgcopy.CsvFunction;
 import life.catalogue.pgcopy.PgCopyUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 /**
  * Normalizes a parsed authorship to be used for indexing in postgres.

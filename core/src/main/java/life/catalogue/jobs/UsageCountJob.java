@@ -29,7 +29,7 @@ public class UsageCountJob extends GlobalBlockingJob {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetPartitionMapper dpm = session.getMapper(DatasetPartitionMapper.class);
       int counter = 0;
-      for (int key : dm.keys(DatasetOrigin.PROJECT)) {
+      for (int key : dm.keys(false, DatasetOrigin.PROJECT)) {
         int cnt = dpm.updateUsageCounter(key);
         LOG.info("Updated usage counter for project {} to {}", key, cnt);
         counter++;

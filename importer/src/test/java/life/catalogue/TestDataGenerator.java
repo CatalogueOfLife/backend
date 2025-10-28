@@ -15,6 +15,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.junit.*;
+import life.catalogue.config.MatchingConfig;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.release.ProjectCopyFactory;
 
@@ -224,9 +226,10 @@ public class TestDataGenerator {
       TestConfigs cfg = TestConfigs.build();
 
       var validator = Validation.buildDefaultValidatorFactory().getValidator();
-      DatasetDao     ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator);
+      DatasetDao ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, syncFactoryRule.getDiDao(), validator, TestUtils.mockedBroker());
       ReferenceDao rdao = new ReferenceDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, validator);
-      var projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
+      var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), null);
+      var projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
         syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
         null, NameUsageIndexService.passThru(), ImageService.passThru(), null, null, SqlSessionFactoryRule.getSqlSessionFactory(),
         validator, cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI

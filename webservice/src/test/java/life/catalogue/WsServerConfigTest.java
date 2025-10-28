@@ -8,8 +8,6 @@
  import java.io.InputStream;
  import java.util.UUID;
 
- import jakarta.validation.Validator;
-
  import org.assertj.core.api.Assertions;
  import org.junit.Test;
 
@@ -19,6 +17,7 @@
  import io.dropwizard.configuration.YamlConfigurationFactory;
  import io.dropwizard.jackson.Jackson;
  import io.dropwizard.jersey.validation.Validators;
+ import jakarta.validation.Validator;
 
  import static org.junit.Assert.assertEquals;
  import static org.junit.Assert.assertNotNull;

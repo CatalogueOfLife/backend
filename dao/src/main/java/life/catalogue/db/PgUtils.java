@@ -28,19 +28,6 @@ public class PgUtils {
 
   }
 
-  public static void deferConstraints(SqlSession session) {
-    deferConstraints(session.getConnection());
-  }
-
-  public static void deferConstraints(Connection con) {
-    try (Statement st = con.createStatement()) {
-      LOG.info("Defer all constraints in this session");
-      st.execute("SET CONSTRAINTS ALL DEFERRED");
-    } catch (SQLException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   /**
    * Tries to return only the main underlying PSQLException message without its stacktrace
    */

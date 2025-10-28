@@ -8,22 +8,25 @@ import life.catalogue.dao.EstimateDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.dao.SectorImportDao;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
+import life.catalogue.matching.UsageMatcher;
+import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.matching.nidx.NameIndex;
-import life.catalogue.matching.UsageMatcherGlobal;
+import life.catalogue.release.UsageIdGen;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.release.UsageIdGen;
-
+import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.EventBus;
+import com.google.common.base.Preconditions;
 
 public class SyncFactory {
   private static final Logger LOG = LoggerFactory.getLogger(SyncFactory.class);
@@ -32,53 +35,57 @@ public class SyncFactory {
   private final SectorImportDao sid;
   private final NameIndex nameIndex;
   private final EstimateDao estimateDao;
-  private final UsageMatcherGlobal matcher;
+  private final UsageMatcherFactory matcherFactory;
   private final SqlSessionFactory factory;
   private final NameUsageIndexService indexService;
-  private final EventBus bus;
+  private final EventBroker bus;
 
-  public SyncFactory(SqlSessionFactory factory, NameIndex nameIndex, UsageMatcherGlobal matcher,
+  public SyncFactory(SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NameIndex nameIndex,
                      SectorDao sd, SectorImportDao sid, EstimateDao estimateDao,
-                     NameUsageIndexService indexService, EventBus bus) {
+                     NameUsageIndexService indexService, EventBroker bus) {
     this.bus = bus;
     this.sd = sd;
     this.sid = sid;
     this.nameIndex = nameIndex;
     this.estimateDao = estimateDao;
-    this.matcher = matcher;
     this.factory = factory;
     this.indexService = indexService;
+    this.matcherFactory = matcherFactory;
   }
 
   /**
-   * Creates a new sync into a project dataset
+   * Creates a new sync into a project dataset using a direct postgres matcher with the tree merge handlers write batch session.
    */
   public SectorSync project(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
+    return new SectorSync(sectorKey, sectorKey.getDatasetKey(), true, null, factory, nameIndex,
+      supplyPgMatcher(sectorKey.getDatasetKey()), bus, indexService, sd, sid, estimateDao,
       successCallback, errorCallback, ShortUUID.ID_GEN, ShortUUID.ID_GEN, UsageIdGen.RANDOM_SHORT_UUID, user);
   }
 
+  private Function<SqlSession, UsageMatcher> supplyPgMatcher(int datasetKey) {
+    return sess -> matcherFactory.postgres(datasetKey, sess, false);
+  }
+
   /**
-   * Creates a new sync into a release dataset
+   * Creates a new sync into a release dataset reusing the given matcher.
    */
-  public SectorSync release(Sector sector, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg,
+  public SectorSync release(DSID<Integer> sectorKey, int releaseDatasetKey, @Nullable TreeMergeHandlerConfig cfg, UsageMatcher matcher,
                             Supplier<String> nameIdGen, Supplier<String> typeMaterialIdGen, UsageIdGen usageIdGen, int user) throws IllegalArgumentException {
-    // make sure the sector is a project sector, not from a release
-    var skey = DSID.of(DatasetInfoCache.CACHE.keyOrProjectKey(sector.getDatasetKey()), sector.getId());
-    return new SectorSync(skey, releaseDatasetKey, false, cfg, factory, nameIndex, matcher, bus, indexService, sd, sid, estimateDao,
-      x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sector, releaseDatasetKey, e.getMessage(), e),
+    Preconditions.checkArgument(releaseDatasetKey == matcher.getDatasetKey(), "Matcher and release dataset key must be the same");
+    return new SectorSync(sectorKey, releaseDatasetKey, false, cfg, factory, nameIndex, session -> matcher, bus, indexService, sd, sid, estimateDao,
+      x -> {}, (s,e) -> LOG.error("Sector merge {} into release {} failed: {}", sectorKey, releaseDatasetKey, e.getMessage(), e),
       nameIdGen, typeMaterialIdGen, usageIdGen, user);
   }
 
   public SectorDelete delete(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDelete(sectorKey, factory, matcher, indexService, sd, sid, bus, successCallback, errorCallback, user);
+    return new SectorDelete(sectorKey, factory, indexService, sd, sid, bus, successCallback, errorCallback, user);
   }
 
   public SectorDeleteFull deleteFull(DSID<Integer> sectorKey, Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, int user) throws IllegalArgumentException {
-    return new SectorDeleteFull(sectorKey, factory, matcher, indexService, bus, sd, sid, successCallback, errorCallback, user);
+    return new SectorDeleteFull(sectorKey, factory, indexService, bus, sd, sid, successCallback, errorCallback, user);
   }
 
   public void assertComponentsOnline() {
-    matcher.assertComponentsOnline();
+    nameIndex.assertOnline();
   }
 }

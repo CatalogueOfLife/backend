@@ -3,9 +3,9 @@ package life.catalogue.db;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import com.google.common.base.Preconditions;
-
 import org.apache.ibatis.session.*;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A sql session factory that sets the postgres search_path before any session is returned.

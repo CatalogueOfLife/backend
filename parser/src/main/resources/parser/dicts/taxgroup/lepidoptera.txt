@@ -1,3 +1,4 @@
+Acanthoctesia
 Acanthopteroctetidae
 Acanthopteroctetoidea
 Acentropinae
@@ -20,6 +21,7 @@ Agathiphagidae
 Agathiphagoidea
 Agdistinae
 Agliinae
+Aglossata
 Agonoxininae
 Aididae
 Alsophilinae
@@ -32,6 +34,8 @@ Amphipyrinae
 Amphipyrini
 Anacampsinae
 Anaeini
+Andesianidae
+Andesianoidea
 Anobinae
 Anomoeotidae
 Anomoeotinae
@@ -44,6 +48,7 @@ Apatetrinae
 Apaturinae
 Aphnaeini
 Apoprogoninae
+Archaeolepidae
 Archiearinae
 Arctiinae
 Arctiini
@@ -107,6 +112,7 @@ Charaxinae
 Charaxini
 Charideinae
 Cheritrini
+Chimabachidae
 Chimabachinae
 Chionopsychinae
 Chlidanotinae
@@ -122,6 +128,7 @@ Cimeliidae
 Cochylini
 Coeini
 Coeliadinae
+Coelopoetidae
 Coelopoetinae
 Coleophoridae
 Collomeninae
@@ -148,6 +155,7 @@ Cyclosiini
 Cyclotornidae
 Cyrestinae
 Cyrestini
+Dacnonypha
 Dalceridae
 Danainae
 Danaini
@@ -184,6 +192,7 @@ Epermenioidea
 Epichnopteriginae
 Epicopeiidae
 Epiinae
+Epimarptidae
 Epipaschiinae
 Epipleminae
 Epipyropidae
@@ -213,6 +222,7 @@ Euteliinae
 Euxanthini
 Evergestinae
 Exelastini
+Exoporia
 Galacticidae
 Galacticoidea
 Galleriinae
@@ -224,6 +234,7 @@ Geometridae
 Geometrinae
 Geometroidea
 Glaphyriinae
+Glossata
 Glottulini
 Glyphipterigidae
 Glyphipteriginae
@@ -247,8 +258,10 @@ Herminiinae
 Hesperiidae
 Hesperiinae
 Heterobathmiidae
+Heterobathmiina
 Heterobathmioidea
 Heterocampinae
+Heteroneura
 Heteropanini
 Heteropterinae
 Hibrildinae
@@ -296,6 +309,7 @@ Lithocolletinae
 Lithosiini
 Litini
 Lophocoronidae
+Lophocoronina
 Lophocoronoidea
 Loxurini
 Luciini
@@ -328,6 +342,7 @@ Midilinae
 Miletinae
 Miletini
 Milleriidae
+Millieriidae
 Mimallonidae
 Mimalloninae
 Mimallonoidea
@@ -341,6 +356,7 @@ Naryciinae
 Nematopogoninae
 Nemeobiinae
 Neopseustidae
+Neopseustina
 Neopseustoidea
 Neotheoridae
 Nepticulidae
@@ -395,6 +411,7 @@ Papilionidae
 Papilionoidea
 Parthenini
 Passovini
+Peleopodidae
 Pentilini
 Periacminae
 Pexicopiinae
@@ -513,6 +530,7 @@ Stygiini
 Stygini
 Symmachiini
 Symmocinae
+Syringopaidae
 Syringopainae
 Taleporiinae
 Tarakini
@@ -543,6 +561,7 @@ Tortricoidea
 Toxocampinae
 Trapezitinae
 Typhoniinae
+Undopterigidae
 Uraniidae
 Uraniinae
 Urodidae
@@ -560,6 +579,7 @@ Yponomeutinae
 Yponomeutoidea
 Ypsolophidae
 Zesiusini
+Zeugloptera
 Zeuzerinae
 Zeuzerini
 Zeuzerocossini

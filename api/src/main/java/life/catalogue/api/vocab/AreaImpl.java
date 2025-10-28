@@ -88,10 +88,6 @@ public class AreaImpl implements Area {
 
   @Override
   public String toString() {
-    return "AreaImpl{" +
-           "gazetteer=" + gazetteer +
-           ", id='" + id + '\'' +
-           ", name='" + name + '\'' +
-           '}';
+    return gazetteer + ":" + id;
   }
 }

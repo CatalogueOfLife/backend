@@ -1,16 +1,14 @@
 package life.catalogue.api.model;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
-import life.catalogue.api.vocab.EstimateType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * A drastic simplification of a taxon with just the minimum information used to render in a tree.
@@ -40,14 +38,15 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   private TaxonomicStatus status;
   private Integer count;
   private int childCount;
-  private List<SpeciesEstimate> estimates;
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer sectorDatasetKey;
   private Boolean sectorRoot;
   private EditorialDecision decision;
   private IntSet sourceDatasetKeys;
-  
+  private Map<UUID, IntSet> publisherDatasetKeys;
+  private ResultPage<TreeNode> children;
+
   /**
    * Exposes a structured name instance as a full name with html markup
    * instead of the regular name property.
@@ -158,28 +157,6 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
   public void setCount(Integer count) {
     this.count = count;
   }
-  
-  public List<SpeciesEstimate> getEstimates() {
-    return estimates;
-  }
-  
-  public void setEstimates(List<SpeciesEstimate> estimates) {
-    this.estimates = estimates;
-  }
-  
-  /**
-   * @return the average of the listed DESCRIBED_SPECIES_LIVING estimates
-   */
-  public Integer getEstimate() {
-    if (estimates == null || estimates.isEmpty()) {
-      return null;
-    }
-    double avg = estimates.stream()
-        .filter(e -> e.getEstimate() != null)
-        .filter(e -> e.getType() == EstimateType.SPECIES_LIVING)
-        .collect(Collectors.averagingInt(SpeciesEstimate::getEstimate));
-    return avg == 0 ? null : (int) avg;
-  }
 
   public Integer getSectorKey() {
     return sectorKey;
@@ -231,6 +208,22 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
     this.sourceDatasetKeys = sourceDatasetKeys;
   }
 
+  public Map<UUID, IntSet> getPublisherDatasetKeys() {
+    return publisherDatasetKeys;
+  }
+
+  public void setPublisherDatasetKeys(Map<UUID, IntSet> publisherDatasetKeys) {
+    this.publisherDatasetKeys = publisherDatasetKeys;
+  }
+
+  public ResultPage<TreeNode> getChildren() {
+    return children;
+  }
+
+  public void setChildren(ResultPage<TreeNode> children) {
+    this.children = children;
+  }
+
   @JsonIgnore
   public boolean isPlaceholder() {
     return this instanceof PlaceholderNode;
@@ -239,27 +232,29 @@ public abstract class TreeNode implements DSID<String>, SectorScoped {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof TreeNode)) return false;
+
     TreeNode treeNode = (TreeNode) o;
     return childCount == treeNode.childCount &&
-           Objects.equals(count, treeNode.count) &&
-           Objects.equals(datasetKey, treeNode.datasetKey) &&
-           Objects.equals(id, treeNode.id) &&
-           Objects.equals(parentId, treeNode.parentId) &&
-          rank == treeNode.rank &&
-          status == treeNode.status &&
-           Objects.equals(estimates, treeNode.estimates) &&
-           Objects.equals(sectorKey, treeNode.sectorKey) &&
-           Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
-           Objects.equals(sectorRoot, treeNode.sectorRoot) &&
-           Objects.equals(decision, treeNode.decision) &&
-           Objects.equals(sourceDatasetKeys, treeNode.sourceDatasetKeys);
+      Objects.equals(datasetKey, treeNode.datasetKey) &&
+      Objects.equals(id, treeNode.id) &&
+      Objects.equals(parentId, treeNode.parentId) &&
+      rank == treeNode.rank &&
+      status == treeNode.status &&
+      Objects.equals(count, treeNode.count) &&
+      Objects.equals(sectorKey, treeNode.sectorKey) &&
+      sectorMode == treeNode.sectorMode &&
+      Objects.equals(sectorDatasetKey, treeNode.sectorDatasetKey) &&
+      Objects.equals(sectorRoot, treeNode.sectorRoot) &&
+      Objects.equals(decision, treeNode.decision) &&
+      Objects.equals(sourceDatasetKeys, treeNode.sourceDatasetKeys) &&
+      Objects.equals(publisherDatasetKeys, treeNode.publisherDatasetKeys) &&
+      Objects.equals(children, treeNode.children);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, estimates, sectorKey, sectorDatasetKey, sectorRoot, decision, sourceDatasetKeys);
+    return Objects.hash(datasetKey, id, parentId, rank, status, count, childCount, sectorKey, sectorMode, sectorDatasetKey, sectorRoot, decision, sourceDatasetKeys, publisherDatasetKeys, children);
   }
 
   @Override

@@ -1,4 +1,4 @@
-id,taxon_id,gazetteer,status,area,reference_id
+id,taxon_id,gazetteer,establishment_means,area,reference_id
 1,1001b,ISO,NATIVE,US,wp1
 2,1001b,ISO,NATIVE,US,wp1
 3,1001b,ISO,NATIVE,US,wp1

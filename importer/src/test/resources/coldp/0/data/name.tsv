@@ -3,6 +3,7 @@ ID	scientificName	authorship	rank	genus	specificEpithet	infraspecificEpithet	ref
 2	Viridae		kingdom						botanical			
 10	Asteraceae		family						botanical			
 11	Compositae		family						botanical			
+12	Brassicaceae		family						botanical			
 20	Cichorioideae		subfamily						botanical			
 30	Cichorieae		tribe						botanical			
 31	Gundelieae		tribe						botanical			
@@ -26,4 +27,4 @@ ID	scientificName	authorship	rank	genus	specificEpithet	infraspecificEpithet	ref
 fake	Paulownia × tomentosa subsp. tella f. pasta	(Carl & Ruth) Frankenstein ex Semmelrogge	forma				frank	87	botanical	conserved	https://herbaria.plants.ox.ac.uk/bol/plants400/profiles/OP/Paulownia	Unclear name origin
 hybrid	Quercus robur x Q. macrocarpa		species						botanical	LEGITIMATE	http://www.heritageseedlings.com/page_608_40/quercus-heritage-q.-robur-x-q.-macrocarpa-clemons	commercial seeds
 virus	Acanthocystis turfacea chlorella virus 1								virus			
-cult	Clematis 'Sapphire Indigo'		species								http://plants.thegrowingplace.com/12120014/Plant/6164/Sapphire_Indigo_Clematis/	
+cult	Clematis 'Sapphire Indigo'		species								http://plants.thegrowingplace.com/12120014/Plant/6164/Sapphire_Indigo_Clematis/

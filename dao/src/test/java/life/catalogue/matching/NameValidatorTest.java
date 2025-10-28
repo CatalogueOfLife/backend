@@ -25,7 +25,7 @@ public class NameValidatorTest {
     } else {
       assertNotNull( NameValidator.flagIssues(n, v) );
       for (Issue iss : expected) {
-        assertTrue(v.hasIssue(iss));
+        assertTrue(v.contains(iss));
       }
     }
   }

@@ -2,17 +2,44 @@
  <configuration debug="false">
   <conversionRule conversionWord="highlight"
                   converterClass="ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter" />
+
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <encoder>
-      <pattern> %highlight(%boldGreen([%date{'yyyy-MM-dd HH:mm:ss'}]) %blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))</pattern>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>
+        %highlight(%boldGreen([%date{'yyyy-MM-dd HH:mm:ss'}]) %blue([${LOG_LEVEL_PATTERN:-%4p}]) %boldCyan([%logger{0}]) %boldYellow(%msg%n))
+      </pattern>
     </encoder>
   </appender>
-  <root level="WARN">
-    <appender-ref ref="CONSOLE" />
+
+  <!-- Specific appender for MatchController -->
+  <appender name="MATCH_CONTROLLER" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>
+        %highlight(%boldGreen([%date{'yyyy-MM-dd HH:mm:ss'}]) %magenta([%X{requestPath}]) %red([%X{executionTime}]) %boldYellow(%msg%n))
+      </pattern>
+    </encoder>
+  </appender>
+
+  <logger name="life.catalogue.matching.controller.MatchController" level="INFO" additivity="false">
+    <appender-ref ref="MATCH_CONTROLLER"/>
+  </logger>
+
+  <logger name="life.catalogue.matching.controller.v1.MatchV1Controller" level="INFO" additivity="false">
+    <appender-ref ref="MATCH_CONTROLLER"/>
+  </logger>
+
+  <root level="INFO">
+    <appender-ref ref="CONSOLE"/>
   </root>
+
   <logger name="life.catalogue" level="INFO"/>
+  <logger name="life.catalogue.matching.index" level="INFO"/>
+  <logger name="life.catalogue.matching.service" level="INFO"/>
+  <logger name="life.catalogue.matching.Main" level="INFO"/>
+  <logger name="life.catalogue.matching.controller" level="INFO"/>
   <logger name="life.catalogue.common.tax" level="ERROR"/>
-  <logger name="org.springframework.web" level="ERROR"/>
-  <!-- Suppress INFO logs from org.apache.catalina.core -->
+  <logger name="org.gbif.nameparser" level="ERROR"/>
+  <logger name="org.springframework" level="ERROR"/>
   <logger name="org.apache.catalina.core" level="ERROR"/>
+  <logger name="org.springdoc" level="ERROR"/>
 </configuration>

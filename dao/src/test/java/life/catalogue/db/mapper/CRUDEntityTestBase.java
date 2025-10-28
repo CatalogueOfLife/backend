@@ -5,9 +5,6 @@ import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
 import life.catalogue.junit.TestDataRule;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 abstract class CRUDEntityTestBase<K, V extends DataEntity<K>, M extends CRUD<K, V>> extends CRUDTestBase<K,V,M> {
   
   protected static int datasetKey = TestEntityGenerator.DATASET11.getKey();;

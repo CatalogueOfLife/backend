@@ -5,12 +5,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.junit.TreeRepoRule;
-import life.catalogue.junit.NameMatchingRule;
-import life.catalogue.junit.PgSetupRule;
-import life.catalogue.junit.SqlSessionFactoryRule;
-import life.catalogue.junit.TestDataRule;
 import life.catalogue.db.mapper.*;
+import life.catalogue.junit.*;
+import life.catalogue.printer.PrinterUtils;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -79,6 +76,7 @@ public class SectorSyncTest {
       session.getMapper(TaxonMapper.class).create(colAttachment);
   
       sector = new Sector();
+      sector.setMode(Sector.Mode.ATTACH);
       sector.setDatasetKey(Datasets.COL);
       sector.setSubjectDatasetKey(datasetKey);
       sector.setSubject(SimpleNameLink.of("t2", "name", Rank.ORDER));
@@ -102,8 +100,10 @@ public class SectorSyncTest {
       assertEquals(1, nm.count(Datasets.COL));
     }
 
+    //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
     SectorSync ss = SyncFactoryRule.getFactory().project(sector, SectorSyncTest::successCallBack, SectorSyncTest::errorCallBack, TestEntityGenerator.USER_EDITOR.getKey());
     ss.run();
+    //PrinterUtils.print(Datasets.COL, true, SqlSessionFactoryRule.getSqlSessionFactory());
 
     MapperTestBase.createSuccess(Datasets.COL, Users.TESTER, diDao);
 

@@ -1,6 +1,6 @@
 package life.catalogue.api.event;
 
-import life.catalogue.api.model.DataEntity;
+import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 
@@ -12,33 +12,15 @@ import static life.catalogue.api.event.EventType.*;
  * @param <K> key type
  * @param <T> entity type
  */
-public class EntityChanged<K, T> {
-  public final EventType type;
-  public final K key;
-  public final T obj;
-  public final T old;
-  public final int user;
-  public final Class<T> objClass;
+public class EntityChanged<K, T> implements Event {
+  public EventType type;
+  public K key;
+  public T obj;
+  public T old;
+  public int user;
+  public Class<T> objClass;
 
-  /**
-   * Creates a change event for newly created instances with just the new (obj) instance.
-   */
-  public static <K, T extends DataEntity<K>>  EntityChanged<K,T> created(T obj, int user){
-    return new EntityChanged<>(CREATE, obj.getKey(), obj, null, user, (Class<T>) obj.getClass());
-  }
-
-  /**
-   * Creates a change event for updates with both the new (obj) and old property.
-   */
-  public static <K, T extends DataEntity<K>>  EntityChanged<K,T> change(T obj, T old, int user){
-    return new EntityChanged<>(UPDATE, obj.getKey(), obj, old, user, (Class<T>) obj.getClass());
-  }
-
-  /**
-   * Creates a change event for deletions with just the old property, i.e. how the instance was before the deletion.
-   */
-  public static <K, T> EntityChanged<K, T> delete(K key, T old, int user, Class<T> objClass){
-    return new EntityChanged<>(DELETE, key, null, old, user, objClass);
+  EntityChanged() {
   }
 
   EntityChanged(EventType type, K key, T obj, T old, int user, Class<T> objClass) {
@@ -60,5 +42,29 @@ public class EntityChanged<K, T> {
 
   public boolean isUpdated(){
     return type ==  UPDATE;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof EntityChanged)) return false;
+    EntityChanged<?, ?> that = (EntityChanged<?, ?>) o;
+    return user == that.user && type == that.type && Objects.equals(key, that.key) && Objects.equals(obj, that.obj) && Objects.equals(old, that.old) && Objects.equals(objClass, that.objClass);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(type, key, obj, old, user, objClass);
+  }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{" +
+      "type=" + type +
+      ", key=" + key +
+      ", obj=" + obj +
+      ", old=" + old +
+      ", user=" + user +
+      ", objClass=" + objClass +
+      '}';
   }
 }

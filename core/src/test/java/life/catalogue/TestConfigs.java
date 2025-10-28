@@ -1,7 +1,5 @@
 package life.catalogue;
 
-import com.google.common.io.Files;
-
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.GbifConfig;
 import life.catalogue.config.ImporterConfig;
@@ -11,8 +9,13 @@ import life.catalogue.db.PgConfig;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.exporter.ExporterConfig;
 import life.catalogue.img.ImgConfig;
+import life.catalogue.release.ProjectReleaseConfig;
 
 import java.net.URI;
+
+import org.apache.commons.io.FileUtils;
+
+import com.google.common.io.Files;
 
 public class TestConfigs implements ExporterConfig {
   public URI apiURI = ApiUtils.API;
@@ -23,6 +26,7 @@ public class TestConfigs implements ExporterConfig {
   public NormalizerConfig normalizer = new NormalizerConfig();
   public ImgConfig img = new ImgConfig();
   public ReleaseConfig release = new ReleaseConfig();
+  public ProjectReleaseConfig projectRelease = new ProjectReleaseConfig();
   public JobConfig job = new JobConfig();
   public GbifConfig gbif = new GbifConfig();
   public DoiConfig doi;
@@ -41,8 +45,16 @@ public class TestConfigs implements ExporterConfig {
 
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
+    cfg.img.repo = cfg.normalizer.scratchDir.toPath();
+    cfg.job.downloadDir = Files.createTempDir();
 
     return cfg;
+  }
+
+  public void removeCfgDirs() {
+    FileUtils.deleteQuietly(job.downloadDir);
+    FileUtils.deleteQuietly(normalizer.scratchDir);
+    FileUtils.deleteQuietly(normalizer.archiveDir);
   }
 
   @Override

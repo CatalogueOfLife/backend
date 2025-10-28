@@ -5,10 +5,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.common.io.TempFile;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.junit.MybatisTestUtils;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.SectorMapper;
 
 import java.sql.Connection;
 import java.sql.Statement;

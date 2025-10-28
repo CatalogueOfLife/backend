@@ -1,0 +1,1 @@
+Mering literature only from bare names and name usages, as provided by Rod Page to COL

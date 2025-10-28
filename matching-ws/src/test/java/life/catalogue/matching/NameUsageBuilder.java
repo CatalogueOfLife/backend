@@ -1,12 +1,14 @@
 package life.catalogue.matching;
 
-import java.util.List;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.matching.model.NameUsageMatch;
 
-import lombok.Builder;
 import org.gbif.nameparser.api.Rank;
+
+import java.util.List;
+
+import lombok.Builder;
 
 class NameUsageBuilder {
 
@@ -46,27 +48,27 @@ class NameUsageBuilder {
         .canonicalName(canonicalName)
         .rank(rank).build());
     m.setAcceptedUsage(NameUsageMatch.Usage.builder().key(acceptedUsageKey).build());
-    m.getDiagnostics().setStatus(status);
+    m.getUsage().setStatus(status);
     m.getDiagnostics().setConfidence(confidence);
     m.getDiagnostics().setNote(note);
     m.getDiagnostics().setMatchType(matchType);
     m.getDiagnostics().setAlternatives(alternatives);
-    m.setKingdom(kingdom);
-    m.setPhylum(phylum);
-    m.setClazz(clazz);
-    m.setOrder(order);
-    m.setFamily(family);
-    m.setGenus(genus);
-    m.setSubgenus(subgenus);
-    m.setSpecies(species);
-    m.setKingdomKey(kingdomKey);
-    m.setPhylumKey(phylumKey);
-    m.setClassKey(classKey);
-    m.setOrderKey(orderKey);
-    m.setFamilyKey(familyKey);
-    m.setGenusKey(genusKey);
-    m.setSubgenusKey(subgenusKey);
-    m.setSpeciesKey(speciesKey);
+    m.setNameFor(kingdom, Rank.KINGDOM);
+    m.setNameFor(phylum, Rank.PHYLUM);
+    m.setNameFor(clazz, Rank.CLASS);
+    m.setNameFor(order, Rank.ORDER);
+    m.setNameFor(family, Rank.FAMILY);
+    m.setNameFor(genus, Rank.GENUS);
+    m.setNameFor(subgenus, Rank.SUBGENUS);
+    m.setNameFor(species, Rank.SPECIES);
+    m.setKeyFor(kingdomKey, Rank.KINGDOM);
+    m.setKeyFor(phylumKey, Rank.PHYLUM);
+    m.setKeyFor(classKey, Rank.CLASS);
+    m.setKeyFor(orderKey, Rank.ORDER);
+    m.setKeyFor(familyKey, Rank.FAMILY);
+    m.setKeyFor(genusKey, Rank.GENUS);
+    m.setKeyFor(subgenusKey, Rank.SUBGENUS);
+    m.setKeyFor(speciesKey, Rank.SPECIES);
     return m;
   }
 }

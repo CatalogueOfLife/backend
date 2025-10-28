@@ -3,6 +3,7 @@ package life.catalogue.cache;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.dao.DatasetInfoCache;
@@ -64,6 +65,7 @@ public class UsageCacheMapDB implements UsageCache {
       kryo.register(MatchType.class);
       kryo.register(TaxonomicStatus.class);
       kryo.register(NomCode.class);
+      kryo.register(TaxGroup.class);
       return kryo;
     }
   }
@@ -119,6 +121,18 @@ public class UsageCacheMapDB implements UsageCache {
     }
   }
 
+  @Override
+  public void updateParent(int datasetKey, String oldParentId, String newParentId) {
+    if (datasets.containsKey(datasetKey)) {
+      var d = datasets.get(datasetKey);
+      for (var u : d.values()) {
+        if (u.getParentId() != null && u.getParent().equals(oldParentId)) {
+          u.setParent(newParentId);
+        }
+      }
+    }
+  }
+
   private static String dbname(int datasetKey) {
     return "u"+datasetKey;
   }
@@ -132,7 +146,7 @@ public class UsageCacheMapDB implements UsageCache {
              //.valueInline()
              //.valuesOutsideNodesEnable()
              ;
-    if (expireMutable && DatasetInfoCache.CACHE.info(datasetKey).isMutable()) {
+    if (expireMutable && DatasetInfoCache.CACHE.info(datasetKey).isProject()) {
       maker.expireAfterCreate(1, TimeUnit.HOURS);
     }
     return maker;
@@ -200,10 +214,4 @@ public class UsageCacheMapDB implements UsageCache {
     start();
   }
 
-  /**
-   * @return set of all datasets that are being cached.
-   */
-  public IntSet listDatasets() {
-    return new IntOpenHashSet(datasets.keySet());
-  }
 }

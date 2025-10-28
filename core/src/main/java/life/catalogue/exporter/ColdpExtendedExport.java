@@ -4,7 +4,9 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.io.UTF8IoUtils;
@@ -56,7 +58,8 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   Term[] define(EntityType entity) {
     if (ColdpTerm.RESOURCES.containsKey(entity.coldp)) {
-      var terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
+      LinkedList<Term> terms = new LinkedList<>(ColdpTerm.RESOURCES.get(entity.coldp));
+      terms.add(ClbTerm.merged);
       terms.push(entity.coldp);
       return terms.toArray(Term[]::new);
     }
@@ -72,7 +75,7 @@ public class ColdpExtendedExport extends ArchiveExport {
 
     write(u.getName());
     writer.set(ColdpTerm.ID, u.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(u.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(u.getSectorKey()));
     writer.set(ColdpTerm.parentID, u.getParentId());
     writer.set(ColdpTerm.status, u.getStatus());
     writer.set(ColdpTerm.namePhrase, u.getNamePhrase());
@@ -81,6 +84,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     // see taxon specifics below
     writer.set(ColdpTerm.link, u.getLink());
     writer.set(ColdpTerm.remarks, u.getRemarks());
+    writer.set(ClbTerm.merged, u.isMerged());
 
     if (!u.isSynonym()) {
       TaxonWithClassification t = (TaxonWithClassification) u;
@@ -94,8 +98,8 @@ public class ColdpExtendedExport extends ArchiveExport {
       writer.set(ColdpTerm.ordinal, t.getOrdinal());
       if (t.getClassification() != null) {
         for (var ht : t.getClassification()) {
-          if (ColdpReader.RANK2COLDP.containsKey(ht.getRank())) {
-            writer.set(ColdpReader.RANK2COLDP.get(ht.getRank()), ht.getName());
+          if (RankUtils.RANK2COLDP.containsKey(ht.getRank())) {
+            writer.set(RankUtils.RANK2COLDP.get(ht.getRank()), ht.getName());
           }
         }
       }
@@ -122,10 +126,11 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.ID, bareID);
     writer.set(ColdpTerm.status, TaxonomicStatus.BARE_NAME);
     writer.set(ColdpTerm.remarks, u.getRemarks());
+    writer.set(ClbTerm.merged, u.isMerged());
   }
 
   void write(Name n) {
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(n.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(n.getSectorKey()));
     for (NameRelation rel : nameRelMapper.listByType(n, NomRelType.BASIONYM)) {
       writer.set(ColdpTerm.basionymID, nameUsageKeyMap.getFirst(rel.getRelatedNameId()));
     }
@@ -171,7 +176,7 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, VernacularName vn) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(vn.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(vn.getSectorKey()));
     writer.set(ColdpTerm.name, vn.getName());
     writer.set(ColdpTerm.transliteration, vn.getLatin());
     writer.set(ColdpTerm.language, vn.getLanguage());
@@ -179,6 +184,7 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.area, vn.getArea());
     writer.set(ColdpTerm.sex, vn.getSex());
     writer.set(ColdpTerm.remarks, vn.getRemarks());
+    writer.set(ClbTerm.merged, vn.isMerged());
   }
 
   @Override
@@ -194,13 +200,14 @@ public class ColdpExtendedExport extends ArchiveExport {
   @Override
   void write(String taxonID, TaxonProperty tp) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(tp.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tp.getSectorKey()));
     writer.set(ColdpTerm.property, tp.getProperty());
     writer.set(ColdpTerm.value, tp.getValue());
     writer.set(ColdpTerm.referenceID, tp.getReferenceId());
     writer.set(ColdpTerm.page, tp.getPage());
     writer.set(ColdpTerm.ordinal, tp.getOrdinal());
     writer.set(ColdpTerm.remarks, tp.getRemarks());
+    writer.set(ClbTerm.merged, tp.isMerged());
   }
 
   @Override
@@ -238,9 +245,10 @@ public class ColdpExtendedExport extends ArchiveExport {
   void write(Reference r) throws IOException {
     // tabular
     writer.set(ColdpTerm.ID, r.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(r.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(r.getSectorKey()));
     writer.set(ColdpTerm.citation, r.getCitation());
     writer.set(ColdpTerm.remarks, r.getRemarks());
+    writer.set(ClbTerm.merged, r.isMerged());
     // BibTex
     bibWriter.write( CslUtil.toBibTexString(r) );
     bibWriter.write("\n");
@@ -292,17 +300,18 @@ public class ColdpExtendedExport extends ArchiveExport {
     } else {
       writer.set(ColdpTerm.nameID, nameID);
       writer.set(ColdpTerm.relatedNameID, relatedNameID);
-      writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+      writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(rel.getSectorKey()));
       writer.set(ColdpTerm.type, rel.getType());
       writer.set(ColdpTerm.referenceID, rel.getReferenceId());
       writer.set(ColdpTerm.remarks, rel.getRemarks());
+      writer.set(ClbTerm.merged, rel.isMerged());
     }
   }
 
   @Override
   void write(TypeMaterial tm) {
     writer.set(ColdpTerm.ID, tm.getId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(tm.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(tm.getSectorKey()));
     writer.set(ColdpTerm.nameID, nameUsageKeyMap.getFirst(tm.getNameId()));
     writer.set(ColdpTerm.citation, tm.getCitation());
     writer.set(ColdpTerm.status, tm.getStatus());
@@ -321,22 +330,24 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.catalogNumber, tm.getCatalogNumber());
     writer.set(ColdpTerm.link, tm.getLink());
     writer.set(ColdpTerm.remarks, tm.getRemarks());
+    writer.set(ClbTerm.merged, tm.isMerged());
   }
 
   @Override
   void write(TaxonConceptRelation rel) {
     writer.set(ColdpTerm.taxonID, rel.getTaxonId());
     writer.set(ColdpTerm.relatedTaxonID, rel.getRelatedTaxonId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(rel.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(rel.getSectorKey()));
     writer.set(ColdpTerm.type, rel.getType());
     writer.set(ColdpTerm.referenceID, rel.getReferenceId());
     writer.set(ColdpTerm.remarks, rel.getRemarks());
+    writer.set(ClbTerm.merged, rel.isMerged());
   }
 
   @Override
   void write(String taxonID, Media m) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(m.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(m.getSectorKey()));
     writer.set(ColdpTerm.url, m.getUrl());
     writer.set(ColdpTerm.type, m.getType());
     writer.set(ColdpTerm.format, m.getFormat());
@@ -346,32 +357,41 @@ public class ColdpExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.license, m.getLicense());
     writer.set(ColdpTerm.link, m.getLink());
     writer.set(ColdpTerm.remarks, m.getRemarks());
+    writer.set(ClbTerm.merged, m.isMerged());
   }
 
   @Override
   void write(SpeciesInteraction si) {
     writer.set(ColdpTerm.taxonID, si.getTaxonId());
     writer.set(ColdpTerm.relatedTaxonID, si.getRelatedTaxonId());
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(si.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(si.getSectorKey()));
     writer.set(ColdpTerm.relatedTaxonScientificName, si.getRelatedTaxonScientificName());
     writer.set(ColdpTerm.type, si.getType());
     writer.set(ColdpTerm.referenceID, si.getReferenceId());
     writer.set(ColdpTerm.remarks, si.getRemarks());
+    writer.set(ClbTerm.merged, si.isMerged());
   }
 
   @Override
   void write(String taxonID, Distribution d) {
     writer.set(ColdpTerm.taxonID, taxonID);
-    writer.set(ColdpTerm.sourceID, sector2datasetKey(d.getSectorKey()));
+    writer.set(ColdpTerm.sourceID, sectorInfoCache.sector2datasetKey(d.getSectorKey()));
     var area = d.getArea();
     if (area != null) {
       writer.set(ColdpTerm.area, area.getName());
       writer.set(ColdpTerm.areaID, area.getId());
       writer.set(ColdpTerm.gazetteer, area.getGazetteer());
     }
-    writer.set(ColdpTerm.status, d.getStatus());
+    writer.set(ColdpTerm.establishmentMeans, d.getEstablishmentMeans());
+    writer.set(ColdpTerm.degreeOfEstablishment, d.getDegreeOfEstablishment());
+    writer.set(ColdpTerm.pathway, d.getPathway());
+    writer.set(ColdpTerm.threatStatus, d.getThreatStatus());
+    writer.set(ColdpTerm.year, d.getYear());
+    writer.set(ColdpTerm.season, d.getSeason());
+    writer.set(ColdpTerm.lifeStage, d.getLifeStage());
     writer.set(ColdpTerm.referenceID, d.getReferenceId());
     writer.set(ColdpTerm.remarks, d.getRemarks());
+    writer.set(ClbTerm.merged, d.isMerged());
   }
 
   @Override

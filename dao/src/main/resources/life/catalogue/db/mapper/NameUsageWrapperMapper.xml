@@ -157,29 +157,52 @@
 
   <select id="get" parameterType="map" resultMap="taxonGetClassificationResultMap">
     WITH nu AS (
-      SELECT u.id, u.name_id, u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      SELECT u.id, u.name_id,
+      <if test="isProjectOrRelease">
+        u.verbatim_source_key AS uvkey, n.verbatim_source_key AS nvkey
+      </if>
+      <if test="!isProjectOrRelease">
+        u.verbatim_key AS uvkey, n.verbatim_key AS nvkey
+      </if>
       FROM name_usage u JOIN name n ON u.name_id=n.id AND n.dataset_key=u.dataset_key
       WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
     ), nuissues AS (
-      SELECT vs.id, array_cat_agg(vs.issues) AS issues
+      SELECT iss.id, array_cat_agg(iss.issues) AS issues
       FROM (
-      <include refid="life.catalogue.db.mapper.VerbatimRecordMapper.usageIssues"/>
-      ) vs
-      GROUP BY vs.id
-    ), src AS (
-      SELECT v.id, array_agg(DISTINCT v.type) AS groups, array_agg(DISTINCT v.source_dataset_key) AS sources
-      FROM nu JOIN verbatim_source_secondary v ON nu.id=v.id
-      WHERE v.dataset_key=#{datasetKey}
-      GROUP BY v.id
+      <if test="isProjectOrRelease">
+        <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssuesVerbatimSource"/>
+      </if>
+      <if test="!isProjectOrRelease">
+        <include refid="life.catalogue.db.mapper.TmpIssueMapper.usageIssuesVerbatim"/>
+      </if>
+      ) iss
+      GROUP BY iss.id
+    ), secsrc AS (
+    <if test="isProjectOrRelease">
+      SELECT secs.id, array_agg(DISTINCT secs.type) AS groups, array_agg(DISTINCT secs.source_dataset_key) AS sources
+      FROM (
+        SELECT nu.id, v.type, v.source_dataset_key
+        FROM nu JOIN verbatim_source_secondary v ON nu.uvkey=v.verbatim_source_key AND v.dataset_key=#{datasetKey}
+          UNION
+        SELECT nu.id, v.type, v.source_dataset_key
+        FROM nu JOIN verbatim_source_secondary v ON nu.nvkey=v.verbatim_source_key AND v.dataset_key=#{datasetKey}
+      ) AS secs
+      GROUP BY secs.id
+    </if>
+    <if test="!isProjectOrRelease">
+      SELECT nu.id, array[]::infogroup[] AS groups, array[]::int[] AS sources
+      FROM nu
+      LIMIT 0
+    </if>
     )
 
     SELECT u.id AS uid,
       <include refid="life.catalogue.db.mapper.NameUsageMapper.SELECT"/>,
       ed.id AS ed_id, ed.dataset_key AS ed_dataset_key, ed.mode AS ed_mode,
-      v.issues, src.sources, src.groups
+      v.issues, secsrc.sources, secsrc.groups
     FROM <include refid="life.catalogue.db.mapper.NameUsageMapper.FROM"/>
       LEFT JOIN nuissues v ON v.id=u.id
-      LEFT JOIN src ON src.id=u.id
+      LEFT JOIN secsrc ON secsrc.id=u.id
       LEFT JOIN decision ed ON ed.subject_dataset_key=#{datasetKey} AND ed.subject_id=u.id
     WHERE u.dataset_key=#{datasetKey} AND u.id = #{id}
   </select>

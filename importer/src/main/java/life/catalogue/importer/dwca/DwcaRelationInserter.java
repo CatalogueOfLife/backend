@@ -93,7 +93,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
             store.createNeoRel(u.nameNode, acc.nameNode, rel);
           }
         } else {
-          v.addIssue(Issue.ACCEPTED_ID_INVALID);
+          v.add(Issue.ACCEPTED_ID_INVALID);
         }
       }
       
@@ -105,8 +105,8 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     
     // if status is synonym but we ain't got no idea of the accepted flag it
-    if (accepted.isEmpty() && (u.isSynonym() || v.hasIssue(Issue.ACCEPTED_ID_INVALID))) {
-      v.addIssue(Issue.ACCEPTED_NAME_MISSING);
+    if (accepted.isEmpty() && (u.isSynonym() || v.contains(Issue.ACCEPTED_ID_INVALID))) {
+      v.add(Issue.ACCEPTED_NAME_MISSING);
       // now remove any denormed classification from this synonym to avoid parent relations
       //t.classification = null;
       u.node.addLabel(Labels.SYNONYM);
@@ -143,12 +143,17 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    * Reads a verbatim given term that should represent a foreign key to another record via the taxonID.
    * If the value is not the same as the original records taxonID it tries to split the ids into multiple keys and lookup the matching nodes.
    *
+   * Ignores IDs and names which are exactly the same as the NeoUsage t - often the terms are used to point to itself for accepted names or basionyms.
+   *
    * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
   private List<RankedUsage> usagesByIdOrName(VerbatimRecord v, NeoUsage t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
     List<RankedUsage> usages = Lists.newArrayList();
     final String unsplitIds = v.getRaw(idTerm);
-    if (unsplitIds != null && !unsplitIds.equals(t.getId())) {
+    boolean pointsToSelf = unsplitIds != null && unsplitIds.equals(t.getId());
+    if (pointsToSelf) return usages;
+
+    if (unsplitIds != null) {
       if (allowMultiple && meta.getMultiValueDelimiters().containsKey(idTerm)) {
         usages.addAll(usagesByIds(meta.getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), t));
       } else {
@@ -169,16 +174,20 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       }
       // could not find anything?
       if (usages.isEmpty()) {
-        v.addIssue(invalidIdIssue);
+        v.add(invalidIdIssue);
         LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
 
-    if (usages.isEmpty()) {
-      // try to setup rel via the name
-      RankedUsage ru = usageByName(nameTerm, v, t, createdNameOrigin);
-      if (ru != null) {
-        usages.add(ru);
+    if (usages.isEmpty() && v.hasTerm(nameTerm)) {
+      // try to setup rel via the name if it is different
+      String relatedName = v.get(nameTerm);
+      pointsToSelf = relatedName.equals(t.usage.getName().getScientificName());
+      if (!pointsToSelf) {
+        RankedUsage ru = usageByName(nameTerm, v, t, createdNameOrigin);
+        if (ru != null) {
+          usages.add(ru);
+        }
       }
     }
     return usages;
@@ -205,7 +214,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
       n = store.names().nodeByID(id);
       // could not find anything?
       if (n == null) {
-        v.addIssue(invalidIdIssue);
+        v.add(invalidIdIssue);
         LOG.debug("{} {} not existing", idTerm.simpleName(), id);
       }
     }
@@ -232,10 +241,11 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
    */
   private RankedName nameByName(DwcTerm term, VerbatimRecord v, NeoName n, Origin createdOrigin) {
     return byName(term, v, new RankedName(n), false,
-        NeoProperties::getRankedName,
-        name -> {
+      NeoProperties::getRankedName,
+      name -> {
           name.setOrigin(createdOrigin);
           NeoName nn = new NeoName((name));
+          nn.setVerbatimKey(v.getId());
           Node n2 = store.names().create(nn);
           return new RankedName(n2, name.getScientificName(), name.getAuthorship(), name.getRank());
         }
@@ -278,7 +288,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
     }
     return usageMatches;
   }
-  
+
   private <T extends RankedName> T byName(DwcTerm term, VerbatimRecord v, RankedName source,
                                           boolean transformToUsages,
                                           Function<Node, T> getByNode,
@@ -312,7 +322,7 @@ public class DwcaRelationInserter implements NodeBatchProcessor {
         } else{
           if (matches.size() > 1) {
             // still multiple matches, pick first and log critical issue!
-            v.addIssue(Issue.NAME_NOT_UNIQUE);
+            v.add(Issue.NAME_NOT_UNIQUE);
           }
           return getByNode.apply(matches.iterator().next());
         }

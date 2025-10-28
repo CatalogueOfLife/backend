@@ -3,10 +3,7 @@ package life.catalogue.metadata.coldp;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.FuzzyDateISOSerde;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.parser.CountryParser;
 import life.catalogue.parser.LicenseParser;
@@ -93,6 +90,12 @@ public class YamlMapper {
   }
 
   abstract static class DatasetMixIn {
+
+    @JsonIgnore
+    abstract LocalDateTime getLastImportAttempt();
+
+    @JsonIgnore
+    abstract ImportState getLastImportState();
 
     @JsonIgnore
     abstract UUID getGbifKey();

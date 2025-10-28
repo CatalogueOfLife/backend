@@ -1,15 +1,13 @@
 package life.catalogue.matching;
 
-import com.google.common.eventbus.EventBus;
-
 import life.catalogue.api.model.DSID;
 import life.catalogue.concurrent.BackgroundJob;
+import life.catalogue.event.EventBroker;
+import life.catalogue.matching.nidx.NameIndex;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
-import life.catalogue.matching.nidx.NameIndex;
 
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -22,7 +20,7 @@ public class RematchJob extends BackgroundJob {
   private static final Logger LOG = LoggerFactory.getLogger(RematchJob.class);
   private final SqlSessionFactory factory;
   private final NameIndex ni;
-  private final EventBus bus;
+  private final EventBroker bus;
   @JsonProperty
   private final boolean missingOnly;
 
@@ -31,11 +29,11 @@ public class RematchJob extends BackgroundJob {
   @JsonProperty
   private final List<? extends DSID<Integer>> sectorKeys;
 
-  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int datasetKey){
+  public static RematchJob one(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus, boolean missingOnly, int datasetKey){
     return new RematchJob(userKey, factory, ni, bus, missingOnly, datasetKey);
   }
 
-  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int... datasetKeys){
+  public static RematchJob some(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus, boolean missingOnly, int... datasetKeys){
     return new RematchJob(userKey, factory, ni, bus, missingOnly, datasetKeys);
   }
 
@@ -43,7 +41,7 @@ public class RematchJob extends BackgroundJob {
     return new RematchJob(userKey, factory, ni, sectorKeys, null);
   }
 
-  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys, EventBus bus) {
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, List<? extends DSID<Integer>> sectorKeys, EventBroker bus) {
     super(userKey);
     this.bus = bus;
     this.datasetKeys = null;
@@ -54,7 +52,7 @@ public class RematchJob extends BackgroundJob {
     this.missingOnly = false; // not supported for sectors
   }
 
-  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBus bus, boolean missingOnly, int... datasetKeys) {
+  private RematchJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus, boolean missingOnly, int... datasetKeys) {
     super(userKey);
     this.bus = bus;
     this.datasetKeys = Preconditions.checkNotNull(datasetKeys);

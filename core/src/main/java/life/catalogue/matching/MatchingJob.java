@@ -1,7 +1,6 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.jackson.PermissiveEnumSerde;
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.VocabularyUtils;
@@ -43,6 +42,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import org.gbif.nameparser.api.Rank;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +73,9 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   private final SqlSessionFactory factory;
-  private final UsageMatcherGlobal matcher;
+  private final UsageMatcherFactory matcherFactory;
+  private UsageMatcher matcher;
+  private final MatchingUtils utils;
   private final NameInterpreter interpreter = new NameInterpreter(new DatasetSettings(), true);
   private final NormalizerConfig cfg;
   // job specifics
@@ -80,12 +84,13 @@ public class MatchingJob extends DatasetBlockingJob {
   private final UsageCounter counter = new UsageCounter();
   private List<SimpleName> rootClassification;
 
-  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherGlobal matcher, NormalizerConfig cfg) {
+  public MatchingJob(MatchingRequest req, int userKey, SqlSessionFactory factory, UsageMatcherFactory matcherFactory, NormalizerConfig cfg) {
     super(req.getDatasetKey(), userKey, JobPriority.LOW);
     this.logToFile = true;
     this.cfg = cfg;
-    this.matcher = matcher;
     this.factory = factory;
+    this.matcherFactory = matcherFactory;
+    this.utils = new MatchingUtils(matcherFactory.getNameIndex());
     this.req = Preconditions.checkNotNull(req);
     this.result = new JobResult(getKey());
     this.dataset = loadDataset(factory, req.getDatasetKey());
@@ -122,11 +127,6 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   @Override
-  public void assertComponentsOnline() throws UnavailableException {
-    matcher.assertComponentsOnline();
-  }
-
-  @Override
   public boolean isDuplicate(BackgroundJob other) {
     if (other instanceof MatchingJob) {
       var mj = (MatchingJob) other;
@@ -137,6 +137,7 @@ public class MatchingJob extends DatasetBlockingJob {
 
   @Override
   public final void runWithLock() throws Exception {
+    matcher = matcherFactory.persistent(req.getDatasetKey());
     try (TempFile tmp = TempFile.created(matchResultFile())) {
       try (ZipOutputStream zos = UTF8IoUtils.zipStreamFromFile(tmp.file)) {
 
@@ -159,12 +160,13 @@ public class MatchingJob extends DatasetBlockingJob {
             // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
             final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
             ttp.setDatasetKey(req.getSourceDatasetKey());
+            final AtomicLong count = new AtomicLong(0);
             writeMatches(writer, null, TreeStreams.dataset(session, ttp)
                                             .map(sn -> {
                                               if (rootClassification != null) {
                                                 sn.getClassification().addAll(rootClassification);
                                               }
-                                              return new IssueName(sn, new IssueContainer.Simple(), null);
+                                              return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
                                             })
             );
           }
@@ -185,11 +187,13 @@ public class MatchingJob extends DatasetBlockingJob {
   static class IssueName {
     final SimpleNameClassified<SimpleName> name;
     final IssueContainer issues;
+    final long line;
     final String[] row;
 
-    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues, String[] row) {
+    IssueName(SimpleNameClassified<SimpleName> name, IssueContainer issues, String[] row, long line) {
       this.issues = issues;
       this.name = name;
+      this.line = line;
       this.row = row;
     }
   }
@@ -230,9 +234,11 @@ public class MatchingJob extends DatasetBlockingJob {
       names.forEach(n -> {
           var m = match(n);
           var row = new String[size];
-          row[0] = m.original.getId();
-          row[1] = str(m.original.getRank());
-          row[2] = m.original.getLabel();
+          if (m.original != null) {
+            row[0] = m.original.getId();
+            row[1] = str(m.original.getRank());
+            row[2] = m.original.getLabel();
+          }
           row[3] = str(m.type);
           if (m.usage != null) {
               row[4] = m.usage.getId();
@@ -247,10 +253,10 @@ public class MatchingJob extends DatasetBlockingJob {
                   row[10] = null;
               }
               row[11] = str(m.usage.getClassification());
-              row[12] = concat(m.issues);
           } else {
               none.incrementAndGet();
           }
+          row[12] = concat(m.issues);
           // also add all original input columns if provided (only works with file uploads)
           if (srcHeader != null && n.row != null) {
               int idx = 0;
@@ -267,22 +273,37 @@ public class MatchingJob extends DatasetBlockingJob {
               LOG.info("Matched {} out of {} names so far", counter.get() - none.get(), counter);
           }
       });
+
+    } catch (Exception e) {
+      LOG.error("Matching failed on line #{}: {}", counter.get()+1, e.getMessage(), e);
     }
     writer.flush();
     LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
   }
 
   private UsageMatchWithOriginal match(IssueName n) {
+    UsageMatch match = interpretAndMatch(n.name, MatchingUtils.toSimpleNameCached(n.name.getClassification()), n.issues, false, interpreter, utils, matcher);
+    return new UsageMatchWithOriginal(match, n.issues, n.name, n.line);
+  }
+
+  public static UsageMatch interpretAndMatch(SimpleName sn, List<SimpleNameCached> classification, IssueContainer issues, boolean verbose,
+                                       NameInterpreter interpreter, MatchingUtils utils, UsageMatcher matcher
+  ) {
     UsageMatch match;
-    var opt = interpreter.interpret(n.name, n.issues);
-    if (opt.isPresent()) {
-      NameUsageBase nu = (NameUsageBase) NameUsage.create(n.name.getStatus(), opt.get().getName());
-      match = matcher.match(datasetKey, nu, n.name.getClassification(), false, false);
+    var opt = interpreter.interpret(sn, issues);
+      if (opt.isPresent()) {
+      NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
+      // replace name parsers unranked with null to let the matcher know its coming from outside
+      if (nu.getRank() == Rank.UNRANKED) {
+        nu.getName().setRank(null);
+      }
+      var snc = utils.toSimpleNameClassified(nu, classification);
+      match = matcher.match(snc, false, verbose);
     } else {
       match = UsageMatch.empty(0);
-      n.issues.addIssue(Issue.UNPARSABLE_NAME);
+      issues.add(Issue.UNPARSABLE_NAME);
     }
-    return new UsageMatchWithOriginal(match, n.issues, n.name);
+      return match;
   }
 
   private static class MappedStream {
@@ -306,9 +327,17 @@ public class MatchingJob extends DatasetBlockingJob {
     final RowMapper mapper = new RowMapper(iter.next());
 
     Stream<String[]> rowStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(iter, Spliterator.ORDERED), false);
+
     return new MappedStream(mapper, rowStream.map(row -> {
       final IssueContainer issues = new IssueContainer.Simple();
-      return new IssueName(mapper.build(row, issues), issues, row);
+      long line = iter.getContext().currentLine();
+      try {
+        return new IssueName(mapper.build(row, issues), issues, row, line);
+      } catch (Exception e) {
+        LOG.error("Error parsing line {}", line, e);
+        issues.add(Issue.NOT_INTERPRETED);
+        return new IssueName(null, issues, row, line);
+      }
     }));
   }
 
@@ -330,14 +359,17 @@ public class MatchingJob extends DatasetBlockingJob {
   }
 
   static String concat(IssueContainer issues) {
-    StringBuilder sb = new StringBuilder();
-    for (var iss : issues.getIssues()) {
-      if (sb.length()>1) {
-        sb.append(";");
+    if (issues != null) {
+      StringBuilder sb = new StringBuilder();
+      for (var iss : issues.getIssues()) {
+        if (sb.length()>1) {
+          sb.append(";");
+        }
+        sb.append(iss);
       }
-      sb.append(iss);
+      return sb.toString();
     }
-    return sb.toString();
+    return null;
   }
 
   static class RowMapper {

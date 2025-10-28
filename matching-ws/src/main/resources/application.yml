@@ -1,0 +1,25 @@
+spring.application.name: matching-ws
+
+springdoc.swagger-ui.path:
+#
+## dictionary.path=https://rs.gbif.org/dictionaries/
+#dictionary:
+#  path: dictionaries/
+#
+#working:
+#  dir: /tmp/
+#
+#licence:
+#  name: Apache License, Version 2.0
+#  url: https://github.com/CatalogueOfLife/backend/blob/master/LICENSE
+#
+##management.server.port=8081
+#management.health.elasticsearch.enabled: false
+#management.endpoints.web.exposure.include: "*"
+#management.endpoint.loggers.enabled: true
+#
+#spring:
+#  banner:
+#    location: classpath:banner.txt
+#  main:
+#    allow-circular-references: true

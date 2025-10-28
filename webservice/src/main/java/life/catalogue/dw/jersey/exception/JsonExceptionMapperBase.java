@@ -1,14 +1,13 @@
 package life.catalogue.dw.jersey.exception;
 
 
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.ExceptionMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.jersey.errors.ErrorMessage;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
 
@@ -24,14 +23,16 @@ public class JsonExceptionMapperBase<T extends Throwable> implements ExceptionMa
   private final boolean stacktrace;
   private final String defaultMessage;
 
-  public JsonExceptionMapperBase(Response.StatusType errorCode) {
-    this(errorCode,null);
-  }
-
   public JsonExceptionMapperBase(Response.StatusType errorCode, String defaultMessage) {
     this(errorCode, false, true, defaultMessage);
   }
 
+  /**
+   * @param errorCode http code to return
+   * @param debug log at debug level? if false logs at info level
+   * @param stacktrace log stacktrace?
+   * @param defaultMessage
+   */
   public JsonExceptionMapperBase(Response.StatusType errorCode, boolean debug, boolean stacktrace, String defaultMessage) {
     this.errorCode = errorCode;
     this.debug = debug;

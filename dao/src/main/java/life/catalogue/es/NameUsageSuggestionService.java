@@ -1,16 +1,17 @@
 package life.catalogue.es;
 
 import life.catalogue.api.search.NameUsageSuggestRequest;
-import life.catalogue.api.search.NameUsageSuggestResponse;
+import life.catalogue.api.search.NameUsageSuggestion;
 
 import java.util.Collections;
+import java.util.List;
 
 public interface NameUsageSuggestionService {
 
   static NameUsageSuggestionService passThru() {
-    return (req) -> new NameUsageSuggestResponse(Collections.emptyList());
+    return (req) -> Collections.emptyList();
   }
 
-  NameUsageSuggestResponse suggest(NameUsageSuggestRequest request);
+  List<NameUsageSuggestion> suggest(NameUsageSuggestRequest request);
 
 }

@@ -9,10 +9,7 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.common.func.ThrowingBiConsumer;
 import life.catalogue.common.func.ThrowingConsumer;
 import life.catalogue.common.io.TermWriter;
-import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.NameProcessable;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.TaxonProcessable;
+import life.catalogue.db.*;
 import life.catalogue.db.mapper.*;
 import life.catalogue.img.ImageService;
 
@@ -34,8 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import jakarta.ws.rs.core.UriBuilder;
 
 public abstract class ArchiveExport extends DatasetExportJob {
@@ -47,9 +42,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected final Set<String> taxonIDs = new HashSet<>();
   protected final Set<String> refIDs = new HashSet<>();
   protected final LoadingCache<String, String> refCache;
-  protected final Int2IntMap sector2datasetKeys = new Int2IntOpenHashMap();
+  protected final SectorInfoCache sectorInfoCache;
   private final UriBuilder logoUriBuilder;
-  protected SectorMapper sectorMapper;
   protected NameRelationMapper nameRelMapper;
   protected SqlSession session;
   protected TermWriter writer;
@@ -74,6 +68,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       wb = null;
       // only include treatments with ColDP
     }
+    sectorInfoCache = new SectorInfoCache(factory, datasetKey);
   }
 
   private String lookupReference(String id) {
@@ -84,20 +79,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
   protected String citationByID(String refID) {
     if (!StringUtils.isBlank(refID)) {
       return refCache.get(refID);
-    }
-    return null;
-  }
-
-  protected Integer sector2datasetKey(Integer sectorKey){
-    if (sectorKey != null) {
-      int sk = sectorKey;
-      if (!sector2datasetKeys.containsKey(sk)) {
-        Sector s = sectorMapper.get(DSID.of(datasetKey, sectorKey));
-        // we apparently have references that still link to removed sectors - don't fail
-        sector2datasetKeys.put(sk, s==null ? -1 : s.getSubjectDatasetKey());
-      }
-      int dkey = sector2datasetKeys.get(sk);
-      return dkey<0 ? null : dkey;
     }
     return null;
   }
@@ -133,8 +114,8 @@ public abstract class ArchiveExport extends DatasetExportJob {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
 
       // extract unique source datasets if sectors were given
-      Set<Integer> sourceKeys = new HashSet<>(sector2datasetKeys.values());
-      LOG.info("Prepare metadata for {} sources from {} sectors in export {}", sourceKeys.size(), sector2datasetKeys.size(), getKey());
+      Set<Integer> sourceKeys = sectorInfoCache.sourceKeys();
+      LOG.info("Prepare metadata for {} sources from {} sectors in export {}", sourceKeys.size(), sectorInfoCache.size(), getKey());
       // for releases and projects also include an EML for each source dataset as defined by all sectors
       for (Integer sk : sourceKeys) {
         Dataset src = null;
@@ -179,7 +160,6 @@ public abstract class ArchiveExport extends DatasetExportJob {
   }
 
   protected void init(SqlSession session) throws Exception {
-    sectorMapper = session.getMapper(SectorMapper.class);
     nameRelMapper = session.getMapper(NameRelationMapper.class);
   }
 
@@ -249,6 +229,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     counter.inc(u);
 
     try {
+      u.setSectorMode(sectorInfoCache.sector2mode(u.getSectorKey()));
       write(u);
       writer.next();
     } catch (final IOException e) {
@@ -265,6 +246,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
     counter.inc(u);
 
     try {
+      u.setSectorMode(sectorInfoCache.sector2mode(u.getSectorKey()));
       write(u);
       writer.next();
     } catch (final IOException e) {
@@ -295,6 +277,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
         if (fullDataset) {
           PgUtils.consume(()->rm.processDataset(datasetKey), r -> {
             try {
+              r.setSectorMode(sectorInfoCache.sector2mode(r.getSectorKey()));
               write(r);
               writer.next();
             } catch (final IOException e) {
@@ -306,6 +289,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           for (String id : refIDs) {
             var ref = rm.get(entityKey.id(id));
             if (ref != null) {
+              ref.setSectorMode(sectorInfoCache.sector2mode(ref.getSectorKey()));
               write(ref);
               writer.next();
             } else {
@@ -325,6 +309,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           PgUtils.consume(()->exm.processDataset(datasetKey), x -> {
             try {
               trackRefId(x.getObj());
+              x.getObj().setSectorMode(sectorInfoCache.sector2mode(x.getObj().getSectorKey()));
               consumer.accept(x.getTaxonID(), x.getObj());
               this.writer.next();
             } catch (final IOException e) {
@@ -336,6 +321,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
           for (String id : taxonIDs) {
             for (T x : exm.listByTaxon(entityKey.id(id))) {
               trackRefId(x);
+              x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
               consumer.accept(id, x);
               this.writer.next();
             }
@@ -347,11 +333,11 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends DatasetScopedEntity & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+  private <T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> void exportNameRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
     new NameRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
-  private class NameRelExporter<T extends DatasetScopedEntity & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
+  private class NameRelExporter<T extends SectorScopedEntity<?> & Referenced, M extends NameProcessable<T> & DatasetProcessable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
       if (newDataFile(define(entity))) {
         try (SqlSession session = factory.openSession()) {
@@ -360,6 +346,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               try {
                 trackRefId(x);
+                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
                 writer.next();
               } catch (final IOException e) {
@@ -370,6 +357,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
             for (String id : nameIDs) {
               for (T x : mapper.listByName(entityKey.id(id))) {
                 trackRefId(x);
+                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
                 writer.next();
               }
@@ -382,11 +370,11 @@ public abstract class ArchiveExport extends DatasetExportJob {
     }
   }
 
-  private <T extends DatasetScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
+  private <T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> void exportTaxonRelation(EntityType type, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
     new TaxonRelExporter<T, M>().export(type, mapperClass, consumer);
   }
 
-  private class TaxonRelExporter<T extends DatasetScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> {
+  private class TaxonRelExporter<T extends SectorScopedEntity<Integer> & Referenced, M extends TaxonProcessable<T> & DatasetProcessable<T>> {
     void export(EntityType entity, Class<M> mapperClass, ThrowingConsumer<T, IOException> consumer) throws IOException {
       if (newDataFile(define(entity))) {
         try (SqlSession session = factory.openSession()) {
@@ -395,6 +383,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
             PgUtils.consume(()->mapper.processDataset(datasetKey), x -> {
               try {
                 trackRefId(x);
+                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
                 writer.next();
               } catch (final IOException e) {
@@ -405,6 +394,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
             for (String id : taxonIDs) {
               for (T x : mapper.listByTaxon(entityKey.id(id))) {
                 trackRefId(x);
+                x.setSectorMode(sectorInfoCache.sector2mode(x.getSectorKey()));
                 consumer.accept(x);
                 writer.next();
               }

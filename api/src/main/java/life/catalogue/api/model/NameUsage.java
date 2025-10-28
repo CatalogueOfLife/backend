@@ -12,7 +12,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  *
  */
-public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, NameUsageCore, Remarkable {
+public interface NameUsage extends DSID<String>, VerbatimEntity, VerbatimSourceEntity, SectorScoped, NameUsageCore, Remarkable {
 
   String getLabel();
 
@@ -57,6 +57,9 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
     return getStatus() != null && getStatus().isTaxon();
   }
 
+  default NameUsageBase asUsageBase() {
+    return this instanceof NameUsageBase ? (NameUsageBase) this : null;
+  }
   default Taxon asTaxon() {
     return this instanceof Taxon ? (Taxon) this : null;
   }
@@ -75,6 +78,10 @@ public interface NameUsage extends DSID<String>, VerbatimEntity, SectorScoped, N
     sn.setCode(getName().getCode());
     sn.setParent(getParentId());
     return sn;
+  }
+
+  default SimpleNameClassified<SimpleNameCached> toSimpleNameClassified(Integer canonicalNidx) {
+    return new SimpleNameClassified<>(asUsageBase(), canonicalNidx);
   }
 
   default SimpleNameWithNidx toSimpleNameWithNidx(Function<Integer, Integer> nidx2canonical) {

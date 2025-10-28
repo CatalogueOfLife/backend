@@ -6,7 +6,6 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
 
-import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.UnicodeUtils;
@@ -115,8 +114,13 @@ public class DataPackageBuilder {
   }
 
   private void readEntity(Document doc, ColdpTerm rt) {
-    var anch = "a#user-content-" + rt.simpleName().toLowerCase();
-    var clsDiv = doc.select(anch).get(0).parent();
+    var anch = "#" + rt.simpleName().toLowerCase();
+    var anchs = doc.select(anch);
+    if (anchs.isEmpty()) {
+      LOG.warn("No entity anchor found for {}", rt);
+      return;
+    }
+    var clsDiv = anchs.get(0).parent();
     resourceDescriptions.put(rt, getDescription(clsDiv));
     var fields = new HashMap<ColdpTerm, String>();
     resourceFieldDescriptions.put(rt, fields);

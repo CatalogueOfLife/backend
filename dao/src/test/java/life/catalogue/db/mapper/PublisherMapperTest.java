@@ -2,17 +2,15 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.Publisher;
-
 import life.catalogue.api.vocab.Users;
-
 import life.catalogue.common.text.StringUtils;
-
-import org.junit.Test;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.junit.Assert.*;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, PublisherMapper>{
   String KEY = StringUtils.removeLast(UUID.randomUUID().toString(),3);
@@ -24,6 +22,14 @@ public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, P
 
   @Test
   public void list() {
+    mapper().create(createTestEntity(datasetKey));
+    mapper().create(createTestEntity(datasetKey));
+    mapper().create(createTestEntity(datasetKey));
+    var keys = mapper().listAllKeys(datasetKey);
+    assertEquals(3, keys.size());
+
+    keys = mapper().listAllKeys(345654);
+    assertEquals(0, keys.size());
   }
 
 

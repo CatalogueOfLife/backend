@@ -1,16 +1,17 @@
 package life.catalogue.csv;
 
 import life.catalogue.api.util.VocabularyUtils;
-import life.catalogue.common.io.CompressionUtil;
-import life.catalogue.common.io.Resources;
+import life.catalogue.common.io.*;
 
-import life.catalogue.common.io.TempFile;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 
 import org.gbif.dwc.terms.*;
 
+import java.io.File;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.univocity.parsers.tsv.TsvFormat;
@@ -300,4 +301,24 @@ public class DwcaReaderTest {
     }
   }
 
+  @Test
+  @Ignore("local test only")
+  public void fromFile() throws Exception {
+    try (var dir = TempFile.directory();
+         var zip = TempFile.file()
+    ) {
+      String url = "http://opendata.globalnames.org/dwca/170-arctos-2024-09-10.tar.gz";
+      try (var hc = HttpClientBuilder.create().build()) {
+        var down = new DownloadUtil(hc);
+        down.download(URI.create(url), zip.file);
+      }
+      CompressionUtil.decompressFile(dir.file, zip.file);
+
+      DwcaReader reader = DwcaReader.from(dir.file.toPath());
+
+      assertEquals(2, reader.size());
+      assertEquals(DwcTerm.Taxon, reader.coreRowType());
+      assertFalse(reader.coreSchema().isTsv());
+    }
+  }
 }

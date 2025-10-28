@@ -3,11 +3,15 @@
 **/.idea
 **/java-xjc/
 **/.surefire-*
+**/neodb.dot
+**/__pycache__
 
+api/latin29.txt
 dao/127.0.0.1/
 dao/dataset/
+core/dataset/
+importer/graphs/
 webservice/dataset/
-webservice/graphs/
 webservice/localhost/
 webservice/config-*.yaml
 webservice/**/ManualLiveDebugging.java

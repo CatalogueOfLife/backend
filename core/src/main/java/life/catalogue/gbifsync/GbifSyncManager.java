@@ -5,6 +5,7 @@ import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.concurrent.NamedThreadFactory;
 import life.catalogue.config.GbifConfig;
+import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 
 import java.util.ArrayList;
@@ -14,11 +15,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.ws.rs.client.Client;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import jakarta.ws.rs.client.Client;
 
 
 /**
@@ -31,13 +32,15 @@ public class GbifSyncManager implements Managed {
   private ScheduledExecutorService scheduler;
   private boolean started;
   private final GbifConfig cfg;
+  private final ImporterConfig iCfg;
   private final DatasetDao ddao;
   private final SqlSessionFactory sessionFactory;
   private final Client client;
   private final List<ScheduledFuture<?>> futures = new ArrayList<>();
 
-  public GbifSyncManager(GbifConfig gbif, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
+  public GbifSyncManager(GbifConfig gbif, ImporterConfig iCfg, DatasetDao ddao, SqlSessionFactory sessionFactory, Client client) {
     this.cfg = gbif;
+    this.iCfg = iCfg;
     this.ddao = ddao;
     this.sessionFactory = sessionFactory;
     this.client = client;

@@ -27,7 +27,8 @@ abstract class SimpleMatcher extends QMatcher implements MatcherMixIn {
         .subquery(new BoolQuery() // Prefer genus over species over subspecies
             .should(matchAsEpithet(FLD_SUBSPECIES, term0).withBoost(1.0))
             .should(matchAsEpithet(FLD_SPECIES, term0).withBoost(1.1))
-            .should(matchAsEpithet(FLD_GENUS, term0).withBoost(1.2)));
+            .should(matchAsEpithet(FLD_INFRAGENERIC, term0).withBoost(1.2))
+            .should(matchAsEpithet(FLD_GENUS, term0).withBoost(1.3)));
   }
 
   @Override
@@ -44,6 +45,10 @@ abstract class SimpleMatcher extends QMatcher implements MatcherMixIn {
             .must(matchAsGenericEpithet(term0))
             .must(matchAsEpithet(FLD_SUBSPECIES, term1))
             .withBoost(2.5))
+        .subquery(new BoolQuery()
+          .must(matchAsGenericEpithet(term0))
+          .must(matchAsEpithet(FLD_INFRAGENERIC, term1))
+          .withBoost(2.3))
         .subquery(new BoolQuery()
             .must(matchAsEpithet(FLD_SPECIES, term0))
             .must(matchAsEpithet(FLD_SUBSPECIES, term1))

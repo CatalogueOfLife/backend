@@ -58,37 +58,37 @@
     <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
     <chronicle.version>2.26ea47</chronicle.version>
     <docker-client.version>3.4.0</docker-client.version><!--keep in sync with test containers -->
-    <dwc-api.version>1.49</dwc-api.version>
-    <dwca-io.version>2.16</dwca-io.version>
+    <dwc-api.version>2.1.4</dwc-api.version>
+    <dwca-io.version>3.0.0</dwca-io.version>
     <elasticsearch.version>8.1.3</elasticsearch.version>
-    <fastutil.version>8.5.14</fastutil.version>
-    <fury.version>0.9.0</fury.version>
-    <ganglia.version>1.0.7</ganglia.version>
-    <gbif-api.version>1.16.12</gbif-api.version>
-    <hikaricp.version>6.0.0</hikaricp.version>
+    <fastutil.version>8.5.15</fastutil.version>
+    <fory.version>0.12.3</fory.version>
+    <gbif-api.version>2.1.3</gbif-api.version>
+    <hikaricp.version>6.3.0</hikaricp.version>
     <icu4j.version>75.1</icu4j.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
     <javers.version>7.6.2</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
     <jjwt.version>0.12.6</jjwt.version>
-    <jsoup.version>1.18.1</jsoup.version>
+    <jsoup.version>1.19.1</jsoup.version>
     <junit.version>5.11.2</junit.version>
-    <kryo.version>5.6.0</kryo.version>
+    <kryo.version>5.6.2</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <lombok.version>1.18.30</lombok.version>
     <mapdb.version>3.1.0</mapdb.version>
     <mockito.version>3.3.3</mockito.version>
-    <mybatis.version>3.5.16</mybatis.version>
-    <name-parser.version>4.0.0-SNAPSHOT</name-parser.version>
+    <mybatis.version>3.5.19</mybatis.version>
+    <name-parser.version>3.14.0</name-parser.version>
     <neo4j.version>5.26.2</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
-    <postgresql.version>42.7.4</postgresql.version>
+    <pollexor.version>3.0.0</pollexor.version>
+    <postgresql.version>42.7.6</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
-    <simple-mail.version>8.12.2</simple-mail.version>
+    <simple-mail.version>8.12.5</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
     <testcontainers.version>1.20.2</testcontainers.version><!--keep in sync with docker client-->
-    <text-tree.version>1.5.0</text-tree.version>
+    <text-tree.version>1.6.5</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
     <woodstox.version>6.6.2</woodstox.version>
@@ -155,6 +155,10 @@
         <updatePolicy>always</updatePolicy>
       </snapshots>
     </repository>
+    <repository>
+      <id>gbif-thirdparty</id>
+      <url>https://repository.gbif.org/repository/thirdparty/</url>
+    </repository>
   </repositories>
 
   <pluginRepositories>
@@ -186,7 +190,6 @@
     <module>reader</module>
     <module>reader-xls</module>
     <module>webservice</module>
-    <module>apianalytics</module>
   </modules>
 
   <distributionManagement>
@@ -195,7 +198,7 @@
       <url>http://repository.gbif.org/content/repositories/releases</url>
     </repository>
     <snapshotRepository>
-      <id>gbif-snapshot</id>
+      <id>gbif-deploy</id>
       <url>http://repository.gbif.org/content/repositories/snapshots</url>
     </snapshotRepository>
   </distributionManagement>
@@ -291,11 +294,6 @@
         <classifier>tests</classifier>
         <scope>test</scope>
       </dependency>
-      <dependency>
-        <groupId>org.catalogueoflife</groupId>
-        <artifactId>apianalytics</artifactId>
-        <version>${project.version}</version>
-      </dependency>
       <!-- Dropwizard -->
       <dependency>
         <groupId>io.dropwizard</groupId>
@@ -341,11 +339,6 @@
         <groupId>io.dropwizard</groupId>
         <artifactId>dropwizard-testing</artifactId>
         <version>${dropwizard.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.ganglia.gmetric4j</groupId>
-        <artifactId>gmetric4j</artifactId>
-        <version>${ganglia.version}</version>
       </dependency>
 
       <!-- Dropwizard Bill of materials.
@@ -421,6 +414,12 @@
             <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <!-- thumbor -->
+      <dependency>
+        <groupId>com.squareup</groupId>
+        <artifactId>pollexor</artifactId>
+        <version>${pollexor.version}</version>
       </dependency>
 
       <!-- JWT -->
@@ -566,9 +565,9 @@
         <type>bundle</type>
       </dependency>
       <dependency>
-        <groupId>org.apache.fury</groupId>
-        <artifactId>fury-core</artifactId>
-        <version>${fury.version}</version>
+        <groupId>org.apache.fory</groupId>
+        <artifactId>fory-core</artifactId>
+        <version>${fory.version}</version>
       </dependency>
 
       <!-- docker -->
@@ -931,7 +930,6 @@
           <executions>
             <execution>
               <id>attach-sources</id>
-              <phase>verify</phase>
               <goals>
                 <goal>jar-no-fork</goal>
               </goals>

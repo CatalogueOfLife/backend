@@ -2,13 +2,17 @@ package life.catalogue.portal;
 
 import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.dao.DatasetSourceDao;
 import life.catalogue.dao.TaxonDao;
+
+import life.catalogue.junit.SqlSessionFactoryRule;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -26,7 +30,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 import static life.catalogue.portal.PortalPageRenderer.Environment.PROD;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -36,8 +40,6 @@ public class PortalPageRendererTest {
   final int releaseKey=1000;
   final DSID<String> ID_DEAD = DSID.of(releaseKey, "DEAD");
 
-  @Mock
-  LatestDatasetKeyCache cache;
   @Mock
   DatasetDao ddao;
   @Mock
@@ -49,31 +51,26 @@ public class PortalPageRendererTest {
 
   @Before
   public void init() throws IOException {
-    when(cache.getLatestRelease(projectKey, false)).thenReturn(releaseKey);
-
     var ds = new Dataset();
     ds.setKey(100);
     ds.setAlias("source");
     ds.setTitle("Super Source");
     when(ddao.get(ds.getKey())).thenReturn(ds);
 
-    var dr1 = new Dataset();
+    var dr1 = new DatasetRelease();
     dr1.setKey(releaseKey-10);
     dr1.setAlias("rel1");
-    dr1.setTitle("First Release");
-    when(ddao.get(dr1.getKey())).thenReturn(dr1);
+    when(ddao.getRelease(dr1.getKey())).thenReturn(dr1);
 
-    var dr2 = new Dataset();
+    var dr2 = new DatasetRelease();
     dr2.setKey(releaseKey-2);
     dr2.setAlias("rel2");
-    dr2.setTitle("Last Release");
-    when(ddao.get(dr2.getKey())).thenReturn(dr2);
+    when(ddao.getRelease(dr2.getKey())).thenReturn(dr2);
 
     ArchivedNameUsage anu = new ArchivedNameUsage();
     anu.setId(ID_DEAD.getId());
     anu.setDatasetKey(projectKey);
-    anu.setLastReleaseKey(dr1.getKey());
-    anu.setFirstReleaseKey(dr2.getKey());
+    anu.setReleaseKeys(new int[]{dr2.getKey(), dr1.getKey()});
     anu.setStatus(TaxonomicStatus.ACCEPTED);
     Name n = new Name();
     n.setRank(Rank.SPECIES);
@@ -90,10 +87,11 @@ public class PortalPageRendererTest {
     var v = new VerbatimSource();
     v.setDatasetKey(anu.getLastReleaseKey());
     v.setSourceDatasetKey(ds.getKey());
-    when(tdao.getSource(any())).thenReturn(v);
+    when(tdao.getSourceByUsageKey(any())).thenReturn(v);
     var p = Path.of("/tmp/col/templates");
     PathUtils.deleteRecursively(p);
-    renderer = new PortalPageRenderer(ddao, sdao, tdao, cache, p);
+    renderer = new PortalPageRenderer(ddao, sdao, tdao, p, false);
+    PortalPageRendererIT.loadTemplates(renderer, releaseKey);
   }
 
   @After
@@ -103,7 +101,7 @@ public class PortalPageRendererTest {
 
   @Test
   public void renderTombstone() throws Exception {
-    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD, false);
+    var res = renderer.renderTaxon(ID_DEAD.getId(), PROD);
     assertEquals(HttpStatus.SC_OK, res.getStatus());
     System.out.println(res.getEntity().toString());
   }

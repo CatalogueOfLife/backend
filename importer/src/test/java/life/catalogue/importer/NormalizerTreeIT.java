@@ -26,9 +26,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -41,6 +38,9 @@ import org.neo4j.graphdb.Transaction;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 import static org.junit.Assert.*;
 

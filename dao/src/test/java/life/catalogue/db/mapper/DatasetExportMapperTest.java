@@ -4,6 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.TabularFormat;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.junit.TestDataRule;
@@ -30,11 +31,13 @@ public class DatasetExportMapperTest extends CRUDEntityTestBase<UUID, DatasetExp
     ExportRequest req = new ExportRequest();
     req.setDatasetKey(datasetKey);
     req.setFormat(DataFormat.COLDP);
+    req.setTabFormat(TabularFormat.CSV);
     req.setRoot(new SimpleName("root", "Abies alba", Rank.SPECIES));
     req.setExcel(true);
     req.setSynonyms(true);
     req.setExtinct(null);
     req.setMinRank(Rank.SPECIES);
+    req.setClassification(true);
 
     DatasetExport d = new DatasetExport();
     d.setKey(UUID.randomUUID());

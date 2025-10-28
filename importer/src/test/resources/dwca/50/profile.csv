@@ -1,5 +1,5 @@
-taxonID,isExtinct,isMarine,isTerrestrial,livingPeriod
-1,true,true,true,Cretaceous
-2,false,true,,
-3,0,,false,
-5,1,1,,
+taxonID,isExtinct,isMarine,isTerrestrial,livingPeriod,massInGrams
+1,true,true,true,Cretaceous,1000.000
+2,false,true,,,2432000
+3,0,,false,,34567
+5,1,1,,,669

@@ -1,5 +1,6 @@
 package life.catalogue.api.model;
 
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.tax.NameFormatter;
 
@@ -40,6 +41,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
   @NotNull
   private Rank rank;
   private NomCode code;
+  private TaxGroup group;
   private TaxonomicStatus status;
   private String parent;
 
@@ -75,6 +77,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.phrase = other.phrase;
     this.rank = other.rank;
     this.code = other.code;
+    this.group = other.group;
     this.status = other.status;
     this.parent = other.parent;
   }
@@ -134,6 +137,15 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.authorship = authorship;
     this.rank = rank;
     this.code = code;
+  }
+
+  public SimpleName(String id, String name, String authorship, Rank rank, NomCode code, TaxGroup group) {
+    this.id = id;
+    this.name = name;
+    this.authorship = authorship;
+    this.rank = rank;
+    this.code = code;
+    this.group = group;
   }
 
   public String getId() {
@@ -224,6 +236,14 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.code = code;
   }
 
+  public TaxGroup getGroup() {
+    return group;
+  }
+
+  public void setGroup(TaxGroup group) {
+    this.group = group;
+  }
+
   public String getLabel() {
     return strOrNull(appendFullName(new StringBuilder(), false));
   }
@@ -289,6 +309,10 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return DSID.of(datasetKey, id);
   }
 
+  public DSID<String> toParentDSID(int datasetKey){
+    return parent == null ? null : DSID.of(datasetKey, parent);
+  }
+
   @Override
   public String toString() {
     return toStringBuilder().toString();
@@ -306,6 +330,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
         Objects.equals(authorship, that.authorship) &&
         rank == that.rank &&
         code == that.code &&
+        group == that.group &&
         status == that.status &&
         Objects.equals(phrase, that.phrase) &&
         Objects.equals(parent, that.parent);
@@ -313,7 +338,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, authorship, rank, code, status, phrase, parent);
+    return Objects.hash(id, name, authorship, rank, code, group, status, phrase, parent);
   }
 
   public int compareTo(SimpleName other) {

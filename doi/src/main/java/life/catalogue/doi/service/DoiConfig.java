@@ -2,6 +2,8 @@ package life.catalogue.doi.service;
 
 import life.catalogue.api.model.DOI;
 
+import com.google.common.base.MoreObjects;
+
 import jakarta.validation.constraints.NotNull;
 
 /**
@@ -34,4 +36,12 @@ public class DoiConfig {
     return DOI.datasetSource(prefix, datasetKey, sourceKey);
   }
 
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+      .add("api", api)
+      .add("prefix", prefix)
+      .add("user", username)
+      .toString();
+  }
 }

@@ -1,0 +1,29 @@
+Eukaryota [domain] {ID=CS5HF}
+  Animalia [kingdom] {ID=N}
+    Arthropoda [phylum] {ID=RT}
+      Insecta [class] {ID=H6}
+        Hemiptera [order] {ID=BXVWV}
+          Sternorrhyncha [suborder] {ID=BXWD4}
+            Aphidomorpha [infraorder] {ID=8PRTX}
+              Aphidoidea [superfamily] {ID=8NKG4}
+                Aphididae [family] {ID=8NKH2}
+                  Calaphidinae [subfamily] {ID=8Q6Y4}
+                    Myzocallidini [tribe] {ID=9GVNF}
+                      Agrioaphis Walker, 1870 [genus] {ID=8P364}
+                      Myzocallis [genus] {ID=8NVPG}
+                        Myzocallis (Myzocallis) [subgenus] {ID=8Q6KW}
+                          =Agrioaphis [genus] {ID=CTN9D}
+                      Tuberculatus [genus] {ID=83GF}
+                        Tuberculatus (Acanthocallis) [subgenus] {ID=8R326}
+                          =Agrioaphis [genus] {ID=CTN9C}
+                        Tuberculatus (Arakawana) [subgenus] {ID=8QWYD}
+                          =Agrioaphis [genus] {ID=CTN9B}
+                        Tuberculatus (Tuberculoides) [subgenus] {ID=8QYKW}
+                          =Agrioaphis [genus] {ID=CTN99}
+                    Pterocallidini [tribe] {ID=9H2ZF}
+                      Pterocallis [genus] {ID=8NYD3}
+                        Pterocallis (Pterocallis) [subgenus] {ID=8R23K}
+                          =Agrioaphis [genus] {ID=CTN9F}
+                    Therioaphidini [tribe] {ID=9GVNR}
+                      Takecallis [genus] {ID=8NPCB}
+                        =Agrioaphis [genus] {ID=CRGH7}

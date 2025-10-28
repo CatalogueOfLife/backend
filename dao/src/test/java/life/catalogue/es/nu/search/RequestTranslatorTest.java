@@ -6,7 +6,6 @@ import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Publishers;
-import life.catalogue.config.GbifConfig;
 import life.catalogue.es.query.Query;
 
 import java.util.Set;

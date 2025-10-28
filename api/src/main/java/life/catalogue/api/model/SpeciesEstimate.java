@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements VerbatimEntity, Referenced, Remarkable {
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private SimpleNameLink target;
   private Integer estimate;
   private EstimateType type = EstimateType.SPECIES_LIVING;
@@ -18,6 +19,7 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
   public SpeciesEstimate(SpeciesEstimate other) {
     super(other);
     this.verbatimKey = other.verbatimKey;
+    this.verbatimSourceKey = other.verbatimSourceKey;
     this.target = SimpleNameLink.of(other.target);
     this.estimate = other.estimate;
     this.type = other.type;
@@ -33,6 +35,14 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public SimpleNameLink getTarget() {
@@ -76,26 +86,27 @@ public class SpeciesEstimate extends DatasetScopedEntity<Integer> implements Ver
   public void setReferenceId(String referenceId) {
     this.referenceId = referenceId;
   }
-  
+
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof SpeciesEstimate)) return false;
     if (!super.equals(o)) return false;
+
     SpeciesEstimate that = (SpeciesEstimate) o;
-    return Objects.equals(target, that.target) &&
-        Objects.equals(verbatimKey, that.verbatimKey) &&
-        Objects.equals(estimate, that.estimate) &&
-        type == that.type &&
-        Objects.equals(referenceId, that.referenceId) &&
-        Objects.equals(remarks, that.remarks);
+    return Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(target, that.target) &&
+      Objects.equals(estimate, that.estimate) &&
+      type == that.type &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
-  
+
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), verbatimKey, target, estimate, type, referenceId, remarks);
+    return Objects.hash(super.hashCode(), verbatimKey, verbatimSourceKey, target, estimate, type, referenceId, remarks);
   }
-  
+
   @Override
   public String toString() {
     return "Estimate{" + getId() + ": " + estimate + " species in " + target + '}';

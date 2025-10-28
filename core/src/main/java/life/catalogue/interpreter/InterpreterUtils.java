@@ -4,6 +4,8 @@ import life.catalogue.api.model.Identifier;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.parser.GeoTimeParser;
+import life.catalogue.parser.SafeParser;
 
 import org.gbif.dwc.terms.Term;
 
@@ -67,12 +69,12 @@ public class InterpreterUtils {
           y = Integer.parseInt(m.group(1)+m.group(2));
         }
         if (y < MIN_YEAR || y > MAX_YEAR) {
-          issues.addIssue(Issue.UNLIKELY_YEAR);
+          issues.add(Issue.UNLIKELY_YEAR);
         } else {
           return y;
         }
       } else {
-        issues.addIssue(Issue.UNPARSABLE_YEAR);
+        issues.add(Issue.UNPARSABLE_YEAR);
       }
     }
     return null;
@@ -88,12 +90,36 @@ public class InterpreterUtils {
           if (defaultScope != null) {
             id.setScope(defaultScope);
           } else {
-            issues.addIssue(Issue.IDENTIFIER_WITHOUT_SCOPE);
+            issues.add(Issue.IDENTIFIER_WITHOUT_SCOPE);
           }
         }
       }
       return ids;
     }
     return Collections.emptyList();
+  }
+
+  public static String normGeoTime(String gt, IssueContainer issues){
+    if (gt != null) {
+      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
+      if (pr.isPresent()) {
+        return pr.get().getName();
+      } else {
+        issues.add(Issue.GEOTIME_INVALID);
+      }
+      return StringUtils.trimToNull(gt.replaceAll("_", " "));
+    }
+    return null;
+  }
+
+  /**
+   * Looks for unlikely vernacular names:
+   *  - very long strings
+   *  - includes common delimiters
+   */
+  public static boolean unlikelyVernacular(String vname) {
+    return vname != null && (
+      vname.length() > 100 || vname.contains(",") || vname.contains(";") || vname.contains("|")
+    );
   }
 }

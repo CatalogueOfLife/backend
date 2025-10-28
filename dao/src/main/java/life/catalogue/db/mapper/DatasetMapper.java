@@ -3,10 +3,13 @@ package life.catalogue.db.mapper;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.TaxGroup;
+import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.CRUD;
 import life.catalogue.db.GlobalPageable;
 
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,12 +21,22 @@ import org.apache.ibatis.cursor.Cursor;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 
+import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The dataset mappers create method expects the key to be provided.
  * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.
  */
 public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Dataset>, DatasetAgentMapper {
+  Logger LOG = LoggerFactory.getLogger(DatasetMapper.class);
+
   int MAGIC_ADMIN_USER_KEY = -42;
+
+  DatasetSimple getSimple(@Param("key") int key);
+
+  Dataset getByDoi(@Param("doi") DOI doi);
 
   void deletePhysically(@Param("key") int key);
 
@@ -36,7 +49,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   /**
    * List all keys equal or above the given minimum.
-   * Includes deleted and private datasets.
+   * Includes deleted, private and temporary datasets!
    */
   List<Integer> keysAbove(@Param("min") int minID, @Nullable @Param("olderThan") LocalDateTime olderThan);
 
@@ -48,6 +61,22 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   void updateSettings(@Param("key") int key, @Param("settings") DatasetSettings settings, @Param("userKey") int userKey);
 
+  /**
+   * Updates the taxonomic group scope of a given dataset.
+   * It adds missing parental groups to the set before storing it with the dataset.
+   */
+  default void updateTaxonomicGroupScope(int key, Set<TaxGroup> groups) {
+    Set<TaxGroup> allGroups = EnumSet.noneOf(TaxGroup.class);
+    // expand group to include all parents
+    for (TaxGroup g : groups) {
+      allGroups.add(g);
+      allGroups.addAll(g.classification());
+    }
+    LOG.debug("Store {} taxon groups for dataset {} ", allGroups.size(), key);
+    _updateTaxonomicGroupScope(key, allGroups);
+  }
+
+  void _updateTaxonomicGroupScope(@Param("key") int key, @Param("groups") Set<TaxGroup> groups);
 
   IntSet getReviewer(@Param("key") int key);
 
@@ -141,56 +170,32 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   List<Integer> listReleaseKeys(@Param("projectKey") int projectKey);
 
   /**
+   * List all dataset keys of all project which are not deleted.
+   * This includes both private and public datasets.
+   */
+  List<Integer> listProjectKeys();
+
+  /**
    * List all releases of a project, including deleted and private ones.
+   * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
   List<Dataset> listReleases(@Param("projectKey") int projectKey);
 
   /**
-   * Same as above, but returning just a minimal object which is much quicker to load
+   * Same as above, but returning just a minimal object which is much quicker to load.
+   * Ordered chronologically starting with the first release. Sorted by attempt, key
    */
   List<DatasetRelease> listReleasesQuick(@Param("projectKey") int projectKey);
 
-  class DatasetRelease {
-    private int key;
-    private int projectKey;
-    private int attempt;
-    private DatasetOrigin origin;
-
-    public int getKey() {
-      return key;
-    }
-
-    public void setKey(int key) {
-      this.key = key;
-    }
-
-    public int getProjectKey() {
-      return projectKey;
-    }
-
-    public void setProjectKey(int projectKey) {
-      this.projectKey = projectKey;
-    }
-
-    public int getAttempt() {
-      return attempt;
-    }
-
-    public void setAttempt(int attempt) {
-      this.attempt = attempt;
-    }
-
-    public DatasetOrigin getOrigin() {
-      return origin;
-    }
-
-    public void setOrigin(DatasetOrigin origin) {
-      this.origin = origin;
-    }
-  }
+  /**
+   * Retrieves a release quickly with minimal information.
+   * @return the release or null if no release exists for the given dataset key or the dataset is not a release dataset.
+   */
+  DatasetRelease getRelease(@Param("key") int key);
 
   /**
    * Looks for potential duplicates of a dataset by aggregating them on title and description.
+   * This method avoids temporary datasets used e.g. for validation.
    *
    * @param minCount minimum number of datasets to be considered a duplicate.
    * @param gbifPublisherKey optional publisher filter
@@ -203,10 +208,11 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param origin optional dataset origin filter, combined with OR if multiple
    * @return list of all dataset keys which have not been deleted
    */
-  default List<Integer> keys(@Param("origin") DatasetOrigin... origin) {
+  default List<Integer> keys(@Param("inclDeleted") boolean inclDeleted, @Param("origin") DatasetOrigin... origin) {
     DatasetSearchRequest req = new DatasetSearchRequest();
     if (origin != null) {
       req.setOrigin(List.of(origin));
+      req.setInclDeleted(inclDeleted);
     }
     return searchKeys(req, MAGIC_ADMIN_USER_KEY);
   }
@@ -233,6 +239,20 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    * @param defaultFrequency number in days to between import attempts when no explicit frequency is configured
    */
   List<DatasetAttempt> listToBeImported(@Param("defaultFrequency") int defaultFrequency, @Param("limit") int limit);
+
+  /**
+   * Retrieves the public release preceeding the given release key, which has the same origin
+   * @param key
+   * @return
+   */
+  Dataset getPreviousRelease(@Param("key") Integer key);
+
+  /**
+   * Retrieves the public release following the given release key, which has the same origin
+   * @param key
+   * @return
+   */
+  Dataset getNextRelease(@Param("key") Integer key);
 
   class DatasetAttempt {
     private int key;
@@ -295,7 +315,7 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   boolean isPrivate(@Param("key") int key);
 
   /**
-   * Looks up the dataset key of the latest release for a given project
+   * Looks up the dataset key of the latest release for a given project, ignoring temporary datasets
    * @param key the project key
    * @param publicOnly if true only include public releases
    * @param origin the kind of release, can be null to allow any

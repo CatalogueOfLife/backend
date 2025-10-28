@@ -12,6 +12,8 @@ import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -46,6 +48,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
   private Boolean extinctFilter = null; // true only syncs extinct, false only extant, null all
   private boolean copyAccordingTo = false;
   private boolean removeOrdinals = false;
+  private boolean createImplicitNames = true;
   // other
   private String note;
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
@@ -93,6 +96,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.nameTypes = other.nameTypes == null ? null : EnumSet.copyOf(other.nameTypes);
     this.nameStatusExclusion = other.nameStatusExclusion == null ? null : EnumSet.copyOf(other.nameStatusExclusion);
     this.extinctFilter = other.extinctFilter;
+    this.createImplicitNames = other.createImplicitNames;
     this.note = other.note;
     this.size = other.size;
   }
@@ -146,7 +150,17 @@ public class Sector extends DatasetScopedEntity<Integer> {
   public void setNote(String note) {
     this.note = note;
   }
-  
+
+  public void addNote(String note) {
+    if (!StringUtils.isBlank(note)) {
+      if (this.note == null) {
+        this.note = note.trim();
+      } else {
+        this.note = this.note + "; " + note.trim();
+      }
+    }
+  }
+
   public Mode getMode() {
     return mode;
   }
@@ -257,6 +271,14 @@ public class Sector extends DatasetScopedEntity<Integer> {
     this.extinctFilter = extinctFilter;
   }
 
+  public boolean isCreateImplicitNames() {
+    return createImplicitNames;
+  }
+
+  public void setCreateImplicitNames(boolean createImplicitNames) {
+    this.createImplicitNames = createImplicitNames;
+  }
+
   public boolean isCopyAccordingTo() {
     return copyAccordingTo;
   }
@@ -293,6 +315,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
            && Objects.equals(syncAttempt, sector.syncAttempt)
            && Objects.equals(datasetAttempt, sector.datasetAttempt)
            && code == sector.code
+           && createImplicitNames == sector.createImplicitNames
            && Objects.equals(ranks, sector.ranks)
            && Objects.equals(entities, sector.entities)
            && Objects.equals(nameTypes, sector.nameTypes)
@@ -303,7 +326,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
+    return Objects.hash(super.hashCode(), target, subjectDatasetKey, subject, originalSubjectId, placeholderRank, mode, priority, syncAttempt, datasetAttempt, code, createImplicitNames, ranks, entities, nameTypes, nameStatusExclusion, extinctFilter, note);
   }
 
   @Override
@@ -343,6 +366,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
     private Set<NomStatus> nameStatusExclusion;
     private boolean copyAccordingTo;
     private boolean removeOrdinals;
+    private boolean createImplicitNames;
     private String note;
     private Integer size;
 
@@ -459,6 +483,11 @@ public class Sector extends DatasetScopedEntity<Integer> {
       return this;
     }
 
+    public Builder createImplicitNames(boolean createImplicitNames) {
+      this.createImplicitNames = createImplicitNames;
+      return this;
+    }
+
     public Builder note(String note) {
       this.note = note;
       return this;
@@ -493,6 +522,7 @@ public class Sector extends DatasetScopedEntity<Integer> {
       sector.setNameStatusExclusion(nameStatusExclusion);
       sector.setCopyAccordingTo(copyAccordingTo);
       sector.setRemoveOrdinals(removeOrdinals);
+      sector.setCreateImplicitNames(createImplicitNames);
       sector.setNote(note);
       sector.size = this.size;
       return sector;

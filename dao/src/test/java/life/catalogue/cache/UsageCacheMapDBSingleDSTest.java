@@ -6,13 +6,13 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.*;
-
-import java.io.File;
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import org.apache.commons.io.FileUtils;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 
 public class UsageCacheMapDBSingleDSTest {

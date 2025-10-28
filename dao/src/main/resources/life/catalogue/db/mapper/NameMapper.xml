@@ -35,6 +35,7 @@
     ${alias}.dataset_key AS ${prefix}dataset_key,
     ${alias}.sector_key AS ${prefix}sector_key,
     ${alias}.verbatim_key AS ${prefix}verbatim_key,
+    ${alias}.verbatim_source_key AS ${prefix}verbatim_source_key,
     ${alias}.published_in_id AS ${prefix}published_in_id,
     ${alias}.published_in_page AS ${prefix}published_in_page,
     ${alias}.published_in_page_link AS ${prefix}published_in_page_link,
@@ -76,7 +77,6 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     id,
     <include refid="COLS_COPY">
       <property name="alias" value=""/>
@@ -84,8 +84,10 @@
   </sql>
 
   <sql id="COLS_COPY">
+    ${alias}sector_key,
     ${alias}identifier,
     ${alias}verbatim_key,
+    ${alias}verbatim_source_key,
     ${alias}scientific_name,
     ${alias}scientific_name_normalized,
     ${alias}authorship,
@@ -128,10 +130,11 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{id},
+    #{sectorKey},
     #{identifier, typeHandler=life.catalogue.db.type2.IdentifierArrayTypeHandler},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{scientificName},
     #{scientificNameNormalized},
     #{authorship},
@@ -299,8 +302,8 @@
   </insert>
 
   <insert id="copyDataset" parameterType="map">
-    INSERT INTO name (dataset_key,sector_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
-    SELECT #{newDatasetKey},n.sector_key,coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
+    INSERT INTO name (dataset_key,id,<include refid="COLS_COPY"><property name="alias" value=""/></include>, created, modified)
+    SELECT #{newDatasetKey},coalesce(<if test="mapIds">m.id2,</if>n.id),<include refid="COLS_COPY"><property name="alias" value="n."/></include>, n.created, n.modified
     FROM name n
     <if test="mapIds">
       LEFT JOIN idmap_name_${datasetKey} m ON m.id=n.id
@@ -338,6 +341,12 @@
       <foreach item="id" collection="nameIds" open="(" separator="," close=")">#{id}</foreach>
     </if>
   </delete>
+
+  <update id="updateVerbatimSourceKey" parameterType="map">
+    UPDATE name
+    SET verbatim_source_key = #{vsKey}
+    WHERE dataset_key = #{key.datasetKey} AND id = #{key.id}
+  </update>
 
   <delete id="deleteOrphans" parameterType="map">
     DELETE FROM name n
@@ -383,6 +392,14 @@
     <include refid="life.catalogue.db.Common.limit"/>
   </select>
 
+  <select id="find" parameterType="map" resultMap="simpleResultMap">
+    SELECT id, scientific_name, authorship, rank, code
+    FROM name
+    WHERE dataset_key=#{datasetKey}
+      AND lower(scientific_name) = lower(#{name})
+    <if test="rank != null">AND rank = #{rank}::RANK</if>
+  </select>
+
   <select id="processSector" parameterType="map" resultMap="nameResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -395,7 +412,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE name SET sector_key = NULL
+    UPDATE name SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key = #{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

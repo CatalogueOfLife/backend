@@ -33,7 +33,7 @@ import com.google.common.annotations.VisibleForTesting;
 public abstract class BaseDiffService<K> {
   private static final Logger LOG = LoggerFactory.getLogger(BaseDiffService.class);
 
-  private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.\\.(\\d+)$");
+  private final static Pattern ATTEMPTS = Pattern.compile("^(\\d+)\\.{2,3}(\\d+)$");
   protected final SqlSessionFactory factory;
   protected final FileMetricsDao<K> dao;
   private final int timeoutInSeconds;

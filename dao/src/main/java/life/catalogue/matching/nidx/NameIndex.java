@@ -4,11 +4,14 @@ import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.IndexName;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.model.NameMatch;
+import life.catalogue.api.model.SimpleName;
 import life.catalogue.common.Managed;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+
+import life.catalogue.parser.NameParser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +36,22 @@ public interface NameIndex extends Managed, AutoCloseable {
   NameMatch match(Name name, boolean allowInserts, boolean verbose);
 
   /**
+   *
+   * @param sn
+   * @param allowInserts
+   * @param verbose
+   * @return
+   */
+  default NameMatch match(SimpleName sn, boolean allowInserts, boolean verbose) {
+    var opt = NameParser.PARSER.parse(sn);
+      if (opt.isPresent()) {
+      var pnu = opt.get();
+      return match(pnu.getName(), allowInserts, verbose);
+    }
+    return NameMatch.noMatch();
+  }
+
+  /**
    * Lookup IndexName by its key
    */
   IndexName get(Integer key);
@@ -51,6 +70,14 @@ public interface NameIndex extends Managed, AutoCloseable {
   Collection<IndexName> byCanonical(Integer key);
 
   Iterable<IndexName> all();
+
+  /**
+   * Prints all names in the index to stdout for debugging purposes
+   */
+  default void printIndex() {
+    System.out.println("Names Index:");
+    all().forEach(System.out::println);
+  }
 
   /**
    * @return the number of names in the index

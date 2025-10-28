@@ -2,6 +2,7 @@ package life.catalogue.api.util;
 
 import life.catalogue.api.exception.NotFoundException;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -30,6 +31,19 @@ public class ObjectUtils {
     if (items != null) {
       for (T i : items)
         if (i != null)
+          return i;
+    }
+    return null;
+  }
+
+  /**
+   * Returns the first of the given lists that is not null and not empty. Otherwise returns null.
+   */
+  @SafeVarargs
+  public static <T> List<T> firstNonEmptyList(List<T>... items) {
+    if (items != null) {
+      for (List<T> i : items)
+        if (i != null && !i.isEmpty())
           return i;
     }
     return null;

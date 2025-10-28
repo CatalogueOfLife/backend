@@ -50,11 +50,32 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   /**
+   * Retrieves all parents and the original taxon in a single list, starting with the highest taxon and the requested taxon last
+   * @param key
+   * @return null in case the given key does not exist, otherwise the entire classification
+   */
+  default LinkedList<SimpleNameCached> getClassificationSN(DSID<String> key) {
+    var classification = new LinkedList<SimpleNameCached>();
+    var u = getSimpleCached(key);
+    if (u == null) return null;
+
+    classification.addLast(u);
+
+    var pid = DSID.<String>root(key.getDatasetKey());
+    while (u.getParentId() != null) {
+      u = getSimpleCached(pid.id(u.getParentId()));
+      classification.addFirst(u);
+    }
+    return classification;
+  }
+
+  /**
    * SimpleName.parent=parent.id
    * @param key
    */
   SimpleName getSimple(@Param("key") DSID<String> key);
 
+  SimpleNameVerbatim getSimpleVerbatim(@Param("key") DSID<String> key);
   /**
    * SimpleName.parent=parent.id
    * @param key
@@ -66,7 +87,7 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * SimpleName.parent=parent.id
    * @param key of the child to fetch the parent from
    */
-  SimpleName getSimpleParent(@Param("key") DSID<String> key);
+  SimpleNameVerbatim getSimpleParent(@Param("key") DSID<String> key);
 
   /**
    * Lists all accepted, direct children of a taxon
@@ -133,6 +154,8 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                            @Param("page") Page page);
 
   List<NameUsageBase> list(@Param("datasetKey") int datasetKey, @Param("page") Page page);
+
+  List<SimpleNameCached> listSN(@Param("datasetKey") int datasetKey, @Param("page") Page page);
 
   /**
    * Returns related name usages based on the same name as matched against the names index.
@@ -253,7 +276,18 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("userKey") int userKey);
 
   /**
-   * Sets a taxon as provisional
+   * Updates the primary key of the usage. Make sure no foreign keys point to the old id any longer.
+   * Use updateParentIds to update all existing usages with a parentID that points to the old id before.
+   * @param key
+   * @param newID
+   * @param userKey
+   */
+  void updateId(@Param("key") DSID<String> key,
+                @Param("newID") @Nullable String newID,
+                @Param("userKey") int userKey);
+
+  /**
+   * Updates a taxon status
    * @param key
    * @param status
    * @param userKey
@@ -271,6 +305,13 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                       @Param("parentId") String parentId,
                       @Param("status") TaxonomicStatus status,
                       @Param("userKey") int userKey);
+
+  /**
+   * Updates only the verbatimSourceKey of the usage
+   * @param key
+   * @param verbatimSourceKey
+   */
+  void updateVerbatimSourceKey(@Param("key") DSID<String> key, @Param("vsKey") Integer verbatimSourceKey);
 
   /**
    * Creates a new temp table for usage & name ids in the current transaction.
@@ -345,11 +386,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    *
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params,
                                     @Param("depthFirst") boolean depthFirst,
-                                    @Param("orderByName") boolean orderByName);
+                                    @Param("ordered") boolean ordered);
 
   default Cursor<NameUsageBase> processTree(@Param("param") TreeTraversalParameter params) {
     return processTree(params, false, false);
@@ -371,11 +412,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by their ordinal and name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params,
                                        @Param("depthFirst") boolean depthFirst,
-                                       @Param("orderByName") boolean orderByName);
+                                       @Param("ordered") boolean ordered);
 
   default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
@@ -394,11 +435,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
    * @param params various tree traversal request parameters
    * @param params various tree traversal request parameters:
    * @param depthFirst if true uses a depth first traversal which is more expensive than breadth first!
-   * @param orderByName if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
+   * @param ordered if true the children of a depth first traversal are ordered by name with all synonyms coming first. Only applies to depthFirst traversals!
    */
   Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params,
                                                  @Param("depthFirst") boolean depthFirst,
-                                                 @Param("orderByName") boolean orderByName);
+                                                 @Param("ordered") boolean ordered);
 
   default Cursor<LinneanNameUsage> processTreeLinneanUsage(@Param("param") TreeTraversalParameter params) {
     return processTreeLinneanUsage(params, false, false);
@@ -415,10 +456,19 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Iterate over all usages ordered by their canonical names index id.
    * The parent property is filled with the parent name, not its ID.
+   * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
    */
-  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey);
+  Cursor<SimpleNameWithNidx> processNxIds(@Param("datasetKey") int datasetKey, @Param("minLength") int minLength);
 
-  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms);
+  /**
+   * Iterates over all usage ids for a given dataset, optionally filtered by a minimum string length,
+   * e.g. to only list temporary UUIDs
+   * @param datasetKey
+   * @param includeSynonyms
+   * @param minLength minimum length of the usage identifier. Usages with shorter ids will be excluded.
+   * @return
+   */
+  Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);
 
   /**
    * Lists all usage ids of taxa which have synonyms as their parent.
@@ -452,5 +502,4 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   }
 
   void _addIdentifier(@Param("key") DSID<String> key, @Param("ids") List<Identifier> identifiers);
-
 }

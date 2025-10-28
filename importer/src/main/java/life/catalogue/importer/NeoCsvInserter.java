@@ -19,12 +19,11 @@ import life.catalogue.metadata.MetadataFactory;
 import org.gbif.dwc.terms.Term;
 
 import java.nio.file.Path;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.*;
+
+import org.gbif.dwc.terms.UnknownTerm;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -46,12 +45,12 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 public abstract class NeoCsvInserter implements NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCsvInserter.class);
   protected static final String INTERRUPT_MESSAGE = "NeoInserter interrupted, exit early with incomplete import";
-
   protected final DatasetSettings settings;
   protected final NeoDb store;
   protected final Path folder;
   protected final CsvReader reader;
   protected final ReferenceFactory refFactory;
+  private final Set<Term> interpretedClassTerms = new HashSet<>();
   private int vcounter;
   private Map<Term, AtomicInteger> badTaxonFks = DefaultMap.createCounter();
 
@@ -132,10 +131,39 @@ public abstract class NeoCsvInserter implements NeoInserter {
     LOG.info("Insert of {} verbatim records and {} nodes completed", vcounter, store.size());
   }
 
+  private void processVerbatimOnly(final CsvReader reader, final Term classTerm) {
+    runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
+    final AtomicInteger counter = new AtomicInteger(0);
+    reader.stream(classTerm).forEach(rec -> {
+      runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
+      rec.add(Issue.NOT_INTERPRETED);
+      store.put(rec);
+      counter.incrementAndGet();
+    });
+    interpretedClassTerms.add(classTerm);
+    LOG.info("Inserted {} verbatim records of {}", counter.get(), classTerm.prefixedName());
+    vcounter += counter.get();
+  }
+
   private void processVerbatim(final CsvReader reader, final Term classTerm, BiPredicate<VerbatimRecord, Transaction> proc) {
     runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     final AtomicInteger counter = new AtomicInteger(0);
     final AtomicInteger success = new AtomicInteger(0);
+    reader.stream(classTerm).forEach(rec -> {
+      runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
+      store.put(rec);
+      if (proc.test(rec)) {
+        success.incrementAndGet();
+      } else {
+        rec.add(Issue.NOT_INTERPRETED);
+      }
+      // processing might already have flagged issues, load and merge them
+      VerbatimRecord old = store.getVerbatim(rec.getId());
+      rec.add(old.getIssues());
+      store.put(rec);
+      counter.incrementAndGet();
+    });
+    interpretedClassTerms.add(classTerm);
     try (var tx = store.beginTx()) {
       reader.stream(classTerm).forEach(rec -> {
         runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
@@ -178,6 +206,18 @@ public abstract class NeoCsvInserter implements NeoInserter {
                                                                 final BiConsumer<NeoUsage, T> add
   ) {
     insertTaxonEntities(reader, classTerm, interpret, v -> v.getRaw(taxonIdTerm), add);
+  }
+
+  protected void insertVerbatimEntities(CsvReader reader, final Term... classTerms) {
+    if (classTerms != null) {
+      for (Term classTerm : classTerms) {
+        if (interpretedClassTerms.contains(classTerm)) {
+          LOG.info("{} has already been inserted", classTerm.prefixedName());
+          continue;
+        }
+        processVerbatimOnly(reader, classTerm);
+      }
+    }
   }
 
   protected <T extends VerbatimEntity> void insertTaxonEntities(final CsvReader reader, final Term classTerm,

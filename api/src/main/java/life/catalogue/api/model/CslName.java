@@ -67,7 +67,17 @@ public class CslName {
   public void setNonDroppingParticle(String nonDroppingParticle) {
     this.nonDroppingParticle = nonDroppingParticle;
   }
-  
+
+  public void addNonDroppingParticle(String nonDroppingParticle) {
+    if (nonDroppingParticle != null && !nonDroppingParticle.trim().isEmpty()) {
+      if (this.nonDroppingParticle == null) {
+        this.nonDroppingParticle = nonDroppingParticle;
+      } else {
+        this.nonDroppingParticle = this.nonDroppingParticle + " " + nonDroppingParticle;
+      }
+    }
+  }
+
   public String getSuffix() {
     return suffix;
   }

@@ -1,11 +1,16 @@
 package life.catalogue.matching.index;
 
-import static life.catalogue.matching.util.IndexConstants.DATASETS_JSON;
-import static life.catalogue.matching.util.IndexConstants.*;
+import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxonomicStatus;
+import life.catalogue.matching.Main;
+import life.catalogue.matching.model.*;
+import life.catalogue.matching.util.IOUtil;
+import life.catalogue.matching.util.IUCNUtils;
+import life.catalogue.matching.util.LuceneUtils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
+import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -21,29 +26,28 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import life.catalogue.api.vocab.MatchType;
-import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.matching.model.*;
-import life.catalogue.matching.util.IUCNUtils;
-import life.catalogue.matching.util.LuceneUtils;
-import life.catalogue.matching.Main;
-import lombok.extern.slf4j.Slf4j;
+
+import javax.annotation.PostConstruct;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.MMapDirectory;
-
 import org.apache.lucene.util.BytesRef;
-
-import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.extern.slf4j.Slf4j;
+
+import static life.catalogue.matching.util.IndexConstants.*;
 
 /**
  * Represents an index of a dataset.
@@ -56,6 +60,11 @@ import javax.annotation.PostConstruct;
 @Service
 public class DatasetIndex {
 
+  public static final String CLB_KEY = "clbKey";
+  public static final String DATASET_TITLE = "datasetTitle";
+  public static final String DATASET_KEY = "datasetKey";
+  public static final String TAXON_COUNT = "taxonCount";
+  public static final String MATCHES_TO_MAIN_INDEX = "matchesToMainIndex";
   private IndexSearcher searcher;
   private Map<Dataset, IndexSearcher> identifierSearchers = new HashMap<>();
   private Map<Dataset, IndexSearcher> ancillarySearchers = new HashMap<>();
@@ -69,6 +78,9 @@ public class DatasetIndex {
 
   @Value("${working.dir:/tmp/}")
   String workingDir;
+
+  @Autowired
+  IOUtil ioUtil;
 
   private boolean isInitialised = false;
 
@@ -93,20 +105,26 @@ public class DatasetIndex {
     final Map<Integer, Dataset> prefixMapping = loadPrefixMapping();
 
     if (new File(mainIndexPath).exists()) {
-      log.info("Loading lucene index from {}", mainIndexPath);
+      log.info("Loading lucene index from {} ....", mainIndexPath);
       try {
-        initWithDir(new MMapDirectory(Path.of(mainIndexPath)));
+        MMapDirectory mMapDirectory = new MMapDirectory(Path.of(mainIndexPath));
+        mMapDirectory.setPreload(true);
+        initWithDir(mMapDirectory);
       } catch (IOException e) {
         log.warn("Cannot open lucene index. Index not available", e);
       }
+      log.info("Loaded lucene index from {}", mainIndexPath);
 
       // load identifier indexes
+      log.debug("Loading identifier indexes from {}", IDENTIFIERS_DIR);
       this.identifierSearchers = initialiseAdditionalIndexes(IDENTIFIERS_DIR, prefixMapping);
 
       // load ancillary indexes
+      log.debug("Loading ancillary indexes from {}", IDENTIFIERS_DIR);
       this.ancillarySearchers = initialiseAdditionalIndexes(ANCILLARY_DIR, prefixMapping);
 
       this.isInitialised = true;
+      log.debug("All indexes initialised");
     } else {
       log.warn("Main lucene index not found at {}", mainIndexPath);
     }
@@ -142,7 +160,7 @@ public class DatasetIndex {
                 Dataset.class);
 
               // apply prefix mapping
-              Dataset prefixDatasetConfig = prefixMapping.get(dataset.getKey());
+              Dataset prefixDatasetConfig = prefixMapping.get(dataset.getClbKey());
               if (prefixDatasetConfig != null) {
                 dataset.setPrefix(prefixDatasetConfig.getPrefix());
                 dataset.setPrefixMapping(prefixDatasetConfig.getPrefixMapping());
@@ -179,8 +197,8 @@ public class DatasetIndex {
       Dataset[] datasets = mapper.readValue(inputStream, Dataset[].class);
 
       return Arrays.stream(datasets)
-        .peek(dataset -> log.debug("Loaded dataset {} [{}]", dataset.getTitle(), dataset.getKey()))
-        .collect(Collectors.toMap(Dataset::getKey, dataset -> dataset));
+        .peek(dataset -> log.debug("Loaded dataset {} [{}]", dataset.getTitle(), dataset.getClbKey()))
+        .collect(Collectors.toMap(Dataset::getClbKey, dataset -> dataset));
     } catch (IOException e) {
       log.warn("Cannot read dataset prefix mapping file", e);
       return Map.of();
@@ -238,13 +256,13 @@ public class DatasetIndex {
 
       for (Dataset dataset : identifierSearchers.keySet()) {
         metadata.getIdentifierIndexes().add(
-          getIndexMetadata(indexPath + "/" + IDENTIFIERS_DIR + "/" + dataset.getKey(),
+          getIndexMetadata(indexPath + "/" + IDENTIFIERS_DIR + "/" + dataset.getClbKey(),
             identifierSearchers.get(dataset), false));
       }
 
       for (Dataset dataset : ancillarySearchers.keySet()) {
         metadata.getAncillaryIndexes().add(
-          getIndexMetadata(indexPath + "/" + ANCILLARY_DIR + "/" + dataset.getKey(),
+          getIndexMetadata(indexPath + "/" + ANCILLARY_DIR + "/" + dataset.getClbKey(),
             ancillarySearchers.get(dataset), false));
       }
     }
@@ -305,19 +323,19 @@ public class DatasetIndex {
     }
 
     Map<String, Object> datasetInfo = getDatasetInfo(indexPath);
-    metadata.setDatasetTitle((String) datasetInfo.getOrDefault("datasetTitle", null));
-    metadata.setDatasetKey((String) datasetInfo.getOrDefault("datasetKey", null));
-    metadata.setGbifKey((String) datasetInfo.getOrDefault("gbifKey", null));
+    metadata.setDatasetTitle((String) datasetInfo.getOrDefault(DATASET_TITLE, null));
+    metadata.setClbDatasetKey((String) datasetInfo.getOrDefault(CLB_KEY, null));
+    metadata.setDatasetKey((String) datasetInfo.getOrDefault(DATASET_KEY, null));
 
     // number of taxa
-    metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault("taxonCount", 0)));
+    metadata.setNameUsageCount(Long.parseLong((String) datasetInfo.getOrDefault(TAXON_COUNT, 0)));
     if (!isMain) {
-      metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault("matchesToMainIndex", 0)));
+      metadata.setMatchesToMain(Long.parseLong((String) datasetInfo.getOrDefault(MATCHES_TO_MAIN_INDEX, 0)));
     }
 
     try {
       Map<String, Long> rankCounts = new LinkedHashMap<>();
-      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a).ordinal() - Rank.valueOf(b).ordinal()
+      distinctValuesForField(FIELD_RANK, indexPath).stream().sorted( (a, b) -> Rank.valueOf(a.toUpperCase()).ordinal() - Rank.valueOf(b.toUpperCase()).ordinal()
       ).forEach(rank -> {
         try {
           rankCounts.put(rank, getCountForRank(searcher, rank));
@@ -333,45 +351,37 @@ public class DatasetIndex {
   }
 
   /**
-   * Reads the git information from the git.json file in the working directory.
+   * Reads Git information from git.json in the working directory.
    * @return Optional of BuildInfo
    */
   private Optional<BuildInfo> getGitInfo() {
-    ObjectMapper mapper = new ObjectMapper();
-    final String filePath = workingDir + GIT_JSON;
+    File file = new File(workingDir + GIT_JSON);
+    if (!file.exists()) {
+      log.warn("Git info not found at {}", file.getPath());
+      return Optional.empty();
+    }
+
     try {
-      if (new File(filePath).exists()) {
-        // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(filePath));
+      JsonNode root = new ObjectMapper().readTree(file);
+      JsonNode commit = root.path("commit");
+      JsonNode author = commit.path("author");
 
-        // Navigate to the author node
-        String sha = rootNode.path("sha").asText();
-        String url = rootNode.path("url").asText();
-        String html_url = rootNode.path("html_url").asText();
-        String message = rootNode.path("commit").path("message").asText();
-        JsonNode authorNode = rootNode.path("commit").path("author");
+      BuildInfo info = BuildInfo.builder()
+        .sha(root.path("sha").asText())
+        .url(root.path("url").asText())
+        .html_url(root.path("html_url").asText())
+        .message(commit.path("message").asText())
+        .name(author.path("name").asText())
+        .email(author.path("email").asText())
+        .date(author.path("date").asText())
+        .build();
 
-        // Retrieve author information
-        String name = authorNode.path("name").asText();
-        String email = authorNode.path("email").asText();
-        String date = authorNode.path("date").asText();
+      return Optional.of(info);
 
-        return Optional.of(BuildInfo.builder()
-          .sha(sha)
-          .url(url)
-          .html_url(html_url)
-          .message(message)
-          .name(name)
-          .email(email)
-          .date(date)
-          .build());
-      } else {
-        log.warn("Git info not found at {}", filePath);
-      }
     } catch (IOException e) {
       log.error("Cannot read index git information", e);
-    }
     return Optional.empty();
+  }
   }
 
   /**
@@ -380,34 +390,28 @@ public class DatasetIndex {
    * @return Map of dataset information
    */
   public Map<String, Object> getDatasetInfo(String indexPath) {
-    ObjectMapper mapper = new ObjectMapper();
-    String filePath = indexPath + "/" + METADATA_JSON;
+    File file = new File(indexPath, METADATA_JSON);
+    if (!file.exists()) {
+      log.warn("Dataset info not found at {}", file.getPath());
+      return Map.of();
+    }
 
     try {
-      if (new File(filePath).exists()){
-        log.debug("Loading dataset info from {}", filePath);
-        // Read JSON file and parse to JsonNode
-        JsonNode rootNode = mapper.readTree(new File(filePath));
-        // Navigate to the author node
-        String datasetKey = rootNode.path("key").asText();
-        String datasetTitle = rootNode.path("title").asText();
-        String gbifKey = rootNode.path("gbifKey").asText();
-        String taxonCount = rootNode.path("taxonCount").asText();
-        String matchesToMainIndex = rootNode.path("matchesToMainIndex").asText();
+      log.debug("Loading dataset info from {}", file.getPath());
+      JsonNode root = new ObjectMapper().readTree(file);
+
         return Map.of(
-          "datasetKey", datasetKey,
-          "datasetTitle", datasetTitle,
-          "gbifKey", gbifKey,
-          "taxonCount", taxonCount,
-          "matchesToMainIndex", matchesToMainIndex
+        CLB_KEY, root.path(CLB_KEY).asText(),
+        DATASET_TITLE, root.path("title").asText(),
+        DATASET_KEY, root.path(DATASET_KEY).asText(),
+        TAXON_COUNT, root.path(TAXON_COUNT).asText(),
+        MATCHES_TO_MAIN_INDEX, root.path(MATCHES_TO_MAIN_INDEX).asText()
         );
-      } else {
-        log.warn("Dataset info not found at {}", filePath);
-      }
+
     } catch (IOException e) {
       log.error("Cannot read index dataset information", e);
-    }
     return Map.of();
+  }
   }
 
   private long getCountForRank(IndexSearcher searcher, String rank) throws IOException {
@@ -423,6 +427,7 @@ public class DatasetIndex {
   public static DatasetIndex newDatasetIndex(Directory mainIndexDir)  {
     DatasetIndex datasetIndex = new DatasetIndex();
     datasetIndex.initWithDir(mainIndexDir);
+    datasetIndex.ioUtil = new IOUtil();
     return datasetIndex;
   }
 
@@ -470,7 +475,6 @@ public class DatasetIndex {
       return NO_MATCH;
     }
   }
-
 
   /**
    * Matches an external ID. Intended for debug purposes only, to quickly
@@ -584,7 +588,7 @@ public class DatasetIndex {
         for (Dataset dataset : searchers.keySet()) {
 
           // use the prefix mapping
-          if (dataset.getKey().toString().equals(datasetID) || (dataset.getGbifKey() != null && dataset.getGbifKey().equals(datasetID))) {
+          if (dataset.getClbKey().toString().equals(datasetID) || (dataset.getDatasetKey() != null && dataset.getDatasetKey().equals(datasetID))) {
 
             // if configured, remove the prefix
             if (dataset.getRemovePrefixForMatching()){
@@ -615,10 +619,11 @@ public class DatasetIndex {
   private static ExternalID toExternalID(Document doc, Dataset dataset) {
     return ExternalID.builder()
       .id(doc.get(FIELD_ID))
-      .datasetKey(dataset.getKey().toString())
-      .gbifKey(dataset.getGbifKey())
+      .clbDatasetKey(dataset.getClbKey().toString())
+      .datasetKey(dataset.getDatasetKey())
       .datasetTitle(dataset.getTitle())
       .scientificName(doc.get(FIELD_SCIENTIFIC_NAME))
+      .canonicalName(doc.get(FIELD_CANONICAL_NAME))
       .rank(doc.get(FIELD_RANK))
       .parentID(doc.get(FIELD_PARENT_ID))
       .status(doc.get(FIELD_STATUS))
@@ -628,7 +633,7 @@ public class DatasetIndex {
 
   /**
    * Matches an external ID
-   * @param key the external ID to match
+   * @param suppliedKey the external ID to match
    * @param notFoundIssue the issue to add if the identifier is not found
    * @param ignoredIssue the issue to add if the identifier is ignored
    * @return NameUsageMatch
@@ -652,7 +657,7 @@ public class DatasetIndex {
 
             // check for multiple matches - indicates duplicates in index
             if (identifierDocs.totalHits.value > 1) {
-              log.warn("Multiple matches found for identifier {} in dataset {}", key, dataset.getKey());
+              log.warn("Multiple matches found for identifier {} in dataset {}", key, dataset.getClbKey());
               return noMatch(ignoredIssue, "Multiple matches found for the identifier");
             }
 
@@ -666,14 +671,15 @@ public class DatasetIndex {
               NameUsageMatch idMatch = fromDoc(getSearcher().storedFields().document(docs.scoreDocs[0].doc));
               idMatch.getDiagnostics().setConfidence(100);
               idMatch.getDiagnostics().setMatchType(MatchType.EXACT);
+              idMatch.getDiagnostics().setMatchedID(toExternalID(identifierDoc, dataset));
               return idMatch;
             } else {
               log.warn("Cannot find usage {} in main lucene index after " +
-                "finding it in identifier index for {}", key, dataset.getKey());
-              return noMatch(ignoredIssue, "Identifier recognised in {}, but not matching in main index" + dataset.getKey());
+                "finding it in identifier index for {}", key, dataset.getClbKey());
+              return noMatch(ignoredIssue, "Identifier recognised in {}, but not matching in main index" + dataset.getClbKey());
             }
           } else {
-            log.info("Identifier {} not found in dataset {}", key, dataset.getKey());
+            log.info("Identifier {} not found in dataset {}", key, dataset.getClbKey());
             return noMatch(notFoundIssue, "Identifier not found");
           }
         }
@@ -705,7 +711,7 @@ public class DatasetIndex {
     if (dataset.getRemovePrefixForMatching() != null && dataset.getRemovePrefixForMatching()){
       key = key.replace(dataset.getPrefix(), "");
     }
-    log.debug("Searching for identifier {} in dataset {}", key, dataset.getKey());
+    log.debug("Searching for identifier {} in dataset {}", key, dataset.getClbKey());
     return Optional.of(key);
   }
 
@@ -731,49 +737,6 @@ public class DatasetIndex {
   }
 
   /**
-   * Loads the higher classification of a taxon starting from the given parentID. The parentID is
-   * not included in the result.
-   * This might be the naive approach. Need to check performance vs MapDB or denormalise
-   * during index generation.
-   *
-   * @param parentID the parentID to start from
-   * @return List of RankedName
-   */
-  private List<NameUsageMatch.RankedName> loadHigherTaxa(String parentID) {
-
-    if (parentID == null) {
-      return new ArrayList<>();
-    }
-
-    List<NameUsageMatch.RankedName> higherTaxa = new ArrayList<>();
-    String currentParentID = parentID;
-    while (currentParentID != null) {
-      NameUsageMatch.RankedName cachedName = null; // higherTaxonomyCache.get(currentParentID);
-      if (cachedName != null) {
-        higherTaxa.add(0, cachedName);
-        currentParentID = cachedName.getParentID();
-      } else {
-        Optional<Document> docOpt = getByUsageKey(currentParentID);
-        if (docOpt.isPresent()) {
-          Document doc = docOpt.get();
-          NameUsageMatch.RankedName higherTaxon = new NameUsageMatch.RankedName();
-          higherTaxon.setKey(doc.get(FIELD_ID));
-          higherTaxon.setName(doc.get(FIELD_CANONICAL_NAME));
-          higherTaxon.setRank(Rank.valueOf(doc.get(FIELD_RANK)));
-          higherTaxon.setParentID(doc.get(FIELD_PARENT_ID));
-          higherTaxa.add(0, higherTaxon);
-          // get next parent
-          currentParentID = doc.get(FIELD_PARENT_ID);
-        } else {
-          currentParentID = null;
-        }
-      }
-    }
-
-    return higherTaxa;
-  }
-
-  /**
    * Converts a lucene document into a NameUsageMatch object.
    *
    * @param doc the lucene document to convert to a NameUsageMatch
@@ -787,48 +750,34 @@ public class DatasetIndex {
 
     u.setUsage(constructUsage(doc));
 
-    String acceptedParentID = null;
-
     if (doc.get(FIELD_ACCEPTED_ID) != null) {
       synonym = true;
       Optional<Document> accDocOpt = getByUsageKey(doc.get(FIELD_ACCEPTED_ID));
       if (accDocOpt.isPresent()) {
         Document accDoc = accDocOpt.get();
         u.setAcceptedUsage(constructUsage(accDoc));
-        acceptedParentID = accDoc.get(FIELD_PARENT_ID);
       }
     }
 
-    // set the higher classification
-    String parentID = doc.get(FIELD_PARENT_ID);
-    List<NameUsageMatch.RankedName> classification = null;
-    if (acceptedParentID != null) {
-      classification = loadHigherTaxa(acceptedParentID);
-    } else {
-      classification = loadHigherTaxa(parentID);
+    if (doc.get(FIELD_LEFT_NESTED_SET_ID) != null) {
+      u.setLeft(Long.parseLong(doc.get(FIELD_LEFT_NESTED_SET_ID)));
+      u.setRight(Long.parseLong(doc.get(FIELD_RIGHT_NESTED_SET_ID)));
     }
 
-    u.setClassification(classification);
+    ioUtil.deserialiseField(doc, FIELD_CLASSIFICATION, StoredClassification.class)
+      .map(StoredClassification::getNames)
+      .ifPresent(names -> u.setClassification(
+        names.stream()
+          .map(r -> NameUsageMatch.RankedName.builder()
+            .key(r.getKey())
+            .rank(Rank.valueOf(r.getRank().toUpperCase()))
+            .canonicalName(r.getName())
+            .name(r.getName())
+            .build()
+          )
+          .collect(Collectors.toList())
+      ));
 
-    // add leaf
-    if (u.getAcceptedUsage() != null) {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key( u.getAcceptedUsage().getKey())
-          .name(u.getAcceptedUsage().getCanonicalName())
-          .rank(u.getAcceptedUsage().getRank())
-          .canonicalName(u.getAcceptedUsage().getCanonicalName())
-          .build());
-    } else {
-      classification.add(
-        NameUsageMatch.RankedName.builder()
-          .key(doc.get(FIELD_ID))
-          .name(doc.get(FIELD_CANONICAL_NAME))
-          .rank(Rank.valueOf(doc.get(FIELD_RANK)))
-          .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-          .build()
-        );
-    }
     u.setSynonym(synonym);
 
     // if ancillary join indexes are present, add them to the match
@@ -848,8 +797,8 @@ public class DatasetIndex {
             IUCNUtils.IUCN iucn = IUCNUtils.IUCN.valueOf(formattedIUCN);
             ancillaryStatus.setStatus(formattedIUCN);
             ancillaryStatus.setStatusCode(iucn.getCode());
-            ancillaryStatus.setDatasetKey(dataset.getKey().toString());
-            ancillaryStatus.setGbifKey(dataset.getGbifKey());
+            ancillaryStatus.setClbDatasetKey(dataset.getClbKey().toString());
+            ancillaryStatus.setDatasetKey(dataset.getDatasetKey());
             ancillaryStatus.setDatasetAlias(dataset.getAlias());
             ancillaryStatus.setSourceId(ancillaryDoc.get(FIELD_ID));
             u.addAdditionalStatus(ancillaryStatus);
@@ -861,81 +810,30 @@ public class DatasetIndex {
     }
 
     String status = doc.get(FIELD_STATUS);
-    u.getDiagnostics().setStatus(TaxonomicStatus.valueOf(status));
+    if (status != null && !status.isEmpty()) {
+      u.getUsage().setStatus(TaxonomicStatus.valueOf(status.toUpperCase()));
+    }
 
     return u;
   }
 
-  private static NameUsageMatch.Usage constructUsage(Document doc) {
-    StoredParsedName pn = null;
-    String parsedNameJson = doc.get(FIELD_PARSED_NAME_JSON);
-    if (parsedNameJson != null) {
-      try {
-        pn = MAPPER.readValue(parsedNameJson, StoredParsedName.class);
-      } catch (Exception e) {
-        log.error("Cannot parse parsed name json", e);
-      }
-    }
+  private NameUsageMatch.Usage constructUsage(Document doc) {
 
-    // set the usage
-    NameUsageMatch.Usage.UsageBuilder b = NameUsageMatch.Usage.builder()
+    return NameUsageMatch.Usage.builder()
         .key(doc.get(FIELD_ID))
         .name(doc.get(FIELD_SCIENTIFIC_NAME))
         .authorship(doc.get(FIELD_AUTHORSHIP))
-        .rank(Rank.valueOf(doc.get(FIELD_RANK)))
+        .rank(Rank.valueOf(doc.get(FIELD_RANK).toUpperCase()))
         .canonicalName(doc.get(FIELD_CANONICAL_NAME))
-        .code(getCode(doc));
-
-    if (pn != null) {
-      b.genus(pn.getGenus())
-        .infragenericEpithet(pn.getInfragenericEpithet())
-        .specificEpithet(pn.getSpecificEpithet())
-        .infraspecificEpithet(pn.getInfraspecificEpithet())
-        .cultivarEpithet(pn.getCultivarEpithet())
-        .phrase(pn.getPhrase())
-        .voucher(pn.getVoucher())
-        .nominatingParty(pn.getNominatingParty())
-        .candidatus(pn.isCandidatus())
-        .notho(pn.getNotho())
-        .originalSpelling(pn.getOriginalSpelling())
-        .epithetQualifier(pn.getEpithetQualifier())
-        .type(pn.getType())
-        .extinct(pn.isExtinct())
-
-        .sanctioningAuthor(pn.getSanctioningAuthor())
-        .taxonomicNote(pn.getTaxonomicNote())
-        .nomenclaturalNote(pn.getNomenclaturalNote())
-        .publishedIn(pn.getPublishedIn())
-        .unparsed(pn.getUnparsed())
-        .doubtful(pn.isDoubtful())
-        .manuscript(pn.isManuscript())
-        .state(pn.getState())
-        .warnings(pn.getWarnings());
-
-        if (pn.getCombinationAuthorship() != null
-          && pn.getCombinationAuthorship().getAuthors() != null
-          && !pn.getCombinationAuthorship().getAuthors().isEmpty()
-        ) {
-          b.combinationAuthorship(
-            NameUsageMatch.Authorship.builder()
-              .authors(pn.getCombinationAuthorship().getAuthors())
-              .year(pn.getCombinationAuthorship().getYear())
-              .build());
-        }
-
-        if (pn.getBasionymAuthorship() != null
-          && pn.getBasionymAuthorship().getAuthors() != null
-          && !pn.getBasionymAuthorship().getAuthors().isEmpty()
-        ) {
-          b.basionymAuthorship(
-            NameUsageMatch.Authorship.builder()
-              .authors(pn.getBasionymAuthorship().getAuthors())
-              .year(pn.getBasionymAuthorship().getYear())
-              .build());
-        }
-    }
-
-    return  b.build();
+        .genericName(doc.get(FIELD_GENERICNAME))
+        .parentID(doc.get(FIELD_PARENT_ID))
+        .specificEpithet(doc.get(FIELD_SPECIFIC_EPITHET))
+        .infraspecificEpithet(doc.get(FIELD_INFRASPECIFIC_EPITHET))
+        .infragenericEpithet(doc.get(FIELD_INFRAGENERIC_EPITHET))
+        .type(doc.get(FIELD_TYPE))
+        .formattedName(doc.get(FIELD_FORMATTED))
+        .code(getCode(doc))
+        .build();
   }
 
   private static NomCode getCode(Document doc) {

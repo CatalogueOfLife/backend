@@ -181,12 +181,12 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertTree("cat34.txt");
 
     final int srcKey2 = dataRule.mapKey(DataFormat.COLDP, 35);
-    print(srcKey2);
     src = getByName(srcKey2, Rank.FAMILY, "Chrysomelidae");
     trg = getByName(Datasets.COL, Rank.FAMILY, "Chrysomelidae");
     createSector(Sector.Mode.MERGE, src, trg, s -> {
       s.setRanks(Set.of(Rank.FAMILY, Rank.GENUS, Rank.SUBGENUS, Rank.SPECIES, Rank.SUBSPECIES));
     });
+    print(srcKey2);
 
     syncAll();
     assertTree("cat34-35.txt");
@@ -609,7 +609,8 @@ public class SectorSyncIT extends SectorSyncTestBase {
     assertEquals("Linnaeus, 1758", caretta.getName().getAuthorship());
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var vs = session.getMapper(VerbatimSourceMapper.class).getWithSources(caretta);
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var vs = vsm.addSources(vsm.getByUsage(caretta));
       assertEquals(srcDatasetKey, (int) vs.getSourceDatasetKey());
       assertEquals("10", vs.getSourceId());
       assertTrue(DSID.equals(DSID.of(srcDatasetKey, "11"), vs.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
@@ -690,7 +691,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     Classification cl = new Classification(getClassification(oa));
     assertEquals("Plantae", cl.getKingdom());
     var v = getSource(oa);
-    assertTrue(v.hasIssue(Issue.SYNC_OUTSIDE_TARGET));
+    assertTrue(v.contains(Issue.SYNC_OUTSIDE_TARGET));
   }
 
   @Test
@@ -708,7 +709,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
     syncAll();
     print(Datasets.COL);
 
-    final var sid = createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
+    createSector(Sector.Mode.MERGE, srcDatasetKey, null, plants, s -> {
       s.setNameTypes(Set.of(NameType.SCIENTIFIC, NameType.INFORMAL, NameType.OTU));
       s.setRanks(null);
       s.setCode(NomCode.BOTANICAL);

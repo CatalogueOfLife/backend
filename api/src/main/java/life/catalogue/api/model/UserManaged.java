@@ -44,4 +44,10 @@ public interface UserManaged {
       setCreatedBy(userKey);
     }
   }
+
+  default void applyCreatedNow() {
+    var now = LocalDateTime.now();
+    setCreated(now);
+    setModified(now);
+  }
 }

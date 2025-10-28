@@ -6,9 +6,11 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.TaxonDao;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.VernacularNameMapper;
 import life.catalogue.junit.*;
-import life.catalogue.matching.nidx.NameIndexImpl;
 import life.catalogue.release.XReleaseConfig;
 
 import java.io.IOException;
@@ -64,7 +66,7 @@ public class SectorSyncNameUpdIT extends SectorSyncTestBase {
   }
 
   private void dumpNidx() {
-    ((NameIndexImpl) NameMatchingRule.getIndex()).printIndex();
+    NameMatchingRule.getIndex().printIndex();
   }
 
   @Test

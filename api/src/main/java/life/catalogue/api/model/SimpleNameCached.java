@@ -1,14 +1,26 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.gbif.nameparser.api.Rank;
+
 import java.util.Objects;
 
 public class SimpleNameCached extends SimpleNameWithNidx {
   private Integer sectorKey;
   // temporary marker not being copied or persisted
   // used to mark usages temporarily during merging / processing. Not related to rank markers!
+  @JsonIgnore
   public boolean marked;
 
   public SimpleNameCached() {
+  }
+
+  public SimpleNameCached(String id, String name, Rank rank) {
+    super();
+    setId(id);
+    setName(name);
+    setRank(rank);
   }
 
   public SimpleNameCached(SimpleName other) {
@@ -18,6 +30,12 @@ public class SimpleNameCached extends SimpleNameWithNidx {
   public SimpleNameCached(SimpleNameWithNidx other) {
     super(other);
   }
+
+  public SimpleNameCached(SimpleNameWithNidx other, Integer sectorKey) {
+    super(other);
+    this.sectorKey = sectorKey;
+  }
+
   public SimpleNameCached(SimpleNameCached other) {
     super(other);
     this.sectorKey = other.sectorKey;

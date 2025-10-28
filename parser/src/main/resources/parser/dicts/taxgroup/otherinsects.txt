@@ -586,6 +586,7 @@ Haplopodini
 Harmoptera
 Havlatiidae
 Hemerobiidae
+Hemerobiiformia
 Hemimeridae
 Hemimerina
 Hemimeroidea
@@ -764,6 +765,7 @@ Macropsylloidea
 Macyniinae
 Macyniini
 Madygenophlebiidae
+Maindronidae
 Majangidae
 Majanginae
 Majangini
@@ -804,6 +806,7 @@ Mellierini
 Menexenini
 Mengeidae
 Mengenillidae
+Mengenillidia
 Menoponidae
 Menoponinae
 Menoponoidea
@@ -848,6 +851,8 @@ Musoniellini
 Myopsocidae
 Myrmecolacidae
 Myrmeleontidae
+Myrmeleontiformia
+Myrmeleontoidea
 Nalinae
 Namurodiaphidae
 Namuroningxiidae
@@ -888,6 +893,8 @@ Nesogastrinae
 Nestorembiinae
 Neuroptera
 Neurostigmatidae
+Nevorthidae
+Nevorthiformia
 Nevrorthidae
 Nicoletiidae
 Nilomantini
@@ -1091,6 +1098,7 @@ Polyphaginae
 Polyphagoidea
 Polyplacidae
 Polypsocini
+Polystoechotidae
 Polythoridae
 Polyzosteriinae
 Popinae
@@ -1307,6 +1315,7 @@ Stylatopsocini
 Styloperlidae
 Styloperlinae
 Stylopidae
+Stylopidia
 Stylotermitidae
 Subulipalpia
 Suwalliini

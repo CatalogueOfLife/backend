@@ -1,11 +1,13 @@
 package life.catalogue.importer.txttree;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
-import life.catalogue.api.vocab.*;
-import life.catalogue.api.vocab.terms.TxtTreeTerm;
+import life.catalogue.api.model.DatasetSettings;
+import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
-import life.catalogue.csv.*;
+import life.catalogue.csv.CsvReader;
+import life.catalogue.csv.MappingInfos;
+import life.catalogue.csv.SourceInvalidException;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoInserter;
 import life.catalogue.importer.NormalizationFailedException;
@@ -14,27 +16,19 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoRel;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.metadata.MetadataFactory;
-import life.catalogue.parser.*;
 
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.Term;
-import org.gbif.dwc.terms.TermFactory;
 import org.gbif.nameparser.api.NomCode;
-import org.gbif.nameparser.api.Rank;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.TreeLine;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -45,14 +39,9 @@ import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 import static life.catalogue.api.vocab.terms.TxtTreeTerm.*;
-import static life.catalogue.importer.InterpreterBase.normGeoTime;
-import static life.catalogue.parser.SafeParser.parse;
-/**
- *
- */
+
 public class TxtTreeInserter implements NeoInserter {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeInserter.class);
-  private static final Pattern VERNACULAR = Pattern.compile("([a-z]{2,3}):(.+)");
   private static final MappingInfos FLAGS = new MappingInfos();
   static {
     FLAGS.setDenormedClassificationMapped(false);
@@ -68,10 +57,10 @@ public class TxtTreeInserter implements NeoInserter {
   private String treeFileName;
   private org.gbif.txtree.Tree<SimpleTreeNode> tree;
   private Long2IntMap line2verbatimKey = new Long2IntOpenHashMap();
-  private final Map<String,String> remarks;
   private final BibTexInserter bibIns;
   private final ReferenceFactory refFactory;
   private final DatasetSettings settings;
+  private final TxtTreeInterpreter interpreter;
 
   public TxtTreeInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     if (!Files.isDirectory(folder)) {
@@ -88,6 +77,7 @@ public class TxtTreeInserter implements NeoInserter {
     if (treeFile == null) {
       throw new SourceInvalidException("No valid tree data file found in " + folder);
     }
+    interpreter = new TxtTreeInterpreter();
     this.refFactory = refFactory;
     Path bib = folder.resolve("reference.bib");
     if (Files.exists(bib)) {
@@ -96,26 +86,12 @@ public class TxtTreeInserter implements NeoInserter {
     } else {
       bibIns = null;
     }
-
-    AllCsvReader r = AllCsvReader.from(folder);
-    Term remarksTerm = TermFactory.instance().findTerm("remarks", true);
-    if (r.hasData(remarksTerm)) {
-      remarks = new HashMap<>();
-      LOG.info("Remarks file found: {}", r.schema(remarksTerm).get().getFirstFile());
-      r.stream(remarksTerm).forEach(rec ->  {
-        if (rec.hasTerms(DcTerm.identifier, DcTerm.description)) {
-          remarks.put(rec.get(DcTerm.identifier), rec.get(DcTerm.description));
-        }
-      });
-    } else {
-      remarks = null;
-    }
   }
 
   public static Optional<Path> findReadable(Path folder) {
     try {
       for (Path f : PathUtils.listFiles(folder, Set.of("txtree", "tree", "txt", "text", "archive"))) {
-        if (!f.getFileName().toString().startsWith("expected") && org.gbif.txtree.Tree.verify(Files.newInputStream(f))) {
+        if (!f.getFileName().toString().startsWith("expected") && org.gbif.txtree.Tree.verify(Files.newInputStream(f)).valid) {
           LOG.info("Found readable tree file {}", f);
           return Optional.of(f);
         }
@@ -196,165 +172,23 @@ public class TxtTreeInserter implements NeoInserter {
     }
   }
 
+
   private NeoUsage usage(SimpleTreeNode tn, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     final int existingIssues = v.getIssues().size();
-
-    // CODE is inherited from above
-    final NomCode code = SafeParser.parse(NomCodeParser.PARSER, rmSingleDataItem(CODE, tn)).orElse(parentCode, Issue.NOMENCLATURAL_CODE_INVALID, v);
-
-    // RANK
-    Rank rank = Rank.UNRANKED; // default for unknown
-    try {
-      var parsedRank = RankParser.PARSER.parse(code, tn.rank);
-      if (parsedRank.isPresent()) {
-        rank = parsedRank.get();
-      }
-    } catch (UnparsableException e) {
-      v.addIssue(Issue.RANK_INVALID);
-      rank = Rank.OTHER;
-    }
-
-    // NAME
-    ParsedNameUsage pnu = NameParser.PARSER.parse(tn.name, rank, code, v).get();
-    pnu.getName().setId(String.valueOf(tn.id));
-    // PUB REF
-    if (hasDataItem(PUB, tn)) {
-      String[] vals = rmDataItem(PUB, tn);
-      for (String val : vals) {
-        if (!referenceExists(val)) {
-          v.addIssue(Issue.REFERENCE_ID_INVALID);
-        } else if (pnu.getName().getPublishedInId() != null){
-          v.addIssue(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
-        } else {
-          pnu.getName().setPublishedInId(val);
-        }
-      }
-    }
-
-    // general usage props to be removed before we add properties!
-    String uid = rmSingleDataItem(ID, tn);
-    URI link = parse(UriParser.PARSER, rmSingleDataItem(LINK, tn)).orNull(Issue.URL_INVALID, v);
-
-    // USAGE
-    NeoUsage u;
-    if(synonym) {
-      u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), TaxonomicStatus.SYNONYM);
-    } else {
-      TaxonomicStatus status = rmBoolean(PROV, tn, v) || tn.provisional || pnu.isDoubtful() ? TaxonomicStatus.PROVISIONALLY_ACCEPTED : TaxonomicStatus.ACCEPTED;
-      u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status);
-      var t = u.asTaxon();
-      t.setOrdinal(ordinal);
-      // DAGGER
-      t.setExtinct(tn.extinct);
-      // ENVIRONMENT
-      if (hasDataItem(ENV, tn)) {
-        String[] vals = rmDataItem(ENV, tn);
-        for (String val : vals) {
-          Environment env = parse(EnvironmentParser.PARSER, val).orNull(Issue.ENVIRONMENT_INVALID, v);
-          if (env != null) {
-            t.getEnvironments().add(env);
-          }
-        }
-      }
-      // CHRONO TEMPORAL RANGE
-      if (hasDataItem(CHRONO, tn)) {
-        String[] vals = rmDataItem(CHRONO, tn);
-        for (String val : vals) {
-          var range = val.split("-");
-          if (range.length==1) {
-            t.setTemporalRangeStart(normGeoTime(range[0],v));
-            t.setTemporalRangeEnd(normGeoTime(range[0],v));
-          } else if (range.length==2) {
-            t.setTemporalRangeStart(normGeoTime(range[0],v));
-            t.setTemporalRangeEnd(normGeoTime(range[1],v));
-          } else {
-            v.addIssue(Issue.GEOTIME_INVALID);
-          }
-        }
-      }
-      // TAX REF
-      if (hasDataItem(REF, tn)) {
-        String[] vals = rmDataItem(REF, tn);
-        for (String val : vals) {
-          if (referenceExists(val)) {
-            t.addReferenceId(val);
-          } else {
-            v.addIssue(Issue.REFERENCE_ID_INVALID);
-          }
-        }
-      }
-      // Vernacular
-      if (hasDataItem(VERN, tn)) {
-        String[] vals = rmDataItem(VERN, tn);
-        for (String val : vals) {
-          var m = VERNACULAR.matcher(val);
-          if (m.find()) {
-            VernacularName vn = new VernacularName();
-            var lang = parse(LanguageParser.PARSER, m.group(1)).orNull(Issue.VERNACULAR_LANGUAGE_INVALID, v);
-            vn.setLanguage(lang);
-            vn.setName(m.group(2));
-            u.vernacularNames.add(vn);
-          } else {
-            v.addIssue(Issue.VERNACULAR_NAME_INVALID);
-          }
-        }
-      }
-      // ALL OTHER
-      for (var entry : tn.infos.entrySet()) {
-        // ignore the PUB entry which we handle below
-        if (!entry.getKey().equalsIgnoreCase(PUB.name())) {
-          var tp = new TaxonProperty();
-          if (entry.getValue() == null || entry.getValue().length == 0) continue;
-          tp.setProperty(entry.getKey().toLowerCase());
-          tp.setValue(String.join(", ", entry.getValue()));
-          u.properties.add(tp);
-        }
-      }
-    }
-    u.setId(ObjectUtils.coalesce(uid, String.valueOf(tn.id)));
-    u.setVerbatimKey(v.getId());
-    u.asNameUsageBase().setLink(link);
-    u.usage.setAccordingToId(pnu.getTaxonomicNote());
-    // COMMENT
-    u.usage.setRemarks(tn.comment);
-    // REMARKS FOREIGN KEY
-    if (remarks != null && hasDataItem(REMARKS, tn)) {
-      String[] remarkKeys = rmDataItem(REMARKS, tn);
-      for (var key : remarkKeys) {
-        u.usage.addRemarks(remarks.get(key));
-      }
-    }
+    // convert
+    var tu = interpreter.interpret(tn, synonym, ordinal, parentCode, this::referenceExists);
+    tu.usage.setVerbatimKey(v.getId());
     // store issues?
+    v.add(tu.issues.getIssues());
     if (existingIssues < v.getIssues().size()) {
       store.put(v);
     }
-    return u;
+    return new NeoUsage(tu);
   }
 
   private boolean referenceExists(String id) {
     return refFactory.find(id) != null;
-  }
-  private boolean hasDataItem(TxtTreeTerm key, SimpleTreeNode tn) {
-    return tn.infos != null && tn.infos.containsKey(key.name());
-  }
-  private String[] rmDataItem(TxtTreeTerm key, SimpleTreeNode tn) {
-    return tn.infos.remove(key.name());
-  }
-  private String rmSingleDataItem(TxtTreeTerm key, SimpleTreeNode tn) {
-    var vals = tn.infos.remove(key.name());
-    if (vals == null || vals.length == 0) {
-      return null;
-    } else if (vals.length == 1) {
-      return vals[0];
-    } else {
-      return String.join(",", vals);
-    }
-  }
-
-  private boolean rmBoolean(TxtTreeTerm key, SimpleTreeNode tn, IssueContainer issues) {
-    var val = rmSingleDataItem(key, tn);
-    return SafeParser.parse(BooleanParser.PARSER, val).orElse(Boolean.FALSE, Issue.PROVISIONAL_STATUS_INVALID, issues);
   }
 
   @Override

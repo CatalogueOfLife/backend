@@ -6,9 +6,9 @@ import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.ImportState;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.mapper.*;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.db.mapper.*;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
 
@@ -53,9 +53,9 @@ public abstract class SectorSyncTestBase {
     }
   }
 
-  public static VerbatimSource getSource(DSID<String> key) {
+  public static VerbatimSource getSource(DSID<String> usageID) {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession()) {
-      return session.getMapper(VerbatimSourceMapper.class).get(key);
+      return session.getMapper(VerbatimSourceMapper.class).getByUsage(usageID);
     }
   }
 
@@ -239,11 +239,11 @@ public abstract class SectorSyncTestBase {
   }
 
   public static void assertSameTree(int datasetKey1, int datasetKey2) throws IOException {
-    String tree1 = readTree(datasetKey1, null);
+    String tree1 = readTree(datasetKey1, null, false);
     System.out.println("\n*** DATASET "+datasetKey1+" TREE ***");
     System.out.println(tree1);
 
-    String tree2 = readTree(datasetKey2, null);
+    String tree2 = readTree(datasetKey2, null, false);
     System.out.println("\n*** DATASET "+datasetKey2+" TREE ***");
     System.out.println(tree2);
 
@@ -255,8 +255,11 @@ public abstract class SectorSyncTestBase {
     assertTree(project, datasetKey, null, expectedTree);
   }
   public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree) throws IOException {
+    assertTree(project, datasetKey, rootID, expectedTree, false);
+  }
+  public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree, boolean showIDs) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
-    String tree = readTree(datasetKey, rootID);
+    String tree = readTree(datasetKey, rootID, showIDs);
 
     // compare trees
     System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
@@ -264,11 +267,13 @@ public abstract class SectorSyncTestBase {
     assertEquals("Tree from project " + project + " not as expected for dataset " + datasetKey, expected, tree);
   }
 
-  public static String readTree(int datasetKey,@Nullable String rootID) throws IOException {
+  public static String readTree(int datasetKey,@Nullable String rootID, boolean showIDs) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
     var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
-    //printer.showIDs();
+    if (showIDs) {
+      printer.showIDs();
+    }
     printer.print();
     String tree = writer.toString().trim();
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
@@ -277,7 +282,6 @@ public abstract class SectorSyncTestBase {
 
   protected void assertHasVerbatimSource(DSID<String> id, String expectedSourceId) {
     VerbatimSource v = getSource(id);
-    assertEquals(id.getId(), v.getId());
     assertEquals(id.getDatasetKey(), v.getDatasetKey());
     assertNotNull(v.getSourceDatasetKey());
     assertEquals(expectedSourceId, v.getSourceId());

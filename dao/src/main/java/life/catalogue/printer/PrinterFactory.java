@@ -1,10 +1,7 @@
 package life.catalogue.printer;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Sector;
 import life.catalogue.api.model.TreeTraversalParameter;
 import life.catalogue.dao.TaxonCounter;
-import life.catalogue.db.mapper.SectorMapper;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -13,10 +10,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import static life.catalogue.api.exception.NotFoundException.throwNotFoundIfNull;
 
 public class PrinterFactory {
 

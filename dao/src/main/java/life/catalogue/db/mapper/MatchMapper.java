@@ -28,6 +28,13 @@ public interface MatchMapper {
   NameMatch get(@Param("key") DSID<String> key);
 
   /**
+   * Retrieve the canonical name index id for the name match of the given name key.
+   * @param key name key
+   * @return canonical name index id or null if no match exists.
+   */
+  Integer getCanonicalNidx(@Param("key") DSID<String> key);
+
+  /**
    * @param key the name key
    * @return the number of records updated
    */

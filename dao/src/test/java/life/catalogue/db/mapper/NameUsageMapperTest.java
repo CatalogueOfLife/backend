@@ -6,9 +6,9 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.dao.NameDao;
+import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
 import org.gbif.nameparser.api.Rank;
@@ -49,6 +49,7 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   public void copyDataset() throws Exception {
     // we also need other entities to not validate constraints
     CopyDatasetTestComponent.copy(mapper(VerbatimRecordMapper.class), testDataRule.testData.key, false);
+    CopyDatasetTestComponent.copy(mapper(VerbatimSourceMapper.class), testDataRule.testData.key, false);
     CopyDatasetTestComponent.copy(mapper(ReferenceMapper.class), testDataRule.testData.key, false);
     CopyDatasetTestComponent.copy(mapper(NameMapper.class), testDataRule.testData.key, false);
     // now do the real copy
@@ -61,6 +62,12 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
     assertSize(mapper().processDataset(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 4);
     assertSize(mapper().processDataset(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
     assertSize(mapper().processDataset(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 4);
+  }
+
+  @Test
+  public void getVerbatim() throws Exception {
+    mapper().getSimpleVerbatim(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
+    mapper().getSimpleParent(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
   }
 
   @Test

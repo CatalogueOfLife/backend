@@ -13,19 +13,23 @@
  */
 package life.catalogue.matching;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import com.google.common.base.Joiner;
-import java.io.IOException;
-import javax.annotation.Nullable;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.matching.model.*;
 import life.catalogue.matching.service.MatchingService;
 import life.catalogue.matching.util.Dictionaries;
 
 import org.gbif.nameparser.api.Rank;
+
+import java.io.IOException;
+
+import javax.annotation.Nullable;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import com.google.common.base.Joiner;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 public class MatchingServiceStrictIT {
 
@@ -43,7 +47,7 @@ public class MatchingServiceStrictIT {
   }
 
   private NameUsageMatch query(String name, Rank rank, Kingdom kingdom) {
-    LinneanClassification cl = new Classification();
+    ClassificationQuery cl = new ClassificationQuery();
     cl.setKingdom(kingdom.name());
     return matcher.match(new NameUsageQuery(null, null, null, null, name, null, null, null, null, rank, cl, null, true, true));
   }
@@ -91,11 +95,11 @@ public class MatchingServiceStrictIT {
       System.out.println(
           "  "
               + JOINER.join(
-                  best.getKingdom(),
-                  best.getPhylum(),
-                  best.getClazz(),
-                  best.getOrder(),
-                  best.getFamily()));
+                  best.nameFor(Rank.KINGDOM),
+                  best.nameFor(Rank.PHYLUM),
+                  best.nameFor(Rank.CLASS),
+                  best.nameFor(Rank.ORDER),
+                  best.nameFor(Rank.FAMILY)));
       System.out.println("diag: " + best.getDiagnostics().getNote());
     }
 

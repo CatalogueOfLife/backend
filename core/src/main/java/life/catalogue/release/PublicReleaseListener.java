@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetExport;
@@ -9,6 +10,7 @@ import life.catalogue.api.search.ExportSearchRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.Datasets;
+import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.concurrent.JobConfig;
 import life.catalogue.config.ReleaseConfig;
@@ -23,6 +25,7 @@ import life.catalogue.doi.service.DoiService;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,8 +40,6 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.eventbus.Subscribe;
-
 
 /**
  * Class to listen to dataset changes and act if a COL release was changed from private to public.
@@ -47,7 +48,7 @@ import com.google.common.eventbus.Subscribe;
  *  - inserts deleted ids from the reports into the names archive
  *  - removes resurrected ids from the names archive
  */
-public class PublicReleaseListener {
+public class PublicReleaseListener implements DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(PublicReleaseListener.class);
 
   private final ReleaseConfig cfg;
@@ -70,10 +71,10 @@ public class PublicReleaseListener {
     this.archiver = new NameUsageArchiver(factory);
   }
 
-  @Subscribe
+  @Override
   public void datasetChanged(DatasetChanged event){
     if (event.isUpdated() // assures we got both obj and old
-      && event.obj.getOrigin().isRelease()
+      && event.obj.getOrigin().isRelease() // release or xrelease
       && event.old.isPrivat() // that was private before
       && !event.obj.isPrivat() // but now is public
     ) {
@@ -83,25 +84,38 @@ public class PublicReleaseListener {
         doiService.publishSilently(event.obj.getDoi());
       }
 
-      // COL specifics, for now we do not issue DOI to XCOL sources or provide prepared downloads
-      if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin() == DatasetOrigin.RELEASE) {
-        LOG.info("Publish COL release specifics");
+      // COL specifics
+      if (Datasets.COL == event.obj.getSourceKey() && event.obj.getOrigin().isRelease()) {
+        LOG.info("Publish COL {} specifics", event.obj.getOrigin());
+        copyExportsToColDownload(event.obj, true);
+        // we point both base and XR DOIs to the portal
         publishColSourceDois(event.obj);
         updateColDoiUrls(event.obj);
-        copyExportsToColDownload(event.obj, true);
       }
 
-      // When a release gets published we need to modify the projects name archive.
-      // For deleted ids a new entry in the names archive needs to be created.
-      // For resurrected ids we need to remove them from the archive.
-      archiver.archiveRelease(event.obj.getSourceKey(), event.obj.getKey());
+      // When a release gets published we need to modify the projects name archive:
+      // a) Usages with new ids need to be added
+      // b) For all still existing usages the release_key needs to be added
+      try {
+        archiver.archiveRelease(event.obj.getKey(), true);
+      } catch (Exception e) {
+        LOG.error("Failed to archive names for published release {}", event.obj.getKey(), e);
+      }
 
-      // generic hooks
-      if (cfg.actions != null && cfg.actions.containsKey(event.obj.getSourceKey())) {
-        for (var action : cfg.actions.get(event.obj.getSourceKey())) {
-          if (action.onPublish) {
-            action.call(httpClient, event.obj);
-          }
+      // generic hooks for releases?
+      ProjectReleaseConfig rcfg = null;
+      try (SqlSession session = factory.openSession(true)) {
+        var settings = session.getMapper(DatasetMapper.class).getSettings(event.obj.getSourceKey());
+        Setting relSetting = event.obj.getOrigin() == DatasetOrigin.XRELEASE ? Setting.XRELEASE_CONFIG : Setting.RELEASE_CONFIG;
+        if (settings.containsKey(relSetting)) {
+          rcfg = ProjectRelease.loadConfig(ProjectReleaseConfig.class, settings.getURI(relSetting), false);
+        }
+      } catch (Exception e) {
+        LOG.error("Failed to look for custom publishing actions for release {}", event.obj.getKey(), e);
+      }
+      if (rcfg != null &&   rcfg.publishActions != null) {
+        for (var action : rcfg.publishActions) {
+          action.call(httpClient, event.obj);
         }
       }
     }
@@ -111,8 +125,9 @@ public class PublicReleaseListener {
     LOG.debug("Publish all draft source DOIs for COL release {}: {}", release.getKey(), release.getVersion());
     DatasetSourceDao dao = new DatasetSourceDao(factory);
     AtomicInteger published = new AtomicInteger(0);
-    try {
-      for (Dataset d : dao.listReleaseSources(release.getKey(), false)) {
+    try (SqlSession session = factory.openSession()) {
+      var dsm = session.getMapper(DatasetSourceMapper.class);
+      for (Dataset d : dsm.listReleaseSourcesSimple(release.getKey(), false)) {
         if (d.getDoi() == null) {
           LOG.error("COL source {} {} without a DOI", d.getKey(), d.getAlias());
         } else {
@@ -199,16 +214,20 @@ public class PublicReleaseListener {
       }
       if (symLinkLatest && dataset.getAttempt() != null) {
         try {
-          // set latest_logs -> /srv/releases/3/50
+          // set latest_logs -> /mnt/auto/col/releases/3/410
           File logs = cfg.reportDir(projectKey, dataset.getAttempt());
-          File symlink = new File(cfg.colDownloadDir, "latest_logs");
+          File symlink = new File(cfg.colDownloadDir, prefix(dataset) + "latest_logs");
           PathUtils.symlink(symlink, logs);
         } catch (IOException e) {
-          LOG.error("Failed to symlink latest release logs", e);
+          LOG.error("Failed to symlink latest {} logs", dataset.getOrigin(), e);
         }
       }
       LOG.info("Copied {} COL exports to downloads at {}", done.size(), cfg.colDownloadDir);
     }
+  }
+
+  private static String prefix(Dataset dataset) {
+    return dataset.getOrigin() == DatasetOrigin.XRELEASE ? "xr_" : "";
   }
 
   public void copyExportToColDownload(Dataset dataset, DataFormat df, UUID exportKey, boolean symLinkLatest) {
@@ -219,7 +238,7 @@ public class PublicReleaseListener {
         LOG.info("Copy COL {} export {} to {}", df, exportKey, target);
         FileUtils.copyFile(source, target);
         if (symLinkLatest) {
-          File symlink = colLatestFile(cfg.colDownloadDir, df);
+          File symlink = colLatestFile(cfg.colDownloadDir, dataset, df);
           LOG.info("Symlink COL {} export {} at {} to {}", df, exportKey, target, symlink);
           PathUtils.symlink(symlink, target);
         }
@@ -231,13 +250,13 @@ public class PublicReleaseListener {
     }
   }
 
-  public static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
+  private static File colDownloadFile(File colDownloadDir, Dataset dataset, DataFormat format) {
     String iso = DateTimeFormatter.ISO_DATE.format(dataset.getIssued().getDate());
-    return new File(colDownloadDir, "monthly/" + iso + "_" + format.getFilename() + ".zip");
+    return new File(colDownloadDir, "monthly/" + iso + "_" + prefix(dataset) + format.getFilename() + ".zip");
   }
 
-  public static File colLatestFile(File colDownloadDir, DataFormat format) {
-    return new File(colDownloadDir, "latest_" + format.getFilename() + ".zip");
+  private static File colLatestFile(File colDownloadDir, Dataset dataset, DataFormat format) {
+    return new File(colDownloadDir, prefix(dataset) + "latest_" + format.getFilename() + ".zip");
   }
 
 }

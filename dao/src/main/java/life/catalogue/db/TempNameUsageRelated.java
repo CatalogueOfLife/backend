@@ -11,7 +11,6 @@ public interface TempNameUsageRelated {
   // order matters!
   List<Class<? extends TempNameUsageRelated>> MAPPERS = List.of(
     // usage related
-    VerbatimSourceMapper.class,
     DistributionMapper.class,
     MediaMapper.class,
     VernacularNameMapper.class,

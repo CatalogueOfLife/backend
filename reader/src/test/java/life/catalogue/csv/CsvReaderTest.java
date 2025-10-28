@@ -174,7 +174,7 @@ public class CsvReaderTest {
     Set<String> ids = new HashSet<>();
     reader.stream(s.rowType).forEach(r -> {
       cnt.incrementAndGet();
-      if (r.hasIssue(Issue.PREVIOUS_LINE_SKIPPED)) {
+      if (r.contains(Issue.PREVIOUS_LINE_SKIPPED)) {
         skipped.incrementAndGet();
       }
       ids.add(r.get(DcTerm.identifier));

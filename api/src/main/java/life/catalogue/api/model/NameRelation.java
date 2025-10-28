@@ -6,6 +6,10 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import life.catalogue.api.vocab.Users;
+
+import javax.annotation.Nullable;
+
 /**
  * A nomenclatural name relation between two names pointing back in time from the nameId to the relatedNameId.
  */
@@ -14,6 +18,7 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Extens
   private Sector.Mode sectorMode;
   private Integer sectorKey;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private NomRelType type;
   private String nameId;
   private String relatedNameId;
@@ -54,7 +59,15 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Extens
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public Integer getDatasetKey() {
     return datasetKey;
   }
@@ -115,16 +128,25 @@ public class NameRelation extends DatasetScopedEntity<Integer> implements Extens
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof NameRelation)) return false;
     if (!super.equals(o)) return false;
+
     NameRelation that = (NameRelation) o;
-    return Objects.equals(datasetKey, that.datasetKey) && sectorMode == that.sectorMode && Objects.equals(sectorKey, that.sectorKey) && Objects.equals(verbatimKey, that.verbatimKey) && type == that.type && Objects.equals(nameId, that.nameId) && Objects.equals(relatedNameId, that.relatedNameId) && Objects.equals(referenceId, that.referenceId) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(datasetKey, that.datasetKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(sectorKey, that.sectorKey) &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      type == that.type &&
+      Objects.equals(nameId, that.nameId) &&
+      Objects.equals(relatedNameId, that.relatedNameId) &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), datasetKey, sectorMode, sectorKey, verbatimKey, type, nameId, relatedNameId, referenceId, remarks);
+    return Objects.hash(super.hashCode(), datasetKey, sectorMode, sectorKey, verbatimKey, verbatimSourceKey, type, nameId, relatedNameId, referenceId, remarks);
   }
 
   @Override

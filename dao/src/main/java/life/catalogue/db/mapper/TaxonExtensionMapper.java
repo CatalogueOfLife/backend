@@ -2,9 +2,7 @@ package life.catalogue.db.mapper;
 
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.ExtensionEntity;
-import life.catalogue.api.model.SectorScopedEntity;
 import life.catalogue.api.model.TaxonExtension;
-import life.catalogue.api.search.VernacularSearchRequest;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.SectorProcessable;

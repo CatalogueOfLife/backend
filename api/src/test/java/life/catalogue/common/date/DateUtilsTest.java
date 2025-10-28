@@ -1,7 +1,5 @@
 package life.catalogue.common.date;
 
-import life.catalogue.common.io.DownloadUtil;
-
 import java.io.IOException;
 
 import org.junit.Assert;

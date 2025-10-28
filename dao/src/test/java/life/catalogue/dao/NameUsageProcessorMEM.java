@@ -6,10 +6,10 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.common.io.TempFile;
-import life.catalogue.junit.PgConnectionRule;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.junit.PgConnectionRule;
 
 import org.gbif.nameparser.api.Rank;
 

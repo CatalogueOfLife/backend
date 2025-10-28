@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.lifecycle.Managed;
 
+import java.io.Closeable;
+
 public class ManagedUtils {
   private static final Logger LOG = LoggerFactory.getLogger(ManagedUtils.class);
 
@@ -23,7 +25,19 @@ public class ManagedUtils {
     };
   }
 
-  static Managed from(final life.catalogue.common.Managed obj) {
+  public static Managed from(final Closeable obj) {
+    return new Managed() {
+      @Override
+      public void start() throws Exception { }
+
+      @Override
+      public void stop() throws Exception {
+        LOG.info("Shutting down {}", obj);
+        obj.close();
+      }
+    };
+  }
+  public static Managed from(final life.catalogue.common.Managed obj) {
     return new Managed() {
       @Override
       public void start() throws Exception {

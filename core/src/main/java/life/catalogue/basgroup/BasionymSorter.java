@@ -1,19 +1,20 @@
 package life.catalogue.basgroup;
 
-import life.catalogue.api.model.*;
-
+import life.catalogue.api.model.FormattableName;
+import life.catalogue.api.model.HasID;
 import life.catalogue.api.vocab.Issue;
-
 import life.catalogue.matching.authorship.AuthorComparator;
 
 import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NomCode;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
-
-import org.gbif.nameparser.api.NomCode;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

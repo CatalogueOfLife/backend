@@ -1,8 +1,20 @@
 package life.catalogue.dw.cors;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import jakarta.servlet.http.HttpServletResponse;
+
+import jakarta.ws.rs.core.MultivaluedMap;
+
 import life.catalogue.api.util.ObjectUtils;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 import jakarta.ws.rs.HttpMethod;
 import jakarta.ws.rs.container.*;
@@ -14,7 +26,7 @@ import jakarta.ws.rs.core.Response;
  * See W3C CORS spec http://www.w3.org/TR/cors/#resource-implementation
  */
 @PreMatching
-public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilter, jakarta.servlet.Filter {
 
   private static final String ANY_ORIGIN = "*";
   private static final String ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin";
@@ -42,19 +54,23 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext resp) throws IOException {
     String origin = req.getHeaderString(ORIGIN);
-    if (origin == null || req.getMethod().equalsIgnoreCase(HttpMethod.OPTIONS)) {
+    String method = req.getMethod();
+    addCorsHeaders(origin, method, resp.getHeaders()::putSingle);
+  }
+
+  private void addCorsHeaders(String origin, String method, BiConsumer<String, String> setHeaderFunc) {
+    if (origin == null || method.equalsIgnoreCase(HttpMethod.OPTIONS)) {
       // don't do anything if origin is null or it is an OPTIONS request
       return;
     }
-    resp.getHeaders().putSingle(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+    setHeaderFunc.accept(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
     if (cfg.vary) {
-      resp.getHeaders().putSingle(HttpHeaders.VARY, ORIGIN);
+      setHeaderFunc.accept(HttpHeaders.VARY, ORIGIN);
     }
     if (cfg.exposedHeaders != null) {
-      resp.getHeaders().putSingle(ACCESS_CONTROL_EXPOSE_HEADERS, cfg.exposedHeaders);
+      setHeaderFunc.accept(ACCESS_CONTROL_EXPOSE_HEADERS, cfg.exposedHeaders);
     }
   }
-
   /**
    * Aborts the request and sends back a response so the real resources are not hit
    */
@@ -80,4 +96,24 @@ public class CorsFilter implements ContainerRequestFilter, ContainerResponseFilt
     }
   }
 
+  @Override
+  public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException {
+    HttpServletRequest request = (HttpServletRequest) servletRequest;
+
+    String origin = request.getHeader("Origin");
+    String method = request.getMethod();
+    HttpServletResponse resp = (HttpServletResponse) servletResponse;
+
+    // add cors response headers
+    addCorsHeaders(origin, method, resp::setHeader);
+
+    // CORS handshake (pre-flight request)
+    if (method != null && method.equals("OPTIONS")) {
+      resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+      return;
+    }
+
+    // otherwise pass the request along the filter chain
+    chain.doFilter(request, servletResponse);
+  }
 }

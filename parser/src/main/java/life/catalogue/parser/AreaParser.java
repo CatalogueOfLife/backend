@@ -58,6 +58,9 @@ public class AreaParser extends ParserBase<Area> {
           } else if (scheme.equalsIgnoreCase(ISO)) {
             return CountryParser.PARSER.parse(value.trim());
 
+          } else if (scheme.equalsIgnoreCase("realm") || scheme.equalsIgnoreCase("bio")) {
+            return RealmParser.PARSER.parse(value.trim());
+
           } else if (scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https") || scheme.equalsIgnoreCase("urn")) {
             // deal with known domains, others will become free text
             m = MRGID.matcher(area);

@@ -9,6 +9,7 @@ import life.catalogue.cache.UsageCache;
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
+import life.catalogue.matching.TaxGroupAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-
-import life.catalogue.matching.TaxGroupAnalyzer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -107,7 +106,7 @@ public class NameUsageProcessor {
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
       final var dm = session.getMapper(DatasetMapper.class);
-      final CacheLoader loader = new CacheLoader.Mybatis(session, false);
+      final CacheLoader loader = new CacheLoader.MybatisSession(session, false);
 
       // reusable dsids for this dataset
       final DSID<String> uKey = DSID.of(datasetKey, null);
@@ -122,11 +121,10 @@ public class NameUsageProcessor {
         sm.listByDataset(datasetKey, null, null).forEach(s -> sectors.put(s.getId(), new SectorProps(s, dm)));
       }
 
-      // build temporary table collecting issues from all usage related tables
+      // build temporary table within the session, collecting issues from all usage related tables
       // we do this in a separate step to not overload postgres with gigantic joins later on
-      var vm = session.getMapper(VerbatimRecordMapper.class);
-      vm.createTmpIssuesTable(datasetKey, sectorKey);
-      vm.createTmpVSourcesTable(datasetKey, sectorKey);
+      var ism = session.getMapper(TmpIssueMapper.class);
+      ism.createTmpIssuesTable(datasetKey, null);
 
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
            UsageCache usageCache = buildUsageCache()

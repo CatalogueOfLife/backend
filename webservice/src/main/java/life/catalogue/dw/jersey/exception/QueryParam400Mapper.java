@@ -1,9 +1,9 @@
 package life.catalogue.dw.jersey.exception;
 
+import org.glassfish.jersey.server.ParamException;
+
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-
-import org.glassfish.jersey.server.ParamException;
 
 /**
  * Maps query parameter exceptions to 400 bad requests instead of the JAX-RS standard 404.
@@ -13,7 +13,7 @@ import org.glassfish.jersey.server.ParamException;
 public class QueryParam400Mapper extends JsonExceptionMapperBase<ParamException.QueryParamException> {
   
   public QueryParam400Mapper() {
-    super(Response.Status.BAD_REQUEST);
+    super(Response.Status.BAD_REQUEST, false, false, null);
   }
   
   @Override

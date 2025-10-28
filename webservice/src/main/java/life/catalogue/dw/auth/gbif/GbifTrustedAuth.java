@@ -1,6 +1,5 @@
 package life.catalogue.dw.auth.gbif;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
@@ -8,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import jakarta.ws.rs.core.HttpHeaders;
 
 import org.apache.hc.client5.http.classic.methods.HttpUriRequest;
 import org.apache.hc.core5.http.Header;
@@ -17,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
+
+import jakarta.ws.rs.core.HttpHeaders;
 
 /**
  * The GBIF authentication scheme is modelled after the Amazon scheme on how to sign REST http requests

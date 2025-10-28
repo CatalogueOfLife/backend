@@ -1,25 +1,21 @@
 package life.catalogue.dao;
 
+import life.catalogue.api.event.ChangeDoi;
 import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.DownloadUtil;
-import life.catalogue.common.text.CitationUtils;
 import life.catalogue.config.GbifConfig;
-import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
-import life.catalogue.db.MybatisFactory;
-import life.catalogue.db.PgConfig;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 
@@ -29,12 +25,10 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -55,13 +49,13 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import com.google.common.eventbus.EventBus;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.NotNull;
 
+import static life.catalogue.common.text.StringUtils.removePunctWS;
 import static life.catalogue.metadata.MetadataFactory.stripHtml;
 
 /**
@@ -78,21 +72,18 @@ import static life.catalogue.metadata.MetadataFactory.stripHtml;
  * On startup we load the current max keys from the database.
  */
 public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
-  
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(DatasetDao.class);
-  private static final int TEMP_KEY_START = 100_000_000;
-  private static final int TEMP_EXPIRY_DAYS = 7;
+  public static final int TEMP_KEY_START = 100_000_000;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
-  private final ImporterConfig iCfg;
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
   private final DatasetImportDao diDao;
   private final DatasetExportDao exportDao;
   private final NameUsageIndexService indexService;
-  private final EventBus bus;
+  private final EventBroker bus;
   private final TempIdProvider tempIds;
   private final URI gbifDatasetApi;
 
@@ -101,20 +92,18 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
   public DatasetDao(SqlSessionFactory factory,
-                    NormalizerConfig nCfg, ReleaseConfig rCfg, ImporterConfig iCfg, GbifConfig gbifCfg,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg, GbifConfig gbifCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
                     DatasetExportDao exportDao,
                     NameUsageIndexService indexService,
                     BiFunction<Integer, String, File> scratchFileFunc,
-                    EventBus bus,
+                    EventBroker bus,
                     Validator validator) {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.nCfg = nCfg;
     this.rCfg = rCfg;
-    this.iCfg = iCfg;
-    if (iCfg.publisherAlias == null) iCfg.publisherAlias = new HashMap<>(); // avoids many null checks below
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -131,14 +120,25 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * THis is using mocks and misses real functionality, but simplifies the construction of the core dao.
    */
   @VisibleForTesting
-  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new ImporterConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, new EventBus(), validator);
+  public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator, EventBroker broker) {
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
+  }
+
+  public static boolean isTempKey(Integer key) {
+    return key != null && key >= TEMP_KEY_START;
   }
 
   public Dataset get(UUID gbifKey) {
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);
       return mapper.getByGBIF(gbifKey);
+    }
+  }
+
+  public DatasetRelease getRelease(Integer key) {
+    try (SqlSession session = factory.openSession()) {
+      var mapper = session.getMapper(mapperClass);
+      return mapper.getRelease(key);
     }
   }
 
@@ -327,9 +327,33 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
 
   private void postDoiDeletionForSources(DatasetSourceMapper psm, int datasetKey){
-    psm.listReleaseSources(datasetKey, false).stream()
+    psm.listReleaseSourcesSimple(datasetKey, false).stream()
       .filter(d -> d.getDoi() != null && d.getDoi().isCOL())
-      .forEach(d -> bus.post(DoiChange.delete(d.getDoi())));
+      .forEach(d -> bus.publish(ChangeDoi.delete(d.getDoi())));
+  }
+
+  /**
+   * Method to completely delete all information related to a dataset.
+   * Should be used only to completely delete all releases when a project gets deleted.
+   * @param key
+   * @param user
+   */
+  private void deleteEntirely(int key, int user) {
+    delete(key, user);
+    // now also delete things we usually keep for published releases
+    try (SqlSession session = factory.openSession(true)) {
+      deleteKeptReleaseData(key, session);
+    }
+  }
+
+  /**
+   * Remove the data we keep for deleted, public releases
+   */
+  private void deleteKeptReleaseData(int key, SqlSession session) {
+    session.getMapper(SectorMapper.class).deleteByDataset(key);
+    session.getMapper(PublisherMapper.class).deleteByDataset(key);
+    session.getMapper(CitationMapper.class).deleteByRelease(key);
+    session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
   }
 
   @Override
@@ -344,34 +368,39 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // avoid deletions of annual releases of COL
     if (old != null
         && old.getOrigin().isRelease()
-        && old.getSourceKey().equals(Datasets.COL)
+        && java.util.Objects.equals(old.getSourceKey(), Datasets.COL)
         && !old.isPrivat()
-        && old.getVersion().startsWith("Annual")
+        && old.getVersion().contains("Annual")
     ) {
       throw new IllegalArgumentException("You cannot delete public annual releases of the COL project");
     }
 
-    DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
+    DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
     if (old != null && old.getOrigin() == DatasetOrigin.PROJECT) {
       // This is a recursive project delete.
       List<Dataset> releases = mapper.listReleases(key);
-      LOG.warn("Deleting project {} with all its {} releases", key, releases.size());
+      LOG.warn("Deleting project {} with all its {} releases and source information!", key, releases.size());
 
       // Simplify the DOI updates by deleting ALL DOIs for ALL releases and ALL sources at the beginning
       LOG.warn("Request deletion of all DOIs from project {}", key);
-      postDoiDeletionForSources(psm, key);
+      postDoiDeletionForSources(dsm, key);
       // cascade to releases first before we remove the mother project dataset
       for (var d : releases) {
         LOG.info("Deleting release {} of project {}", d.getKey(), key);
-        postDoiDeletionForSources(psm, d.getKey());
-        delete(d.getKey(), user);
+        postDoiDeletionForSources(dsm, d.getKey());
+        deleteEntirely(d.getKey(), user);
       }
+    } else if (old != null) {
+      LOG.info("Delete {} dataset {}: {}", old.getOrigin(), key, old.getTitle());
+    } else {
+      LOG.info("Delete dataset {}", key);
     }
+
     // remove source citations
     var cm = session.getMapper(CitationMapper.class);
     cm.delete(key);
     // remove decisions, estimates, dataset patches, archived usages, name matches,
-    // but NOT sectors which are referenced from data tables
+    // but NOT sectors or sector_publisher which are referenced from data tables and which we want to keep for public release
     for (Class<DatasetProcessable<?>> mClass : new Class[]{
       DecisionMapper.class, EstimateMapper.class, DatasetPatchMapper.class, ArchivedNameUsageMapper.class, NameMatchMapper.class
     }) {
@@ -379,17 +408,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       session.getMapper(mClass).deleteByDataset(key);
       session.commit();
     }
-    // remove id reports only for private releases - we want to keep public releases forever to track ids!!!
-    if (old != null
-        && old.getOrigin().isRelease()
-        && old.isPrivat()
-    ) {
-      LOG.info("Delete id reports for private release {}", key);
-      session.getMapper(IdReportMapper.class).deleteByDataset(key);
-    }
     // request DOI update/deletion for all source DOIs - they might be shared across releases so we cannot just delete them
-    Set<DOI> dois = psm.listReleaseSourcesSimple(key, false).stream()
-        .map(Dataset::getDoi)
+    Set<DOI> dois = dsm.listReleaseSourcesSimple(key, false).stream()
+        .map(DatasetSourceMapper.SourceDataset::getDoi)
         .filter(java.util.Objects::nonNull)
         .collect(Collectors.toSet());
     // remove dataset archive & its citations
@@ -404,9 +425,13 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // delete all partitioned data
     deleteData(key, session);
     session.commit();
-    // now also remove sectors
-    session.getMapper(SectorMapper.class).deleteByDataset(key);
-    // now also clear filesystem
+    // now also remove sectors, unless it was a published release.
+    // We want to keep the sector and sector_publisher entries for deleted, public release !!!
+    if (old == null || old.isPrivat() || old.getOrigin() == DatasetOrigin.PROJECT) {
+      session.getMapper(SectorMapper.class).deleteByDataset(key);
+      session.getMapper(PublisherMapper.class).deleteByDataset(key);
+    }
+    // now also clear filesystem - again release metrics are stored with the project so this is safe
     diDao.removeMetrics(key);
     FileUtils.deleteQuietly(nCfg.scratchDir(key));
     FileUtils.deleteQuietly(nCfg.archiveDir(key));
@@ -417,7 +442,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (old != null && old.isPrivat()) {
       // project source dataset archives & its citations
       LOG.info("Delete archived sources for private dataset {}", key);
-      psm.deleteByRelease(key);
+      dsm.deleteByRelease(key);
       cm.deleteByRelease(key);
       // exports
       if (exportDao == null) {
@@ -428,7 +453,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
       }
     }
     // trigger DOI update at the very end for the now removed sources!
-    dois.forEach(doi -> bus.post(DoiChange.change(doi)));
+    dois.forEach(doi -> bus.publish(ChangeDoi.change(doi)));
   }
 
   /**
@@ -463,8 +488,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
     // physically delete dataset if its temporary
     if (key >= TEMP_KEY_START) {
+      LOG.info("Physically delete temporary dataset {}", key);
+      deleteKeptReleaseData(key, session);
       mapper.deletePhysically(key);
     }
+    session.commit();
     session.close();
 
     // clear search index asynchroneously
@@ -474,9 +502,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         return 0;
       });
     // notify event bus
-    bus.post(delEvent);
+    bus.publish(delEvent);
     if (old.getDoi() != null && old.getDoi().isCOL()) {
-      bus.post(DoiChange.delete(old.getDoi()));
+      bus.publish(ChangeDoi.delete(old.getDoi()));
     }
     return false;
   }
@@ -526,9 +554,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
         cm.create(obj.getKey(), c);
       }
     }
-    // update alias for publisher based datasets - we need the generated key for it
-    if (obj.getAlias() == null && obj.getGbifPublisherKey() != null && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
-      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
+    // update alias for ARTICLE datasets: https://github.com/CatalogueOfLife/backend/issues/1421
+    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
+      obj.setAlias(articleAlias(obj));
       mapper.update(obj);
     }
 
@@ -540,7 +568,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, null, user);
-    bus.post(DatasetChanged.created(obj, user));
+    bus.publish(DatasetChanged.created(obj, user));
     return false;
   }
 
@@ -573,10 +601,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     if (!java.util.Objects.equals(obj.getOrigin(), old.getOrigin())) {
       throw new IllegalArgumentException("origin is immutable and must remain " + old.getOrigin());
     }
-    // update alias for publisher based datasets ONLY in case the publisher key has changed
-    if (obj.getGbifPublisherKey() != null && !obj.getGbifPublisherKey().equals(old.getGbifPublisherKey()) && iCfg.publisherAlias.containsKey(obj.getGbifPublisherKey())) {
-      obj.setAlias(publisherAlias(obj.getGbifPublisherKey(), obj.getKey()));
-      mapper.update(obj);
+    // update alias for ARTICLE datasets when none existed: https://github.com/CatalogueOfLife/backend/issues/1421
+    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
+      obj.setAlias(articleAlias(obj));
     }
     sanitize(obj);
     // if list of creators for a project changes, adjust the max container author settings
@@ -588,8 +615,31 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super.updateBefore(obj, old, user, mapper, session);
   }
 
-  private String publisherAlias(UUID publisher, Integer key) {
-    return iCfg.publisherAlias.get(publisher) + key;
+  static String articleAlias(Dataset d) {
+    StringBuilder sb = new StringBuilder();
+    if (d.getSource() != null && d.getSource().size() == 1 &&
+      d.getSource().get(0).getAuthor() != null && !d.getSource().get(0).getAuthor().isEmpty() && !StringUtils.isBlank(d.getSource().get(0).getAuthor().get(0).getFamily())) {
+      var src = d.getSource().get(0);
+      var author = src.getAuthor().get(0);
+      if (!StringUtils.isBlank(author.getNonDroppingParticle())) {
+        sb.append((author.getNonDroppingParticle()));
+      }
+      sb.append(author.getFamily());
+      if (src.getIssued() != null) {
+        sb.append(src.getIssued().getYear());
+      }
+
+    } else if (d.getCreator() != null && !d.getCreator().isEmpty()) {
+      var author = d.getCreator().get(0);
+      var name = ObjectUtils.coalesce(author.getFamily(), author.getOrganisation(), author.getName());
+      if (!StringUtils.isBlank(name)) {
+        sb.append(name);
+      }
+      if (d.getIssued() != null) {
+        sb.append(d.getIssued().getYear());
+      }
+    }
+    return sb.length() > 2 ? removePunctWS(sb.toString()) : null;
   }
 
   @Override
@@ -609,9 +659,9 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     session.close();
     // other non pg stuff
     pullLogo(obj, old, user);
-    bus.post(DatasetChanged.changed(obj, old, user));
+    bus.publish(DatasetChanged.changed(obj, old, user));
     if (obj.getDoi() != null && obj.getDoi().isCOL()) {
-      bus.post(DoiChange.change(old.getDoi()));
+      bus.publish(ChangeDoi.change(old.getDoi()));
     }
     return false;
   }
@@ -670,28 +720,48 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
 
   /**
    * Convenience method to publish a dataset.
-   * Interally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * Internally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
    * @return true if the private flag has changed and the dataset was published
    */
   public boolean publish(int key, User user) {
+    var d = getNotDeleted(key);
+    if (d.isPrivat()) {
+      d.setPrivat(false);
+      update(d, user.getKey());
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Convenience method to make a dataset private again.
+   * Internally this loads the dataset instance, changes its private value and calls an update which does trigger the publication procedures.
+   * @return true if the private flag has changed and the dataset was unpublished
+   */
+  public boolean unpublish(int key, User user) {
+    var d = getNotDeleted(key);
+    if (!d.isPrivat()) {
+      d.setPrivat(true);
+      update(d, user.getKey());
+      return true;
+    }
+    return false;
+  }
+
+  private Dataset getNotDeleted(int key) {
     try (SqlSession session = factory.openSession(true)){
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var d = dm.get(key);
       if (d == null || d.hasDeletedDate()) {
         throw NotFoundException.notFound(Dataset.class, key);
       }
-      if (d.isPrivat()) {
-        d.setPrivat(false);
-        update(d, user.getKey());
-        return true;
-      }
-      return false;
+      return d;
     }
   }
 
-  public int deleteTempDatasets() {
+  public int deleteTempDatasets(@Nullable LocalDateTime expiryDate) {
     List<Integer> toDelete;
-    LocalDateTime expiryDate = LocalDateTime.now().minusDays(TEMP_EXPIRY_DAYS);
+    LOG.info("Looking for temporary datasets to be removed and created before {}", expiryDate);
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       toDelete = dm.keysAbove(TEMP_KEY_START, expiryDate);

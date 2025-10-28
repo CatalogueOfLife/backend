@@ -12,7 +12,9 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   private URI url;
+  private URI thumbnail;
   private MediaType type;
   private String format;
   private String title;
@@ -52,7 +54,15 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
   }
-  
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
   public URI getUrl() {
     return url;
   }
@@ -60,7 +70,15 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
   public void setUrl(URI url) {
     this.url = url;
   }
-  
+
+  public URI getThumbnail() {
+    return thumbnail;
+  }
+
+  public void setThumbnail(URI thumbnail) {
+    this.thumbnail = thumbnail;
+  }
+
   public MediaType getType() {
     return type;
   }
@@ -139,15 +157,29 @@ public class Media extends DatasetScopedEntity<Integer> implements ExtensionEnti
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof Media)) return false;
     if (!super.equals(o)) return false;
+
     Media media = (Media) o;
-    return Objects.equals(sectorKey, media.sectorKey) && sectorMode == media.sectorMode && Objects.equals(verbatimKey, media.verbatimKey) && Objects.equals(url, media.url) && type == media.type && Objects.equals(format, media.format) && Objects.equals(title, media.title) && Objects.equals(captured, media.captured) && Objects.equals(capturedBy, media.capturedBy) && license == media.license && Objects.equals(link, media.link) && Objects.equals(referenceId, media.referenceId) && Objects.equals(remarks, media.remarks);
+    return Objects.equals(sectorKey, media.sectorKey) &&
+      sectorMode == media.sectorMode &&
+      Objects.equals(verbatimKey, media.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, media.verbatimSourceKey) &&
+      Objects.equals(url, media.url) &&
+      Objects.equals(thumbnail, media.thumbnail) &&
+      type == media.type &&
+      Objects.equals(format, media.format) &&
+      Objects.equals(title, media.title) &&
+      Objects.equals(captured, media.captured) &&
+      Objects.equals(capturedBy, media.capturedBy) &&
+      license == media.license &&
+      Objects.equals(link, media.link) &&
+      Objects.equals(referenceId, media.referenceId) &&
+      Objects.equals(remarks, media.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, url, type, format, title, captured, capturedBy, license, link, referenceId, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, url, thumbnail, type, format, title, captured, capturedBy, license, link, referenceId, remarks);
   }
 }

@@ -10,7 +10,6 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -106,7 +105,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       store.verbatimList(ColdpTerm.NameRelation).forEach(v -> {
         if (v.getRaw(ColdpTerm.relatedNameID).equals("3")) {
-          assertTrue(v.hasIssue(Issue.NAME_ID_INVALID));
+          assertTrue(v.contains(Issue.NAME_ID_INVALID));
         } else {
           assertFalse(v.hasIssues());
         }
@@ -336,18 +335,18 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       VerbatimRecord t9 = vByUsageID("9");
       VerbatimRecord v9 = vByNameID("9");
-      assertTrue(t9.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
-      assertFalse(t9.hasIssue(Issue.PARENT_NAME_MISMATCH));
+      assertTrue(t9.contains(Issue.PUBLISHED_BEFORE_GENUS));
+      assertFalse(t9.contains(Issue.PARENT_NAME_MISMATCH));
 
       VerbatimRecord t11 = vByUsageID("11");
-      assertTrue(t11.hasIssue(Issue.PARENT_NAME_MISMATCH));
+      assertTrue(t11.contains(Issue.PARENT_NAME_MISMATCH));
 
       VerbatimRecord t103 = vByUsageID("103");
-      assertFalse(t103.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
-      assertFalse(t103.hasIssue(Issue.PARENT_NAME_MISMATCH));
+      assertFalse(t103.contains(Issue.PUBLISHED_BEFORE_GENUS));
+      assertFalse(t103.contains(Issue.PARENT_NAME_MISMATCH));
 
       VerbatimRecord t104 = vByUsageID("104");
-      assertTrue(t104.hasIssue(Issue.PUBLISHED_BEFORE_GENUS));
+      assertTrue(t104.contains(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }
   
@@ -612,8 +611,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Ignore
   public void testExternal() throws Exception {
 
-    normalize(Paths.get("/Users/markus/Desktop/antcat"));
-    //normalize(URI.create("https://svampe.databasen.org/dwc/dwcchecklistarchive.zip"));
+    //normalize(Paths.get("/Users/markus/Desktop/antcat"));
+    normalize(URI.create("https://ipt.laji.fi/archive.do?r=cfs"));
     //normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     //normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));

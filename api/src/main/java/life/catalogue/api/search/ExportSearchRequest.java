@@ -3,6 +3,7 @@ package life.catalogue.api.search;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.JobStatus;
+import life.catalogue.api.vocab.TabularFormat;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -14,7 +15,7 @@ import jakarta.ws.rs.QueryParam;
 /**
  * Watch out - null values mean different things.
  * For most properties NULL means I don't care - match any.
- * For some the filter only selects actual null values which is indicated in the fields descriptions
+ * For some, the filter only selects actual null values which is indicated in the fields descriptions
  */
 public class ExportSearchRequest {
   @QueryParam("datasetKey")
@@ -28,6 +29,9 @@ public class ExportSearchRequest {
 
   @QueryParam("format")
   private DataFormat format;
+
+  @QueryParam("tabFormat")
+  private TabularFormat tabFormat;
 
   @QueryParam("taxonID")
   private String taxonID; // NULL requires taxonID to be null in the export
@@ -49,6 +53,12 @@ public class ExportSearchRequest {
 
   @QueryParam("extinct")
   private Boolean extinct;// NULL requires extinct to be null in the export
+
+  @QueryParam("classification")
+  private Boolean classification;
+
+  @QueryParam("taxGroups")
+  private Boolean taxGroups;
 
   /**
    * Matches complete exports of a dataset not in Excel which have finished successfully and regardless of their format
@@ -75,6 +85,7 @@ public class ExportSearchRequest {
   public ExportSearchRequest(ExportRequest req) {
     datasetKey = req.getDatasetKey();
     format = req.getFormat();
+    tabFormat = req.getTabFormat();
     if (req.getRoot() != null) {
       taxonID = req.getRoot().getId();
     }
@@ -84,6 +95,8 @@ public class ExportSearchRequest {
     extended = req.isExtended();
     synonyms = req.isSynonyms();
     extinct = req.getExtinct();
+    classification = req.isClassification();
+    taxGroups = req.isTaxGroups();
   }
 
   public Integer getDatasetKey() {
@@ -122,6 +135,14 @@ public class ExportSearchRequest {
     this.format = format;
   }
 
+  public TabularFormat getTabFormat() {
+    return tabFormat;
+  }
+
+  public void setTabFormat(TabularFormat tabFormat) {
+    this.tabFormat = tabFormat;
+  }
+
   public String getTaxonID() {
     return taxonID;
   }
@@ -154,6 +175,22 @@ public class ExportSearchRequest {
     this.extended = extended;
   }
 
+  public Boolean getClassification() {
+    return classification;
+  }
+
+  public void setClassification(Boolean classification) {
+    this.classification = classification;
+  }
+
+  public Boolean getTaxGroups() {
+    return taxGroups;
+  }
+
+  public void setTaxGroups(Boolean taxGroups) {
+    this.taxGroups = taxGroups;
+  }
+
   public Boolean getExcel() {
     return excel;
   }
@@ -180,14 +217,27 @@ public class ExportSearchRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof ExportSearchRequest)) return false;
+
     ExportSearchRequest that = (ExportSearchRequest) o;
-    return Objects.equals(datasetKey, that.datasetKey) && Objects.equals(createdBy, that.createdBy) && Objects.equals(status, that.status) && format == that.format && Objects.equals(taxonID, that.taxonID) && minRank == that.minRank && Objects.equals(synonyms, that.synonyms) && Objects.equals(bareNames, that.bareNames) && Objects.equals(excel, that.excel) && Objects.equals(extended, that.extended) && Objects.equals(extinct, that.extinct);
+    return Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(createdBy, that.createdBy) &&
+      Objects.equals(status, that.status) &&
+      format == that.format &&
+      tabFormat == that.tabFormat &&
+      Objects.equals(taxonID, that.taxonID) &&
+      minRank == that.minRank &&
+      Objects.equals(synonyms, that.synonyms) &&
+      Objects.equals(bareNames, that.bareNames) &&
+      Objects.equals(excel, that.excel) &&
+      Objects.equals(extended, that.extended) &&
+      Objects.equals(extinct, that.extinct) &&
+      Objects.equals(classification, that.classification) &&
+      Objects.equals(taxGroups, that.taxGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, createdBy, status, format, taxonID, minRank, synonyms, bareNames, excel, extended, extinct);
+    return Objects.hash(datasetKey, createdBy, status, format, tabFormat, taxonID, minRank, synonyms, bareNames, excel, extended, extinct, classification, taxGroups);
   }
 }

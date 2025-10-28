@@ -1,23 +1,21 @@
 package life.catalogue.matching.util;
 
+import life.catalogue.matching.model.Kingdom;
+import life.catalogue.matching.model.RankNameResolver;
+
+import org.gbif.nameparser.api.Rank;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import life.catalogue.matching.model.Kingdom;
-import life.catalogue.matching.model.LinneanClassification;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
-import org.gbif.nameparser.api.Rank;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 /**
  * Utility class to compare higher taxa of a classification.
@@ -65,15 +63,15 @@ public class HigherTaxaComparator {
    */
   public int compareHigherRank(
       Rank rank,
-      LinneanClassification query,
-      LinneanClassification ref,
+      RankNameResolver query,
+      RankNameResolver ref,
       int match,
       int mismatch,
       int missing) {
-    if (!StringUtils.isBlank(query.getHigherRank(rank))
-        && !StringUtils.isBlank(ref.getHigherRank(rank))) {
-      String querySyn = lookup(query.getHigherRank(rank), rank);
-      String refSyn = lookup(ref.getHigherRank(rank), rank);
+    if (!StringUtils.isBlank(query.nameFor(rank))
+        && !StringUtils.isBlank(ref.nameFor(rank))) {
+      String querySyn = lookup(query.nameFor(rank), rank);
+      String refSyn = lookup(ref.nameFor(rank), rank);
       if (!StringUtils.isBlank(querySyn)
           && !StringUtils.isBlank(refSyn)
           && querySyn.equalsIgnoreCase(refSyn)) {
@@ -85,8 +83,8 @@ public class HigherTaxaComparator {
     return missing;
   }
 
-  public boolean isInKingdoms(LinneanClassification n, Kingdom... kingdoms) {
-    String syn = lookup(n.getKingdom(), Rank.KINGDOM);
+  public boolean isInKingdoms(RankNameResolver n, Kingdom... kingdoms) {
+    String syn = lookup(n.nameFor(Rank.KINGDOM), Rank.KINGDOM);
     if (Objects.nonNull(syn) && !syn.isEmpty()) {
       for (Kingdom kingdom : kingdoms) {
         if (syn.equalsIgnoreCase(kingdom.name())) {
@@ -153,9 +151,11 @@ public class HigherTaxaComparator {
    * @return a map of synonyms
    */
   private Map<String, String> readSynonymUrl(Rank rank, String file) {
-    URL url = dictionaries.synonymUrl(file);
-    log.debug("Reading synonyms from " + url.toString());
-    try (InputStream synIn = url.openStream()) {
+    try (InputStream synIn = dictionaries.getDictionaryInputStream("synonyms", file)) {
+      if (synIn == null) {
+        log.error("Unable to find synonym file: {}", file);
+        return Map.of();
+      }
       return IOUtils.streamToMap(synIn);
     } catch (IOException e) {
       log.warn("Cannot read synonym map from stream for {}. Use empty map instead.", rank, e);
@@ -175,10 +175,12 @@ public class HigherTaxaComparator {
 
   /** Reads blacklisted names from rs.gbif.org */
   private void readOnlineBlacklist() {
-    URL url = dictionaries.authorityUrl(Dictionaries.FILENAME_BLACKLIST);
-    try (InputStream in = url.openStream()) {
-      log.debug("Reading {}", url);
-      readBlacklistStream(in);
+    try (InputStream in = dictionaries.getDictionaryInputStream("authority", Dictionaries.FILENAME_BLACKLIST)) {
+      if (in != null) {
+        readBlacklistStream(in);
+      } else {
+        log.error("Unable to find online blacklist file.");
+      }
     } catch (IOException e) {
       log.warn("Cannot read online blacklist.", e);
     }

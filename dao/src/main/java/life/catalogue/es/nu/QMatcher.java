@@ -24,6 +24,7 @@ public abstract class QMatcher {
   static final String FLD_VERNACULAR = "vernacularNames";
   static final String FLD_GENUS = "nameStrings.genusOrMonomial";
   static final String FLD_GENUS_LETTER = "nameStrings.genusLetter";
+  static final String FLD_INFRAGENERIC = "nameStrings.infragenericEpithet";
   static final String FLD_SPECIES = "nameStrings.specificEpithet";
   static final String FLD_SUBSPECIES = "nameStrings.infraspecificEpithet";
 

@@ -11,6 +11,7 @@
     nr.name_id,
     nr.related_name_id,
     nr.verbatim_key,
+    nr.verbatim_source_key,
     nr.type,
     nr.reference_id,
     nr.remarks,
@@ -22,14 +23,15 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     name_id,
     related_name_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
+    verbatim_source_key,
     type,
     reference_id,
     remarks,
@@ -39,10 +41,11 @@
 
   <sql id="PROPS">
     #{datasetKey},
-    #{sectorKey},
     #{nameId},
     #{relatedNameId},
+    #{sectorKey},
     #{verbatimKey},
+    #{verbatimSourceKey},
     #{type}::NOMRELTYPE,
     #{referenceId},
     #{remarks},
@@ -194,7 +197,7 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE name_rel SET sector_key = NULL
+    UPDATE name_rel SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
   </update>
 

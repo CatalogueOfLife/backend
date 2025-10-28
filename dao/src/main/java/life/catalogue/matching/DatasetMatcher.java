@@ -1,6 +1,6 @@
 package life.catalogue.matching;
 
-import life.catalogue.api.event.FlushDatasetCache;
+import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.PgUtils;
@@ -8,16 +8,15 @@ import life.catalogue.db.mapper.ArchivedNameUsageMapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.db.mapper.NameMatchMapper;
+import life.catalogue.event.EventBroker;
+import life.catalogue.matching.nidx.NameIndex;
 
 import javax.annotation.Nullable;
 
-import life.catalogue.matching.nidx.NameIndex;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.eventbus.EventBus;
 
 /**
  * Rematches entire datasets, using 2 separate db connections for read & write
@@ -25,11 +24,11 @@ import com.google.common.eventbus.EventBus;
  */
 public class DatasetMatcher extends BaseMatcher {
   private static final Logger LOG = LoggerFactory.getLogger(DatasetMatcher.class);
-  private final EventBus bus;
+  private final EventBroker bus;
   private int archived = 0;
   private int datasets = 0;
 
-  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBus bus) {
+  public DatasetMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBroker bus) {
     super(factory, ni);
     this.bus = bus;
   }
@@ -52,26 +51,30 @@ public class DatasetMatcher extends BaseMatcher {
         doUpdate = !onlyMissingMatches && session.getMapper(NameMatchMapper.class).exists(datasetKey, null);
       }
 
-      try (SqlSession readOnlySession = factory.openSession(true);
-           BulkMatchHandler hn = new BulkMatchHandler(allowInserts, NameMatchMapper.class, doUpdate);
-           BulkMatchHandler hu = new BulkMatchHandler(allowInserts, ArchivedNameUsageMatchMapper.class, true);
-      ) {
+      try (SqlSession readOnlySession = factory.openSession(true)) {
         NameMapper nm = readOnlySession.getMapper(NameMapper.class);
 
         final boolean isProject = DatasetInfoCache.CACHE.info(datasetKey).origin == DatasetOrigin.PROJECT;
         LOG.info("{} {}name matches for {}{}", doUpdate ? "Update" : "Create", onlyMissingMatches?"missing ":"", isProject ? "project " : "", datasetKey);
-        PgUtils.consume(() -> onlyMissingMatches ?
+
+        try (BulkMatchHandler hn = new BulkMatchHandler(allowInserts, NameMatchMapper.class, doUpdate)) {
+          PgUtils.consume(() -> onlyMissingMatches ?
             nm.processDatasetWithoutMatches(datasetKey) :
             nm.processDataset(datasetKey), hn
-        );
+          );
+        }
+
         // also match archived names
         if (isProject) {
           ArchivedNameUsageMapper anum = readOnlySession.getMapper(ArchivedNameUsageMapper.class);
           LOG.info("{} {}name archive matches for project {}", doUpdate ? "Update" : "Create", onlyMissingMatches?"missing ":"", datasetKey);
           final int totalBeforeArchive = total;
-          PgUtils.consume(() -> anum.processArchivedNames(datasetKey, onlyMissingMatches), hu);
+          try (BulkMatchHandler hu = new BulkMatchHandler(allowInserts, ArchivedNameUsageMatchMapper.class, true)) {
+            PgUtils.consume(() -> anum.processArchivedNames(datasetKey, onlyMissingMatches), hu);
+          }
           archived = archived + total - totalBeforeArchive;
         }
+
       } catch (RuntimeException e) {
         LOG.error("Failed to rematch dataset {}", datasetKey, e);
         throw e;
@@ -97,7 +100,7 @@ public class DatasetMatcher extends BaseMatcher {
       }
     } finally {
       if (bus != null) {
-        bus.post(new FlushDatasetCache(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey));
       }
     }
   }

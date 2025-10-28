@@ -273,6 +273,19 @@ public class NeoDb implements AutoCloseable {
     return result.columnAs("n");
   }
 
+  public Set<Node> usagesByNames(Rank rank, boolean inclUnranked, String... scientificName) {
+    Set<Node> nodes = new HashSet<>();
+    if (scientificName != null && scientificName.length > 0) {
+      Set<String> names = Arrays.stream(scientificName)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toSet());
+      for (String name : names) {
+        nodes.addAll(usagesByName(name, null, rank, inclUnranked));
+      }
+    }
+    return nodes;
+  }
+
   /**
    * Retuns a list of usage nodes that have a matching scientific name, rank & authorship.
    * A prefixed hybrid symbol will be ignored in both the query name and stored names.
@@ -538,7 +551,7 @@ public class NeoDb implements AutoCloseable {
       } else {
         for (Issue is : issue) {
           if (is != null) {
-            v.addIssue(is);
+            v.add(is);
           }
         }
         put(v);

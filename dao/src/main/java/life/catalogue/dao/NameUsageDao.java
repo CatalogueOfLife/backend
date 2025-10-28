@@ -1,38 +1,28 @@
 package life.catalogue.dao;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
-
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-
-import life.catalogue.api.exception.ArchivedException;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.exception.SynonymException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
-import life.catalogue.api.vocab.*;
-import life.catalogue.db.*;
-import life.catalogue.db.mapper.*;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.db.CRUD;
+import life.catalogue.db.DatasetPageable;
+import life.catalogue.db.DatasetProcessable;
+import life.catalogue.db.mapper.NameUsageMapper;
+import life.catalogue.db.mapper.NameUsageWrapperMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.parser.NameParser;
+
+import org.gbif.nameparser.api.NameType;
+
+import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import org.gbif.nameparser.api.NameType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 import jakarta.validation.Validator;
-
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>, T> & DatasetPageable<T> & DatasetProcessable<T>> extends SectorEntityDao<T, M> {
   protected final NameUsageIndexService indexService;
@@ -58,9 +48,25 @@ abstract class NameUsageDao<T extends NameUsageBase, M extends CRUD<DSID<String>
     return u;
   }
 
-  public VerbatimSource getSource(final DSID<String> key) {
+  public SimpleName getSimpleOr404(DSID<String> key) {
     try (SqlSession session = factory.openSession(false)) {
-      return session.getMapper(VerbatimSourceMapper.class).getWithSources(key);
+      var sn = session.getMapper(NameUsageMapper.class).getSimple(key);
+      if (sn == null) {
+        throw NotFoundException.notFound(SimpleName.class, key);
+      }
+      return sn;
+    }
+  }
+
+  /**
+   * @param key name usage key
+   * @return the verbatim source record with 2ndary sources for the given name usage key or null if none exists
+   */
+  public VerbatimSource getSourceByUsageKey(final DSID<String> key) {
+    try (SqlSession session = factory.openSession(false)) {
+      var vsm = session.getMapper(VerbatimSourceMapper.class);
+      var v = vsm.getByUsage(key);
+      return vsm.addSources(v);
     }
   }
 

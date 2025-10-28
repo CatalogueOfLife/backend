@@ -103,7 +103,7 @@ public class NamesIndexResource {
                          @QueryParam("rank") Rank rank,
                          @QueryParam("code") NomCode code,
                          @QueryParam("verbose") boolean verbose) throws InterruptedException {
-    SimpleNameClassified<SimpleName> sn = SimpleNameClassified.snc(null, rank, code, null, ObjectUtils.coalesce(sciname, name, q), authorship);
+    SimpleName sn = new SimpleName(null, ObjectUtils.coalesce(sciname, name, q), authorship, rank, code);
     Name n = interpreter.interpret(sn, IssueContainer.VOID)
                         .orElseThrow(() -> new IllegalArgumentException("Failed to interpret name")).getName();
     return ni.match(n, false, verbose);

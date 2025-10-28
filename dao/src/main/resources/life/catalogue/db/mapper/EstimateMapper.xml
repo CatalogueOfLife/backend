@@ -8,6 +8,7 @@
     ${alias}id AS ${prefix}id,
     ${alias}dataset_key AS ${prefix}dataset_key,
     ${alias}verbatim_key AS ${prefix}verbatim_key,
+    ${alias}verbatim_source_key AS ${prefix}verbatim_source_key,
     ${alias}target_id AS ${prefix}target_id,
     ${alias}target_name AS ${prefix}target_name,
     ${alias}target_authorship AS ${prefix}target_authorship,
@@ -39,6 +40,7 @@
 
   <sql id="COLS_NO_DATASETKEY">
     verbatim_key,
+    verbatim_source_key,
     target_name,
     target_authorship,
     target_rank,
@@ -55,6 +57,7 @@
       #{datasetKey},
       #{target.id},
       #{verbatimKey},
+      #{verbatimSourceKey},
       #{target.name},
       #{target.authorship},
       #{target.rank}::RANK,
@@ -192,4 +195,8 @@
     WHERE est.dataset_key=#{datasetKey}
   </select>
 
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE estimate SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
+  </update>
 </mapper>

@@ -5,17 +5,17 @@ import life.catalogue.api.model.DSIDValue;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-
 import life.catalogue.junit.TreeRepoRule;
+
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 public abstract class DaoTestBase {
   

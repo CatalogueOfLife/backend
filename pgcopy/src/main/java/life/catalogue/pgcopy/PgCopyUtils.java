@@ -74,6 +74,7 @@ public class PgCopyUtils {
     long cnt = copy.copyIn("COPY " + table + "(" + header + ") FROM STDOUT WITH "+with, in);
 
     con.commit();
+    LOG.debug("Copied {} records to {}", cnt, table);
     return cnt;
   }
   

@@ -21,6 +21,7 @@ abber,ABERRATION
 abberatio,ABERRATION
 abberation,ABERRATION
 aberrancy,ABERRATION
+aberratio,ABERRATION
 abt,PHYLUM
 abteilung,PHYLUM
 agamosp,SPECIES
@@ -112,7 +113,9 @@ infrasp,INFRASPECIFIC_NAME
 infrasp.unranked,INFRASPECIFIC_NAME
 infraspecies,INFRASPECIFIC_NAME
 infraspecific,INFRASPECIFIC_NAME
+infraspecific,INFRASPECIFIC_NAME
 infraspecifictaxon,INFRASPECIFIC_NAME
+infrasubspecific,INFRASUBSPECIFIC_NAME
 intergen hybrid,UNRANKED
 k,KINGDOM
 kd,KINGDOM
@@ -190,9 +193,9 @@ sec ion,SECTION_BOTANY
 sec,SECTION_BOTANY
 sect,SECTION_BOTANY
 sectio,SECTION_BOTANY
-section,SECTION_BOTANY
 section (botany),SECTION_BOTANY
 section (zoology),SECTION_ZOOLOGY
+section,SECTION_BOTANY
 ser,SERIES
 serie,SERIES
 serotype,SEROVAR
@@ -251,6 +254,7 @@ subsection,SUBSECTION_BOTANY
 subser,SUBSERIES
 subsp,SUBSPECIES
 subspec,SUBSPECIES
+subspecies (plantae),SUBSPECIES
 subspeciesaggregate,INFRASPECIFIC_NAME
 subsubf,INFRASUBSPECIFIC_NAME
 subsubvar,INFRASUBSPECIFIC_NAME

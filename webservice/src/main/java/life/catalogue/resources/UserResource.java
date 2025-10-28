@@ -1,5 +1,9 @@
 package life.catalogue.resources;
 
+import jakarta.ws.rs.container.ContainerRequestContext;
+
+import jakarta.ws.rs.core.*;
+
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -19,19 +23,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
-
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)
@@ -104,6 +103,16 @@ public class UserResource {
       throw new WebApplicationException(Response.Status.UNAUTHORIZED);
     }
     return jwt.generate(user);
+  }
+
+  /**
+   * Makes surer a user has authenticated with BasicAuth and then returns a new JWT token if successful.
+   */
+  @DELETE
+  @Path("/logout")
+  public void logout(@Auth User user, @Context ContainerRequestContext req) {
+    final String auth = req.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    jwt.invalidate(auth);
   }
   
   @PUT
@@ -182,6 +191,6 @@ public class UserResource {
   @Path("/cache")
   @RolesAllowed({Roles.ADMIN})
   public int flushCache() throws Exception {
-    return idService.flush();
+    return idService.flushCache();
   }
 }

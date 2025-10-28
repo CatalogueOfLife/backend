@@ -3,11 +3,12 @@ package life.catalogue.interpreter;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
-
 import life.catalogue.coldp.ColdpTerm;
 
 import org.gbif.dwc.terms.Term;
-import org.gbif.nameparser.api.*;
+import org.gbif.nameparser.api.Authorship;
+import org.gbif.nameparser.api.NamePart;
+import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
 import java.util.List;
@@ -129,6 +130,8 @@ public class NameInterpreterTest {
     VerbatimRecord v = new VerbatimRecord();
     ParsedNameUsage pnu;
     Name n;
+
+    assertFalse(ib.interpret(null, v).isPresent());
 
     pnu = ib.interpret(SimpleName.sn(BACTERIAL, "Bacteroides tectus (corrig.) Love et al. 1986"), v).get();
     assertEquals("Bacteroides tectus", pnu.getName().getScientificName());

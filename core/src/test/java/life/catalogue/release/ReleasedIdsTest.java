@@ -2,6 +2,7 @@ package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.concurrent.TimeUnit;
@@ -19,7 +20,7 @@ public class ReleasedIdsTest {
   ReleasedIds ids;
 
   void init(int max){
-    ids = new ReleasedIds(max);
+    ids = new ReleasedIds();
     counter = 0;
     while (counter < max) {
       ids.add(gen());
@@ -49,15 +50,15 @@ public class ReleasedIdsTest {
     assertNull(ids.byId(3));
     assertEquals(9, ids.size());
     assertEquals(3, r.nxId);
-    assertEquals(1, ids.byNxId(1).length);
-    assertEquals(2, ids.byNxId(2).length);
-    assertNull(ids.byNxId(3));
+    assertEquals(9, ids.byCanonId(r.canonId).length);
+    assertNull(ids.byCanonId(2));
+    assertNull(ids.byCanonId(3));
 
     // id 0 has nx id = 2
     ids.remove(0);
     assertEquals(8, ids.size());
-    assertEquals(1, ids.byNxId(1).length);
-    assertEquals(1, ids.byNxId(2).length);
+    assertEquals(8, ids.byCanonId(1).length);
+    assertNull(ids.byCanonId(2));
     assertNull(ids.byId(0));
 
     // we did remove it already, no change
@@ -82,6 +83,7 @@ public class ReleasedIdsTest {
     sn.setNamesIndexMatchType(MatchType.EXACT);
     sn.setStatus(TaxonomicStatus.ACCEPTED);
     sn.setName("Abies");
+    sn.setGroup(TaxGroup.Angiosperms);
     return new ReleasedId(id, counter < 100000 ? 1 : 2, true, sn);
   }
 }

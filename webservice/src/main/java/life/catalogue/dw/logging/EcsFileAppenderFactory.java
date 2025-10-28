@@ -1,36 +1,21 @@
 package life.catalogue.dw.logging;
 
-import java.util.Map;
-
-import ch.qos.logback.core.OutputStreamAppender;
-
-import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
-import co.elastic.logging.AdditionalField;
-import co.elastic.logging.EcsJsonSerializer;
-import co.elastic.logging.logback.EcsEncoder;
-
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
-import io.dropwizard.logging.common.FileAppenderFactory;
-
 import life.catalogue.api.util.ObjectUtils;
 
-import life.catalogue.common.util.LoggingUtils;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
-import io.dropwizard.logging.common.AbstractAppenderFactory;
+import ch.qos.logback.core.OutputStreamAppender;
+import co.elastic.logging.AdditionalField;
+import io.dropwizard.logging.common.FileAppenderFactory;
 import io.dropwizard.logging.common.async.AsyncAppenderFactory;
 import io.dropwizard.logging.common.filter.LevelFilterFactory;
 import io.dropwizard.logging.common.layout.LayoutFactory;
-
-import org.slf4j.MDC;
 
 /**
  * A logback appender factory using the standardized ECS JSON logging from elasticsearch.

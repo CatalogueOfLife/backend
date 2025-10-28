@@ -5,12 +5,11 @@ import life.catalogue.db.mapper.*;
 
 import java.util.UUID;
 
-import jakarta.ws.rs.core.Response;
-
 import org.apache.ibatis.exceptions.PersistenceException;
 import org.junit.Test;
 
 import io.dropwizard.jersey.errors.ErrorMessage;
+import jakarta.ws.rs.core.Response;
 
 import static org.junit.Assert.*;
 
@@ -23,7 +22,7 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   @Test
   public void missing404() throws Exception {
     try {
-      mapper(TreeMapper.class).get(9999, TreeNode.Type.PROJECT, DSID.of(9999, "1"), true);
+      mapper(TreeMapper.class).get(9999, TreeNode.Type.PROJECT, DSID.of(9999, "1"));
     } catch (PersistenceException e) {
       PersistenceExceptionMapper map = new PersistenceExceptionMapper();
       Response resp = map.toResponse(e);

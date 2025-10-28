@@ -3,8 +3,8 @@ package life.catalogue.api.model;
 import java.util.Objects;
 
 /**
- * A Name relation that can includes usage keys for the respective nameId and relatedNameId values.
- * Not that there might be several usages for a given name. In that case the relation should be duplicated!
+ * A Name relation that can include usage keys for the respective nameId and relatedNameId values.
+ * Note that there might be several usages for a given name. In that case the relation should be duplicated!
  */
 public class NameUsageRelation extends NameRelation {
   private String usageId;

@@ -3,9 +3,9 @@ package life.catalogue.dao;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.db.CRUD;
 
-import jakarta.validation.Validator;
-
 import org.apache.ibatis.session.SqlSessionFactory;
+
+import jakarta.validation.Validator;
 
 /**
  * Generic CRUD Data DAO for keyed entities

@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -11,12 +12,12 @@ import life.catalogue.common.io.TempFile;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.dao.DatasetDao;
-import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
@@ -27,9 +28,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -42,6 +40,8 @@ import com.google.common.io.Files;
 
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectIntImmutablePair;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 
 /**
  * Imports the given datasets from the test resources
@@ -158,7 +158,7 @@ public class PgImportRule extends ExternalResource {
   public void before() throws Throwable {
     LOG.info("run PgImportRule with {} datasets{}", datasets.length, colImportSource==null ? "" : " and import COL from " + colImportSource.second());
     super.before();
-    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator);
+    ddao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), null, null, validator, TestUtils.mockedBroker());
 
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();

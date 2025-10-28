@@ -13,11 +13,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * Type material should only be associated with the original name, not with a recombination.
  */
-public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScoped, Referenced, Remarkable {
+public class TypeMaterial extends DatasetScopedEntity<String> implements VerbatimEntity, SectorScopedEntity<String>, Referenced, Remarkable {
 
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
 
   /**
    * The citation generated from the CSL data or the verbatim citation if it could not be parsed
@@ -126,6 +127,14 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
   }
 
   public String getNameId() {
@@ -287,15 +296,37 @@ public class TypeMaterial extends DatasetScopedEntity<String> implements Verbati
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof TypeMaterial)) return false;
     if (!super.equals(o)) return false;
+
     TypeMaterial that = (TypeMaterial) o;
-    return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(verbatimKey, that.verbatimKey) && Objects.equals(nameId, that.nameId) && Objects.equals(citation, that.citation) && status == that.status && Objects.equals(referenceId, that.referenceId) && Objects.equals(link, that.link) && country == that.country && Objects.equals(locality, that.locality) && sex == that.sex && Objects.equals(institutionCode, that.institutionCode) && Objects.equals(catalogNumber, that.catalogNumber) && Objects.equals(associatedSequences, that.associatedSequences) && Objects.equals(host, that.host) && Objects.equals(date, that.date) && Objects.equals(collector, that.collector) && Objects.equals(latitude, that.latitude) && Objects.equals(longitude, that.longitude) && Objects.equals(coordinate, that.coordinate) && Objects.equals(altitude, that.altitude) && Objects.equals(remarks, that.remarks);
+    return Objects.equals(sectorKey, that.sectorKey) &&
+      sectorMode == that.sectorMode &&
+      Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
+      Objects.equals(nameId, that.nameId) &&
+      Objects.equals(citation, that.citation) &&
+      status == that.status &&
+      Objects.equals(referenceId, that.referenceId) &&
+      Objects.equals(link, that.link) &&
+      country == that.country &&
+      Objects.equals(locality, that.locality) &&
+      sex == that.sex &&
+      Objects.equals(institutionCode, that.institutionCode) &&
+      Objects.equals(catalogNumber, that.catalogNumber) &&
+      Objects.equals(associatedSequences, that.associatedSequences) &&
+      Objects.equals(host, that.host) &&
+      Objects.equals(date, that.date) &&
+      Objects.equals(collector, that.collector) &&
+      Objects.equals(latitude, that.latitude) &&
+      Objects.equals(longitude, that.longitude) &&
+      Objects.equals(coordinate, that.coordinate) &&
+      Objects.equals(altitude, that.altitude) &&
+      Objects.equals(remarks, that.remarks);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, nameId, citation, status, referenceId, link, country, locality, sex, institutionCode, catalogNumber, associatedSequences, host, date, collector, latitude, longitude, coordinate, altitude, remarks);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, nameId, citation, status, referenceId, link, country, locality, sex, institutionCode, catalogNumber, associatedSequences, host, date, collector, latitude, longitude, coordinate, altitude, remarks);
   }
 }

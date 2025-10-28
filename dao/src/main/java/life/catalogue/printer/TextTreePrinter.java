@@ -2,28 +2,31 @@ package life.catalogue.printer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
+import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.dao.TaxonCounter;
-
+import life.catalogue.db.PgUtils;
+import life.catalogue.db.SectorInfoCache;
+import life.catalogue.db.mapper.DistributionMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonExtensionMapper;
 import life.catalogue.db.mapper.VernacularNameMapper;
 
 import org.gbif.nameparser.api.Rank;
+import org.gbif.txtree.Tree;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
-
-import org.gbif.txtree.Tree;
-
-import javax.annotation.Nullable;
 
 /**
  * Print an entire dataset in the indented text format used by TxtPrinter.
@@ -48,24 +51,52 @@ import javax.annotation.Nullable;
  */
 public class TextTreePrinter extends AbstractTreePrinter {
   private static final int indentation = 2;
+  private static final Pattern SPACE = Pattern.compile("[\n\r\t]+");
+  private static final Pattern COMMA = Pattern.compile(",");
   private boolean showIDs;
   private boolean extended;
   private final DSID<String> key;
+  private final SectorInfoCache sectorInfoCache;
 
   public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
                          SqlSessionFactory factory, Writer writer) {
     super(params, ranks, extinct, countRank, taxonCounter, factory, writer);
     key = DSID.root(params.getDatasetKey());
+    sectorInfoCache = new SectorInfoCache(factory, params.getDatasetKey());
   }
 
 
-  public void showIDs() {
+  public TextTreePrinter showIDs() {
     this.showIDs = true;
+    return this;
   }
 
-  public void showExtendedInfos() {
+  public TextTreePrinter showExtendedInfos() {
     extended = true;
+    return this;
+  }
+
+  /**
+   * Prints the parent classification of the given root taxon and increases the indentation (level) accordingly.
+   * Make sure to call this method only once and before printing any taxa!
+   *
+   * This method will do nothing if no taxonID (root) is set in the traversal parameters.
+   */
+  public void printParents() {
+    if (params.getTaxonID() != null) {
+      try (var sess = factory.openSession(true)){
+        var num = sess.getMapper(NameUsageMapper.class);
+        var cl = num.getClassificationSN(key.id(params.getTaxonID()));
+        if (cl != null) {
+          for (var sn : cl) {
+            if (!sn.getId().equals(params.getTaxonID())) {
+              accept(sn);
+            }
+          }
+        }
+      }
+    }
   }
 
   protected void start(SimpleName u) throws IOException {
@@ -91,12 +122,14 @@ public class TextTreePrinter extends AbstractTreePrinter {
     writer.write("]");
 
     var infos = infos(u);
-    if (!infos.isEmpty()) {
+    if (!infos.props.isEmpty()) {
       writer.write(" {");
-      writer.write(String.join(" ", infos));
+      writer.write(String.join(" ", infos.props));
       writer.write("}");
     }
-
+    if (infos.remarks != null) {
+      writer.write(" # " + noLineBreak(infos.remarks) );
+    }
     writer.write('\n');
   }
 
@@ -111,39 +144,50 @@ public class TextTreePrinter extends AbstractTreePrinter {
     return sb;
   }
 
+  private static class MappedInfos {
+    final List<String> props = new ArrayList<>();
+    String remarks;
+  }
+
   /**
    * @return list of infos to be appended in brackets after the name
    * @param u
    */
-  private List<String> infos(SimpleName u){
-    List<String> infos = new ArrayList<>();
+  private MappedInfos infos(SimpleName u){
+    var infos = new MappedInfos();
     if (showIDs) {
-      infos.add("ID=" + u.getId());
+      infos.props.add("ID=" + u.getId());
     }
     if (extended) {
       key.id(u.getId());
-      addInfos(TxtTreeTerm.CODE, u.getCode(), infos);
+      addInfos(TxtTreeTerm.CODE, u.getCode(), infos.props);
       var nu = session.getMapper(NameUsageMapper.class).get(key);
       if (nu != null) {
-        addInfos(TxtTreeTerm.PUB, escape(nu.getName().getPublishedInId()), infos);
+        nu.setSectorMode(sectorInfoCache.sector2mode(nu.getSectorKey()));
+        if (Boolean.TRUE.equals(nu.isMerged())) {
+          addInfos(TxtTreeTerm.MERGED, "true", infos.props);
+        }
+        addInfos(TxtTreeTerm.PUB, escape(nu.getName().getPublishedInId()), infos.props);
         if (nu.isTaxon()) {
           Taxon t = nu.asTaxon();
-          addInfos(TxtTreeTerm.REF, joinStr(t.getReferenceIds()), infos);
-          addInfos(TxtTreeTerm.ENV, joinEnum(t.getEnvironments()), infos);
+          addInfos(TxtTreeTerm.REF, joinStr(t.getReferenceIds()), infos.props);
+          addInfos(TxtTreeTerm.ENV, joinEnum(t.getEnvironments()), infos.props);
           if (t.getTemporalRangeStart() != null || t.getTemporalRangeEnd() != null) {
-            addInfos(TxtTreeTerm.CHRONO, str(t.getTemporalRangeStart()) + "-" + str(t.getTemporalRangeEnd()), infos);
+            addInfos(TxtTreeTerm.CHRONO, str(t.getTemporalRangeStart()) + "-" + str(t.getTemporalRangeEnd()), infos.props);
           }
         }
-        addInfos(TxtTreeTerm.LINK, nu.getLink(), infos);
-        addInfos(TxtTreeTerm.REMARKS, escape(nu.getRemarks()), infos);
+        addInfos(TxtTreeTerm.LINK, nu.getLink(), infos.props);
+        infos.remarks = nu.getRemarks();
       }
-      addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos);
+      addInfos(TxtTreeTerm.VERN, VernacularNameMapper.class, this::encode, infos.props);
+      addInfos(TxtTreeTerm.DIST, DistributionMapper.class, this::encode, infos.props);
     }
     if (countRank != null) {
-      infos.add("NUM_"+countRank.name() + "=" + taxonCount);
+      infos.props.add("NUM_"+countRank.name() + "=" + taxonCount);
     }
     return infos;
   }
+
   private static String str(String x) {
     return x == null ? "" : escape(x);
   }
@@ -154,14 +198,36 @@ public class TextTreePrinter extends AbstractTreePrinter {
    * @return
    */
   private static String escape(String x) {
-    return x == null ? null : x.replaceAll(",", ",,");
+    return x == null ? null : COMMA.matcher( noLineBreak(x) ).replaceAll(",,");
   }
+  private static String noLineBreak(String x) {
+    return x == null ? null : SPACE.matcher(x).replaceAll(" ");
+  }
+
   private String encode(VernacularName vn) {
     if (vn != null && vn.getName() != null) {
       if (vn.getLanguage() != null) {
         return vn.getLanguage() + ":" + escape(vn.getName().trim());
       }
       return escape(vn.getName().trim());
+    }
+    return null;
+  }
+
+  /**
+   * Serializes all structured distributions, but skips pure text ones
+   */
+  private String encode(Distribution d) {
+    if (d != null && d.getArea() != null && d.getArea().getGazetteer() != null && d.getArea().getGazetteer() != Gazetteer.TEXT) {
+      if (d.getArea().getId() != null) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(d.getArea().getGlobalId());
+        if (d.getEstablishmentMeans() != null) {
+          // iso:de:native
+          sb.append(':').append(d.getEstablishmentMeans().name().toLowerCase());
+        }
+        return sb.toString();
+      }
     }
     return null;
   }

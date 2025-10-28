@@ -1,7 +1,9 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DeleteSector;
+import life.catalogue.api.event.SectorListener;
 import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -38,9 +40,8 @@ import org.slf4j.LoggerFactory;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.google.common.eventbus.Subscribe;
 
-public class SyncManager implements Managed, Idle {
+public class SyncManager implements Managed, Idle, SectorListener, DatasetListener {
   static  final Comparator<Sector> SECTOR_ORDER = Comparator.comparing(Sector::getTarget, Comparator.nullsLast(SimpleName::compareTo));
   private static final Logger LOG = LoggerFactory.getLogger(SyncManager.class);
   private static final String THREAD_NAME = "assembly-sync";
@@ -92,7 +93,7 @@ public class SyncManager implements Managed, Idle {
       Page page = new Page(0, Page.MAX_LIMIT);
       List<SectorImport> sims = null;
       while (page.getOffset() == 0 || (sims != null && sims.size() == page.getLimit())) {
-        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, page);
+        sims = sim.list(null, null, null, ImportState.runningAndWaitingStates(), null, null, page);
         for (SectorImport si : sims) {
           si.setState(ImportState.CANCELED);
           si.setFinished(LocalDateTime.now());
@@ -294,10 +295,11 @@ public class SyncManager implements Managed, Idle {
   }
 
   private boolean rejectJob(SectorRunnable job, String reason) {
-    LOG.info(reason);
+    LOG.warn(reason);
     try (SqlSession session = factory.openSession(true)) {
       job.state.setState(ImportState.FAILED);
       job.state.setFinished(LocalDateTime.now());
+      job.state.setError(reason);
       session.getMapper(SectorImportMapper.class).update(job.state);
     }
     return false;
@@ -356,8 +358,8 @@ public class SyncManager implements Managed, Idle {
     return queued;
   }
 
-  @Subscribe
-  public void deleteSectorListener(DeleteSector event){
+  @Override
+  public void sectorDeleted(DeleteSector event){
     LOG.info("Trigger deletion of sector {} by user={}", event.key, event.user);
     var del = deleteSector(event.key, true, event.user);
     if (!del) {
@@ -365,8 +367,8 @@ public class SyncManager implements Managed, Idle {
     }
   }
 
-  @Subscribe
-  public void datasetDeletedListener(DatasetChanged event){
+  @Override
+  public void datasetChanged(DatasetChanged event){
     if (event.isDeletion()) {
       var keys = syncs.keySet().stream()
                       .filter(k -> k.getDatasetKey().equals(event.key))

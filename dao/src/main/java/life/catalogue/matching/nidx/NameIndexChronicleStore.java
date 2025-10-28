@@ -35,7 +35,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import net.openhft.chronicle.bytes.Bytes;
 import net.openhft.chronicle.hash.serialization.BytesReader;
 import net.openhft.chronicle.hash.serialization.BytesWriter;
-import net.openhft.chronicle.hash.serialization.StatefulCopyable;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
 
@@ -347,4 +346,5 @@ public class NameIndexChronicleStore implements NameIndexStore {
       }
     }
   }
+
 }

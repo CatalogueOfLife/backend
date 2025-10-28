@@ -4,6 +4,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 
 import org.gbif.nameparser.api.NomCode;
+import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -13,8 +14,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.gbif.nameparser.api.Rank;
 
 public class DatasetWithSettings {
 

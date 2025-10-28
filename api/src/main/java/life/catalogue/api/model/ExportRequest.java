@@ -22,6 +22,10 @@ public class ExportRequest {
   private TabularFormat tabFormat = TabularFormat.TSV;
   private boolean excel;
   private boolean extended;
+  // only relevant for simple dwc & coldp exports
+  private Boolean classification; // triggers a simple dwc tree export
+  private Boolean taxGroups;
+  // workflow
   private boolean force; // this makes sure we run a new export
 
   public ExportRequest() {
@@ -62,6 +66,22 @@ public class ExportRequest {
 
   public void setExtended(boolean extended) {
     this.extended = extended;
+  }
+
+  public Boolean isClassification() {
+    return classification;
+  }
+
+  public void setClassification(Boolean classification) {
+    this.classification = classification;
+  }
+
+  public Boolean isTaxGroups() {
+    return taxGroups;
+  }
+
+  public void setTaxGroups(Boolean taxGroups) {
+    this.taxGroups = taxGroups;
   }
 
   public boolean isExcel() {
@@ -117,6 +137,7 @@ public class ExportRequest {
     this.minRank = minRank;
   }
 
+  @JsonIgnore
   public boolean isForce() {
     return force;
   }
@@ -126,33 +147,45 @@ public class ExportRequest {
   }
 
   /**
+   * @return true if the requested output requires ordered tree traversal.
+   * Typically when the full classification per row is required.
+   */
+  @JsonIgnore
+  public boolean isTreeRequest() {
+    return Boolean.TRUE.equals(classification) || Boolean.TRUE.equals(taxGroups);
+  }
+
+  /**
    * @return true if any filter has been used apart from the mandatory datasetKey & format
    */
+  @JsonIgnore
   public boolean hasFilter() {
     return !synonyms || extinct!=null || bareNames || root!=null || minRank!=null;
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof ExportRequest)) return false;
+
     ExportRequest that = (ExportRequest) o;
-    return excel == that.excel
-           && extended == that.extended
-           && synonyms == that.synonyms
-           && bareNames == that.bareNames
-           && force == that.force
-           && Objects.equals(datasetKey, that.datasetKey)
-           && format == that.format
-           && tabFormat == that.tabFormat
-           && Objects.equals(root, that.root)
-           && Objects.equals(extinct, that.extinct)
-           && minRank == that.minRank;
+    return synonyms == that.synonyms &&
+      bareNames == that.bareNames &&
+      excel == that.excel &&
+      extended == that.extended &&
+      force == that.force &&
+      Objects.equals(datasetKey, that.datasetKey) &&
+      Objects.equals(root, that.root) &&
+      Objects.equals(extinct, that.extinct) &&
+      minRank == that.minRank &&
+      format == that.format &&
+      tabFormat == that.tabFormat &&
+      Objects.equals(classification, that.classification) &&
+      Objects.equals(taxGroups, that.taxGroups);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(datasetKey, format, tabFormat, excel, root, extended, synonyms, extinct, bareNames, minRank, force);
+    return Objects.hash(datasetKey, root, synonyms, extinct, bareNames, minRank, format, tabFormat, excel, extended, classification, taxGroups, force);
   }
 
   @Override

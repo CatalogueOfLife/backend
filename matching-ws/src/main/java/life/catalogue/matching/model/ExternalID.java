@@ -1,7 +1,9 @@
 package life.catalogue.matching.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -20,15 +22,16 @@ public class ExternalID {
     @Schema(description = "The main index identifier that the external identifier was matched to")
     private String mainIndexID;
     @Schema(description = "The gbif key of the dataset containing the joined external ID")
-    private String gbifKey;
-    @Schema(description = "The dataset key of the joined external ID")
     private String datasetKey;
+    @Schema(description = "The checklistbank dataset key of the joined external ID")
+    private String clbDatasetKey;
     @Schema(description = "The dataset title of the joined external ID")
     private String datasetTitle;
     @Schema(description = "The parent ID of the external identifier")
     private String parentID;
     @Schema(description = "The scientific name associated with the external identifier")
     private String scientificName;
+    @JsonIgnore private String canonicalName;
     @Schema(description = "The accepted taxon ID of the external identifier")
     private String acceptedTaxonID;
     @Schema(description = "The rank of the external identifier")

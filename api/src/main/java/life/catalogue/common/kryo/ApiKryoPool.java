@@ -166,6 +166,21 @@ public class ApiKryoPool extends Pool<Kryo> {
     }
     kryo.register(UnknownTerm.class, new TermSerializer());
     kryo.register(BibTexTerm.class, new TermSerializer());
+
+    // ADD NEW CLASS REGISTRATIONS HERE !!!
+    // order of registration matters and changing the above list of registered classes
+    // will change the persisted kryo class IDs.
+    // If you do so all persisted data will be corrupted and needs to be rebuild !!!
+    kryo.register(Dataset.UrlDescription.class);
+    kryo.register(EntityType.class);
+    kryo.register(SimpleNameLink.class);
+    kryo.register(SimpleNameClassified.class);
+    kryo.register(TaxGroup.class);
+    kryo.register(EstablishmentMeans.class);
+    kryo.register(DegreeOfEstablishment.class);
+    kryo.register(Season.class);
+    kryo.register(ThreatStatus.class);
+
     return kryo;
   }
 

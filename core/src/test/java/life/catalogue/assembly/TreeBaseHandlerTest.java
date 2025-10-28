@@ -1,33 +1,30 @@
 package life.catalogue.assembly;
 
 import life.catalogue.api.model.*;
-
 import life.catalogue.api.vocab.EntityType;
 import life.catalogue.api.vocab.IgnoreReason;
-
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.TaxonMapper;
+import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.matching.nidx.NameIndex;
-
 import life.catalogue.release.UsageIdGen;
 
-import org.apache.ibatis.session.ExecutorType;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,10 +39,13 @@ public class TreeBaseHandlerTest {
   public void setup() throws Exception {
     TaxonMapper tm = mock(TaxonMapper.class);
     DatasetMapper dm = mock(DatasetMapper.class);
+    VerbatimSourceMapper vsm = mock(VerbatimSourceMapper.class);
+    when(vsm.getMaxID(anyInt())).thenReturn(1);
 
     SqlSession session = mock(SqlSession.class);
     when(session.getMapper(TaxonMapper.class)).thenReturn(tm);
     when(session.getMapper(DatasetMapper.class)).thenReturn(dm);
+    when(session.getMapper(VerbatimSourceMapper.class)).thenReturn(vsm);
 
     factory = mock(SqlSessionFactory.class);
     when(factory.openSession(anyBoolean())).thenReturn(session);
@@ -97,7 +97,7 @@ public class TreeBaseHandlerTest {
     }
 
     @Override
-    protected void cacheImplicit(Taxon t, Usage parent) {
+    protected void cacheImplicit(Taxon t) {
 
     }
 

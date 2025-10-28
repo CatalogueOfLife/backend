@@ -4,6 +4,7 @@ import life.catalogue.api.model.SimpleNameInDataset;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.concurrent.ExecutorUtils;
 import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameMapper;
 import life.catalogue.matching.TaxGroupAnalyzer;
 
@@ -12,7 +13,9 @@ import org.gbif.nameparser.api.Rank;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +32,7 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
   private static final Logger LOG = LoggerFactory.getLogger(TaxGroupCmd.class);
   private final static AtomicInteger COUNTER = new AtomicInteger(1);
   private static final String ARG_THREADS = "t";
+  private static final String ARG_DATASETS = "update-datasets";
   int threads = 4;
 
   public TaxGroupCmd() {
@@ -43,6 +47,13 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
       .type(Integer.class)
       .required(false)
       .help("number of threads to use for analyzing and writing. Defaults to " + threads);
+    subparser.addArgument("--" + ARG_DATASETS)
+      .dest(ARG_DATASETS)
+      .type(boolean.class)
+      .nargs("?")
+      .setConst(true)
+      .setDefault(false)
+      .help("analyze all name usages of all datasets and update all dataset scopes.");
   }
 
   @Override
@@ -67,6 +78,29 @@ public class TaxGroupCmd extends AbstractMybatisCmd {
     ExecutorUtils.shutdown(exec);
 
     addIndices();
+
+    if (ns.getBoolean(ARG_DATASETS)) {
+      int counter = 0;
+      LOG.info("Updating dataset group scope now...");
+      try (SqlSession session = factory.openSession(true);
+           var con = session.getConnection();
+           PreparedStatement pStmt = con.prepareStatement("SELECT DISTINCT tg FROM tax_groups WHERE dataset_key=?")
+      ) {
+        var dm = session.getMapper(DatasetMapper.class);
+        for (int key : dm.keys(false)) {
+          Set<TaxGroup> groups = EnumSet.noneOf(TaxGroup.class);
+          pStmt.setInt(1, key);
+          var rs = pStmt.executeQuery();
+          while (rs.next()) {
+            var tg = rs.getString(1);
+            groups.add(TaxGroup.valueOf(tg));
+          }
+          dm.updateTaxonomicGroupScope(key, groups);
+          counter++;
+        }
+      }
+      LOG.info("Updated all {} datasets with their group scope.", counter);
+    }
     LOG.info("Tax group analysis complete");
   }
 

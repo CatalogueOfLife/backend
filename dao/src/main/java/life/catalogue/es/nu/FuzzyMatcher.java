@@ -21,13 +21,11 @@ abstract class FuzzyMatcher extends QMatcher implements MatcherMixIn {
   Query matchAsMonomial() {
     String[] terms = request.getSciNameSearchTerms();
     String termWN = normalizeWeakly(terms[0]);
-    // we used to use the strongly normalised terms to index/query species/infraspecific epithets.
-    // But that caused more problems than it helped...
-    String termSN = normalizeStrongly(terms[0]);
     return sciNameBaseQuery()
         .subquery(new BoolQuery() // Prefer subspecies over species and species over genera
-            .should(matchAsEpithet(FLD_SUBSPECIES, termWN).withBoost(1.2))
-            .should(matchAsEpithet(FLD_SPECIES, termWN).withBoost(1.1))
+            .should(matchAsEpithet(FLD_SUBSPECIES, termWN).withBoost(1.3))
+            .should(matchAsEpithet(FLD_SPECIES, termWN).withBoost(1.2))
+            .should(matchAsEpithet(FLD_INFRAGENERIC, termWN).withBoost(1.1))
             .should(matchAsEpithet(FLD_GENUS, termWN).withBoost(1.0)));
   }
 
@@ -47,6 +45,10 @@ abstract class FuzzyMatcher extends QMatcher implements MatcherMixIn {
             .must(matchAsGenericEpithet(term0WN))
             .must(matchAsEpithet(FLD_SPECIES, term1SN))
             .withBoost(2.5))
+        .subquery(new BoolQuery()
+          .must(matchAsGenericEpithet(term0WN))
+          .must(matchAsEpithet(FLD_INFRAGENERIC, term1SN))
+          .withBoost(2.3))
         .subquery(new BoolQuery()
             .must(matchAsEpithet(FLD_SPECIES, term0SN))
             .must(matchAsEpithet(FLD_SUBSPECIES, term1SN))

@@ -10,6 +10,7 @@
     m.sector_key,
     m.taxon_id,
     m.verbatim_key,
+    m.verbatim_source_key,
     m.url,
     m.type,
     m.format,
@@ -28,13 +29,14 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
+    verbatim_source_key,
     url,
     type,
     format,
@@ -51,9 +53,10 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
-    #{obj.sectorKey},
     #{taxonId},
+    #{obj.sectorKey},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.url},
     #{obj.type}::MEDIATYPE,
     #{obj.format},
@@ -139,8 +142,13 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE media SET sector_key = NULL
+    UPDATE media SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE media SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
 </mapper>

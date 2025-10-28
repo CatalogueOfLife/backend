@@ -90,7 +90,7 @@ public class InterpreterBaseTest {
     resp = InterpreterUtils.interpretIdentifiers("Poa_annua", null, issues);
     assertEquals(List.of(new Identifier(Identifier.Scope.LOCAL, "Poa_annua")), resp);
     assertTrue(issues.hasIssues());
-    assertTrue(issues.hasIssue(Issue.IDENTIFIER_WITHOUT_SCOPE));
+    assertTrue(issues.contains(Issue.IDENTIFIER_WITHOUT_SCOPE));
 
     issues.clear();
     resp = InterpreterUtils.interpretIdentifiers("wfo-0001057524", Identifier.Scope.WFO, issues);
@@ -205,7 +205,7 @@ public class InterpreterBaseTest {
     }) {
       issues.getIssues().clear();
       assertNull(x, InterpreterUtils.parseNomenYear(x, issues));
-      assertTrue(x, issues.hasIssue(Issue.UNLIKELY_YEAR));
+      assertTrue(x, issues.contains(Issue.UNLIKELY_YEAR));
     }
 
     for (var x : Map.of(
@@ -230,7 +230,7 @@ public class InterpreterBaseTest {
     }) {
       issues.getIssues().clear();
       assertNull(x, InterpreterUtils.parseNomenYear(x, issues));
-      assertTrue(x, issues.hasIssue(Issue.UNPARSABLE_YEAR));
+      assertTrue(x, issues.contains(Issue.UNPARSABLE_YEAR));
     }
   }
 
@@ -254,7 +254,8 @@ public class InterpreterBaseTest {
   }
 
   private void assertDistributions(Gazetteer std, String loc, String... expectedIDs) {
-    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, "present", new VerbatimRecord(), null, new BiConsumer<Distribution, VerbatimRecord>() {
+    List<Distribution> dis = InterpreterBase.createDistributions(std, loc, new VerbatimRecord(), null, null,null,null,null,null,null,null,null,
+      new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
       public void accept(Distribution distribution, VerbatimRecord verbatimRecord) {
         // dont do anything

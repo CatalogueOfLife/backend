@@ -1,5 +1,3 @@
-@Library('gbif-common-jenkins-pipelines') _
-
 pipeline {
   agent any
   tools {
@@ -7,6 +5,7 @@ pipeline {
     jdk 'LibericaJDK21'
   }
   options {
+    disableConcurrentBuilds()
     buildDiscarder(logRotator(numToKeepStr: '6'))
     skipStagesAfterUnstable()
     timestamps()
@@ -22,17 +21,6 @@ pipeline {
         ) {
           sh '''mvn clean -U -T 4 -pl '!:matching-ws' test deploy'''
         }
-      }
-    }
-
-    stage('Trigger dev deploy') {
-      when {
-        allOf {
-          branch 'master';
-        }
-      }
-      steps {
-        build job: "col-dev-deploy", wait: false, propagate: false
       }
     }
   }

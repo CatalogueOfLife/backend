@@ -31,6 +31,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   private Integer sectorKey;
   private Sector.Mode sectorMode;
   private Integer verbatimKey;
+  private Integer verbatimSourceKey;
   @Nonnull
   @JsonFilter(LabelPropertyFilter.NAME)
   private Name name;
@@ -66,6 +67,7 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     this.sectorKey = other.sectorKey;
     this.sectorMode = other.sectorMode;
     this.verbatimKey = other.verbatimKey;
+    this.verbatimSourceKey = other.verbatimSourceKey;
     this.name = other.name;
     this.status = other.status;
     this.origin = other.origin;
@@ -97,6 +99,22 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
   @Override
   public void setVerbatimKey(Integer verbatimKey) {
     this.verbatimKey = verbatimKey;
+  }
+
+  public Integer getVerbatimSourceKey() {
+    return verbatimSourceKey;
+  }
+
+  public void setVerbatimSourceKey(Integer verbatimSourceKey) {
+    this.verbatimSourceKey = verbatimSourceKey;
+  }
+
+  @Override
+  public void setDatasetKey(Integer datasetKey) {
+    super.setDatasetKey(datasetKey);
+    if (hasName()) {
+      getName().setDatasetKey(datasetKey);
+    }
   }
 
   @Override
@@ -172,6 +190,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       }
     }
     return sb.toString();
+  }
+
+  @JsonIgnore
+  public boolean hasName() {
+    return name != null;
   }
 
   @Override
@@ -342,18 +365,20 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
     if (!(o instanceof NameUsageBase)) return false;
     if (!super.equals(o)) return false;
+
     NameUsageBase that = (NameUsageBase) o;
     return Objects.equals(sectorKey, that.sectorKey) &&
-      Objects.equals(sectorMode, that.sectorMode) &&
+      sectorMode == that.sectorMode &&
       Objects.equals(verbatimKey, that.verbatimKey) &&
+      Objects.equals(verbatimSourceKey, that.verbatimSourceKey) &&
       Objects.equals(name, that.name) &&
       status == that.status &&
       origin == that.origin &&
       Objects.equals(parentId, that.parentId) &&
       Objects.equals(namePhrase, that.namePhrase) &&
+      Objects.equals(accordingTo, that.accordingTo) &&
       Objects.equals(accordingToId, that.accordingToId) &&
       Objects.equals(identifier, that.identifier) &&
       Objects.equals(link, that.link) &&
@@ -363,11 +388,12 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, name, status, origin, parentId, namePhrase, accordingToId, identifier, link, remarks, referenceIds);
+    return Objects.hash(super.hashCode(), sectorKey, sectorMode, verbatimKey, verbatimSourceKey, name, status, origin, parentId, namePhrase, accordingTo, accordingToId, identifier, link, remarks, referenceIds);
   }
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "{" + name.getLabel() + " [" + getId() + "]}";
+    String label = name != null ? name.getLabel() : "[no_name]";
+    return getClass().getSimpleName() + "{" + label + " [" + getId() + "]}";
   }
 }

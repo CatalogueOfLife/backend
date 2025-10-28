@@ -24,13 +24,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.commons.codec.digest.HmacAlgorithms;
 import org.apache.commons.codec.digest.HmacUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +33,12 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
 
 @Path("/importer")
 @Produces(MediaType.APPLICATION_JSON)
@@ -131,6 +130,16 @@ public class ImporterResource {
 
   @POST
   @Path("{key}")
+  // trigger an import with the existing access url
+  @Consumes(MediaType.APPLICATION_JSON)
+  @RolesAllowed({Roles.ADMIN, Roles.EDITOR})
+  public ImportRequest triggerImport(@PathParam("key") int datasetKey, @QueryParam("force") boolean force, @Auth User user) throws IOException {
+    var req = ImportRequest.external(datasetKey, user.getKey(), force);
+    return importManager.submit(req);
+  }
+
+  @POST
+  @Path("{key}")
   // there are many unofficial mime types around for zip and gzip
   // these can show up via the upload component of the CLB UI if used from Windows for example, so we add them all
   @Consumes({
@@ -168,7 +177,7 @@ public class ImporterResource {
     importManager.cancel(datasetKey, user.getKey());
   }
 
-  static String contentType2Suffix(HttpHeaders h) {
+  public static String contentType2Suffix(HttpHeaders h) {
     if (h != null && h.getRequestHeaders() != null) {
       String ctype = Strings.nullToEmpty(h.getRequestHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).toLowerCase();
       switch (ctype) {

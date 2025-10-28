@@ -6,15 +6,14 @@ import life.catalogue.api.model.User;
 import life.catalogue.dao.DataEntityDao;
 import life.catalogue.dw.auth.Roles;
 
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -65,24 +64,10 @@ public abstract class AbstractGlobalResource<T extends DataEntity<Integer>> {
     }
     obj.setKey(key);
     obj.applyUser(user);
-    String msg = allowUpdate(obj, user);
-    if (msg == null) {
-      int i = dao.update(obj, user.getKey());
-      if (i == 0) {
-        throw NotFoundException.notFound(objClass, key);
-      }
-    } else {
-      throw new IllegalArgumentException(msg);
+    int i = dao.update(obj, user.getKey());
+    if (i == 0) {
+      throw NotFoundException.notFound(objClass, key);
     }
-  }
-
-  /**
-   * Override this method if updates should be restricted.
-   * If no update is allowed a non null message must be returned that explains why.
-   * By default all updates are allowed and null is returned.
-   */
-  protected String allowUpdate(T obj, User user){
-    return null;
   }
 
   @DELETE

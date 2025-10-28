@@ -1,13 +1,5 @@
 package life.catalogue.metadata;
 
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
 import life.catalogue.api.model.DOI;
@@ -28,7 +20,11 @@ import org.apache.hc.core5.http.io.entity.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 
 /**
  * A CrossRef DOI resolver that can return citation metadata for most (all?) DOIs.
@@ -64,9 +60,9 @@ public class DoiResolver {
       } else {
         LOG.warn("Failed to resolve DOI {}. HTTP {}", doi, resp.getCode());
         if (resp.getCode() == 404) {
-          issues.addIssue(Issue.DOI_NOT_FOUND);
+          issues.add(Issue.DOI_NOT_FOUND);
         } else {
-          issues.addIssue(Issue.DOI_UNRESOLVED);
+          issues.add(Issue.DOI_UNRESOLVED);
         }
       }
 

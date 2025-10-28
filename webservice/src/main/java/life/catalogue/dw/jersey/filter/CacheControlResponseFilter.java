@@ -1,5 +1,9 @@
 package life.catalogue.dw.jersey.filter;
 
+import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.dao.DatasetInfoCache;
+
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -10,10 +14,6 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.HttpHeaders;
-
-import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.dao.DatasetInfoCache;
 
 /**
  * Filter that updates Cache-Control http headers to allow caching of responses belonging to static released datasets.

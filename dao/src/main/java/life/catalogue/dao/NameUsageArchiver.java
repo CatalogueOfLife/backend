@@ -1,26 +1,26 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.ArchivedNameUsage;
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.SimpleName;
-import life.catalogue.api.model.Taxon;
+import life.catalogue.api.model.DatasetRelease;
+import life.catalogue.api.search.DatasetSearchRequest;
 import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.IdReportType;
-import life.catalogue.common.id.IdConverter;
-import life.catalogue.db.PgUtils;
-import life.catalogue.db.mapper.*;
+import life.catalogue.api.vocab.Users;
+import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.ArchivedNameUsageMatchMapper;
+import life.catalogue.db.mapper.DatasetMapper;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Service that builds the name usage archive for projects based on their existing id_reports.
- * It requires an empty archive. If you want to rebuild an existing archive please manually delete the existing archive records first.
+ * Service that builds the name usage archive for projects.
+ * All name usages of all public releases will be included in the archive.
+ *
+ * If you want to rebuild an existing archive please manually delete the existing archive records first.
  * This guarantees that no existing archive is deleted or overwritten accidently by this tool.
  */
 public class NameUsageArchiver {
@@ -32,12 +32,48 @@ public class NameUsageArchiver {
   }
 
   /**
-   * Rebuilds the name usage archive for a given project if it does not yet exist.
-   * If a single archived record exists already an IAE wil be thrown.
    *
-   * The rebuild expects the id reports to be correct and makes use of them to decide which usages will have to be archived.
+   * @param truncate if true deletes the name usage archive before rebuilding
    */
-  public void rebuildProject(int projectKey) {
+  public void rebuildAll(boolean truncate) {
+    List<Integer> projects;
+    try (SqlSession session = factory.openSession(true)) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      var req = new DatasetSearchRequest();
+      req.setOrigin(List.of(DatasetOrigin.PROJECT));
+      req.setSortBy(DatasetSearchRequest.SortBy.KEY);
+      projects = dm.searchKeys(req, Users.SUPERUSER);
+      if (truncate) {
+        LOG.warn("Truncate entire name usage archive");
+        session.getMapper(ArchivedNameUsageMatchMapper.class).truncate();
+        session.getMapper(ArchivedNameUsageMapper.class).truncate();
+      }
+    }
+
+    LOG.info("Total number of projects found to rebuild: {}", projects.size());
+    for (var key : projects) {
+      LOG.info("Rebuild name usage archive for project {}", key);
+      rebuildProject(key, false);
+    }
+
+    LOG.info("Copy all name matches for all archived projects");
+    try (SqlSession session = factory.openSession(true)) {
+      var amm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+      var matches = amm.createAllMatches();
+      LOG.info("Copied {} name matches", matches);
+    }
+  }
+
+  /**
+   * Rebuilds the name usage archive for a given project if it does not yet exist.
+   * If a single archived record exists already an IAE will be thrown.
+   *
+   * The rebuild uses only the currently existing, non deleted releases to decide which usages will have to be archived.
+   * @param copyMatches if true also copies the existing name matches for the newly created archive records
+   * @throws IllegalArgumentException if the project key is not a project or the archive already contains usages
+   */
+  public void rebuildProject(int projectKey, boolean copyMatches) {
+    List<DatasetRelease> releases;
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var project = dm.get(projectKey);
@@ -52,120 +88,64 @@ public class NameUsageArchiver {
         throw new IllegalArgumentException("Project "+projectKey+" already contains "+count+" archived name usages");
       }
       // finally allow the rebuild for each release
-      var datasets = dm.listReleases(projectKey);
+      var datasets = dm.listReleasesQuick(projectKey);
+      releases = datasets.stream().filter(d -> !d.isDeleted() && !d.isPrivat()).collect(Collectors.toList());
+    }
+
+    try {
+      LOG.info("Archiving name usages for {} public releases of PROJECT {}", releases.size(), projectKey);
       int archived = 0;
-      LOG.info("Archiving name usages for {} releases of project {}", datasets.size(), projectKey);
-      for (var d : datasets) {
-        if (d.isPrivat()) {
-          LOG.info("Ignore private release {}", d.getKey());
-        } else if (d.hasDeletedDate()) {
-          LOG.info("Ignore deleted release {}", d.getKey());
-        } else {
-          archived += archiveRelease(projectKey, d.getKey());
-        }
+      for (var d : releases) {
+        archived += archiveRelease(d.getKey(), copyMatches);
       }
-      LOG.info("Archived {} name usages for project {}", archived, projectKey);
+      LOG.info("Archived {} name usages for all {} releases of project {}", archived, releases.size(), projectKey);
+
+    } catch (Exception e) {
+      LOG.error("Failed to archive names for project {}", projectKey, e);
     }
   }
 
   /**
-   * Creates and removes archived usages according to the existing id reports.
-   * @param projectKey valid project key - not verified, must be existing
+   * Creates new and updates existing archived usages according to the usages from the releaseKey.
+   * The release is required to be public, otherwise an IAE is thrown.
    * @param releaseKey valid release key - not verified, must not be deleted or private!
-   * @return change of number of archived usages, i.e. newly archived - resurrected ones
+   * @param copyMatches if true also copies the existing name matches for the newly created archive records
+   * @return number of newly created archived usages
    */
-  public int archiveRelease(int projectKey, int releaseKey) {
-    final AtomicInteger counter = new AtomicInteger(0);
-    final AtomicInteger delCounter = new AtomicInteger(0);
-    try (SqlSession session = factory.openSession(true);
-         SqlSession batchSession = factory.openSession(ExecutorType.BATCH, false)
-    ) {
-      if (!session.getMapper(NameMapper.class).hasData(releaseKey)) {
-        LOG.info("Release {} has id reports, but no data to archive", releaseKey);
-        return 0;
-      }
-
-      var idm = session.getMapper(IdReportMapper.class);
-      var tm = session.getMapper(TaxonMapper.class);
-      var rm = session.getMapper(ReferenceMapper.class);
-      var num = session.getMapper(NameUsageMapper.class);
-      var anm = batchSession.getMapper(ArchivedNameUsageMapper.class);
-      Integer previousKey = session.getMapper(DatasetMapper.class).previousRelease(releaseKey);
-      if (previousKey == null) {
-        LOG.info("Ignoring first release {} from project {}", releaseKey, projectKey);
-        return 0;
-      }
-
-      LOG.info("Rebuilding names archive from id reports for release {} from project {} with previous release {}", releaseKey, projectKey, previousKey);
-      final DSID<String> archiveKey = DSID.root(projectKey);
-      PgUtils.consume(() -> idm.processDataset(releaseKey), r -> {
-        if (r.getType() != IdReportType.CREATED) {
-          final String id = IdConverter.LATIN29.encode(r.getId());
-
-          if (r.getType() == IdReportType.RESURRECTED) {
-            anm.delete(archiveKey.id(id));
-            delCounter.incrementAndGet();
-
-          } else if (r.getType() == IdReportType.DELETED) {
-            var oldKey = DSID.of(previousKey, id);
-            var u = num.get(oldKey);
-            if (u == null) {
-              LOG.warn("Cannot archive missing name usage {}, deleted from dataset {}", oldKey, releaseKey);
-              return;
-            }
-            // assemble archived usage
-            ArchivedNameUsage au = new ArchivedNameUsage(u);
-            // archived usages belong to project, not release!
-            au.setDatasetKey(projectKey);
-            // basionym
-            var bas = NameDao.getBasionym(factory, oldKey);
-            if (bas != null) {
-              au.setBasionym(new SimpleName(bas));
-            }
-            // publishedIn
-            if (u.getName().getPublishedInId() != null) {
-              var pub = rm.get(DSID.of(previousKey, u.getName().getPublishedInId()));
-              if (pub != null) {
-                au.setPublishedIn(pub.getCitation());
-              }
-            }
-            // classification
-            au.setClassification(tm.classificationSimple(oldKey));
-            // lastReleaseKey
-            au.setLastReleaseKey(previousKey);
-            // firstReleaseKey
-            var first = idm.first(projectKey, r.getId());
-            if (first == null) {
-              LOG.warn("Deleted ID {} missing created IdReport event", r.getId());
-            } else {
-              au.setFirstReleaseKey(first.getDatasetKey());
-            }
-
-            if (u.isTaxon()){
-              // extinct
-              Taxon t = (Taxon) u;
-              au.setExtinct(t.isExtinct());
-
-            } else if (u.isBareName()) {
-              LOG.warn("{} stable ID {} is a {}. Skip", r.getType(), id, u.getStatus());
-              return;
-            }
-
-            anm.create(au);
-            if (counter.incrementAndGet() % 5000 == 0) {
-              batchSession.commit();
-            }
-          }
-        }
-      });
-      batchSession.commit();
-      LOG.info("Copied {} name usages into the project archive {} as their stable IDs were deleted in release {}.", counter, projectKey, releaseKey);
-      LOG.info("Deleted {} resurrected name usages from the project archive {}.", delCounter, projectKey);
-
-    } catch (Throwable e) {
-      LOG.error("Failed to archive names for project {}.", projectKey, e);
+  public int archiveRelease(int releaseKey, boolean copyMatches) throws RuntimeException {
+    var info = DatasetInfoCache.CACHE.info(releaseKey);
+    if (!info.origin.isRelease()) {
+      throw new IllegalArgumentException("Not a release " + releaseKey);
     }
-    return counter.get() - delCounter.get();
+
+    int created = 0;
+    final int projectKey = info.sourceKey;
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var release = dm.get(releaseKey);
+      if (release.isPrivat()) {
+        throw new IllegalArgumentException("Release " + releaseKey+ " has not been published yet");
+      }
+
+      LOG.info("Updating names archive for project {} with release {}", projectKey, releaseKey);
+
+      var anum = session.getMapper(ArchivedNameUsageMapper.class);
+      LOG.info("Adding release key of all archive records which also exist in release {} of project {}", releaseKey, projectKey);
+      int updated = anum.addReleaseKey(projectKey, releaseKey);
+      LOG.info("Updated {} archive records which exist in release {} of project {}", updated, releaseKey, projectKey);
+
+      LOG.info("Creating missing archive records from release {} of project {}", releaseKey, projectKey);
+      created = anum.createMissingUsages(projectKey, releaseKey);
+      LOG.info("Created {} new archive records from release {} of project {}", created, releaseKey, projectKey);
+
+      if (copyMatches) {
+        LOG.info("Copy missing archive matches from release {} of project {}", releaseKey, projectKey);
+        var anumm = session.getMapper(ArchivedNameUsageMatchMapper.class);
+        var matches = anumm.createMissingMatches(projectKey, releaseKey);
+        LOG.info("Copied {} archive matches from release {} of project {}", matches, releaseKey, projectKey);
+      }
+    }
+    return created;
   }
 
 }

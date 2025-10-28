@@ -3,8 +3,6 @@ package life.catalogue.exporter;
 import life.catalogue.api.model.ExportRequest;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
-import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
 import life.catalogue.printer.AbstractPrinter;
 import life.catalogue.printer.PrinterFactory;
@@ -45,7 +43,7 @@ public abstract class PrinterExport<T extends AbstractPrinter> extends DatasetEx
 
   abstract protected String filename();
 
-  void modifyPrinter(T printer) {
+  void modifyPrinter(T printer) throws Exception {
     // nothing by default
   }
 

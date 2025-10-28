@@ -1,8 +1,8 @@
 package life.catalogue.release;
 
 import life.catalogue.api.model.SimpleNameWithNidx;
-import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.MatchType;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.ArrayList;
@@ -24,6 +24,7 @@ public class ScoreMatrixTest {
     sn.setStatus(status);
     sn.setName("Abies alba");
     sn.setAuthorship(authorship);
+    sn.setGroup(TaxGroup.Angiosperms);
     ReleasedIds.ReleasedId rid = new ReleasedIds.ReleasedId(id, attempt, true, sn);
     ScoreMatrix.ReleaseMatch m = new ScoreMatrix.ReleaseMatch(1,1,1, sn, rid);
     return m;

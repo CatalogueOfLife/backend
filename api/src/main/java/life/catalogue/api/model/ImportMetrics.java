@@ -83,6 +83,10 @@ public class ImportMetrics implements ImportAttempt {
   private Map<TaxonomicStatus, Integer> usagesByStatusCount = new HashMap<>();
   private Map<Origin, Integer> usagesByOriginCount = new HashMap<>();
   private Map<String, Integer> vernacularsByLanguageCount = new HashMap<>();
+  // merging metrics
+  private Map<InfoGroup, Integer> secondarySourceByInfoCount = new HashMap<>();
+  private Map<Rank, Integer> mergedTaxaByRankCount = new HashMap<>();
+  private Map<Rank, Integer> mergedSynonymsByRankCount = new HashMap<>();
 
   public Integer getDatasetKey() {
     return datasetKey;
@@ -461,6 +465,30 @@ public class ImportMetrics implements ImportAttempt {
     this.speciesInteractionsByTypeCount = speciesInteractionsByTypeCount;
   }
 
+  public Map<InfoGroup, Integer> getSecondarySourceByInfoCount() {
+    return secondarySourceByInfoCount;
+  }
+
+  public void setSecondarySourceByInfoCount(Map<InfoGroup, Integer> secondarySourceByInfoCount) {
+    this.secondarySourceByInfoCount = secondarySourceByInfoCount;
+  }
+
+  public Map<Rank, Integer> getMergedTaxaByRankCount() {
+    return mergedTaxaByRankCount;
+  }
+
+  public void setMergedTaxaByRankCount(Map<Rank, Integer> mergedTaxaByRankCount) {
+    this.mergedTaxaByRankCount = mergedTaxaByRankCount;
+  }
+
+  public Map<Rank, Integer> getMergedSynonymsByRankCount() {
+    return mergedSynonymsByRankCount;
+  }
+
+  public void setMergedSynonymsByRankCount(Map<Rank, Integer> mergedSynonymsByRankCount) {
+    this.mergedSynonymsByRankCount = mergedSynonymsByRankCount;
+  }
+
   public Map<Issue, Integer> getIssuesCount() {
     return issuesCount;
   }
@@ -514,6 +542,10 @@ public class ImportMetrics implements ImportAttempt {
       usagesByOriginCount = sum(usagesByOriginCount, m.usagesByOriginCount);
       usagesByStatusCount = sum(usagesByStatusCount, m.usagesByStatusCount);
       vernacularsByLanguageCount = sum(vernacularsByLanguageCount, m.vernacularsByLanguageCount);
+
+      secondarySourceByInfoCount = sum(secondarySourceByInfoCount, m.secondarySourceByInfoCount);
+      mergedTaxaByRankCount = sum(mergedTaxaByRankCount, m.mergedTaxaByRankCount);
+      mergedSynonymsByRankCount = sum(mergedSynonymsByRankCount, m.mergedSynonymsByRankCount);
     }
   }
 
@@ -586,7 +618,10 @@ public class ImportMetrics implements ImportAttempt {
       Objects.equals(usagesByOriginCount, that.usagesByOriginCount) &&
       Objects.equals(usagesByStatusCount, that.usagesByStatusCount) &&
       Objects.equals(vernacularCount, that.vernacularCount) &&
-      Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount);
+      Objects.equals(vernacularsByLanguageCount, that.vernacularsByLanguageCount) &&
+      Objects.equals(mergedTaxaByRankCount, that.mergedTaxaByRankCount) &&
+      Objects.equals(mergedSynonymsByRankCount, that.mergedSynonymsByRankCount) &&
+      Objects.equals(secondarySourceByInfoCount, that.secondarySourceByInfoCount);
   }
 
   @Override
@@ -599,7 +634,8 @@ public class ImportMetrics implements ImportAttempt {
       nameRelationsByTypeCount, typeMaterialByStatusCount, distributionsByGazetteerCount,
       vernacularsByLanguageCount, mediaByTypeCount, usagesByOriginCount, usagesByStatusCount,
       taxaByRankCount, taxaByScrutinizerCount, extinctTaxaByRankCount, synonymsByRankCount,
-      taxonConceptRelationsByTypeCount, speciesInteractionsByTypeCount, issuesCount);
+      taxonConceptRelationsByTypeCount, speciesInteractionsByTypeCount, issuesCount,
+      secondarySourceByInfoCount, mergedTaxaByRankCount, mergedSynonymsByRankCount);
   }
 
   @Override

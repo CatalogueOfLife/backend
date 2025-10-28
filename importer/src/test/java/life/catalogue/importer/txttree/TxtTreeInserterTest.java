@@ -4,7 +4,6 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.Language;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.common.collection.CountMap;
 import life.catalogue.dao.ReferenceFactory;
@@ -17,7 +16,6 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
@@ -61,22 +59,6 @@ public class TxtTreeInserterTest extends InserterBaseTest {
     assertEquals(2, issues.size());
     assertEquals(2, (int) issues.get(Issue.ID_NOT_UNIQUE));
     assertEquals(1, (int) issues.get(Issue.RANK_INVALID));
-  }
-
-  @Test
-  public void remarks() throws Exception {
-    NeoInserter ins = setup("/txtree/6");
-    ins.insertAll();
-    AtomicInteger all = new AtomicInteger(0);
-    AtomicInteger remarks = new AtomicInteger(0);
-    store.usages().all().forEach(u -> {
-      all.incrementAndGet();
-      if (u.usage.getRemarks() != null) {
-        remarks.incrementAndGet();
-      }
-    });
-    assertEquals(932, all.get());
-    assertEquals(83, remarks.get());
   }
 
   @Test

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 import org.apache.tika.mime.MimeType;
 import org.apache.tika.mime.MimeTypeException;
@@ -25,20 +26,19 @@ public class MediaInterpreter {
   private static final String HTML_TYPE = "text/html";
   // mime types which we consider as html links instead of real media file uris
   private static final Set<String> HTML_MIME_TYPES = ImmutableSet
-    .of("text/x-coldfusion", "text/x-php", "text/asp", "text/aspdotnet", "text/x-cgi", "text/x-jsp", "text/x-perl",
-      HTML_TYPE, MIME_TYPES.OCTET_STREAM);
+    .of("text/x-coldfusion", "text/x-php", "text/asp", "text/aspdotnet", "text/x-cgi", "text/x-jsp", "text/x-perl", HTML_TYPE);
   
   /**
    * Tries to derive a media type (image/video/audio) from the format, url or explicitly given type.
    */
   public static Media detectType(Media m) {
-    if (Strings.isNullOrEmpty(m.getFormat())) {
+    if (Strings.isNullOrEmpty(m.getFormat()) && m.getUrl() != null) {
       // derive from URI
       m.setFormat(parseMimeType(m.getUrl()));
     }
 
-    // if MIME type is text/html make it a references link instead
-    if (HTML_TYPE.equalsIgnoreCase(m.getFormat()) && m.getUrl() != null) {
+    // if MIME type is text/html and we do not yet have a link, make it a references link instead
+    if (HTML_TYPE.equalsIgnoreCase(m.getFormat()) && m.getUrl() != null && m.getLink() == null) {
       // make file URI the references link URL instead
       m.setLink(m.getUrl());
       m.setUrl(null);
@@ -84,16 +84,21 @@ public class MediaInterpreter {
   /**
    * Parses a mime type using apache tika which can handle the following:
    * http://svn.apache.org/repos/asf/tika/trunk/tika-core/src/main/resources/org/apache/tika/mime/tika-mimetypes.xml
+   *
+   * TODO: consider to pull content from one or two full URLs and interpret those instead to represent the entire data?
    */
   private static String parseMimeType(@Nullable URI uri) {
     if (uri != null) {
-      String mime = TIKA.detect(uri.toString());
-      if (mime != null && HTML_MIME_TYPES.contains(mime.toLowerCase())) {
-        // links without any suffix default to OCTET STREAM, see:
-        // http://dev.gbif.org/issues/browse/POR-2066
-        return HTML_TYPE;
+      var filename = FilenameUtils.getName(uri.toString());
+      if (filename != null) {
+        String mime = TIKA.detect(filename);
+        if (mime != null && HTML_MIME_TYPES.contains(mime.toLowerCase())) {
+          // links without any suffix default to OCTET STREAM, see:
+          // http://dev.gbif.org/issues/browse/POR-2066
+          return HTML_TYPE;
+        }
+        return mime;
       }
-      return mime;
     }
     return null;
   }

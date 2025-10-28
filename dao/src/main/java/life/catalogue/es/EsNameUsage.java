@@ -1,6 +1,5 @@
 package life.catalogue.es;
 
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Sector;
 import life.catalogue.api.vocab.*;
 import life.catalogue.es.ddl.*;
@@ -9,7 +8,10 @@ import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 import static life.catalogue.es.ddl.Analyzer.*;
 

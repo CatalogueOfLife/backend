@@ -26,8 +26,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.*;
 
@@ -36,6 +34,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(IdProviderIT.PROJECT_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule);
 
   final int projectKey = IdProviderIT.PROJECT_DATA.key;
@@ -78,6 +77,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     String expected = Resources.toString("assembly-trees/" + resourceName);
     assertEquals(expected.trim(), tree.trim());
   }
+
   public static String readTree(int datasetKey) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey);
@@ -88,6 +88,7 @@ public class ProjectReleaseIT extends ProjectBaseIT {
     assertFalse("Empty tree, probably no root node found", tree.isEmpty());
     return tree;
   }
+
   @Test
   public void release() throws Exception {
     ProjectRelease release = buildRelease();

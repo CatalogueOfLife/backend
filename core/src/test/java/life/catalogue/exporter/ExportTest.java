@@ -6,11 +6,10 @@ import life.catalogue.junit.TestDataRule;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.Path;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.slf4j.Logger;
@@ -21,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class ExportTest {
   private static final Logger LOG = LoggerFactory.getLogger(ExportTest.class);
 
-  TestConfigs cfg;
+  static TestConfigs cfg;
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -37,27 +36,20 @@ public class ExportTest {
     this.testDataRule = new TestDataRule(testData);
   }
 
-  @Before
-  public void initCfg()  {
+  @BeforeClass
+  public static void initCfg()  {
     cfg = TestConfigs.build();
+    cfg.db = PgSetupRule.getCfg();
   }
 
-  @After
-  public void cleanup()  {
-    LOG.info("Cleaning up download directory {}", cfg.job.downloadDir);
-    FileUtils.deleteQuietly(cfg.getJob().downloadDir);
+  @AfterClass
+  public static void cleanup()  {
+    LOG.info("Cleaning up test directories");
+    cfg.removeCfgDirs();
   }
 
-  static void assertExportExists(File file) {
-    if (!Files.exists(file.toPath())) {
-      // we sometimes see result files not found on jenkins sometimes. give the FS a bit more time
-      try {
-        TimeUnit.MILLISECONDS.sleep(500);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-      assertTrue("Export file missing: " + file, Files.exists(file.toPath()));
-    }
+  void assertExportExists(File file) {
+    final Path path = file.toPath();
+    assertTrue("Export file missing: " + file, Files.exists(path));
   }
-
 }

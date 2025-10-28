@@ -31,6 +31,8 @@
     <zookeeper.version>3.8.1</zookeeper.version>
     <spring-cloud-zookeeper.version>3.1.5</spring-cloud-zookeeper.version>
     <spring-boot-admin.version>2.7.16</spring-boot-admin.version>
+    <kryo.version>5.6.0</kryo.version>
+    <curator-framework.version>5.5.0-disable-connectstr-updates</curator-framework.version>
   </properties>
   <dependencies>
     <!-- COL -->
@@ -251,6 +253,17 @@
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-x-discovery</artifactId>
       <version>5.5.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.curator</groupId>
+          <artifactId>curator-framework</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+      <version>${curator-framework.version}</version>
     </dependency>
     <dependency>
       <groupId>de.codecentric</groupId>
@@ -444,6 +457,11 @@
       <version>${opencsv.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>kryo</artifactId>
+      <version>${kryo.version}</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -470,7 +488,7 @@
           <java>
             <removeUnusedImports />
             <googleJavaFormat>
-              <version>1.10.0</version>
+              <version>1.17.0</version>
               <style>GOOGLE</style>
             </googleJavaFormat>
           </java>

@@ -1,7 +1,9 @@
 package life.catalogue.exporter;
 
 import life.catalogue.api.model.*;
+import life.catalogue.api.util.RankUtils;
 import life.catalogue.api.vocab.*;
+import life.catalogue.api.vocab.terms.ClbTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.TermWriter;
 import life.catalogue.img.ImageService;
@@ -11,10 +13,7 @@ import org.gbif.dwc.Archive;
 import org.gbif.dwc.ArchiveField;
 import org.gbif.dwc.ArchiveFile;
 import org.gbif.dwc.MetaDescriptorWriter;
-import org.gbif.dwc.terms.DcTerm;
-import org.gbif.dwc.terms.DwcTerm;
-import org.gbif.dwc.terms.GbifTerm;
-import org.gbif.dwc.terms.Term;
+import org.gbif.dwc.terms.*;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -33,16 +32,6 @@ import org.slf4j.LoggerFactory;
 public class DwcaExtendedExport extends ArchiveExport {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaExtendedExport.class);
   private static final String EML_FILENAME = "eml.xml";
-  private static final Map<Rank, DwcTerm> CLASSIFICATION_TERMS = Map.of(
-    Rank.KINGDOM, DwcTerm.kingdom,
-    Rank.PHYLUM, DwcTerm.phylum,
-    Rank.CLASS, DwcTerm.class_,
-    Rank.ORDER, DwcTerm.order,
-    Rank.SUPERFAMILY, DwcTerm.superfamily,
-    Rank.FAMILY, DwcTerm.family,
-    Rank.SUBFAMILY, DwcTerm.subfamily,
-    Rank.TRIBE, DwcTerm.tribe
-  );
 
   private TermWriter writer2;
   private final Archive arch = new Archive();
@@ -112,26 +101,38 @@ public class DwcaExtendedExport extends ArchiveExport {
           DwcTerm.family,
           DwcTerm.subfamily,
           DwcTerm.tribe,
+          DwcTerm.subtribe,
+          DwcTerm.genus,
+          DwcTerm.subgenus,
           DwcTerm.taxonRemarks,
-          DcTerm.references
+          DcTerm.references,
+          ClbTerm.merged
         };
       case VERNACULAR:
         return new Term[]{GbifTerm.VernacularName, DwcTerm.taxonID,
           DcTerm.language,
-          DwcTerm.vernacularName};
+          DwcTerm.vernacularName,
+          ClbTerm.merged};
       case DISTRIBUTION:
         return new Term[]{GbifTerm.Distribution, DwcTerm.taxonID,
+          DwcTerm.establishmentMeans,
+          DwcTerm.degreeOfEstablishment,
+          IucnTerm.threatStatus,
+          DwcTerm.pathway,
+          DwcTerm.lifeStage,
           DwcTerm.occurrenceStatus,
           DwcTerm.locationID,
           DwcTerm.locality,
           DwcTerm.countryCode,
-          DcTerm.source};
+          DcTerm.source,
+          ClbTerm.merged};
       case TAXON_PROPERTY:
         return new Term[]{DwcTerm.MeasurementOrFact, DwcTerm.taxonID,
           DwcTerm.measurementID,
           DwcTerm.measurementType,
           DwcTerm.measurementValue,
-          DwcTerm.measurementRemarks};
+          DwcTerm.measurementRemarks,
+          ClbTerm.merged};
     }
     return null;
   }
@@ -147,7 +148,7 @@ public class DwcaExtendedExport extends ArchiveExport {
 
   void write(NameUsageBase u) {
     writer.set(DwcTerm.taxonID, u.getId());
-    writer.set(DwcTerm.datasetID, sector2datasetKey(u.getSectorKey()));
+    writer.set(DwcTerm.datasetID, sectorInfoCache.sector2datasetKey(u.getSectorKey()));
 
     if (u.isSynonym()) {
       writer.set(DwcTerm.acceptedNameUsageID, u.getParentId());
@@ -157,8 +158,8 @@ public class DwcaExtendedExport extends ArchiveExport {
       TaxonWithClassification t = (TaxonWithClassification) u;
       if (t.getClassification() != null) {
         for (var ht : t.getClassification()) {
-          if (CLASSIFICATION_TERMS.containsKey(ht.getRank())) {
-            writer.set(CLASSIFICATION_TERMS.get(ht.getRank()), ht.getName());
+          if (RankUtils.RANK2DWC.containsKey(ht.getRank())) {
+            writer.set(RankUtils.RANK2DWC.get(ht.getRank()), ht.getName());
           }
         }
       }
@@ -200,6 +201,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(ColdpTerm.notho, n.getNotho());
     writer.set(DwcTerm.taxonomicStatus, u.getStatus());
     writer.set(DwcTerm.namePublishedIn, citationByID(n.getPublishedInId()));
+    writer.set(ClbTerm.merged, u.isMerged());
     if (n.getGenus() != null) {
       writer.set(DwcTerm.genericName, n.getGenus());
       writer.set(DwcTerm.infragenericEpithet, n.getInfragenericEpithet());
@@ -222,11 +224,16 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.taxonID, taxonID);
     writer.set(DcTerm.language, vn.getLanguage());
     writer.set(DwcTerm.vernacularName, vn.getName());
+    writer.set(ClbTerm.merged, vn.isMerged());
   }
 
   void write(String taxonID, Distribution d) {
     writer.set(DwcTerm.taxonID, taxonID);
-    writer.set(DwcTerm.occurrenceStatus, d.getStatus());
+    writer.set(DwcTerm.establishmentMeans, d.getEstablishmentMeans());
+    writer.set(DwcTerm.degreeOfEstablishment, d.getDegreeOfEstablishment());
+    writer.set(IucnTerm.threatStatus, d.getThreatStatus());
+    writer.set(DwcTerm.pathway, d.getPathway());
+    writer.set(DwcTerm.lifeStage, d.getLifeStage());
     writer.set(DwcTerm.locality, d.getArea().getName());
     if (d.getArea().getGazetteer() == Gazetteer.ISO) {
         writer.set(DwcTerm.countryCode, d.getArea().getId());
@@ -236,6 +243,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     if (d.getReferenceId() != null) {
       writer.set(DcTerm.source, refCache.get(d.getReferenceId()));
     }
+    writer.set(ClbTerm.merged, d.isMerged());
   }
 
   @Override
@@ -245,6 +253,7 @@ public class DwcaExtendedExport extends ArchiveExport {
     writer.set(DwcTerm.measurementType, tp.getProperty());
     writer.set(DwcTerm.measurementValue, tp.getValue());
     writer.set(DwcTerm.measurementRemarks, tp.getRemarks());
+    writer.set(ClbTerm.merged, tp.isMerged());
 }
 
   @Override

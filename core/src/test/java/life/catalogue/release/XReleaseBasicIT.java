@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.TestConfigs;
+import life.catalogue.TestUtils;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.vocab.*;
@@ -8,16 +9,22 @@ import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
 import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.concurrent.EmailNotificationTemplateTest;
+import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
+import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.*;
+
+import life.catalogue.config.MatchingConfig;
+import life.catalogue.matching.UsageMatcherFactory;
 
 import org.gbif.nameparser.api.NameType;
 
@@ -31,9 +38,9 @@ import org.junit.*;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 
-import com.google.common.eventbus.EventBus;
-
 import jakarta.validation.Validation;
+
+import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -57,10 +64,13 @@ public class XReleaseBasicIT {
   final SyncFactoryRule syncFactoryRule = new SyncFactoryRule();
   ProjectCopyFactory projectCopyFactory;
   private TestConfigs cfg;
+  @Mock
+  JobExecutor jobExecutor;
 
   @Rule
   public final TestRule chain = RuleChain
     .outerRule(new TestDataRule(XRELEASE_DATA))
+    .around(new ArchivingRule())
     .around(matchingRule)
     .around(syncFactoryRule);
 
@@ -72,9 +82,9 @@ public class XReleaseBasicIT {
     cfg.clbURI = URI.create("https://www.dev.checklistbank.org");
 
     var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    provider = new IdProvider(projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, factory);
+    provider = new IdProvider(projectKey, projectKey, DatasetOrigin.XRELEASE,1, -1, cfg.release, cfg.projectRelease, factory);
 
-    EventBus bus = mock(EventBus.class);
+    EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     UserDao udao = mock(UserDao.class);
@@ -87,9 +97,9 @@ public class XReleaseBasicIT {
     var nuIdxService = NameUsageIndexService.passThru();
     var imgService = ImageService.passThru();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
-    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.importer, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
-
-    projectCopyFactory = new ProjectCopyFactory(null, syncFactoryRule.getMatcher(), SyncFactoryRule.getFactory(),
+    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
+    var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
+    projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
       exm, nuIdxService, imgService, doiService, doiUpdater, factory, validator,
       cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
@@ -105,6 +115,11 @@ public class XReleaseBasicIT {
   @Test
   public void release() throws Exception {
     var xrel = projectCopyFactory.buildExtendedRelease(13, Users.TESTER);
+    var cfg = new ProjectReleaseConfig();
+    cfg.metadata.alias = "COL{date,yy}";
+    cfg.metadata.description = "The XR addresses {mergeSources} gaps of the base release.";
+    cfg.metadata.confidence=5;
+    xrel.setPrCfg(cfg);
     xrel.run();
     assertEquals(xrel.getFailedSyncs()+" failed syncs",0, xrel.getFailedSyncs());
 
@@ -126,15 +141,19 @@ public class XReleaseBasicIT {
 
       // 2 sectors from dataset 101 & 102 have an authorship update for that name
       // make sure we only have one as the secondary source
-      var all = vsm.list(dsid);
-      assertEquals(1, all.size());
-
-      var src = vsm.getWithSources(dsid);
+      var src = vsm.addSources(vsm.getByUsage(dsid));
+      assertEquals(1, src.getSecondarySources().size());
       assertEquals(100, (int)src.getSourceDatasetKey());
       assertEquals("srcX", src.getSourceId());
-      assertEquals(1, src.getSecondarySources().size());
       // sector from dataset 102 has prio over the 101 one, so the author update comes from that
       assertTrue(DSID.equals(DSID.of(102, "x2"), src.getSecondarySources().get(InfoGroup.AUTHORSHIP)));
+
+      // assert metadata
+      var dm = session.getMapper(DatasetMapper.class);
+      var d = dm.get(xrel.newDatasetKey);
+      assertEquals("COL25", d.getAlias());
+      assertEquals("The XR addresses 3 gaps of the base release.", d.getDescription());
+      assertEquals((Integer)5, d.getConfidence());
     }
 
     // test email templates

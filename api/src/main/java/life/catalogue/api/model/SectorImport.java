@@ -1,9 +1,8 @@
 package life.catalogue.api.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import org.gbif.nameparser.api.Rank;
+
+import java.util.*;
 
 public class SectorImport extends ImportMetrics implements SectorScoped {
   private static final int MAX_WARN_SIZE = 25;
@@ -60,9 +59,34 @@ public class SectorImport extends ImportMetrics implements SectorScoped {
   }
 
   @Override
+  public void setMergedSynonymsByRankCount(Map<Rank, Integer> mergedSynonymsByRankCount) {
+    // ignore
+  }
+
+  @Override
+  public Map<Rank, Integer> getMergedSynonymsByRankCount() {
+    if (Boolean.TRUE.equals(isMerged())) {
+      return getSynonymsByRankCount();
+    }
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public void setMergedTaxaByRankCount(Map<Rank, Integer> mergedTaxaByRankCount) {
+    // ignore
+  }
+
+  @Override
+  public Map<Rank, Integer> getMergedTaxaByRankCount() {
+    if (Boolean.TRUE.equals(isMerged())) {
+      return getTaxaByRankCount();
+    }
+    return Collections.emptyMap();
+  }
+
+  @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof SectorImport)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorImport that = (SectorImport) o;
     return Objects.equals(sectorKey, that.sectorKey) && sectorMode == that.sectorMode && Objects.equals(datasetAttempt, that.datasetAttempt) && Objects.equals(warnings, that.warnings);

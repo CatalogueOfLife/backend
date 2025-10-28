@@ -5,21 +5,18 @@ import life.catalogue.api.vocab.IgnoreReason;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.CopyUtil;
 import life.catalogue.db.mapper.NameRelationMapper;
+import life.catalogue.interpreter.RanKnName;
 import life.catalogue.matching.nidx.NameIndex;
+import life.catalogue.release.UsageIdGen;
 
 import java.util.*;
 
-import life.catalogue.release.UsageIdGen;
-
 import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 
 public class TreeCopyHandler extends TreeBaseHandler {
   private static final Logger LOG = LoggerFactory.getLogger(TreeCopyHandler.class);
@@ -109,7 +106,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
     }
     if (obj instanceof Referenced) {
       Referenced r = (Referenced) obj;
-      r.setReferenceId(lookupReference(r.getReferenceId()));
+      r.setReferenceId(lookupOrCreateReference(r.getReferenceId()));
     }
   }
 
@@ -134,7 +131,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
 
   private void process(NameUsageBase u) throws InterruptedException {
     var mod = processCommon(u);
-    if (ignoreUsage(mod.usage, decisions.get(u.getId()), false)) {
+    if (ignoreUsage(mod.usage, decisions.get(u.getId()), IssueContainer.VOID, false)) {
       // skip this taxon, bmod.usaget include children
       // use taxons parent also as the parentID for this so children link one level up
       ids.put(mod.usage.getId(), ids.getOrDefault(mod.usage.getParentId(), targetUsage));
@@ -154,7 +151,7 @@ public class TreeCopyHandler extends TreeBaseHandler {
       LOG.info("Relinking {} to new parent {}", mod.usage.getLabel(), parent);
     }
     // make sure we have a genus for species and a species for infraspecific taxa
-    if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow()) {
+    if (mod.usage.isTaxon() && mod.usage.getName().getRank().isSpeciesOrBelow() && allowImplicitName(parent, (Taxon) mod.usage)) {
       parent = createImplicit(parent, (Taxon) mod.usage);
     }
     String origNameID= mod.usage.getName().getId();
@@ -204,8 +201,8 @@ public class TreeCopyHandler extends TreeBaseHandler {
   }
 
   @Override
-  protected void cacheImplicit(Taxon t, Usage parent) {
-    implicits.put(new RanKnName(t.getName().getRank(), t.getName().getScientificName()), parent);
+  protected void cacheImplicit(Taxon t) {
+    implicits.put(new RanKnName(t.getName().getRank(), t.getName().getScientificName()), usage(t, t.getParentId(), null));
   }
 
   @Override

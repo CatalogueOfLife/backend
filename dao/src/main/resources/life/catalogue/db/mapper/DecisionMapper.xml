@@ -194,6 +194,15 @@
     )
   </select>
 
+  <select id="existsWithKeyOrSubject" resultType="boolean">
+    SELECT EXISTS (
+      SELECT TRUE
+      FROM decision ed
+      WHERE ed.dataset_key=#{d.datasetKey} AND
+            (ed.id = #{d.id} OR (ed.subject_dataset_key = #{d.subjectDatasetKey} AND ed.subject_id = #{d.subject.id}))
+    )
+  </select>
+
   <select id="getBySubject" resultMap="decisionResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
@@ -215,9 +224,10 @@
       <property name="alias" value="d."/>
       <property name="prefix" value=""/>
     </include>
-    FROM verbatim_source v
-      JOIN decision d ON d.dataset_key=v.dataset_key AND d.subject_id=v.source_id AND d.subject_dataset_key=v.source_dataset_key
-    WHERE v.dataset_key=#{key.datasetKey} AND v.id=#{key.id};
+    FROM name_usage u
+      JOIN verbatim_source v ON v.dataset_key=u.dataset_key AND v.id=u.verbatim_source_key
+      JOIN decision d ON d.dataset_key=u.dataset_key AND d.subject_id=v.source_id AND d.subject_dataset_key=v.source_dataset_key
+    WHERE u.dataset_key=#{key.datasetKey} AND u.id=#{key.id};
   </select>
 
   <insert id="create" parameterType="EditorialDecision" useGeneratedKeys="true" keyProperty="id">
@@ -288,5 +298,15 @@
     FROM decision
     WHERE dataset_key=#{datasetKey}
   </insert>
+
+  <select id="searchModeFacet" resultType="life.catalogue.db.mapper.DecisionMapper$ModeValue">
+    SELECT mode, count(*)
+    FROM decision ed
+    <if test="req.broken">
+      <include refid="JOIN_USAGE"/>
+    </if>
+    <include refid="WHERE"/>
+    GROUP BY mode
+  </select>
 
 </mapper>

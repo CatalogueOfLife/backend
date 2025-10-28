@@ -14,6 +14,614 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-09-01 XR hangs on copy
+```
+CREATE TYPE DEGREEOFESTABLISHMENT AS ENUM (
+  'NATIVE',
+  'CAPTIVE',
+  'CULTIVATED',
+  'RELEASED',
+  'FAILING',
+  'CASUAL',
+  'REPRODUCING',
+  'ESTABLISHED',
+  'COLONISING',
+  'INVASIVE',
+  'WIDESPREAD_INVASIVE'
+);
+
+CREATE TYPE ESTABLISHMENTMEANS AS ENUM (
+  'NATIVE',
+  'NATIVE_ENDEMIC',
+  'NATIVE_REINTRODUCED',
+  'INTRODUCED',
+  'INTRODUCED_ASSISTED_COLONISATION',
+  'VAGRANT',
+  'UNCERTAIN'
+);
+
+DROP TYPE IDREPORTTYPE;
+
+CREATE TYPE SEASON AS ENUM (
+  'SPRING',
+  'SUMMER',
+  'AUTUMN',
+  'WINTER',
+  'WET',
+  'DRY'
+);
+
+CREATE TYPE THREATSTATUS AS ENUM (
+  'EXTINCT',
+  'EXTINCT_IN_THE_WILD',
+  'CRITICALLY_ENDANGERED',
+  'ENDANGERED',
+  'VULNERABLE',
+  'NEAR_THREATENED',
+  'LEAST_CONCERN',
+  'DATA_DEFICIENT',
+  'NOT_EVALUATED'
+);
+
+ALTER TABLE distribution 
+  ADD COLUMN establishment_means ESTABLISHMENTMEANS,
+  ADD COLUMN degree_of_establishment DEGREEOFESTABLISHMENT,
+  ADD COLUMN pathway TEXT,
+  ADD COLUMN threat_status THREATSTATUS,
+  ADD COLUMN year Integer,
+  ADD COLUMN season SEASON,
+  ADD COLUMN life_stage TEXT;
+
+UPDATE distribution SET establishment_means='NATIVE', degree_of_establishment='NATIVE' WHERE status='NATIVE';
+UPDATE distribution SET establishment_means='INTRODUCED', degree_of_establishment='CULTIVATED' WHERE status='DOMESTICATED';
+UPDATE distribution SET establishment_means='INTRODUCED', degree_of_establishment=NULL WHERE status='ALIEN';
+UPDATE distribution SET establishment_means='UNCERTAIN', degree_of_establishment=NULL WHERE status='UNCERTAIN';
+
+ALTER TABLE distribution DROP COLUMN status;
+DROP TYPE DISTRIBUTIONSTATUS;
+```
+
+
+#### 2025-09-01 XR hangs on copy
+```
+ALTER TABLE verbatim_source_secondary drop constraint verbatim_source_secondary_dataset_key_verbatim_source_key_fkey;
+```
+
+#### 2025-08-28 XR metrics
+```
+ALTER TABLE dataset_import
+  ADD COLUMN merged_taxa_by_rank_count HSTORE,
+  ADD COLUMN merged_synonyms_by_rank_count HSTORE,
+  ADD COLUMN secondary_source_by_info_count HSTORE;
+```
+
+#### 2025-08-21 verbatim_source refactoring
+```
+CREATE SCHEMA vs;
+
+CREATE TABLE vs.holotypes AS (
+  SELECT dataset_key, source_dataset_key, source_id, id as usage_id
+  FROM verbatim_source_secondary 
+  WHERE type='HOLOTYPE'
+);
+create index on vs.holotypes (dataset_key, usage_id);
+DELETE FROM verbatim_source_secondary WHERE type='HOLOTYPE';
+
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE TEXT;
+DROP TYPE INFOGROUP;
+CREATE TYPE INFOGROUP AS ENUM (
+  'AUTHORSHIP',
+  'PUBLISHED_IN',
+  'PARENT',
+  'BASIONYM',
+  'EXTINCT',
+  'TEMPORAL_RANGE',
+  'RANK'
+);
+ALTER TABLE verbatim_source_secondary ALTER COLUMN type TYPE INFOGROUP USING type::INFOGROUP;
+
+CREATE TABLE vs.verbatim_source (
+   id INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   sector_key INTEGER,
+   source_id TEXT,
+   source_entity ENTITYTYPE,
+   source_dataset_key INTEGER,
+   issues ISSUE[] DEFAULT '{}',
+   usage_id TEXT,
+   PRIMARY KEY (dataset_key, id)
+) PARTITION BY HASH (dataset_key);
+
+CREATE TABLE vs.verbatim_source_secondary (
+   verbatim_source_key INTEGER NOT NULL,
+   dataset_key INTEGER NOT NULL,
+   type INFOGROUP NOT NULL,
+   source_id TEXT,
+   source_dataset_key INTEGER,
+   FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES vs.verbatim_source
+) PARTITION BY HASH (dataset_key);
+```
+In the existing dbs we then need to create the actual partition tables.
+We can use the partition command for that, i.e. to create 24 partitions:
+> ./partition.sh vs.verbatim_source 24
+> ./partition.sh vs.verbatim_source_secondary 24
+
+Now further changes and data migration...
+```
+ALTER TABLE reference ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE name ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE name_usage ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE name_rel ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE type_material ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE taxon_concept_rel ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE species_interaction ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE vernacular_name ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE distribution ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE treatment ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE estimate ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE media ADD COLUMN verbatim_source_key INTEGER;
+ALTER TABLE taxon_property ADD COLUMN verbatim_source_key INTEGER;
+
+CREATE SEQUENCE vs.tmp_verbatim_source_id_seq START 1;
+INSERT INTO vs.verbatim_source (id, usage_id, dataset_key, sector_key, source_id, source_entity, source_dataset_key, issues) 
+SELECT nextval('vs.tmp_verbatim_source_id_seq'::regclass), v.id, v.dataset_key, u.sector_key, v.source_id, 'NAME_USAGE', v.source_dataset_key, v.issues
+FROM public.verbatim_source v LEFT JOIN name_usage u ON u.dataset_key=v.dataset_key AND u.id=v.id;
+
+CREATE INDEX ON vs.verbatim_source (dataset_key, usage_id);
+
+INSERT INTO vs.verbatim_source_secondary (verbatim_source_key, dataset_key, type, source_id, source_dataset_key) 
+SELECT v.id, v.dataset_key, vs.type, vs.source_id, vs.source_dataset_key
+FROM verbatim_source_secondary vs 
+  JOIN vs.verbatim_source v ON vs.dataset_key=v.dataset_key AND vs.id=v.usage_id;
+
+UPDATE name_usage SET verbatim_source_key=v.id 
+FROM vs.verbatim_source v
+WHERE name_usage.dataset_key=v.dataset_key AND name_usage.id=v.usage_id;
+CREATE TABLE vs.tmp_nvs AS (
+  SELECT distinct on (n.dataset_key, n.id) n.dataset_key, n.id, u.verbatim_source_key 
+  FROM name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
+);
+
+CREATE INDEX ON vs.tmp_nvs (dataset_key,id);
+ANALYZE vs.tmp_nvs;
+UPDATE name n SET verbatim_source_key=vs.verbatim_source_key 
+ FROM vs.tmp_nvs vs 
+ WHERE n.dataset_key=vs.dataset_key AND n.id=vs.id;
+DROP TABLE vs.tmp_nvs;
+
+UPDATE type_material tm SET verbatim_source_key = n.verbatim_source_key 
+FROM vs.holotypes h 
+  JOIN name_usage u ON u.dataset_key=h.dataset_key AND h.usage_id=u.id
+  JOIN name n ON n.dataset_key=h.dataset_key AND n.id=u.name_id
+WHERE tm.dataset_key=h.dataset_key AND tm.name_id=n.id;
+
+ALTER TABLE vs.verbatim_source DROP COLUMN usage_id;
+
+CREATE INDEX ON vs.verbatim_source USING GIN(dataset_key, issues);
+CREATE INDEX on vs.verbatim_source (dataset_key, id) WHERE array_length(issues, 1) > 0;
+CREATE INDEX on vs.verbatim_source (dataset_key, sector_key);
+CREATE INDEX on vs.verbatim_source (dataset_key, source_entity);
+CREATE INDEX on vs.verbatim_source (dataset_key, source_dataset_key);
+
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, verbatim_source_key);
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, source_dataset_key);
+CREATE INDEX ON vs.verbatim_source_secondary (dataset_key, type);
+
+CREATE INDEX ON reference (dataset_key, verbatim_source_key);
+CREATE INDEX ON name (dataset_key, verbatim_source_key);
+CREATE INDEX ON name_usage (dataset_key, verbatim_source_key);
+CREATE INDEX ON name_rel (dataset_key, verbatim_source_key);
+CREATE INDEX ON type_material (dataset_key, verbatim_source_key);
+CREATE INDEX ON taxon_concept_rel (dataset_key, verbatim_source_key);
+CREATE INDEX ON species_interaction (dataset_key, verbatim_source_key);
+CREATE INDEX ON vernacular_name (dataset_key, verbatim_source_key);
+CREATE INDEX ON distribution (dataset_key, verbatim_source_key);
+CREATE INDEX ON treatment (dataset_key, verbatim_source_key);
+CREATE INDEX ON estimate (dataset_key, verbatim_source_key);
+CREATE INDEX ON media (dataset_key, verbatim_source_key);
+CREATE INDEX ON taxon_property (dataset_key, verbatim_source_key);
+```
+
+bring the schema live.
+the next step is disruptive!
+Deploy the new application
+```
+CREATE SCHEMA vsold;
+ALTER TABLE verbatim_source set schema vsold;
+ALTER TABLE verbatim_source_secondary set schema vsold;
+ALTER TABLE vs.verbatim_source set schema public;
+ALTER TABLE vs.verbatim_source_secondary set schema public;
+
+ALTER TABLE verbatim_source_mod0  set schema vsold;
+ALTER TABLE verbatim_source_mod1  set schema vsold;
+ALTER TABLE verbatim_source_mod10 set schema vsold;
+ALTER TABLE verbatim_source_mod11 set schema vsold;
+ALTER TABLE verbatim_source_mod12 set schema vsold;
+ALTER TABLE verbatim_source_mod13 set schema vsold;
+ALTER TABLE verbatim_source_mod14 set schema vsold;
+ALTER TABLE verbatim_source_mod15 set schema vsold;
+ALTER TABLE verbatim_source_mod16 set schema vsold;
+ALTER TABLE verbatim_source_mod17 set schema vsold;
+ALTER TABLE verbatim_source_mod18 set schema vsold;
+ALTER TABLE verbatim_source_mod19 set schema vsold;
+ALTER TABLE verbatim_source_mod2  set schema vsold;
+ALTER TABLE verbatim_source_mod20 set schema vsold;
+ALTER TABLE verbatim_source_mod21 set schema vsold;
+ALTER TABLE verbatim_source_mod22 set schema vsold;
+ALTER TABLE verbatim_source_mod23 set schema vsold;
+ALTER TABLE verbatim_source_mod3  set schema vsold;
+ALTER TABLE verbatim_source_mod4  set schema vsold;
+ALTER TABLE verbatim_source_mod5  set schema vsold;
+ALTER TABLE verbatim_source_mod6  set schema vsold;
+ALTER TABLE verbatim_source_mod7  set schema vsold;
+ALTER TABLE verbatim_source_mod8  set schema vsold;
+ALTER TABLE verbatim_source_mod9  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod0  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod1  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod10 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod11 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod12 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod13 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod14 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod15 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod16 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod17 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod18 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod19 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod2  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod20 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod21 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod22 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod23 set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod3  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod4  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod5  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod6  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod7  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod8  set schema vsold;
+ALTER TABLE verbatim_source_secondary_mod9  set schema vsold;
+
+ALTER TABLE vs.verbatim_source_mod0  set schema public;
+ALTER TABLE vs.verbatim_source_mod1  set schema public;
+ALTER TABLE vs.verbatim_source_mod10 set schema public;
+ALTER TABLE vs.verbatim_source_mod11 set schema public;
+ALTER TABLE vs.verbatim_source_mod12 set schema public;
+ALTER TABLE vs.verbatim_source_mod13 set schema public;
+ALTER TABLE vs.verbatim_source_mod14 set schema public;
+ALTER TABLE vs.verbatim_source_mod15 set schema public;
+ALTER TABLE vs.verbatim_source_mod16 set schema public;
+ALTER TABLE vs.verbatim_source_mod17 set schema public;
+ALTER TABLE vs.verbatim_source_mod18 set schema public;
+ALTER TABLE vs.verbatim_source_mod19 set schema public;
+ALTER TABLE vs.verbatim_source_mod2  set schema public;
+ALTER TABLE vs.verbatim_source_mod20 set schema public;
+ALTER TABLE vs.verbatim_source_mod21 set schema public;
+ALTER TABLE vs.verbatim_source_mod22 set schema public;
+ALTER TABLE vs.verbatim_source_mod23 set schema public;
+ALTER TABLE vs.verbatim_source_mod3  set schema public;
+ALTER TABLE vs.verbatim_source_mod4  set schema public;
+ALTER TABLE vs.verbatim_source_mod5  set schema public;
+ALTER TABLE vs.verbatim_source_mod6  set schema public;
+ALTER TABLE vs.verbatim_source_mod7  set schema public;
+ALTER TABLE vs.verbatim_source_mod8  set schema public;
+ALTER TABLE vs.verbatim_source_mod9  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod0  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod1  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod10 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod11 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod12 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod13 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod14 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod15 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod16 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod17 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod18 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod19 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod2  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod20 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod21 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod22 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod23 set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod3  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod4  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod5  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod6  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod7  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod8  set schema public;
+ALTER TABLE vs.verbatim_source_secondary_mod9  set schema public;
+```
+
+finally some new constraints & cleanup
+```
+ALTER TABLE name ADD CONSTRAINT name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE estimate ADD CONSTRAINT estimate_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE media ADD CONSTRAINT media_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_verbatim_source_key_fkey FOREIGN KEY (dataset_key, verbatim_source_key) REFERENCES verbatim_source DEFERRABLE INITIALLY DEFERRED;
+
+
+DROP SEQUENCE vs.tmp_verbatim_source_id_seq;
+DROP TABLE vs.holotypes;
+DROP SCHEMA vs;
+
+DROP TABLE verbatim_source_secondary_old;
+DROP TABLE verbatim_source_old;
+```
+
+#### 2025-08-15 store all release keys in archive
+```sql
+ALTER TABLE name_usage_archive ADD COLUMN release_keys INT[];
+UPDATE name_usage_archive SET release_keys = array[first_release_key] WHERE first_release_key = last_release_key;
+UPDATE name_usage_archive SET release_keys = array[first_release_key, last_release_key] WHERE release_keys IS NULL;
+CREATE INDEX ON name_usage_archive using GIN (dataset_key, release_keys);
+```
+
+#### 2025-07-11 add tax groups to export props
+```sql
+ALTER TABLE dataset_export ADD COLUMN add_tax_group BOOLEAN NOT NULL DEFAULT FALSE;
+DROP INDEX taxon_metrics_dataset_key_taxon_id_idx;
+ALTER TABLE taxon_metrics ADD PRIMARY KEY (dataset_key, taxon_id);
+```
+
+#### 2025-07-07 dataset groups
+```sql
+CREATE TYPE TAXGROUP AS ENUM (
+  'Viruses',
+  'Prokaryotes',
+  'Bacteria',
+  'Archaea',
+  'Eukaryotes',
+  'Protists',
+  'Plants',
+  'Algae',
+  'Bryophytes',
+  'Pteridophytes',
+  'Angiosperms',
+  'Gymnosperms',
+  'Fungi',
+  'Ascomycetes',
+  'Basidiomycetes',
+  'Pseudofungi',
+  'OtherFungi',
+  'Animals',
+  'Arthropods',
+  'Insects',
+  'Coleoptera',
+  'Diptera',
+  'Lepidoptera',
+  'Hymenoptera',
+  'Hemiptera',
+  'Orthoptera',
+  'Trichoptera',
+  'OtherInsects',
+  'Arachnids',
+  'Crustacean',
+  'OtherArthropods',
+  'Molluscs',
+  'Gastropods',
+  'Bivalves',
+  'OtherMolluscs',
+  'Chordates',
+  'OtherAnimals'
+  );
+ALTER TABLE dataset ADD COLUMN taxonomic_group_scope TAXGROUP[];
+CREATE INDEX ON dataset USING GIN (taxonomic_group_scope);
+```
+
+#### 2025-06-27 new issues
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_WITH_TAXON_PROPERTY';
+```
+
+#### 2025-06-19 log table
+```sql
+ALTER TYPE TREATMENTFORMAT ADD VALUE 'PDF';
+
+CREATE TYPE APILOG_HTTPMETHOD AS ENUM (
+  'GET',
+  'HEAD',
+  'POST',
+  'PUT',
+  'DELETE',
+  'CONNECT',
+  'OPTIONS',
+  'TRACE',
+  'PATCH',
+  'OTHER'
+);
+
+CREATE TABLE api_logs(
+  date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  duration INT,
+  method APILOG_HTTPMETHOD,
+  response_code INT,
+  dataset_key INT,
+  "user" INT,
+  request TEXT,
+  agent TEXT
+) PARTITION BY RANGE (date);
+
+CREATE INDEX ON api_logs(date);
+CREATE INDEX ON api_logs(duration);
+CREATE INDEX ON api_logs(method);
+CREATE INDEX ON api_logs(response_code);
+CREATE INDEX ON api_logs(dataset_key);
+CREATE INDEX ON api_logs("user");
+CREATE INDEX ON api_logs(request text_pattern_ops);
+
+CREATE TABLE api_logs_2025 PARTITION OF api_logs FOR VALUES FROM (timestamp '2025-01-01 00:00:00') TO (timestamp '2026-01-01 00:00:00');
+CREATE TABLE api_logs_2026 PARTITION OF api_logs FOR VALUES FROM (timestamp '2026-01-01 00:00:00') TO (timestamp '2027-01-01 00:00:00');
+CREATE TABLE api_logs_default PARTITION OF api_logs DEFAULT;
+
+-- drop old analytics tables
+DROP TABLE api_analytics;
+```
+
+#### 2025-06-05 sector index for sources
+```sql
+CREATE INDEX ON sector (dataset_key, subject_dataset_key);
+```
+
+#### 2025-05-25 new issue
+```sql
+ALTER TYPE ISSUE ADD VALUE 'SYNONYM_RANK_DIFFERS';
+```
+
+#### 2025-05-21 add infrageneric field to ES mappings
+```bash
+curl -H "Content-Type: application/json" -X PUT "http://esm.checklistbank.org:9200/clb/_mapping" -d'
+{
+  "properties": {
+    "nameStrings": {
+      "properties": {
+        "infragenericEpithet": {
+          "type": "keyword",
+          "index": false,
+          "fields": {
+            "sac": {
+              "type": "text",
+              "analyzer": "sciname_autocomplete_indextime",
+              "search_analyzer": "sciname_whole_words"
+            },
+            "sic": {
+              "type": "text",
+              "analyzer": "sciname_ignore_case"
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
+
+#### 2025-05-13 new NO_SPECIES_INCLUDED issue
+
+```sql
+ALTER TYPE ISSUE ADD VALUE 'PARENT_GENUS_MISSING';
+ALTER TYPE ISSUE ADD VALUE 'NO_SPECIES_INCLUDED';
+```
+
+### 2025-04-30 make all foreign keys to name_usage deferrable and all deferrable FKs initially deferred
+```sql
+-- name related
+ALTER TABLE name_match DROP CONSTRAINT name_match_dataset_key_name_id_fkey; 
+ALTER TABLE name_match ADD CONSTRAINT name_match_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_name_id_fkey;
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_rel DROP CONSTRAINT name_rel_dataset_key_related_name_id_fkey; 
+ALTER TABLE name_rel ADD CONSTRAINT name_rel_dataset_key_related_name_id_fkey FOREIGN KEY (dataset_key, related_name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE type_material DROP CONSTRAINT type_material_dataset_key_name_id_fkey; 
+ALTER TABLE type_material ADD CONSTRAINT type_material_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE name_usage DROP CONSTRAINT name_usage_dataset_key_name_id_fkey;
+ALTER TABLE name_usage ADD CONSTRAINT name_usage_dataset_key_name_id_fkey FOREIGN KEY (dataset_key, name_id) REFERENCES name(dataset_key, id) NOT DEFERRABLE;
+
+-- name usage related
+ALTER TABLE verbatim_source DROP CONSTRAINT verbatim_source_dataset_key_id_fkey;
+ALTER TABLE verbatim_source ADD CONSTRAINT verbatim_source_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE verbatim_source_secondary DROP CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey;
+ALTER TABLE verbatim_source_secondary ADD CONSTRAINT verbatim_source_secondary_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_concept_rel DROP CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey;
+ALTER TABLE taxon_concept_rel ADD CONSTRAINT taxon_concept_rel_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE species_interaction DROP CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey;
+ALTER TABLE species_interaction ADD CONSTRAINT species_interaction_dataset_key_related_taxon_id_fkey FOREIGN KEY (dataset_key, related_taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE vernacular_name DROP CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey;
+ALTER TABLE vernacular_name ADD CONSTRAINT vernacular_name_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE distribution DROP CONSTRAINT distribution_dataset_key_taxon_id_fkey;
+ALTER TABLE distribution ADD CONSTRAINT distribution_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE media DROP CONSTRAINT media_dataset_key_taxon_id_fkey;
+ALTER TABLE media ADD CONSTRAINT media_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE taxon_property DROP CONSTRAINT taxon_property_dataset_key_taxon_id_fkey;
+ALTER TABLE taxon_property ADD CONSTRAINT taxon_property_dataset_key_taxon_id_fkey FOREIGN KEY (dataset_key, taxon_id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+
+ALTER TABLE treatment DROP CONSTRAINT treatment_dataset_key_id_fkey;
+ALTER TABLE treatment ADD CONSTRAINT treatment_dataset_key_id_fkey FOREIGN KEY (dataset_key, id) REFERENCES name_usage(dataset_key, id) DEFERRABLE INITIALLY DEFERRED;
+```
+
+#### 2025-04-14 add 2nd source entity
+```
+ALTER TABLE verbatim_source_secondary ADD COLUMN source_entity ENTITYTYPE;
+UPDATE verbatim_source_secondary SET source_entity='NAME_USAGE' WHERE source_id IS NOT NULL;
+```
+
+#### 2025-04-10 remove id reports
+```
+DROP TABLE id_report;
+CREATE INDEX ON name_usage_archive (dataset_key, first_release_key);
+ALTER TABLE name_usage_archive ADD COLUMN accepted SIMPLE_NAME;
+```
+Then rebuild all name archives for all projects!
+
+#### 2025-04-08 new sector merge metrics
+```
+ALTER TABLE sector_import ADD COLUMN secondary_source_by_info_count HSTORE;
+```
+
+#### 2025-04-08 new gazeteer
+```
+ALTER TABLE distribution ALTER COLUMN GAZETTEER TYPE TEXT;
+DROP TYPE GAZETTEER;
+CREATE TYPE GAZETTEER AS ENUM (
+  'TDWG',
+  'ISO',
+  'FAO',
+  'LONGHURST',
+  'REALM',
+  'IHO',
+  'MRGID',
+  'TEXT'
+);
+ALTER TABLE distribution ALTER COLUMN GAZETTEER TYPE GAZETTEER USING GAZETTEER::GAZETTEER;
+```
+
+#### 2025-04-04 new vernacular issue
+```
+ALTER TYPE ISSUE ADD VALUE 'VERNACULAR_NAME_UNLIKELY';
+```
+
+#### 2025-03-25 classification desimple function
+```
+-- transform a simple name array into an array of just names
+CREATE OR REPLACE FUNCTION sn2text_array(v_classification simple_name[]) RETURNS text[] AS $$
+  SELECT array_agg((n).name) FROM unnest(v_classification) AS n
+$$ LANGUAGE SQL;
+```
+
+#### 2025-02-12 add missing export fields
+```
+CREATE TYPE TABFORMAT AS ENUM (
+  'CSV',
+  'TSV'
+);
+
+ALTER TABLE dataset_export ADD COLUMN add_classification BOOLEAN NOT NULL DEFAULT false; 
+ALTER TABLE dataset_export ADD COLUMN tab_format TABFORMAT; 
+```
+
 #### 2025-01-20 move release settings to file
 ```
 UPDATE dataset SET settings = ((((((((((settings - 'release alias template') 

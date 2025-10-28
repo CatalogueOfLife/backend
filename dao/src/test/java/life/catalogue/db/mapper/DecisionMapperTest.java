@@ -5,12 +5,14 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.DataEntity;
 import life.catalogue.api.model.DatasetScoped;
 import life.catalogue.api.model.EditorialDecision;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.search.DecisionSearchRequest;
 import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.Resources;
+import life.catalogue.junit.PgSetupRule;
+
+import org.gbif.nameparser.api.Rank;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.ibatis.exceptions.PersistenceException;
+import org.apache.ibatis.session.SqlSession;
 import org.junit.Test;
 
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
@@ -74,7 +79,57 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     req.setMode(EditorialDecision.Mode.REVIEWED);
     assertEquals(0, mapper().search(req,null).size());
   }
-  
+
+  @Test
+  public void testTransactionPerformance() {
+    EditorialDecision d = createTestEntity(catalogeKey);
+    commit();
+
+    StopWatch watch = StopWatch.createStarted();
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+      var dm = session.getMapper(DecisionMapper.class);
+      for (int i = 0; i < 1000; i++) {
+        d.getSubject().setId(String.valueOf(i*2));
+        dm.create(d);
+      }
+      session.commit();
+    }
+    watch.stop();
+    System.out.println("CREATED !!!");
+    System.out.println(watch);
+
+    int success = 0;
+    int existed = 0;
+    int failed = 0;
+    watch = StopWatch.createStarted();
+    try (SqlSession session = PgSetupRule.getSqlSessionFactory().openSession(false)) {
+      var dm = session.getMapper(DecisionMapper.class);
+      for (int i = 0; i < 2000; i++) {
+        d.getSubject().setId(String.valueOf(i));
+        d.setId(i);
+        try {
+          if (dm.existsWithKeyOrSubject(d)) {
+            existed++;
+
+          } else {
+            dm.createWithID(d);
+            success++;
+          }
+        } catch (PersistenceException e) {
+          failed++;
+          System.out.println(e);
+        }
+      }
+      session.commit();
+    }
+    watch.stop();
+    System.out.println("CREATED AGAIN !!!");
+    System.out.println(watch);
+    System.out.println("Success: "+success);
+    System.out.println("Existed: "+existed);
+    System.out.println("Failed: "+failed);
+  }
+
   @Override
   void updateTestObj(EditorialDecision ed) {
     ed.setNote("My next note");
@@ -141,6 +196,27 @@ public class DecisionMapperTest extends BaseDecisionMapperTest<EditorialDecision
     // just test valid sql rather than expected outcomes
     mapper().listStaleAmbiguousUpdateDecisions(appleKey, null, 100);
     mapper().listStaleAmbiguousUpdateDecisions(appleKey, 1, 100);
+  }
+
+  @Test
+  public void facets(){
+    var ed = create(appleKey);
+    mapper().create(ed);
+
+    var req = new DecisionSearchRequest();
+    req.setDatasetKey(Datasets.COL);
+    var resp = mapper().searchModeFacet(req);
+    assertEquals(1, resp.size());
+    assertEquals(1, resp.get(0).getCount());
+    assertEquals(ed.getMode(), resp.get(0).getValue());
+
+    req.setSubjectDatasetKey(appleKey);
+    resp = mapper().searchModeFacet(req);
+    assertEquals(1, resp.size());
+
+    req.setRank(Rank.SEROVAR);
+    resp = mapper().searchModeFacet(req);
+    assertEquals(0, resp.size());
   }
 
   @Test

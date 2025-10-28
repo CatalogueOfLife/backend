@@ -13,8 +13,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.ws.rs.NotFoundException;
-
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -23,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+
+import jakarta.ws.rs.NotFoundException;
 
 /**
  * Cache that listens to dataset changes and provides the latest dataset keys for project releases

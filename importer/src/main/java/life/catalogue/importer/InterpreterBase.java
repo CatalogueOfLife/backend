@@ -71,7 +71,7 @@ public class InterpreterBase {
   
   protected boolean requireTerm(VerbatimRecord v, Term term, Issue notExistingIssue){
     if (!v.hasTerm(term)) {
-      v.addIssue(notExistingIssue);
+      v.add(notExistingIssue);
       return false;
     }
     return true;
@@ -97,7 +97,7 @@ public class InterpreterBase {
       ref = refFactory.find(rid, null);
       if (ref == null) {
         LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
-        v.addIssue(Issue.REFERENCE_ID_INVALID);
+        v.add(Issue.REFERENCE_ID_INVALID);
       } else {
         refIdConsumer.accept(ref.getId());
         if (refCitationConsumer != null) {
@@ -117,7 +117,7 @@ public class InterpreterBase {
           Reference ref = refFactory.find(rid);
           if (ref == null) {
             LOG.debug("ReferenceID {} not existing but referred from {} in file {} line {}", rid, refIdTerm.prefixedName(), v.getFile(), v.fileLine());
-            v.addIssue(Issue.REFERENCE_ID_INVALID);
+            v.add(Issue.REFERENCE_ID_INVALID);
           } else {
             existingIds.add(ref.getId());
           }
@@ -132,7 +132,7 @@ public class InterpreterBase {
    */
   protected void setTaxonomicNote(NameUsage u, String taxNote, VerbatimRecord v) {
     if (!StringUtils.isBlank(taxNote)) {
-      v.addIssue(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
+      v.add(Issue.AUTHORSHIP_CONTAINS_TAXONOMIC_NOTE);
       Matcher m = SEC_REF.matcher(taxNote);
       if (m.find()) {
         String remainder = m.replaceFirst("");
@@ -156,7 +156,7 @@ public class InterpreterBase {
       Reference ref = buildReference(accordingTo, v);
       if (ref != null) {
         if (u.getAccordingToId() != null) {
-          v.addIssue(Issue.ACCORDING_TO_CONFLICT);
+          v.add(Issue.ACCORDING_TO_CONFLICT);
         }
         u.setAccordingToId(ref.getId());
         u.setAccordingTo(accordingTo);
@@ -218,7 +218,10 @@ public class InterpreterBase {
       vn.setVerbatimKey(rec.getId());
       vn.setName(vname);
       vn.setRemarks(getFormattedText(rec, remarks));
-      
+
+      if (InterpreterUtils.unlikelyVernacular(vname)) {
+        rec.add(Issue.VERNACULAR_NAME_UNLIKELY);
+      }
       if (translit != null) {
         vn.setLatin(rec.get(translit));
       }
@@ -244,9 +247,10 @@ public class InterpreterBase {
     }
     return Collections.emptyList();
   }
-  
+
   protected List<Distribution> interpretDistributionByGazetteer(VerbatimRecord rec, BiConsumer<Distribution, VerbatimRecord> addReference,
-                                                                Term tArea, Term tGazetteer, Term tStatus, Term tRemarks) {
+                                                                Term tArea, Term tGazetteer, Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                                Term tYear, Term tSeason, Term tLifeStage, Term tRemarks) {
     // require location
     if (rec.hasTerm(tArea)) {
       // which standard?
@@ -257,20 +261,20 @@ public class InterpreterBase {
         gazetteer = parse(GazetteerParser.PARSER, rec.get(tGazetteer))
             .orElse(Gazetteer.TEXT, Issue.DISTRIBUTION_GAZETEER_INVALID, rec);
       }
-      return createDistributions(gazetteer, rec.get(tArea), rec.get(tStatus), rec, tRemarks, addReference);
+      return createDistributions(gazetteer, rec.get(tArea), rec, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference);
     }
     return Collections.emptyList();
   }
   
-  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, String statusRaw, VerbatimRecord rec,
-                                                   Term tRemarks,
-                                                   BiConsumer<Distribution, VerbatimRecord> addReference) {
+  protected static List<Distribution> createDistributions(@Nullable Gazetteer standard, final String locRaw, VerbatimRecord rec,
+                              Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                              Term tYear, Term tSeason, Term tLifeStage, Term tRemarks,
+                               BiConsumer<Distribution, VerbatimRecord> addReference) {
     if (locRaw != null) {
-
-      final DistributionStatus status = parse(DistributionStatusParser.PARSER, statusRaw).orNull(Issue.DISTRIBUTION_STATUS_INVALID, rec);
-
       if (standard == Gazetteer.TEXT) {
-        return Lists.newArrayList( createDistribution(rec, new AreaImpl(locRaw), status, tRemarks, addReference) );
+        return Lists.newArrayList(
+          createDistribution(rec, new AreaImpl(locRaw), tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+        );
       
       } else {
         List<Distribution> distributions = new ArrayList<>();
@@ -295,7 +299,9 @@ public class InterpreterBase {
               LOG.info("Area standard {} found in area {} different from explicitly given standard {} for {}",
                 area.getGazetteer(), area.getGazetteer(), standard, rec);
             }
-            distributions.add(createDistribution(rec, area, status, tRemarks, addReference));
+            distributions.add(
+              createDistribution(rec, area, tStatus, tEstablishmentMeans, tDegreeOfEstablishment, tPathway, tThreatStatus, tYear, tSeason, tLifeStage, tRemarks, addReference)
+            );
           }
         }
         return distributions;
@@ -314,15 +320,51 @@ public class InterpreterBase {
     return words;
   }
 
-  private static Distribution createDistribution(VerbatimRecord rec, Area area, DistributionStatus status, Term tRemarks, BiConsumer<Distribution, VerbatimRecord> addReference) {
+  private static Distribution createDistribution(VerbatimRecord rec, Area area,
+                                                 @Nullable Term tStatus, Term tEstablishmentMeans, Term tDegreeOfEstablishment, Term tPathway, Term tThreatStatus,
+                                                 @Nullable Term tYear, @Nullable Term tSeason, Term tLifeStage, Term tRemarks,
+                                                 BiConsumer<Distribution, VerbatimRecord> addReference) {
+    final var means  = parse(EstablishmentMeansParser.PARSER, rec.get(tEstablishmentMeans)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var degree = parse(DegreeOfEstablishmentParser.PARSER, rec.get(tDegreeOfEstablishment)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var threat = parse(ThreatStatusParser.PARSER, rec.get(tThreatStatus)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var season = tSeason == null ? null : parse(SeasonParser.PARSER, rec.get(tSeason)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+    final var year   = tYear == null ? null : parse(IntegerParser.PARSER, rec.get(tYear)).orNull(Issue.DISTRIBUTION_INVALID, rec);
+
     Distribution d = new Distribution();
     d.setVerbatimKey(rec.getId());
     d.setArea(area);
-    d.setStatus(status);
+    d.setEstablishmentMeans(means);
+    d.setDegreeOfEstablishment(degree);
+    d.setThreatStatus(threat);
+    d.setSeason(season);
+    d.setYear(year);
+    d.setLifeStage(rec.get(tLifeStage));
+    d.setPathway(rec.get(tPathway));
     d.setRemarks(getFormattedText(rec, tRemarks));
     addReference.accept(d, rec);
+
+    var status = parse(DistributionStatusParser.PARSER, rec.get(tStatus));
+    if (status.isPresent()) {
+      switch (status.get()) {
+        case NATIVE:
+          d.setEstablishmentMeans(EstablishmentMeans.NATIVE);
+          d.setDegreeOfEstablishment(DegreeOfEstablishment.NATIVE);
+          break;
+        case DOMESTICATED:
+          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+          d.setDegreeOfEstablishment(DegreeOfEstablishment.CULTIVATED);
+          break;
+        case ALIEN:
+          d.setEstablishmentMeans(EstablishmentMeans.INTRODUCED);
+          break;
+        case UNCERTAIN:
+          d.setEstablishmentMeans(EstablishmentMeans.UNCERTAIN);
+          break;
+      }
+    }
     return d;
   }
+
 
   protected List<Media> interpretMedia(VerbatimRecord rec, BiConsumer<Media, VerbatimRecord> addReference,
                                        Set<Term> type, Set<Term> url, Set<Term> link, Set<Term> license, Set<Term> creator, Set<Term> created, Set<Term> title, Set<Term> format, Set<Term> remarks) {
@@ -374,12 +416,12 @@ public class InterpreterBase {
     try {
       date = DateParser.PARSER.parse(v.get(term));
     } catch (UnparsableException e) {
-      v.addIssue(invalidIssue);
+      v.add(invalidIssue);
       return null;
     }
     if (date.isPresent()) {
       if (date.get().isFuzzyDate()) {
-        v.addIssue(Issue.PARTIAL_DATE);
+        v.add(Issue.PARTIAL_DATE);
       }
       return date.get();
     }
@@ -426,7 +468,7 @@ public class InterpreterBase {
       u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
       if (pnu.isExtinct()) {
         // flag this as synonyms cannot have the extinct flag
-        v.addIssue(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
+        v.add(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
       }
     } else {
       u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
@@ -491,18 +533,5 @@ public class InterpreterBase {
     if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
       t.setEnvironments(Set.of(settings.getEnum(Setting.ENVIRONMENT)));
     }
-  }
-
-  public static String normGeoTime(String gt, IssueContainer issues){
-    if (gt != null) {
-      var pr = SafeParser.parse(GeoTimeParser.PARSER, gt);
-      if (pr.isPresent()) {
-        return pr.get().getName();
-      } else {
-        issues.addIssue(Issue.GEOTIME_INVALID);
-      }
-      return StringUtils.trimToNull(gt.replaceAll("_", " "));
-    }
-    return null;
   }
 }

@@ -234,6 +234,13 @@ public class StringUtils {
     return Strings.emptyToNull(x);
   }
 
+  public static String removePunctWS(String x) {
+    if (x == null)
+      return null;
+    x = NON_DIGITLETTER.removeFrom(x);
+    return Strings.emptyToNull(x);
+  }
+
   /**
    * <p>
    * Converts a string to a Set. Breaks the string to characters and store each character in a Set.
@@ -402,6 +409,10 @@ public class StringUtils {
     return INVISIBLE.matcher(
       SPACE.matcher(value).replaceAll(" ")
     ).replaceAll("");
+  }
+
+  public static String lc(String value) {
+    return value == null ? null : value.toUpperCase();
   }
 
   public static String rmWS(String value) {

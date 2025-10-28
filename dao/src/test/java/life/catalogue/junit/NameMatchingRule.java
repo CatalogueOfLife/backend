@@ -1,15 +1,13 @@
 package life.catalogue.junit;
 
-import it.unimi.dsi.fastutil.ints.IntSet;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.dao.DaoUtils;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.matching.RematchJob;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
-import life.catalogue.matching.RematchJob;
 
 import java.util.function.Supplier;
 
@@ -18,6 +16,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.junit.rules.ExternalResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
  * A junit test rule that sets up a new in memory names index and rematches all names

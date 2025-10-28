@@ -1,5 +1,6 @@
 package life.catalogue.interpreter;
 
+import life.catalogue.api.model.Name;
 import life.catalogue.common.tax.SciNameNormalizer;
 
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -7,6 +8,7 @@ import static org.apache.commons.lang3.StringUtils.trimToNull;
 public class ExtinctName {
   public final String name;
   public final boolean extinct;
+  public Name pname;
 
   public ExtinctName(String name) {
     boolean dagger = false;

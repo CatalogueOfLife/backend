@@ -1,12 +1,12 @@
 package life.catalogue.api.model;
 
+import org.gbif.nameparser.api.ParsedName;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.Strings;
-
-import org.gbif.nameparser.api.ParsedName;
 
 public class ParserConfig extends Name {
   private static String[] EMPTY = new String[2];

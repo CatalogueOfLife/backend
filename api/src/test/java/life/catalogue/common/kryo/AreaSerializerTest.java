@@ -28,6 +28,14 @@ public class AreaSerializerTest {
     AreaSerializer.parse("iso:ttt");
   }
 
+  @Test
+  public void url() {
+    var url = "http://vocab.getty.edu/tgn/1000226";
+    var area = AreaSerializer.parse(url);
+    assertEquals(new AreaImpl(url), area);
+    assertEquals(url, area.getName());
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void failBadGazetteer() {
     AreaSerializer.parse("gaz:1234");

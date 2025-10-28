@@ -41,17 +41,18 @@ public class SectorImportDao {
    * @param datasetKey the dataset key to analyze the data from. Should be the releases datasetKey if its a release
    */
   public void updateMetrics(SectorImport si, int datasetKey) {
-    try (SqlSession session = factory.openSession(true)) {
+    try (SqlSession session = factory.openSession(false)) {
       LOG.debug("Start metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
       SectorImportMapper mapper = session.getMapper(SectorImportMapper.class);
       populateCounts(mapper, si, datasetKey);
       mapper.update(si);
+      session.commit();
       LOG.debug("Updated counts for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
-
-      DSID<Integer> sectorKey = DSID.of(datasetKey, si.getSectorKey());
-      fileMetricsDao.updateNames(sectorKey, si.getSectorDSID(), si.getAttempt());
-      LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
     }
+
+    DSID<Integer> sectorKey = DSID.of(datasetKey, si.getSectorKey());
+    fileMetricsDao.updateNames(sectorKey, si.getSectorDSID(), si.getAttempt());
+    LOG.debug("Updated names for metrics update for sector {} from dataset {}", si.getSectorDSID(), datasetKey);
   }
 
 
@@ -89,6 +90,9 @@ public class SectorImportDao {
     si.setUsagesByOriginCount(countMap(Origin.class, mapper.countUsagesByOrigin(datasetKey, key)));
     si.setUsagesByStatusCount(countMap(TaxonomicStatus.class, mapper.countUsagesByStatus(datasetKey, key)));
     si.setVernacularsByLanguageCount(countMap(mapper.countVernacularsByLanguage(datasetKey, key)));
+    si.setSecondarySourceByInfoCount(countMap(InfoGroup.class, mapper.countSecondarySourceByInfo(datasetKey, key)));
+    // we don't need to store mergedTaxon/SynonymByRank as its the same as the non merged one and just depends on the sector type
+    // instead we have overriden the SectorImport methods
   }
 
   /**

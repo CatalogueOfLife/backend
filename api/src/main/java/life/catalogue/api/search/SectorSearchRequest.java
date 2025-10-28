@@ -34,6 +34,10 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
   @QueryParam("withoutData")
   private boolean withoutData = false;
 
+  // restrict to sectors that have a subject id which points to a different name in the source than what is configured in the subject_name of the sector.
+  @QueryParam("wrongSubject")
+  private boolean wrongSubject = false;
+
   @QueryParam("publisherKey")
   private UUID publisherKey;
 
@@ -97,6 +101,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
     this.nested = nested;
   }
 
+  public boolean isWrongSubject() {
+    return wrongSubject;
+  }
+
+  public void setWrongSubject(boolean wrongSubject) {
+    this.wrongSubject = wrongSubject;
+  }
+
   public Integer getMinSize() {
     return minSize;
   }
@@ -115,15 +127,14 @@ public class SectorSearchRequest extends BaseDecisionSearchRequest {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof SectorSearchRequest)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     if (!super.equals(o)) return false;
     SectorSearchRequest that = (SectorSearchRequest) o;
-    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
+    return subject == that.subject && nested == that.nested && withoutData == that.withoutData && wrongSubject == that.wrongSubject && Objects.equals(subjectDatasetKey, that.subjectDatasetKey) && Objects.equals(lastSync, that.lastSync) && Objects.equals(mode, that.mode) && Objects.equals(minSize, that.minSize) && Objects.equals(publisherKey, that.publisherKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, publisherKey);
+    return Objects.hash(super.hashCode(), subjectDatasetKey, lastSync, mode, subject, nested, minSize, withoutData, wrongSubject, publisherKey);
   }
 }

@@ -10,6 +10,7 @@
     p.dataset_key,
     p.sector_key,
     p.verbatim_key,
+    p.verbatim_source_key,
     p.property,
     p.value,
     p.reference_id,
@@ -24,13 +25,14 @@
 
   <sql id="COLS">
     dataset_key,
-    sector_key,
     taxon_id,
     <include refid="COLS_COPY"/>
   </sql>
 
   <sql id="COLS_COPY">
+    sector_key,
     verbatim_key,
+    verbatim_source_key,
     property,
     value,
     reference_id,
@@ -43,9 +45,10 @@
 
   <sql id="PROPS">
     #{obj.datasetKey},
-    #{obj.sectorKey},
     #{taxonId},
+    #{obj.sectorKey},
     #{obj.verbatimKey},
+    #{obj.verbatimSourceKey},
     #{obj.property},
     #{obj.value},
     #{obj.referenceId},
@@ -127,8 +130,13 @@
   </delete>
 
   <update id="removeSectorKey" parameterType="map">
-    UPDATE taxon_property SET sector_key = NULL
+    UPDATE taxon_property SET sector_key = NULL, verbatim_source_key = NULL
     WHERE dataset_key=#{key.datasetKey} AND sector_key = #{key.id}
+  </update>
+
+  <update id="updateTaxonID" parameterType="map">
+    UPDATE verbatim_source SET taxon_id=#{newTaxonID}, modified_by=#{userKey}, modified=now()
+    WHERE dataset_key=#{key.datasetKey} AND taxon_id=#{key.id}
   </update>
 
 </mapper>

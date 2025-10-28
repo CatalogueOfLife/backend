@@ -152,7 +152,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       if (pnu.getName().isParsed()) {
         ParsedAuthorship pnAuthorship = parseAuthorship(authorship).orElseGet(() -> {
           LOG.info("Unparsable authorship {}", authorship);
-          v.addIssue(Issue.UNPARSABLE_AUTHORSHIP);
+          v.add(Issue.UNPARSABLE_AUTHORSHIP);
           // add the full, unparsed authorship in this case to not lose it
           ParsedName pn = new ParsedName();
           pn.getCombinationAuthorship().getAuthors().add(authorship);
@@ -163,7 +163,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         if (pnu.getName().hasParsedAuthorship()) {
           String prevAuthorship = NameFormatter.authorship(pnu.getName(), false);
           if (!prevAuthorship.equalsIgnoreCase(pnAuthorship.authorshipComplete(pnu.getName().getCode()))) {
-            v.addIssue(Issue.INCONSISTENT_AUTHORSHIP);
+            v.add(Issue.INCONSISTENT_AUTHORSHIP);
             LOG.info("Different authorship found in name {} than in parsed version: [{}] vs [{}]",
                 pnu.getName(), prevAuthorship, pnAuthorship.authorshipComplete(pnu.getName().getCode()));
           }
@@ -175,7 +175,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
         copyToPNU(pnAuthorship, pnu, ic);
         // ignore issues related to the epithet - we only parse authorships here
         removeEpithetIssues(ic);
-        ic.getIssues().forEach(v::addIssue);
+        ic.getIssues().forEach(v::add);
 
         // use original authorship string but normalize whitespace and remove taxonomic notes, e.g. misapplication
         setNormalizeAuthorship(pnu, authorship, pnAuthorship.getTaxonomicNote());
@@ -196,14 +196,14 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
   }
 
   private static void removeEpithetIssues(IssueContainer v) {
-    v.removeIssue(Issue.NULL_EPITHET);
-    v.removeIssue(Issue.SUBSPECIES_ASSIGNED);
-    v.removeIssue(Issue.LC_MONOMIAL);
-    v.removeIssue(Issue.QUESTION_MARKS_REMOVED);
-    v.removeIssue(Issue.REPL_ENCLOSING_QUOTE);
-    v.removeIssue(Issue.ESCAPED_CHARACTERS);
-    v.removeIssue(Issue.ESCAPED_CHARACTERS);
-    v.removeIssue(Issue.CONTAINS_REFERENCE);
+    v.remove(Issue.NULL_EPITHET);
+    v.remove(Issue.SUBSPECIES_ASSIGNED);
+    v.remove(Issue.LC_MONOMIAL);
+    v.remove(Issue.QUESTION_MARKS_REMOVED);
+    v.remove(Issue.REPL_ENCLOSING_QUOTE);
+    v.remove(Issue.ESCAPED_CHARACTERS);
+    v.remove(Issue.ESCAPED_CHARACTERS);
+    v.remove(Issue.CONTAINS_REFERENCE);
   }
 
   static String note2pattern(String x) {
@@ -313,21 +313,21 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     // issues
     switch (pn.getState()) {
       case PARTIAL:
-        issues.addIssue(Issue.PARTIALLY_PARSABLE_NAME);
+        issues.add(Issue.PARTIALLY_PARSABLE_NAME);
         break;
       case NONE:
-        issues.addIssue(Issue.UNPARSABLE_NAME);
+        issues.add(Issue.UNPARSABLE_NAME);
         break;
     }
 
     if (pn.isDoubtful()) {
       pnu.setDoubtful(true);
-      issues.addIssue(Issue.DOUBTFUL_NAME);
+      issues.add(Issue.DOUBTFUL_NAME);
     }
     // translate warnings into issues
     for (String warn : pn.getWarnings()) {
       if (WARN_TO_ISSUE.containsKey(warn)) {
-        issues.addIssue(WARN_TO_ISSUE.get(warn));
+        issues.add(WARN_TO_ISSUE.get(warn));
       } else {
         LOG.debug("Unknown parser warning: {}", warn);
       }
@@ -381,7 +381,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
       pnu.getName().setType(e.getType());
       // adds an issue in case the type indicates a parsable name
       if (pnu.getName().getType().isParsable()) {
-        issues.addIssue(Issue.UNPARSABLE_NAME);
+        issues.add(Issue.UNPARSABLE_NAME);
       }
     } finally {
       if (ctx != null) {
@@ -446,7 +446,7 @@ public class NameParser implements Parser<ParsedNameUsage>, AutoCloseable {
     n.setType(pn.getType());
 
     if (pn.isIncomplete()) {
-      issues.addIssue(Issue.INCONSISTENT_NAME);
+      issues.add(Issue.INCONSISTENT_NAME);
     }
 
     // we rebuilt the caches as we dont have any original authorship yet - it all came in through the single scientificName

@@ -12,16 +12,15 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TxtTreeDataRule;
 
-import org.apache.ibatis.session.SqlSession;
-
 import org.gbif.nameparser.api.Rank;
 
+import java.io.IOException;
+
+import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import java.io.IOException;
 
 import static org.junit.Assert.*;
 
@@ -40,13 +39,12 @@ public class TreeCleanerAndValidatorIT {
   @Test
   public void parentMismatch() throws IOException {
     final var factory = SqlSessionFactoryRule.getSqlSessionFactory();
-    try (SqlSession session = factory.openSession(true);
-         TreeCleanerAndValidator tcv = new TreeCleanerAndValidator(factory, datasetKey, false)
-    ) {
+    try (SqlSession session = factory.openSession(true)) {
       var num = session.getMapper(NameUsageMapper.class);
+      var tcv = new TreeCleanerAndValidator(session, datasetKey, false);
       TreeTraversalParameter params = new TreeTraversalParameter();
       params.setDatasetKey(datasetKey);
-      params.setSynonyms(false);
+      params.setSynonyms(true);
 
       PgUtils.consume(() -> num.processTreeLinneanUsage(params, true, false), tcv);
     }
@@ -56,20 +54,23 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(Rank.SPECIES, "Burundi negeriana", Issue.PARENT_NAME_MISMATCH);
     assertIssues(Rank.SPECIES, "Diamessa kundera", Issue.PARENT_NAME_MISMATCH);
     assertIssues(Rank.SPECIES, "Nesodiamesa negeriana", Issue.PARENT_NAME_MISMATCH);
-    assertIssues(Rank.SPECIES, "Ablabesmyia suturalis", Issue.MISSING_GENUS);
-    assertIssues(Rank.SPECIES, "Ablabesmyia satanis", Issue.MISSING_GENUS);
+    assertIssues(Rank.SPECIES, "Ablabesmyia suturalis", Issue.PARENT_GENUS_MISSING);
+    assertIssues(Rank.SPECIES, "Ablabesmyia satanis", Issue.PARENT_GENUS_MISSING);
 
+    assertIssues(Rank.SUBSPECIES, "Diamesa vulgaris vulgaris", Issue.PARENT_SPECIES_MISSING);
+
+    assertIssues(Rank.SUBGENUS, "Nesodiamesa", Issue.SYNONYM_RANK_DIFFERS);
     assertIssues(Rank.GENUS, "Onychodiamesa");
 
     assertIssues(Rank.ORDER, "Heminoptera", Issue.CLASSIFICATION_RANK_ORDER_INVALID);
-    assertIssues(Rank.ORDER, "Hymenoidales", Issue.CLASSIFICATION_RANK_ORDER_INVALID);
+    assertIssues(Rank.ORDER, "Hymenoidales", Issue.CLASSIFICATION_RANK_ORDER_INVALID, Issue.NO_SPECIES_INCLUDED);
 
-    assertIssues(Rank.ORDER, "Hymenoptera");
-    assertIssues(Rank.UNRANKED, "Hymenoidies");
-    assertIssues(Rank.SUBORDER, "Hymenoidaloides");
-    assertIssues(Rank.FAMILY, "Hymenoidaloidea", Issue.RANK_NAME_SUFFIX_CONFLICT);
+    assertIssues(Rank.ORDER, "Hymenoptera", Issue.NO_SPECIES_INCLUDED);
+    assertIssues(Rank.UNRANKED, "Hymenoidies"); // we don not flag unranked taxa
+    assertIssues(Rank.SUBORDER, "Hymenoidaloides", Issue.NO_SPECIES_INCLUDED);
+    assertIssues(Rank.FAMILY, "Hymenoidaloidea", Issue.NO_SPECIES_INCLUDED, Issue.RANK_NAME_SUFFIX_CONFLICT);
     assertIssues(Rank.UNRANKED, "Hymenoidalododes");
-    assertIssues(Rank.SUBFAMILY, "Hymenoidaloidiea");
+    assertIssues(Rank.SUBFAMILY, "Hymenoidaloidiea", Issue.NO_SPECIES_INCLUDED);
   }
 
   void assertIssues(Rank rank, String name, Issue ... issues) {
@@ -77,7 +78,7 @@ public class TreeCleanerAndValidatorIT {
     assertNotNull(u);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       var vm = session.getMapper(VerbatimSourceMapper.class);
-      var v = vm.get(DSID.of(datasetKey, u.getId()));
+      var v = vm.getByUsage(DSID.of(datasetKey, u.getId()));
       if (issues == null || issues.length == 0) {
         assertFalse(v != null && v.hasIssues());
       } else {

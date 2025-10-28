@@ -2,6 +2,7 @@ package life.catalogue.es.nu.suggest;
 
 import life.catalogue.api.search.NameUsageSearchParameter;
 import life.catalogue.api.search.NameUsageSuggestRequest;
+import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.es.DownwardConverter;
 import life.catalogue.es.nu.FilterTranslator;
 import life.catalogue.es.nu.FiltersTranslator;
@@ -12,6 +13,9 @@ import life.catalogue.es.query.EsSearchRequest;
 import life.catalogue.es.query.IsNotNullQuery;
 import life.catalogue.es.query.Query;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static life.catalogue.api.search.NameUsageSearchParameter.DATASET_KEY;
 import static life.catalogue.api.search.NameUsageSearchParameter.USAGE_ID;
 import static life.catalogue.api.vocab.TaxonomicStatus.ACCEPTED;
@@ -21,6 +25,7 @@ import static life.catalogue.api.vocab.TaxonomicStatus.PROVISIONALLY_ACCEPTED;
  * Translates the {@code NameSuggestRequest} into a native Elasticsearch search request.
  */
 class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, EsSearchRequest> {
+  private static final Logger LOG = LoggerFactory.getLogger(RequestTranslator.class);
 
   private final NameUsageSuggestRequest request;
 
@@ -39,8 +44,20 @@ class RequestTranslator implements DownwardConverter<NameUsageSuggestRequest, Es
 
   static Query generateQuery(NameUsageSuggestRequest request) {
     if (request.isAccepted()) {
+      request.clearFilter(NameUsageSearchParameter.STATUS);
       request.addFilter(NameUsageSearchParameter.STATUS, ACCEPTED);
       request.addFilter(NameUsageSearchParameter.STATUS, PROVISIONALLY_ACCEPTED);
+    }
+    if (request.isExclBareNames()) {
+      if (request.hasFilter(NameUsageSearchParameter.STATUS)) {
+        LOG.debug("Request already filters on taxonomic status. Ignore exclude bare names flag");
+      } else {
+        for (var status : TaxonomicStatus.values()) {
+          if (!status.isBareName()) {
+            request.addFilter(NameUsageSearchParameter.STATUS, status);
+          }
+        }
+      }
     }
 
     BoolQuery q = new BoolQuery();

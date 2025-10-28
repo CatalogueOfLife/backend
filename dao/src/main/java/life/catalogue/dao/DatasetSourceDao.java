@@ -5,6 +5,7 @@ import life.catalogue.db.mapper.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -26,13 +27,13 @@ public class DatasetSourceDao {
   }
 
   /**
-   * @param datasetKey the dataset key of the release or project
+   * @param datasetKey       the dataset key of the release or project
    * @param sourceDatasetKey the dataset key of the source within the release or project
-   * @param dontPatch if true return the original project source metadata without the patch. This works only for managed datasets, not releases
+   * @param dontPatch        if true return the original project source metadata without the patch. This works only for managed datasets, not releases
    */
-  public Dataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
+  public DatasetSourceMapper.SourceDataset get(int datasetKey, int sourceDatasetKey, boolean dontPatch){
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);
-    Dataset d;
+    DatasetSourceMapper.SourceDataset d;
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       DatasetSourceMapper dsm = session.getMapper(DatasetSourceMapper.class);
@@ -78,18 +79,22 @@ public class DatasetSourceDao {
   }
 
   /**
-   * Returns simple source datasets like the main list method but without
-   * - description
-   * - container dataset
-   * - bibliography
-   * - contributors
+   * Returns simple source datasets like the main list method but without:
+   *  - description
+   *  - conversion
+   *  - containerXXX properties
+   *  - source bibliography
+   *  - contributor
+   *  - identifier
+   *  - url_formatter
    *
    * @param datasetKey
+   * @param splitMerge if true split source with merge and non merge sector modes into 2 copies
    * @return
    */
-  public List<Dataset> listSimple(int datasetKey, boolean inclPublisherSources){
-    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE, PROJECT);
-    List<Dataset> sources;
+  public List<DatasetSourceMapper.SourceDataset> listSimple(int datasetKey, boolean inclPublisherSources, boolean splitMerge){
+    DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey, true).requireOrigin(RELEASE, XRELEASE, PROJECT);
+    List<DatasetSourceMapper.SourceDataset> sources;
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
       final var container = dm.get(datasetKey);
@@ -105,8 +110,28 @@ public class DatasetSourceDao {
         sources.forEach(d -> patch(d, datasetKey, pm));
       }
       sources.forEach(d -> d.addContainer(container, settings));
+      // should we create 2 copies of sources with merge and non merge sector modes?
+      if (splitMerge) {
+        var splitSources = new ArrayList<DatasetSourceMapper.SourceDataset>();
+        for (DatasetSourceMapper.SourceDataset sd : sources) {
+          if (sd.isMerged() && sd.getSectorModes().size()>1) {
+            // split in two
+            var sd1 = new DatasetSourceMapper.SourceDataset(sd);
+            sd1.getSectorModes().add(Sector.Mode.MERGE);
+            splitSources.add(sd1);
+            var sd2 = new DatasetSourceMapper.SourceDataset(sd);
+            sd2.getSectorModes().addAll(sd.getSectorModes());
+            sd2.getSectorModes().remove(Sector.Mode.MERGE);
+            splitSources.add(sd2);
+          } else {
+            // keep
+            splitSources.add(sd);
+          }
+        }
+        return splitSources;
+      }
+      return sources;
     }
-    return sources;
   }
 
   public List<DatasetSimple> suggest(int datasetKey, String query, boolean inclMergeSources){
@@ -114,14 +139,6 @@ public class DatasetSourceDao {
     try (SqlSession session = factory.openSession()) {
       var dm = session.getMapper(DatasetMapper.class);
       return dm.suggest(query, datasetKey, inclMergeSources, 50);
-    }
-  }
-
-  public List<Dataset> listReleaseSources(int datasetKey, boolean inclPublisherSources){
-    DatasetInfoCache.CACHE.info(datasetKey).requireOrigin(RELEASE, XRELEASE);
-    try (SqlSession session = factory.openSession()) {
-      DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
-      return psm.listReleaseSources(datasetKey, inclPublisherSources);
     }
   }
 
@@ -140,9 +157,10 @@ public class DatasetSourceDao {
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       DatasetPatchMapper pm = session.getMapper(DatasetPatchMapper.class);
       // get latest version with patch applied
-      List<Dataset> sources = psm.listProjectSources(datasetKey, inclPublisherSources);
-      sources.forEach(d -> patch(d, projectKey, pm));
-      return sources;
+      List<DatasetSourceMapper.SourceDataset> sources = psm.listProjectSources(datasetKey, inclPublisherSources);
+      return sources.stream()
+        .map(d -> patch(d, projectKey, pm))
+        .collect(Collectors.toList());
     }
   }
 
@@ -239,11 +257,13 @@ public class DatasetSourceDao {
 
   /**
    * Retrieve the metrics for a single source of a project or release
+   *
    * @param datasetKey of the project or release
-   * @param sourceKey dataset key of the source in the project/release
+   * @param sourceKey  dataset key of the source in the project/release
+   * @param merged defines whether to calculate metrics for all sectors (null), only from merge sectors (true) or non merge (false)
    * @return
    */
-  public SourceMetrics sourceMetrics(int datasetKey, int sourceKey) {
+  public SourceMetrics sourceMetrics(int datasetKey, int sourceKey, @Nullable Boolean merged) {
     SourceMetrics metrics = new SourceMetrics(datasetKey, sourceKey);
 
     try (SqlSession session = factory.openSession()) {
@@ -258,24 +278,42 @@ public class DatasetSourceDao {
       // aggregate metrics based on sector syncs/imports
       SectorImportMapper sim = session.getMapper(SectorImportMapper.class);
       AtomicInteger sectorCounter = new AtomicInteger(0);
+      List<Sector.Mode> modes = new ArrayList<>();
+      if (merged != null && merged) {
+        modes.add(Sector.Mode.MERGE);
+      } else if (merged != null) {
+        modes.add(Sector.Mode.ATTACH);
+        modes.add(Sector.Mode.UNION);
+      }
       // a release? use mother project in that case
       if (info.origin.isRelease()) {
         Integer projectKey = info.sourceKey;
-        for (Sector s : session.getMapper(SectorMapper.class).listByDataset(datasetKey, sourceKey, null)){
-          if (s.getSyncAttempt() != null) {
-            SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
-            add(metrics, m);
-            sectorCounter.incrementAndGet();
+        var sm = session.getMapper(SectorMapper.class);
+        if (modes.isEmpty()) {
+          addReleaseMetrics(metrics, projectKey, datasetKey, sourceKey, null, sectorCounter, sm, sim);
+        } else {
+          for (Sector.Mode mode : modes) {
+            addReleaseMetrics(metrics, projectKey, datasetKey, sourceKey, mode, sectorCounter, sm, sim);
           }
         }
       } else {
-        for (SectorImport m : sim.list(null, datasetKey, sourceKey, null, true, null)) {
+        for (SectorImport m : sim.list(null, datasetKey, sourceKey, null, modes, true, null)) {
           add(metrics, m);
           sectorCounter.incrementAndGet();
         }
       }
       metrics.setSectorCount(sectorCounter.get());
       return metrics;
+    }
+  }
+
+  private void addReleaseMetrics(SourceMetrics metrics, int projectKey, int datasetKey, int sourceKey, @Nullable Sector.Mode mode, AtomicInteger sectorCounter, SectorMapper sm, SectorImportMapper sim) {
+    for (Sector s : sm.listByDataset(datasetKey, sourceKey, mode)){
+      if (s.getSyncAttempt() != null) {
+        SectorImport m = sim.get(DSID.of(projectKey, s.getId()), s.getSyncAttempt());
+        add(metrics, m);
+        sectorCounter.incrementAndGet();
+      }
     }
   }
 

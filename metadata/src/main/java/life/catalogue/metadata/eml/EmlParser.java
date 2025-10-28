@@ -25,8 +25,6 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import lombok.val;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -318,6 +316,12 @@ public class EmlParser {
                   break;
                 case "bibliography":
                   isBibliography = false;
+                  break;
+                case "dateStamp":
+                  FuzzyDate fuzzy = date(text);
+                  if (fuzzy != null && d.getIssued() == null) {
+                    d.setIssued(fuzzy);
+                  }
                   break;
                 }
               }

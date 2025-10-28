@@ -1,21 +1,24 @@
 package life.catalogue.es;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.util.Pool;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.kryo.*;
+import life.catalogue.common.kryo.ApiKryoPool;
+import life.catalogue.common.kryo.FuzzyDateSerializer;
+import life.catalogue.common.kryo.URISerializer;
+import life.catalogue.common.kryo.UUIDSerializer;
 
 import org.gbif.nameparser.api.*;
 
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.UUID;
+
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.Pool;
 
 
 /**

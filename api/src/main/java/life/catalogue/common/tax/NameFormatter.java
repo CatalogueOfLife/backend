@@ -3,7 +3,6 @@ package life.catalogue.common.tax;
 
 import life.catalogue.api.model.FormattableName;
 
-import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
@@ -16,6 +15,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+
 import static org.gbif.nameparser.util.NameFormatter.appendAuthorship;
 /**
  * Formatting FormattableName instances to plain text and html labels.

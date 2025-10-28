@@ -1,0 +1,33 @@
+Eukaryota [domain]
+  Plantae [kingdom]
+    Pteridobiotina [subkingdom]
+      Tracheophyta [phylum]
+        Magnoliopsida [class]
+          Apiales Nakai [order]
+            Apiaceae Lindl. [family]
+              Oenanthe L. [genus] {ID=Oen1}
+        Liliopsida [class]
+          Orchidaceae Juss. [family]
+            Trichosalpinx Luer [genus]
+              =Pseudolepanthes (Luer) Archila [genus]
+              =Tubella (Luer) Archila [genus] {ID=TubOrch}
+  Animalia [kingdom]
+    Chordata [phylum]
+      Vertebrata [subphylum]
+        Gnathostomata [infraphylum]
+          Osteichthyes [parvphylum]
+            Tetrapoda [megaclass]
+              Aves [class]
+                Passeriformes [order]
+                  Muscicapidae Fleming, 1822 [family]
+                    Oenanthe Vieillot, 1816 [genus] {ID=Oen2}
+    Mollusca [phylum]
+    Porifera [phylum]
+      Spongillidae Gray, 1867 [family]
+        Trochospongilla Vejdovsky, 1888 [genus]
+          =Tubella Carter, 1881 [genus] {ID=TubPor1}
+      Metaniidae Volkmer-Ribeiro, 1986 [family]
+        Tubella Carter, 1881 [genus] {ID=TubPor2}
+  Protozoa [kingdom]
+    Calcitarcha [phylum]
+      Tubella Odin, 2008 [genus] {ID=TubPr}

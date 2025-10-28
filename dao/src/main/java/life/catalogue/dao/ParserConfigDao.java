@@ -1,6 +1,5 @@
 package life.catalogue.dao;
 
-import life.catalogue.api.model.Name;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.ParserConfig;
 import life.catalogue.api.model.ResultPage;

@@ -3,8 +3,8 @@ package life.catalogue.db;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.db.mapper.ArchivedNameUsageMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.UsageNameID;
 import life.catalogue.db.mapper.legacy.model.LName;
 import life.catalogue.db.type.UuidTypeHandler;
@@ -138,13 +138,14 @@ public class MybatisFactory {
     registry.registerAliases(LName.class.getPackage().getName());
     registry.registerAlias(StringCount.class);
     registry.registerAlias(UsageNameID.class);
+    registry.registerAlias("SourceDataset", DatasetSourceMapper.SourceDataset.class);
     registry.registerAlias("TreeNodeMybatis", TreeNode.TreeNodeMybatis.class);
     registry.registerAlias("UsageDecision", Duplicate.UsageDecision.class);
     registry.registerAlias("DuplicateMybatis", Duplicate.Mybatis.class);
     registry.registerAlias("HomonymMybatis", Duplicate.Homonyms.class);
     registry.registerAlias("DuplicateIntKeys", Duplicate.IntKeys.class);
     registry.registerAlias("SimpleWithID", IssueContainer.SimpleWithID.class);
-    registry.registerAlias("ArchivedSimpleNameWithNidx", ArchivedNameUsageMapper.ArchivedSimpleNameWithNidx.class);
+    registry.registerAlias("ArchivedSimpleName", ArchivedNameUsageMapper.ArchivedSimpleName.class);
   }
   
   private static void registerTypeHandlers(TypeHandlerRegistry registry) {
