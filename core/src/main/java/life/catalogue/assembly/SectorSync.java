@@ -17,6 +17,7 @@ import life.catalogue.matching.MatchingUtils;
 import life.catalogue.matching.UsageMatcher;
 import life.catalogue.matching.decision.EstimateRematcher;
 import life.catalogue.matching.decision.MatchingDao;
+import life.catalogue.matching.decision.MatchingResult;
 import life.catalogue.matching.decision.RematchRequest;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.release.UsageIdGen;
@@ -118,19 +119,15 @@ public class SectorSync extends SectorRunnable {
       if (trgt == null) {
         // try to match by name
         MatchingDao mdao = new MatchingDao(session);
-        List<Taxon> matches = mdao.matchSector(s.getTarget(), s);
-        if (matches.size()==1) {
-          s.getTarget().setId(matches.get(0).getId());
-
+        MatchingResult match = mdao.matchDataset(s.getTarget(), targetDatasetKey);
+        s.getTarget().setId(null);
+        if (match.isEmpty()) {
+          LOG.warn("Target of sector {} cannot be matched to target dataset {} - lost {}", s.getKey(), targetDatasetKey, s.getTarget());
+        } else if (match.getMatches().size() > 1) {
+          LOG.warn("Target of sector {} cannot be matched to target dataset {} - multiple names like {}", s.getKey(), targetDatasetKey, s.getTarget());
         } else {
-          String warning;
-          s.getTarget().setId(null);
-          if (matches.isEmpty()) {
-            warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - lost " + s.getTarget();
-          } else {
-            warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - multiple names like  " + s.getTarget();
-          }
-          LOG.warn(warning);
+          s.getTarget().setId(match.getMatches().get(0).getId());
+          LOG.info("Target of sector {} matched to {} [{}] in target dataset {}", s.getKey(), s.getTarget().getLabel(), s.getTarget().getId(), targetDatasetKey);
         }
         return true;
       }
