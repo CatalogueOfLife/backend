@@ -129,7 +129,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
     numRO = session.getMapper(NameUsageMapper.class);
     vrmRO = session.getMapper(VerbatimRecordMapper.class);
     // load target taxon
-    target = session.getMapper(TaxonMapper.class).get(sector.getTargetAsDSID());
+    target = session.getMapper(TaxonMapper.class).get(targetKey.id(sector.getTargetID()));
     targetUsage = usage(target, null, null);
     // load source dataset
     source = session.getMapper(DatasetMapper.class).get(sector.getSubjectDatasetKey());
