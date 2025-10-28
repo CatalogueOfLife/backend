@@ -533,16 +533,18 @@ public class XRelease extends ProjectRelease {
       try (SqlSession session = factory.openSession(true)) {
         SectorMapper sm = session.getMapper(SectorMapper.class);
         if (!sm.exists(s)) {
-          // the targetID points to the project temp ids - we need to map to the tmp project ids incl base release ids
-          rematchSectorTarget(s, session);
+          // the sector belongs to the tmp project,
+          // but the targetID points to the project ids, not the tmp dataset ids which use the stable base release identifiers
+          SectorSync.rematchSectorTarget(s, s.getDatasetKey(), session);
           sm.createWithID(s);
         }
       }
       checkIfCancelled();
       SectorSync ss;
       try {
-        // this loads decisions from the main project, even though the sector dataset key is the xrelease
-        ss = syncFactory.release(s, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
+        // sector syncs require the project key where we store all sync attempts
+        var skey = DSID.of(projectKey, s.getId());
+        ss = syncFactory.release(skey, tmpProjectKey, mergeCfg, matcher, nameIdGen, typeMaterialIdGen, usageIdGen, fullUser.getKey());
         ss.run();
         if (ss.getState().getState() != ImportState.FINISHED){
           failedSyncs++;
@@ -575,27 +577,6 @@ public class XRelease extends ProjectRelease {
     LOG.info("All {} sectors merged, {} failed", counter, failedSyncs);
     DateUtils.logDuration(LOG, "Merging sectors", start);
     matcher=null; // release matcher memory
-  }
-
-  private void rematchSectorTarget(Sector s, SqlSession session) {
-    if (s.getTarget() != null) {
-      MatchingDao mdao = new MatchingDao(session);
-      List<Taxon> matches = mdao.matchSector(s.getTarget(), s);
-      if (matches.size()==1) {
-        s.getTarget().setId(matches.get(0).getId());
-
-      } else {
-        String warning;
-        s.getTarget().setId(null);
-        if (matches.isEmpty()) {
-          warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - lost " + s.getTarget();
-        } else {
-          warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - multiple names like  " + s.getTarget();
-        }
-        LOG.warn(warning);
-      }
-      session.commit();
-    }
   }
 
   /**

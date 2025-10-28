@@ -124,6 +124,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     this(factory, new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
   }
 
+  public static boolean isTempKey(Integer key) {
+    return key != null && key >= TEMP_KEY_START;
+  }
+
   public Dataset get(UUID gbifKey) {
     try (SqlSession session = factory.openSession()) {
       var mapper = session.getMapper(mapperClass);

@@ -110,11 +110,20 @@ public class DatasetInfoCache implements DatasetListener {
   }
 
   private DatasetInfo get(int datasetKey, boolean allowDeleted) throws NotFoundException {
-    DatasetInfo info = infos.computeIfAbsent(datasetKey, key -> {
+    DatasetInfo info;
+    if (DatasetDao.isTempKey(datasetKey)) {
+      // do not use the cache for temp keys
       try (SqlSession session = factory.openSession()) {
-        return convert(datasetKey, session.getMapper(DatasetMapper.class).getSimple(key));
+        info = convert(datasetKey, session.getMapper(DatasetMapper.class).getSimple(datasetKey));
       }
-    });
+
+    } else {
+      info = infos.computeIfAbsent(datasetKey, key -> {
+        try (SqlSession session = factory.openSession()) {
+          return convert(datasetKey, session.getMapper(DatasetMapper.class).getSimple(key));
+        }
+      });
+    }
     if (info.deleted && !allowDeleted) {
       throw NotFoundException.notFound(Dataset.class, datasetKey);
     }

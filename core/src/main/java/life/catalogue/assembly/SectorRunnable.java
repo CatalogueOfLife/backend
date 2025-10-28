@@ -1,5 +1,7 @@
 package life.catalogue.assembly;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
@@ -58,11 +60,15 @@ abstract class SectorRunnable implements Runnable {
   final boolean updateSectorAttemptOnSuccess;
 
   /**
-   * @throws IllegalArgumentException if the sectors dataset is not of PROJECT origin
+   * @throws IllegalArgumentException if the sector key is not of PROJECT origin
    */
   SectorRunnable(DSID<Integer> sectorKey, boolean validateSector, SqlSessionFactory factory,
                  NameUsageIndexService indexService, SectorDao dao, SectorImportDao sid, EventBroker bus,
                  Consumer<SectorRunnable> successCallback, BiConsumer<SectorRunnable, Exception> errorCallback, boolean updateSectorAttemptOnSuccess, int user) throws IllegalArgumentException {
+    // make sure the sector is a project sector, not from a release
+    if (sectorKey.getDatasetKey() == null || !DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey()).isProject()) {
+      throw new IllegalArgumentException("Sector required to be a project dataset key");
+    }
     this.updateSectorAttemptOnSuccess = updateSectorAttemptOnSuccess;
     this.user = user;
     this.bus = bus;
@@ -199,7 +205,7 @@ abstract class SectorRunnable implements Runnable {
         throw new NotFoundException("Sector "+sectorKey+" does not exist");
       }
       var dsInfo = DatasetInfoCache.CACHE.info(sectorKey.getDatasetKey());
-      if (dsInfo.origin != DatasetOrigin.PROJECT && dsInfo.origin != DatasetOrigin.XRELEASE) {
+      if (dsInfo.origin != DatasetOrigin.PROJECT) {
         throw new IllegalArgumentException("Cannot run a " + getClass().getSimpleName() + " against a " + dsInfo.origin + " dataset");
       }
       // apply dataset defaults if needed

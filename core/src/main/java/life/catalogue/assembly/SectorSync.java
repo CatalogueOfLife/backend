@@ -10,6 +10,7 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.SectorProcessable;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.SectorMapper;
+import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.matching.MatchingUtils;
@@ -93,6 +94,51 @@ public class SectorSync extends SectorRunnable {
   }
 
   @Override
+  protected Sector loadSectorAndUpdateDatasetImport(boolean validate) {
+    var s = super.loadSectorAndUpdateDatasetImport(validate);
+    // match the target to the target dataset of the sync
+    if (validate && s.getTarget() != null && targetDatasetKey != s.getDatasetKey()) {
+      try (SqlSession session = factory.openSession()) {
+        rematchSectorTarget(s, targetDatasetKey, session);
+      }
+    }
+    return s;
+  }
+
+  /**
+   * @return true of the target id has changed
+   */
+  public static boolean rematchSectorTarget(Sector s, int targetDatasetKey, SqlSession session) {
+    if (s.getTarget() != null) {
+      SimpleName trgt = null;
+      if (s.getTargetID() != null) {
+        // see if we can find the target by its old project temp ID first
+        trgt = session.getMapper(NameUsageMapper.class).getSimple(DSID.of(targetDatasetKey, s.getTargetID()));
+      }
+      if (trgt == null) {
+        // try to match by name
+        MatchingDao mdao = new MatchingDao(session);
+        List<Taxon> matches = mdao.matchSector(s.getTarget(), s);
+        if (matches.size()==1) {
+          s.getTarget().setId(matches.get(0).getId());
+
+        } else {
+          String warning;
+          s.getTarget().setId(null);
+          if (matches.isEmpty()) {
+            warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - lost " + s.getTarget();
+          } else {
+            warning = "Sector " + s.getKey() + " cannot be rematched to synced sector " + s.getKey() + " - multiple names like  " + s.getTarget();
+          }
+          LOG.warn(warning);
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
   void doWork() throws Exception {
     if (projectTarget) {
       state.setState( ImportState.DELETING);
@@ -151,7 +197,6 @@ public class SectorSync extends SectorRunnable {
   @Override
   void init() throws Exception {
     super.init(true);
-
     loadForeignChildren();
     if (!disableAutoBlocking) {
       // also load all sector subjects of the same source to auto block them
