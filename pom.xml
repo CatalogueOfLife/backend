@@ -26,6 +26,12 @@
     <java.version>21</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <jvm.opens.args>
+      --add-opens=java.base/java.lang=ALL-UNNAMED
+      --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+      --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+      --add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+    </jvm.opens.args>
 
     <!-- Library dependencies Check for available updates: mvn versions:display-dependency-updates We make
         use of the Dropwizard BOM (Bill of materials) to manage versions for the major libraries which also imports
@@ -957,7 +963,7 @@
             <useSystemClassLoader>false</useSystemClassLoader>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <!-- use the same JVM options as maven -->
-            <argLine>-Xmx512m --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argLine>
+            <argLine>-Xmx512m ${jvm.opens.args}</argLine>
             <runOrder>failedfirst</runOrder>
 
             <includes>
@@ -995,11 +1001,7 @@
             <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
             <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
             <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
-            <argLine>
-              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
-              --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
-              --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
-            </argLine>
+            <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true ${jvm.opens.args}</argLine>
             <runOrder>random</runOrder>
           </configuration>
         </plugin>
