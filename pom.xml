@@ -956,7 +956,8 @@
 
             <useSystemClassLoader>false</useSystemClassLoader>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
+            <!-- use the same JVM options as maven -->
+            <argLine>-Xmx512m --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED</argLine>
             <runOrder>failedfirst</runOrder>
 
             <includes>
@@ -996,6 +997,8 @@
             <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
             <argLine>
               -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+              --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+              --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
             </argLine>
             <runOrder>random</runOrder>
           </configuration>
