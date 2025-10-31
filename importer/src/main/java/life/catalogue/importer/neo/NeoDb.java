@@ -6,6 +6,7 @@ import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
+import life.catalogue.common.lang.Exceptions;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.model.*;
@@ -99,7 +100,7 @@ public class NeoDb implements AutoCloseable {
     this.dbname = neo.databaseName();
     this.storeDir = storeDir;
     this.mapDb = mapDb;
-    this.batchSize = 1; //batchSize;
+    this.batchSize = batchSize;
     this.batchTimeout = batchTimeout;
     
     try {
@@ -157,12 +158,9 @@ public class NeoDb implements AutoCloseable {
    * @return a neo node bound to the given transaction with the given unique internal id
    */
   public Node nodeById(int id, Transaction tx) {
-    var n = tx.findNode(ID_LABEL, NeoProperties.ID, id);
-    if (n==null) {
-      debug();
-    }
-    return n;
+    return tx.findNode(ID_LABEL, NeoProperties.ID, id);
   }
+
   public Node nodeByMock(NodeMock n, Transaction tx) {
     return nodeById(n.id, tx);
   }
@@ -363,12 +361,14 @@ public class NeoDb implements AutoCloseable {
    */
   public int process(@Nullable Labels label, BiConsumer<Node, Transaction> consumer) throws InterruptedException {
     int counter = 0;
-    try (Transaction tx = neo.beginTx()){
-      final ResourceIterator<Node> iter = label == null ? tx.findNodes(NeoDb.ID_LABEL) : tx.findNodes(label);
+    try (Transaction tx = neo.beginTx()) {
+      final Label lbl = label == null ? ID_LABEL : label;
+      final ResourceIterator<Node> iter = tx.findNodes(lbl);
       while (iter.hasNext()) {
-        checkIfInterrupted();
         consumer.accept(iter.next(), tx);
-        counter++;
+        if (counter++ % 1000 == 0) {;
+          Exceptions.interruptIfCancelled();
+        }
       }
       // mark good for commit
       tx.commit();
@@ -379,12 +379,6 @@ public class NeoDb implements AutoCloseable {
       LOG.error("Neo processing interrupted", e);
     }
     return counter;
-  }
-  
-  private void checkIfInterrupted() throws InterruptedException {
-    if (Thread.currentThread().isInterrupted()) {
-      throw new InterruptedException("Neo thread was cancelled/interrupted");
-    }
   }
 
   public boolean createNameAndUsaged(NeoUsage u, Transaction tx) {
