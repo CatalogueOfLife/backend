@@ -1,8 +1,11 @@
 package life.catalogue.importer;
 
+import com.google.common.collect.Iterables;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.common.collection.CollectionUtils;
 import life.catalogue.importer.neo.NeoDbUtils;
 import life.catalogue.importer.neo.model.*;
 
@@ -10,6 +13,7 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +23,7 @@ import org.junit.Test;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.schema.IndexDefinition;
 import org.neo4j.graphdb.schema.Schema;
 
 import com.google.common.collect.Maps;
@@ -45,7 +50,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(49);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = usageByID("urn:lsid:irmng.org:taxname:6");
+      NeoUsage u = usageByID("urn:lsid:irmng.org:taxname:6", tx);
       var n = u.getNeoName().getName();
       assertTrue(u.isTaxon());
       Taxon t = (Taxon)u.usage;
@@ -59,7 +64,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertTrue(refIds.contains("10.1073/pnas.87.12.4576"));
       assertTrue(refIds.contains("10.1099/00207713-52-1-7"));
 
-      u = usageByID("urn:lsid:irmng.org:taxname:7");
+      u = usageByID("urn:lsid:irmng.org:taxname:7", tx);
       n = u.getNeoName().getName();
       assertEquals("10.1016/0303-2647(81)90050-2", n.getPublishedInId()); // normalised DOI
     }
@@ -70,7 +75,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(43);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t3 = usageByID("ns:3");
+      NeoUsage t3 = usageByID("ns:3", tx);
       assertEquals("Insecta", t3.usage.getName().getLabel());
       assertEquals(1, t3.vernacularNames.size());
       assertEquals("Insects", t3.vernacularNames.get(0).getName());
@@ -82,7 +87,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       assertEquals("Arthropoda", parents.get(0).name);
 
 
-      NeoUsage t4 = usageByID("ns:4");
+      NeoUsage t4 = usageByID("ns:4", tx);
       assertEquals("Rhyniognatha hirsti", t4.usage.getName().getLabel());
       assertEquals(List.of(new Identifier("zoobank","1234567")), t4.usage.getName().getIdentifier());
       assertEquals(t4.getId(), t4.usage.getName().getId());
@@ -118,7 +123,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(17);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1099-sp16");
+      NeoUsage t = usageByID("1099-sp16", tx);
       assertFalse(t.isSynonym());
       assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
       assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.asTaxon().getLink());
@@ -134,20 +139,20 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     }
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage trametes_modesta = usageByID("324805");
+      NeoUsage trametes_modesta = usageByID("324805", tx);
       assertFalse(trametes_modesta.isSynonym());
 
       Reference pubIn = store.references().get(trametes_modesta.usage.getName().getPublishedInId());
       assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
       assertNotNull(pubIn.getId());
 
-      NeoUsage Polystictus_substipitatus = usageByID("140283");
+      NeoUsage Polystictus_substipitatus = usageByID("140283", tx);
       assertTrue(Polystictus_substipitatus.isSynonym());
       assertTrue(Polystictus_substipitatus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
       assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
 
-      NeoUsage Polyporus_modestus = usageByID("198666");
+      NeoUsage Polyporus_modestus = usageByID("198666", tx);
       assertTrue(Polyporus_modestus.isSynonym());
       assertTrue(Polyporus_modestus.asSynonym().getStatus().isSynonym());
       pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
@@ -162,7 +167,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoUsage t = usageByID("1000");
+      NeoUsage t = usageByID("1000", tx);
       assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
 
       // check vernaculars
@@ -203,8 +208,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       // 1->2->1
       // should be: 1->2
-      NeoName t1 = nameByID("1");
-      NeoName t2 = nameByID("2");
+      NeoName t1 = nameByID("1", tx);
+      NeoName t2 = nameByID("2", tx);
 
       assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
@@ -213,10 +218,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
       // 10->11->12->10, 13->11
       // should be: 10,13->11 12
-      NeoName t10 = nameByID("10");
-      NeoName t11 = nameByID("11");
-      NeoName t12 = nameByID("12");
-      NeoName t13 = nameByID("13");
+      NeoName t10 = nameByID("10", tx);
+      NeoName t11 = nameByID("11", tx);
+      NeoName t12 = nameByID("12", tx);
+      NeoName t13 = nameByID("13", tx);
 
       assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
       assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
@@ -239,7 +244,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // verify results
     try (Transaction tx = store.getNeo().beginTx()) {
       // check species name
-      NeoUsage t = usageByID("10156");
+      NeoUsage t = usageByID("10156", tx);
       assertEquals("'Prosthète'", t.usage.getName().getScientificName());
     }
   }
@@ -251,7 +256,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     // no indices!
     try (Transaction tx = store.getNeo().beginTx()) {
       Schema schema = tx.schema();
-      assertFalse(schema.getIndexes().iterator().hasNext());
+      List<IndexDefinition> indices = new ArrayList<>();
+      schema.getIndexes().forEach(indices::add);
+      assertEquals(3, indices.size());
 
       // 1001, Crepis bakeri Greene
       assertNotNull(NeoDbUtils.singleOrNull(
@@ -269,14 +276,14 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(1);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u1 = usageByID("1006");
-      NeoUsage u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
+      NeoUsage u1 = usageByID("1006", tx);
+      NeoUsage u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat", tx);
 
       assertEquals(u1, u2);
 
-      NeoUsage bas = byName("Leonida taraxacoida");
+      NeoUsage bas = byName("Leonida taraxacoida", tx);
 
-      NeoUsage syn = byName("Leontodon leysseri");
+      NeoUsage syn = byName("Leontodon leysseri", tx);
       assertTrue(syn.asSynonym().getStatus().isSynonym());
     }
   }
@@ -286,7 +293,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(8);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage syn = usageByID("1001");
+      NeoUsage syn = usageByID("1001", tx);
       assertNotNull(syn.asSynonym());
 
       Map<String, String> expectedAccepted = Maps.newHashMap();
@@ -306,10 +313,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(29);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage annua1 = usageByID("4");
-      NeoUsage annua2 = usageByID("5");
-      NeoUsage reptans1 = usageByID("7");
-      NeoUsage reptans2 = usageByID("8");
+      NeoUsage annua1 = usageByID("4", tx);
+      NeoUsage annua2 = usageByID("5", tx);
+      NeoUsage reptans1 = usageByID("7", tx);
+      NeoUsage reptans2 = usageByID("8", tx);
     }
   }
   
@@ -318,10 +325,10 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(30);
     
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t10 = usageByID("10");
-      NeoUsage t11 = usageByID("11");
+      NeoUsage t10 = usageByID("10", tx);
+      NeoUsage t11 = usageByID("11", tx);
 
-      NeoName nn = nameByID("10");
+      NeoName nn = nameByID("10", tx);
       List<NameRelation> rels = store.nameRelations(nn.node);
       assertEquals(1, rels.size());
       assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
@@ -333,19 +340,19 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(31);
     debug();
     try (Transaction tx = store.getNeo().beginTx()) {
-      VerbatimRecord t9 = vByUsageID("9");
-      VerbatimRecord v9 = vByNameID("9");
+      VerbatimRecord t9 = vByUsageID("9", tx);
+      VerbatimRecord v9 = vByNameID("9", tx);
       assertTrue(t9.contains(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t9.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t11 = vByUsageID("11");
+      VerbatimRecord t11 = vByUsageID("11", tx);
       assertTrue(t11.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t103 = vByUsageID("103");
+      VerbatimRecord t103 = vByUsageID("103", tx);
       assertFalse(t103.contains(Issue.PUBLISHED_BEFORE_GENUS));
       assertFalse(t103.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t104 = vByUsageID("104");
+      VerbatimRecord t104 = vByUsageID("104", tx);
       assertTrue(t104.contains(Issue.PUBLISHED_BEFORE_GENUS));
     }
   }
@@ -366,7 +373,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       }
 
       // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
-      u = usageByID("8");
+      u = usageByID("8", tx);
       assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
       assertEquals("Engl. nom.illeg.", u.usage.getName().getAuthorship());
       assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
@@ -387,7 +394,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(44);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      var u = usageByID("1");
+      var u = usageByID("1", tx);
       assertEquals("Aa Rchb.f.", u.usage.getLabel());
       assertEquals(Rank.GENUS, u.usage.getRank());
       // check tdwg distributions
@@ -396,9 +403,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
       }
       // synonym of an unplaced name also becomes a bare name
-      var n = nameByID("398576");
+      var n = nameByID("398576", tx);
       assertEquals("398576", n.getName().getId());
-      assertNull(usageByID(n.getId())); // a bare name
+      assertNull(usageByID(n.getId(), tx)); // a bare name
       assertEquals("Bambos fax (Lour.) Poir.", n.getName().getLabel());
       assertEquals(Rank.SPECIES, n.getName().getRank());
       assertEquals(1, n.getName().getIdentifier().size());
@@ -407,13 +414,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       var rels = store.nameRelations(n.node);
       assertEquals(1, rels.size());
 
-      n = nameByID("396648");
-      assertNull(usageByID(n.getId())); // a bare name
+      n = nameByID("396648", tx);
+      assertNull(usageByID(n.getId(), tx)); // a bare name
       assertEquals("Arundo fax Lour.", n.getName().getLabel());
       assertEquals(Rank.SPECIES, n.getName().getRank());
 
       // replacement name rel
-      u = usageByID("100200");
+      u = usageByID("100200", tx);
       assertEquals("Hormidium uniflorum Heynh.", u.usage.getLabel());
       assertEquals(TaxonomicStatus.SYNONYM, u.usage.getStatus());
       assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
@@ -432,7 +439,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().allIds().forEach( id -> {
-        var u = store.usageWithName(id);
+        var u = store.usageWithName(id, tx);
         var n = u.getNeoName().getName();
         if (u.getId().startsWith("10")) {
           assertEquals(Rank.GENUS, n.getRank());
@@ -492,7 +499,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().allIds().forEach( x -> {
         System.out.println(x);
-        var u = store.usageWithName(x);
+        var u = store.usageWithName(x, tx);
         var n = u.getNeoName().getName();
         var v = store.getVerbatim(u.getVerbatimKey());
         int id = Integer.parseInt(u.getId());
@@ -549,7 +556,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(48, settings);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642");
+      var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642", tx);
       var n = u.getNeoName().getName();
       var v = store.getVerbatim(u.getVerbatimKey());
 
@@ -580,7 +587,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().all().forEach( un -> {
-        var u = store.usageWithName(un.getId());
+        var u = store.usageWithName(un.getId(), tx);
         var n = u.getNeoName().getName();
         if (n.getRank().isInfragenericStrictly()) {
           assertNotNull(n.getInfragenericEpithet());

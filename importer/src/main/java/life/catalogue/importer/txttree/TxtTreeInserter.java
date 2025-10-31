@@ -125,7 +125,7 @@ public class TxtTreeInserter implements NeoInserter {
       NomCode code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
       for (SimpleTreeNode t : tree.getRoot()) {
         try (Transaction tx = store.getNeo().beginTx()) {
-          recursiveNodeInsert(null, t, ordinal++, code);
+          recursiveNodeInsert(null, t, ordinal++, code, tx);
           tx.commit();
         }
       }
@@ -139,25 +139,25 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void persist(NeoUsage u, SimpleTreeNode t) {
-    store.createNameAndUsage(u); // this removes the usage.name
+  private void persist(NeoUsage u, SimpleTreeNode t, Transaction tx) {
+    store.createNameAndUsage(u, tx); // this removes the usage.name
     if (u.getId() == null) {
       // try again with line number as ID in case of duplicates
       u.setId(String.valueOf(t.id));
-      store.usages().create(u);
+      store.usages().create(u, tx);
     }
   }
 
-  private void recursiveNodeInsert(Node parent, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
+  private void recursiveNodeInsert(Node parent, SimpleTreeNode t, int ordinal, NomCode parentCode, Transaction tx) throws InterruptedException {
     NeoUsage u = usage(t, false, ordinal, parentCode);
     final NomCode code = u.usage.getName().getCode();
-    persist(u, t);
+    persist(u, t, tx);
     if (parent != null) {
       store.assignParent(parent, u.node);
     }
     for (SimpleTreeNode syn : t.synonyms){
       NeoUsage s = usage(syn, true, 0, code);
-      persist(s, t);
+      persist(s, t, tx);
       store.createSynonymRel(s.node, u.node);
       if (syn.basionym) {
         NeoRel rel = new NeoRel();
@@ -168,7 +168,7 @@ public class TxtTreeInserter implements NeoInserter {
     }
     int childOrdinal = 1;
     for (SimpleTreeNode c : t.children){
-      recursiveNodeInsert(u.node, c, childOrdinal++, code);
+      recursiveNodeInsert(u.node, c, childOrdinal++, code, tx);
     }
   }
 

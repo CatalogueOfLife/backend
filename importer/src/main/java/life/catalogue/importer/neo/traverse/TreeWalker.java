@@ -46,7 +46,7 @@ public class TreeWalker {
                               StartEndHandler... handler
   ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
-      walkPaths(MultiRootPathIterator.create(findRoot(db, null), td), handler);
+      walkPaths(MultiRootPathIterator.create(findRoot(db, null, tx), td), handler);
     }
   }
   
@@ -57,7 +57,7 @@ public class TreeWalker {
                               StartEndHandler... handler
   ) throws InterruptedException {
     try (Transaction tx = db.beginTx()) {
-      walkPaths(MultiRootPathIterator.create(findRoot(db, root), filterRank(td, lowestRank)), handler);
+      walkPaths(MultiRootPathIterator.create(findRoot(db, root, tx), filterRank(td, lowestRank)), handler);
     }
   }
   
@@ -121,13 +121,11 @@ public class TreeWalker {
     }
   }
   
-  private static List<Node> findRoot(GraphDatabaseService db, @Nullable Node root) {
+  private static List<Node> findRoot(GraphDatabaseService db, @Nullable Node root, Transaction tx) {
     if (root != null) {
       return Lists.newArrayList(root);
     }
-    try (Transaction tx = db.beginTx()) {
-      return tx.findNodes(Labels.ROOT).stream().toList();
-    }
+    return tx.findNodes(Labels.ROOT).stream().toList();
   }
   
   private static TraversalDescription filterRank(TraversalDescription td, @Nullable Rank lowestRank) {

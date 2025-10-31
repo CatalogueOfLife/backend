@@ -67,7 +67,7 @@ public class TxtTreeInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usageWithName("13");
+      NeoUsage u = store.usageWithName("13", tx);
       assertNotNull(u.getVerbatimKey());
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       assertEquals("6", v.get(TxtTreeTerm.indent));
@@ -80,14 +80,14 @@ public class TxtTreeInserterTest extends InserterBaseTest {
       assertEquals("(Torr. & Gray) Sarg.", u.usage.getName().getAuthorship());
       assertEquals("Sarg.", u.usage.getName().getCombinationAuthorship().getAuthors().get(0));
 
-      u = store.usageWithName("6");
+      u = store.usageWithName("6", tx);
       assertEquals("Acer negundo", u.usage.getName().getScientificName());
       assertEquals(3, u.vernacularNames.size());
       assertEquals("eng", u.vernacularNames.get(1).getLanguage());
       assertEquals("Box elder", u.vernacularNames.get(1).getName());
       assertEquals(Set.of(Environment.TERRESTRIAL), u.asTaxon().getEnvironments());
 
-      u = store.usageWithName("20");
+      u = store.usageWithName("20", tx);
       assertEquals("Negundo aceroides subsp. violaceum", u.usage.getName().getScientificName());
       assertEquals("do we need to capture both?", u.usage.getRemarks());
     }

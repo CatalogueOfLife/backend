@@ -16,23 +16,20 @@ import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
 
-import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
+
+import org.neo4j.graphdb.Transaction;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
-<<<<<<< HEAD
-import org.gbif.nameparser.api.Rank;
-
-import org.neo4j.graphdb.Transaction;
-
-=======
->>>>>>> master
 import static life.catalogue.parser.SafeParser.parse;
 
 /**
@@ -49,16 +46,16 @@ public class ColdpInterpreter extends InterpreterBase {
     metadata.setDenormedClassificationMapped(true);
   }
 
-  Optional<Reference> interpretReference(VerbatimRecord v) {
+  Optional<Reference> interpretReference(VerbatimRecord v, Transaction tx) {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
     return Optional.of(refFactory.fromColDP(v));
   }
 
-  Optional<NeoUsage> interpretNameUsage(VerbatimRecord v) {
+  Optional<NeoUsage> interpretNameUsage(VerbatimRecord v, Transaction tx) {
     // name
-    return interpretName(v).map(nn -> {
+    return interpretName(v, tx).map(nn -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
@@ -229,7 +226,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.of(m);
   }
 
-  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
+  List<VernacularName> interpretVernacular(VerbatimRecord rec, Transaction tx) {
     return super.interpretVernacular(rec,
         this::setReference,
         ColdpTerm.name,
@@ -243,7 +240,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  List<TaxonProperty> interpretProperties(VerbatimRecord rec) {
+  List<TaxonProperty> interpretProperties(VerbatimRecord rec, Transaction tx) {
     return super.interpretProperty(rec,
       this::setReference,
       ColdpTerm.property,
@@ -254,7 +251,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  List<Distribution> interpretDistribution(VerbatimRecord rec) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec, Transaction tx) {
     List<Distribution> dists;
     if (rec.hasTerm(ColdpTerm.areaID)) {
       dists = super.interpretDistributionByGazetteer(rec, this::setReference,
@@ -290,7 +287,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return dists;
   }
   
-  List<Media> interpretMedia(VerbatimRecord rec) {
+  List<Media> interpretMedia(VerbatimRecord rec, Transaction tx) {
     return interpretMedia(rec, this::setReference,
         ColdpTerm.type,
         ColdpTerm.url,
@@ -304,7 +301,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec) {
+  public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec, Transaction tx) {
     if (rec.hasTerm(ColdpTerm.estimate)) {
       Integer estimate = SafeParser.parse(IntegerParser.PARSER, rec.get(ColdpTerm.estimate)).orNull();
       if (estimate != null) {
@@ -324,12 +321,12 @@ public class ColdpInterpreter extends InterpreterBase {
     return Collections.emptyList();
   }
 
-  Optional<VerbatimEntity> interpretAuthor(VerbatimRecord v) {
+  Optional<VerbatimEntity> interpretAuthor(VerbatimRecord v, Transaction tx) {
     //TODO: create model class, implement interpreter & persistence layer
     return Optional.empty();
   }
 
-  Optional<NeoName> interpretName(VerbatimRecord v) {
+  Optional<NeoName> interpretName(VerbatimRecord v, Transaction tx) {
     Term nomStatusTerm = ColdpTerm.status;
     Term genusNameTerm = ColdpTerm.genus;
     Term remarksTerm = ColdpTerm.remarks;

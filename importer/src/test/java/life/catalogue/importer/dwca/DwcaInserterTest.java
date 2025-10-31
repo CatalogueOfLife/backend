@@ -44,27 +44,27 @@ public class DwcaInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      var t = store.usageWithName("1").asTaxon();
+      var t = store.usageWithName("1", tx).asTaxon();
       assertTrue(t.isExtinct());
       assertEquals(Set.of(Environment.MARINE, Environment.TERRESTRIAL), t.getEnvironments());
 
-      t = store.usageWithName("2").asTaxon();
+      t = store.usageWithName("2", tx).asTaxon();
       assertFalse(t.isExtinct());
       assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
 
-      t = store.usageWithName("3").asTaxon();
+      t = store.usageWithName("3", tx).asTaxon();
       assertFalse(t.isExtinct());
       assertEquals(Set.of(), t.getEnvironments());
 
-      t = store.usageWithName("4").asTaxon();
+      t = store.usageWithName("4", tx).asTaxon();
       assertTrue(t.isExtinct());
       assertEquals(Set.of(), t.getEnvironments());
 
-      t = store.usageWithName("5").asTaxon();
+      t = store.usageWithName("5", tx).asTaxon();
       assertTrue(t.isExtinct());
       assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
 
-      t = store.usageWithName("6").asTaxon();
+      t = store.usageWithName("6", tx).asTaxon();
       assertNull(t.isExtinct());
       assertEquals(Set.of(), t.getEnvironments());
     }
@@ -79,7 +79,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      var t = store.usageWithName("763571").asTaxon();
+      var t = store.usageWithName("763571", tx).asTaxon();
       assertEquals(5, t.getIdentifier().size());
     }
   }
@@ -108,7 +108,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usageWithName("530938-wcs");
+      NeoUsage u = store.usageWithName("530938-wcs", tx);
       var nn = u.getNeoName();
 
       var ref = store.references().get(nn.getName().getPublishedInId());
@@ -126,7 +126,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usages().objByID("319088");
+      NeoUsage u = store.usages().objByID("319088", tx);
       assertNotNull(u.getVerbatimKey());
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       v.hasTerm(new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false));
@@ -140,7 +140,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon");
+      NeoUsage u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon", tx);
       assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", u.getNeoName().getName().getScientificName());
       assertEquals(": Zapekina-Dulkeit, 1975", u.getNeoName().getName().getAuthorship());
       assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", u.getNeoName().getName().getLabel());

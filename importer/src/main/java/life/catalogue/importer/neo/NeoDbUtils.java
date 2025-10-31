@@ -1,23 +1,17 @@
 package life.catalogue.importer.neo;
 
-import ch.qos.logback.core.spi.PropertyContainer;
-
 import life.catalogue.api.model.Name;
-import life.catalogue.importer.neo.model.Labels;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.NeoRel;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.neo.model.*;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.neo4j.graphdb.*;
+import org.neo4j.internal.helpers.collection.Iterators;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-
-import org.neo4j.internal.helpers.collection.Iterators;
 
 /**
  * Static utils for the NeoDb class
@@ -267,7 +261,14 @@ public class NeoDbUtils {
       }
     }
   }
-  
+
+  public static int id(Node n) {
+    if (n instanceof NodeMock) {
+      return ((NodeMock) n).id;
+    }
+    return NeoProperties.getID(n);
+  }
+
   public static Map<String, Object> neo4jProps(Name name) {
     return neo4jProps(name, Maps.newHashMap());
   }

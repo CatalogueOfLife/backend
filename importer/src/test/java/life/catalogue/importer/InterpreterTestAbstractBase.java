@@ -20,7 +20,7 @@ public abstract class InterpreterTestAbstractBase<I extends InterpreterBase> {
   ReferenceMapStore refStore;
 
   @Mock
-  NeoDb store;
+  protected NeoDb store;
 
   protected IssueContainer issues = new IssueContainer.Simple();
   protected I interpreter;

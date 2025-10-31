@@ -20,6 +20,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.util.*;
 
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +47,7 @@ public class DwcInterpreter extends InterpreterBase {
     idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
 
-  public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
+  public Optional<NeoUsage> interpretUsage(VerbatimRecord v, Transaction tx) {
     // name
     return interpretName(v).map(pnu -> {
       NeoUsage u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, ALT_ID_TERMS);
@@ -81,7 +82,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  public List<TaxonAndProperties> interpretSpeciesProfile(VerbatimRecord v) {
+  public List<TaxonAndProperties> interpretSpeciesProfile(VerbatimRecord v, Transaction tx) {
     var tp = new TaxonAndProperties();
     String refID;
     if (v.hasTerm(DcTerm.source)) {
@@ -126,7 +127,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
 
-  public List<Taxon> interpretAltIdentifiers(VerbatimRecord v) {
+  public List<Taxon> interpretAltIdentifiers(VerbatimRecord v, Transaction tx) {
     if (v.hasTerm(DcTerm.identifier)) {
       Taxon t = new Taxon();
       t.setIdentifier(new ArrayList<>());
@@ -174,7 +175,7 @@ public class DwcInterpreter extends InterpreterBase {
     return Optional.empty();
   }
   
-  List<Reference> interpretReference(VerbatimRecord rec) {
+  List<Reference> interpretReference(VerbatimRecord rec, Transaction tx) {
     var r = Lists.newArrayList(refFactory.fromDC(rec.getRaw(DcTerm.identifier),
         rec.get(DcTerm.bibliographicCitation),
         rec.get(DcTerm.creator),
@@ -189,11 +190,11 @@ public class DwcInterpreter extends InterpreterBase {
   /**
    * As used by Plazi
    */
-  List<Reference> interpretEolReference(VerbatimRecord v) {
+  List<Reference> interpretEolReference(VerbatimRecord v, Transaction tx) {
     return Lists.newArrayList(refFactory.fromEOL(v));
   }
   
-  List<Distribution> interpretDistribution(VerbatimRecord rec) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec, Transaction tx) {
     // try to figure out an area
     if (rec.hasTerm(DwcTerm.locationID)) {
       return createDistributions(null, rec.getRaw(DwcTerm.locationID), rec,
@@ -242,7 +243,7 @@ public class DwcInterpreter extends InterpreterBase {
     }
   }
   
-  List<VernacularName> interpretVernacularName(VerbatimRecord rec) {
+  List<VernacularName> interpretVernacularName(VerbatimRecord rec, Transaction tx) {
     var vns = super.interpretVernacular(rec,
         this::setReference,
         DwcTerm.vernacularName,
@@ -263,7 +264,7 @@ public class DwcInterpreter extends InterpreterBase {
     return vns;
   }
 
-  List<Media> interpretGbifMedia(VerbatimRecord rec) {
+  List<Media> interpretGbifMedia(VerbatimRecord rec, Transaction tx) {
     return interpretMedia(rec, this::setReference,
         DcTerm.type,
         DcTerm.identifier,
@@ -277,7 +278,7 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
 
-  List<Media> interpretAcMedia(VerbatimRecord rec) {
+  List<Media> interpretAcMedia(VerbatimRecord rec, Transaction tx) {
     return interpretMedia(rec, this::setReference,
       Set.of(DcTerm.type, DcElement.type),
       Set.of(AcTerm.accessURI),
@@ -291,7 +292,7 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
 
-  List<TaxonProperty> interpretMeasurements(VerbatimRecord rec) {
+  List<TaxonProperty> interpretMeasurements(VerbatimRecord rec, Transaction tx) {
     return super.interpretProperty(rec,
       this::setReference,
       DwcTerm.measurementType,
@@ -302,7 +303,7 @@ public class DwcInterpreter extends InterpreterBase {
     );
   }
 
-  List<TaxonProperty> interpretDescriptions(VerbatimRecord rec) {
+  List<TaxonProperty> interpretDescriptions(VerbatimRecord rec, Transaction tx) {
     return super.interpretProperty(rec,
       this::setReference,
       DcTerm.type,

@@ -16,11 +16,11 @@ import org.gbif.dwc.terms.AcefTerm;
 import org.gbif.dwc.terms.GbifTerm;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Result;
 import org.neo4j.graphdb.Transaction;
 
 import com.google.common.io.Files;
@@ -30,23 +30,22 @@ import static org.junit.Assert.assertNull;
 
 
 public class NeoDbTest {
-  private final int datasetKey = RandomUtils.randomInt();
+  private int datasetKey;
   private final static NormalizerConfig cfg = new NormalizerConfig();
   private static NeoDbFactory neoDbFactory;
 
   NeoDb db;
   
   @BeforeClass
-  public static void initRepo() throws Exception {
+  public static void initRepo() {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
   }
   
   @Before
-  synchronized
   public void init() throws IOException {
+    datasetKey = RandomUtils.randomInt();
     System.out.println("Use datasetKey "+datasetKey);
     db = neoDbFactory.create(datasetKey, 1);
   }
@@ -60,58 +59,8 @@ public class NeoDbTest {
   
   @AfterClass
   public static void destroyRepo() throws Exception {
-    neoDbFactory.stop();
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
-  }
-  
-  /**
-   * Tests inclusion of external cypher procedures for common graph algorithms.
-   * See https://github.com/neo4j-contrib/neo4j-graph-algorithms/blob/3.3/tests/src/test/java/org/neo4j/graphalgo/algo/UnionFindProcIntegrationTest.java
-   */
-  @Test
-  public void testUnionFind() throws Exception {
-    String createGraph =
-        "CREATE (nA:Label)\n" +
-            "CREATE (nB:Label)\n" +
-            "CREATE (nC:Label)\n" +
-            "CREATE (nD:Label)\n" +
-            "CREATE (nE)\n" +
-            "CREATE (nF)\n" +
-            "CREATE (nG)\n" +
-            "CREATE (nH)\n" +
-            "CREATE (nI)\n" +
-            "CREATE (nJ)\n" + // {J}
-            "CREATE\n" +
-            
-            // {A, B, C, D}
-            "  (nA)-[:TYPE]->(nB),\n" +
-            "  (nB)-[:TYPE]->(nC),\n" +
-            "  (nC)-[:TYPE]->(nD),\n" +
-            
-            "  (nD)-[:TYPE {cost:4.2}]->(nE),\n" + // threshold UF should split here
-            
-            // {E, F, G}
-            "  (nE)-[:TYPE]->(nF),\n" +
-            "  (nF)-[:TYPE]->(nG),\n" +
-            
-            // {H, I}
-            "  (nH)-[:TYPE]->(nI)";
-    
-    try (Transaction tx = db.getNeo().beginTx()) {
-      tx.execute(createGraph).close();
-      tx.commit();
-    }
-    
-    // graphImpl: Heavy, Light, Huge, Kernel
-    String graphImpl = "Heavy";
-    try (Transaction tx = db.getNeo().beginTx()) {
-      tx.execute("CALL algo.unionFind('', '',{graph:'" + graphImpl + "'}) YIELD setCount")
-          .accept((Result.ResultVisitor<Exception>) row -> {
-            assertEquals(4L, row.getNumber("setCount"));
-            return true;
-          });
-    }
   }
   
   @Test
@@ -122,11 +71,11 @@ public class NeoDbTest {
     try (Transaction tx = db.getNeo().beginTx()) {
       u1 = taxon("12");
       n1 = u1.usage.getName();
-      db.createNameAndUsage(u1);
+      db.createNameAndUsage(u1, tx);
       assertNull(u1.usage.getName());
 
       u2 = taxon("13");
-      db.createNameAndUsage(u2);
+      db.createNameAndUsage(u2, tx);
       assertNull(u2.usage.getName());
 
       // now relate the 2 nodes and make sure when we read the relations the instance is changed accordingly
@@ -138,11 +87,11 @@ public class NeoDbTest {
     db.sync();
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoName n1b = db.names().objByID("12");
-      NeoName n2b = db.names().objByID("13");
+      NeoName n1b = db.names().objByID("12", tx);
+      NeoName n2b = db.names().objByID("13", tx);
       assertEquals(n1, n1b.getName());
 
-      NeoUsage u1b = db.usages().objByID("12");
+      NeoUsage u1b = db.usages().objByID("12", tx);
       assertEquals(u1, u1b);
     }
   }
@@ -160,7 +109,7 @@ public class NeoDbTest {
       NeoUsage p2 = null;
       for (int i = 1; i<100; i++) {
         NeoUsage u = taxon("id-"+i);
-        db.createNameAndUsage(u);
+        db.createNameAndUsage(u, tx);
         if (p == null) {
           p = u;
         } else if (p2 == null || i%10==0) {
@@ -175,31 +124,21 @@ public class NeoDbTest {
     }
     db.sync();
 
-    db.process(null, 10, new NodeBatchProcessor() {
+    db.process(null, new BiConsumer<Node, Transaction>() {
       @Override
-      public void process(Node n) {
-        System.out.println("process " + n);
-      }
-      
-      @Override
-      public void commitBatch(int counter) {
-        System.out.println("commitBatch " + counter);
+      public void accept(Node n, Transaction transaction) {
+        System.out.println("process node " + NeoDbUtils.id(n));
       }
     });
     
     // now try with error throwing processor
-    db.process(null, 10, new NodeBatchProcessor() {
+    db.process(null, new BiConsumer<Node, Transaction>() {
       @Override
-      public void process(Node n) {
-        System.out.println("process " + n);
+      public void accept(Node n, Transaction transaction) {
+        System.out.println("process node " + NeoDbUtils.id(n));
         if (n.getId() > 10) {
           throw new BatchProcException("I cannot count over ten!");
         }
-      }
-      
-      @Override
-      public void commitBatch(int counter) {
-        System.out.println("commitBatch " + counter);
       }
     });
   }
@@ -208,7 +147,7 @@ public class NeoDbTest {
   public void updateTaxon() throws Exception {
     try (Transaction tx = db.getNeo().beginTx()) {
       NeoUsage u = taxon("id1");
-      db.createNameAndUsage(u);
+      db.createNameAndUsage(u, tx);
       tx.commit();
     }
     db.sync();
@@ -218,12 +157,12 @@ public class NeoDbTest {
     tr.put(AcefTerm.DistributionElement, "Asia");
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoUsage u = db.usages().objByID("id1");
-      db.usages().update(u);
+      NeoUsage u = db.usages().objByID("id1", tx);
+      db.usages().update(u, tx);
     }
     
     try (Transaction tx = db.getNeo().beginTx()) {
-      NeoUsage u = db.usages().objByID("id1");
+      NeoUsage u = db.usages().objByID("id1", tx);
       //assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
       //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).getUsage(0));
     }

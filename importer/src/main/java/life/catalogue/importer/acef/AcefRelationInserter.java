@@ -16,6 +16,7 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Optional;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,7 @@ public class AcefRelationInserter extends RelationInserterBase {
   }
   
   @Override
-  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) throws InterruptedException {
+  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p, Transaction tx) throws InterruptedException {
     if (AcefTerm.AcceptedInfraSpecificTaxa == v.getType()) {
       // finally we have all pieces to also interpret infraspecific names
       // even with a missing parent, we will still try to build a name
@@ -63,12 +64,12 @@ public class AcefRelationInserter extends RelationInserterBase {
           v.add(Issue.INCONSISTENT_NAME);
         }
       
-        store.names().update(nn);
+        store.names().update(nn, tx);
       
       } else {
         // remove name & taxon from store, only keeping the verbatim
-        store.remove(nn.node);
-        store.remove(u.node);
+        store.remove(nn.node, tx);
+        store.remove(u.node, tx);
       }
     }
   }

@@ -54,21 +54,21 @@ public class AcefInterpreter extends InterpreterBase {
     ));
   }
   
-  Optional<NeoUsage> interpretSpecies(VerbatimRecord v) {
+  Optional<NeoUsage> interpretSpecies(VerbatimRecord v, Transaction tx) {
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoUsage> interpretInfraspecies(VerbatimRecord v) {
+  Optional<NeoUsage> interpretInfraspecies(VerbatimRecord v, Transaction tx) {
     requireTerm(v, AcefTerm.ParentSpeciesID, Issue.PARENT_ID_INVALID);
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoUsage> interpretSynonym(VerbatimRecord v) {
+  Optional<NeoUsage> interpretSynonym(VerbatimRecord v, Transaction tx) {
     requireTerm(v, AcefTerm.AcceptedTaxonID, Issue.ACCEPTED_ID_INVALID);
     return interpretUsage(AcefTerm.ID, v, true);
   }
   
-  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
+  List<VernacularName> interpretVernacular(VerbatimRecord rec, Transaction tx) {
     return super.interpretVernacular(rec,
         this::setReference,
         AcefTerm.CommonName,
@@ -82,7 +82,7 @@ public class AcefInterpreter extends InterpreterBase {
     );
   }
   
-  List<Distribution> interpretDistribution(VerbatimRecord rec) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec, Transaction tx) {
     var dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         AcefTerm.DistributionElement,
         AcefTerm.StandardInUse,

@@ -107,7 +107,6 @@ public class NormalizerTreeIT {
     FileUtils.cleanDirectory(cfg.archiveDir);
     FileUtils.cleanDirectory(cfg.scratchDir);
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
   }
   
   @AfterClass
@@ -115,7 +114,6 @@ public class NormalizerTreeIT {
     System.out.println("Removing temp test repo");
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
-    neoDbFactory.stop();
   }
   
   @After

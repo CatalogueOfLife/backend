@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.config.NormalizerConfig;
@@ -15,35 +16,40 @@ import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 
 import com.google.common.io.Files;
+
+import org.junit.BeforeClass;
 
 public abstract class InserterBaseTest {
   protected DatasetWithSettings d;
   protected NeoDb store;
   protected ReferenceFactory refFactory;
-  protected NormalizerConfig cfg;
-  private NeoDbFactory neoDbFactory;
+  protected static NormalizerConfig cfg;
+  private static NeoDbFactory neoDbFactory;
 
-  
-  @Before
-  public void initCfg() throws Exception {
+
+  @BeforeClass
+  public static void initNeo() throws Exception {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
   }
-  
+
   @After
   public void cleanup() throws Exception {
     if (store != null) {
       store.close();
     }
+  }
+
+  @AfterClass
+  public static void shutdown() throws Exception {
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
-    neoDbFactory.stop();
   }
 
   protected NeoInserter setup(String resource) {

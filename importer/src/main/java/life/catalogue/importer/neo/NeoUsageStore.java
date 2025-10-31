@@ -6,12 +6,11 @@ import life.catalogue.importer.neo.model.RelType;
 
 import org.mapdb.DB;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
-
-import org.neo4j.graphdb.Transaction;
 
 public class NeoUsageStore extends NeoCRUDStore<NeoUsage> {
 

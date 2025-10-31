@@ -26,9 +26,9 @@ import com.google.common.base.Preconditions;
 public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
-  private final Map<Long, T> objects;
+  private final Map<Integer, T> objects;
   // ID -> nodeId
-  private final Map<String, Long> ids;
+  private final Map<String, Integer> ids;
   private int duplicateCounter = 0;
   private final IdGenerator idGen;
   private final String objName;
@@ -38,23 +38,27 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     this.neoDb = neoDb;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
-        .keySerializer(Serializer.LONG)
+        .keySerializer(Serializer.INTEGER)
         .valueSerializer(new MapDbObjectSerializer<>(clazz, pool, 256))
         .counterEnable()
         .createOrOpen();
     ids = mapDb.hashMap(mapDbName+"-ids")
         .keySerializer(Serializer.STRING)
-        .valueSerializer(Serializer.LONG)
+        .valueSerializer(Serializer.INTEGER)
         .createOrOpen();
     this.idGen = idGen;
   }
   
   public T objByNode(Node n) {
-    T t = n == null ? null : objects.get((Long) n.getId());
+    T t = n == null ? null : objects.get(NeoDbUtils.id(n));
     if (t != null) {
       t.setNode(n);
     }
     return t;
+  }
+
+  public void logKeys() {
+    objects.keySet().stream().sorted().forEach(key -> System.out.println(key));
   }
   
   public T objByID(String id, Transaction tx) {
@@ -69,7 +73,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
 
   public Node nodeByID(String id, Transaction tx) {
     if (id != null) {
-      Long nodeId = ids.getOrDefault(id, null);
+      Integer nodeId = ids.getOrDefault(id, null);
       if (nodeId != null) {
         return neoDb.nodeById(nodeId, tx);
       }
@@ -111,6 +115,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
    * Creates a new neo4j node and adds the object to the internal lookups.
    * Properties and labels are added, the ID is checked and the object registered in this CRUD store
    * @return the created node id or null if it could not be created (currently only with duplicate IDs).
+   * @throws NotUniqueRuntimeException
    */
   public Node create(T obj, Transaction tx) {
     Preconditions.checkArgument(obj.getNode() == null, "Object already has a neo4j node");
@@ -128,17 +133,20 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
     final PropLabel props = obj.propLabel();
 
     // create a new neo4j node if not yet existing
+    int id;
     if (obj.getNode() == null) {
       // update neo4j propLabel either via batch mode or classic
       obj.setNode( neoDb.createNode(props, tx) );
-    
+      id = NeoDbUtils.id(obj.getNode());
+
     } else {
       // update existing node labels and props with object data
-      neoDb.updateNode(obj.getNode().getId(), props, tx);
+      id = NeoDbUtils.id(obj.getNode());
+      neoDb.updateNode(id, props, tx);
     }
     
-    objects.put((Long) obj.getNode().getId(), obj);
-    ids.put(obj.getId(), (Long) obj.getNode().getId());
+    objects.put(id, obj);
+    ids.put(obj.getId(), id);
     
     return obj.getNode();
   }
@@ -164,13 +172,14 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
    */
   public void update(T obj, Transaction tx) {
     Preconditions.checkNotNull(obj.getNode());
+    int id = NeoDbUtils.id(obj.getNode());
     if (!(obj.getNode() instanceof NodeMock)) {
       PropLabel props = obj.propLabel();
       if (props != null && !props.isEmpty()) {
         NeoDbUtils.addProperties(obj.getNode(), props);
       }
     }
-    objects.put((Long) obj.getNode().getId(), obj);
+    objects.put(id, obj);
   }
   
   /**

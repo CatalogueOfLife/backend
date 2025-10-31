@@ -37,7 +37,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      var n = store.names().objByID("667").getName();
+      var n = store.names().objByID("667", tx).getName();
       assertEquals("Toleria aegerides", n.getScientificName());
       assertEquals("(Strand, [1916])", n.getAuthorship());
       assertEquals(Rank.SPECIES, n.getRank());
@@ -51,7 +51,7 @@ public class ColdpInserterTest extends InserterBaseTest {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().allIds().forEach(id -> {
-        var u = store.usageWithName(id);
+        var u = store.usageWithName(id, tx);
         var n = u.usage.getName();
 
         assertEquals("Toleria aegerides", n.getScientificName());
@@ -80,14 +80,14 @@ public class ColdpInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      assertNull(store.usages().objByID("111"));
-      assertNull(store.usages().objByID("222"));
+      assertNull(store.usages().objByID("111", tx));
+      assertNull(store.usages().objByID("222", tx));
 
-      var n = store.names().objByID("111").getName();
+      var n = store.names().objByID("111", tx).getName();
       assertEquals("Catyclia", n.getScientificName());
       assertEquals(Rank.GENUS, n.getRank());
 
-      n = store.names().objByID("222").getName();
+      n = store.names().objByID("222", tx).getName();
       assertEquals("Killmora", n.getScientificName());
       assertEquals(Rank.GENUS, n.getRank());
     }
@@ -151,7 +151,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     ins.insertAll();
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      Name n = store.names().objByID("139502").getName();
+      Name n = store.names().objByID("139502", tx).getName();
       assertEquals("Agaricus candidus caerulescens", n.getScientificName());
       assertEquals("Agaricus", n.getGenus());
       assertEquals("candidus", n.getSpecificEpithet());
@@ -160,7 +160,7 @@ public class ColdpInserterTest extends InserterBaseTest {
       assertNull(n.getUninomial());
       assertEquals(Rank.OTHER, n.getRank());
 
-      n = store.names().objByID("588900").getName();
+      n = store.names().objByID("588900", tx).getName();
       assertEquals("Lecidea sabuletorum sabuletorum", n.getScientificName());
       assertEquals("Lecidea", n.getGenus());
       assertEquals("sabuletorum", n.getSpecificEpithet());

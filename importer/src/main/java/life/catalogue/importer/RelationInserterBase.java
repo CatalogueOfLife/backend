@@ -3,21 +3,23 @@ package life.catalogue.importer;
 import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.*;
 
 import org.gbif.dwc.terms.Term;
 
+import java.util.function.BiConsumer;
+
 import javax.annotation.Nullable;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
  */
-public abstract class RelationInserterBase implements NodeBatchProcessor {
+public abstract class RelationInserterBase implements BiConsumer<Node, Transaction> {
   private static final Logger LOG = LoggerFactory.getLogger(RelationInserterBase.class);
   
   protected final NeoDb store;
@@ -38,10 +40,10 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    * @param v
    * @return the parent node
    */
-  protected Node processUsage(NeoUsage u, VerbatimRecord v) {
+  protected Node processUsage(NeoUsage u, VerbatimRecord v, Transaction tx) {
     Node p;
     if (u.isSynonym()) {
-      p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID);
+      p = usageByID(acceptedTerm, v, u, Issue.ACCEPTED_ID_INVALID, tx);
       if (p != null) {
         if (!store.createSynonymRel(u.node, p)) {
           v.add(Issue.ACCEPTED_ID_INVALID);
@@ -53,7 +55,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
       }
 
     } else {
-      p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID);
+      p = usageByID(parentTerm, v, u, Issue.PARENT_ID_INVALID, tx);
       if (p != null && !p.equals(u.node)) {
         store.assignParent(p, u.node);
       }
@@ -62,18 +64,16 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
   }
 
   @Override
-  public void process(Node n) throws InterruptedException {
+  public void accept(Node n, Transaction tx) {
     if (n.hasLabel(Labels.USAGE)) {
       try {
         NeoUsage u = store.usages().objByNode(n);
         if (u.getVerbatimKey() != null) {
           VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-          Node p = processUsage(u, v);
-          processVerbatimUsage(u, v, p);
+          Node p = processUsage(u, v, tx);
+          processVerbatimUsage(u, v, p, tx);
           store.put(v);
         }
-      } catch (InterruptedException e) {
-        throw e;
       } catch (Exception e) {
         LOG.error("error processing explicit relations for usage {} {}", n, NeoProperties.getRankedUsage(n), e);
       }
@@ -83,7 +83,7 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
         NeoName nn = store.names().objByNode(n);
         if (nn.getVerbatimKey() != null) {
           VerbatimRecord v = store.getVerbatim(nn.getVerbatimKey());
-          Node o = nameByID(originalNameTerm, v, nn, Issue.BASIONYM_ID_INVALID);
+          Node o = nameByID(originalNameTerm, v, nn, Issue.BASIONYM_ID_INVALID, tx);
           if (o != null) {
             NeoRel rel = new NeoRel();
             rel.setType(RelType.HAS_BASIONYM);
@@ -104,12 +104,12 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    * @param v
    * @param p parent (usage=taxon) or accepted (usage=synonym) node
    */
-  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p) throws InterruptedException {
+  protected void processVerbatimUsage(NeoUsage u, VerbatimRecord v, Node p, Transaction tx) throws InterruptedException {
     // override to do further processing per usage node
   }
 
-  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u) {
-    return usageByID(idTerm, v, u, null);
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, Transaction tx) {
+    return usageByID(idTerm, v, u, null, tx);
   }
 
   /**
@@ -120,11 +120,11 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
    *
    * @return queue of potentially split ids with their matching neo node if found, otherwise null
    */
-  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, @Nullable Issue invalidIssue) {
+  protected Node usageByID(Term idTerm, VerbatimRecord v, NeoUsage u, @Nullable Issue invalidIssue, Transaction tx) {
     Node n = null;
     final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(u.getId())) {
-      n = store.usages().nodeByID(id);
+      n = store.usages().nodeByID(id, tx);
       if (n == null && invalidIssue != null) {
         v.add(invalidIssue);
       }
@@ -132,24 +132,15 @@ public abstract class RelationInserterBase implements NodeBatchProcessor {
     return n;
   }
 
-  protected Node nameByID(Term idTerm, VerbatimRecord v, NeoName nn, Issue invalidIssue) {
+  protected Node nameByID(Term idTerm, VerbatimRecord v, NeoName nn, Issue invalidIssue, Transaction tx) {
     Node n = null;
     final String id = v.getRaw(idTerm);
     if (id != null && !id.equals(nn.getId())) {
-      n = store.names().nodeByID(id);
+      n = store.names().nodeByID(id, tx);
       if (n == null) {
         v.add(invalidIssue);
       }
     }
     return n;
-  }
-  
-  @Override
-  public void commitBatch(int counter) {
-    if (Thread.interrupted()) {
-      LOG.warn("Normalizer interrupted, exit dataset {} early with incomplete parsing", store.getDatasetKey());
-      throw new NormalizationFailedException("Normalizer interrupted");
-    }
-    LOG.debug("Processed relations for {} nodes", counter);
   }
 }

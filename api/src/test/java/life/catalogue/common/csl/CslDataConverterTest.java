@@ -3,6 +3,7 @@ package life.catalogue.common.csl;
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslDate;
 
+import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.Key;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -13,6 +14,9 @@ import de.undercouch.citeproc.csl.CSLDate;
 import de.undercouch.citeproc.csl.CSLItemData;
 import de.undercouch.citeproc.csl.CSLItemDataBuilder;
 import de.undercouch.citeproc.csl.CSLType;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;

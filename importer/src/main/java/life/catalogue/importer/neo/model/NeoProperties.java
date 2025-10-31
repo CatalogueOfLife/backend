@@ -17,7 +17,9 @@ import com.google.common.base.Strings;
  * Any property we store in normalizer should be listed here to avoid overlaps or other confusion.
  */
 public class NeoProperties {
-  // propLabel used in NeoTaxon
+  // prop used in ALL nodes but devNull
+  public static final String ID = "ID";
+  // prop used in NeoTaxon
   public static final String RANK = "rank";
   public static final String SCIENTIFIC_NAME = "scientificName";
   public static final String AUTHORSHIP = "authorship";
@@ -82,7 +84,11 @@ public class NeoProperties {
     }
     return sb.toString();
   }
-  
+
+  public static int getID(Node n) {
+    return (int) n.getProperty(NeoProperties.ID);
+  }
+
   /**
    * Reads a ranked name instance purely from neo4j propLabel
    */

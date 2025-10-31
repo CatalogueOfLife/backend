@@ -80,7 +80,6 @@ public class PgImportITBase {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
     dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.EXTERNAL);
@@ -101,7 +100,6 @@ public class PgImportITBase {
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
-    neoDbFactory.stop();
   }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {

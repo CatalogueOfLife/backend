@@ -3,13 +3,12 @@ package life.catalogue.importer.neo.printer;
 import life.catalogue.importer.neo.model.RankedUsage;
 import life.catalogue.importer.neo.model.RelType;
 
-import org.apache.commons.lang3.StringUtils;
-
 import org.gbif.txtree.Tree;
 
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 

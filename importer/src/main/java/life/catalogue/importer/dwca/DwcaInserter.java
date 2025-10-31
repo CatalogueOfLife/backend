@@ -8,27 +8,26 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
 import org.gbif.dwc.terms.*;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FilenameUtils;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,7 +220,7 @@ public class DwcaInserter extends NeoCsvInserter {
   }
 
   @Override
-  protected NodeBatchProcessor relationProcessor() {
+  protected BiConsumer<Node, Transaction> relationProcessor() {
     return new DwcaRelationInserter(store, reader.getMappingFlags());
   }
   

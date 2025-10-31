@@ -1,47 +1,38 @@
 package life.catalogue.importer.neo;
 
-import life.catalogue.common.Managed;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FileUtils;
 import org.mapdb.DBMaker;
 import org.neo4j.configuration.GraphDatabaseSettings;
-import org.neo4j.dbms.api.DatabaseExistsException;
 import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
-import org.neo4j.dbms.api.DatabaseNotFoundException;
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.neo4j.configuration.GraphDatabaseSettings.DEFAULT_DATABASE_NAME;
-
 /**
  * A factory for persistent & temporary, volatile neodb instances.
- * The factory runs a dedicated DatabaseManagementService and should be a singleton.
+ * The factory was originally designed to run a dedicated, single DatabaseManagementService,
+ * but the community edition of neo4j does not allow to create multiple databases.
+ *
+ * So now we create a new embedded service for each neodb instance.
  */
-public class NeoDbFactory implements Managed {
+public class NeoDbFactory {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDbFactory.class);
 
   private final NormalizerConfig cfg;
   private final Path dir;
-  private DatabaseManagementService service;
 
 
   public NeoDbFactory(NormalizerConfig cfg) {
     this.cfg = cfg;
     this.dir = cfg.neoDir().toPath();
-  }
-
-  private String dbName(int datasetKey) {
-    return "db-"+datasetKey;
   }
 
   private File dbDir(int datasetKey) {
@@ -54,7 +45,7 @@ public class NeoDbFactory implements Managed {
    * @return creates a new, empty, persistent dao wiping any data that might have existed for that dataset
    */
   public NeoDb create(int datasetKey, int attempt) {
-    final File storeDir = dbDir(datasetKey); // only used for mapdb, not neo!
+    final File storeDir = dbDir(datasetKey); // used for both neo & mapdb
     try {
       LOG.info("Create new neodb {} with storage at {}", datasetKey, storeDir);
 
@@ -71,8 +62,9 @@ public class NeoDbFactory implements Managed {
         .fileDB(mapDbFile)
         .fileMmapEnableIfSupported();
 
-      GraphDatabaseService graphDb = service.database( DEFAULT_DATABASE_NAME );
-      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, graphDb, cfg.batchSize, cfg.batchTimeout);
+      // neo4j embedded
+      DatabaseManagementService service = newEmbeddedService(storeDir.toPath());
+      return new NeoDb(datasetKey, attempt, dbMaker.make(), storeDir, service, cfg.batchSize, cfg.batchTimeout);
 
     } catch (RuntimeException e) {
       // can be caused by interruption in mapdb
@@ -87,8 +79,8 @@ public class NeoDbFactory implements Managed {
   /**
    * Creates a new embedded db service in the configured directory folder.
    */
-  private DatabaseManagementService newEmbeddedService() {
-    var dbService = new DatabaseManagementServiceBuilder( dir )
+  private DatabaseManagementService newEmbeddedService(Path storeDir) {
+    var dbService = new DatabaseManagementServiceBuilder( storeDir )
       .setConfig(GraphDatabaseSettings.keep_logical_logs, "false")
       .setConfig(GraphDatabaseSettings.pagecache_memory, (long) cfg.mappedMemory * 1024 * 1024)
       .build();
@@ -109,26 +101,5 @@ public class NeoDbFactory implements Managed {
     return new File(neoDir, "mapdb.bin");
   }
 
-  @Override
-  public void start() throws Exception {
-    if (service == null) {
-      LOG.info("Starting neodb factory service in {}", dir);
-      service = newEmbeddedService();
-    }
-  }
-
-  @Override
-  public void stop() throws Exception {
-    if (service != null) {
-      LOG.info("Stopping neodb factory service in {}", dir);
-      service.shutdown();
-      service = null;
-    }
-  }
-
-  @Override
-  public boolean hasStarted() {
-    return service != null;
-  }
 }
 

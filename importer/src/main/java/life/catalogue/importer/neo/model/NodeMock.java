@@ -11,9 +11,9 @@ import org.neo4j.graphdb.*;
  * It is primarily used during batch insertion to pass nodes which cannot be accessed through neo at that stage.
  */
 public class NodeMock implements Node {
-  private final long id;
+  public final int id;
   
-  public NodeMock(long id) {
+  public NodeMock(int id) {
     this.id = id;
   }
   
@@ -24,7 +24,7 @@ public class NodeMock implements Node {
 
   @Override
   public String getElementId() {
-    return ""+id;
+    return "el"+id;
   }
 
   @Override

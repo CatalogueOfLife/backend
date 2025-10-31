@@ -1,8 +1,8 @@
 package life.catalogue.importer.neo.traverse;
 
-import java.util.List;
-
 import life.catalogue.importer.neo.NeoDbUtils;
+
+import java.util.List;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterable;

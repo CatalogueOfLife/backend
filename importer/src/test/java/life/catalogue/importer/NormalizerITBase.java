@@ -76,7 +76,6 @@ abstract class NormalizerITBase {
     cfg.scratchDir = Files.createTempDir();
     attempt = 1;
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
   }
 
   @After
@@ -86,7 +85,6 @@ abstract class NormalizerITBase {
     }
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
-    neoDbFactory.stop();
   }
 
   public void normalizeExcel(String filename, NomCode code) throws Exception {
@@ -217,12 +215,12 @@ abstract class NormalizerITBase {
     return null;
   }
 
-  public VerbatimRecord vByNameID(String id) {
-    return store.getVerbatim(store.names().objByID(id).getVerbatimKey());
+  public VerbatimRecord vByNameID(String id, Transaction tx) {
+    return store.getVerbatim(store.names().objByID(id, tx).getVerbatimKey());
   }
   
-  public VerbatimRecord vByUsageID(String id) {
-    return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
+  public VerbatimRecord vByUsageID(String id, Transaction tx) {
+    return store.getVerbatim(store.usages().objByID(id, tx).getVerbatimKey());
   }
 
   public Reference accordingTo(NameUsage nu) {
@@ -232,12 +230,12 @@ abstract class NormalizerITBase {
     return null;
   }
   
-  public NeoUsage byName(String name) {
-    return byName(name, null);
+  public NeoUsage byName(String name, Transaction tx) {
+    return byName(name, null, tx);
   }
   
-  public NeoUsage byName(String name, @Nullable String author) {
-    Set<Node> usageNodes = store.usagesByName(name, author, null, true);
+  public NeoUsage byName(String name, @Nullable String author, Transaction tx) {
+    Set<Node> usageNodes = store.usagesByName(name, author, null, true, tx);
     if (usageNodes.isEmpty()) {
       throw new NotFoundException();
     }
@@ -312,28 +310,28 @@ abstract class NormalizerITBase {
     return true;
   }
   
-  public NeoUsage usageByNameID(String id) {
-    List<Node> usages = store.usageNodesByName(store.names().nodeByID(id));
+  public NeoUsage usageByNameID(String id, Transaction tx) {
+    List<Node> usages = store.usageNodesByName(store.names().nodeByID(id, tx));
     if (usages.size() != 1) {
       fail("No single usage for name " + id);
     }
     return store.usageWithName(usages.get(0));
   }
 
-  public NeoUsage usageByID(String id) {
-    return store.usageWithName(store.usages().nodeByID(id));
+  public NeoUsage usageByID(String id, Transaction tx) {
+    return store.usageWithName(store.usages().nodeByID(id, tx));
   }
   
-  public NeoUsage usageByName(Rank rank, String name) {
-    Set<Node> usages = store.usagesByName(name, null, rank, true);
+  public NeoUsage usageByName(Rank rank, String name, Transaction tx) {
+    Set<Node> usages = store.usagesByName(name, null, rank, true, tx);
     if (usages.size()!=1) {
       throw new IllegalStateException(usages.size() + " usage nodes matching " + rank + " " + name);
     }
     return store.usageWithName(usages.iterator().next());
   }
 
-  public NeoName nameByID(String id) {
-    return store.names().objByID(id);
+  public NeoName nameByID(String id, Transaction tx) {
+    return store.names().objByID(id, tx);
   }
 
   public Reference refByID(String id) {

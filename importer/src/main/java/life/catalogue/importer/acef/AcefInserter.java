@@ -10,7 +10,6 @@ import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.NeoCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.ReferenceMapStore;
 import life.catalogue.importer.neo.model.NeoName;
 import life.catalogue.importer.neo.model.NeoUsage;
@@ -24,10 +23,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,7 +185,7 @@ public class AcefInserter extends NeoCsvInserter {
   }
   
   @Override
-  protected NodeBatchProcessor relationProcessor() {
+  protected BiConsumer<Node, Transaction> relationProcessor() {
     return new AcefRelationInserter(store, inter);
   }
   

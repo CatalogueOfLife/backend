@@ -15,12 +15,9 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.BrokerConfig;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;
-<<<<<<< HEAD
 import life.catalogue.importer.neo.NeoDbFactory;
-=======
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
->>>>>>> master
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -76,7 +73,6 @@ public class ImportJobIT {
     cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
     neoDbFactory = new NeoDbFactory(cfg.normalizer);
-    neoDbFactory.start();
     diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
@@ -91,7 +87,6 @@ public class ImportJobIT {
   public void shutdown() throws Exception {
     LOG.warn("Shutting down test");
     hc.close();
-    neoDbFactory.stop();
   }
 
   void start(){
@@ -123,14 +118,9 @@ public class ImportJobIT {
     }
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
-<<<<<<< HEAD
-    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), neoDbFactory, NameIndexFactory.passThru(), validator, null,
-      indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, new EventBus("test-bus"), this::start, this::success, this::error);
-=======
-    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
+    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), neoDbFactory,
+      NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, TestUtils.mockedBroker(), this::start, this::success, this::error);
->>>>>>> master
-
   }
 
   @Test

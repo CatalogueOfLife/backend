@@ -6,14 +6,16 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ColdpReader;
 import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.NodeBatchProcessor;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 import com.google.common.io.Files;
 
@@ -28,7 +30,6 @@ public class NeoCsvInserterTest {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     NeoDbFactory factory = new NeoDbFactory(cfg);
-    factory.start();
     NeoDb db = factory.create(datasetKey, 1);
 
     URL url = getClass().getResource("/coldp/20");
@@ -43,7 +44,7 @@ public class NeoCsvInserterTest {
       }
 
       @Override
-      protected NodeBatchProcessor relationProcessor() {
+      protected BiConsumer<Node, Transaction> relationProcessor() {
         return null;
       }
     };
@@ -58,7 +59,6 @@ public class NeoCsvInserterTest {
       db.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
-      factory.stop();
     }
   }
 }

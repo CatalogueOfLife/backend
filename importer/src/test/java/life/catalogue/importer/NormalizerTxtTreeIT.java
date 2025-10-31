@@ -39,11 +39,11 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     normalize(0);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage s = usageByID("13");
+      NeoUsage s = usageByID("13", tx);
       assertTrue(s.isSynonym());
       assertEquals("Pardina", s.usage.getName().getLabel());
   
-      NeoUsage t = usageByID("12");
+      NeoUsage t = usageByID("12", tx);
       assertFalse(t.isSynonym());
       assertEquals("Lynx", t.usage.getName().getLabel());
 
@@ -71,7 +71,7 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     normalize(2);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = usageByID("14");
+      NeoUsage u = usageByID("14", tx);
       assertTrue(u.isSynonym());
       assertEquals("? californicum Torr. & A.Gray", u.usage.getName().getLabel());
       assertEquals(MatchType.NONE, u.usage.getName().getNamesIndexType());
@@ -89,7 +89,7 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     normalize(3);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = usageByID("8");
+      NeoUsage u = usageByID("8", tx);
       assertFalse(u.isSynonym());
       assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().getLabel());
       assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());

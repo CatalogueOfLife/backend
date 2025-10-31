@@ -8,7 +8,6 @@ import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.neo.NodeBatchProcessor.BatchConsumer;
 import life.catalogue.importer.neo.model.*;
 import life.catalogue.importer.neo.printer.PrinterUtils;
 import life.catalogue.importer.neo.traverse.Traversals;
@@ -20,20 +19,20 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.io.Writer;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
+import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.graphdb.*;
 import org.neo4j.internal.helpers.collection.Iterables;
 import org.neo4j.internal.helpers.collection.Iterators;
@@ -43,9 +42,9 @@ import org.slf4j.LoggerFactory;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.UnmodifiableIterator;
 
 import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
+import static org.neo4j.configuration.GraphDatabaseSettings.DEFAULT_DATABASE_NAME;
 
 /**
  * A persistence mechanism for storing core taxonomy & names propLabel and relations in an embedded
@@ -59,6 +58,7 @@ import static life.catalogue.common.tax.NameFormatter.HYBRID_MARKER;
  */
 public class NeoDb implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(NeoDb.class);
+  public static final Label ID_LABEL = Label.label(NeoProperties.ID);
 
   private final int datasetKey;
   private final int attempt;
@@ -66,6 +66,7 @@ public class NeoDb implements AutoCloseable {
   private final DB mapDb;
   private final File storeDir;
   private final Pool<Kryo> pool;
+  private final DatabaseManagementService neoService;
   private final GraphDatabaseService neo;
   public final int batchSize;
   public final int batchTimeout;
@@ -87,17 +88,18 @@ public class NeoDb implements AutoCloseable {
   /**
    * @param mapDb
    * @param storeDir
-   * @param graphDB
+   * @param neoService
    * @param batchTimeout in minutes
    */
-  NeoDb(int datasetKey, int attempt, DB mapDb, File storeDir, GraphDatabaseService graphDB, int batchSize, int batchTimeout) {
+  NeoDb(int datasetKey, int attempt, DB mapDb, File storeDir, DatabaseManagementService neoService, int batchSize, int batchTimeout) {
     this.datasetKey = datasetKey;
     this.attempt = attempt;
-    this.dbname = graphDB.databaseName();
-    this.neo = graphDB;
+    this.neoService = neoService;
+    this.neo = neoService.database( DEFAULT_DATABASE_NAME );
+    this.dbname = neo.databaseName();
     this.storeDir = storeDir;
     this.mapDb = mapDb;
-    this.batchSize = batchSize;
+    this.batchSize = 1; //batchSize;
     this.batchTimeout = batchTimeout;
     
     try {
@@ -135,6 +137,12 @@ public class NeoDb implements AutoCloseable {
       LOG.info("Failed to close mapDb for directory {}", storeDir.getAbsolutePath(), e);
     }
 
+    try {
+      neoService.shutdown();
+    } catch (Exception e) {
+      LOG.info("Failed to shutdown neo4j at {}", storeDir.getAbsolutePath(), e);
+    }
+
     if (storeDir != null && storeDir.exists()) {
       LOG.debug("Deleting storeDir {}", storeDir.getAbsolutePath());
       FileUtils.deleteQuietly(storeDir);
@@ -146,10 +154,17 @@ public class NeoDb implements AutoCloseable {
   }
 
   /**
-   * @return a node which is a dummy proxy only with just an id while we are in batch mode.
+   * @return a neo node bound to the given transaction with the given unique internal id
    */
-  Node nodeById(long nodeId, Transaction tx) {
-    return tx.getNodeById(nodeId);
+  public Node nodeById(int id, Transaction tx) {
+    var n = tx.findNode(ID_LABEL, NeoProperties.ID, id);
+    if (n==null) {
+      debug();
+    }
+    return n;
+  }
+  public Node nodeByMock(NodeMock n, Transaction tx) {
+    return nodeById(n.id, tx);
   }
 
 
@@ -163,6 +178,20 @@ public class NeoDb implements AutoCloseable {
       } else {
         devNullNode = tx.createNode(Labels.DEV_NULL);
       }
+      tx.commit();
+    }
+    // look for highest node id to continue from there
+    try (Transaction tx = neo.beginTx()) {
+      int max = 0;
+      for (Node n : Iterators.loop(tx.findNodes(ID_LABEL))) {
+        max = Math.max(max, NeoProperties.getID(n));
+      }
+      neoCounter.set(max+1);
+      LOG.info("Initialized neo4j database {} with max node id={}", dbname, max);
+    }
+    // create indexes
+    try (Transaction tx = neo.beginTx()) {
+      tx.execute("CREATE INDEX node_id_index FOR (n:ID) ON (n.id)");
       tx.commit();
     }
   }
@@ -273,14 +302,14 @@ public class NeoDb implements AutoCloseable {
     return result.columnAs("n");
   }
 
-  public Set<Node> usagesByNames(Rank rank, boolean inclUnranked, String... scientificName) {
+  public Set<Node> usagesByNames(Rank rank, boolean inclUnranked, Transaction tx, String... scientificName) {
     Set<Node> nodes = new HashSet<>();
     if (scientificName != null && scientificName.length > 0) {
       Set<String> names = Arrays.stream(scientificName)
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
       for (String name : names) {
-        nodes.addAll(usagesByName(name, null, rank, inclUnranked));
+        nodes.addAll(usagesByName(name, null, rank, inclUnranked, tx));
       }
     }
     return nodes;
@@ -290,11 +319,11 @@ public class NeoDb implements AutoCloseable {
    * Retuns a list of usage nodes that have a matching scientific name, rank & authorship.
    * A prefixed hybrid symbol will be ignored in both the query name and stored names.
    */
-  public Set<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked) {
-    Set<Node> names = names().nodesByName(scientificName);
+  public Set<Node> usagesByName(String scientificName, @Nullable String authorship, @Nullable Rank rank, boolean inclUnranked, Transaction tx) {
+    Set<Node> names = names().nodesByName(scientificName, tx);
     if (scientificName.charAt(0) != HYBRID_MARKER) {
       // try also to find the hybrid version of any monomial
-      names.addAll( names().nodesByName(HYBRID_MARKER + " " + scientificName));
+      names.addAll( names().nodesByName(HYBRID_MARKER + " " + scientificName, tx));
     }
     // filter ranks
     if (rank != null) {
@@ -329,54 +358,27 @@ public class NeoDb implements AutoCloseable {
    * Iteration is by node value starting from node value 1 to highest.
    *
    * @param label neo4j node label to select nodes by. Use NULL for all nodes
-   * @param batchSize
-   * @param callback
+   * @param consumer
    * @return total number of processed nodes.
    */
-  public int process(@Nullable Labels label, final int batchSize, NodeBatchProcessor callback) throws InterruptedException {
-    final BlockingQueue<List<Node>> queue = new LinkedBlockingQueue<>(3);
-    BatchConsumer consumer = new BatchConsumer(datasetKey, attempt, neo, callback, queue, Thread.currentThread());
-    Thread consThread = new Thread(consumer, "neodb-processor-" + datasetKey);
-
+  public int process(@Nullable Labels label, BiConsumer<Node, Transaction> consumer) throws InterruptedException {
+    int counter = 0;
     try (Transaction tx = neo.beginTx()){
-      consThread.start();
-      final ResourceIterator<Node> iter = label == null ? tx.getAllNodes().iterator() : tx.findNodes(label);
-      UnmodifiableIterator<List<Node>> batchIter = com.google.common.collect.Iterators.partition(iter, batchSize);
-
-      while (batchIter.hasNext() && consThread.isAlive()) {
+      final ResourceIterator<Node> iter = label == null ? tx.findNodes(NeoDb.ID_LABEL) : tx.findNodes(label);
+      while (iter.hasNext()) {
         checkIfInterrupted();
-        List<Node> batch = batchIter.next();
-        if (!queue.offer(batch, batchTimeout, TimeUnit.MINUTES)) {
-          LOG.error("Failed to offer new batch {} of size {} within {} minutes for neodb processing by {}", consumer.getBatchCounter(), batch.size(), batchTimeout, callback);
-          LOG.info("Nodes: {}", batch.stream()
-              .map(NeoProperties::getScientificNameWithAuthor)
-              .collect(Collectors.joining("; "))
-          );
-          throw new RuntimeException("Failed to offer new batch for neodb processing by " + callback);
-        }
+        consumer.accept(iter.next(), tx);
+        counter++;
       }
-      if (consThread.isAlive()) {
-        queue.put(BatchConsumer.POISON_PILL);
-      }
-      consThread.join();
-      
       // mark good for commit
       tx.commit();
-      LOG.info("Neo processing of {} finished in {} batches with {} records", label, consumer.getBatchCounter(), consumer.getRecordCounter());
+      LOG.info("Neo processing of {} finished with {} records", label, counter);
       
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();  // set interrupt flag back
       LOG.error("Neo processing interrupted", e);
-      if (consThread.isAlive()) {
-        consThread.interrupt();
-      }
     }
-    
-    if (consumer.hasError()) {
-      throw consumer.getError();
-    }
-    
-    return consumer.getRecordCounter();
+    return counter;
   }
   
   private void checkIfInterrupted() throws InterruptedException {
@@ -422,7 +424,6 @@ public class NeoDb implements AutoCloseable {
     }
     nn.homotypic = u.homotypic;
     u.nameNode = names.create(nn, tx);
-  
     if (u.nameNode != null) {
       // remove name from usage & create it which results in a new node on the usage
       u.usage.setName(null);
@@ -463,18 +464,20 @@ public class NeoDb implements AutoCloseable {
 
   Node createNode(PropLabel data, Transaction tx) {
     // create neo4j node and update its propLabel
-    Node n = tx.createNode(data.getLabels());
+    var ll = data.getLabels();
+    Node n = tx.createNode(ArrayUtils.add(ll, NeoDb.ID_LABEL));
     NeoDbUtils.addProperties(n, data);
-    neoCounter.incrementAndGet();
+    int id = neoCounter.incrementAndGet();
+    n.setProperty(NeoProperties.ID, id);
     return n;
   }
   
   /**
    * Updates a node by adding properties and/or labels
    */
-  void updateNode(long nodeId, PropLabel data, Transaction tx) {
+  void updateNode(int id, PropLabel data, Transaction tx) {
     if (!data.isEmpty()) {
-      Node n = nodeById(nodeId, tx);
+      Node n = nodeById(id, tx);
       NeoDbUtils.addProperties(n, data);
       NeoDbUtils.addLabels(n, data.getLabels());
     }
@@ -574,6 +577,11 @@ public class NeoDb implements AutoCloseable {
     try (Transaction tx = getNeo().beginTx()) {
       for (Node n : Iterators.loop(tx.findNodes(Labels.TAXON))) {
         NeoUsage u = usages().objByNode(n);
+        if (u == null) {
+          var id = NeoProperties.getID(n);
+          LOG.error("No usage found for taxon node {}, ID={}", n, id);
+          u = usages().objByNode(n);
+        }
         if (!u.node.hasLabel(Labels.ROOT)){
           // parent
           Node p = getSingleRelated(u.node, RelType.PARENT_OF, Direction.INCOMING);
@@ -583,8 +591,7 @@ public class NeoDb implements AutoCloseable {
         // store the updated object
         usages().update(u, tx);
       }
-      tx.commit();
-  
+
       for (Node n : Iterators.loop(tx.findNodes(Labels.SYNONYM))) {
         NeoUsage u = usages().objByNode(n);
         if (u.node.hasLabel(Labels.SYNONYM) && !u.isSynonym()) {
@@ -627,17 +634,29 @@ public class NeoDb implements AutoCloseable {
     updateLabels();
     updateTaxonStoreWithRelations();
   }
-  
+
+  public void debug() {
+    try (Transaction tx = getNeo().beginTx()) {
+      debug(tx);
+    }
+  }
   /**
    * dump treetext on console
    */
-  public void debug() {
-    try {
-      System.out.println("TextTree:\n" + PrinterUtils.textTree(getNeo()) + "\n");
+  public void debug(Transaction tx) {
+    System.out.println("\n\nNeo IDs:");
+    for (Node n : Iterators.loop(tx.findNodes(NeoDb.ID_LABEL))) {
+      System.out.println(NeoProperties.getID(n) + " -> " + StreamSupport.stream(n.getLabels().spliterator(), false).map(Label::name).collect(Collectors.joining(",")));
+    }
 
-      System.out.println("\n\nNames:");
-      names().all().forEach(n -> System.out.println(n.getName()));
-      System.out.println("\n");
+    System.out.println("\n\nUsage Map IDs:");
+    usages().logKeys();
+
+    System.out.println("\n\nName Map IDs:");
+    names().logKeys();
+
+    try {
+      System.out.println("\nTextTree:\n" + PrinterUtils.textTree(getNeo()) + "\n");
 
     } catch (Exception e) {
       e.printStackTrace();

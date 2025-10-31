@@ -7,14 +7,11 @@ import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.NodeMock;
 import life.catalogue.importer.neo.model.RankedName;
 
+import org.neo4j.kernel.impl.core.NodeEntity;
+
 import com.esotericsoftware.kryo.Kryo;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.internal.kernel.api.helpers.RelationshipFactory;
-import org.neo4j.kernel.impl.core.AbstractNodeEntity;
-import org.neo4j.kernel.impl.core.NodeEntity;
 
 
 /**

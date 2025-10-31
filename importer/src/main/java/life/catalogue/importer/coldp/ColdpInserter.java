@@ -13,7 +13,6 @@ import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.bibtex.BibTexInserter;
 import life.catalogue.importer.csljson.CslJsonInserter;
 import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
 import life.catalogue.importer.neo.model.NeoProperties;
 import life.catalogue.importer.neo.model.NeoUsage;
 import life.catalogue.importer.neo.model.RelType;
@@ -23,6 +22,7 @@ import life.catalogue.parser.TreatmentFormatParser;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FilenameUtils;
 import org.neo4j.graphdb.Node;
@@ -268,7 +268,7 @@ public class ColdpInserter extends NeoCsvInserter {
   }
 
   @Override
-  protected NodeBatchProcessor relationProcessor() {
+  protected BiConsumer<Node, Transaction> relationProcessor() {
     return new ColdpRelationInserter(store);
   }
 

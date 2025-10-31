@@ -485,7 +485,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         iCfg.threads,
         iCfg.maxQueue);
 
-    neoDbFactory.start();
     exec = new PBQThreadPoolExecutor<>(iCfg.threads,
         60L,
         TimeUnit.SECONDS,
@@ -511,8 +510,6 @@ public class ImportManager implements Managed, Idle, DatasetListener {
       exec.stop();
       exec = null;
     }
-    // finally shutdown neo server
-    neoDbFactory.stop();
   }
 
   @Override

@@ -8,6 +8,7 @@ import life.catalogue.importer.neo.NeoDb;
 import life.catalogue.importer.neo.model.NeoUsage;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  *
@@ -19,10 +20,10 @@ public class ColdpRelationInserter extends RelationInserterBase {
   }
 
   @Override
-  protected Node processUsage(NeoUsage u, VerbatimRecord v) {
+  protected Node processUsage(NeoUsage u, VerbatimRecord v, Transaction tx) {
     // NameUsage.parentID is also used for accepted taxa in synonyms
     if (v.getType() == ColdpTerm.NameUsage) {
-      Node p = usageByID(ColdpTerm.parentID, v, u);
+      Node p = usageByID(ColdpTerm.parentID, v, u, tx);
       if (u.isSynonym()) {
         if (p != null) {
           if (!store.createSynonymRel(u.node, p)) {
@@ -42,7 +43,7 @@ public class ColdpRelationInserter extends RelationInserterBase {
       return p;
 
     } else {
-      return super.processUsage(u, v);
+      return super.processUsage(u, v, tx);
     }
   }
 

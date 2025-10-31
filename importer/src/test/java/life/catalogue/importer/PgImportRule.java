@@ -164,7 +164,6 @@ public class PgImportRule extends ExternalResource {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     neoDbFactory = new NeoDbFactory(cfg);
-    neoDbFactory.start();
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }

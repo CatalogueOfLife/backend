@@ -50,11 +50,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(0);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1000");
+      NeoUsage t = usageByID("1000", tx);
       assertFalse(t.isSynonym());
       assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
   
-      t = usageByNameID("1006-s3");
+      t = usageByNameID("1006-s3", tx);
       assertTrue(t.isSynonym());
       assertEquals("1006-1006-s3", t.getId());
       assertEquals("1006-s3", t.usage.getName().getId());
@@ -116,13 +116,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
         }
       });
 
-      t = usageByNameID("1001c");
+      t = usageByNameID("1001c", tx);
       assertFalse(t.isSynonym());
       assertEquals("1001c", t.getId());
 
       assertEquals(3, store.typeMaterial().size());
 
-      t = usageByID("10");
+      t = usageByID("10", tx);
       assertEquals(2, t.estimates.size());
     }
   }
@@ -133,7 +133,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       store.usages().allIds().forEach( id -> {
-        var u = store.usageWithName(id);
+        var u = store.usageWithName(id, tx);
         var n = u.getNeoName().getName();
         System.out.println("\n" + u.getId());
         System.out.println(n);
@@ -196,7 +196,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(23);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("urn:lsid:nmbe.ch:spidersp:000002");
+      NeoUsage t = usageByID("urn:lsid:nmbe.ch:spidersp:000002", tx);
       assertFalse(t.isSynonym());
       assertEquals("Heptathela amamiensis Haupt, 1983", t.usage.getName().getLabel());
       assertEquals("1938232063", t.usage.getName().getPublishedInId());
@@ -214,7 +214,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalizeExcel("Torotrogla_villosa.xlsx", NomCode.ZOOLOGICAL);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1922");
+      NeoUsage t = usageByID("1922", tx);
       assertFalse(t.isSynonym());
       assertEquals("Picobia villosa Hancock, 1895", t.usage.getName().getLabel());
       assertEquals(1895, (int) t.usage.getName().getPublishedInYear());
@@ -223,7 +223,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("Angaben zu locality, deposition und host entnommen 97000593", t.usage.getRemarks());
 
 
-      t = usageByNameID("1006-s3");
+      t = usageByNameID("1006-s3", tx);
       assertTrue(t.isSynonym());
       assertEquals("1006-1006-s3", t.getId());
       assertEquals("1006-s3", t.usage.getName().getId());
@@ -282,13 +282,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
         }
       });
 
-      t = usageByNameID("1001c");
+      t = usageByNameID("1001c", tx);
       assertFalse(t.isSynonym());
       assertEquals("1001c", t.getId());
 
       assertEquals(3, store.typeMaterial().size());
 
-      t = usageByID("10");
+      t = usageByID("10", tx);
       assertEquals(2, t.estimates.size());
     }
   }
@@ -301,11 +301,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(2);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("10");
+      NeoUsage t = usageByID("10", tx);
       assertFalse(t.isSynonym());
       assertTrue(synonyms(t.node).isEmpty());
       
-      t = usageByID("11");
+      t = usageByID("11", tx);
       assertFalse(t.isSynonym());
       synonyms(t.node, "12");
     }
@@ -319,12 +319,12 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(3);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("13");
+      NeoUsage t = usageByID("13", tx);
       assertFalse(t.isSynonym());
       assertTrue(synonyms(t.node).isEmpty());
       assertBasionym(t, null);
   
-      t = usageByID("11");
+      t = usageByID("11", tx);
       assertFalse(t.isSynonym());
       assertBasionym(t, "12");
     }
@@ -340,7 +340,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(5);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = usageByID("1");
+      NeoUsage u = usageByID("1", tx);
       assertFalse(u.isSynonym());
       assertEquals("Aspilota vector Belokobylskij, 2007", u.usage.getName().getLabel());
       assertEquals(NameType.SCIENTIFIC, u.usage.getName().getType());
@@ -362,14 +362,14 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(6);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      assertRosanae("846548");
-      assertRosanae("846548b");
-      assertRosanae("846548c");
+      assertRosanae("846548", tx);
+      assertRosanae("846548b", tx);
+      assertRosanae("846548c", tx);
     }
   }
 
-  private void assertRosanae(String id){
-    NeoName n = nameByID(id);
+  private void assertRosanae(String id, Transaction tx) throws Exception {
+    NeoName n = nameByID(id, tx);
     assertEquals("Rosanae", n.getName().getLabel());
     assertEquals("Rosanae", n.getName().getUninomial());
     assertEquals("Rosanae", n.getName().getScientificName());
@@ -387,11 +387,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(7);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1000");
+      NeoUsage t = usageByID("1000", tx);
       assertFalse(t.isSynonym());
       assertEquals("Platycarpha glomerata (Thunberg) A. P. de Candolle", t.usage.getName().getLabel());
 
-      t = usageByID("1006-s3");
+      t = usageByID("1006-s3", tx);
       assertTrue(t.isSynonym());
       assertEquals("1006-s3", t.getId());
       assertEquals("1006-s3", t.usage.getName().getId());
@@ -434,7 +434,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertNotNull(r.getCsl().getTitle());
       });
 
-      t = usageByNameID("1001c");
+      t = usageByNameID("1001c", tx);
       assertFalse(t.isSynonym());
       assertEquals("1001c", t.getId());
 
@@ -450,14 +450,14 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(8);
     store.dump();
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1225-3");
+      NeoUsage t = usageByID("1225-3", tx);
       assertTrue(t.isSynonym());
       assertEquals(TaxonomicStatus.MISAPPLIED, t.usage.getStatus());
       assertEquals("auct. nec Zeller, 1877", t.usage.getNamePhrase());
       assertEquals("Platyptilia fuscicornis", t.usage.getName().getLabel());
       assertEquals("Platyptilia fuscicornis auct. nec Zeller, 1877", t.usage.getLabel());
 
-      t = usageByID("778");
+      t = usageByID("778", tx);
       assertFalse(t.isSynonym());
       assertEquals(TaxonomicStatus.ACCEPTED, t.usage.getStatus());
       Taxon tt = t.asTaxon();
@@ -476,11 +476,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     final String key = "urn:lsid:marinespecies.org:taxname:1252865";
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoName nn = nameByID(key);
+      NeoName nn = nameByID(key, tx);
       assertEquals("Paludina longispira", nn.getName().getScientificName());
       assertEquals("E.A. Smith, 1886", nn.getName().getAuthorship());
 
-      VerbatimRecord v = vByNameID(key);
+      VerbatimRecord v = vByNameID(key, tx);
       assertTrue(v.getIssues().isEmpty());
 
       List<Relationship> rels = Iterators.asList( nn.node.getRelationships(RelType.HAS_BASIONYM).iterator() );
@@ -504,11 +504,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     final String key = "331502";
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoName nn = nameByID(key);
+      NeoName nn = nameByID(key, tx);
       assertEquals("Jupunba abbottii", nn.getName().getScientificName());
       assertEquals("(Rose & Leonard) Britton & Rose", nn.getName().getAuthorship());
 
-      var nu = usageByID(key);
+      var nu = usageByID(key, tx);
       assertTrue(nu.isSynonym());
       List<Relationship> rels = Iterators.asList( nu.node.getRelationships().iterator() );
       assertEquals(2, rels.size());
@@ -526,11 +526,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       for (String id : List.of("3","4","7")) {
-        var t = usageByID(id);
+        var t = usageByID(id, tx);
         assertTrue("Missing issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
       }
       for (String id : List.of("1","2","8a","8","9","10","11","12","13","14")) {
-        var t = usageByID(id);
+        var t = usageByID(id, tx);
         assertFalse("Wrong issue for "+id, hasIssues(t, Issue.CLASSIFICATION_RANK_ORDER_INVALID));
       }
     }
@@ -552,23 +552,23 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
     try (Transaction tx = store.getNeo().beginTx()) {
       //125,,Species,bare name,,Jupunba bara,L.,,,,,
-      NeoName nn = nameByID("125");
+      NeoName nn = nameByID("125", tx);
       assertEquals("Jupunba bara", nn.getName().getScientificName());
       assertEquals("L.", nn.getName().getAuthorship());
-      var nu = usageByID("125");
+      var nu = usageByID("125", tx);
       assertNull(nu);
 
       //124,,Species,unplaced,unavailable,Jupunba nuduta,L.,,,,nom.nud.,
-      nn = nameByID("124");
+      nn = nameByID("124", tx);
       assertEquals("Jupunba nuduta", nn.getName().getScientificName());
       assertEquals("L.", nn.getName().getAuthorship());
       assertEquals("nom.nud.; unavailable", nn.getName().getRemarks());
       assertEquals(NomStatus.NOT_ESTABLISHED, nn.getName().getNomStatus());
-      nu = usageByID(nn.getId());
+      nu = usageByID(nn.getId(), tx);
       assertNull(nu);
 
       // 331502,609287,Species,Synonym,,Jupunba abbottii,(Rose & Leonard) Britton & Rose,R2,1928,R2,nom.illeg.,
-      nn = nameByID("331502");
+      nn = nameByID("331502", tx);
       assertEquals("Jupunba abbottii", nn.getName().getScientificName());
       assertEquals("(Rose & Leonard) Britton & Rose", nn.getName().getAuthorship());
       assertEquals("nom.illeg.", nn.getName().getRemarks());
@@ -576,7 +576,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
       assertEquals("R2", nn.getName().getPublishedInId());
       //TODO: derive status from remarks!
       //assertEquals(NomStatus.UNACCEPTABLE, nn.getName().getNomStatus());
-      nu = usageByID(nn.getId());
+      nu = usageByID(nn.getId(), tx);
       assertNotNull(nu);
       assertEquals(TaxonomicStatus.SYNONYM, nu.usage.getStatus());
 
@@ -604,8 +604,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
     try (Transaction tx = store.getNeo().beginTx()) {
       // a synonym with no parent!
       // 704264-az			synonym	Orthographic	Species	Cassine congonha	A.St.-Hil.			orth. var.	R300753
-      assertNull(usageByID("704264-az"));
-      var nn = nameByID("704264-az");
+      assertNull(usageByID("704264-az", tx));
+      var nn = nameByID("704264-az", tx);
       printRelations(nn.node);
       var n = nn.getName();
       assertEquals(NomStatus.NOT_ESTABLISHED, n.getNomStatus());
@@ -651,11 +651,11 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(33);
 
     try (Transaction tx = store.getNeo().beginTx()) {
-      NeoName nn = nameByID("S110070040");
+      NeoName nn = nameByID("S110070040", tx);
       assertEquals("Caloptilia acerifoliella", nn.getName().getScientificName());
       assertEquals("(Chambers, 1875)", nn.getName().getAuthorship());
 
-      var nu = usageByID("S110070040");
+      var nu = usageByID("S110070040", tx);
       var v = store.getVerbatim(nu.getVerbatimKey());
       assertFalse(v.getIssues().contains(Issue.LAT_LON_INVALID));
 

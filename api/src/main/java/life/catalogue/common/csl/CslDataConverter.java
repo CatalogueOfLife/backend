@@ -42,19 +42,33 @@ public class CslDataConverter {
       src.getJournalAbbreviation(),
       src.getTitleShort(),
       toCSLNames(src.getAuthor()),
+      null, // chair
       toCSLNames(src.getCollectionEditor()),
+      null, // compiler
       toCSLNames(src.getComposer()),
       toCSLNames(src.getContainerAuthor()),
+      null, // contributor
+      null, // curator
       toCSLNames(src.getDirector()),
       toCSLNames(src.getEditor()),
       toCSLNames(src.getEditorialDirector()),
+      null, // executiveProducer
+      null, // guest
+      null, // host,
       toCSLNames(src.getInterviewer()),
       toCSLNames(src.getIllustrator()),
+      null, // narrator
+      null, // organizer,
       toCSLNames(src.getOriginalAuthor()),
+      null, // performer
+      null, // producer
       toCSLNames(src.getRecipient()),
       toCSLNames(src.getReviewedAuthor()),
+      null, // scriptWriter
+      null, // seriesCreator
       toCSLNames(src.getTranslator()),
       toCSLDate(src.getAccessed()),
+      null, // availableDate
       toCSLDate(src.getContainer()),
       toCSLDate(src.getEventDate()),
       toCSLDate(src.getIssued()),
@@ -63,21 +77,25 @@ public class CslDataConverter {
       src.getAbstrct(),
       src.getAnnote(),
       src.getArchive(),
+      null, // archiveCollection
       src.getArchiveLocation(),
       src.getArchivePlace(),
       src.getAuthority(),
       src.getCallNumber(),
       src.getChapterNumber(),
       src.getCitationNumber(),
+      null, // citationKey
       src.getCitationLabel(),
       src.getCollectionNumber(),
       src.getCollectionTitle(),
       src.getContainerTitle(),
       src.getContainerTitleShort(),
       src.getDimensions(),
+      null, // division
       src.getDOI(),
       src.getEdition(),
       src.getEvent(),
+      null, // eventTitle,
       src.getEventPlace(),
       src.getFirstReferenceNoteNumber(),
       src.getGenre(),
@@ -96,22 +114,27 @@ public class CslDataConverter {
       src.getOriginalPublisherPlace(),
       src.getOriginalTitle(),
       src.getPage(),
-      src.getPageFirst(),
+      null, // part
+      null, // partTitle
       src.getPMCID(),
       src.getPMID(),
+      null, // printing
       src.getPublisher(),
       src.getPublisherPlace(),
       src.getReferences(),
+      null, // reviewedGenre,
       src.getReviewedTitle(),
       src.getScale(),
       src.getSection(),
       src.getSource(),
       src.getStatus(),
+      null, // supplement,
       src.getTitle(),
       src.getTitleShort(),
       src.getURL(),
       src.getVersion(),
       src.getVolume(),
+      null, // volumeTitle,
       src.getYearSuffix());
   }
   
