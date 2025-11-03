@@ -19,7 +19,7 @@ pipeline {
           mavenSettingsConfig: 'b043019e-79d8-48fd-8ecf-b20e3fb0a3cc',
           traceability: true
         ) {
-          sh '''mvn clean -U -T 4 test deploy'''
+          sh '''mvn clean -U -T 4 test'''
         }
       }
     }
