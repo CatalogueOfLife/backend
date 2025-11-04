@@ -1,5 +1,8 @@
 package life.catalogue.importer.neo;
 
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
+
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Origin;
@@ -18,6 +21,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -121,7 +125,7 @@ public class NeoDb implements AutoCloseable {
     } catch (Exception e) {
       LOG.error("Failed to initialize a new NeoDB", e);
       close();
-      throw e;
+      throw new RuntimeException(e);
     }
   }
   
@@ -206,7 +210,7 @@ public class NeoDb implements AutoCloseable {
     return names;
   }
   
-  public NeoCRUDStore<NeoUsage> usages() {
+  public NeoUsageStore usages() {
     return usages;
   }
 
@@ -915,6 +919,43 @@ public class NeoDb implements AutoCloseable {
     if (usages().getDuplicateCounter() > 0) {
       LOG.warn("The inserted dataset contains {} duplicate taxonIds! Only the first record will be used", usages().getDuplicateCounter());
     }
+  }
+
+  public File csvFile(String filename) {
+    return new File(storeDir, "csv/"+filename);
+  }
+
+  public CsvWriter newCsvWriter(String filename, String... headers) throws IOException {
+    File out = csvFile(filename);
+    CsvWriterSettings settings = new CsvWriterSettings();
+    var w = new CsvWriter(UTF8IoUtils.writerFromFile(out), settings);
+    w.writeHeaders(headers);
+    return w;
+  }
+
+  public void buildGraph() {
+    LOG.info("Load CSV files into graph");
+    names().closeWriters();
+    loadCsvNodes(names().nodeFileName(), labels(Labels.NAME));
+
+    usages().closeWriters();
+    loadCsvNodes(usages().taxFileName(), labels(Labels.USAGE, Labels.TAXON));
+    loadCsvNodes(usages().synFileName(), labels(Labels.USAGE, Labels.SYNONYM));
+
+    // relations
+
+    //loadCsv(usages().nodeFileName(), labels(Labels.USAGE));
+  }
+
+  private String labels(Labels... labels) {
+    return Arrays.stream(labels).map(Labels::name).collect(Collectors.joining(":"));
+  }
+
+  private void loadCsvNodes(String filename, String labels) {
+    String fileUrl = "file://" + csvFile(filename).getAbsolutePath();
+    neo.executeTransactionally("LOAD CSV FROM '$file' WITH HEADER AS row CREATE (p:$lbl) SET p += row",
+        Map.of("file", fileUrl,  "lbl", labels)
+    );
   }
 
 }

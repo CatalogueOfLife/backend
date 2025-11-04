@@ -4,15 +4,19 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 
+import com.univocity.parsers.csv.CsvWriter;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.neo.model.NeoName;
 
+import life.catalogue.importer.neo.model.NeoProperties;
+import life.catalogue.importer.neo.model.PropLabel;
 import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
 import org.mapdb.Serializer;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
@@ -22,13 +26,15 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
   
   // scientificName to nodeId
   private final Map<String, int[]> names;
-  
-  public NeoNameStore(DB mapDb, String mapDbName, Pool<Kryo> pool, IdGenerator idGen, NeoDb neoDb) {
+  private final CsvWriter csvNodeWriter;
+
+  public NeoNameStore(DB mapDb, String mapDbName, Pool<Kryo> pool, IdGenerator idGen, NeoDb neoDb) throws IOException {
     super(mapDb, mapDbName, NeoName.class, pool, neoDb, idGen);
     names = mapDb.hashMap(mapDbName+"-names")
         .keySerializer(Serializer.STRING)
         .valueSerializer(Serializer.INT_ARRAY)
         .createOrOpen();
+    csvNodeWriter  = neoDb.newCsvWriter(nodeFileName(), NeoProperties.ID, NeoProperties.SCIENTIFIC_NAME, NeoProperties.AUTHORSHIP, NeoProperties.RANK);
   }
   
   /**
@@ -100,4 +106,21 @@ public class NeoNameStore extends NeoCRUDStore<NeoName> {
     return names.size();
   }
 
+  public String nodeFileName() {
+    return csvFileName("");
+  }
+
+  @Override
+  void writeCsvNode(NeoName obj) {
+    final PropLabel props = obj.propLabel();
+    csvNodeWriter.writeRow(props);
+  }
+
+  @Override
+  protected void closeWriters() {
+    super.closeWriters();
+    if (csvNodeWriter != null) {
+      csvNodeWriter.close();
+    }
+  }
 }

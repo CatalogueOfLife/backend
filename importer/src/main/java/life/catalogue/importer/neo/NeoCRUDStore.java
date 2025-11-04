@@ -1,15 +1,17 @@
 package life.catalogue.importer.neo;
 
+import com.univocity.parsers.csv.CsvWriter;
+
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
-import life.catalogue.importer.neo.model.NeoNode;
-import life.catalogue.importer.neo.model.NodeMock;
-import life.catalogue.importer.neo.model.PropLabel;
+import life.catalogue.importer.neo.model.*;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.mapdb.DB;
@@ -23,7 +25,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
 import com.google.common.base.Preconditions;
 
-public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
+public abstract class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private static final Logger LOG = LoggerFactory.getLogger(NeoCRUDStore.class);
   // nodeId -> obj
   private final Map<Integer, T> objects;
@@ -33,8 +35,10 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   private final IdGenerator idGen;
   private final String objName;
   protected final NeoDb neoDb;
+  private final CsvWriter csvRelWriter;
+  protected boolean csvWritersClosed = false;
 
-  NeoCRUDStore(DB mapDb, String mapDbName, Class<T> clazz, Pool<Kryo> pool, NeoDb neoDb, IdGenerator idGen) {
+  NeoCRUDStore(DB mapDb, String mapDbName, Class<T> clazz, Pool<Kryo> pool, NeoDb neoDb, IdGenerator idGen) throws IOException {
     this.neoDb = neoDb;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
@@ -47,6 +51,7 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
         .valueSerializer(Serializer.INTEGER)
         .createOrOpen();
     this.idGen = idGen;
+    csvRelWriter  = neoDb.newCsvWriter(relFileName(), "type", NeoProperties.SCINAME, NeoProperties.REF_ID, NeoProperties.VERBATIM_KEY, NeoProperties.NOTE);
   }
   
   public T objByNode(Node n) {
@@ -195,5 +200,26 @@ public class NeoCRUDStore<T extends DSID<String> & VerbatimEntity & NeoNode> {
   
   public int getDuplicateCounter() {
     return duplicateCounter;
+  }
+
+  protected String csvFileName(String subfix) {
+    return objName.toLowerCase() + subfix + ".csv";
+  }
+  protected String relFileName() {
+    return csvFileName("-rel");
+  }
+
+  abstract void writeCsvNode(T obj);
+
+  private void writeCsvRel(NeoRel rel) {
+    Map<String, Object> props = NeoDbUtils.neo4jProps(rel);
+    props.put("type", rel.getType().name());
+    csvRelWriter.writeRow(props);
+  }
+  protected void closeWriters() {
+    if (csvRelWriter != null) {
+      csvRelWriter.close();
+    }
+    csvWritersClosed = true;
   }
 }
