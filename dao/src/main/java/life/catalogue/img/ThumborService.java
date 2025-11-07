@@ -33,10 +33,14 @@ public class ThumborService {
   }
 
   public URI thumbnail(URI url) {
-    var builder = thumbor.buildImage(url.toString())
+    var builder = thumbor.buildImage(urlEscape(url))
       .resize(cfg.size*10, cfg.size)
       .fitIn();
     return URI.create(builder.toUrl());
+  }
+
+  static String urlEscape(URI url) {
+    return url.toString().replaceFirst("\\?", "%3F");
   }
 
 }
