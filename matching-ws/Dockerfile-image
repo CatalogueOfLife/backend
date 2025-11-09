@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 
 # this directory should contain a pre-built jar + config, and the generated lucene index
 ARG INDEX_BUILD_PATH=./index-build
