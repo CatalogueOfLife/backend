@@ -41,6 +41,7 @@ import life.catalogue.metadata.DoiResolver;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
@@ -260,6 +261,7 @@ public class ImportJob implements Runnable {
     dao.update(di);
 
     boolean isModified = true;
+    final Path archivePath = archive.toPath();
     if (dataset.getImportAttempt() != null) {
       try (SqlSession session = factory.openSession()) {
         String lastMD5 = session.getMapper(DatasetImportMapper.class).getMD5(datasetKey, dataset.getImportAttempt());
@@ -273,10 +275,16 @@ public class ImportJob implements Runnable {
               isModified = false;
               LOG.info("MD5 unchanged: {}", di.getMd5());
               Path lastReal = lastArchive.toPath().toRealPath();
-              if (archive.exists()) {
-                archive.delete();
+              try {
+                Files.delete(archivePath);
+              } catch (NoSuchFileException e) {
+                // ignore, we want it gone anyways
               }
-              Files.createSymbolicLink(archive.toPath(), lastReal);
+              try {
+                Files.createSymbolicLink(archivePath, lastReal);
+              } catch (IOException e) {
+                LOG.error("Failed to replace unchanged archive {} with symlink. Keep it. {}", archivePath, e.getMessage(), e);
+              }
 
             } else {
               LOG.info("MD5 stored for attempt {} differs from stored file. Consider archive {}#{} modified", dataset.getImportAttempt(), datasetKey, getAttempt());
@@ -289,11 +297,17 @@ public class ImportJob implements Runnable {
     }
 
     // update latest symlink
-    File latest = nCfg.lastestArchiveSymlink(datasetKey);
-    if (latest.exists()) {
-      latest.delete();
+    Path latest = nCfg.lastestArchiveSymlink(datasetKey).toPath();
+    try {
+      Files.delete(latest);
+    } catch (NoSuchFileException e) {
+      // ignore, we dont want it anyways
     }
-    Files.createSymbolicLink(latest.toPath(), archive.toPath());
+    try {
+      Files.createSymbolicLink(latest, archivePath);
+    } catch (IOException e) {
+      LOG.error("Failed to create latest symlink {} to archive {}: {}", latest, archivePath, e.getMessage(), e);
+    }
 
     checkIfCancelled();
     // decompress and import?
