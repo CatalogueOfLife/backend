@@ -8,7 +8,6 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
-import life.catalogue.dw.cors.CorsFilter;
 import life.catalogue.dw.db.MybatisBundle;
 import life.catalogue.dw.health.EsHealthCheck;
 import life.catalogue.dw.health.EventBrokerHealthCheck;
@@ -290,7 +289,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new ImageResource(imgService, factory));
     j.register(new NameResource(ndao));
     j.register(new NameUsageResource(searchService, suggestService, indexService, coljersey.getCache(), tdao, feedbackService));
-    j.register(new PublisherResource(pdao));
+    j.register(new SectorPublisherResource(pdao));
     j.register(new ReferenceResource(rdao));
     j.register(new SynonymResource(sdao));
     j.register(new TaxonResource(factory, tdao, txtrDao));

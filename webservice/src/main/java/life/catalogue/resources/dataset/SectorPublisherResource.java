@@ -20,12 +20,12 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class PublisherResource extends AbstractDatasetScopedResource<UUID, Publisher, QuerySearchRequest> {
+public class SectorPublisherResource extends AbstractDatasetScopedResource<UUID, Publisher, QuerySearchRequest> {
   private final PublisherDao pdao;
   @SuppressWarnings("unused")
-  private static final Logger LOG = LoggerFactory.getLogger(PublisherResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SectorPublisherResource.class);
 
-  public PublisherResource(PublisherDao dao) {
+  public SectorPublisherResource(PublisherDao dao) {
     super(Publisher.class, dao);
     this.pdao = dao;
   }
