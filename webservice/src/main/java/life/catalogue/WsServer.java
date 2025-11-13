@@ -344,7 +344,8 @@ public class WsServer extends Application<WsServerConfig> {
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    SectorPublisherDao pdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
+    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), validator);
+    SectorPublisherDao spdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);
@@ -455,7 +456,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
-      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService,
       imgService, feedback, doiResolver, coljersey
     );
