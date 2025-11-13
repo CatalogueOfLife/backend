@@ -51,6 +51,7 @@ public class PublisherSyncJob extends GlobalBlockingJob {
 
   @Override
   public void execute() throws Exception {
+    LOG.info("Starting publisher registry sync");
     try (SqlSession session = sessionFactory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var pm = session.getMapper(PublisherMapper.class);

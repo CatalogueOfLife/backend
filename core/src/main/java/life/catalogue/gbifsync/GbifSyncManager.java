@@ -68,6 +68,11 @@ public class GbifSyncManager implements Managed {
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
 
+      LOG.info("Enable GBIF publisher syncs every hour");
+      futures.add(scheduler.scheduleAtFixedRate(
+        new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 0, 1, TimeUnit.HOURS)
+      );
+
       if (cfg.fullSyncFrequency > 0) {
         LOG.info("Schedule a full GBIF registry sync incl deletions every {} days", cfg.fullSyncFrequency);
         futures.add(scheduler.scheduleAtFixedRate(
@@ -82,11 +87,6 @@ public class GbifSyncManager implements Managed {
         futures.add(scheduler.scheduleAtFixedRate(
           new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
           30, cfg.syncFrequency, TimeUnit.MINUTES)
-        );
-
-        LOG.info("Enable GBIF publisher syncs every hour");
-        futures.add(scheduler.scheduleAtFixedRate(
-          new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 1, 1, TimeUnit.HOURS)
         );
       }
 
