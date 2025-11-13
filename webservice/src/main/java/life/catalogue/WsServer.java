@@ -344,7 +344,7 @@ public class WsServer extends Application<WsServerConfig> {
     DuplicateDao dupeDao = new DuplicateDao(getSqlSessionFactory());
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, ni, validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorPublisherDao pdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
     SectorDao secdao = new SectorDao(getSqlSessionFactory(), indexService, tdao, validator);

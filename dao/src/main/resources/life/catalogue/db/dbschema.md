@@ -14,6 +14,21 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-11-13 add global gbif publisher table
+```
+CREATE TABLE publisher (
+  key UUID PRIMARY KEY,
+  title TEXT,
+  description TEXT,
+  homepage TEXT,
+  city TEXT,
+  province TEXT,
+  country TEXT,
+  latitude NUMERIC(8, 5),
+  longitude NUMERIC(8, 5)
+);
+```
+
 #### 2025-09-01 XR hangs on copy
 ```
 CREATE TYPE DEGREEOFESTABLISHMENT AS ENUM (

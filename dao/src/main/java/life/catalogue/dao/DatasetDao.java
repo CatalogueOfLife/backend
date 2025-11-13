@@ -351,7 +351,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   private void deleteKeptReleaseData(int key, SqlSession session) {
     session.getMapper(SectorMapper.class).deleteByDataset(key);
-    session.getMapper(PublisherMapper.class).deleteByDataset(key);
+    session.getMapper(SectorPublisherMapper.class).deleteByDataset(key);
     session.getMapper(CitationMapper.class).deleteByRelease(key);
     session.getMapper(DatasetSourceMapper.class).deleteByRelease(key);
   }
@@ -429,7 +429,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     // We want to keep the sector and sector_publisher entries for deleted, public release !!!
     if (old == null || old.isPrivat() || old.getOrigin() == DatasetOrigin.PROJECT) {
       session.getMapper(SectorMapper.class).deleteByDataset(key);
-      session.getMapper(PublisherMapper.class).deleteByDataset(key);
+      session.getMapper(SectorPublisherMapper.class).deleteByDataset(key);
     }
     // now also clear filesystem - again release metrics are stored with the project so this is safe
     diDao.removeMetrics(key);

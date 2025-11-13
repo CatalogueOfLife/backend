@@ -1,7 +1,7 @@
 package life.catalogue.db.mapper;
 
 import life.catalogue.api.RandomUtils;
-import life.catalogue.api.model.Publisher;
+import life.catalogue.api.model.SectorPublisher;
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.text.StringUtils;
 
@@ -12,12 +12,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, PublisherMapper>{
+public class SectorSectorPublisherMapperTest extends CRUDPageableTestBase<UUID, SectorPublisher, SectorPublisherMapper>{
   String KEY = StringUtils.removeLast(UUID.randomUUID().toString(),3);
   AtomicInteger KEY_INC = new AtomicInteger(100);
 
-  public PublisherMapperTest() {
-    super(PublisherMapper.class);
+  public SectorSectorPublisherMapperTest() {
+    super(SectorPublisherMapper.class);
   }
 
   @Test
@@ -34,13 +34,13 @@ public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, P
 
 
   @Override
-  Publisher createTestEntity(int datasetKey) {
+  SectorPublisher createTestEntity(int datasetKey) {
     return createTestEntityIncId(datasetKey);
   }
 
   @Override
-  Publisher createTestEntityIncId(int datasetKey) {
-    var p = new Publisher();
+  SectorPublisher createTestEntityIncId(int datasetKey) {
+    var p = new SectorPublisher();
     p.setId(UUID.fromString(KEY+KEY_INC.getAndIncrement()));
     p.setDatasetKey(datasetKey);
     p.setAlias(RandomUtils.randomUnicodeString(5));
@@ -51,7 +51,7 @@ public class PublisherMapperTest extends CRUDPageableTestBase<UUID, Publisher, P
   }
 
   @Override
-  void updateTestObj(Publisher p) {
+  void updateTestObj(SectorPublisher p) {
     p.setAlias("ali");
     p.setDescription("Updated description");
   }

@@ -376,7 +376,7 @@ public class ProjectRelease extends AbstractProjectCopy {
           LOG.info("Create DOIs for all sources, including datasets from sector publishers!");
         } else {
           LOG.warn("Do not create DOIs for sources from sector publishers!");
-          var pm = session.getMapper(PublisherMapper.class);
+          var pm = session.getMapper(SectorPublisherMapper.class);
           publishers.addAll(pm.listAllKeys(projectKey));
         }
       }

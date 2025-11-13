@@ -229,7 +229,7 @@ public class WsROServer extends Application<WsServerConfig> {
     EstimateDao edao = new EstimateDao(getSqlSessionFactory(), validator);
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     NameDao ndao = new NameDao(getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
-    PublisherDao pdao = new PublisherDao(getSqlSessionFactory(), broker, validator);
+    SectorPublisherDao pdao = new SectorPublisherDao(getSqlSessionFactory(), broker, validator);
     ReferenceDao rdao = new ReferenceDao(getSqlSessionFactory(), doiResolver, validator);
     SynonymDao sdao = new SynonymDao(getSqlSessionFactory(), ndao, indexService, validator);
     TaxonDao tdao = new TaxonDao(getSqlSessionFactory(), ndao, mdao, thumborService, indexService, searchService, validator);
@@ -273,7 +273,7 @@ public class WsROServer extends Application<WsServerConfig> {
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
                                         @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao,
-                                        DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
+                                        DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, SectorPublisherDao pdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
                                         ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, ColJerseyBundle coljersey) {
     // dataset scoped resources

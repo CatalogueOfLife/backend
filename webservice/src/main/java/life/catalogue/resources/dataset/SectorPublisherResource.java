@@ -2,7 +2,7 @@ package life.catalogue.resources.dataset;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.QuerySearchRequest;
-import life.catalogue.dao.PublisherDao;
+import life.catalogue.dao.SectorPublisherDao;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.filter.ProjectOnly;
 
@@ -20,18 +20,18 @@ import jakarta.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @SuppressWarnings("static-method")
-public class SectorPublisherResource extends AbstractDatasetScopedResource<UUID, Publisher, QuerySearchRequest> {
-  private final PublisherDao pdao;
+public class SectorPublisherResource extends AbstractDatasetScopedResource<UUID, SectorPublisher, QuerySearchRequest> {
+  private final SectorPublisherDao pdao;
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(SectorPublisherResource.class);
 
-  public SectorPublisherResource(PublisherDao dao) {
-    super(Publisher.class, dao);
+  public SectorPublisherResource(SectorPublisherDao dao) {
+    super(SectorPublisher.class, dao);
     this.pdao = dao;
   }
 
   @Override
-  ResultPage<Publisher> searchImpl(int datasetKey, QuerySearchRequest req, Page page) {
+  ResultPage<SectorPublisher> searchImpl(int datasetKey, QuerySearchRequest req, Page page) {
     return dao.list(datasetKey, page);
   }
 

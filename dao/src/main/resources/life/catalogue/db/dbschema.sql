@@ -811,6 +811,18 @@ CREATE TABLE "user" (
   settings HSTORE
 );
 
+CREATE TABLE publisher (
+  key UUID PRIMARY KEY,
+  title TEXT,
+  description TEXT,
+  homepage TEXT,
+  city TEXT,
+  province TEXT,
+  country TEXT,
+  latitude NUMERIC(8, 5),
+  longitude NUMERIC(8, 5)
+);
+
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,

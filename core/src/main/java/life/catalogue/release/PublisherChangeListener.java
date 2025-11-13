@@ -3,36 +3,13 @@ package life.catalogue.release;
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.model.*;
-import life.catalogue.api.search.ExportSearchRequest;
-import life.catalogue.api.vocab.DataFormat;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.Datasets;
-import life.catalogue.common.io.PathUtils;
-import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.ReleaseConfig;
-import life.catalogue.dao.DatasetExportDao;
-import life.catalogue.dao.DatasetSourceDao;
-import life.catalogue.dao.NameUsageArchiver;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.db.mapper.DatasetSourceMapper;
-import life.catalogue.db.mapper.PublisherMapper;
+import life.catalogue.db.mapper.SectorPublisherMapper;
 import life.catalogue.db.mapper.SectorMapper;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiException;
-import life.catalogue.doi.service.DoiService;
 
-import java.io.File;
-import java.io.IOException;
-import java.time.format.DateTimeFormatter;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -72,14 +49,14 @@ public class PublisherChangeListener implements DatasetListener {
   }
 
   private void updateProject(Integer pkey, Dataset obj, UUID oldPublisherKey, UUID newPublisherKey, SqlSession session) {
-    var pm = session.getMapper(PublisherMapper.class);
+    var pm = session.getMapper(SectorPublisherMapper.class);
     var currPublisher = pm.listAllKeys(pkey);
     if (currPublisher.contains(oldPublisherKey) && !currPublisher.contains(newPublisherKey)) {
       var sm = session.getMapper(SectorMapper.class);
       var sectors = sm.listByDataset(pkey, obj.getKey(), Sector.Mode.MERGE);
       if (!sectors.isEmpty()) {
         LOG.warn("Project {} has sectors from publisher {} which have changed to the new publisher {}. Adding new publisher to project!", obj.getKey(), oldPublisherKey, newPublisherKey);
-        var p = new Publisher();
+        var p = new SectorPublisher();
         p.setDatasetKey(pkey);
         p.setId(newPublisherKey);
         //TODO: query GBIF API

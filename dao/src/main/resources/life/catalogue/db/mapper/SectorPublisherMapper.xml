@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="life.catalogue.db.mapper.PublisherMapper">
+<mapper namespace="life.catalogue.db.mapper.SectorPublisherMapper">
 
   <sql id="SELECT">
     p.id,
@@ -42,7 +42,7 @@
     sector_publisher p
   </sql>
 
-  <resultMap id="publisherResultMap" type="Publisher" autoMapping="true">
+  <resultMap id="publisherResultMap" type="SectorPublisher" autoMapping="true">
     <id property="id" column="id"/>
   </resultMap>
 
@@ -82,7 +82,7 @@
     DELETE FROM sector_publisher WHERE dataset_key = #{datasetKey}
   </delete>
 
-  <insert id="create" parameterType="Publisher" useGeneratedKeys="false" keyProperty="id">
+  <insert id="create" parameterType="SectorPublisher" useGeneratedKeys="false" keyProperty="id">
     INSERT INTO sector_publisher (id, <include refid="COLS"/>, created_by )
     VALUES (#{id}, <include refid="PROPS"/>, #{createdBy} )
   </insert>
@@ -94,7 +94,7 @@
     WHERE p.dataset_key=#{datasetKey}
   </insert>
 
-  <update id="update" parameterType="Publisher">
+  <update id="update" parameterType="SectorPublisher">
     UPDATE sector_publisher
     SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
     WHERE id = #{id} AND dataset_key=#{datasetKey}

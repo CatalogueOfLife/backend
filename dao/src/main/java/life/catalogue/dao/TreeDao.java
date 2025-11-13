@@ -5,7 +5,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxonomicStatus;
-import life.catalogue.db.mapper.PublisherMapper;
+import life.catalogue.db.mapper.SectorPublisherMapper;
 import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.db.mapper.TreeMapper;
@@ -74,7 +74,7 @@ public class TreeDao {
     RankID key = RankID.parseID(id);
     try (SqlSession session = factory.openSession()){
       TreeMapper trm = session.getMapper(TreeMapper.class);
-      PublisherMapper pm = session.getMapper(PublisherMapper.class);
+      SectorPublisherMapper pm = session.getMapper(SectorPublisherMapper.class);
 
       Rank pRank = null;
       LinkedList<TreeNode> classification = new LinkedList<>();
@@ -191,7 +191,7 @@ public class TreeDao {
   private ResultPage<TreeNode> rootOrChildren(final DSID<String> id, final int projectKey, final boolean placeholder, boolean inclExtinct, final TreeNode.Type type, final Page page, SqlSession session) {
     TreeMapper trm = session.getMapper(TreeMapper.class);
     TaxonMapper tm = session.getMapper(TaxonMapper.class);
-    PublisherMapper pm = session.getMapper(PublisherMapper.class);
+    SectorPublisherMapper pm = session.getMapper(SectorPublisherMapper.class);
 
     // not null, but parent.id might be null
     final RankID parent = RankID.parseID(id);

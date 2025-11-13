@@ -1,25 +1,32 @@
 package life.catalogue.db.mapper;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.Publisher;
+import life.catalogue.api.model.*;
+import life.catalogue.api.search.DatasetSearchRequest;
+import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.db.CRUD;
-import life.catalogue.db.CopyDataset;
-import life.catalogue.db.DatasetPageable;
-import life.catalogue.db.DatasetProcessable;
 
+import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.cursor.Cursor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public interface PublisherMapper extends CRUD<DSID<UUID>, Publisher>, DatasetProcessable<Publisher>, DatasetPageable<Publisher>, CopyDataset {
+import it.unimi.dsi.fastutil.ints.IntSet;
 
-  List<Publisher> listAll(@Param("datasetKey") int datasetKey);
+/**
+ * The dataset mappers create method expects the key to be provided.
+ * Unless you know exactly what you are doing please use the DatasetDAO to create, modify or delete datasets.
+ */
+public interface PublisherMapper extends CRUD<UUID, Publisher> {
 
-  /**
-   * @param datasetKey a release or project key
-   * @return
-   */
-  Set<UUID> listAllKeys(@Param("datasetKey") int datasetKey);
+  List<Publisher> search(@Param("q") String q, @Param("page") Page page);
+
 }

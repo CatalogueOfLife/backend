@@ -23,7 +23,7 @@ import jakarta.ws.rs.client.Client;
 
 
 /**
- * Syncs datasets from the GBIF registry
+ * Syncs datasets and publishers from the GBIF registry
  */
 public class GbifSyncManager implements Managed {
   private static final Logger LOG = LoggerFactory.getLogger(GbifSyncManager.class);
@@ -82,6 +82,11 @@ public class GbifSyncManager implements Managed {
         futures.add(scheduler.scheduleAtFixedRate(
           new GbifSyncJob(cfg, client, ddao, sessionFactory, Users.GBIF_SYNC, true),
           30, cfg.syncFrequency, TimeUnit.MINUTES)
+        );
+
+        LOG.info("Enable GBIF publisher syncs every hour");
+        futures.add(scheduler.scheduleAtFixedRate(
+          new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 1, 1, TimeUnit.HOURS)
         );
       }
 

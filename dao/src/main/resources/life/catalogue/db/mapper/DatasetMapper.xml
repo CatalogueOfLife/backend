@@ -573,6 +573,12 @@
     WHERE key = #{key}
   </select>
 
+  <select id="listPublisherKeys" resultType="java.util.UUID">
+    SELECT DISTINCT gbif_publisher_key
+    FROM dataset
+    WHERE deleted IS NULL
+  </select>
+
   <select id="listKeysGBIF" resultType="integer">
     SELECT key
     FROM dataset

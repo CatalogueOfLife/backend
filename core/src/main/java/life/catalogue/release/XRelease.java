@@ -25,7 +25,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.matching.*;
-import life.catalogue.matching.decision.MatchingDao;
 import life.catalogue.matching.nidx.NameIndex;
 
 import org.gbif.nameparser.api.NameType;
@@ -264,7 +263,7 @@ public class XRelease extends ProjectRelease {
   private void updatePublisherSectors() {
     LOG.info("Updating publisher sectors");
     try (SqlSession session = factory.openSession(true)) {
-      var pm = session.getMapper(PublisherMapper.class);
+      var pm = session.getMapper(SectorPublisherMapper.class);
       var publisher = pm.listAll(projectKey);
       // create missing sectors in project from publishers for compatible licenses only
       for (var p : publisher) {
@@ -457,7 +456,7 @@ public class XRelease extends ProjectRelease {
       map = true;
     } else {
       map = false;
-      if (entity.equals(Publisher.class)) {
+      if (entity.equals(SectorPublisher.class)) {
         // we copy publisher entities from the project and all the rest from the base release with the new ids already
         from = projectKey;
       } else {
