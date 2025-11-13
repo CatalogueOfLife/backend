@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.catalogue.db.mapper.PublisherMapper">
+
+  <sql id="COLS">
+    title,
+    description,
+    homepage,
+    city,
+    province,
+    country,
+    latitude,
+    longitude
+  </sql>
+
+  <sql id="PROPS">
+    #{title},
+    #{description},
+    #{homepage},
+    #{city},
+    #{province},
+    #{country},
+    #{latitude},
+    #{longitude}
+  </sql>
+
+  <resultMap id="publisherResultMap" type="Publisher" autoMapping="true">
+    <id property="key" column="key"/>
+  </resultMap>
+
+
+  <select id="get" resultMap="publisherResultMap">
+    SELECT key,<include refid="COLS"/>
+    FROM publisher
+    WHERE key = #{key}
+  </select>
+
+  <select id="search" resultMap="publisherResultMap">
+    SELECT key,<include refid="COLS"/>
+    FROM publisher
+    WHERE doc @@ plainto_tsquery('dataset', f_unaccent($Grtz5$%${q}%$Grtz5$))
+    ORDER BY ts_rank_cd('{0.1, 1.0}'::float4[], doc, plainto_tsquery('dataset', f_unaccent(#{q}))) DESC, title
+    <include refid="life.catalogue.db.Common.limit"/>
+  </select>
+
+  <update id="update" parameterType="Publisher">
+    UPDATE publisher SET (<include refid="COLS"/>) = (<include refid="PROPS"/>)
+    WHERE key = #{key}
+  </update>
+
+  <update id="delete" parameterType="map">
+    DELETE FROM publisher WHERE key = #{key}
+  </update>
+
+</mapper>
