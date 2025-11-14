@@ -10,5 +10,7 @@ public enum InfoGroup {
   BASIONYM,
   EXTINCT,
   TEMPORAL_RANGE,
-  RANK;
+  RANK,
+  ETYMOLOGY,
+  GENDER;
 }

@@ -773,6 +773,17 @@ public class TreeMergeHandler extends TreeBaseHandler {
         }
         LOG.debug("Updated {} with authorship {}", n.getScientificName(), n.getAuthorship());
       }
+      if (src.getEtymology() != null && n.getEtymology() == null) {
+        upd.add(InfoGroup.ETYMOLOGY);
+        n.setEtymology(src.getEtymology());
+        LOG.debug("Updated {} with etymology", n.getScientificName());
+      }
+      if (src.getGender() != null && n.getGender() == null) {
+        upd.add(InfoGroup.GENDER);
+        n.setGender(src.getGender());
+        n.setGenderAgreement(src.hasGenderAgreement());
+        LOG.debug("Updated {} with gender {}", n.getScientificName(), n.getGender());
+      }
       if (!src.getRank().isUncomparable() && n.getRank().isUncomparable()
         && RankComparator.compareVagueRanks(n.getRank(), src.getRank()) != Equality.DIFFERENT
       ) {
