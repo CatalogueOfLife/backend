@@ -851,6 +851,10 @@ public class Dataset extends DataEntity<Integer> {
     return taxonomicGroupScope;
   }
 
+  public void setTaxonomicGroupScope(Set<TaxGroup> taxonomicGroupScope) {
+    this.taxonomicGroupScope = taxonomicGroupScope;
+  }
+
   public void setTemporalScope(String temporalScope) {
     this.temporalScope = temporalScope;
   }

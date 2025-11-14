@@ -1,8 +1,11 @@
 package life.catalogue.gbifsync;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import jakarta.ws.rs.WebApplicationException;
 
 import life.catalogue.api.model.Publisher;
+import life.catalogue.api.vocab.Country;
 import life.catalogue.concurrent.GlobalBlockingJob;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.GbifConfig;
@@ -75,65 +78,38 @@ public class PublisherSyncJob extends GlobalBlockingJob {
     LOG.info("{} publisher added, {} updated", created, updated);
   }
 
-  private Publisher getFromGBIF(UUID key) throws Exception {
+  @VisibleForTesting
+  Publisher getFromGBIF(UUID key) throws Exception {
     try {
       return orgTarget.path(key.toString())
         .request(MediaType.APPLICATION_JSON_TYPE)
-        .get(Publisher.class);
+        .get(GPublisher.class);
     } catch (WebApplicationException e) {
       LOG.warn("Publisher {} not found in GBIF", key, e);
       return null;
     }
   }
 
-  public static class GAgent {
-    public String key;
-    public String title;
-    public String organization;
-    public String city;
-    public String province;
-    public String country;
-    public String latitude;
-    public String longitude;
-    public List<String> homepage;
-
-    public Publisher toPublisher(){
-      Publisher org = new Publisher();
-      org.setTitle(title);
-      org.setKey(UUID.fromString(key));
-      StringBuilder sb = new StringBuilder();
-      addIfExists(sb, country);
-      addIfExists(sb, province, ", ");
-      addIfExists(sb, city, ", ");
-      addIfExists(sb, organization, ". ");
-      if (homepage != null) {
-        for (var h : homepage) {
-          addIfExists(sb, h, ". ");
-        }
-      }
-      return org;
-    }
-
-    private void addIfExists(StringBuilder sb, String value) {
-      addIfExists(sb, value, "");
-    }
-    private void addIfExists(StringBuilder sb, String value, String prefix) {
-      if (!StringUtils.isBlank(value)) {
-        if (sb.length() > 0) {
-          sb.append(prefix);
-        }
-        sb.append(value.trim());
+  public static class GPublisher extends Publisher {
+    public void setHomepage(List<String> homepages) {
+      if (homepages != null && !homepages.isEmpty()) {
+        super.setHomepage(StringUtils.trimToNull(homepages.get(0)));
+      } else {
+        super.setHomepage(null);
       }
     }
 
-    @Override
-    public String toString() {
-      return "GPublisher{title=" + title + ", country=" + country + '}';
+    public void setCountry(String country) {
+      if (StringUtils.isBlank(country)) {
+        super.setCountry(null);
+      } else {
+        var opt = Country.fromIsoCode(country);
+        if (opt.isPresent()) {
+          super.setCountry(opt.get().getName());
+        } else {
+          super.setCountry(country);
+        }
+      }
     }
-  }
-
-  static class GResp {
-    public int count;
-    public List<GAgent> results;
   }
 }

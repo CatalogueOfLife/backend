@@ -3,10 +3,7 @@ package life.catalogue.api.model;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.jackson.SerdeTestBase;
-import life.catalogue.api.vocab.Country;
-import life.catalogue.api.vocab.DatasetOrigin;
-import life.catalogue.api.vocab.DatasetType;
-import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
 
@@ -51,6 +48,8 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setLogo(URI.create("www.gbif.org"));
     d.setLicense(License.CC0);
     d.setGeographicScope("North Africa");
+    d.setTaxonomicScope("Animalia");
+    d.setTaxonomicGroupScope(Set.of(TaxGroup.Plants, TaxGroup.Algae, TaxGroup.Angiosperms));
     d.setContact(Agent.contact("Helpdesk", "info@mailinator.com"));
     d.setCreator(new ArrayList<>(List.of(
       Agent.person("Roy", "Black", "roy@black.de", "0000-0003-4994-0653"),
