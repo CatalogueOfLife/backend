@@ -1,5 +1,7 @@
 package life.catalogue.gbifsync;
 
+import com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.config.GbifConfig;
 
@@ -12,8 +14,6 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;

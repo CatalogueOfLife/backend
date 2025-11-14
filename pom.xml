@@ -57,7 +57,7 @@
     <commons-io.version>2.17.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
     <chronicle.version>2.26ea47</chronicle.version>
-    <docker-client.version>3.4.2</docker-client.version><!--keep in sync with test containers -->
+    <docker-client.version>3.6.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>2.1.4</dwc-api.version>
     <dwca-io.version>3.0.0</dwca-io.version>
     <elasticsearch.version>8.1.3</elasticsearch.version>
@@ -88,7 +88,7 @@
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.12.5</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
-    <testcontainers.version>1.21.3</testcontainers.version><!--keep in sync with docker client-->
+    <testcontainers.version>2.0.1</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.6.5</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
@@ -755,19 +755,19 @@
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>junit-jupiter</artifactId>
+        <artifactId>testcontainers-junit-jupiter</artifactId>
         <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>postgresql</artifactId>
+        <artifactId>testcontainers-postgresql</artifactId>
         <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.testcontainers</groupId>
-        <artifactId>elasticsearch</artifactId>
+        <artifactId>testcontainers-elasticsearch</artifactId>
         <version>${testcontainers.version}</version>
         <scope>test</scope>
       </dependency>
