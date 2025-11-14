@@ -37,6 +37,13 @@
     WHERE key = #{key}
   </select>
 
+  <select id="exists" resultType="boolean">
+    SELECT exists(
+      SELECT key FROM publisher
+      WHERE key=#{key}
+    )
+  </select>
+
   <select id="search" resultMap="publisherResultMap">
     SELECT key,<include refid="COLS"/>
     FROM publisher

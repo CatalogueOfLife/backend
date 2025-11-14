@@ -191,6 +191,8 @@ public class Dataset extends DataEntity<Integer> {
   @AbsoluteURI
   private URI url;
   @AbsoluteURI
+  private URI feedbackUrl;
+  @AbsoluteURI
   private URI logo;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> urlFormatter = new HashMap<>();
@@ -248,6 +250,7 @@ public class Dataset extends DataEntity<Integer> {
     this.completeness = other.completeness;
     this.license = other.license;
     this.url = other.url;
+    this.feedbackUrl = other.feedbackUrl;
     this.logo = other.logo;
     this.urlFormatter = other.urlFormatter;
     this.conversion = other.conversion;
@@ -907,6 +910,14 @@ public class Dataset extends DataEntity<Integer> {
     this.url = url;
   }
 
+  public URI getFeedbackUrl() {
+    return feedbackUrl;
+  }
+
+  public void setFeedbackUrl(URI feedbackUrl) {
+    this.feedbackUrl = feedbackUrl;
+  }
+
   public URI getLogo() {
     return logo;
   }
@@ -1037,6 +1048,7 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(completeness, dataset.completeness)
            && license == dataset.license
            && Objects.equals(url, dataset.url)
+           && Objects.equals(feedbackUrl, dataset.feedbackUrl)
            && Objects.equals(logo, dataset.logo)
            && Objects.equals(urlFormatter, dataset.urlFormatter)
            && Objects.equals(conversion, dataset.conversion)
@@ -1050,7 +1062,7 @@ public class Dataset extends DataEntity<Integer> {
       gbifKey, gbifPublisherKey, size, notes,
       doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
-      geographicScope, taxonomicScope, taxonomicGroupScope, temporalScope, confidence, completeness, license, url, logo,
+      geographicScope, taxonomicScope, taxonomicGroupScope, temporalScope, confidence, completeness, license, url, feedbackUrl, logo,
       urlFormatter, conversion,  source);
   }
 

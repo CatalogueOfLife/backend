@@ -60,6 +60,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     d.setIssued(FuzzyDate.now());
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
+    d.setFeedbackUrl(URI.create("https://www.github.com/xyz/123/issues"));
     d.setIdentifier(Map.of(
       "gbif", UUID.randomUUID().toString(),
       "col", "1001"

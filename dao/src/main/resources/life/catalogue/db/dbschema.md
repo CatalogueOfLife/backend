@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+
+#### 2025-11-13 feedback_url
+```
+ALTER TABLE dataset ADD COLUMN feedback_url TEXT;
+```
+
 #### 2025-11-13 add info group values
 ```
 ALTER TYPE INFOGROUP ADD VALUE 'ETYMOLOGY';

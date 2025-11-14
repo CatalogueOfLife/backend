@@ -869,6 +869,7 @@ CREATE TABLE dataset (
   conversion_description TEXT,
   conversion_url TEXT,
   url TEXT,
+  feedback_url TEXT,
   logo TEXT,
   notes TEXT,
 

@@ -51,6 +51,7 @@
     #{completeness},
     #{license}::LICENSE,
     #{url},
+    #{feedbackUrl},
     #{logo},
     #{urlFormatter, typeHandler=life.catalogue.db.type2.HstoreMapTypeHandler}::hstore,
     #{conversion.description},
