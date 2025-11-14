@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-11-13 add info group values
+```
+ALTER TYPE INFOGROUP ADD VALUE 'ETYMOLOGY';
+ALTER TYPE INFOGROUP ADD VALUE 'GENDER';
+```
+
 #### 2025-11-13 add global gbif publisher table
 ```
 CREATE TABLE publisher (
