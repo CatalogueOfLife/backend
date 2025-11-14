@@ -3,8 +3,7 @@ package life.catalogue.matching;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 
 import jakarta.validation.constraints.NotNull;
 
@@ -32,7 +31,7 @@ public class DockerConfig {
       .withDockerTlsVerify(false)
       .build();
 
-    DockerHttpClient hcl = new ApacheDockerHttpClient.Builder()
+    ZerodepDockerHttpClient hcl = new ZerodepDockerHttpClient.Builder()
       .dockerHost(dcfg.getDockerHost())
       .build();
 
