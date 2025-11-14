@@ -16,7 +16,7 @@ public class ReleaseActionTest {
     var httpClient = HttpClientBuilder.create().build();
 
     var d = new Dataset();
-    d.setKey(1234);
+    d.setKey(987654321);
     d.setSourceKey(3);
     d.setOrigin(DatasetOrigin.RELEASE);
     d.setAlias("COL24 XR");
@@ -25,7 +25,7 @@ public class ReleaseActionTest {
 
     var act = new ReleaseAction();
     act.method = "GET";
-    act.url = "http://www.gbif.org/dataset/{key}?alias={ALIAS}";
-    assertEquals(404, act.call(httpClient, d));
+    act.url = "http://www.checklistbank.org/dataset/{key}?alias={ALIAS}";
+    assertEquals(200, act.call(httpClient, d));
   }
 }

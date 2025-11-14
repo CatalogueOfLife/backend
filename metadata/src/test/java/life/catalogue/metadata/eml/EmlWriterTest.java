@@ -83,8 +83,9 @@ public class EmlWriterTest {
       d2.setType(d.getType());
       d2.setOrigin(d.getOrigin());
       d2.setNotes(d.getNotes());
-      d2.getContributor().get(3).setNote(null); // we will get contributor othertwise
-      d2.getContributor().get(4).setNote(null); // we will get contributor othertwise
+      d2.getContributor().get(3).setNote(null); // we will get contributor otherwise
+      d2.getContributor().get(4).setNote(null); // we will get contributor otherwise
+      d2.setTaxonomicGroupScope(d.getTaxonomicGroupScope());
       d.setUrl(URI.create("http://www.gbif.org")); // we normalise the URL
 
       assertEquals(d, d2);

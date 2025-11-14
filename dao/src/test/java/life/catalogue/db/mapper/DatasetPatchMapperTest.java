@@ -101,6 +101,7 @@ public class DatasetPatchMapperTest extends MapperTestBase<DatasetPatchMapper> {
     if (obj.getSource() == null) {
       obj.setSource(new ArrayList<>());
     }
+    obj.setTaxonomicGroupScope(null);
     return obj;
   }
 
