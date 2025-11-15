@@ -88,7 +88,7 @@
     <scribejava.version>8.3.1</scribejava.version>
     <simple-mail.version>8.12.5</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
-    <testcontainers.version>2.0.1</testcontainers.version><!--keep in sync with docker client-->
+    <testcontainers.version>2.0.2</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.6.5</text-tree.version>
     <tika.version>2.9.2</tika.version>
     <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
