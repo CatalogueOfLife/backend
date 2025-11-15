@@ -57,6 +57,11 @@
     WHERE key = #{key}
   </update>
 
+  <insert id="create" parameterType="Publisher">
+    INSERT INTO publisher (<include refid="COLS"/>, key)
+    VALUES (<include refid="PROPS"/>, #{key})
+  </insert>
+
   <update id="delete" parameterType="map">
     DELETE FROM publisher WHERE key = #{key}
   </update>
