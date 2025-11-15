@@ -576,7 +576,7 @@
   <select id="listPublisherKeys" resultType="java.util.UUID">
     SELECT DISTINCT gbif_publisher_key
     FROM dataset
-    WHERE deleted IS NULL
+    WHERE deleted IS NULL AND gbif_publisher_key IS NOT NULL
   </select>
 
   <select id="listKeysGBIF" resultType="integer">
