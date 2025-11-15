@@ -63,15 +63,13 @@ public class PublisherSyncJob extends GlobalBlockingJob {
         if (p == null) {
           continue;
         }
-        if (!pm.exists(key)) {
+        var existing = pm.get(key);
+        if (existing == null) {
           pm.create(p);
           created++;
-        } else {
-          var existing = pm.get(key);
-          if (!existing.equals(p)) {
-            pm.update(p);
-            updated++;
-          }
+        } else if (!existing.equals(p)) {
+          pm.update(p);
+          updated++;
         }
       }
     }
