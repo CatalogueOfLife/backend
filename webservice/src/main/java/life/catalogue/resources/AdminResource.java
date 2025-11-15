@@ -24,6 +24,7 @@ import life.catalogue.event.EventBroker;
 import life.catalogue.feedback.EmailEncryption;
 import life.catalogue.gbifsync.GbifSyncJob;
 import life.catalogue.gbifsync.GbifSyncManager;
+import life.catalogue.gbifsync.PublisherSyncJob;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
 import life.catalogue.importer.ImportManager;
@@ -233,8 +234,15 @@ public class AdminResource {
     }
   }
 
+  @POST
+  @Path("/publisher-sync")
+  public BackgroundJob publisherSync(@Auth User user) {
+    PublisherSyncJob job = new PublisherSyncJob(cfg.gbif, gbifSync.getClient(), factory, user.getKey());
+    return runJob(job);
+  }
+
   @GET
-  @Path("gbif-deleted")
+  @Path("/gbif-deleted")
   @Produces({TEXT_TSV, TEXT_CSV})
   public Stream<Object[]> listDeletedInGBIF() {
     return ddao.listDeletedInGBIF();

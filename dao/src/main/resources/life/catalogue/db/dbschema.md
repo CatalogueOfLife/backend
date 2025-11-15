@@ -18,6 +18,9 @@ and done it manually. So we can as well log changes here.
 #### 2025-11-13 feedback_url
 ```
 ALTER TABLE dataset ADD COLUMN feedback_url TEXT;
+ALTER TABLE dataset_archive ADD COLUMN feedback_url TEXT;
+ALTER TABLE dataset_source ADD COLUMN feedback_url TEXT;
+ALTER TABLE dataset_patch ADD COLUMN feedback_url TEXT;
 ```
 
 #### 2025-11-13 add info group values

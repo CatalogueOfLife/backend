@@ -236,6 +236,12 @@ public class TreeMergeHandler extends TreeBaseHandler {
     counter++;
     LOG.debug("process {} {} {} -> {}", nu.getStatus(), nu.getName().getRank(), nu.getLabel(), parents.classificationToString());
 
+    // adjust all accepted names from nomenclators to be provisionally accepted
+    if (source.getType() == DatasetType.NOMENCLATURAL && nu.getStatus() == TaxonomicStatus.ACCEPTED) {
+      nu.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+      LOG.debug("Mark {} as provisionally accepted by a nomenclator", nu.getLabel());
+    }
+
     // apply common changes to the usage
     var mod = processCommon(nu);
 
@@ -372,7 +378,9 @@ public class TreeMergeHandler extends TreeBaseHandler {
 
   @Override
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return !isAmbiguousGenus(u);
+    return sector.isCreateImplicitNames()
+      && (!u.isProvisional() || source.getType() == DatasetType.NOMENCLATURAL) // we allow implicit names for nomenclatural records
+      && !isAmbiguousGenus(u);
   }
 
   public void acceptName(Name n) throws InterruptedException {

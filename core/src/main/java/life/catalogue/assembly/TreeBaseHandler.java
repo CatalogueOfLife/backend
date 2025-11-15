@@ -316,7 +316,9 @@ public abstract class TreeBaseHandler implements TreeHandler {
   }
 
   protected boolean allowImplicitName(Usage parent, Taxon u) {
-    return sector.isCreateImplicitNames();
+    // do only create implicit names if the name is not provisional
+    // see https://github.com/CatalogueOfLife/coldp/issues/45
+    return sector.isCreateImplicitNames() && !u.isProvisional();
   }
 
   static String idOrNull(Usage u) {
@@ -335,9 +337,8 @@ public abstract class TreeBaseHandler implements TreeHandler {
   protected Usage createImplicit(@Nullable Usage parent, Taxon taxon) {
     // figure out if we need to create any implicit taxon
     Name origName = taxon.getName();
-    // do only create implicit names if the name is parsed & not provisional
-    // see https://github.com/CatalogueOfLife/coldp/issues/45
-    if (origName.isParsed() && !origName.isIndetermined() && !taxon.isProvisional()) {
+    // do only create implicit names if the name is parsed
+    if (origName.isParsed() && !origName.isIndetermined()) {
       List<Rank> neededRanks = new ArrayList<>();
       Usage parentConcreteRank = parent;
       while (parentConcreteRank != null && parentConcreteRank.rank.otherOrUnranked()) {
@@ -419,7 +420,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
         }
         t.setSectorKey(sector.getId());
         t.setOrigin(Origin.IMPLICIT_NAME);
-        t.setStatus(TaxonomicStatus.ACCEPTED);
+        t.setStatus(taxon.getStatus());
         t.applyUser(user);
         // apply inherited decisions
         applyInheritedDecisions(t, taxon.getParentId());
