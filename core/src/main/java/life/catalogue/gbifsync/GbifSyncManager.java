@@ -69,9 +69,9 @@ public class GbifSyncManager implements Managed {
       );
 
       if (cfg.publisherSyncFrequency > 0) {
-        LOG.info("Enable GBIF publisher syncs every {} minutes", cfg.publisherSyncFrequency);
+        LOG.info("Enable GBIF publisher syncs every {} hours", cfg.publisherSyncFrequency);
         futures.add(scheduler.scheduleAtFixedRate(
-          new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 1, cfg.publisherSyncFrequency, TimeUnit.MINUTES)
+          new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 1, cfg.publisherSyncFrequency, TimeUnit.HOURS)
         );
       }
 

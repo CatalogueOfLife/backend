@@ -46,10 +46,10 @@ public class GbifConfig {
   public int fullSyncFrequency = 1;
 
   /**
-   * Full publisher GBIF registry sync frequency in minutes.
+   * Full publisher GBIF registry sync frequency in hours.
    * If zero or negative sync is off.
    */
-  public int publisherSyncFrequency = 60*24;
+  public int publisherSyncFrequency = 24;
 
   /**
    * GBIF publisher keys for journals and other publishers who exclusively publish article based datasets, e.g. Plazi & Pensoft.

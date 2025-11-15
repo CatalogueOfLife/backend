@@ -27,6 +27,7 @@
     d.completeness,
     d.license,
     d.url,
+    d.feedback_url,
     d.logo,
     d.url_formatter,
     d.conversion_description,
