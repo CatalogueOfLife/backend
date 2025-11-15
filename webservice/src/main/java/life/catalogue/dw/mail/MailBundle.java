@@ -38,6 +38,7 @@ public class MailBundle implements ConfiguredBundle<MailBundleConfig> {
         .withTransportStrategy(cfg.transport)
         .withDebugLogging(cfg.block)
         .withThreadPoolSize(cfg.threads)
+        .withSessionTimeout(cfg.timeout)
         .buildMailer();
       emailNotification = new EmailNotification(mailer, cfg);
       // health tests

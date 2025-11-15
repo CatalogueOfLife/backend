@@ -32,6 +32,12 @@ public class MailConfig {
   public int threads = 3;
 
   /**
+   * The SMTP session timeout (affects socket connect-, read- and write timeouts) in milliseconds.
+   */
+  @Min(100)
+  public int timeout = 10 * 1000;
+
+  /**
    * Default address to be used for from and reply-to settings.
    */
   @NotNull

@@ -51,7 +51,7 @@ public class EsConfig {
    *
    * Defaults here to 15 minutes = 900.000ms
    */
-  public int socketTimeout = 900000;
+  public int socketTimeout = 900_000;
 
   /**
    * Number of parallel threads to use when indexing all datasets
