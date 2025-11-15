@@ -62,16 +62,18 @@ public class GbifSyncManager implements Managed {
 
   @Override
   public void start() throws Exception {
-    if (cfg.syncFrequency > 0 || cfg.fullSyncFrequency > 0) {
+    if (cfg.syncFrequency > 0 || cfg.fullSyncFrequency > 0 || cfg.publisherSyncFrequency > 0) {
       started = true;
       scheduler = Executors.newScheduledThreadPool(1,
           new NamedThreadFactory(THREAD_NAME, Thread.NORM_PRIORITY, true)
       );
 
-      LOG.info("Enable GBIF publisher syncs every hour");
-      futures.add(scheduler.scheduleAtFixedRate(
-        new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 0, 1, TimeUnit.HOURS)
-      );
+      if (cfg.publisherSyncFrequency > 0) {
+        LOG.info("Enable GBIF publisher syncs every {} minutes", cfg.publisherSyncFrequency);
+        futures.add(scheduler.scheduleAtFixedRate(
+          new PublisherSyncJob(cfg, client, sessionFactory, Users.GBIF_SYNC), 1, cfg.publisherSyncFrequency, TimeUnit.MINUTES)
+        );
+      }
 
       if (cfg.fullSyncFrequency > 0) {
         LOG.info("Schedule a full GBIF registry sync incl deletions every {} days", cfg.fullSyncFrequency);
@@ -92,7 +94,7 @@ public class GbifSyncManager implements Managed {
 
     } else {
       started = false;
-      LOG.warn("Disable GBIF dataset sync");
+      LOG.warn("Disable GBIF registry sync");
     }
   }
   
