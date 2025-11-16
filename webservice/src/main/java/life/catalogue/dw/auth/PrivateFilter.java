@@ -4,6 +4,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.IOException;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.IntPredicate;
@@ -38,7 +39,7 @@ public class PrivateFilter implements ContainerRequestFilter {
   private SqlSessionFactory factory;
   // is dataset private cache?
   private final Map<Integer, Boolean> cache = new HashMap<>(10_000);
-  private final Int2BooleanMap cache2 = new Int2BooleanOpenHashMap(50_000);
+  private final Int2BooleanMap cache2 = Int2BooleanMaps.synchronize(new Int2BooleanOpenHashMap(10_000));
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
@@ -46,7 +47,11 @@ public class PrivateFilter implements ContainerRequestFilter {
     req.setProperty(DATASET_KEY_PROPERTY, datasetKey);
     if (datasetKey != null) {
       // is this a private dataset?
-      boolean priv = cache.computeIfAbsent(datasetKey, this::isPrivateInDB);
+      Boolean priv = cache.get(datasetKey);
+      if (priv == null) {
+        priv = isPrivateInDB(datasetKey);
+        cache.put(datasetKey, priv);
+      }
 
       if (priv) {
         // check if user has permissions to at least read
