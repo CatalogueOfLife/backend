@@ -267,6 +267,10 @@
       <artifactId>simple-java-mail</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.simplejavamail</groupId>
+      <artifactId>batch-module</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
     </dependency>

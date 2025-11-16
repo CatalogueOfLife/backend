@@ -86,7 +86,7 @@
     <pollexor.version>3.0.0</pollexor.version>
     <postgresql.version>42.7.6</postgresql.version>
     <scribejava.version>8.3.1</scribejava.version>
-    <simple-mail.version>8.12.5</simple-mail.version>
+    <simple-mail.version>8.12.6</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
     <testcontainers.version>2.0.2</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.6.5</text-tree.version>
@@ -654,6 +654,11 @@
       <dependency>
         <groupId>org.simplejavamail</groupId>
         <artifactId>simple-java-mail</artifactId>
+        <version>${simple-mail.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.simplejavamail</groupId>
+        <artifactId>batch-module</artifactId>
         <version>${simple-mail.version}</version>
       </dependency>
       <dependency>
