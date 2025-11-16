@@ -4,6 +4,8 @@ import life.catalogue.api.model.User;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.IntPredicate;
 
 import org.apache.ibatis.session.SqlSession;
@@ -35,7 +37,8 @@ public class PrivateFilter implements ContainerRequestFilter {
 
   private SqlSessionFactory factory;
   // is dataset private cache?
-  private final Int2BooleanMap cache = new Int2BooleanOpenHashMap();
+  private final Map<Integer, Boolean> cache = new HashMap<>(10_000);
+  private final Int2BooleanMap cache2 = new Int2BooleanOpenHashMap(50_000);
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {
@@ -43,12 +46,7 @@ public class PrivateFilter implements ContainerRequestFilter {
     req.setProperty(DATASET_KEY_PROPERTY, datasetKey);
     if (datasetKey != null) {
       // is this a private dataset?
-      boolean priv = cache.computeIfAbsent(datasetKey, (IntPredicate) value -> {
-        try (SqlSession session = factory.openSession()) {
-          DatasetMapper dm = session.getMapper(DatasetMapper.class);
-          return dm.isPrivate(datasetKey);
-        }
-      });
+      boolean priv = cache.computeIfAbsent(datasetKey, this::isPrivateInDB);
 
       if (priv) {
         // check if user has permissions to at least read
@@ -62,6 +60,13 @@ public class PrivateFilter implements ContainerRequestFilter {
           throw new NotAuthorizedException("Dataset " + datasetKey + " is private");
         }
       }
+    }
+  }
+
+  private boolean isPrivateInDB(int datasetKey) {
+    try (SqlSession session = factory.openSession()) {
+      DatasetMapper dm = session.getMapper(DatasetMapper.class);
+      return dm.isPrivate(datasetKey);
     }
   }
 
