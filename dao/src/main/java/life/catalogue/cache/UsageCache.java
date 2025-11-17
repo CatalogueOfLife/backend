@@ -1,59 +1,44 @@
 package life.catalogue.cache;
 
-import life.catalogue.api.event.DatasetChanged;
-import life.catalogue.api.event.DatasetDataChanged;
-import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.NameUsage;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
-import life.catalogue.common.Managed;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import life.catalogue.db.PgUtils;
+import life.catalogue.db.mapper.NameUsageMapper;
+
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Simple KVP style cache for name usages in the form of SimpleNameWithPub instances.
+ * Simple KVP style cache for name usages from a single dataset in the form of SimpleNameWithPub instances.
  */
-public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
+public interface UsageCache extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageCache.class);
 
+  int getDatasetKey();
 
-  boolean contains(DSID<String> key);
+  boolean contains(String key);
 
-  SimpleNameCached get(DSID<String> key);
+  SimpleNameCached get(String key);
 
-  SimpleNameCached put(int datasetKey, SimpleNameCached usage);
+  SimpleNameCached put(SimpleNameCached usage);
 
-  SimpleNameCached remove(DSID<String> key);
-
-  void clear(int datasetKey);
+  SimpleNameCached remove(String key);
 
   void clear();
 
   @Override
   void close();
 
-  void updateParent(int datasetKey, String oldParentId, String newParentId);
-
-  @Override
-  default void datasetChanged(DatasetChanged event){
-    if (event.isDeletion()) {
-      clear(event.key);
-    }
-  }
-
-  @Override
-  default void datasetDataChanged(DatasetDataChanged event){
-    clear(event.datasetKey);
-  }
-
-  default SimpleNameCached getOrLoad(DSID<String> key, CacheLoader loader) {
+  default SimpleNameCached getOrLoad(String key, CacheLoader loader) {
     var sn = get(key);
     if (sn == null) {
       sn = loader.load(key);
@@ -63,7 +48,7 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
         sn = loader.load(key);
       }
       if (sn != null) {
-        put(key.getDatasetKey(), sn);
+        put(sn);
       } else {
         LOG.warn("Missing usage {}", key);
       }
@@ -72,16 +57,32 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
   }
 
   /**
-   * @param datasetKey
+   * Loads the entire dataset from postgres into the cache.
+   * @return number of loaded usages
+   */
+  default int load(SqlSessionFactory factory) {
+    LOG.info("Load all usages of dataset {} into cache", getDatasetKey());
+    AtomicInteger cnt = new AtomicInteger();
+    try (SqlSession session = factory.openSession()) {
+      PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processDatasetSimpleNidx(getDatasetKey()), u -> {
+        put(u);
+        cnt.incrementAndGet();
+      });
+    }
+    LOG.info("Loaded {} usages of dataset {} into cache", cnt.get(), getDatasetKey());
+    return cnt.intValue();
+  }
+
+  /**
    * @param usage with parent property being the ID !!!
    * @param loader
    * @return
    */
-  default SimpleNameClassified<SimpleNameCached> withClassification(int datasetKey, SimpleNameCached usage, CacheLoader loader) throws NotFoundException {
+  default SimpleNameClassified<SimpleNameCached> withClassification(SimpleNameCached usage, CacheLoader loader) throws NotFoundException {
     SimpleNameClassified<SimpleNameCached> sncl = new SimpleNameClassified<>(usage);
     sncl.setClassification(new ArrayList<>());
     if (usage.getParent() != null) {
-      addParents(sncl.getClassification(), DSID.of(datasetKey, usage.getParent()), loader);
+      addParents(sncl.getClassification(), usage.getParent(), loader);
     }
     return sncl;
   }
@@ -90,17 +91,17 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
    * @return entire classification including the start ID
    * @throws NotFoundException if the start ID or any subsequent parentID cannot be resolved
    */
-  default List<SimpleNameCached> getClassification(DSID<String> start, CacheLoader loader) throws NotFoundException {
+  default List<SimpleNameCached> getClassification(String start, CacheLoader loader) throws NotFoundException {
     List<SimpleNameCached> classification = new ArrayList<>();
-    addParents(classification, DSID.copy(start), loader);
+    addParents(classification, start, loader);
     return classification;
   }
 
-  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, CacheLoader loader) throws NotFoundException {
+  private void addParents(List<SimpleNameCached> classification, String parentKey, CacheLoader loader) throws NotFoundException {
     addParents(classification, parentKey, loader, new HashSet<>());
   }
 
-  private void addParents(List<SimpleNameCached> classification, DSID<String> parentKey, CacheLoader loader, Set<String> visitedIDs) throws NotFoundException {
+  private void addParents(List<SimpleNameCached> classification, String parentKey, CacheLoader loader, Set<String> visitedIDs) throws NotFoundException {
     SimpleNameCached p;
     if (contains(parentKey)) {
       p = get(parentKey);
@@ -112,27 +113,27 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
         p = loader.load(parentKey);
       }
       if (p != null) {
-        put(parentKey.getDatasetKey(), p);
+        put(p);
       } else {
         LOG.warn("Missing usage {}", parentKey);
         throw NotFoundException.notFound(NameUsage.class, parentKey);
       }
     }
     if (p != null) {
-      visitedIDs.add(parentKey.getId());
+      visitedIDs.add(parentKey);
       classification.add(p);
       if (p.getParent() != null) {
         if (visitedIDs.contains(p.getParent())) {
           LOG.warn("Bad classification tree with parent circles involving {}", p);
         } else {
-          addParents(classification, parentKey.id(p.getParent()), loader, visitedIDs);
+          addParents(classification, p.getParent(), loader, visitedIDs);
         }
       }
     }
   }
 
-  static UsageCache mapDB(File location, boolean expireMutable, int kryoMaxCapacity) throws IOException {
-    return new UsageCacheMapDB(location, expireMutable, kryoMaxCapacity);
+  static UsageCache mapDB(int datasetKey, File location) {
+    return new UsageCacheMapDB(datasetKey, location, 8);
   }
 
   /**
@@ -141,96 +142,69 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
   static UsageCache passThru() {
     return new UsageCache() {
       @Override
-      public void start() throws Exception {      }
-
-      @Override
-      public void stop() throws Exception {      }
-
-      @Override
-      public boolean hasStarted() {
-        return true;
+      public int getDatasetKey() {
+        return -1;
       }
 
       @Override
-      public boolean contains(DSID<String> key) {
+      public boolean contains(String key) {
         return false;
       }
 
       @Override
-      public SimpleNameCached get(DSID<String> key) {
+      public SimpleNameCached get(String key) {
         return null;
       }
 
       @Override
-      public SimpleNameCached put(int datasetKey, SimpleNameCached usage) {
+      public SimpleNameCached put(SimpleNameCached usage) {
         return null;
       }
 
       @Override
-      public SimpleNameCached remove(DSID<String> key) {
+      public SimpleNameCached remove(String key) {
         return null;
       }
-
-      @Override
-      public void clear(int datasetKey) { }
 
       @Override
       public void clear() { }
 
       @Override
       public void close() { }
-
-      @Override
-      public void updateParent(int datasetKey, String oldParentId, String newParentId) {
-
-      }
     };
   }
 
   /**
    * A simple cache backed by an in memory hash map that grows forever.
-   * Really only for tests...
    */
-  static UsageCache hashMap() {
+  static UsageCache hashMap(final int datasetKey) {
     return new UsageCache() {
-      @Override
-      public void start() throws Exception {      }
+      private final int dKey = datasetKey;
+      private final Map<String, SimpleNameCached> data = new HashMap<>();
 
       @Override
-      public void stop() throws Exception {      }
-
-      private final Map<DSID<String>, SimpleNameCached> data = new HashMap<>();
+      public int getDatasetKey() {
+        return dKey;
+      }
 
       @Override
-      public boolean contains(DSID<String> key) {
+      public boolean contains(String key) {
         return data.containsKey(key);
       }
 
       @Override
-      public SimpleNameCached get(DSID<String> key) {
+      public SimpleNameCached get(String key) {
         return data.get(key);
       }
 
       @Override
-      public SimpleNameCached put(int datasetKey, SimpleNameCached usage) {
-        return data.put(DSID.of(datasetKey, usage.getId()), usage);
+      public SimpleNameCached put(SimpleNameCached usage) {
+        return data.put(usage.getId(), usage);
       }
 
       @Override
-      public SimpleNameCached remove(DSID<String> key) {
+      public SimpleNameCached remove(String key) {
         return data.remove(key);
-      }
-
-      @Override
-      public void clear(int datasetKey) {
-        int count = 0;
-        for (var k : data.keySet()) {
-          if (datasetKey == k.getDatasetKey()) {
-            data.remove(k);
-            count++;
-          }
-        }
-        LOG.info("Cleared all {} usages for datasetKey {} from the cache", count, datasetKey);
       }
 
       @Override
@@ -240,23 +214,6 @@ public interface UsageCache extends AutoCloseable, Managed, DatasetListener {
 
       @Override
       public void close() { }
-
-      @Override
-      public void updateParent(int datasetKey, String oldParentId, String newParentId) {
-        for (var k : data.keySet()) {
-          if (datasetKey == k.getDatasetKey()) {
-            var old = data.get(k);
-            if (old.getParentId() != null && old.getParentId().equals(oldParentId)) {
-              data.remove(k);
-            }
-          }
-        }
-      }
-
-      @Override
-      public boolean hasStarted() {
-        return true;
-      }
     };
   }
 }

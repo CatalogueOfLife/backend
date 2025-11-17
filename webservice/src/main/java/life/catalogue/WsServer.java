@@ -354,10 +354,6 @@ public class WsServer extends Application<WsServerConfig> {
     TreeDao trDao = new TreeDao(getSqlSessionFactory());
     TxtTreeDao txtrDao = new TxtTreeDao(getSqlSessionFactory(), tdao, sdao, indexService, new TxtTreeInterpreter());
 
-    // usage cache
-    UsageCache uCache = UsageCache.mapDB(cfg.usageCacheFile, false, 64);
-    managedService.manage(Component.UsageCache, uCache);
-
     // matcher factory
     final var matcherFactory = new UsageMatcherFactory(cfg.matching, ni, getSqlSessionFactory(), executor);
     env.lifecycle().manage(ManagedUtils.from(matcherFactory));
@@ -495,7 +491,6 @@ public class WsServer extends Application<WsServerConfig> {
     broker.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiUpdater);
-    broker.register(uCache);
     broker.register(exportManager);
     broker.register(syncManager);
     broker.register(importManager);

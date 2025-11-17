@@ -106,11 +106,11 @@ public class NameUsageProcessor {
       final NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final var sm = session.getMapper(SectorMapper.class);
       final var dm = session.getMapper(DatasetMapper.class);
-      final CacheLoader loader = new CacheLoader.MybatisSession(session, false);
+      final CacheLoader loader = new CacheLoader.MybatisSession(session, datasetKey);
 
       // reusable dsids for this dataset
-      final DSID<String> uKey = DSID.of(datasetKey, null);
-      final DSID<Integer> sKey = DSID.of(datasetKey, null);
+      final DSID<String> uKey = DSID.root(datasetKey);
+      final DSID<Integer> sKey = DSID.root(datasetKey);
       // we exclude some rather static info from our already massive joins and set them manually in code:
       final UUID publisher = session.getMapper(DatasetMapper.class).getPublisherKey(datasetKey);
       // we prefetch sectorKey to the sectors subject dataset key depending whether we process a sector or entire dataset
@@ -127,7 +127,7 @@ public class NameUsageProcessor {
       ism.createTmpIssuesTable(datasetKey, null);
 
       try (ObjectCache<NameUsageWrapper> taxa = buildObjCache();
-           UsageCache usageCache = buildUsageCache()
+           UsageCache usageCache = buildUsageCache(datasetKey)
       ) {
         final AtomicInteger counter = new AtomicInteger(0);
         // processing first returns all taxa before any synonym is returned - cache these and process them at the end
@@ -202,7 +202,6 @@ public class NameUsageProcessor {
 
   private void addClassification(NameUsageWrapper nuw, ObjectCache<NameUsageWrapper> taxa, UsageCache usageCache, CacheLoader loader) {
     List<SimpleName> classification = new ArrayList<>();
-    DSID<String> uKey = null;
     if (!nuw.getUsage().isBareName()) {
       SimpleName curr = new SimpleName((NameUsageBase) nuw.getUsage());
       classification.add(curr);
@@ -211,10 +210,7 @@ public class NameUsageProcessor {
           curr = new SimpleName((NameUsageBase) taxa.get(curr.getParent()).getUsage());
         } else {
           // need to fetch usage which lies outside the scope of this processor, e.g. a merge sector with parents outside of the sector
-          if (uKey == null) {
-            uKey = DSID.root(nuw.getUsage().getDatasetKey());
-          }
-          curr = usageCache.getOrLoad(uKey.id(curr.getParent()), loader);
+          curr = usageCache.getOrLoad(curr.getParent(), loader);
           loadCounter++;
         }
         if (curr != null) {
@@ -229,9 +225,7 @@ public class NameUsageProcessor {
   private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
     return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
   }
-  private UsageCache buildUsageCache() throws Exception {
-    var cache = UsageCache.mapDB(new File(tmpDir, UUID.randomUUID().toString()), true, 8);
-    cache.start();
-    return cache;
+  private UsageCache buildUsageCache(int datasetKey) throws Exception {
+    return UsageCache.mapDB(datasetKey, new File(tmpDir, UUID.randomUUID().toString()));
   }
 }

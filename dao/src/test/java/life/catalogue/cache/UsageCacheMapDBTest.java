@@ -6,6 +6,8 @@ import life.catalogue.api.vocab.Datasets;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
+import life.catalogue.common.io.TempFile;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
@@ -24,8 +26,8 @@ public class UsageCacheMapDBTest {
   @Before
   public void init() throws Exception {
     dbf = File.createTempFile("coltest", "mapdb");
-    cache = new UsageCacheMapDB(dbf, false, 8);
-    cache.start();
+    dbf.delete(); // map db create a new one
+    cache = new UsageCacheMapDB(Datasets.COL, dbf, 8);
   }
 
   @After
@@ -43,18 +45,17 @@ public class UsageCacheMapDBTest {
     sn.setCode(NomCode.BOTANICAL);
     sn.setNamesIndexMatchType(MatchType.EXACT);
 
-    assertFalse(cache.contains(DSID.colID("a")));
+    assertFalse(cache.contains("a"));
 
-    cache.put(Datasets.COL, sn);
-    assertTrue(cache.contains(DSID.colID("a")));
-    assertEquals(sn, cache.get(DSID.colID("a")));
+    cache.put(sn);
+    assertTrue(cache.contains("a"));
+    assertEquals(sn, cache.get("a"));
 
-    cache.put(999, sn);
-    cache.remove(DSID.colID("a"));
-    assertFalse(cache.contains(DSID.colID("a")));
-    assertTrue(cache.contains(DSID.of(999,"a")));
+    cache.put(sn);
+    cache.remove("a");
+    assertFalse(cache.contains("a"));
 
-    cache.clear(999);
-    assertFalse(cache.contains(DSID.of(999,"a")));
+    cache.clear();
+    assertFalse(cache.contains("a"));
   }
 }

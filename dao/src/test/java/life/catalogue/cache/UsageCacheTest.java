@@ -21,16 +21,16 @@ public class UsageCacheTest {
 
   @Test
   public void withClassification() {
-    var cache = UsageCache.hashMap();
-    var key = DSID.of(testDataRule.testData.key, "s11");
+    var cache = UsageCache.hashMap(testDataRule.testData.key);
+    var key = "s11";
 
     assertFalse(cache.contains(key));
     assertNull(cache.get(key));
 
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
-      var loader = new CacheLoader.MybatisSession(session, true);
+      var loader = new CacheLoader.MybatisSession(session, cache.getDatasetKey());
       var snp = loader.load(key);
-      var sncl = cache.withClassification(testDataRule.testData.key, snp, loader);
+      var sncl = cache.withClassification(snp, loader);
       assertEquals(6, sncl.getClassification().size());
     }
   }

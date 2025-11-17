@@ -5,7 +5,6 @@ package life.catalogue.dw.managed;
  */
 public enum Component {
   NamesIndex,
-  UsageCache,
   JobExecutor,
   CronExecutor,
   DatasetImporter,

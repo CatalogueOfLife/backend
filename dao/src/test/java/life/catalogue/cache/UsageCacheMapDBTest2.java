@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class UsageCacheMapDBSingleDSTest {
+public class UsageCacheMapDBTest2 {
 
   @ClassRule
   public static PgSetupRule pgSetupRule = new PgSetupRule();
@@ -25,20 +25,20 @@ public class UsageCacheMapDBSingleDSTest {
 
   @Test
   public void create() throws IOException {
-    UsageCacheMapDBSingleDS cache = null;
+    UsageCacheMapDB cache = null;
     try (var tmpF = new TempFile()) {
       FileUtils.deleteQuietly(tmpF.file);
-      cache = UsageCacheMapDBSingleDS.createStarted(tmpF.file, 8, testDataRule.testData.key, SqlSessionFactoryRule.getSqlSessionFactory());
+      cache = new UsageCacheMapDB(testDataRule.testData.key, tmpF.file, 8);
+      cache.load(SqlSessionFactoryRule.getSqlSessionFactory());
+
       assertEquals((int)testDataRule.testData.key, cache.getDatasetKey());
       assertEquals(24, cache.size());
-      var key = DSID.of(testDataRule.testData.key, "t23");
+      String key = "t23";
       var u = cache.get(key);
       assertEquals("Canis adustus", u.getName());
       var cl = cache.getClassification(key, null);
       assertEquals(7, cl.size());
-      cache.stop();
 
-      cache.start();
       assertEquals((int)testDataRule.testData.key, cache.getDatasetKey());
       assertEquals(24, cache.size());
       u = cache.get(key);
