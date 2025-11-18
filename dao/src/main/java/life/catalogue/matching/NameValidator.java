@@ -31,6 +31,7 @@ public class NameValidator {
   public static final int MIN_YEAR = 1753; // Species Plantarum (1753) and Systema Naturæ (1758)
   public static final int MAX_YEAR = Year.now().getValue() + 1;
 
+  private static final Pattern RM_HYBRID = Pattern.compile("(^|\\s)×\\s*");
   private static final Pattern WHITE = Pattern.compile("\\s");
   @VisibleForTesting
   // ë is exceptionally allowed in botanical code. See Article 60.6
@@ -86,10 +87,10 @@ public class NameValidator {
     }
   }
   
-  public static IssueContainer flagIssues(FormattableName n, IssueContainer v) {
-    return flagIssues(n, new Supplier<IssueContainer>() {
+  public static <T extends IssueContainer> T flagIssues(FormattableName n, T v) {
+    return flagIssues(n, new Supplier<T>() {
       @Override
-      public IssueContainer get() {
+      public T get() {
         return v;
       }
     });
@@ -190,6 +191,7 @@ public class NameValidator {
     // monomials expected as 1 word in Title case
     for (String x : Lists.newArrayList(n.getUninomial(), n.getGenus(), n.getInfragenericEpithet())) {
       if (x != null) {
+        x = removeHybrid(x);
         if (isMultiWord(x)) {
           issues.add(Issue.MULTI_WORD_MONOMIAL);
         }
@@ -203,6 +205,7 @@ public class NameValidator {
     // epithet expected as 1 lower case word
     for (String x : Lists.newArrayList(n.getSpecificEpithet(), n.getInfraspecificEpithet())) {
       if (x != null) {
+        x = removeHybrid(x);
         if (isMultiWord(x)) {
           issues.add(Issue.MULTI_WORD_EPITHET);
         }
@@ -291,7 +294,11 @@ public class NameValidator {
   /**
    * Checks if a string is composed of multiple words delimited by space.
    */
+  public static String removeHybrid(String x) {
+    if (x == null) return null;
+    return RM_HYBRID.matcher(x.trim()).replaceAll("$1");
+  }
   public static boolean isMultiWord(String x) {
-    return x != null && x.contains(" ");
+    return x != null && removeHybrid(x).contains(" ");
   }
 }

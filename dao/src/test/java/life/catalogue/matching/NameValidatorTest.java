@@ -31,13 +31,23 @@ public class NameValidatorTest {
   }
 
   @Test
+  public void removeHybrid() {
+    assertEquals("Abies", NameValidator.removeHybrid("Abies"));
+    assertEquals("alba", NameValidator.removeHybrid("alba"));
+    assertEquals("Abies alba", NameValidator.removeHybrid("Abies × alba"));
+    assertEquals("a alba", NameValidator.removeHybrid("a alba"));
+    assertEquals("Abies", NameValidator.removeHybrid("× Abies"));
+  }
+
+  @Test
   public void isMultiWord() throws Exception {
     assertFalse(NameValidator.isMultiWord("Abies"));
     assertFalse(NameValidator.isMultiWord("alba"));
+    assertFalse(NameValidator.isMultiWord("× Abies"));
 
+    assertTrue(NameValidator.isMultiWord("Abies × alba"));
     assertTrue(NameValidator.isMultiWord("a alba"));
     assertTrue(NameValidator.isMultiWord("Abies alba"));
-    assertTrue(NameValidator.isMultiWord("× Abies")); // the hybrid marker should be removed in a parsed name!
   }
 
   @Test

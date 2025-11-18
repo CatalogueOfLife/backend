@@ -165,12 +165,12 @@ public class NameInterpreter {
         setDefaultNameType(atom);
         pnu.setName(atom);
 
-        set(pnu, atom::setUninomial, uninomial);
-        set(pnu, atom::setGenus, genus);
-        set(pnu, atom::setInfragenericEpithet, infraGenus);
-        set(pnu, atom::setSpecificEpithet, sanitizeEpithet(species, issues));
-        set(pnu, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, issues));
-        set(pnu, atom::setCultivarEpithet, cultivar);
+        set(pnu, atom::setCultivarEpithet, cultivar, NamePart.INFRASPECIFIC);
+        set(pnu, atom::setInfraspecificEpithet, sanitizeEpithet(infraspecies, issues), NamePart.INFRASPECIFIC);
+        set(pnu, atom::setSpecificEpithet, sanitizeEpithet(species, issues), NamePart.SPECIFIC);
+        set(pnu, atom::setInfragenericEpithet, infraGenus, NamePart.INFRAGENERIC);
+        set(pnu, atom::setGenus, genus, NamePart.GENERIC);
+        set(pnu, atom::setUninomial, uninomial, null);
 
         // misplaced uninomial in genus field
         if (!atom.isBinomial() && rank.isGenusOrSuprageneric() && atom.getGenus() != null && atom.getInfragenericEpithet() == null) {
@@ -370,13 +370,16 @@ public class NameInterpreter {
   }
 
   /**
-   * sets a name part while parsing out and setting any potential exticnt daggers.
+   * sets a name part while parsing out and setting any potential extinct daggers or hybrid markers.
    */
-  private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet) {
+  private static void set(ParsedNameUsage pnu, Consumer<String> setter, String epithet, NamePart part) {
     var epi = new ExtinctName(epithet);
     setter.accept(epi.name);
     if (epi.extinct) {
       pnu.setExtinct(true);
+    }
+    if (epi.hybrid && pnu.getName().getNotho() == null) {
+      pnu.getName().setNotho(part);
     }
   }
 

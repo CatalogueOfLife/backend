@@ -30,8 +30,8 @@ public class SciNameNormalizer {
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
-  private static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
-  private static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
+  public static final Pattern removeHybridSignGenus = Pattern.compile("^\\s*[×xX]\\s*([A-Z])");
+  public static final Pattern removeHybridSignEpithet = Pattern.compile("(?:^|\\s)(?:×\\s*|[xX]\\s+)([^A-Z])");
   private static final Pattern empty = Pattern.compile("[?!\"'`_-]");
   private static final Pattern punct = Pattern.compile("[,.:;]");
   private static final Pattern white = Pattern.compile("\\s{2,}");
