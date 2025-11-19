@@ -8,8 +8,8 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.neo4j.graphdb.Transaction;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,13 +37,13 @@ public class AcefInterpreter extends InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(AcefInterpreter.class);
   private static final int ACEF_AUTHOR_MAX = 100;
 
-  AcefInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
+  AcefInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, ImportStore store) {
     super(settings, refFactory, store, true);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
 
-  Optional<Reference> interpretReference(VerbatimRecord rec, Transaction tx) {
+  Optional<Reference> interpretReference(VerbatimRecord rec) {
     return Optional.of(refFactory.fromACEF(
         rec.get(AcefTerm.ReferenceID),
         rec.get(AcefTerm.Author),
@@ -54,21 +54,21 @@ public class AcefInterpreter extends InterpreterBase {
     ));
   }
   
-  Optional<NeoUsage> interpretSpecies(VerbatimRecord v, Transaction tx) {
+  Optional<UsageData> interpretSpecies(VerbatimRecord v) {
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoUsage> interpretInfraspecies(VerbatimRecord v, Transaction tx) {
+  Optional<UsageData> interpretInfraspecies(VerbatimRecord v) {
     requireTerm(v, AcefTerm.ParentSpeciesID, Issue.PARENT_ID_INVALID);
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<NeoUsage> interpretSynonym(VerbatimRecord v, Transaction tx) {
+  Optional<UsageData> interpretSynonym(VerbatimRecord v) {
     requireTerm(v, AcefTerm.AcceptedTaxonID, Issue.ACCEPTED_ID_INVALID);
     return interpretUsage(AcefTerm.ID, v, true);
   }
   
-  List<VernacularName> interpretVernacular(VerbatimRecord rec, Transaction tx) {
+  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::setReference,
         AcefTerm.CommonName,
@@ -82,7 +82,7 @@ public class AcefInterpreter extends InterpreterBase {
     );
   }
   
-  List<Distribution> interpretDistribution(VerbatimRecord rec, Transaction tx) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec) {
     var dists = super.interpretDistributionByGazetteer(rec, this::setReference,
         AcefTerm.DistributionElement,
         AcefTerm.StandardInUse,
@@ -91,10 +91,10 @@ public class AcefInterpreter extends InterpreterBase {
     return dists;
   }
   
-  private Optional<NeoUsage> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
+  private Optional<UsageData> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     return interpretName(idTerm, v).map(nat -> {
-      NeoUsage u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+      UsageData u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
       // status matches up?
       if (synonym != u.isSynonym()) {
         v.add(Issue.TAXONOMIC_STATUS_INVALID);

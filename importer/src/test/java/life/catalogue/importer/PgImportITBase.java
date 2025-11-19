@@ -13,9 +13,9 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
+import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -51,10 +51,10 @@ import static org.junit.Assert.*;
  */
 public class PgImportITBase {
   
-  NeoDb store;
+  ImportStore store;
   NormalizerConfig cfg;
   ImporterConfig icfg = new ImporterConfig();
-  NeoDbFactory neoDbFactory;
+  ImportStoreFactory importStoreFactory;
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
   DatasetDao ddao;
@@ -79,7 +79,7 @@ public class PgImportITBase {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    neoDbFactory = new NeoDbFactory(cfg);
+    importStoreFactory = new ImportStoreFactory(cfg);
     dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.EXTERNAL);
@@ -127,7 +127,7 @@ public class PgImportITBase {
       }
 
       // normalize
-      store = neoDbFactory.create(dataset.getKey(), 1);
+      store = importStoreFactory.create(dataset.getKey(), 1);
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);

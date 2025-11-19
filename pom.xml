@@ -85,7 +85,6 @@
     <mockito.version>3.3.3</mockito.version>
     <mybatis.version>3.5.19</mybatis.version>
     <name-parser.version>3.14.0</name-parser.version>
-    <neo4j.version>5.26.14</neo4j.version>
     <newick-io.version>1.0.6</newick-io.version>
     <poi.version>5.2.3</poi.version>
     <pollexor.version>3.0.0</pollexor.version>
@@ -500,37 +499,6 @@
         <groupId>org.mybatis</groupId>
         <artifactId>mybatis</artifactId>
         <version>${mybatis.version}</version>
-      </dependency>
-
-      <!-- neo4j -->
-      <dependency>
-        <groupId>org.neo4j</groupId>
-        <artifactId>neo4j</artifactId>
-        <version>${neo4j.version}</version>
-        <exclusions>
-          <exclusion>
-            <!-- turn off usage reporting to normalizer -->
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-udc</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.neo4j</groupId>
-        <artifactId>neo4j-kernel</artifactId>
-        <version>${neo4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.neo4j</groupId>
-        <artifactId>neo4j-cypher</artifactId>
-        <version>${neo4j.version}</version>
-        <exclusions>
-          <exclusion>
-            <!-- uses old ASM version and we dont use it anyways -->
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-codegen</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!-- eclipse collections is used by both neo4j and mapdb with different versions -->

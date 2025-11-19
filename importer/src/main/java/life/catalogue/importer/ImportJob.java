@@ -27,8 +27,8 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.LogoUpdateJob;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.importer.proxy.ArchiveDescriptor;
 import life.catalogue.importer.proxy.DistributedArchiveService;
 import life.catalogue.matching.decision.DecisionRematchRequest;
@@ -84,7 +84,7 @@ public class ImportJob implements Runnable {
   private final SectorDao sDao;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
-  private final NeoDbFactory neoDbFactory;
+  private final ImportStoreFactory importStoreFactory;
   private final ImageService imgService;
   private final Validator validator;
   private final DoiResolver resolver;
@@ -96,7 +96,7 @@ public class ImportJob implements Runnable {
   
   ImportJob(ImportRequest req, DatasetWithSettings d,
             ImporterConfig iCfg, NormalizerConfig nCfg,
-            DownloadUtil downloader, SqlSessionFactory factory, NeoDbFactory neoDbFactory, NameIndex index, Validator validator, DoiResolver resolver,
+            DownloadUtil downloader, SqlSessionFactory factory, ImportStoreFactory importStoreFactory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
             StartNotifier notifier,
@@ -112,7 +112,7 @@ public class ImportJob implements Runnable {
     this.downloader = downloader;
     this.resolver = resolver;
     this.distributedArchiveService = new DistributedArchiveService(downloader.getClient());
-    this.neoDbFactory = neoDbFactory;
+    this.importStoreFactory = importStoreFactory;
     this.factory = factory;
     this.index = index;
     this.indexService = indexService;
@@ -325,7 +325,7 @@ public class ImportJob implements Runnable {
     try {
       final boolean doImport = prepareSourceData(sourceDir);
       if (doImport) {
-        try (NeoDb store = neoDbFactory.create(datasetKey, getAttempt())) {
+        try (ImportStore store = importStoreFactory.create(datasetKey, getAttempt())) {
           LOG.info("Normalizing {}", datasetKey);
           updateState(ImportState.PROCESSING);
 

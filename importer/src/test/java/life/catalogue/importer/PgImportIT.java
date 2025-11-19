@@ -6,7 +6,7 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.printer.PrinterFactory;
 import life.catalogue.printer.TextTreePrinter;
@@ -17,7 +17,6 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.Writer;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;

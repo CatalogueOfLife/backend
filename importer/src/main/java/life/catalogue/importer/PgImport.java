@@ -6,23 +6,19 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
+import life.catalogue.cache.ObjectCache;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.TaxonMetricsBuilder;
-import life.catalogue.db.Create;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.es.nu.NameUsageIndexServiceEs;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbUtils;
-import life.catalogue.importer.neo.model.Labels;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.importer.neo.traverse.StartEndHandler;
-import life.catalogue.importer.neo.traverse.TreeWalker;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.TreeWalker;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -30,18 +26,12 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
 import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +55,7 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 public class PgImport implements Callable<Boolean> {
   private static final Logger LOG = LoggerFactory.getLogger(PgImport.class);
   
-  private final NeoDb store;
+  private final ImportStore store;
   private final int batchSize;
   private final SqlSessionFactory sessionFactory;
   private final DatasetDao datasetDao;
@@ -74,7 +64,6 @@ public class PgImport implements Callable<Boolean> {
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
-  private final Set<String> proParteIds = new HashSet<>();
   private final AtomicInteger nCounter = new AtomicInteger(0);
   private final AtomicInteger tCounter = new AtomicInteger(0);
   private final AtomicInteger sCounter = new AtomicInteger(0);
@@ -93,7 +82,7 @@ public class PgImport implements Callable<Boolean> {
   private int sRelCounter;
   private int userKey;
 
-  public PgImport(int attempt, DatasetWithSettings dataset, int userKey, NeoDb store,
+  public PgImport(int attempt, DatasetWithSettings dataset, int userKey, ImportStore store,
                   SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService) {
     this.attempt = attempt;
     this.dataset = dataset;
@@ -329,14 +318,29 @@ public class PgImport implements Callable<Boolean> {
   }
   
   /**
-   * Go through all neo4j relations and convert them to name acts if the rel type matches
+   * Go through all name relations and convert & persist them
    */
   private void insertNameRelations() {
-    nRelCounter = insertRelations(
-      RelType::isNameRel,
-      NameRelationMapper.class,
-      store::toNameRelation
-    );
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
+      final var rm = session.getMapper(NameRelationMapper.class);
+
+      LOG.debug("Inserting all name relations");
+      store.names().all().forEach(n -> {
+        for (var r : n.relations) {
+          var rel = r.toNameRelation();
+          updateVerbatimUserEntity(rel);
+          updateReferenceKey(rel);
+          rm.create(rel);
+          if (nRelCounter++ % batchSize == 0) {
+            runtimeInterruptIfCancelled();
+            session.commit();
+            LOG.debug("Inserted {} name relations", nRelCounter);
+          }
+        }
+      });
+      session.commit();
+    }
+    LOG.info("Inserted {} name relations in total", nRelCounter);
   }
 
   private void insertTypeMaterial() throws InterruptedException {
@@ -359,13 +363,12 @@ public class PgImport implements Callable<Boolean> {
     LOG.info("Inserted {} type material records", tmCounter);
   }
 
-  private static class NodeNXtra {
-    Node node;
-    public Integer verbatimKey; // for the main usage
+  private static class UsageNXtra {
+    UsageData data;
     NameUsageWrapper nuw;
 
-    public NodeNXtra(Node node) {
-      this.node = node;
+    public UsageNXtra(UsageData data) {
+      this.data = data;
     }
   }
 
@@ -408,35 +411,48 @@ public class PgImport implements Callable<Boolean> {
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
         // pro parte synonyms will be visited multiple times, remember their name ids!
+
+        // key on parentKey to iterate over taxonomy !!!
+
+
+        try (final ObjectCache<SimpleName> visited = ObjectCache.hashMap()) {
+          store.usages().all().forEach(u -> {
+            if (!visited.contains(u.getId())) {
+              visited.put(u.usage.toSimpleNameLink());
+            }
+          });
+        }
+          new HashSet<>(store.usages().size());
+
         DSID<Integer> vKey = DSID.root(dataset.getKey());
-        TreeWalker.walkTree(store.getNeo(), new StartEndHandler() {
+        TreeWalker.walkTree(store, new TreeWalker.StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
-          final Stack<NodeNXtra> parentsN = new Stack<>();
+          final Stack<UsageNXtra> parentsN = new Stack<>();
           final TaxonMetricsBuilder mBuilder = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
-          public void start(Node n) {
+          public void start(UsageData u) {
             Set<Integer> vKeys = new HashSet<>();
 
-            NeoUsage u = fillNeoUsage(n, parents.isEmpty() ? null : parents.peek(), vKeys);
+            fillUsageData(u, vKeys);
             // update depth
             if (maxDepth.get() < parents.size()) {
               maxDepth.set(parents.size());
             }
             // insert taxon or synonym
-            NodeNXtra nx = null; // we only populate that for accepted taxa which we push onto the stack later
+            UsageNXtra nx = null; // we only populate that for accepted taxa which we push onto the stack later
             if (u.isSynonym()) {
-              if (NeoDbUtils.isProParteSynonym(n)) {
-                if (proParteIds.contains(u.getId())) {
-                  // we had that id before, append a random suffix for further pro parte usage
-                  UUID ppID = UUID.randomUUID();
-                  u.setId(u.getId() + "-" + ppID);
-                } else {
-                  proParteIds.add(u.getId());
+              var syn = u.asSynonym();
+              synMapper.create(syn);
+              sCounter.incrementAndGet();
+              if (u.proParteAcceptedIDs != null) {
+                for (String id : u.proParteAcceptedIDs) {
+                  syn.setId(u.getId() + "-" + id);
+                  syn.setParentId(id);
+                  synMapper.create(syn);
+                  sCounter.incrementAndGet();
                 }
               }
-              synMapper.create(u.asSynonym());
-              sCounter.incrementAndGet();
 
             } else if (u.isTaxon()){
               taxonMapper.create(updateUser(u.asTaxon()));
@@ -447,8 +463,7 @@ public class PgImport implements Callable<Boolean> {
               // ES indexes only id,rank & name
               var sn = new SimpleName(acc.getId(), acc.getName().getScientificName(), acc.getName().getRank());
               parents.push(sn);
-              nx = new NodeNXtra(u.node);
-              nx.verbatimKey = u.getVerbatimKey();
+              nx = new UsageNXtra(u);
               parentsN.push(nx);
               mBuilder.start(sn.getId());
 
@@ -519,7 +534,8 @@ public class PgImport implements Callable<Boolean> {
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));
             if (u.usage.isSynonym()) {
-              NeoUsage acc = fillNeoUsage(parentsN.peek().node, parents.peek(), null);
+              UsageData acc = parentsN.peek().data;
+              fillUsageData(acc, null);
               ((Synonym)u.usage).setAccepted(acc.asTaxon());
               nuw.getClassification().add(new SimpleName(u.usage.getId(), u.usage.getName().getScientificName(), u.usage.getName().getRank()));
             }
@@ -533,10 +549,10 @@ public class PgImport implements Callable<Boolean> {
           }
 
           @Override
-          public void end(Node n) {
+          public void end(UsageData data) {
             runtimeInterruptIfCancelled();
-            // remove this key from parent queue if its an accepted taxon
-            if (n.hasLabel(Labels.TAXON)) {
+            // remove this key from parent queue if it is an accepted taxon
+            if (data.isTaxon()) {
               var sn = parents.pop();
               var nx = parentsN.pop();
               // update & store metrics
@@ -545,7 +561,7 @@ public class PgImport implements Callable<Boolean> {
               if (sn.getRank().higherThan(Rank.SPECIES_AGGREGATE) && m.getSpeciesCount() == 0) {
                 // see also an alternative implementation in TreeCleanerAndValidators stack handler
                 nx.nuw.getIssues().add(Issue.NO_SPECIES_INCLUDED);
-                verbatimRecordMapper.addIssue(vKey.id(nx.verbatimKey), Issue.NO_SPECIES_INCLUDED);
+                verbatimRecordMapper.addIssue(vKey.id(nx.data.getVerbatimKey()), Issue.NO_SPECIES_INCLUDED);
               }
               indexer.accept(nx.nuw);
             }
@@ -556,19 +572,16 @@ public class PgImport implements Callable<Boolean> {
       }
 
       // index bare names
-      try (Transaction tx = store.getNeo().beginTx()) {
-        ResourceIterator<Node> iter = store.bareNames(tx);
-        while (iter.hasNext()) {
-          Set<Integer> vKeys = new HashSet<>();
-          NeoName nn = updateNeoName(iter.next(), vKeys);
-          BareName bn = new BareName(nn.getName());
-          NameUsageWrapper nuw = new NameUsageWrapper(bn);
-          nuw.setPublisherKey(dataset.getGbifPublisherKey());
-          nuw.setIssues(mergeIssues(vKeys));
-          indexer.accept(nuw);
-          runtimeInterruptIfCancelled();
-        }
-      }
+      store.bareNames().forEach( nn -> {
+        Set<Integer> vKeys = new HashSet<>();
+        updateNameData(nn, vKeys);
+        BareName bn = new BareName(nn.getName());
+        NameUsageWrapper nuw = new NameUsageWrapper(bn);
+        nuw.setPublisherKey(dataset.getGbifPublisherKey());
+        nuw.setIssues(mergeIssues(vKeys));
+        indexer.accept(nuw);
+        runtimeInterruptIfCancelled();
+      });
 
       // update the dataset tax scope
       if (indexer instanceof NameUsageIndexServiceEs.IndexerBatchConsumer) {
@@ -591,8 +604,7 @@ public class PgImport implements Callable<Boolean> {
     return issues;
   }
 
-  private NeoName updateNeoName(Node n, Set<Integer> vKeys){
-    NeoName nn = store.names().objByNode(n);
+  private NameData updateNameData(NameData nn, Set<Integer> vKeys){
     updateVerbatimEntity(nn, vKeys);
     nn.getName().setDatasetKey(dataset.getKey());
     updateReferenceKey(nn.getName().getPublishedInId(), nn.getName()::setPublishedInId);
@@ -600,9 +612,8 @@ public class PgImport implements Callable<Boolean> {
     return nn;
   }
 
-  private NeoUsage fillNeoUsage(Node n, SimpleName parent, Set<Integer> vKeys){
-    NeoUsage u = store.usages().objByNode(n);
-    NeoName nn = updateNeoName(store.getUsageNameNode(n), vKeys);
+  private void fillUsageData(UsageData u, Set<Integer> vKeys){
+    NameData nn = updateNameData(store.names().objByID(u.nameID), vKeys);
 
     updateVerbatimEntity(u, vKeys);
     NameUsage nu = u.usage;
@@ -611,75 +622,52 @@ public class PgImport implements Callable<Boolean> {
     if (nu.getAccordingToId() != null) {
       updateReferenceKey(nu.getAccordingToId(), nu::setAccordingToId);
     }
-    if (nu instanceof NameUsageBase) {
-      NameUsageBase nub = (NameUsageBase)nu;
-      updateReferenceKey(nub.getReferenceIds());
-      updateUser(nub);
-      if (parent != null) {
-        nub.setParentId(parent.getId());
-      } else if (u.isSynonym()) {
-        throw new IllegalStateException("Synonym node " + n.getElementId() + " without accepted taxon found: " + nn.getName().getScientificName());
-      } else if (!n.hasLabel(Labels.ROOT)) {
-        throw new IllegalStateException("Non root node " + n.getElementId() + " with an accepted taxon without parent found: " + nn.getName().getScientificName());
-      }
+    NameUsageBase nub = nu.asUsageBase(); // no bare names here
+    updateReferenceKey(nub.getReferenceIds());
+    updateUser(nub);
+    if (u.isSynonym() && u.usage.getParentId() == null) {
+      throw new IllegalStateException("Synonym " + u.getId() + " without accepted taxon found: " + nn.getName().getScientificName());
     }
-    return u;
   }
 
   /**
    * Go through all neo4j relations and convert them to taxon concept relations or species interactions if the rel type matches
    */
   private void insertUsageRelations() {
-    // taxon concept
-    tRelCounter = insertRelations(
-      RelType::isTaxonConceptRel,
-      TaxonConceptRelationMapper.class,
-      store::toConceptRelation
-    );
+    // taxon concept & species interactions
+    try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
+      final var tcm = session.getMapper(TaxonConceptRelationMapper.class);
+      final var spm = session.getMapper(SpeciesInteractionMapper.class);
 
-    // species interactions
-    sRelCounter = insertRelations(
-      RelType::isSpeciesInteraction,
-      SpeciesInteractionMapper.class,
-      store::toSpeciesInteraction
-    );
-  }
-
-  private <T extends DatasetScopedEntity<Integer> & Referenced> int insertRelations (
-    Predicate<RelType> filter,
-    Class<? extends Create<T>> relMapperClass,
-    Function<Relationship, T> creator
-  ) {
-    int total = 0;
-    String type = null;
-    for (RelType rt : RelType.values()) {
-      if (!filter.test(rt)) continue;
-
-      if (type == null && rt.relationClass() != null) {
-        type = rt.relationClass().getSimpleName();
-      }
-      final AtomicInteger counter = new AtomicInteger(0);
-      try (final SqlSession session = sessionFactory.openSession(ExecutorType.BATCH, false)) {
-        final Create<T> relMapper = session.getMapper(relMapperClass);
-        try (Transaction tx = store.getNeo().beginTx()) {
-          store.iterRelations(tx, rt).stream().forEach(rel -> {
-            T nr = creator.apply(rel);
-            updateReferenceKey(nr);
-            relMapper.create(updateUser(nr));
-            if (counter.incrementAndGet() % batchSize == 0) {
-              runtimeInterruptIfCancelled();
-              session.commit();
-            }
-          });
+      LOG.debug("Inserting all taxon relations");
+      store.usages().all().forEach(u -> {
+        for (var r : u.tcRelations) {
+          var rel = r.toConceptRelation();
+          updateVerbatimUserEntity(rel);
+          updateReferenceKey(rel);
+          tcm.create(rel);
+          if (sRelCounter+tRelCounter++ % batchSize == 0) {
+            runtimeInterruptIfCancelled();
+            session.commit();
+            LOG.debug("Inserted {} taxon concept relations", tRelCounter);
+          }
         }
-        session.commit();
-      }
-      LOG.debug("Inserted {} {} relations", counter.get(), rt);
-      total += counter.get();
+        for (var r : u.spiRelations) {
+          var rel = r.toSpeciesInteraction();
+          updateVerbatimUserEntity(rel);
+          updateReferenceKey(rel);
+          spm.create(rel);
+          if (tRelCounter+sRelCounter++ % batchSize == 0) {
+            runtimeInterruptIfCancelled();
+            session.commit();
+            LOG.debug("Inserted {} species interaction relations", sRelCounter);
+          }
+        }
+      });
+      session.commit();
+      LOG.info("Inserted {} taxon concept relations in total", sRelCounter);
+      LOG.info("Inserted {} species interaction relations in total", sRelCounter);
     }
-
-    LOG.info("Inserted {} {} relations", total, type);
-    return total;
   }
 
   /**

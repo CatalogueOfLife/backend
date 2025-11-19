@@ -11,7 +11,7 @@
 
   <artifactId>importer</artifactId>
   <name>CLB importer</name>
-  <description>Importer component of ChecklistBank using neo4j</description>
+  <description>Importer component of ChecklistBank</description>
 
   <dependencies>
     <!-- col & gbif -->
@@ -67,21 +67,7 @@
       <groupId>org.gbif</groupId>
       <artifactId>text-tree</artifactId>
     </dependency>
-
-    <!-- neo4j -->
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-kernel</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-cypher</artifactId>
-    </dependency>
-
+ 
     <!-- DB -->
     <dependency>
       <groupId>org.mybatis</groupId>

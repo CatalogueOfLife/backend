@@ -1,0 +1,243 @@
+package life.catalogue.importer.store.model;
+
+import life.catalogue.api.model.*;
+import life.catalogue.api.vocab.*;
+import life.catalogue.dao.TxtTreeDao;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+
+/**
+ * Simple wrapper to hold a normalizer node together with all data for a record
+ * including a name and a taxon instance. This name usage conflates a name with a taxon and/or synonym
+ * as it comes in in some formats like DwC and ACEF.
+ *
+ * It allows us to store the data as it is and then start normalizing it into cleanly delimited Name, Taxon and Synonym instances.
+ * <p />
+ * The modified flag can be used to (manually) track if an instance has changed and needs to be persisted.
+ */
+public class UsageData implements DSID<String>, VerbatimEntity {
+  // either a taxon or a synonym - this can change during normalisation!
+  public NameUsage usage; // we ignore and do not persist the name part !!!
+  public String nameID; // instead we keep a reference to the name id only
+  public Set<String> proParteAcceptedIDs; // optional additional accepted taxon ids allowing for multiple parents in case of pro parte synonyms
+  public boolean homotypic = false;
+
+  // supplementary infos for a taxon
+  public Treatment treatment;
+  public List<Distribution> distributions = new ArrayList<>();
+  public List<Media> media = new ArrayList<>();
+  public List<VernacularName> vernacularNames = new ArrayList<>();
+  public List<SpeciesEstimate> estimates = new ArrayList<>();
+  public List<TaxonProperty> properties = new ArrayList<>();
+  // taxon relations
+  public final List<RelationData<TaxonConceptRelType>> tcRelations = new ArrayList<>();
+  public final List<RelationData<SpeciesInteractionType>> spiRelations = new ArrayList<>();
+
+  // extra stuff not covered by above for normalizer only
+  public Classification classification;
+  public List<String> remarks = Lists.newArrayList();
+
+  public UsageData() {
+  }
+
+  public UsageData(TxtTreeDao.TxtUsage tu) {
+    this.usage = tu.usage;
+    this.distributions = tu.distributions;
+    this.media = tu.media;
+    this.vernacularNames = tu.vernacularNames;
+    this.estimates = tu.estimates;
+    this.properties = tu.properties;
+  }
+
+
+  private static UsageData create(NameUsage nu, Origin origin, Name name, TaxonomicStatus status) {
+    UsageData u = new UsageData();
+    u.usage = nu;
+    u.usage.setStatus(status);
+    u.usage.setOrigin(origin);
+    if (name != null) {
+      u.usage.setName(name);
+      name.setOrigin(origin);
+    }
+    return u;
+  }
+
+  public static UsageData createBareName(Origin origin) {
+    return createBareName(origin, null);
+  }
+
+  public static UsageData createBareName(Origin origin, Name name) {
+    return create(new BareName(), origin, name, TaxonomicStatus.BARE_NAME);
+  }
+
+  public static UsageData createTaxon(Origin origin, TaxonomicStatus status) {
+    return createTaxon(origin, null, status);
+  }
+  
+  public static UsageData createTaxon(Origin origin, Name name, TaxonomicStatus status) {
+    return create(new Taxon(), origin, name, status);
+  }
+  
+  public static UsageData createSynonym(Origin origin, TaxonomicStatus status) {
+    return createSynonym(origin, null, status);
+  }
+  
+  public static UsageData createSynonym(Origin origin, Name name, TaxonomicStatus status) {
+    return create(new Synonym(), origin, name, status);
+  }
+  
+  public NameData getNameData() {
+    return new NameData(usage.getName());
+  }
+
+  public Taxon asTaxon() {
+    return usage instanceof Taxon ? (Taxon) usage : null;
+  }
+  
+  public Synonym asSynonym() {
+    return usage instanceof Synonym ? (Synonym) usage : null;
+  }
+
+  public NameUsageBase asNameUsageBase() {
+    return usage instanceof NameUsageBase ? (NameUsageBase) usage : null;
+  }
+
+  public SimpleName toSimpleName() {
+    return new SimpleName((NameUsageBase) usage);
+  }
+
+  public boolean isNameUsageBase() {
+    return usage instanceof NameUsageBase;
+  }
+
+  public boolean isSynonym() {
+    return usage instanceof Synonym;
+  }
+
+  public boolean isTaxon() {
+    return usage instanceof Taxon;
+  }
+
+  public boolean isBareName() {
+    return usage instanceof BareName;
+  }
+
+  @Override
+  public Integer getVerbatimKey() {
+    return usage.getVerbatimKey();
+  }
+  
+  @Override
+  public void setVerbatimKey(Integer verbatimKey) {
+    usage.setVerbatimKey(verbatimKey);
+  }
+  
+  @Override
+  public String getId() {
+    return usage.getId();
+  }
+  
+  @Override
+  public void setId(String id) {
+    usage.setId(id);
+  }
+  
+  @Override
+  public Integer getDatasetKey() {
+    return usage.getDatasetKey();
+  }
+  
+  @Override
+  public void setDatasetKey(Integer key) {
+    usage.setDatasetKey(key);
+  }
+  
+  public void addRemark(String remark) {
+    remarks.add(remark);
+  }
+
+  public List<RelationData<TaxonConceptRelType>> getTcRelations() {
+    return tcRelations;
+  }
+
+  public void addTcRelation(RelationData<TaxonConceptRelType> rel) {
+    this.tcRelations.add(rel);
+  }
+
+  public List<RelationData<SpeciesInteractionType>> getSpiRelations() {
+    return spiRelations;
+  }
+
+  public void addSpiRelation(RelationData<SpeciesInteractionType> rel) {
+    this.spiRelations.add(rel);
+  }
+
+  /**
+   * Converts the current synonym usage into a taxon instance
+   * @param status new taxon status
+   * @return the replaced synonym usage
+   */
+  public Synonym convertToTaxon(TaxonomicStatus status) {
+    Preconditions.checkArgument(isSynonym(), "Usage needs to be a synonym");
+    Preconditions.checkArgument(status.isTaxon(), "Status needs to be a taxon status");
+    final Synonym s = asSynonym();
+    usage = new Taxon(s);
+    usage.setStatus(status);
+    return s;
+  }
+
+  /**
+   * Converts the current taxon usage into a synonym instance
+   * @param status new synonym status
+   * @return the replaced taxon usage
+   */
+  public Taxon convertToSynonym(TaxonomicStatus status) {
+    Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
+    Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
+    final Taxon t = asTaxon();
+    usage = new Synonym(t);
+    usage.setStatus(status);
+    return t;
+  }
+
+  public boolean hasRelations() {
+    return !tcRelations.isEmpty() || !spiRelations.isEmpty();
+  }
+
+  public boolean hasSupplementaryInfos() {
+    return !distributions.isEmpty() ||
+      !media.isEmpty() ||
+      !vernacularNames.isEmpty() ||
+      !estimates.isEmpty() ||
+      !properties.isEmpty();
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UsageData usageData = (UsageData) o;
+    return
+        Objects.equals(usage, usageData.usage) &&
+        Objects.equals(treatment, usageData.treatment) &&
+        Objects.equals(distributions, usageData.distributions) &&
+        Objects.equals(media, usageData.media) &&
+        Objects.equals(vernacularNames, usageData.vernacularNames) &&
+        Objects.equals(estimates, usageData.estimates) &&
+        Objects.equals(properties, usageData.properties) &&
+        Objects.equals(classification, usageData.classification) &&
+        Objects.equals(remarks, usageData.remarks);
+  }
+  
+  @Override
+  public int hashCode() {
+    return Objects.hash(usage, treatment, distributions, media, vernacularNames, estimates, properties, classification, remarks);
+  }
+}

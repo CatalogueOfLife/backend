@@ -8,9 +8,9 @@ import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
+import life.catalogue.importer.DataInserter;
 import life.catalogue.importer.InserterBaseTest;
-import life.catalogue.importer.NeoInserter;
-import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.NomCode;
@@ -24,14 +24,13 @@ import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import static org.junit.Assert.*;
 
 public class DwcaInserterTest extends InserterBaseTest {
   
   @Override
-  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
+  public DataInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
     return new DwcaInserter(store, resource, settings, refFactory);
   }
 
@@ -40,34 +39,32 @@ public class DwcaInserterTest extends InserterBaseTest {
    */
   @Test
   public void speciesProfiles() throws Exception {
-    NeoInserter ins = setup("/dwca/50");
+    DataInserter ins = setup("/dwca/50");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var t = store.usageWithName("1", tx).asTaxon();
-      assertTrue(t.isExtinct());
-      assertEquals(Set.of(Environment.MARINE, Environment.TERRESTRIAL), t.getEnvironments());
+    var t = store.usageWithName("1").asTaxon();
+    assertTrue(t.isExtinct());
+    assertEquals(Set.of(Environment.MARINE, Environment.TERRESTRIAL), t.getEnvironments());
 
-      t = store.usageWithName("2", tx).asTaxon();
-      assertFalse(t.isExtinct());
-      assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
+    t = store.usageWithName("2").asTaxon();
+    assertFalse(t.isExtinct());
+    assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
 
-      t = store.usageWithName("3", tx).asTaxon();
-      assertFalse(t.isExtinct());
-      assertEquals(Set.of(), t.getEnvironments());
+    t = store.usageWithName("3").asTaxon();
+    assertFalse(t.isExtinct());
+    assertEquals(Set.of(), t.getEnvironments());
 
-      t = store.usageWithName("4", tx).asTaxon();
-      assertTrue(t.isExtinct());
-      assertEquals(Set.of(), t.getEnvironments());
+    t = store.usageWithName("4").asTaxon();
+    assertTrue(t.isExtinct());
+    assertEquals(Set.of(), t.getEnvironments());
 
-      t = store.usageWithName("5", tx).asTaxon();
-      assertTrue(t.isExtinct());
-      assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
+    t = store.usageWithName("5").asTaxon();
+    assertTrue(t.isExtinct());
+    assertEquals(Set.of(Environment.MARINE), t.getEnvironments());
 
-      t = store.usageWithName("6", tx).asTaxon();
-      assertNull(t.isExtinct());
-      assertEquals(Set.of(), t.getEnvironments());
-    }
+    t = store.usageWithName("6").asTaxon();
+    assertNull(t.isExtinct());
+    assertEquals(Set.of(), t.getEnvironments());
   }
 
   /**
@@ -75,13 +72,11 @@ public class DwcaInserterTest extends InserterBaseTest {
    */
   @Test
   public void altIds() throws Exception {
-    NeoInserter ins = setup("/dwca/53");
+    DataInserter ins = setup("/dwca/53");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var t = store.usageWithName("763571", tx).asTaxon();
-      assertEquals(5, t.getIdentifier().size());
-    }
+    var t = store.usageWithName("763571").asTaxon();
+    assertEquals(5, t.getIdentifier().size());
   }
 
   /**
@@ -89,7 +84,7 @@ public class DwcaInserterTest extends InserterBaseTest {
    */
   @Test
   public void dwca40() throws Exception {
-    NeoInserter ins = setup("/dwca/40");
+    DataInserter ins = setup("/dwca/40");
     ins.insertAll();
 
     var m = ins.readMetadata().get();
@@ -104,17 +99,15 @@ public class DwcaInserterTest extends InserterBaseTest {
 
   @Test
   public void dwca42() throws Exception {
-    NeoInserter ins = setup("/dwca/42");
+    DataInserter ins = setup("/dwca/42");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usageWithName("530938-wcs", tx);
-      var nn = u.getNeoName();
+    UsageData u = store.usageWithName("530938-wcs");
+    var nn = u.getNameData();
 
-      var ref = store.references().get(nn.getName().getPublishedInId());
-      assertEquals("Bot. J. Linn. Soc. (2018)", ref.getCitation());
-      assertEquals((Integer) 2018, ref.getYear());
-    }
+    var ref = store.references().get(nn.getName().getPublishedInId());
+    assertEquals("Bot. J. Linn. Soc. (2018)", ref.getCitation());
+    assertEquals((Integer) 2018, ref.getYear());
   }
 
   /**
@@ -122,34 +115,30 @@ public class DwcaInserterTest extends InserterBaseTest {
    */
   @Test
   public void dwca37() throws Exception {
-    NeoInserter ins = setup("/dwca/37");
+    DataInserter ins = setup("/dwca/37");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usages().objByID("319088", tx);
-      assertNotNull(u.getVerbatimKey());
-      VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-      v.hasTerm(new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false));
-    }
+    UsageData u = store.usages().objByID("319088");
+    assertNotNull(u.getVerbatimKey());
+    VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
+    v.hasTerm(new UnknownTerm(URI.create("http://unknown.org/CoL_name"), false));
   }
 
   @Test
   @Ignore("unfinished")
   public void plazi2() throws Exception {
-    NeoInserter ins = setup("/dwca/plazi2");
+    DataInserter ins = setup("/dwca/plazi2");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon", tx);
-      assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", u.getNeoName().getName().getScientificName());
-      assertEquals(": Zapekina-Dulkeit, 1975", u.getNeoName().getName().getAuthorship());
-      assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", u.getNeoName().getName().getLabel());
-    }
+    UsageData u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon");
+    assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", u.getNameData().getName().getScientificName());
+    assertEquals(": Zapekina-Dulkeit, 1975", u.getNameData().getName().getAuthorship());
+    assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", u.getNameData().getName().getLabel());
   }
 
   @Test
   public void readMetadata() throws Exception {
-    NeoInserter ins = setup("/dwca/38");
+    DataInserter ins = setup("/dwca/38");
     DatasetWithSettings d = ins.readMetadata().get();
 
     Agent markus = Agent.person("Markus", "Döring", "mdoering@gbif.org", "0000-0001-7757-1889");
@@ -167,7 +156,7 @@ public class DwcaInserterTest extends InserterBaseTest {
 
   @Test
   public void readYamlMetadata() throws Exception {
-    NeoInserter ins = setup("/dwca/39");
+    DataInserter ins = setup("/dwca/39");
     DatasetWithSettings d = ins.readMetadata().get();
 
     Agent donald = Agent.person("Donald","Hobern","dhobern@gmail.com","0000-0001-6492-4016");

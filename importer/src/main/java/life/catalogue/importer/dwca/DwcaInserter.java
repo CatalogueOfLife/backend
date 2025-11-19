@@ -10,9 +10,9 @@ import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.NeoCsvInserter;
+import life.catalogue.importer.DataCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.store.ImportStore;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
@@ -23,11 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FilenameUtils;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,13 +34,13 @@ import static life.catalogue.common.lang.Exceptions.runtimeInterruptIfCancelled;
 /**
  *
  */
-public class DwcaInserter extends NeoCsvInserter {
+public class DwcaInserter extends DataCsvInserter {
   private static final Logger LOG = LoggerFactory.getLogger(DwcaInserter.class);
   private static final UnknownTerm DNA_EXTENSION = UnknownTerm.build("http://rs.gbif.org/terms/1.0/DnaDerivedData", "DnaDerivedData", true);
 
   private DwcInterpreter inter;
 
-  public DwcaInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+  public DwcaInserter(ImportStore store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     super(folder, DwcaReader.from(folder), store, settings, refFactory);
   }
   
@@ -52,22 +49,20 @@ public class DwcaInserter extends NeoCsvInserter {
    * Before inserting it does a quick check to see if all required files are existing.
    */
   @Override
-  protected void batchInsert() throws NormalizationFailedException, InterruptedException {
+  protected void insert() throws NormalizationFailedException, InterruptedException {
     inter = new DwcInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
     // taxon core only, extensions are interpreted later
     insertEntities(reader, DwcTerm.Taxon,
         inter::interpretUsage,
-        store::createNameAndUsaged
+        store::createNameAndUsage
     );
 
-    insertRelations(reader, ColdpTerm.NameRelation,
-        inter::interpretNameRelations,
-        store.names(),
-        inter::taxonID,
+    insertNameRelations(reader, ColdpTerm.NameRelation,
+        inter::interpretNameRelation,
+        DwcTerm.taxonID,
         ColdpTerm.relatedNameID,
-        Issue.NAME_ID_INVALID,
-      true
+        Issue.NAME_ID_INVALID
     );
 
     interpretTypeMaterial(reader, DwcTerm.Occurrence,
@@ -114,23 +109,21 @@ public class DwcaInserter extends NeoCsvInserter {
     );
     // extract etymology from descriptions
     AtomicInteger cnt = new AtomicInteger();
-    try (var tx = store.beginTx()) {
-      reader.stream(GbifTerm.Description).forEach(rec -> {
-        runtimeInterruptIfCancelled(NeoCsvInserter.INTERRUPT_MESSAGE);
-        if (rec.getOrDefault(DcTerm.type, "").equalsIgnoreCase("etymology")) {
-          String id = inter.taxonID(rec);
-          if (id != null) {
-            String description = rec.get(DcTerm.description);
-            var nn = store.names().objByID(id, tx);
-            if (nn != null && nn.getName().getEtymology() == null && description != null) {
-              nn.getName().setEtymology(description);
-              store.names().update(nn, tx);
-              cnt.incrementAndGet();
-            }
+    reader.stream(GbifTerm.Description).forEach(rec -> {
+      runtimeInterruptIfCancelled(DataCsvInserter.INTERRUPT_MESSAGE);
+      if (rec.getOrDefault(DcTerm.type, "").equalsIgnoreCase("etymology")) {
+        String id = inter.taxonID(rec);
+        if (id != null) {
+          String description = rec.get(DcTerm.description);
+          var nn = store.names().objByID(id);
+          if (nn != null && nn.getName().getEtymology() == null && description != null) {
+            nn.getName().setEtymology(description);
+            store.names().update(nn);
+            cnt.incrementAndGet();
           }
         }
-      });
-    }
+      }
+    });
     LOG.info("Update {} names with etymology from descriptions", cnt.get());
 
     insertTaxonEntities(reader, GbifTerm.Reference,
@@ -219,11 +212,6 @@ public class DwcaInserter extends NeoCsvInserter {
     insertVerbatimEntities(reader, GbifTerm.Image, GbifTerm.TypesAndSpecimen, DwcTerm.ResourceRelationship, DNA_EXTENSION);
   }
 
-  @Override
-  protected BiConsumer<Node, Transaction> relationProcessor() {
-    return new DwcaRelationInserter(store, reader.getMappingFlags());
-  }
-  
   /**
    * Reads the dataset metadata and puts it into the store
    */

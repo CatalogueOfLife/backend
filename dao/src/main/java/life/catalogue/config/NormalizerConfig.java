@@ -38,22 +38,10 @@ public class NormalizerConfig {
    */
   @NotNull
   public File scratchDir = new File("/tmp/col");
-  
-  /**
-   * Batchsize to use when processing all nodes, e.g. for normalising the flat classification
-   */
-  @NotNull
-  public int batchSize = 10000;
-  
-  /**
-   * Timeout in minutes to wait before stopping processing a batch in neodb and fail the normalizer / import
-   */
-  @NotNull
-  public int batchTimeout = 30;
-  
-  @Min(0)
-  public int mappedMemory = 128;
-  
+
+  @Min(2)
+  public int kryoPoolSize = 12;
+
   /**
    * The dataset source files as a single archive in original format (zip, gzip, etc).
    * Stored in special archive directory so we can keep large amounts of data on cheap storage devices
@@ -113,8 +101,8 @@ public class NormalizerConfig {
     return new File(scratchDir, "job/" + jobKey.toString());
   }
 
-  public File neoDir() {
-    return scratchDir("neo4j");
+  public File importStorageDir() {
+    return scratchDir("import-store");
   }
 
   /**

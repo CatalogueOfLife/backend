@@ -7,11 +7,10 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoRel;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.RelationData;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.*;
@@ -23,9 +22,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-
-import org.neo4j.graphdb.Transaction;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
@@ -40,34 +36,34 @@ public class ColdpInterpreter extends InterpreterBase {
   private static final EnumNote<TaxonomicStatus> ACC_NOTE = new EnumNote<>(TaxonomicStatus.ACCEPTED, null);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').omitEmptyStrings(); // for multi value ID fields
 
-  ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, NeoDb store) {
+  ColdpInterpreter(DatasetSettings settings, MappingInfos metadata, ReferenceFactory refFactory, ImportStore store) {
     super(settings, refFactory, store, true);
     // turn on normalization of flat classification
     metadata.setDenormedClassificationMapped(true);
   }
 
-  Optional<Reference> interpretReference(VerbatimRecord v, Transaction tx) {
+  Optional<Reference> interpretReference(VerbatimRecord v) {
     if (!v.hasTerm(ColdpTerm.ID)) {
       return Optional.empty();
     }
     return Optional.of(refFactory.fromColDP(v));
   }
 
-  Optional<NeoUsage> interpretNameUsage(VerbatimRecord v, Transaction tx) {
+  Optional<UsageData> interpretNameUsage(VerbatimRecord v) {
     // name
-    return interpretName(v, tx).map(nn -> {
+    return interpretName(v).map(nn -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
 
-      NeoUsage u;
+      UsageData u;
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
       if (status.isBareName()) {
-        u = NeoUsage.createBareName(Origin.SOURCE);
+        u = UsageData.createBareName(Origin.SOURCE);
       } else if (status.isSynonym()) {
-        u = NeoUsage.createSynonym(Origin.SOURCE, status);
+        u = UsageData.createSynonym(Origin.SOURCE, status);
       } else {
-        u = NeoUsage.createTaxon(Origin.SOURCE, status);
+        u = UsageData.createTaxon(Origin.SOURCE, status);
         interpretTaxonInfos(u, nn, v);
       }
       interpretUsageBase(u, nn, v);
@@ -75,12 +71,12 @@ public class ColdpInterpreter extends InterpreterBase {
     });
   }
 
-  Optional<NeoUsage> interpretTaxon(VerbatimRecord v, Transaction tx) {
-    return findName(v, ColdpTerm.nameID, tx).map(n -> {
+  Optional<UsageData> interpretTaxon(VerbatimRecord v) {
+    return findName(v, ColdpTerm.nameID).map(n -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
-      NeoUsage u = NeoUsage.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
+      UsageData u = UsageData.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
 
       // shared usage base
       interpretUsageBase(u, n, v);
@@ -92,7 +88,7 @@ public class ColdpInterpreter extends InterpreterBase {
     });
   }
 
-  private void interpretTaxonInfos(NeoUsage u, NeoName n, VerbatimRecord v){
+  private void interpretTaxonInfos(UsageData u, NameData n, VerbatimRecord v){
     if (!u.isSynonym()) {
       Taxon t = u.asTaxon();
       t.setOrdinal(v.getInt(ColdpTerm.ordinal, Issue.ORDINAL_INVALID));
@@ -118,8 +114,8 @@ public class ColdpInterpreter extends InterpreterBase {
     u.classification = interpretClassification(v);
   }
 
-  Optional<NeoUsage> interpretSynonym(VerbatimRecord v, Transaction tx) {
-    return findName(v, ColdpTerm.nameID, tx).map(n -> {
+  Optional<UsageData> interpretSynonym(VerbatimRecord v) {
+    return findName(v, ColdpTerm.nameID).map(n -> {
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(SYN_NOTE).val;
       if (!status.isSynonym()) {
         v.add(Issue.TAXONOMIC_STATUS_INVALID);
@@ -127,7 +123,7 @@ public class ColdpInterpreter extends InterpreterBase {
         status = TaxonomicStatus.SYNONYM;
       }
   
-      NeoUsage u = NeoUsage.createSynonym(Origin.SOURCE, status);
+      UsageData u = UsageData.createSynonym(Origin.SOURCE, status);
       interpretUsageBase(u, n, v);
       if (!v.hasTerm(ColdpTerm.ID)) {
         u.setId(v.getRaw(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID));
@@ -136,8 +132,8 @@ public class ColdpInterpreter extends InterpreterBase {
     });
   }
 
-  private Optional<NeoName> findName(VerbatimRecord v, Term nameId, Transaction tx) {
-    NeoName n = store.names().objByID(v.getRaw(nameId), tx);
+  private Optional<NameData> findName(VerbatimRecord v, Term nameId) {
+    NameData n = store.names().objByID(v.getRaw(nameId));
     if (n == null) {
       v.add(Issue.NAME_ID_INVALID);
       v.add(Issue.NOT_INTERPRETED);
@@ -146,8 +142,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.of(n);
   }
 
-  private void interpretUsageBase(NeoUsage u, NeoName n, VerbatimRecord v) throws IllegalArgumentException {
-    u.nameNode = n.node;
+  private void interpretUsageBase(UsageData u, NameData n, VerbatimRecord v) throws IllegalArgumentException {
     u.setId(v.getRaw(ColdpTerm.ID));
     u.setVerbatimKey(v.getId());
     setReference(v, ColdpTerm.accordingToID, u.usage::setAccordingToId, u.usage::setAccordingTo);
@@ -168,33 +163,20 @@ public class ColdpInterpreter extends InterpreterBase {
     NameValidator.flagSuspicousPhrase(u.usage.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
   }
 
-  Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
-    return interpretRelations(rec, NomRelTypeParser.PARSER, RelType::from);
+  Optional<RelationData<NomRelType>> interpretNameRelations(VerbatimRecord rec) {
+    return interpretRelations(rec, ColdpTerm.type, NomRelTypeParser.PARSER, ColdpTerm.nameID, ColdpTerm.relatedNameID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
   }
 
-  Optional<NeoRel> interpretTaxonRelations(VerbatimRecord rec) {
-    return interpretRelations(rec, TaxonConceptRelTypeParser.PARSER, RelType::from);
+  Optional<RelationData<TaxonConceptRelType>> interpretTaxonRelations(VerbatimRecord rec) {
+    return interpretRelations(rec, ColdpTerm.type, TaxonConceptRelTypeParser.PARSER, ColdpTerm.taxonID, ColdpTerm.relatedTaxonID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
   }
 
-  Optional<NeoRel> interpretSpeciesInteractions(VerbatimRecord rec) {
-    return interpretRelations(rec, SpeciesInteractionTypeParser.PARSER, RelType::from);
-  }
-
-  <T extends Enum > Optional < NeoRel > interpretRelations(VerbatimRecord rec, EnumParser < T > parser, Function < T, RelType > typeFunction) {
-    NeoRel rel = new NeoRel();
-    SafeParser<T> type = SafeParser.parse(parser, rec.get(ColdpTerm.type));
-    if (type.isPresent()) {
-      rel.setType(typeFunction.apply(type.get()));
-      rel.setRelatedScientificName(rec.get(ColdpTerm.relatedTaxonScientificName));
-      rel.setRemarks(getRemarks(rec));
-      setReference(rel, rec);
-      return Optional.of(rel);
-    }
-    return Optional.empty();
+  Optional<RelationData<SpeciesInteractionType>> interpretSpeciesInteractions(VerbatimRecord rec) {
+    return interpretRelations(rec, ColdpTerm.type, SpeciesInteractionTypeParser.PARSER, ColdpTerm.taxonID, ColdpTerm.relatedTaxonID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
   }
 
   String getRemarks(VerbatimRecord v) {
-    return getFormattedText(v, ColdpTerm.remarks);
+    return getRemarks(v, ColdpTerm.remarks);
   }
 
   Optional<TypeMaterial> interpretTypeMaterial(VerbatimRecord rec) {
@@ -226,7 +208,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.of(m);
   }
 
-  List<VernacularName> interpretVernacular(VerbatimRecord rec, Transaction tx) {
+  List<VernacularName> interpretVernacular(VerbatimRecord rec) {
     return super.interpretVernacular(rec,
         this::setReference,
         ColdpTerm.name,
@@ -240,7 +222,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  List<TaxonProperty> interpretProperties(VerbatimRecord rec, Transaction tx) {
+  List<TaxonProperty> interpretProperties(VerbatimRecord rec) {
     return super.interpretProperty(rec,
       this::setReference,
       ColdpTerm.property,
@@ -251,7 +233,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  List<Distribution> interpretDistribution(VerbatimRecord rec, Transaction tx) {
+  List<Distribution> interpretDistribution(VerbatimRecord rec) {
     List<Distribution> dists;
     if (rec.hasTerm(ColdpTerm.areaID)) {
       dists = super.interpretDistributionByGazetteer(rec, this::setReference,
@@ -287,7 +269,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return dists;
   }
   
-  List<Media> interpretMedia(VerbatimRecord rec, Transaction tx) {
+  List<Media> interpretMedia(VerbatimRecord rec) {
     return interpretMedia(rec, this::setReference,
         ColdpTerm.type,
         ColdpTerm.url,
@@ -301,7 +283,7 @@ public class ColdpInterpreter extends InterpreterBase {
     );
   }
 
-  public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec, Transaction tx) {
+  public List<SpeciesEstimate> interpretEstimate(VerbatimRecord rec) {
     if (rec.hasTerm(ColdpTerm.estimate)) {
       Integer estimate = SafeParser.parse(IntegerParser.PARSER, rec.get(ColdpTerm.estimate)).orNull();
       if (estimate != null) {
@@ -321,12 +303,12 @@ public class ColdpInterpreter extends InterpreterBase {
     return Collections.emptyList();
   }
 
-  Optional<VerbatimEntity> interpretAuthor(VerbatimRecord v, Transaction tx) {
+  Optional<VerbatimEntity> interpretAuthor(VerbatimRecord v) {
     //TODO: create model class, implement interpreter & persistence layer
     return Optional.empty();
   }
 
-  Optional<NeoName> interpretName(VerbatimRecord v, Transaction tx) {
+  Optional<NameData> interpretName(VerbatimRecord v) {
     Term nomStatusTerm = ColdpTerm.status;
     Term genusNameTerm = ColdpTerm.genus;
     Term remarksTerm = ColdpTerm.remarks;
@@ -374,7 +356,7 @@ public class ColdpInterpreter extends InterpreterBase {
         }
       }
     }
-    return opt.map(NeoName::new);
+    return opt.map(NameData::new);
   }
   
   private Classification interpretClassification(VerbatimRecord v) {

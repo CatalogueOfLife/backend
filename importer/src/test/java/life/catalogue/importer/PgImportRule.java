@@ -15,8 +15,8 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -62,10 +62,10 @@ public class PgImportRule extends ExternalResource {
   }
 
   private final Validator validator;
-  private NeoDbFactory neoDbFactory;
+  private ImportStoreFactory importStoreFactory;
   private DatasetDao ddao;
 
-  private NeoDb store;
+  private ImportStore store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
   private DatasetWithSettings dataset;
@@ -163,7 +163,7 @@ public class PgImportRule extends ExternalResource {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-    neoDbFactory = new NeoDbFactory(cfg);
+    importStoreFactory = new ImportStoreFactory(cfg);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }
@@ -238,7 +238,7 @@ public class PgImportRule extends ExternalResource {
 
   private void normalizeAndImportDataset(Path source) throws Exception {
     // normalize
-    store = neoDbFactory.create(dataset.getKey(), 1);
+    store = importStoreFactory.create(dataset.getKey(), 1);
     Normalizer norm = new Normalizer(dataset, store, source, nidx, ImageService.passThru(), validator, null);
     norm.call();
 

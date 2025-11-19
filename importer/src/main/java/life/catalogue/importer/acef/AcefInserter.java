@@ -4,16 +4,14 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.csv.AcefReader;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.NeoCsvInserter;
+import life.catalogue.importer.DataCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceMapStore;
-import life.catalogue.importer.neo.model.NeoName;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ReferenceMapStore;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.AcefTerm;
@@ -23,13 +21,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.function.BiConsumer;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,14 +35,14 @@ import static com.google.common.base.Strings.emptyToNull;
 /**
  *
  */
-public class AcefInserter extends NeoCsvInserter {
+public class AcefInserter extends DataCsvInserter {
   private static final Map<String, List<String>> proParteAccIds = new HashMap<>();
   private static final Logger LOG = LoggerFactory.getLogger(AcefInserter.class);
   private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
   
   private AcefInterpreter inter;
   
-  public AcefInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+  public AcefInserter(ImportStore store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     super(folder, AcefReader.from(folder), store, settings, refFactory);
   }
   
@@ -56,20 +51,20 @@ public class AcefInserter extends NeoCsvInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  protected void batchInsert() throws NormalizationFailedException, InterruptedException {
+  protected void insert() throws NormalizationFailedException, InterruptedException {
     inter = new AcefInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
     // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
     // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
     insertEntities(reader, AcefTerm.Reference,
         inter::interpretReference,
-        (r,tx) -> store.references().create(r)
+        r -> store.references().create(r)
     );
 
     // species
     insertEntities(reader, AcefTerm.AcceptedSpecies,
-        inter::interpretSpecies,
-        (u,tx) -> store.createNameAndUsage(u, tx) != null
+      inter::interpretSpecies,
+      store::createNameAndUsage
     );
 
     // infraspecies
@@ -77,33 +72,50 @@ public class AcefInserter extends NeoCsvInserter {
     // but a link to their parent species ID.
     // so we cannot update the scientific name yet - we do this in the relation inserter instead!
     insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
-        inter::interpretInfraspecies,
-      (u,tx) -> store.createNameAndUsage(u, tx) != null
+      inter::interpretInfraspecies,
+      store::createNameAndUsage
     );
 
     // synonyms
     insertEntities(reader, AcefTerm.Synonyms,
-        inter::interpretSynonym,
-        this::createSynonymNameUsage
+      inter::interpretSynonym,
+      this::createSynonymNameUsage
     );
 
     insertTaxonEntities(reader, AcefTerm.Distribution,
-        inter::interpretDistribution,
-        AcefTerm.AcceptedTaxonID,
-        (t, d) -> t.distributions.add(d)
+      inter::interpretDistribution,
+      AcefTerm.AcceptedTaxonID,
+      (t, d) -> t.distributions.add(d)
     );
 
     insertTaxonEntities(reader, AcefTerm.CommonNames,
-        inter::interpretVernacular,
-        AcefTerm.AcceptedTaxonID,
-        (t, vn) -> t.vernacularNames.add(vn)
+      inter::interpretVernacular,
+      AcefTerm.AcceptedTaxonID,
+      (t, vn) -> t.vernacularNames.add(vn)
     );
+
+    reader.stream(AcefTerm.NameReferencesLinks).forEach(this::addReferenceLink);
+
+    LOG.info("Create additional pro parte synonyms for {} usages", proParteAccIds.size());
+    for (Map.Entry<String, List<String>> syn : proParteAccIds.entrySet()) {
+      if (!syn.getValue().isEmpty()) {
+        UsageData synU = store.usages().objByID(syn.getKey());
+        // remove the first which we generate normally
+        syn.getValue().remove(0);
+        // now create additional pro parte synonym relations for the rest
+        for (String accID : syn.getValue()) {
+          var s = synU.asSynonym();
+          s.setParentId(accID);
+          store.usages().create(synU);
+        }
+      }
+    }
   }
-  
-  public boolean createSynonymNameUsage(NeoUsage u, Transaction tx) {
+
+  public boolean createSynonymNameUsage(UsageData u) {
     // check if we have seen the usage id before - this is legitimate for ambiguous and misapplied names
     // https://github.com/Sp2000/colplus-backend/issues/449
-    NeoUsage pre = store.usages().objByID(u.getId(), tx);
+    UsageData pre = store.usages().objByID(u.getId());
     if (pre != null && pre.usage.getStatus().isSynonym()) {
       //TODO: create second relation or fail if accepted is the same!
       // we have not yet established neo relations so we need to check the verbatim data here
@@ -111,84 +123,28 @@ public class AcefInserter extends NeoCsvInserter {
       VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
       final String aID = v.getRaw(AcefTerm.AcceptedTaxonID);
       if (StringUtils.isNotEmpty(aID)) {
-        List<String> accIds = proParteAccIds.computeIfAbsent(u.getId(), k -> new ArrayList<>());
-        if (accIds.isEmpty()) {
-          // never been here before, so we need to also load the first, previous acceptedID from verbatim
-          v = store.getVerbatim(pre.usage.getVerbatimKey());
-          String acceptedTaxonID = v.getRaw(AcefTerm.AcceptedTaxonID);
-          if (StringUtils.isNotEmpty(acceptedTaxonID)) {
-            accIds.add(acceptedTaxonID);
-          }
+        if (pre.proParteAcceptedIDs == null) {
+          pre.proParteAcceptedIDs = new HashSet<>();
         }
-        if (accIds.contains(aID)) {
+        var added = pre.proParteAcceptedIDs.add(aID);
+        if (!added || aID.equals(pre.asSynonym().getParentId())) {
           LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");
           v.add(Issue.DUPLICATE_NAME);
           v.add(Issue.TAXON_ID_INVALID);
           
+        } else if (!store.usages().exists(aID)) {
+          v.add(Issue.ACCEPTED_ID_INVALID);
+
         } else {
-          NeoUsage acc = store.usages().objByID(aID, tx);
-          if (acc == null) {
-            v.add(Issue.ACCEPTED_ID_INVALID);
-            
-          } else {
-            // create synonym relations in post process
-            accIds.add(aID);
-            return true;
-          }
+          store.usages().update(pre);
+          return true;
         }
         return false;
       }
-      
     }
-    return store.createNameAndUsage(u, tx) != null;
+    return store.createNameAndUsage(u);
   }
-  
-  @Override
-  protected void postBatchInsert() throws NormalizationFailedException, InterruptedException {
-    try (Transaction tx = store.getNeo().beginTx()){
-      reader.stream(AcefTerm.NameReferencesLinks).forEach(rl -> addReferenceLink(rl, tx));
-      tx.commit();
 
-    } catch (InterruptedRuntimeException e) {
-      throw new InterruptedException(e.getMessage());
-
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to read ACEF files", e);
-    }
-  
-    LOG.info("Create additional pro parte synonyms for {} usages", proParteAccIds.size());
-    try (Transaction tx = store.getNeo().beginTx()){
-      for (Map.Entry<String, List<String>> syn : proParteAccIds.entrySet()) {
-        if (!syn.getValue().isEmpty()) {
-          NeoUsage synU = store.usages().objByID(syn.getKey(), tx);
-          // remove the first which we generate normally
-          syn.getValue().remove(0);
-          // now create additional pro parte synonym relations for the rest
-          for (String accID : syn.getValue()) {
-            NeoUsage accU = store.usages().objByID(accID, tx);
-            if (accU == null) {
-              //TODO: log issue
-            } else {
-              synU.node.createRelationshipTo(accU.node, RelType.SYNONYM_OF);
-            }
-          }
-        }
-      }
-      tx.commit();
-
-    } catch (InterruptedRuntimeException e) {
-      throw new InterruptedException(e.getMessage());
-
-    } catch (RuntimeException e) {
-      throw new NormalizationFailedException("Failed to insert ACEF files", e);
-    }
-  }
-  
-  @Override
-  protected BiConsumer<Node, Transaction> relationProcessor() {
-    return new AcefRelationInserter(store, inter);
-  }
-  
   /**
    * Inserts the NameReferecesLinks table from ACEF by looking up both the taxonID and the ReferenceID
    * ComNameRef references are linked from the individual common name already, we only process name and taxon references here
@@ -199,7 +155,7 @@ public class AcefInserter extends NeoCsvInserter {
    * As all references and names must be indexed in the store to establish the relations
    * we run this in the relation inserter
    */
-  private void addReferenceLink(VerbatimRecord rec, Transaction tx) {
+  private void addReferenceLink(VerbatimRecord rec) {
     String taxonID = emptyToNull(rec.get(AcefTerm.ID));
     String referenceID = ReferenceMapStore.normaliseIdentifier(emptyToNull(rec.get(AcefTerm.ReferenceID)));
     String refTypeRaw = emptyToNull(rec.get(AcefTerm.ReferenceType)); // NomRef, TaxAccRef, ComNameRef
@@ -208,13 +164,13 @@ public class AcefInserter extends NeoCsvInserter {
                                                           .orElse(ReferenceTypeParser.ReferenceType.TaxAccRef, Issue.REFTYPE_INVALID, rec);
     
     // lookup NeoTaxon and reference
-    NeoUsage u = store.usages().objByID(taxonID, tx);
+    UsageData u = store.usages().objByID(taxonID);
     Reference ref = store.references().get(referenceID);
     Set<Issue> issues = EnumSet.noneOf(Issue.class);
     if (u != null && ref != null) {
       switch (refType) {
         case NomRef:
-          NeoName nn = store.nameByUsage(u.node);
+          NameData nn = store.names().objByID(u.nameID);
           if (nn.getName().getPublishedInId() != null) {
             rec.add(Issue.MULTIPLE_PUBLISHED_IN_REFERENCES);
           }
@@ -222,12 +178,12 @@ public class AcefInserter extends NeoCsvInserter {
           // we extract the page from CSL and also store it in the name
           // No deduplication of refs happening
           nn.getName().setPublishedInPage(ref.getCsl().getPage());
-          store.names().update(nn, tx);
+          store.names().update(nn);
           break;
         case TaxAccRef:
           // we dont ever have bare ACEF names - inserter only creates synonyms & taxa
-          ((NameUsageBase)u.usage).getReferenceIds().add(ref.getId());
-          store.usages().update(u, tx);
+          u.asNameUsageBase().getReferenceIds().add(ref.getId());
+          store.usages().update(u);
           break;
         case ComNameRef:
           // ignore here, we should see this again when parsing common names

@@ -94,6 +94,14 @@ public class CollectionUtils {
     return null;
   }
 
+  /**
+   * Returns the last object from the given list or null if the list is empty
+   */
+  public static <T> T lastOrNull(List<T> objects) {
+    if (objects == null || objects.isEmpty()) return null;
+    return objects.getLast();
+  }
+
   public static <E> int lastIndexOf(final Iterable<E> iterable, final Predicate<? super E> predicate) {
     int lastIdx = -1;
     if (iterable != null) {

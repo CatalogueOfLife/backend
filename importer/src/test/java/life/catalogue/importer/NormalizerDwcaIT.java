@@ -1,30 +1,21 @@
 package life.catalogue.importer;
 
-import com.google.common.collect.Iterables;
-
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
-import life.catalogue.common.collection.CollectionUtils;
-import life.catalogue.importer.neo.NeoDbUtils;
-import life.catalogue.importer.neo.model.*;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.schema.IndexDefinition;
-import org.neo4j.graphdb.schema.Schema;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -49,85 +40,79 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void testIrmngRefDupes() throws Exception {
     normalize(49);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u = usageByID("urn:lsid:irmng.org:taxname:6", tx);
-      var n = u.getNeoName().getName();
-      assertTrue(u.isTaxon());
-      Taxon t = (Taxon)u.usage;
+    UsageData u = usageByID("urn:lsid:irmng.org:taxname:6");
+    var n = u.getNameData().getName();
+    assertTrue(u.isTaxon());
+    Taxon t = (Taxon)u.usage;
 
-      assertEquals(6, t.getReferenceIds().size());
-      var refIds = Set.copyOf(t.getReferenceIds());
-      assertEquals(6, refIds.size()); // all unique
+    assertEquals(6, t.getReferenceIds().size());
+    var refIds = Set.copyOf(t.getReferenceIds());
+    assertEquals(6, refIds.size()); // all unique
 
-      assertTrue(refIds.contains("10.1111/j.1469-185x.1998.tb00030.x"));
-      assertTrue(refIds.contains("10.1371/journal.pone.0119248"));
-      assertTrue(refIds.contains("10.1073/pnas.87.12.4576"));
-      assertTrue(refIds.contains("10.1099/00207713-52-1-7"));
+    assertTrue(refIds.contains("10.1111/j.1469-185x.1998.tb00030.x"));
+    assertTrue(refIds.contains("10.1371/journal.pone.0119248"));
+    assertTrue(refIds.contains("10.1073/pnas.87.12.4576"));
+    assertTrue(refIds.contains("10.1099/00207713-52-1-7"));
 
-      u = usageByID("urn:lsid:irmng.org:taxname:7", tx);
-      n = u.getNeoName().getName();
-      assertEquals("10.1016/0303-2647(81)90050-2", n.getPublishedInId()); // normalised DOI
-    }
+    u = usageByID("urn:lsid:irmng.org:taxname:7");
+    n = u.getNameData().getName();
+    assertEquals("10.1016/0303-2647(81)90050-2", n.getPublishedInId()); // normalised DOI
   }
 
   @Test
   public void testFks() throws Exception {
     normalize(43);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t3 = usageByID("ns:3", tx);
-      assertEquals("Insecta", t3.usage.getName().getLabel());
-      assertEquals(1, t3.vernacularNames.size());
-      assertEquals("Insects", t3.vernacularNames.get(0).getName());
-      assertEquals(List.of(new Identifier("zoobank","1234")), t3.usage.getName().getIdentifier());
-      assertEquals(t3.getId(), t3.usage.getName().getId());
+    UsageData t3 = usageByID("ns:3");
+    assertEquals("Insecta", t3.usage.getName().getLabel());
+    assertEquals(1, t3.vernacularNames.size());
+    assertEquals("Insects", t3.vernacularNames.get(0).getName());
+    assertEquals(List.of(new Identifier("zoobank","1234")), t3.usage.getName().getIdentifier());
+    assertEquals(t3.getId(), t3.usage.getName().getId());
 
-      var parents = store.parents(t3.node);
-      assertEquals(2, parents.size());
-      assertEquals("Arthropoda", parents.get(0).name);
+    var parents = store.usages().parents(t3);
+    assertEquals(2, parents.size());
+    assertEquals("Arthropoda", parents.get(0).usage.getName().getLabel());
 
 
-      NeoUsage t4 = usageByID("ns:4", tx);
-      assertEquals("Rhyniognatha hirsti", t4.usage.getName().getLabel());
-      assertEquals(List.of(new Identifier("zoobank","1234567")), t4.usage.getName().getIdentifier());
-      assertEquals(t4.getId(), t4.usage.getName().getId());
-      assertEquals(0, t4.vernacularNames.size());
+    UsageData t4 = usageByID("ns:4");
+    assertEquals("Rhyniognatha hirsti", t4.usage.getName().getLabel());
+    assertEquals(List.of(new Identifier("zoobank","1234567")), t4.usage.getName().getIdentifier());
+    assertEquals(t4.getId(), t4.usage.getName().getId());
+    assertEquals(0, t4.vernacularNames.size());
 
-      int counter = 0;
-      for (var tm : store.typeMaterial().values()) {
-        counter++;
-        assertEquals(tm.getNameId(), t4.getId());
-      }
-      assertEquals(2, counter);
-
-      var rels = store.nameRelations(t4.nameNode);
-      assertEquals(1, rels.size());
-      for (var rel : rels) {
-        assertNotNull(rel.getType());
-        assertEquals(rel.getNameId(), t4.getId());
-        assertEquals(rel.getRelatedNameId(), t3.getId());
-      }
-
-      store.verbatimList(ColdpTerm.NameRelation).forEach(v -> {
-        if (v.getRaw(ColdpTerm.relatedNameID).equals("3")) {
-          assertTrue(v.contains(Issue.NAME_ID_INVALID));
-        } else {
-          assertFalse(v.hasIssues());
-        }
-      });
+    int counter = 0;
+    for (var tm : store.typeMaterial().values()) {
+      counter++;
+      assertEquals(tm.getNameId(), t4.getId());
     }
+    assertEquals(2, counter);
+
+    var rels = store.names().relations(t4.nameID);
+    assertEquals(1, rels.size());
+    for (var rel : rels) {
+      assertNotNull(rel.getType());
+      assertEquals(rel.getNameId(), t4.getId());
+      assertEquals(rel.getRelatedNameId(), t3.getId());
+    }
+
+    store.verbatimList(ColdpTerm.NameRelation).forEach(v -> {
+      if (v.getRaw(ColdpTerm.relatedNameID).equals("3")) {
+        assertTrue(v.contains(Issue.NAME_ID_INVALID));
+      } else {
+        assertFalse(v.hasIssues());
+      }
+    });
   }
 
   @Test
   public void testBdjCsv() throws Exception {
     normalize(17);
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t = usageByID("1099-sp16", tx);
-      assertFalse(t.isSynonym());
-      assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
-      assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.asTaxon().getLink());
-    }
+
+    UsageData t = usageByID("1099-sp16");
+    assertFalse(t.isSynonym());
+    assertEquals("Pinus palustris Mill.", t.usage.getName().getLabel());
+    assertEquals(URI.create("http://dx.doi.org/10.3897/BDJ.2.e1099"), t.asTaxon().getLink());
   }
   
   @Test
@@ -137,27 +122,25 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     for (Reference r : store.references()) {
       System.out.println(r);
     }
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage trametes_modesta = usageByID("324805", tx);
-      assertFalse(trametes_modesta.isSynonym());
 
-      Reference pubIn = store.references().get(trametes_modesta.usage.getName().getPublishedInId());
-      assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-      assertNotNull(pubIn.getId());
+    UsageData trametes_modesta = usageByID("324805");
+    assertFalse(trametes_modesta.isSynonym());
 
-      NeoUsage Polystictus_substipitatus = usageByID("140283", tx);
-      assertTrue(Polystictus_substipitatus.isSynonym());
-      assertTrue(Polystictus_substipitatus.asSynonym().getStatus().isSynonym());
-      pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
-      assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
+    Reference pubIn = store.references().get(trametes_modesta.usage.getName().getPublishedInId());
+    assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
+    assertNotNull(pubIn.getId());
 
-      NeoUsage Polyporus_modestus = usageByID("198666", tx);
-      assertTrue(Polyporus_modestus.isSynonym());
-      assertTrue(Polyporus_modestus.asSynonym().getStatus().isSynonym());
-      pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
-      assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
-    }
+    UsageData Polystictus_substipitatus = usageByID("140283");
+    assertTrue(Polystictus_substipitatus.isSynonym());
+    assertTrue(Polystictus_substipitatus.asSynonym().getStatus().isSynonym());
+    pubIn = store.references().get(Polystictus_substipitatus.usage.getName().getPublishedInId());
+    assertEquals("Syll. fung. (Abellini) 21: 318 (1912)", pubIn.getCitation());
+
+    UsageData Polyporus_modestus = usageByID("198666");
+    assertTrue(Polyporus_modestus.isSynonym());
+    assertTrue(Polyporus_modestus.asSynonym().getStatus().isSynonym());
+    pubIn = store.references().get(Polyporus_modestus.usage.getName().getPublishedInId());
+    assertEquals("Linnaea 5: 519 (1830)", pubIn.getCitation());
   }
   
   @Test
@@ -165,39 +148,37 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(24);
     
     // verify results
-    try (Transaction tx = store.getNeo().beginTx()) {
-      // check species name
-      NeoUsage t = usageByID("1000", tx);
-      assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
+    // check species name
+    UsageData t = usageByID("1000");
+    assertEquals("Crepis pulchra", t.usage.getName().getScientificName());
 
-      // check vernaculars
-      Map<String, String> expV = Maps.newHashMap();
-      expV.put("deu", "Schöner Pippau");
-      expV.put("eng", "smallflower hawksbeard");
-      assertEquals(expV.size(), t.vernacularNames.size());
-      for (VernacularName vn : t.vernacularNames) {
-        assertEquals(expV.remove(vn.getLanguage()), vn.getName());
-      }
-      assertTrue(expV.isEmpty());
-      
-      // check distributions
-      List<Distribution> expD = PgImportIT.expectedDwca24Distributions();
-      
-      assertEquals(expD.size(), t.distributions.size());
-      // remove keys before we check equality
-      t.distributions.forEach(d -> {
-        d.setKey(null);
-        d.setVerbatimKey(null);
-      });
-      Set<Distribution> imported = Sets.newHashSet(t.distributions);
-      Set<Distribution> expected = Sets.newHashSet(expD);
-
-      Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
-      for (Distribution d : diff) {
-        System.out.println(d);
-      }
-      assertEquals(expected, imported);
+    // check vernaculars
+    Map<String, String> expV = Maps.newHashMap();
+    expV.put("deu", "Schöner Pippau");
+    expV.put("eng", "smallflower hawksbeard");
+    assertEquals(expV.size(), t.vernacularNames.size());
+    for (VernacularName vn : t.vernacularNames) {
+      assertEquals(expV.remove(vn.getLanguage()), vn.getName());
     }
+    assertTrue(expV.isEmpty());
+
+    // check distributions
+    List<Distribution> expD = PgImportIT.expectedDwca24Distributions();
+
+    assertEquals(expD.size(), t.distributions.size());
+    // remove keys before we check equality
+    t.distributions.forEach(d -> {
+      d.setKey(null);
+      d.setVerbatimKey(null);
+    });
+    Set<Distribution> imported = Sets.newHashSet(t.distributions);
+    Set<Distribution> expected = Sets.newHashSet(expD);
+
+    Sets.SetView<Distribution> diff = Sets.difference(expected, imported);
+    for (Distribution d : diff) {
+      System.out.println(d);
+    }
+    assertEquals(expected, imported);
   }
   
   @Test
@@ -205,33 +186,28 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(28);
 
     // verify results
-    try (Transaction tx = store.getNeo().beginTx()) {
-      // 1->2->1
-      // should be: 1->2
-      NeoName t1 = nameByID("1", tx);
-      NeoName t2 = nameByID("2", tx);
+    // 1->2->1
+    // should be: 1->2
+    NameData t1 = nameByID("1");
+    NameData t2 = nameByID("2");
 
-      assertEquals(1, t1.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(1, t2.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(t2.node,
-          t1.node.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getEndNode());
+    assertEquals(1, t1.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(0, t2.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(t2.getId(), t1.getRelation(NomRelType.BASIONYM).getToID());
 
-      // 10->11->12->10, 13->11
-      // should be: 10,13->11 12
-      NeoName t10 = nameByID("10", tx);
-      NeoName t11 = nameByID("11", tx);
-      NeoName t12 = nameByID("12", tx);
-      NeoName t13 = nameByID("13", tx);
+    // 10->11->12->10, 13->11
+    // should be: 10,13->11 12
+    NameData t10 = nameByID("10");
+    NameData t11 = nameByID("11");
+    NameData t12 = nameByID("12");
+    NameData t13 = nameByID("13");
 
-      assertEquals(1, t10.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(2, t11.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(0, t12.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(1, t13.node.getDegree(RelType.HAS_BASIONYM));
-      assertEquals(t11.node, t10.node
-          .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t10.node));
-      assertEquals(t11.node, t13.node
-          .getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING).getOtherNode(t13.node));
-    }
+    assertEquals(1, t10.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(2, t11.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(0, t12.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(1, t13.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(t11.getId(), t10.getRelation(NomRelType.BASIONYM).getToID());
+    assertEquals(t11.getId(), t13.getRelation(NomRelType.BASIONYM).getToID());
   }
   
   /**
@@ -242,307 +218,262 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(26);
     
     // verify results
-    try (Transaction tx = store.getNeo().beginTx()) {
-      // check species name
-      NeoUsage t = usageByID("10156", tx);
-      assertEquals("'Prosthète'", t.usage.getName().getScientificName());
-    }
-  }
-  
-  @Test
-  public void testNeoIndices() throws Exception {
-    normalize(1);
-    
-    // no indices!
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Schema schema = tx.schema();
-      List<IndexDefinition> indices = new ArrayList<>();
-      schema.getIndexes().forEach(indices::add);
-      assertEquals(3, indices.size());
-
-      // 1001, Crepis bakeri Greene
-      assertNotNull(NeoDbUtils.singleOrNull(
-          tx.findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "Crepis bakeri")
-      ));
-  
-      assertNull(NeoDbUtils.singleOrNull(
-          tx.findNodes(Labels.NAME, NeoProperties.SCIENTIFIC_NAME, "xCrepis bakeri")
-      ));
-    }
+    // check species name
+    UsageData t = usageByID("10156");
+    assertEquals("'Prosthète'", t.usage.getName().getScientificName());
   }
   
   @Test
   public void testIdRels() throws Exception {
     normalize(1);
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u1 = usageByID("1006", tx);
-      NeoUsage u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat", tx);
 
-      assertEquals(u1, u2);
+    UsageData u1 = usageByID("1006");
+    UsageData u2 = byName("Leontodon taraxacoides", "(Vill.) Mérat");
 
-      NeoUsage bas = byName("Leonida taraxacoida", tx);
+    assertEquals(u1, u2);
 
-      NeoUsage syn = byName("Leontodon leysseri", tx);
-      assertTrue(syn.asSynonym().getStatus().isSynonym());
-    }
+    UsageData bas = byName("Leonida taraxacoida");
+
+    UsageData syn = byName("Leontodon leysseri");
+    assertTrue(syn.asSynonym().getStatus().isSynonym());
   }
 
   @Test
   public void testProParte() throws Exception {
     normalize(8);
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage syn = usageByID("1001", tx);
-      assertNotNull(syn.asSynonym());
 
-      Map<String, String> expectedAccepted = Maps.newHashMap();
-      expectedAccepted.put("1000", "Calendula arvensis");
-      expectedAccepted.put("10000", "Calendula incana subsp. incana");
-      expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
+    UsageData syn = usageByID("1001");
+    assertNotNull(syn.asSynonym());
 
-      for (RankedUsage acc : store.accepted(syn.node)) {
-        assertEquals(expectedAccepted.remove(store.names().objByNode(acc.nameNode).getId()), acc.name);
-      }
-      assertTrue(expectedAccepted.isEmpty());
+    Map<String, String> expectedAccepted = Maps.newHashMap();
+    expectedAccepted.put("1000", "Calendula arvensis");
+    expectedAccepted.put("10000", "Calendula incana subsp. incana");
+    expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
+
+    for (var acc : store.usages().accepted(syn)) {
+      assertEquals(expectedAccepted.remove(acc.getId()), acc.usage.getLabel());
     }
+    assertTrue(expectedAccepted.isEmpty());
   }
   
   @Test
   public void testHomotypic() throws Exception {
     normalize(29);
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage annua1 = usageByID("4", tx);
-      NeoUsage annua2 = usageByID("5", tx);
-      NeoUsage reptans1 = usageByID("7", tx);
-      NeoUsage reptans2 = usageByID("8", tx);
-    }
+
+    UsageData annua1 = usageByID("4");
+    UsageData annua2 = usageByID("5");
+    UsageData reptans1 = usageByID("7");
+    UsageData reptans2 = usageByID("8");
   }
   
   @Test
   public void testNameRelations() throws Exception {
     normalize(30);
-    
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage t10 = usageByID("10", tx);
-      NeoUsage t11 = usageByID("11", tx);
 
-      NeoName nn = nameByID("10", tx);
-      List<NameRelation> rels = store.nameRelations(nn.node);
-      assertEquals(1, rels.size());
-      assertEquals(NomRelType.BASED_ON, rels.get(0).getType());
-    }
+    UsageData t10 = usageByID("10");
+    UsageData t11 = usageByID("11");
+
+    NameData nn = nameByID("10");
+    List<NameRelation> rels = store.names().relations(nn.getId());
+    assertEquals(1, rels.size());
+    assertEquals(NomRelType.BASED_ON, rels.getFirst().getType());
   }
   
   @Test
   public void testIssueFlagging() throws Exception {
     normalize(31);
     debug();
-    try (Transaction tx = store.getNeo().beginTx()) {
-      VerbatimRecord t9 = vByUsageID("9", tx);
-      VerbatimRecord v9 = vByNameID("9", tx);
-      assertTrue(t9.contains(Issue.PUBLISHED_BEFORE_GENUS));
-      assertFalse(t9.contains(Issue.PARENT_NAME_MISMATCH));
+    VerbatimRecord t9 = vByUsageID("9");
+    VerbatimRecord v9 = vByNameID("9");
+    assertTrue(t9.contains(Issue.PUBLISHED_BEFORE_GENUS));
+    assertFalse(t9.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t11 = vByUsageID("11", tx);
-      assertTrue(t11.contains(Issue.PARENT_NAME_MISMATCH));
+    VerbatimRecord t11 = vByUsageID("11");
+    assertTrue(t11.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t103 = vByUsageID("103", tx);
-      assertFalse(t103.contains(Issue.PUBLISHED_BEFORE_GENUS));
-      assertFalse(t103.contains(Issue.PARENT_NAME_MISMATCH));
+    VerbatimRecord t103 = vByUsageID("103");
+    assertFalse(t103.contains(Issue.PUBLISHED_BEFORE_GENUS));
+    assertFalse(t103.contains(Issue.PARENT_NAME_MISMATCH));
 
-      VerbatimRecord t104 = vByUsageID("104", tx);
-      assertTrue(t104.contains(Issue.PUBLISHED_BEFORE_GENUS));
-    }
+    VerbatimRecord t104 = vByUsageID("104");
+    assertTrue(t104.contains(Issue.PUBLISHED_BEFORE_GENUS));
   }
   
   @Test
   public void dwc8Nons() throws Exception {
     normalize(34);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      NeoUsage u;
-      for (Node n : NeoDbUtils.loop(tx.findNodes(Labels.USAGE))) {
-        u = store.usageWithName(n);
-        if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-          System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());
-          System.out.println("  " + u.usage.getName().getRemarks());
-          System.out.println("  " + u.usage.getAccordingToId());
-          assertNotNull(u.usage.getAccordingToId());
-        }
+    store.usages().all().forEach(u -> {
+      if (u.usage.getName().getOrigin() == Origin.SOURCE) {
+        System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());
+        System.out.println("  " + u.usage.getName().getRemarks());
+        System.out.println("  " + u.usage.getAccordingToId());
+        assertNotNull(u.usage.getAccordingToId());
       }
+    });
 
-      // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
-      u = usageByID("8", tx);
-      assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
-      assertEquals("Engl. nom.illeg.", u.usage.getName().getAuthorship());
-      assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
-      assertNull(u.usage.getName().getRemarks());
+    // 8	Phylata	Anthurium lanceum Engl., nom. illeg., non. A. lancea.	Markus
+    UsageData u = usageByID("8");
+    assertEquals("Anthurium lanceum", u.usage.getName().getScientificName());
+    assertEquals("Engl. nom.illeg.", u.usage.getName().getAuthorship());
+    assertEquals("nom.illeg.", u.usage.getName().getNomenclaturalNote());
+    assertNull(u.usage.getName().getRemarks());
 
-      assertEquals("non. A.lancea.", u.usage.getNamePhrase());
-      assertNull(u.usage.getName().getRemarks());
-      assertNotNull(u.usage.getAccordingToId());
-      Reference sec = accordingTo(u.usage);
-      assertEquals("Markus", sec.getCitation());
-      assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
-      //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
-    }
+    assertEquals("non. A.lancea.", u.usage.getNamePhrase());
+    assertNull(u.usage.getName().getRemarks());
+    assertNotNull(u.usage.getAccordingToId());
+    Reference sec = accordingTo(u.usage);
+    assertEquals("Markus", sec.getCitation());
+    assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
+    //assertTrue(store.getVerbatim(u.usage.getName().getVerbatimKey()).hasIssue(Issue.PARTIALLY_PARSABLE_NAME));
   }
 
   @Test
   public void wcvpUnplacedReplacement() throws Exception {
     normalize(44);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var u = usageByID("1", tx);
-      assertEquals("Aa Rchb.f.", u.usage.getLabel());
-      assertEquals(Rank.GENUS, u.usage.getRank());
-      // check tdwg distributions
-      assertEquals(9, u.distributions.size());
-      for (var d : u.distributions) {
-        assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
-      }
-      // synonym of an unplaced name also becomes a bare name
-      var n = nameByID("398576", tx);
-      assertEquals("398576", n.getName().getId());
-      assertNull(usageByID(n.getId(), tx)); // a bare name
-      assertEquals("Bambos fax (Lour.) Poir.", n.getName().getLabel());
-      assertEquals(Rank.SPECIES, n.getName().getRank());
-      assertEquals(1, n.getName().getIdentifier().size());
-      assertEquals(new Identifier(Identifier.Scope.IPNI, "77236313-1"), n.getName().getIdentifier().get(0));
-
-      var rels = store.nameRelations(n.node);
-      assertEquals(1, rels.size());
-
-      n = nameByID("396648", tx);
-      assertNull(usageByID(n.getId(), tx)); // a bare name
-      assertEquals("Arundo fax Lour.", n.getName().getLabel());
-      assertEquals(Rank.SPECIES, n.getName().getRank());
-
-      // replacement name rel
-      u = usageByID("100200", tx);
-      assertEquals("Hormidium uniflorum Heynh.", u.usage.getLabel());
-      assertEquals(TaxonomicStatus.SYNONYM, u.usage.getStatus());
-      assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
-      rels = store.nameRelations(u.nameNode);
-      assertEquals(1, rels.size());
-      var rel = rels.get(0);
-      assertEquals(NomRelType.REPLACEMENT_NAME, rel.getType());
-      assertEquals(", nom. superfl.", rel.getRemarks());
-      assertEquals("69807", rel.getRelatedNameId());
+    var u = usageByID("1");
+    assertEquals("Aa Rchb.f.", u.usage.getLabel());
+    assertEquals(Rank.GENUS, u.usage.getRank());
+    // check tdwg distributions
+    assertEquals(9, u.distributions.size());
+    for (var d : u.distributions) {
+      assertEquals(Gazetteer.TDWG, d.getArea().getGazetteer());
     }
+    // synonym of an unplaced name also becomes a bare name
+    var n = nameByID("398576");
+    assertEquals("398576", n.getName().getId());
+    assertNull(usageByID(n.getId())); // a bare name
+    assertEquals("Bambos fax (Lour.) Poir.", n.getName().getLabel());
+    assertEquals(Rank.SPECIES, n.getName().getRank());
+    assertEquals(1, n.getName().getIdentifier().size());
+    assertEquals(new Identifier(Identifier.Scope.IPNI, "77236313-1"), n.getName().getIdentifier().get(0));
+
+    assertEquals(1, n.relations.size());
+
+    n = nameByID("396648");
+    assertNull(usageByID(n.getId())); // a bare name
+    assertEquals("Arundo fax Lour.", n.getName().getLabel());
+    assertEquals(Rank.SPECIES, n.getName().getRank());
+
+    // replacement name rel
+    u = usageByID("100200");
+    assertEquals("Hormidium uniflorum Heynh.", u.usage.getLabel());
+    assertEquals(TaxonomicStatus.SYNONYM, u.usage.getStatus());
+    assertEquals(NomStatus.UNACCEPTABLE, u.usage.getName().getNomStatus());
+    var rels = store.names().relations(u.nameID);
+    assertEquals(1, rels.size());
+    var rel = rels.getFirst();
+    assertEquals(NomRelType.REPLACEMENT_NAME, rel.getType());
+    assertEquals(", nom. superfl.", rel.getRemarks());
+    assertEquals("69807", rel.getRelatedNameId());
   }
 
   @Test
   public void infragenerics() throws Exception {
     normalize(46);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().allIds().forEach( id -> {
-        var u = store.usageWithName(id, tx);
-        var n = u.getNeoName().getName();
-        if (u.getId().startsWith("10")) {
-          assertEquals(Rank.GENUS, n.getRank());
-          assertEquals("Abies", n.getScientificName());
-          assertEquals("Mill.", n.getAuthorship());
-          assertEquals("Abies", n.getUninomial());
-          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+    store.usages().allIds().forEach( id -> {
+      var u = store.usageWithName(id);
+      var n = u.getNameData().getName();
+      if (u.getId().startsWith("10")) {
+        assertEquals(Rank.GENUS, n.getRank());
+        assertEquals("Abies", n.getScientificName());
+        assertEquals("Mill.", n.getAuthorship());
+        assertEquals("Abies", n.getUninomial());
+        assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+        assertNull(n.getGenus());
+        assertNull(n.getInfragenericEpithet());
+
+      } else if (u.getId().startsWith("11")) {
+        assertEquals(Rank.SUBGENUS, n.getRank());
+        assertEquals("Mill.", n.getAuthorship());
+        assertEquals("Ferox", n.getInfragenericEpithet());
+        assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+        assertNull(n.getUninomial());
+        if (u.getId().endsWith("3") || u.getId().endsWith("4")) {
+          // no genus
           assertNull(n.getGenus());
-          assertNull(n.getInfragenericEpithet());
+          assertEquals("Ferox", n.getScientificName());
 
-        } else if (u.getId().startsWith("11")) {
-          assertEquals(Rank.SUBGENUS, n.getRank());
-          assertEquals("Mill.", n.getAuthorship());
-          assertEquals("Ferox", n.getInfragenericEpithet());
-          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
-          assertNull(n.getUninomial());
-          if (u.getId().endsWith("3") || u.getId().endsWith("4")) {
-            // no genus
-            assertNull(n.getGenus());
-            assertEquals("Ferox", n.getScientificName());
-
-          } else {
-            // with genus
-            assertEquals("Abies", n.getGenus());
-            assertEquals("Abies (Ferox)", n.getScientificName());
-          }
-
-        } else if (u.getId().startsWith("12")) {
-          assertEquals(Rank.SECTION_BOTANY, n.getRank());
-          assertEquals("Mill.", n.getAuthorship());
-          assertEquals("Ferox", n.getInfragenericEpithet());
-          assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
-          assertNull(n.getUninomial());
-          if (u.getId().endsWith("3") || u.getId().endsWith("4")) {
-            // no genus
-            assertNull(n.getGenus());
-            assertEquals("sect. Ferox", n.getScientificName());
-
-          } else {
-            // with genus
-            assertEquals("Abies", n.getGenus());
-            assertEquals("Abies sect. Ferox", n.getScientificName());
-          }
-        } else if (u.usage.getOrigin() == Origin.DENORMED_CLASSIFICATION) {
-          // ignore
         } else {
-          throw new IllegalStateException("Should not have usages with origin="+u.usage.getOrigin()+" and ID="+u.getId());
+          // with genus
+          assertEquals("Abies", n.getGenus());
+          assertEquals("Abies (Ferox)", n.getScientificName());
         }
-      });
-    }
+
+      } else if (u.getId().startsWith("12")) {
+        assertEquals(Rank.SECTION_BOTANY, n.getRank());
+        assertEquals("Mill.", n.getAuthorship());
+        assertEquals("Ferox", n.getInfragenericEpithet());
+        assertEquals(Authorship.authors("Mill."), n.getCombinationAuthorship());
+        assertNull(n.getUninomial());
+        if (u.getId().endsWith("3") || u.getId().endsWith("4")) {
+          // no genus
+          assertNull(n.getGenus());
+          assertEquals("sect. Ferox", n.getScientificName());
+
+        } else {
+          // with genus
+          assertEquals("Abies", n.getGenus());
+          assertEquals("Abies sect. Ferox", n.getScientificName());
+        }
+      } else if (u.usage.getOrigin() == Origin.DENORMED_CLASSIFICATION) {
+        // ignore
+      } else {
+        throw new IllegalStateException("Should not have usages with origin="+u.usage.getOrigin()+" and ID="+u.getId());
+      }
+    });
   }
 
   @Test
   public void nomYear() throws Exception {
     normalize(47);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().allIds().forEach( x -> {
-        System.out.println(x);
-        var u = store.usageWithName(x, tx);
-        var n = u.getNeoName().getName();
-        var v = store.getVerbatim(u.getVerbatimKey());
-        int id = Integer.parseInt(u.getId());
-        assertEquals("Lipolexis peregrinus", n.getScientificName());
-        if (id < 10) {
-          if (id==3) {
-            assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
-            assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
-            assertEquals((Integer)2020, n.getPublishedInYear());
-            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-            assertEquals(1, v.getIssues().size());
-          } else if (id==4) {
-            assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
-            assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
-            assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
-            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-            assertEquals(2, v.getIssues().size());
-            assertEquals((Integer)2021, n.getPublishedInYear());
-          } else {
-            assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
-            assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
-            assertEquals((Integer)2020, n.getPublishedInYear());
-            assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-            assertEquals(1, v.getIssues().size());
-          }
-
-        } else if (id < 20 || id == 23){
-          assertNull(n.getPublishedInYear());
+    store.usages().allIds().forEach( x -> {
+      System.out.println(x);
+      var u = store.usageWithName(x);
+      var n = u.getNameData().getName();
+      var v = store.getVerbatim(u.getVerbatimKey());
+      int id = Integer.parseInt(u.getId());
+      assertEquals("Lipolexis peregrinus", n.getScientificName());
+      if (id < 10) {
+        if (id==3) {
           assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
           assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
-          assertTrue(v.getIssues().contains(Issue.UNLIKELY_YEAR));
+          assertEquals((Integer)2020, n.getPublishedInYear());
+          assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+          assertEquals(1, v.getIssues().size());
+        } else if (id==4) {
+          assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
+          assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+          assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
           assertEquals(2, v.getIssues().size());
+          assertEquals((Integer)2021, n.getPublishedInYear());
         } else {
-          assertNull(n.getPublishedInYear());
-          assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
-          assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
-          assertTrue(v.getIssues().contains(Issue.UNPARSABLE_YEAR));
+          assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
+          assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+          assertEquals((Integer)2020, n.getPublishedInYear());
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(2, v.getIssues().size());
+          assertEquals(1, v.getIssues().size());
         }
-      });
-    }
+
+      } else if (id < 20 || id == 23){
+        assertNull(n.getPublishedInYear());
+        assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
+        assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+        assertTrue(v.getIssues().contains(Issue.UNLIKELY_YEAR));
+        assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+        assertEquals(2, v.getIssues().size());
+      } else {
+        assertNull(n.getPublishedInYear());
+        assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
+        assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
+        assertTrue(v.getIssues().contains(Issue.UNPARSABLE_YEAR));
+        assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
+        assertEquals(2, v.getIssues().size());
+      }
+    });
   }
 
   /**
@@ -555,24 +486,22 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     normalize(48, settings);
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642", tx);
-      var n = u.getNeoName().getName();
-      var v = store.getVerbatim(u.getVerbatimKey());
+    var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642");
+    var n = u.getNameData().getName();
+    var v = store.getVerbatim(u.getVerbatimKey());
 
-      assertEquals("Cambarus uhleri", n.getScientificName());
-      assertEquals(Rank.SPECIES, n.getRank());
-      assertNull(n.getUninomial());
-      assertEquals("Cambarus", n.getGenus());
-      assertEquals("uhleri", n.getSpecificEpithet());
-      assertNull(n.getNotho());
+    assertEquals("Cambarus uhleri", n.getScientificName());
+    assertEquals(Rank.SPECIES, n.getRank());
+    assertNull(n.getUninomial());
+    assertEquals("Cambarus", n.getGenus());
+    assertEquals("uhleri", n.getSpecificEpithet());
+    assertNull(n.getNotho());
 
-      assertEquals("Faxon, 1884", n.getAuthorship());
-      assertEquals(Authorship.yearAuthors("1884", "Faxon"), n.getCombinationAuthorship());
-      assertEquals(1884, (int) n.getPublishedInYear());
+    assertEquals("Faxon, 1884", n.getAuthorship());
+    assertEquals(Authorship.yearAuthors("1884", "Faxon"), n.getCombinationAuthorship());
+    assertEquals(1884, (int) n.getPublishedInYear());
 
-      assertTrue(v.getIssues().contains(Issue.UPPERCASE_EPITHET));
-    }
+    assertTrue(v.getIssues().contains(Issue.UPPERCASE_EPITHET));
   }
 
   /**
@@ -585,17 +514,15 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(51, settings);
     printTree();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().all().forEach( un -> {
-        var u = store.usageWithName(un.getId(), tx);
-        var n = u.getNeoName().getName();
-        if (n.getRank().isInfragenericStrictly()) {
-          assertNotNull(n.getInfragenericEpithet());
-          assertNull(n.getUninomial());
-          assertNull(n.getSpecificEpithet());
-        }
-      });
-    }
+    store.usages().all().forEach( un -> {
+      var u = store.usageWithName(un.getId());
+      var n = u.getNameData().getName();
+      if (n.getRank().isInfragenericStrictly()) {
+        assertNotNull(n.getInfragenericEpithet());
+        assertNull(n.getUninomial());
+        assertNull(n.getSpecificEpithet());
+      }
+    });
   }
 
   /**
@@ -609,9 +536,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(52, settings);
     printTree();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      assertEquals(11, store.usages().all().count());
-    }
+    assertEquals(11, store.usages().all().count());
   }
 
   @Test

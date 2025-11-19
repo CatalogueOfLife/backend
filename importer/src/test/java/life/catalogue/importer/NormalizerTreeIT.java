@@ -5,17 +5,12 @@ import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.RankedName;
-import life.catalogue.importer.neo.printer.PrinterUtils;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
+import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.matching.nidx.NameIndexFactory;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,7 +29,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.neo4j.graphdb.Transaction;
 
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
@@ -59,8 +53,8 @@ public class NormalizerTreeIT {
   final static int MAX_COLDP_ID = 0;
 
   private static NormalizerConfig cfg;
-  private static NeoDbFactory neoDbFactory;
-  private NeoDb store;
+  private static ImportStoreFactory importStoreFactory;
+  private ImportStore store;
   private Path source;
   // TODO: these tests need to be checked - they do seem to create real wrong outcomes !!!
   Set<Integer> ignoreAcef = Sets.newHashSet(3);
@@ -106,7 +100,7 @@ public class NormalizerTreeIT {
     // make sure its empty
     FileUtils.cleanDirectory(cfg.archiveDir);
     FileUtils.cleanDirectory(cfg.scratchDir);
-    neoDbFactory = new NeoDbFactory(cfg);
+    importStoreFactory = new ImportStoreFactory(cfg);
   }
   
   @AfterClass
@@ -143,7 +137,7 @@ public class NormalizerTreeIT {
       source = Paths.get(dwcaUrl.toURI());
       System.out.println("TEST " + format + " " + sourceKey);
       
-      store = neoDbFactory.create(datasetKey, 1);
+      store = importStoreFactory.create(datasetKey, 1);
 
       DatasetWithSettings d = new DatasetWithSettings();
       d.setKey(datasetKey);
@@ -160,8 +154,8 @@ public class NormalizerTreeIT {
       InputStream tree = getClass().getResourceAsStream(resourceDir + "/expected.tree");
       String expected = UTF8IoUtils.readString(tree).trim();
       
-      String neotree = PrinterUtils.textTree(store.getNeo());
-      assertFalse("Empty tree, probably no root node found", neotree.isEmpty());
+      String dbtree = store.printTree();
+      assertFalse("Empty tree, probably no root node found", dbtree.isEmpty());
 
       // debug all usages
       //store.verbatimList().forEach(v -> {
@@ -180,18 +174,16 @@ public class NormalizerTreeIT {
       //});
 
       // compare trees
-      assertEquals("Taxon tree not as expected", expected, neotree);
+      assertEquals("Taxon tree not as expected", expected, dbtree);
 
       // queue non tree nodes
-      String bareNames;
-      try (Transaction tx = store.getNeo().beginTx()) {
-        bareNames = store.bareNames(tx)
-            .map(NeoProperties::getRankedName)
-            .map(RankedName::toString)
-            .stream()
-            .sorted()
-            .collect(Collectors.joining("\n"));
-      }
+      String bareNames = store.bareNames()
+        .map(nd -> {
+          var sn = new RankedName(nd);
+          return sn.toString();
+        })
+        .sorted()
+        .collect(Collectors.joining("\n"));
 
       InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir + "/expected-barenames.txt");
       if (bareNamesFile != null) {
@@ -205,16 +197,6 @@ public class NormalizerTreeIT {
       System.err.println("Failed to normalize " + format + " dataset " + sourceKey);
       throw e;
     }
-  }
-  
-  void debug() throws Exception {
-    // dump graph as DOT file for debugging
-    File dotFile = new File("graphs/tree-" + format + sourceKey + ".dot");
-    Files.createParentDirs(dotFile);
-    Writer writer = new FileWriter(dotFile);
-    PrinterUtils.dumpDotFile(store.getNeo(), writer);
-    writer.close();
-    System.out.println("Wrote graph to " + dotFile.getAbsolutePath());
   }
   
 }

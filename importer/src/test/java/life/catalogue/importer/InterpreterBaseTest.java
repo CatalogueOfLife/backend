@@ -7,9 +7,9 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.ReferenceMapStore;
-import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ReferenceMapStore;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
 
 import org.gbif.nameparser.api.Authorship;
@@ -38,7 +38,7 @@ public class InterpreterBaseTest {
   ReferenceMapStore refStore;
 
   @Mock
-  NeoDb store;
+  ImportStore store;
 
   IssueContainer issues = new IssueContainer.Simple();
   InterpreterBase ib;
@@ -145,7 +145,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
 
-    NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
 
     assertTrue(u.usage.isTaxon());
     Taxon t = u.asTaxon();
@@ -177,7 +177,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);
     pnu.setDoubtful(true); // gets converted to provisional
-    NeoUsage u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
 
     assertTrue(u.usage.isTaxon());
     assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, u.usage.getStatus());

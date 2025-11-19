@@ -2,7 +2,8 @@ package life.catalogue.importer;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
-import life.catalogue.common.collection.IterUtils;
+import life.catalogue.common.collection.CollectionUtils;
+import life.catalogue.common.collection.CountMap;
 import life.catalogue.common.collection.MapUtils;
 import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
@@ -14,11 +15,10 @@ import life.catalogue.img.ImageServiceFS;
 import life.catalogue.importer.acef.AcefInserter;
 import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbUtils;
-import life.catalogue.importer.neo.NotUniqueRuntimeException;
-import life.catalogue.importer.neo.model.*;
-import life.catalogue.importer.neo.traverse.Traversals;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.NotUniqueRuntimeException;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.interpreter.ExtinctName;
 import life.catalogue.interpreter.RanKnName;
@@ -33,19 +33,17 @@ import org.gbif.nameparser.api.Rank;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.neo4j.graphdb.*;
-import org.neo4j.internal.helpers.collection.Iterators;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +67,7 @@ public class Normalizer implements Callable<Boolean> {
   private final DataFormat format;
   private final Path sourceDir;
   private final int datasetKey;
-  private final NeoDb store;
+  private final ImportStore store;
   private final ReferenceFactory refFactory;
   private final ImageService imgService;
   private final NameIndex index;
@@ -82,7 +80,7 @@ public class Normalizer implements Callable<Boolean> {
     .build(this::parse);
 
 
-  public Normalizer(DatasetWithSettings dataset, NeoDb store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {
+  public Normalizer(DatasetWithSettings dataset, ImportStore store, Path sourceDir, NameIndex index, ImageService imgService, Validator validator, @Nullable DoiResolver resolver) {
     this.format = Preconditions.checkNotNull(dataset.getDataFormat(), "Data format not given");
     this.dataset = dataset;
     this.sourceDir = sourceDir;
@@ -114,9 +112,6 @@ public class Normalizer implements Callable<Boolean> {
     checkIfCancelled();
     // insert normalizer db relations, create implicit nodes if needed and parse names
     normalize();
-    checkIfCancelled();
-    // sync taxon KVP store with neo4j relations, setting correct neo4j labels, homotypic keys etc
-    store.sync();
     checkIfCancelled();
     // apply missing dataset defaults, verify, derive issues and fail before we do expensive matching or even db imports
     validateAndDefaults();
@@ -161,157 +156,86 @@ public class Normalizer implements Callable<Boolean> {
     final Set<Environment> defaultEnvironment = dataset.getEnvironment() == null ? null : Set.of(dataset.getEnvironment());
 
     LOG.info("Start name validation");
-    try (var tx = store.beginTx()) {
-      store.names().all().forEach(nn -> {
-        Name n = nn.getName();
+    store.names().all().forEach(nn -> {
+      Name n = nn.getName();
 
-        // dataset defaults
-        if (defaultCode != null && n.getCode() == null) {
-          n.setCode(defaultCode);
-          store.names().update(nn, tx);
-        }
-        require(n, n.getId(), "name id");
+      // dataset defaults
+      if (defaultCode != null && n.getCode() == null) {
+        n.setCode(defaultCode);
+        store.names().update(nn);
+      }
+      require(n, n.getId(), "name id");
 
-        // is it a source with verbatim data?
-        require(n, n.getOrigin(), "name origin");
+      // is it a source with verbatim data?
+      require(n, n.getOrigin(), "name origin");
 
-        // check for required fields to avoid pg exceptions
-        require(n, n.getScientificName(), "scientific name");
-        require(n, n.getRank(), "rank");
-        require(n, n.getType(), "name type");
+      // check for required fields to avoid pg exceptions
+      require(n, n.getScientificName(), "scientific name");
+      require(n, n.getRank(), "rank");
+      require(n, n.getType(), "name type");
 
-        // all names should have a verbatim record by now - even implicit ones!
-        VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
-        if (v != null) {
-          store.put(v);
-        }
-      });
-      tx.commit();
-    }
-
-    LOG.info("Apply dataset defaults");
-    try (var tx = store.beginTx()) {
-      store.usages().all().forEach(u -> {
-        try {
-          // taxon or synonym
-          if (u.isSynonym()) {
-            Synonym s = u.asSynonym();
-            require(s, s.getId(), "id");
-            require(s, s.getOrigin(), "origin");
-
-            // no vernaculars, distribution etc
-            check(s, u.treatment == null, "no treatments");
-            check(s, u.distributions.isEmpty(), "no distributions");
-            check(s, u.media.isEmpty(), "no media");
-            check(s, u.vernacularNames.isEmpty(), "no vernacular names");
-
-          } else {
-            Taxon t = u.asTaxon();
-
-            // dataset defaults
-            boolean updateNeeded = false;
-            if (t.isExtinct() == null && isExtinctBySetting(t.getRank())) {
-              t.setExtinct(true);
-              updateNeeded = true;
-            }
-            if (defaultEnvironment != null && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
-              t.setEnvironments(defaultEnvironment);
-              updateNeeded = true;
-            }
-            if (updateNeeded) {
-              store.usages().update(u, tx);
-            }
-
-            require(t, t.getId(), "id");
-            require(t, t.getOrigin(), "origin");
-            require(t, t.getStatus(), "status");
-
-            // vernacular
-            for (VernacularName v : u.vernacularNames) {
-              require(v, v.getName(), "vernacular name");
-            }
-
-            // distribution
-            for (Distribution d : u.distributions) {
-              require(d, d.getArea(), "area");
-            }
-
-          }
-        } catch (NormalizationFailedException e) {
-          LOG.error("{}: {}", e.getMessage(), u.getId());
-          throw e;
-        }
-      });
-      tx.commit();
-    }
-
-    // flag PARENT_NAME_MISMATCH, PUBLISHED_BEFORE_GENUS, PARENT_SPECIES_MISSING & CLASSIFICATION_RANK_ORDER_INVALID for accepted names
-    LOG.info("Flag classification issues");
-    store.process(Labels.TAXON, new BiConsumer<Node, Transaction>() {
-      @Override
-      public void accept(Node n, Transaction tx) {
-        RankedUsage ru = NeoProperties.getRankedUsage(n);
-        // compare with parent rank
-        Node pNode = Traversals.parentWithConcreteRank(n);
-        if (pNode != null && !ru.rank.isUncomparable()) {
-          Node pNameNode = NeoProperties.getNameNode(pNode);
-          Rank pRank = NeoProperties.getRank(pNameNode, Rank.UNRANKED);
-          if (pRank.notOtherOrUnranked() && (ru.rank == pRank || ru.rank.higherThan(pRank))) {
-            store.addUsageIssues(n, Issue.CLASSIFICATION_RANK_ORDER_INVALID);
-          }
-        }
-
-        if (ru.rank.isSpeciesOrBelow()) {
-          NeoName nn = store.names().objByNode(ru.nameNode);
-          Name nnn = nn.getName();
-          Node gn = Traversals.parentWithRankOf(ru.usageNode, Rank.GENUS);
-          if (gn != null) {
-            Name g = store.nameByUsage(gn).getName();
-            // does the genus name match up?
-            if (nnn.isParsed() && g.isParsed() && !Objects.equals(nnn.getGenus(), g.getUninomial())) {
-              store.addIssues(nnn, Issue.PARENT_NAME_MISMATCH);
-            }
-            // compare combination authorship years if existing
-            if (nnn.getCombinationAuthorship() != null && nnn.getCombinationAuthorship().getYear() != null
-              && g.getCombinationAuthorship() != null && g.getCombinationAuthorship().getYear() != null) {
-              if (isBefore(nnn.getCombinationAuthorship().getYear(), g.getCombinationAuthorship().getYear())) {
-                store.addIssues(nnn, Issue.PUBLISHED_BEFORE_GENUS);
-              }
-
-            } else if (nnn.getPublishedInId() != null && g.getPublishedInId() != null) {
-              // compare publication years if existing
-              Reference spr = store.references().get(nnn.getPublishedInId());
-              Reference gr = store.references().get(g.getPublishedInId());
-              if (spr.getYear() != null && gr.getYear() != null && spr.getYear() < gr.getYear()) {
-                store.addIssues(nnn, Issue.PUBLISHED_BEFORE_GENUS);
-              }
-            }
-          }
-
-          // further checks for infraspecifics
-          if (ru.rank.isInfraspecific()) {
-            Node sp = Traversals.parentWithRankOf(ru.usageNode, Rank.SPECIES);
-            if (sp == null) {
-              store.addIssues(nnn, Issue.PARENT_SPECIES_MISSING);
-            }
-          }
-        }
-
-        // validate synonyms
-        for (Node sn : Traversals.SYNONYMS.traverse(n).nodes()) {
-          RankedUsage su = NeoProperties.getRankedUsage(sn);
-          if (su.rank != ru.rank) {
-            store.addUsageIssues(sn, Issue.SYNONYM_RANK_DIFFERS);
-          }
-        }
+      // all names should have a verbatim record by now - even implicit ones!
+      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+      if (v != null) {
+        store.put(v);
       }
     });
 
-    // TODO: https://github.com/Sp2000/colplus-backend/issues/117
-    // Issue.POTENTIAL_CHRESONYM;
+    LOG.info("Apply dataset defaults");
+    store.usages().all().forEach(u -> {
+      try {
+        // taxon or synonym
+        if (u.isSynonym()) {
+          Synonym s = u.asSynonym();
+          require(s, s.getId(), "id");
+          require(s, s.getOrigin(), "origin");
 
-    // TODO: https://github.com/Sp2000/colplus-backend/issues/114
-    // Issue.POTENTIAL_VARIANT;
+          // no vernaculars, distribution etc
+          check(s, u.treatment == null, "no treatments");
+          check(s, u.distributions.isEmpty(), "no distributions");
+          check(s, u.media.isEmpty(), "no media");
+          check(s, u.vernacularNames.isEmpty(), "no vernacular names");
+
+        } else {
+          Taxon t = u.asTaxon();
+
+          // dataset defaults
+          boolean updateNeeded = false;
+          if (t.isExtinct() == null && isExtinctBySetting(t.getRank())) {
+            t.setExtinct(true);
+            updateNeeded = true;
+          }
+          if (defaultEnvironment != null && (t.getEnvironments() == null || t.getEnvironments().isEmpty())) {
+            t.setEnvironments(defaultEnvironment);
+            updateNeeded = true;
+          }
+          if (updateNeeded) {
+            store.usages().update(u);
+          }
+
+          require(t, t.getId(), "id");
+          require(t, t.getOrigin(), "origin");
+          require(t, t.getStatus(), "status");
+
+          // vernacular
+          for (VernacularName v : u.vernacularNames) {
+            require(v, v.getName(), "vernacular name");
+          }
+
+          // distribution
+          for (Distribution d : u.distributions) {
+            require(d, d.getArea(), "area");
+          }
+
+        }
+      } catch (NormalizationFailedException e) {
+        LOG.error("{}: {}", e.getMessage(), u.getId());
+        throw e;
+      }
+    });
+
+    // TODO: flag PARENT_NAME_MISMATCH, PUBLISHED_BEFORE_GENUS, PARENT_SPECIES_MISSING & CLASSIFICATION_RANK_ORDER_INVALID for accepted names
+    LOG.info("Flag classification issues");
 
     // verify reference truncation
     LOG.info("Validate references");
@@ -353,33 +277,33 @@ public class Normalizer implements Callable<Boolean> {
     }
     // track duplicates, map index name ids to first verbatim key
     final Int2IntMap nameIds = new Int2IntOpenHashMap();
-    try (var tx = store.beginTx()) {
-      store.names().all().forEach(nn -> {
-        NameMatch m = index.match(nn.getName(), true, false);
-        nn.getName().setNamesIndexType(m.getType());
-        if (m.hasMatch()) {
-          int nKey = m.getName().getKey();
-          nn.getName().setNamesIndexId(nKey);
-          // track duplicates regardless of status - but only for verbatim records!
-          if (nn.getName().getVerbatimKey() != null) {
-            if (nameIds.containsKey(nKey)) {
-              store.addIssues(nameIds.get(nKey), Issue.DUPLICATE_NAME);
-              store.addIssues(nn.getName(), Issue.DUPLICATE_NAME);
-            } else {
-              nameIds.put(nKey, (int) nn.getName().getVerbatimKey());
-            }
+    store.names().all().forEach(nn -> {
+      NameMatch m = index.match(nn.getName(), true, false);
+      nn.getName().setNamesIndexType(m.getType());
+      if (m.hasMatch()) {
+        int nKey = m.getName().getKey();
+        nn.getName().setNamesIndexId(nKey);
+        // track duplicates regardless of status - but only for verbatim records!
+        if (nn.getName().getVerbatimKey() != null) {
+          if (nameIds.containsKey(nKey)) {
+            store.addIssues(nameIds.get(nKey), Issue.DUPLICATE_NAME);
+            store.addIssues(nn.getName(), Issue.DUPLICATE_NAME);
+          } else {
+            nameIds.put(nKey, (int) nn.getName().getVerbatimKey());
           }
         }
-        store.names().update(nn, tx);
-        counts.get(m.getType()).incrementAndGet();
-        Exceptions.runtimeInterruptIfCancelled();
-      });
-      tx.commit();
-    }
+      }
+      store.names().update(nn);
+      counts.get(m.getType()).incrementAndGet();
+      Exceptions.runtimeInterruptIfCancelled();
+    });
     LOG.info("Matched all {} names: {}", MapUtils.sumValues(counts), Joiner.on(',').withKeyValueSeparator("=").join(counts));
   }
 
   private void normalize() throws InterruptedException {
+    // validate relation constraints
+    validateRelations();
+
     // cleanup synonym & parent relations
     cutSynonymCycles();
     relinkSynonymChains();
@@ -406,48 +330,68 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Normalization completed.");
   }
 
-  private void reduceRedundantNameRels() {
-    for (NomRelType type : NomRelType.values()) {
-      reduceRedundantNameRels(type);
+  private void validateRelations() {
+    LOG.info("Validate parent relations");
+    LOG.info("Validate basionym relations");
+  }
+
+  static class UniqueNameRel {
+    final NomRelType type;
+    final String from;
+    final String to;
+
+    public UniqueNameRel(NomRelType type, String from, String to) {
+      this.type = type;
+      this.from = from;
+      this.to = to;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof UniqueNameRel that)) return false;
+
+      return type == that.type &&
+        Objects.equals(from, that.from) &&
+        Objects.equals(to, that.to);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(type, from, to);
     }
   }
 
-  private void reduceRedundantNameRels(NomRelType type) {
-    RelType rt = RelType.from(type);
-    final String query = String.format("MATCH (n1:NAME)-[r:%s]->(n2:NAME)"
-                                     + " WITH n1,n2, tail(collect(r)) as coll "
-                                     + " FOREACH (x in coll | delete x)"
-                                     + " RETURN sum(size(coll)) AS cnt", rt);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      try (Result result = tx.execute(query)) {
-        if (result.hasNext()) {
-          var row = result.next();
-          var cnt = (Long) row.get("cnt");
-          if (cnt > 0) {
-            LOG.info("{} redundant {} relations removed", cnt, type);
-          }
+  private void reduceRedundantNameRels() {
+    CountMap<NomRelType> counter = new CountMap<>();
+    store.names().all().forEach(n -> {
+      Set<UniqueNameRel> rels = new HashSet<>();
+      var iter = n.relations.iterator();
+      while (iter.hasNext()) {
+        var r = iter.next();
+        if (!rels.add(new UniqueNameRel(r.getType(), r.getFromID(), r.getToID()))) {
+          // redundant - remove it
+          iter.remove();
+          counter.inc(r.getType());
         }
       }
-      tx.commit();
+    });
+    for (var entry : counter.entrySet()) {
+      if (entry.getValue() > 0) {
+        LOG.info("{} redundant {} relations removed", entry.getValue(), entry.getKey());
+      }
     }
   }
 
   private void removeOrphanSynonyms() {
-    final String query = "MATCH (s:SYNONYM) WHERE NOT (s)-[:SYNONYM_OF]->() RETURN s";
-    try (Transaction tx = store.getNeo().beginTx()) {
-      int counter = 0;
-      Result result = tx.execute(query);
-      try (ResourceIterator<Node> nodes = result.columnAs("s")) {
-        while (nodes.hasNext()) {
-          Node syn = nodes.next();
-          addUsageIssue(syn, Issue.ACCEPTED_NAME_MISSING);
-          store.remove(syn, tx);
-          counter++;
-        }
+    final AtomicInteger counter = new AtomicInteger(0);
+    store.usages().all().forEach(syn -> {
+      if (syn.isSynonym()) {
+        addUsageIssue(syn, Issue.ACCEPTED_NAME_MISSING);
+        store.usages().remove(syn.getId());
+        counter.incrementAndGet();
       }
-      tx.commit();
-      LOG.info("{} orphan synonyms removed", counter);
-    }
+    });
+    LOG.info("{} orphan synonyms removed", counter);
   }
 
   /**
@@ -458,45 +402,41 @@ public class Normalizer implements Callable<Boolean> {
    * from names data and flagged by an issue.
    */
   private void rectifyTaxonomicStatus() {
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().all().forEach(u -> {
-        if (u.isSynonym()) {
-          Synonym syn = u.asSynonym();
-          // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
-          Node n = store.nodeByMock((NodeMock)u.node, tx);
-          Name name = store.names().objByNode(NeoProperties.getNameNode(n)).getName();
-          boolean ambigous = n.getDegree(RelType.SYNONYM_OF, Direction.OUTGOING) > 1;
-          boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(name, false, syn.getAccordingToId(), null));
-          TaxonomicStatus status = syn.getStatus();
+    store.usages().all().forEach(u -> {
+      if (u.isSynonym()) {
+        Synonym syn = u.asSynonym();
+        var n = store.names().objByID(u.nameID);
+        boolean ambiguous = !n.usageIDs.isEmpty();
+        boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(n.getName(), false, syn.getAccordingToId(), null));
+        TaxonomicStatus status = syn.getStatus();
 
-          if (status == TaxonomicStatus.MISAPPLIED) {
-            if (!misapplied) {
-              store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
-            }
+        if (status == TaxonomicStatus.MISAPPLIED) {
+          if (!misapplied) {
+            store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
+          }
 
-          } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
-            if (misapplied) {
-              syn.setStatus(TaxonomicStatus.MISAPPLIED);
-              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.usages().update(u, tx);
-            } else if (!ambigous) {
-              store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
-            }
+        } else if (status == TaxonomicStatus.AMBIGUOUS_SYNONYM) {
+          if (misapplied) {
+            syn.setStatus(TaxonomicStatus.MISAPPLIED);
+            store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+            store.usages().update(u);
+          } else if (!ambiguous) {
+            store.addIssues(syn, Issue.TAXONOMIC_STATUS_DOUBTFUL);
+          }
 
-          } else if (status == TaxonomicStatus.SYNONYM) {
-            if (misapplied) {
-              syn.setStatus(TaxonomicStatus.MISAPPLIED);
-              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.usages().update(u, tx);
-            } else if (ambigous) {
-              syn.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
-              store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
-              store.usages().update(u, tx);
-            }
+        } else if (status == TaxonomicStatus.SYNONYM) {
+          if (misapplied) {
+            syn.setStatus(TaxonomicStatus.MISAPPLIED);
+            store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+            store.usages().update(u);
+          } else if (ambiguous) {
+            syn.setStatus(TaxonomicStatus.AMBIGUOUS_SYNONYM);
+            store.addIssues(syn, Issue.DERIVED_TAXONOMIC_STATUS);
+            store.usages().update(u);
           }
         }
-      });
-    }
+      }
+    });
   }
 
   /**
@@ -507,39 +447,35 @@ public class Normalizer implements Callable<Boolean> {
     AtomicInteger moved = new AtomicInteger(0);
     AtomicInteger removed = new AtomicInteger(0);
     AtomicBoolean hasAccepted = new AtomicBoolean(false);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().all().forEach(u -> {
-        if (u.isSynonym()) {
-          if (!u.distributions.isEmpty() ||
-              !u.media.isEmpty() ||
-              !u.vernacularNames.isEmpty()
-          ) {
-            // getUsage a real neo4j node (store.allUsages() only populates a dummy with an id)
-            Node n = store.nodeByMock((NodeMock)u.node, tx);
-            hasAccepted.set(false);
-            Traversals.ACCEPTED.traverse(n).nodes().forEach( accNode -> {
-              NeoUsage acc = store.usages().objByNode(accNode);
-              acc.distributions.addAll(u.distributions);
-              acc.media.addAll(u.media);
-              acc.vernacularNames.addAll(u.vernacularNames);
-              store.usages().update(acc, tx);
-              hasAccepted.set(true);
-            });
+    store.usages().all().forEach(u -> {
+      if (u.isSynonym()) {
+        if (u.hasSupplementaryInfos()) {
+          hasAccepted.set(false);
+          for (var acc : store.usages().accepted(u)) {
+            acc.distributions.addAll(u.distributions);
+            acc.media.addAll(u.media);
+            acc.vernacularNames.addAll(u.vernacularNames);
+            acc.estimates.addAll(u.estimates);
+            acc.properties.addAll(u.properties);
+            store.usages().update(acc);
+            hasAccepted.set(true);
+          }
 
-            u.distributions.clear();
-            u.media.clear();
-            u.vernacularNames.clear();
-            store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
-            store.usages().update(u, tx);
-            if (hasAccepted.get()) {
-              moved.incrementAndGet();
-            } else {
-              removed.incrementAndGet();
-            }
+          u.distributions.clear();
+          u.media.clear();
+          u.vernacularNames.clear();
+          u.estimates.clear();
+          u.properties.clear();
+          store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
+          store.usages().update(u);
+          if (hasAccepted.get()) {
+            moved.incrementAndGet();
+          } else {
+            removed.incrementAndGet();
           }
         }
-      });
-    }
+      }
+    });
     LOG.info("Moved associated data from {} synonyms to their accepted taxon", moved);
     LOG.info("Removed associated data from {} synonyms without accepted taxon", removed);
   }
@@ -562,52 +498,9 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   private int cutNonOverlappingBasionymChains() {
-    final String query = "MATCH (x)-[r1:HAS_BASIONYM]->(b1)-[r2:HAS_BASIONYM]->(b2:NAME) " +
-      "RETURN x, b1, b2, r1, r2";
+    //TODO: impl see old code
     int counter = 0;
     LongSet visited = new LongOpenHashSet();
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = tx.execute(query);
-      while (result.hasNext()) {
-        Map<String, Object> row = result.next();
-        Node x = (Node) row.get("x");
-        Node b1 = (Node) row.get("b1");
-        Node b2 = (Node) row.get("b2");
-
-        // make sure any of the 3 nodes in play have not been visited before
-        // otherwise skip this relationship and wait for the next round
-        if (visited.contains(x.getId()) || visited.contains(b1.getId()) || visited.contains(b2.getId())) {
-          LOG.debug("Skip overlapping relation {}->{}->{}", x.getId(), b1.getId(), b2.getId());
-          continue;
-        }
-        visited.add(x.getId());
-        visited.add(b1.getId());
-        visited.add(b2.getId());
-
-        // pick the bad relation to delete.
-        // count number of incoming basionym relations = combinations
-        int d1 = b1.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
-        int d2 = b2.getDegree(RelType.HAS_BASIONYM, Direction.INCOMING);
-
-        // default to remove b2 with the "higher" sorting id property to getUsage a determine result
-        String badRelAlias;
-        // but prefer r1 in case it links to a more used basionym
-        if (d1 < d2) {
-          badRelAlias = "r1";
-        } else {
-          badRelAlias = "r2";
-        }
-        Relationship bad = (Relationship) row.get(badRelAlias);
-
-        // remove basionym relations
-        addNameIssue(bad.getStartNode(), Issue.CHAINED_BASIONYM);
-        addNameIssue(bad.getEndNode(), Issue.CHAINED_BASIONYM);
-        LOG.debug("Delete rel {}-{}>{}", bad.getStartNodeId(), bad.getType().name(), bad.getEndNodeId());
-        bad.delete();
-        counter++;
-      }
-      tx.commit();
-    }
     return counter;
   }
 
@@ -626,41 +519,36 @@ public class Normalizer implements Callable<Boolean> {
     }
 
     LOG.info("Start processing higher denormalized classification ...");
-    store.process(Labels.TAXON, new BiConsumer<Node, Transaction>() {
-      @Override
-      public void accept(Node u, Transaction tx) {
-        // the highest current parent of n
-        RankedUsage highest = findHighestParent(u);
-        // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
-        if (highest != null && highest.rank != Rank.KINGDOM) {
-          NeoUsage t = store.usages().objByNode(u);
-          if (t.classification != null) {
-            applyClassification(highest, t.classification, tx);
-          }
+    store.usages().allTaxa().forEach(u -> {
+      // the highest current parent of n
+      var highest = findHighestParent(u);
+      // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
+      if (highest != null && highest.usage.getRank() != Rank.KINGDOM) {
+        if (u.classification != null) {
+          applyClassification(highest, u.classification);
         }
       }
     });
   }
 
-  private RankedUsage findHighestParent(Node n) {
+  private UsageData findHighestParent(UsageData n) {
     // the highest current parent of n
-    RankedUsage highest = null;
+    UsageData highest = null;
     if (meta.isParentNameMapped()) {
       // verify if we already have a classification, that it ends with a known rank
-      Node p = NeoDbUtils.lastOrNull(Traversals.PARENTS.traverse(n).nodes());
-      highest = p == null ? null : NeoProperties.getRankedUsage(p);
+      highest = CollectionUtils.lastOrNull(store.usages().parents(n));
       if (highest != null
-          && !highest.usageNode.equals(n)
-          && !highest.rank.notOtherOrUnranked()
-          ) {
-        LOG.debug("Node {} already has a classification which ends in an uncomparable rank.", n.getId());
+          && !highest.getId().equals(n.getId())
+          && !highest.usage.getRank().notOtherOrUnranked()
+      ) {
+        LOG.debug("Usage {} already has a classification which ends in an uncomparable rank.", n.getId());
         addUsageIssue(n, Issue.CLASSIFICATION_NOT_APPLIED);
         return null;
       }
     }
     if (highest == null) {
       // otherwise use this node
-      highest = NeoProperties.getRankedUsage(n);
+      highest = n;
     }
     return highest;
   }
@@ -670,21 +558,21 @@ public class Normalizer implements Callable<Boolean> {
    * @param taxon
    * @param cl
    */
-  private void applyClassification(RankedUsage taxon, Classification cl, Transaction tx) {
+  private void applyClassification(UsageData taxon, Classification cl) {
     // first modify classification to only keep those ranks we want to apply!
     // exclude lowest rank from classification to be applied if this taxon is rankless and has the same name
-    if (taxon.rank == null || taxon.rank.isUncomparable()) {
+    var nn = store.loadName(taxon);
+    if (nn.getName().getRank() == null || nn.getName().getRank().isUncomparable()) {
       Rank lowest = cl.getLowestExistingRank();
-      if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(taxon.name)) {
+      if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(nn.getName().getScientificName())) {
         cl.setByRank(lowest, null);
         // apply the classification rank to unranked taxon and reload immutable taxon instance
-        updateRank(taxon.nameNode, lowest, tx);
-        taxon = NeoProperties.getRankedUsage(taxon.usageNode);
+        updateRank(nn, lowest);
       }
     }
     // ignore same rank from classification if accepted
-    if (!taxon.isSynonym() && taxon.rank != null) {
-      cl.setByRank(taxon.rank, null);
+    if (!taxon.isSynonym() && nn.getName().getRank() != null) {
+      cl.setByRank(nn.getName().getRank(), null);
     }
     // ignore genus and below for synonyms
     // http://dev.gbif.org/issues/browse/POR-2992
@@ -695,27 +583,27 @@ public class Normalizer implements Callable<Boolean> {
       cl.setSpecies(null);
     }
 
-    // now reconstruct the given classification as linked neo4j nodes
-    // reusing existing nodes if possible, otherwise creating new ones
-    // and at the very end apply that classification to the taxon.node
-    Node parent = null;
+    // now reconstruct the given classification with the parentID field
+    // reusing existing taxa if possible, otherwise creating new ones
+    // and at the very end apply that classification to the taxon
+    UsageData parent = null;
     Rank parentRank = null;
     // from kingdom to subgenus
     for (final Rank hr : Classification.RANKS) {
-      if ((taxon.rank == null || !taxon.rank.higherThan(hr)) && cl.getByRank(hr) != null) {
+      if ((nn.getName().getRank() == null || !nn.getName().getRank().higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
         // to be safe we query for both versions
         var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
         final ExtinctName normedName = parseCache.get(rnn);
-        for (Node n : store.usagesByNames(hr, true, tx, cl.getByRankCleaned(hr), normedName.pname == null ? null : normedName.pname.getScientificName())) {
+        for (String uid : store.usageIDsByNames(hr, true, cl.getByRankCleaned(hr), normedName.pname == null ? null : normedName.pname.getScientificName())) {
           // ignore synonyms
-          if (n.hasLabel(Labels.SYNONYM)) continue;
+          var u = store.usages().objByID(uid);
+          if (u.isSynonym()) continue;
           if (parent == null) {
             // make sure node does also not have a higher linnean rank parent
-            Node p = NeoDbUtils.firstOrNull(Traversals.CLASSIFICATION.traverse(n).nodes());
-            if (p == null) {
+            if (u.usage.getParentId() == null) {
               // aligns!
               found = true;
             }
@@ -723,13 +611,12 @@ public class Normalizer implements Callable<Boolean> {
           } else {
             // verify the parents for the next higher rank are the same
             // we dont want to apply a contradicting classification with the same name
-            Node p = Traversals.parentOf(n);
-            Node p2 = Traversals.parentWithRankOf(n, parentRank);
-            if ((p != null && p.equals(parent)) || (p2 != null && p2.equals(parent) && mappedRanksInBetween(n, p2).isEmpty())) {
+            var p = store.usages().objByID(u.usage.getParentId());
+            var p2 = store.usages().parent(u, parentRank);
+            if ((p != null && p.getId().equals(parent.getId())) || (p2 != null && p2.getId().equals(parent.getId()) && mappedRanksInBetween(p, p2).isEmpty())) {
               found = true;
             } else if (p == null) {
               // if the matched node has not yet been denormalized we need to compare the classification props
-              NeoUsage u = store.usages().objByNode(n);
               if (u.classification != null && u.classification.equalsAboveRank(cl, hr)) {
                 found = true;
               }
@@ -737,73 +624,54 @@ public class Normalizer implements Callable<Boolean> {
           }
 
           if (found) {
-            parent = n;
+            parent = u;
             parentRank = hr;
             // did we match against an unranked name? Then use the queried rank
-            RankedUsage ru = NeoProperties.getRankedUsage(n);
-            if (Rank.UNRANKED == ru.rank) {
-              updateRank(ru.nameNode, hr, tx);
+            var un = store.names().objByID(u.nameID);
+            if (Rank.UNRANKED == un.getRank()) {
+              updateRank(un, hr);
             }
             break;
           }
         }
         if (!found) {
           // persistent new higher taxon if not found
-          Node lowerParent = createHigherTaxon(normedName, hr, tx).node;
+          var lowerParent = createHigherTaxon(normedName, hr);
           // insert parent relationship?
-          store.assignParent(parent, lowerParent);
+          store.usages().assignParent(lowerParent, parent.getId());
           parent = lowerParent;
           parentRank = hr;
         }
       }
     }
     // finally apply lowest parent to initial node
-    store.assignParent(parent, taxon.usageNode);
+    store.usages().assignParent(taxon, parent.getId());
   }
 
-  private Set<Rank> mappedRanksInBetween(Node n, Node n2){
-    return Traversals.parentsUntil(n, n2).stream()
-        .map(NeoProperties::getRankedUsage)
-        .map(ru -> ru.rank)
+  private Set<Rank> mappedRanksInBetween(UsageData u1, UsageData u2){
+    return store.usages().parentsUntil(u1, u2.getId()).stream()
+        .map(ru -> {
+          var n = store.names().objByID(ru.nameID);
+          return n.getRank();
+        })
         .filter(r -> meta.getDenormedRanksMapped().contains(r))
         .collect(Collectors.toSet());
   }
 
-  /**
-   * @param n a Name node (not usage!)
-   */
-  private void updateRank(Node n, Rank r, Transaction tx) {
-    NeoName name = store.names().objByNode(n);
+  private void updateRank(NameData name, Rank r) {
     name.getName().setRank(r);
-    store.names().update(name, tx);
+    store.names().update(name);
   }
 
   /**
    * Sanitizes synonym relations and cuts cycles at lowest rank
    */
   private void cutSynonymCycles() {
+    //TODO: impl see old code Issue.CHAINED_SYNONYM
     LOG.info("Cleanup synonym cycles");
     final String query = "MATCH (s)-[sr:SYNONYM_OF]->(x)-[:SYNONYM_OF*]->(s) RETURN sr LIMIT 1";
 
     int counter = 0;
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = tx.execute(query);
-      ;
-      while (result.hasNext()) {
-        Relationship sr = (Relationship) result.next().get("sr");
-
-        Node n = sr.getStartNode();
-        addUsageIssue(n, Issue.CHAINED_SYNONYM);
-        sr.delete();
-
-        if (counter++ % 100 == 0) {
-          LOG.debug("Synonym cycles cut so far: {}", counter);
-        }
-        result = tx.execute(query);
-        ;
-      }
-      tx.commit();
-    }
     LOG.info("{} synonym cycles resolved", counter);
   }
 
@@ -824,8 +692,8 @@ public class Normalizer implements Callable<Boolean> {
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private NeoUsage createHigherTaxon(ExtinctName eName, Rank rank, Transaction tx) {
-    NeoUsage t = NeoUsage.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
+  private UsageData createHigherTaxon(ExtinctName eName, Rank rank) {
+    UsageData t = UsageData.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
 
     eName.pname.setId(null); // we don't want to reuse the name id
     t.usage.setName(eName.pname);
@@ -837,7 +705,7 @@ public class Normalizer implements Callable<Boolean> {
       t.asTaxon().setEnvironments(Set.of(dataset.getEnvironment()));
     }
     // store both, which creates a single new neo node
-    store.createNameAndUsage(t, tx);
+    store.createNameAndUsage(t);
     return t;
   }
 
@@ -845,25 +713,12 @@ public class Normalizer implements Callable<Boolean> {
    * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    */
   private void relinkSynonymChains() {
+    //TODO: impl see old code Issue.CHAINED_SYNONYM
     LOG.debug("Relink synonym chains to single accepted");
     final String query = "MATCH (s)-[srs:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
         "WITH srs, t UNWIND srs AS sr " +
         "RETURN DISTINCT sr, t";
     int counter = 0;
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = tx.execute(query);
-      while (result.hasNext()) {
-        Map<String, Object> row = result.next();
-        Node acc = (Node) row.get("t");
-        Relationship sr = (Relationship) row.get("sr");
-        Node syn = sr.getStartNode();
-        addUsageIssue(syn, Issue.CHAINED_SYNONYM);
-        store.createSynonymRel(syn, acc);
-        sr.delete();
-        counter++;
-      }
-      tx.commit();
-    }
     LOG.info("{} synonym chains to a taxon resolved", counter);
 
 
@@ -872,16 +727,6 @@ public class Normalizer implements Callable<Boolean> {
         "WITH srs UNWIND srs AS sr " +
         "RETURN DISTINCT sr";
     AtomicInteger cnt = new AtomicInteger(0);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Result result = tx.execute(query2);
-      result.<Relationship>columnAs("sr").forEachRemaining( sr -> {
-        Node syn = sr.getStartNode();
-        addUsageIssue(syn, Issue.CHAINED_SYNONYM);
-        sr.delete();
-        cnt.incrementAndGet();
-      });
-      tx.commit();
-    }
     LOG.info("{} synonym chains to a taxon resolved", counter);
   }
 
@@ -896,61 +741,29 @@ public class Normalizer implements Callable<Boolean> {
    * presence of both confuses subsequent imports, see http://dev.gbif.org/issues/browse/POR-2755
    */
   private void preferSynonymOverParentRel() {
+    //TODO: impl see old code Issue.SYNONYM_PARENT
     LOG.info("Cleanup relations, preferring synonym over parent relations");
     int parentOfRelDeleted = 0;
     int parentOfRelRelinked = 0;
     int childOfRelDeleted = 0;
-    try (Transaction tx = store.getNeo().beginTx()) {
-      for (Node syn : Iterators.loop(tx.findNodes(Labels.SYNONYM))) {
-        // if the synonym is a parent of another child taxon - relink accepted as parent of child
-        Set<Node> accepted = Traversals.acceptedOf(syn);
-        for (Relationship pRel : syn.getRelationships(Direction.OUTGOING, RelType.PARENT_OF)) {
-          Node child = pRel.getOtherNode(syn);
-          pRel.delete();
-          addUsageIssue(syn, Issue.SYNONYM_PARENT);
-          if (accepted.contains(child)) {
-            // accepted is also the parent. Simply delete the parent rel in this case
-            parentOfRelDeleted++;
-          } else {
-            String synonymName = NeoProperties.getScientificNameWithAuthor(syn);
-            if (accepted.isEmpty()) {
-              LOG.info("No accepted taxon for synonym {} with a child {}. Child becomes root taxon!", synonymName, NeoProperties.getScientificNameWithAuthor(child));
-            } else {
-              if (accepted.size() > 1) {
-                // multiple accepted taxa. We will take the first, but log an issue!
-                LOG.info("{} accepted taxa for synonym {} with a child {}. Relink child to first accepted only!", accepted.size(), synonymName, NeoProperties.getScientificNameWithAuthor(child));
-              }
-              store.assignParent(IterUtils.firstOrNull(accepted), child);
-              parentOfRelRelinked++;
-            }
-          }
-        }
-        // remove parent rel for synonyms
-        for (Relationship pRel : syn.getRelationships(Direction.INCOMING, RelType.PARENT_OF)) {
-          pRel.delete();
-          childOfRelDeleted++;
-        }
-      }
-      tx.commit();
-    }
     LOG.info("Synonym relations cleaned up. "
             + "{} hasParent relations deleted,"
             + "{} isParentOf relations deleted, {} isParentOf rels moved from synonym to accepted",
         childOfRelDeleted, parentOfRelDeleted, parentOfRelRelinked);
   }
 
-  private void addNameIssue(Node node, Issue issue) {
-    store.addIssues(store.names().objByNode(node).getName(), issue);
+  private void addNameIssue(NameData data, Issue issue) {
+    store.addIssues(data.getName(), issue);
   }
 
-  private void addUsageIssue(Node node, Issue issue) {
-    store.addIssues(store.usages().objByNode(node).usage, issue);
+  private void addUsageIssue(UsageData data, Issue issue) {
+    store.addIssues(data.usage, issue);
   }
 
   private void insertData() throws NormalizationFailedException, InterruptedException {
     // closing the batch inserter opens the normalizer db again for regular access via the store
     try {
-      NeoInserter inserter;
+      DataInserter inserter;
       switch (format) {
         case COLDP:
           inserter = new ColdpInserter(store, sourceDir, dataset.getSettings(), refFactory);

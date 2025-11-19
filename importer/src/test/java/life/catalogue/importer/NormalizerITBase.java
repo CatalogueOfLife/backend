@@ -1,19 +1,21 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.NotUniqueRuntimeException;
-import life.catalogue.importer.neo.model.*;
-import life.catalogue.importer.neo.printer.PrinterUtils;
-import life.catalogue.importer.neo.traverse.Traversals;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
+import life.catalogue.importer.store.NotUniqueRuntimeException;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.RankedName;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
@@ -22,8 +24,6 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -37,9 +37,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
-import org.neo4j.graphdb.*;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.io.Files;
 
@@ -50,10 +48,10 @@ import static org.junit.Assert.*;
 
 abstract class NormalizerITBase {
   
-  protected NeoDb store;
+  protected ImportStore store;
   private int attempt;
   protected NormalizerConfig cfg;
-  protected NeoDbFactory neoDbFactory;
+  protected ImportStoreFactory importStoreFactory;
   private final DataFormat format;
   private final Supplier<NameIndex> nameIndexSupplier;
   protected DatasetWithSettings dws;
@@ -75,7 +73,7 @@ abstract class NormalizerITBase {
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
     attempt = 1;
-    neoDbFactory = new NeoDbFactory(cfg);
+    importStoreFactory = new ImportStoreFactory(cfg);
   }
 
   @After
@@ -101,25 +99,23 @@ abstract class NormalizerITBase {
   }
 
   public void assertTree() throws Exception {
-    InputStream tree = getClass().getResourceAsStream(resourceDir() + "/expected.tree");
-    String expected = UTF8IoUtils.readString(tree).trim();
-    String neotree = PrinterUtils.textTree(store.getNeo());
-    assertEquals(expected, neotree);
+    InputStream treeSteam = getClass().getResourceAsStream(resourceDir() + "/expected.tree");
+    String expected = UTF8IoUtils.readString(treeSteam).trim();
+    String tree = store.printTree();
+    assertEquals(expected, tree);
 
     // check also bare names if file exists
     InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir() + "/expected-barenames.txt");
     if (bareNamesFile != null) {
       expected = UTF8IoUtils.readString(bareNamesFile).trim();
 
-      String bareNames;
-      try (Transaction tx = store.getNeo().beginTx()) {
-        bareNames = store.bareNames(tx)
-                         .map(NeoProperties::getRankedName)
-                         .map(RankedName::toString)
-                         .stream()
+      String bareNames = store.bareNames()
+                         .map(nd -> {
+                           var sn = new RankedName(nd);
+                           return sn.toString();
+                         })
                          .sorted()
                          .collect(Collectors.joining("\n"));
-      }
       assertEquals("Bare names not as expected", expected, bareNames);
     }
   }
@@ -186,7 +182,7 @@ abstract class NormalizerITBase {
   
   protected void normalize(Path arch, @Nullable DatasetSettings settings) {
     try {
-      store = neoDbFactory.create(1, attempt);
+      store = importStoreFactory.create(1, attempt);
       dws = new DatasetWithSettings();
       dws.setKey(store.getDatasetKey());
       if (settings != null) {
@@ -215,12 +211,12 @@ abstract class NormalizerITBase {
     return null;
   }
 
-  public VerbatimRecord vByNameID(String id, Transaction tx) {
-    return store.getVerbatim(store.names().objByID(id, tx).getVerbatimKey());
+  public VerbatimRecord vByNameID(String id) {
+    return store.getVerbatim(store.names().objByID(id).getVerbatimKey());
   }
   
-  public VerbatimRecord vByUsageID(String id, Transaction tx) {
-    return store.getVerbatim(store.usages().objByID(id, tx).getVerbatimKey());
+  public VerbatimRecord vByUsageID(String id) {
+    return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
 
   public Reference accordingTo(NameUsage nu) {
@@ -230,73 +226,55 @@ abstract class NormalizerITBase {
     return null;
   }
   
-  public NeoUsage byName(String name, Transaction tx) {
-    return byName(name, null, tx);
-  }
-  
-  public NeoUsage byName(String name, @Nullable String author, Transaction tx) {
-    Set<Node> usageNodes = store.usagesByName(name, author, null, true, tx);
-    if (usageNodes.isEmpty()) {
-      throw new NotFoundException();
-    }
-    if (usageNodes.size() > 1) {
-      throw new NotUniqueRuntimeException("scientificName", name);
-    }
-    return store.usageWithName(usageNodes.iterator().next());
-  }
-  
-  public NeoUsage accepted(Node syn) {
-    List<RankedUsage> accepted = store.accepted(syn);
+  public UsageData accepted(UsageData syn) {
+    var accepted = store.usages().accepted(syn);
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return store.usageWithName(accepted.get(0).usageNode);
+    return accepted.get(0);
   }
   
-  public List<NeoUsage> parents(Node child, String... parentIdsToVerify) {
-    List<NeoUsage> parents = new ArrayList<>();
-    int idx = 0;
-    for (RankedUsage rn : store.parents(child)) {
-      NeoUsage u = store.usageWithName(rn.usageNode);
-      parents.add(u);
-      if (parentIdsToVerify != null) {
-        assertEquals(u.getId(), parentIdsToVerify[idx]);
-        idx++;
-      }
-    }
+  public List<UsageData> parents(UsageData child, String... parentIdsToVerify) {
+    List<UsageData> parents = store.usages().parents(child);
     if (parentIdsToVerify != null) {
       assertEquals(parents.size(), parentIdsToVerify.length);
+      int idx = 0;
+      for (var p : parents) {
+        assertEquals(p.getId(), parentIdsToVerify[idx]);
+        idx++;
+      }
     }
     return parents;
   }
   
-  public Set<NeoUsage> synonyms(Node accepted, String... synonymNameIdsToVerify) {
-    Set<NeoUsage> synonyms = new HashSet<>();
-    for (Node sn : Traversals.SYNONYMS.traverse(accepted).nodes()) {
-      synonyms.add(Preconditions.checkNotNull(store.usageWithName(sn)));
-    }
+  public Set<UsageData> synonyms(UsageData accepted, String... synonymNameIdsToVerify) {
+    Set<UsageData> synonyms = new HashSet<>();
+    store.usages().allSynonyms().forEach(s -> {
+      if (s.asSynonym().getParentId().equals(accepted.getId())) {
+        synonyms.add(s);
+      }
+    });
     if (synonymNameIdsToVerify != null) {
       Set<String> ids = new HashSet<>();
       ids.addAll(Arrays.asList(synonymNameIdsToVerify));
       
       assertEquals(ids.size(), synonyms.size());
-      for (NeoUsage s : synonyms) {
+      for (UsageData s : synonyms) {
         assertTrue(ids.contains(s.usage.getName().getId()));
       }
     }
     return synonyms;
   }
   
-  public NeoName assertBasionym(NeoUsage usage, @Nullable String basionymNameId) {
-    NeoName nn = null;
-    Relationship rel = usage.nameNode.getSingleRelationship(RelType.HAS_BASIONYM, Direction.OUTGOING);
+  public NameData assertBasionym(UsageData usage, @Nullable String basionymNameId) {
+    NameData nn = store.names().objByID(usage.nameID);
+
     if (basionymNameId == null) {
-      assertNull(rel);
+      assertTrue(nn.relations.isEmpty());
     } else {
-      Node bn = rel.getOtherNode(usage.nameNode);
-      nn = store.names().objByNode(bn);
-      assertNotNull(nn);
-      assertEquals(basionymNameId, nn.getName().getId());
+      var rel = nn.getRelation(NomRelType.BASIONYM);
+      assertNotNull(rel);
+      assertEquals(basionymNameId, rel.getToID());
     }
     return nn;
   }
@@ -309,29 +287,44 @@ abstract class NormalizerITBase {
     }
     return true;
   }
-  
-  public NeoUsage usageByNameID(String id, Transaction tx) {
-    List<Node> usages = store.usageNodesByName(store.names().nodeByID(id, tx));
-    if (usages.size() != 1) {
+
+  public UsageData byName(String name) {
+    return byName(name, null);
+  }
+
+  public UsageData byName(String name, @Nullable String author) {
+    Set<String> usageIDs = store.usageIDsByName(name, author, null, true);
+    if (usageIDs.isEmpty()) {
+      throw new NotFoundException(name);
+    }
+    if (usageIDs.size() > 1) {
+      throw new NotUniqueRuntimeException("scientificName", name);
+    }
+    return store.usageWithName(usageIDs.iterator().next());
+  }
+
+  public UsageData byName(Rank rank, String name) {
+    Set<String> usageIDs = store.usageIDsByName(name, null, rank, true);
+    if (usageIDs.size()!=1) {
+      throw new IllegalStateException(usageIDs.size() + " usage nodes matching " + rank + " " + name);
+    }
+    return store.usageWithName(usageIDs.iterator().next());
+  }
+
+  public UsageData byNameID(String id) {
+    var nn = store.names().objByID(id);
+    if (nn.usageIDs.size() != 1) {
       fail("No single usage for name " + id);
     }
-    return store.usageWithName(usages.get(0));
+    return store.usageWithName(nn.usageIDs.iterator().next());
   }
 
-  public NeoUsage usageByID(String id, Transaction tx) {
-    return store.usageWithName(store.usages().nodeByID(id, tx));
+  public UsageData usageByID(String id) {
+    return store.usageWithName(id);
   }
   
-  public NeoUsage usageByName(Rank rank, String name, Transaction tx) {
-    Set<Node> usages = store.usagesByName(name, null, rank, true, tx);
-    if (usages.size()!=1) {
-      throw new IllegalStateException(usages.size() + " usage nodes matching " + rank + " " + name);
-    }
-    return store.usageWithName(usages.iterator().next());
-  }
-
-  public NeoName nameByID(String id, Transaction tx) {
-    return store.names().objByID(id, tx);
+  public NameData nameByID(String id) {
+    return store.names().objByID(id);
   }
 
   public Reference refByID(String id) {
@@ -339,17 +332,11 @@ abstract class NormalizerITBase {
   }
 
   public void debug() throws Exception {
-    store.dump(new File("graphs/debugtree.dot"));
-  }
-
-  public void printTree() throws Exception {
     store.debug();
   }
 
-  public void printRelations(Node n) throws Exception {
-    n.getRelationships().forEach(rel -> {
-      System.out.println(rel.getStartNodeId() + " --"+ rel.getType() + "-> " + rel.getEndNodeId());
-    });
+  public void printTree() throws Exception {
+    store.printTree();
   }
 
 }

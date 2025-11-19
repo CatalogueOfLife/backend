@@ -6,7 +6,7 @@ import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.importer.InserterBaseTest;
-import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.DataInserter;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -20,13 +20,13 @@ import static org.junit.Assert.*;
 public class AcefInserterTest extends InserterBaseTest {
   
   @Override
-  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
+  public DataInserter newInserter(Path resource, DatasetSettings settings) throws IOException  {
     return new AcefInserter(store, resource, settings, refFactory);
   }
 
   @Test
   public void readMetadata() throws Exception {
-    NeoInserter ins = setup("/acef/0");
+    DataInserter ins = setup("/acef/0");
     DatasetWithSettings d = ins.readMetadata().get();
     
     assertEquals(DatasetType.TAXONOMIC, d.getType());
@@ -53,7 +53,7 @@ public class AcefInserterTest extends InserterBaseTest {
   
   @Test
   public void readMetadataBadType() throws Exception {
-    NeoInserter ins = setup("/acef/16");
+    DataInserter ins = setup("/acef/16");
     DatasetWithSettings d = ins.readMetadata().get();
     
     assertNull(d.getType());

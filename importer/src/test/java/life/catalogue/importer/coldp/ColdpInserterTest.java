@@ -5,9 +5,8 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
+import life.catalogue.importer.DataInserter;
 import life.catalogue.importer.InserterBaseTest;
-import life.catalogue.importer.NeoInserter;
-import life.catalogue.importer.neo.model.RelType;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -19,7 +18,6 @@ import java.util.List;
 
 import org.jbibtex.BibTeXDatabase;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
 
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
 import de.undercouch.citeproc.csl.CSLType;
@@ -33,69 +31,63 @@ public class ColdpInserterTest extends InserterBaseTest {
    */
   @Test
   public void bracketYearAuthorship() throws Exception {
-    NeoInserter ins = setup("/coldp/36");
+    DataInserter ins = setup("/coldp/36");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var n = store.names().objByID("667", tx).getName();
-      assertEquals("Toleria aegerides", n.getScientificName());
-      assertEquals("(Strand, [1916])", n.getAuthorship());
-      assertEquals(Rank.SPECIES, n.getRank());
-    }
+    var n = store.names().objByID("667").getName();
+    assertEquals("Toleria aegerides", n.getScientificName());
+    assertEquals("(Strand, [1916])", n.getAuthorship());
+    assertEquals(Rank.SPECIES, n.getRank());
   }
 
   @Test
   public void nameInterpretations() throws Exception {
-    NeoInserter ins = setup("/coldp/39");
+    DataInserter ins = setup("/coldp/39");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.usages().allIds().forEach(id -> {
-        var u = store.usageWithName(id, tx);
-        var n = u.usage.getName();
+    store.usages().allIds().forEach(id -> {
+      var u = store.usageWithName(id);
+      var n = u.usage.getName();
 
-        assertEquals("Toleria aegerides", n.getScientificName());
-        assertEquals("(Strand, 1916)", n.getAuthorship());
-        assertEquals(Rank.SPECIES, n.getRank());
-        assertTrue(u.asTaxon().isProvisional());
+      assertEquals("Toleria aegerides", n.getScientificName());
+      assertEquals("(Strand, 1916)", n.getAuthorship());
+      assertEquals(Rank.SPECIES, n.getRank());
+      assertTrue(u.asTaxon().isProvisional());
 
-        if (id.length()==1) {
-          assertNull(n.isOriginalSpelling());
+      if (id.length()==1) {
+        assertNull(n.isOriginalSpelling());
 
-        } else if (id.length()==2) {
-          assertTrue(n.isOriginalSpelling());
-          assertEquals("Toleria aegerides [sic] (Strand, 1916)", u.usage.getLabel());
+      } else if (id.length()==2) {
+        assertTrue(n.isOriginalSpelling());
+        assertEquals("Toleria aegerides [sic] (Strand, 1916)", u.usage.getLabel());
 
-        } else if (id.length()==3) {
-          assertFalse(n.isOriginalSpelling());
-          assertEquals("Toleria aegerides corrig. (Strand, 1916)", u.usage.getLabel());
-        }
-      });
-    }
+      } else if (id.length()==3) {
+        assertFalse(n.isOriginalSpelling());
+        assertEquals("Toleria aegerides corrig. (Strand, 1916)", u.usage.getLabel());
+      }
+    });
   }
 
   @Test
   public void bareNamesWithAccordingToID() throws Exception {
-    NeoInserter ins = setup("/coldp/20");
+    DataInserter ins = setup("/coldp/20");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      assertNull(store.usages().objByID("111", tx));
-      assertNull(store.usages().objByID("222", tx));
+    assertNull(store.usages().objByID("111"));
+    assertNull(store.usages().objByID("222"));
 
-      var n = store.names().objByID("111", tx).getName();
-      assertEquals("Catyclia", n.getScientificName());
-      assertEquals(Rank.GENUS, n.getRank());
+    var n = store.names().objByID("111").getName();
+    assertEquals("Catyclia", n.getScientificName());
+    assertEquals(Rank.GENUS, n.getRank());
 
-      n = store.names().objByID("222", tx).getName();
-      assertEquals("Killmora", n.getScientificName());
-      assertEquals(Rank.GENUS, n.getRank());
-    }
+    n = store.names().objByID("222").getName();
+    assertEquals("Killmora", n.getScientificName());
+    assertEquals(Rank.GENUS, n.getRank());
   }
 
   @Test
   public void readMetadata() throws Exception {
-    NeoInserter ins = setup("/coldp/0");
+    DataInserter ins = setup("/coldp/0");
     DatasetWithSettings d = ins.readMetadata().get();
     
     assertNull(d.getType());
@@ -128,47 +120,41 @@ public class ColdpInserterTest extends InserterBaseTest {
 
   @Test
   public void relatedName() throws Exception {
-    NeoInserter ins = setup("/coldp/16");
+    DataInserter ins = setup("/coldp/16");
     ins.insertAll();
 
-    for (RelType rt : RelType.values()) {
-      if (rt.isSpeciesInteraction()) {
-        try (Transaction tx = store.getNeo().beginTx()) {
-          store.iterRelations(tx, rt).stream().forEach(rel -> {
-            var si = store.toSpeciesInteraction(rel);
-            assertNotNull(si.getTaxonId());
-            assertNotNull(si.getRelatedTaxonScientificName());
-            assertEquals(rt.specInterType, si.getType());
-          });
-        }
+    store.usages().all().forEach(u -> {
+      for (var rel : u.spiRelations) {
+        var si = rel.toSpeciesInteraction();
+        assertNotNull(si.getTaxonId());
+        assertNotNull(si.getRelatedTaxonScientificName());
+        assertNotNull(si.getType());
       }
-    }
+    });
   }
 
   @Test
   public void fungi13() throws Exception {
-    NeoInserter ins = setup("/coldp/13");
+    DataInserter ins = setup("/coldp/13");
     ins.insertAll();
 
-    try (Transaction tx = store.getNeo().beginTx()) {
-      Name n = store.names().objByID("139502", tx).getName();
-      assertEquals("Agaricus candidus caerulescens", n.getScientificName());
-      assertEquals("Agaricus", n.getGenus());
-      assertEquals("candidus", n.getSpecificEpithet());
-      assertEquals("caerulescens", n.getInfraspecificEpithet());
-      assertNull(n.getInfragenericEpithet());
-      assertNull(n.getUninomial());
-      assertEquals(Rank.OTHER, n.getRank());
+    Name n = store.names().objByID("139502").getName();
+    assertEquals("Agaricus candidus caerulescens", n.getScientificName());
+    assertEquals("Agaricus", n.getGenus());
+    assertEquals("candidus", n.getSpecificEpithet());
+    assertEquals("caerulescens", n.getInfraspecificEpithet());
+    assertNull(n.getInfragenericEpithet());
+    assertNull(n.getUninomial());
+    assertEquals(Rank.OTHER, n.getRank());
 
-      n = store.names().objByID("588900", tx).getName();
-      assertEquals("Lecidea sabuletorum sabuletorum", n.getScientificName());
-      assertEquals("Lecidea", n.getGenus());
-      assertEquals("sabuletorum", n.getSpecificEpithet());
-      assertEquals("sabuletorum", n.getInfraspecificEpithet());
-      assertNull(n.getInfragenericEpithet());
-      assertNull(n.getUninomial());
-      assertEquals(Rank.OTHER, n.getRank());
-    }
+    n = store.names().objByID("588900").getName();
+    assertEquals("Lecidea sabuletorum sabuletorum", n.getScientificName());
+    assertEquals("Lecidea", n.getGenus());
+    assertEquals("sabuletorum", n.getSpecificEpithet());
+    assertEquals("sabuletorum", n.getInfraspecificEpithet());
+    assertNull(n.getInfragenericEpithet());
+    assertNull(n.getUninomial());
+    assertEquals(Rank.OTHER, n.getRank());
   }
 
 
@@ -203,7 +189,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     CslUtil.buildCitation(TestEntityGenerator.newReference("My Sharona"));
     CslUtil.buildCitation(TestEntityGenerator.newReference("Telecon in Death Valley"));
 
-    NeoInserter inserter = setup("/coldp/bibtex");
+    DataInserter inserter = setup("/coldp/bibtex");
     inserter.insertAll();
   
     Reference r = store.references().get("greene");
@@ -241,7 +227,7 @@ public class ColdpInserterTest extends InserterBaseTest {
     CslUtil.buildCitation(TestEntityGenerator.newReference("My Sharona"));
     CslUtil.buildCitation(TestEntityGenerator.newReference("Telecon in Death Valley"));
 
-    NeoInserter inserter = setup("/coldp/csl-lines");
+    DataInserter inserter = setup("/coldp/csl-lines");
     inserter.insertAll();
 
     Reference r = store.references().get("10.1093/database/baw125");
@@ -262,7 +248,7 @@ public class ColdpInserterTest extends InserterBaseTest {
   }
 
   @Override
-  public NeoInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
+  public DataInserter newInserter(Path resource, DatasetSettings settings) throws IOException {
     return new ColdpInserter(store, resource, settings, refFactory);
   }
 }
