@@ -55,12 +55,12 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
   }
 
   public boolean exists(String id) {
-    return objects.containsKey(id);
+    return id != null && objects.containsKey(id);
   }
 
   public T objByID(String id) {
     if (id != null) {
-      objects.get(id);
+      return objects.get(id);
     }
     return null;
   }

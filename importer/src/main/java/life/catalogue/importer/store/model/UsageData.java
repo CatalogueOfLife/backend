@@ -4,10 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.dao.TxtTreeDao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 
 import com.google.common.base.Preconditions;
@@ -26,16 +23,16 @@ public class UsageData implements DSID<String>, VerbatimEntity {
   // either a taxon or a synonym - this can change during normalisation!
   public NameUsage usage; // we ignore and do not persist the name part !!!
   public String nameID; // instead we keep a reference to the name id only
-  public Set<String> proParteAcceptedIDs; // optional additional accepted taxon ids allowing for multiple parents in case of pro parte synonyms
+  public final Set<String> proParteAcceptedIDs = new HashSet<>(); // optional additional accepted taxon ids allowing for multiple parents in case of pro parte synonyms
   public boolean homotypic = false;
 
   // supplementary infos for a taxon
   public Treatment treatment;
-  public List<Distribution> distributions = new ArrayList<>();
-  public List<Media> media = new ArrayList<>();
-  public List<VernacularName> vernacularNames = new ArrayList<>();
-  public List<SpeciesEstimate> estimates = new ArrayList<>();
-  public List<TaxonProperty> properties = new ArrayList<>();
+  public final List<Distribution> distributions = new ArrayList<>();
+  public final List<Media> media = new ArrayList<>();
+  public final List<VernacularName> vernacularNames = new ArrayList<>();
+  public final List<SpeciesEstimate> estimates = new ArrayList<>();
+  public final List<TaxonProperty> properties = new ArrayList<>();
   // taxon relations
   public final List<RelationData<TaxonConceptRelType>> tcRelations = new ArrayList<>();
   public final List<RelationData<SpeciesInteractionType>> spiRelations = new ArrayList<>();
@@ -49,11 +46,11 @@ public class UsageData implements DSID<String>, VerbatimEntity {
 
   public UsageData(TxtTreeDao.TxtUsage tu) {
     this.usage = tu.usage;
-    this.distributions = tu.distributions;
-    this.media = tu.media;
-    this.vernacularNames = tu.vernacularNames;
-    this.estimates = tu.estimates;
-    this.properties = tu.properties;
+    this.distributions.addAll(tu.distributions);
+    this.media.addAll(tu.media);
+    this.vernacularNames.addAll(tu.vernacularNames);
+    this.estimates.addAll(tu.estimates);
+    this.properties.addAll(tu.properties);
   }
 
 

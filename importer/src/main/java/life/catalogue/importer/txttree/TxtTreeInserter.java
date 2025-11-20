@@ -37,6 +37,8 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
+import javax.annotation.Nullable;
+
 import static life.catalogue.api.vocab.terms.TxtTreeTerm.*;
 
 public class TxtTreeInserter implements DataInserter {
@@ -167,16 +169,18 @@ public class TxtTreeInserter implements DataInserter {
   }
 
 
-  private UsageData usage(SimpleTreeNode tn, String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
+  private UsageData usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     final int existingIssues = v.getIssues().size();
     // convert
     var tu = interpreter.interpret(tn, synonym, ordinal, parentCode, this::referenceExists);
     tu.usage.setVerbatimKey(v.getId());
-    if (store.usages().exists(parentID)) {
-      tu.usage.setParentId(parentID);
-    } else {
-      tu.issues.add(Issue.PARENT_ID_INVALID);
+    if (parentID != null) {
+      if (store.usages().exists(parentID)) {
+        tu.usage.setParentId(parentID);
+      } else {
+        tu.issues.add(Issue.PARENT_ID_INVALID);
+      }
     }
     // store issues?
     v.add(tu.issues.getIssues());

@@ -123,9 +123,6 @@ public class AcefInserter extends DataCsvInserter {
       VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
       final String aID = v.getRaw(AcefTerm.AcceptedTaxonID);
       if (StringUtils.isNotEmpty(aID)) {
-        if (pre.proParteAcceptedIDs == null) {
-          pre.proParteAcceptedIDs = new HashSet<>();
-        }
         var added = pre.proParteAcceptedIDs.add(aID);
         if (!added || aID.equals(pre.asSynonym().getParentId())) {
           LOG.debug("Duplicate synonym with the same acceptedID found. Ignore");

@@ -2,6 +2,7 @@ package life.catalogue.importer.store;
 
 import life.catalogue.common.kryo.ApiKryoPool;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.importer.store.model.RankedName;
 
@@ -30,6 +31,7 @@ public class ImportKryoPool extends ApiKryoPool {
     // add normalizer specific models
     kryo.register(UsageData.class);
     kryo.register(NameData.class);
+    kryo.register(RelationData.class);
     kryo.register(RankedName.class);
 
     // fastutil

@@ -3,6 +3,7 @@ package life.catalogue.importer.coldp;
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.License;
+import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.DataInserter;
@@ -126,9 +127,12 @@ public class ColdpInserterTest extends InserterBaseTest {
     store.usages().all().forEach(u -> {
       for (var rel : u.spiRelations) {
         var si = rel.toSpeciesInteraction();
-        assertNotNull(si.getTaxonId());
-        assertNotNull(si.getRelatedTaxonScientificName());
         assertNotNull(si.getType());
+        assertNotNull(si.getTaxonId());
+        assertNotNull(si.getRelatedTaxonId());
+        if (si.getType() == SpeciesInteractionType.CO_OCCURS_WITH) {
+          assertEquals("Leontodon anomalus", si.getRelatedTaxonScientificName());
+        }
       }
     });
   }

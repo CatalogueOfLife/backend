@@ -631,7 +631,7 @@ public class PgImport implements Callable<Boolean> {
   }
 
   /**
-   * Go through all neo4j relations and convert them to taxon concept relations or species interactions if the rel type matches
+   * Go through all usages relations and convert them to taxon concept relations or species interactions
    */
   private void insertUsageRelations() {
     // taxon concept & species interactions

@@ -53,7 +53,7 @@ public class MapDbStringSetSerializer extends GroupSerializerObjectArray<Set<Str
       int size = DataIO.unpackInt(in);
       byte[] ret = new byte[size];
       in.readFully(ret);
-      return kryo.readObject(new Input(ret), Set.class);
+      return kryo.readObject(new Input(ret), HashSet.class);
     } finally {
       if (kryo != null) {
         pool.free(kryo);

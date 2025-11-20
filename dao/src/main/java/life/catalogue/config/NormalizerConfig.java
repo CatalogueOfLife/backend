@@ -34,7 +34,7 @@ public class NormalizerConfig {
   
   /**
    * Temporary folder for fast IO.
-   * Used primarily for neo4j dbs.
+   * Used primarily for import dbs.
    */
   @NotNull
   public File scratchDir = new File("/tmp/col");

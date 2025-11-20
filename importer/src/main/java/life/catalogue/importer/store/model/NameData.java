@@ -9,13 +9,13 @@ import java.util.*;
 
 
 /**
- * Simple wrapper to hold a neo4j node together with a name
+ * Simple wrapper to hold all name data together for kryo persistence
  */
 public class NameData implements DSID<String>, VerbatimEntity {
 
   public ParsedNameUsage pnu;
   public boolean homotypic = false;
-  public Set<String> usageIDs = new HashSet<>(); // all usages linked to this name
+  public final HashSet<String> usageIDs = new HashSet<>(); // all usages linked to this name
   public final List<RelationData<NomRelType>> relations = new ArrayList<>();
 
   public NameData() {

@@ -19,6 +19,15 @@ public class RelationData<T extends Enum<?>> implements VerbatimEntity, Referenc
   private String referenceId;
   private String remarks;
 
+  public RelationData() {
+  }
+
+  public RelationData(T type, String fromID, String toID) {
+    this.fromID = fromID;
+    this.toID = toID;
+    this.type = type;
+  }
+
   public String getFromID() {
     return fromID;
   }
