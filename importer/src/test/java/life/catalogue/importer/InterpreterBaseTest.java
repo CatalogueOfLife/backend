@@ -145,10 +145,10 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n, true, "sensu Döring 1999", "Döring 1999. Travels through the Middle East");
 
-    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
 
-    assertTrue(u.usage.isTaxon());
-    Taxon t = u.asTaxon();
+    assertTrue(nu.ud.usage.isTaxon());
+    Taxon t = nu.ud.asTaxon();
 
     assertTrue(t.isExtinct());
     assertNull(t.getNamePhrase());
@@ -177,7 +177,7 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);
     pnu.setDoubtful(true); // gets converted to provisional
-    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap()).ud;
 
     assertTrue(u.usage.isTaxon());
     assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, u.usage.getStatus());

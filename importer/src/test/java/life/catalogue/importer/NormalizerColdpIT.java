@@ -128,8 +128,9 @@ public class NormalizerColdpIT extends NormalizerITBase {
     normalize(31);
 
     store.usages().allIds().forEach( id -> {
-      var u = store.usageWithName(id);
-      var n = u.getNameData().getName();
+      var nu = store.nameUsage(id);
+      var n = nu.nd.getName();
+      var u = nu.ud;
       System.out.println("\n" + u.getId());
       System.out.println(n);
       if (u.getId().startsWith("10")) {
@@ -513,8 +514,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
   @Test
   public void zooSection() throws Exception {
     normalize(12);
-
     printTree();
+    assertTree();
   }
 
   @Test

@@ -1,7 +1,6 @@
 package life.catalogue.importer.store;
 
 import life.catalogue.importer.IdGenerator;
-import life.catalogue.importer.store.model.RankedUsage;
 import life.catalogue.importer.store.model.UsageData;
 
 import java.io.IOException;
@@ -40,15 +39,13 @@ public class UsageStore extends CRUDStore<UsageData> {
 
   @Override
   public boolean create(UsageData obj) {
-    if (obj.nameID == null && obj.usage.getName() != null && obj.usage.getName().getId() != null) {
-      obj.nameID = obj.usage.getName().getId();
-    }
     Preconditions.checkNotNull(obj.nameID, "Usage requires an existing nameID");
     obj.usage.setName(null); // do not persist name object
     var created = super.create(obj);
     if (created) {
-      var n = importStore.names().objByID(obj.nameID);
+      var n = db.names().objByID(obj.nameID);
       n.usageIDs.add(obj.getId());
+      db.names().update(n);
     }
     return created;
   }
@@ -59,10 +56,10 @@ public class UsageStore extends CRUDStore<UsageData> {
     var old = super.update(obj);
     if (old != null && !Objects.equals(old.nameID, obj.nameID)) {
       // add to new name
-      var n = importStore.names().objByID(obj.nameID);
+      var n = db.names().objByID(obj.nameID);
       n.usageIDs.add(obj.getId());
       // remove from old name
-      n = importStore.names().objByID(old.nameID);
+      n = db.names().objByID(old.nameID);
       n.usageIDs.remove(old.getId());
     }
     return old;
@@ -72,7 +69,7 @@ public class UsageStore extends CRUDStore<UsageData> {
   public UsageData remove(String id) {
     var u = super.remove(id);
     if (u != null) {
-      var n = importStore.names().objByID(u.nameID);
+      var n = db.names().objByID(u.nameID);
       n.usageIDs.remove(u.getId());
     }
     return u;
@@ -84,12 +81,9 @@ public class UsageStore extends CRUDStore<UsageData> {
         .collect(Collectors.toList());
   }
 
-  public void assignParent(String usageID, String newParentID) {
-    assignParent(objByID(usageID), newParentID);
-  }
   public void assignParent(UsageData u, String newParentID) {
-    // avoid self referencing loops
-    if (newParentID != null && !newParentID.equals(u.getId())) {
+    // avoid self referencing loops and unchanged updates
+    if (newParentID != null && !newParentID.equals(u.getId()) && !newParentID.equals(u.usage.getParentId())) {
       u.usage.asUsageBase().setParentId(newParentID);
       super.update(u);
     }
@@ -126,7 +120,8 @@ public class UsageStore extends CRUDStore<UsageData> {
   public UsageData parent(UsageData child, Rank parentRank) {
     if (child.usage.getParentId() != null) {
       var p = objByID(child.usage.getParentId());
-      if (p.usage.getRank() == parentRank) {
+      var n = db.names().objByID(p.nameID);
+      if (n.getRank() == parentRank) {
         return p;
       }
       return parent(p, parentRank);

@@ -6,7 +6,6 @@ import life.catalogue.api.search.SimpleDecision;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.api.vocab.Users;
-import life.catalogue.cache.ObjectCache;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
@@ -18,6 +17,7 @@ import life.catalogue.es.nu.NameUsageIndexServiceEs;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.nameparser.api.Rank;
@@ -374,6 +374,7 @@ public class PgImport implements Callable<Boolean> {
 
   /**
    * insert taxa/synonyms with all the rest. Skips bare name usages.
+   * Requires names to be inserted before!
    * This also indexes usages into the ES search index!
    */
   private void insertUsages() throws InterruptedException {
@@ -410,20 +411,6 @@ public class PgImport implements Callable<Boolean> {
         VerbatimRecordMapper verbatimRecordMapper = session.getMapper(VerbatimRecordMapper.class);
 
         // iterate over taxonomic tree in depth first order, keeping postgres parent keys
-        // pro parte synonyms will be visited multiple times, remember their name ids!
-
-        // key on parentKey to iterate over taxonomy !!!
-
-
-        try (final ObjectCache<SimpleName> visited = ObjectCache.hashMap()) {
-          store.usages().all().forEach(u -> {
-            if (!visited.contains(u.getId())) {
-              visited.put(u.usage.toSimpleNameLink());
-            }
-          });
-        }
-          new HashSet<>(store.usages().size());
-
         DSID<Integer> vKey = DSID.root(dataset.getKey());
         TreeWalker.walkTree(store, new TreeWalker.StartEndHandler() {
           final Stack<SimpleName> parents = new Stack<>();
@@ -431,9 +418,10 @@ public class PgImport implements Callable<Boolean> {
           final TaxonMetricsBuilder mBuilder = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
-          public void start(UsageData u) {
+          public void start(NameUsageData nu) {
             Set<Integer> vKeys = new HashSet<>();
 
+            var u = nu.ud;
             fillUsageData(u, vKeys);
             // update depth
             if (maxDepth.get() < parents.size()) {
@@ -445,13 +433,11 @@ public class PgImport implements Callable<Boolean> {
               var syn = u.asSynonym();
               synMapper.create(syn);
               sCounter.incrementAndGet();
-              if (u.proParteAcceptedIDs != null) {
-                for (String id : u.proParteAcceptedIDs) {
-                  syn.setId(u.getId() + "-" + id);
-                  syn.setParentId(id);
-                  synMapper.create(syn);
-                  sCounter.incrementAndGet();
-                }
+              for (String id : u.proParteAcceptedIDs) {
+                syn.setId(u.getId() + "-" + id);
+                syn.setParentId(id);
+                synMapper.create(syn);
+                sCounter.incrementAndGet();
               }
 
             } else if (u.isTaxon()){
@@ -549,10 +535,10 @@ public class PgImport implements Callable<Boolean> {
           }
 
           @Override
-          public void end(UsageData data) {
+          public void end(NameUsageData data) {
             runtimeInterruptIfCancelled();
             // remove this key from parent queue if it is an accepted taxon
-            if (data.isTaxon()) {
+            if (data.ud.isTaxon()) {
               var sn = parents.pop();
               var nx = parentsN.pop();
               // update & store metrics

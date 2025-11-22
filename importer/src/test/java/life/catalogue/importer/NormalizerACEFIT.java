@@ -258,11 +258,12 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
 
     u = usageByID("2");
-    assertEquals("Foa fo", u.usage.getName().getScientificName());
-    assertEquals("Jordan & Seale, 1905", u.usage.getName().getAuthorship());
-    assertTrue(u.getNameData().getName().isParsed());
-    assertEquals(NameType.SCIENTIFIC, u.getNameData().getName().getType());
-    v = verbatim(u.usage.getName());
+    var n = nameByID(u.nameID).getName();
+    assertEquals("Foa fo", n.getScientificName());
+    assertEquals("Jordan & Seale, 1905", n.getAuthorship());
+    assertTrue(n.isParsed());
+    assertEquals(NameType.SCIENTIFIC, n.getType());
+    v = verbatim(n);
     assertFalse(v.contains(Issue.UNPARSABLE_AUTHORSHIP));
   }
   

@@ -9,7 +9,7 @@ import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.store.ImportStore;
-import life.catalogue.importer.store.model.UsageData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.matching.NameValidator;
 import life.catalogue.parser.RankParser;
 import life.catalogue.parser.SafeParser;
@@ -23,7 +23,6 @@ import org.gbif.nameparser.api.Rank;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,16 +53,16 @@ public class AcefInterpreter extends InterpreterBase {
     ));
   }
   
-  Optional<UsageData> interpretSpecies(VerbatimRecord v) {
+  Optional<NameUsageData> interpretSpecies(VerbatimRecord v) {
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<UsageData> interpretInfraspecies(VerbatimRecord v) {
+  Optional<NameUsageData> interpretInfraspecies(VerbatimRecord v) {
     requireTerm(v, AcefTerm.ParentSpeciesID, Issue.PARENT_ID_INVALID);
     return interpretUsage(AcefTerm.AcceptedTaxonID, v, false);
   }
 
-  Optional<UsageData> interpretSynonym(VerbatimRecord v) {
+  Optional<NameUsageData> interpretSynonym(VerbatimRecord v) {
     requireTerm(v, AcefTerm.AcceptedTaxonID, Issue.ACCEPTED_ID_INVALID);
     return interpretUsage(AcefTerm.ID, v, true);
   }
@@ -91,34 +90,34 @@ public class AcefInterpreter extends InterpreterBase {
     return dists;
   }
   
-  private Optional<UsageData> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
+  private Optional<NameUsageData> interpretUsage(Term idTerm, VerbatimRecord v, boolean synonym) {
     // name
     return interpretName(idTerm, v).map(nat -> {
-      UsageData u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, Collections.emptyMap());
+      var u = interpretUsage(idTerm, nat, AcefTerm.Sp2000NameStatus, synonym ? TaxonomicStatus.SYNONYM : TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
       // status matches up?
-      if (synonym != u.isSynonym()) {
+      if (synonym != u.ud.isSynonym()) {
         v.add(Issue.TAXONOMIC_STATUS_INVALID);
         // override status as we require some accepted status on Taxon and some synonym status for Synonym
         if (synonym) {
-          u.convertToSynonym(TaxonomicStatus.SYNONYM);
+          u.ud.convertToSynonym(TaxonomicStatus.SYNONYM);
         } else {
-          u.convertToTaxon(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+          u.ud.convertToTaxon(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
         }
       }
 
       if (!synonym) {
         // taxon
-        Taxon t = u.asTaxon();
+        Taxon t = u.ud.asTaxon();
         t.setScrutinizer(v.get(AcefTerm.LTSSpecialist));
         t.setScrutinizerDate(fuzzydate(v, Issue.SCRUTINIZER_DATE_INVALID, AcefTerm.LTSDate));
         t.setExtinct(bool(v, Issue.IS_EXTINCT_INVALID, AcefTerm.IsExtinct));
         setEnvironment(t, v, AcefTerm.LifeZone);
       }
       // for both synonyms and taxa
-      u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
-      u.usage.setRemarks(v.get(AcefTerm.AdditionalData));
+      u.ud.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      u.ud.usage.setRemarks(v.get(AcefTerm.AdditionalData));
       // flat classification for any usage
-      u.classification = interpretClassification(v, synonym);
+      u.ud.classification = interpretClassification(v, synonym);
       return u;
     });
   }

@@ -41,7 +41,7 @@ public class NameStore extends CRUDStore<NameData> {
    * @return the matching name nodes with the scientificName in a mutable set
    */
   public Set<String> nameIdsByName(String scientificName) {
-    return names.get(scientificName);
+    return names.getOrDefault(scientificName, new HashSet<>());
   }
   
   @Override
@@ -88,13 +88,10 @@ public class NameStore extends CRUDStore<NameData> {
   
   private void addToIndex(NameData n) {
     if (n.getName().getScientificName() != null) {
-      var nids = names.get(n.getName().getScientificName());
-      if (nids == null) {
-        nids = Set.of(n.getId());
-      } else {
-        nids.add(n.getId());
-      }
-      names.put(n.getName().getScientificName(), nids);
+      var sciname = n.getName().getScientificName();
+      var nids = names.getOrDefault(sciname, new HashSet<>());
+      nids.add(n.getId());
+      names.put(sciname, nids);
     }
   }
 

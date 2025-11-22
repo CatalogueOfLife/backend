@@ -6,6 +6,8 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
@@ -460,22 +462,28 @@ public class InterpreterBase {
     return settings.get(Setting.EXTINCT) != null && rank != null && !rank.isUncomparable() && !rank.higherThan(settings.getEnum(Setting.EXTINCT));
   }
 
-  public UsageData interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Map<Term, Identifier.Scope> altIdTerms) {
-    UsageData u;
+  public NameUsageData interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term basionymIdTerm, Map<Term, Identifier.Scope> altIdTerms) {
+    // name data
+    var nn = new NameData(pnu);
+    if (basionymIdTerm != null) {
+      nn.basionymID = v.getRaw(basionymIdTerm);
+    }
+
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
 
+    UsageData u;
     if (status.val.isBareName()) {
-      u = UsageData.createBareName(Origin.SOURCE, pnu.getName());
+      u = UsageData.buildBareName(Origin.SOURCE);
     } else if (status.val.isSynonym()) {
-      u = UsageData.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+      u = UsageData.buildSynonym(Origin.SOURCE, status.val);
       if (pnu.isExtinct()) {
         // flag this as synonyms cannot have the extinct flag
         v.add(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
       }
     } else {
-      u = UsageData.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      u = UsageData.buildTaxon(Origin.SOURCE, status.val);
       var t = (Taxon) u.usage;
       if (pnu.isExtinct() || isExtinctBySetting(t.getRank())) {
         t.setExtinct(true);
@@ -489,7 +497,7 @@ public class InterpreterBase {
     u.setId(v.getRaw(idTerm));
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
-    u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+    nn.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
     if (u.isNameUsageBase()) {
       List<Identifier> ids = new ArrayList<>();
@@ -514,7 +522,7 @@ public class InterpreterBase {
         u.classification.setByTerm(t, v.get(t));
       }
     }
-    return u;
+    return new NameUsageData(nn, u);
   }
 
   protected void setEnvironment(Taxon t, VerbatimRecord v, Term environment) {

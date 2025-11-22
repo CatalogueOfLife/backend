@@ -18,6 +18,8 @@ import life.catalogue.importer.dwca.DwcaInserter;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.NotUniqueRuntimeException;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
+import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.importer.txttree.TxtTreeInserter;
 import life.catalogue.interpreter.ExtinctName;
@@ -303,14 +305,14 @@ public class Normalizer implements Callable<Boolean> {
   private void normalize() throws InterruptedException {
     // validate relation constraints
     validateRelations();
+    insertBasionymRelations();
+    // deduplicate name relations
+    reduceRedundantNameRels();
 
     // cleanup synonym & parent relations
     cutSynonymCycles();
     relinkSynonymChains();
     preferSynonymOverParentRel();
-
-    // deduplicate name relations
-    reduceRedundantNameRels();
 
     // cleanup basionym rels
     cutBasionymChains();
@@ -330,8 +332,38 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Normalization completed.");
   }
 
+
+  /**
+   * Use the basionymID from the name instances to setup valid name relations or flag invalid ids
+   */
+  private void insertBasionymRelations() {
+    store.names().all()
+      .filter(n->n.basionymID != null)
+      .forEach(n -> {
+        if (store.names().exists(n.basionymID)) {
+          var rel = new RelationData<NomRelType>();
+          rel.setType(NomRelType.BASIONYM);
+          rel.setVerbatimKey(n.getVerbatimKey());
+          rel.setFromID(n.getId());
+          rel.setToID(n.basionymID);
+          n.relations.add(rel);
+          store.names().update(n);
+        } else {
+          store.addIssues(n, Issue.BASIONYM_ID_INVALID);
+        }
+      });
+  }
+
   private void validateRelations() {
     LOG.info("Validate parent relations");
+    store.usages().all().forEach(u -> {
+      if (u.usage.getParentId() != null && !store.usages().exists(u.usage.getParentId())) {
+        LOG.debug("ParentID {} of usage {} not existing", u.usage.getParentId(), u.usage.getId());
+        u.usage.asUsageBase().setParentId(null);
+        store.usages().update(u);
+        store.addIssues(u.usage, Issue.PARENT_ID_INVALID);
+      }
+    });
     LOG.info("Validate basionym relations");
   }
 
@@ -519,36 +551,36 @@ public class Normalizer implements Callable<Boolean> {
     }
 
     LOG.info("Start processing higher denormalized classification ...");
-    store.usages().allTaxa().forEach(u -> {
+    store.nameUsages(false).forEach(u -> {
       // the highest current parent of n
       var highest = findHighestParent(u);
-      // only need to apply classification if highest exists and is not already a kingdom, the denormed classification cannot add to it anymore!
-      if (highest != null && highest.usage.getRank() != Rank.KINGDOM) {
-        if (u.classification != null) {
-          applyClassification(highest, u.classification);
+      // only need to apply classification if highest exists and is not already a superdomain, the denormed classification cannot add to it anymore!
+      if (highest != null && highest.nd.getRank() != Rank.SUPERDOMAIN) {
+        if (u.ud.classification != null) {
+          applyClassification(highest, u.ud.classification);
         }
       }
     });
   }
 
-  private UsageData findHighestParent(UsageData n) {
+  private NameUsageData findHighestParent(NameUsageData nu) {
     // the highest current parent of n
-    UsageData highest = null;
+    NameUsageData highest = null;
     if (meta.isParentNameMapped()) {
       // verify if we already have a classification, that it ends with a known rank
-      highest = CollectionUtils.lastOrNull(store.usages().parents(n));
-      if (highest != null
-          && !highest.getId().equals(n.getId())
-          && !highest.usage.getRank().notOtherOrUnranked()
-      ) {
-        LOG.debug("Usage {} already has a classification which ends in an uncomparable rank.", n.getId());
-        addUsageIssue(n, Issue.CLASSIFICATION_NOT_APPLIED);
-        return null;
+      var hu = CollectionUtils.lastOrNull(store.usages().parents(nu.ud));
+      if (hu != null) {
+        highest = store.nameUsage(hu);
+        if(!hu.getId().equals(nu.ud.getId()) && !highest.nd.getRank().notOtherOrUnranked()) {
+          LOG.debug("Usage {} already has a classification which ends in an uncomparable rank.", nu.ud.getId());
+          addUsageIssue(nu.ud, Issue.CLASSIFICATION_NOT_APPLIED);
+          return null;
+        }
       }
     }
     if (highest == null) {
       // otherwise use this node
-      highest = n;
+      highest = nu;
     }
     return highest;
   }
@@ -556,27 +588,28 @@ public class Normalizer implements Callable<Boolean> {
   /**
    * Applies the classification lc to the given RankedUsage taxon
    * @param taxon
-   * @param cl
+   * @param clOrig
    */
-  private void applyClassification(UsageData taxon, Classification cl) {
+  private void applyClassification(NameUsageData taxon, Classification clOrig) {
     // first modify classification to only keep those ranks we want to apply!
     // exclude lowest rank from classification to be applied if this taxon is rankless and has the same name
-    var nn = store.loadName(taxon);
-    if (nn.getName().getRank() == null || nn.getName().getRank().isUncomparable()) {
+    var n = taxon.nd.getName();
+    var cl = new Classification(clOrig); // we modify the instance, so work on a copy to not persist these changes
+    if (n.getRank() == null || n.getRank().isUncomparable()) {
       Rank lowest = cl.getLowestExistingRank();
-      if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(nn.getName().getScientificName())) {
+      if (lowest != null && cl.getByRank(lowest).equalsIgnoreCase(n.getScientificName())) {
         cl.setByRank(lowest, null);
         // apply the classification rank to unranked taxon and reload immutable taxon instance
-        updateRank(nn, lowest);
+        updateRank(taxon.nd, lowest);
       }
     }
     // ignore same rank from classification if accepted
-    if (!taxon.isSynonym() && nn.getName().getRank() != null) {
-      cl.setByRank(nn.getName().getRank(), null);
+    if (!taxon.ud.isSynonym() && n.getRank() != null) {
+      cl.setByRank(n.getRank(), null);
     }
     // ignore genus and below for synonyms
     // http://dev.gbif.org/issues/browse/POR-2992
-    if (taxon.isSynonym()) {
+    if (taxon.ud.isSynonym()) {
       cl.setGenus(null);
       cl.setSubgenus(null);
       cl.setSection(null);
@@ -586,37 +619,36 @@ public class Normalizer implements Callable<Boolean> {
     // now reconstruct the given classification with the parentID field
     // reusing existing taxa if possible, otherwise creating new ones
     // and at the very end apply that classification to the taxon
-    UsageData parent = null;
-    Rank parentRank = null;
+    String parentID = null;
+    Rank parentRank = parentID == null ? null : store.name(store.usages().objByID(parentID)).getRank();
     // from kingdom to subgenus
     for (final Rank hr : Classification.RANKS) {
-      if ((nn.getName().getRank() == null || !nn.getName().getRank().higherThan(hr)) && cl.getByRank(hr) != null) {
+      if ((n.getRank() == null || hr.higherThan(n.getRank())) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
         // to be safe we query for both versions
         var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
         final ExtinctName normedName = parseCache.get(rnn);
-        for (String uid : store.usageIDsByNames(hr, true, cl.getByRankCleaned(hr), normedName.pname == null ? null : normedName.pname.getScientificName())) {
-          // ignore synonyms
+        for (String uid : store.usageIDsByName(normedName.pname == null ? cl.getByRankCleaned(hr) : normedName.pname.getScientificName(), null, hr, false)) {
           var u = store.usages().objByID(uid);
+          // ignore synonyms
           if (u.isSynonym()) continue;
-          if (parent == null) {
-            // make sure node does also not have a higher linnean rank parent
+          if (parentID == null) {
+            // make sure found usage does also not have any parent
             if (u.usage.getParentId() == null) {
-              // aligns!
               found = true;
             }
 
           } else {
             // verify the parents for the next higher rank are the same
             // we dont want to apply a contradicting classification with the same name
-            var p = store.usages().objByID(u.usage.getParentId());
-            var p2 = store.usages().parent(u, parentRank);
-            if ((p != null && p.getId().equals(parent.getId())) || (p2 != null && p2.getId().equals(parent.getId()) && mappedRanksInBetween(p, p2).isEmpty())) {
+            var up = store.usages().objByID(u.usage.getParentId());
+            var upAtRnk = store.usages().parent(u, parentRank);
+            if ((up != null && up.getId().equals(parentID)) || (upAtRnk != null && upAtRnk.getId().equals(parentID) && mappedRanksInBetween(up, upAtRnk).isEmpty())) {
               found = true;
-            } else if (p == null) {
-              // if the matched node has not yet been denormalized we need to compare the classification props
+            } else if (up == null) {
+              // if the matched usage has not yet been denormalized we need to compare the classification props
               if (u.classification != null && u.classification.equalsAboveRank(cl, hr)) {
                 found = true;
               }
@@ -624,7 +656,7 @@ public class Normalizer implements Callable<Boolean> {
           }
 
           if (found) {
-            parent = u;
+            parentID = u.getId();
             parentRank = hr;
             // did we match against an unranked name? Then use the queried rank
             var un = store.names().objByID(u.nameID);
@@ -636,24 +668,21 @@ public class Normalizer implements Callable<Boolean> {
         }
         if (!found) {
           // persistent new higher taxon if not found
-          var lowerParent = createHigherTaxon(normedName, hr);
-          // insert parent relationship?
-          store.usages().assignParent(lowerParent, parent.getId());
-          parent = lowerParent;
+          var lowerParent = createHigherTaxon(normedName, hr, parentID);
+          parentID = lowerParent.getId();
           parentRank = hr;
         }
       }
     }
     // finally apply lowest parent to initial node
-    store.usages().assignParent(taxon, parent.getId());
+    if (parentID != null) {
+      store.usages().assignParent(taxon.ud, parentID);
+    }
   }
 
   private Set<Rank> mappedRanksInBetween(UsageData u1, UsageData u2){
     return store.usages().parentsUntil(u1, u2.getId()).stream()
-        .map(ru -> {
-          var n = store.names().objByID(ru.nameID);
-          return n.getRank();
-        })
+        .map(ru -> store.name(ru).getRank())
         .filter(r -> meta.getDenormedRanksMapped().contains(r))
         .collect(Collectors.toSet());
   }
@@ -692,21 +721,20 @@ public class Normalizer implements Callable<Boolean> {
    * Creates a new denormalised higher taxon usage.
    * The given uninomial is allowed to contain a dagger to indicate extinct taxa.
    */
-  private UsageData createHigherTaxon(ExtinctName eName, Rank rank) {
-    UsageData t = UsageData.createTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
-
+  private UsageData createHigherTaxon(ExtinctName eName, Rank rank, String parentID) {
+    UsageData ud = UsageData.buildTaxon(Origin.DENORMED_CLASSIFICATION, TaxonomicStatus.ACCEPTED);
+    Taxon t = ud.asTaxon();
     eName.pname.setId(null); // we don't want to reuse the name id
-    t.usage.setName(eName.pname);
-
+    t.setParentId(parentID);
     if (eName.extinct || isExtinctBySetting(rank)) {
-      t.asTaxon().setExtinct(true);
+      t.setExtinct(true);
     }
     if (dataset.getEnvironment() != null) {
-      t.asTaxon().setEnvironments(Set.of(dataset.getEnvironment()));
+      t.setEnvironments(Set.of(dataset.getEnvironment()));
     }
-    // store both, which creates a single new neo node
-    store.createNameAndUsage(t);
-    return t;
+    var nu = new NameUsageData(new NameData(eName.pname), ud);
+    store.createNameAndUsage(nu);
+    return ud;
   }
 
   /**

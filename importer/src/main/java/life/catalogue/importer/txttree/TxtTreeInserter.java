@@ -15,6 +15,7 @@ import life.catalogue.importer.DataInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.bibtex.BibTexInserter;
 import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.TxtTreeInterpreter;
@@ -137,39 +138,43 @@ public class TxtTreeInserter implements DataInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void persist(UsageData u, SimpleTreeNode t) {
-    store.createNameAndUsage(u); // this removes the usage.name
-    if (u.getId() == null) {
+  private void persist(NameUsageData u, SimpleTreeNode t) {
+    if (!store.createNameAndUsage(u)) {
       // try again with line number as ID in case of duplicates
-      u.setId(String.valueOf(t.id));
-      store.usages().create(u);
+      u.ud.setId(String.valueOf(t.id));
+      if (u.ud.nameID == null) {
+        u.nd.setId(String.valueOf(t.id));
+        store.createNameAndUsage(u);
+      } else {
+        store.usages().create(u.ud);
+      }
     }
   }
 
   private void recursiveNodeInsert(String parentID, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
-    UsageData u = usage(t, parentID, false, ordinal, parentCode);
-    final NomCode code = u.usage.getName().getCode();
+    var u = usage(t, parentID, false, ordinal, parentCode);
+    final NomCode code = u.nd.getName().getCode();
     persist(u, t);
     for (SimpleTreeNode syn : t.synonyms){
-      UsageData s = usage(syn, u.getId(), true, 0, code);
+      var s = usage(syn, u.ud.getId(), true, 0, code);
       persist(s, t);
       if (syn.basionym) {
         var rel = new RelationData<NomRelType>();
         rel.setType(NomRelType.BASIONYM);
         rel.setVerbatimKey(line2verbatimKey.get(syn.id));
-        rel.setFromID(u.nameID);
-        rel.setToID(s.nameID);
+        rel.setFromID(u.ud.nameID);
+        rel.setToID(s.ud.nameID);
         store.addNameRelation(rel);
       }
     }
     int childOrdinal = 1;
     for (SimpleTreeNode c : t.children){
-      recursiveNodeInsert(u.getId(), c, childOrdinal++, code);
+      recursiveNodeInsert(u.ud.getId(), c, childOrdinal++, code);
     }
   }
 
 
-  private UsageData usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
+  private NameUsageData usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     final int existingIssues = v.getIssues().size();
     // convert
@@ -187,7 +192,7 @@ public class TxtTreeInserter implements DataInserter {
     if (existingIssues < v.getIssues().size()) {
       store.put(v);
     }
-    return new UsageData(tu);
+    return new NameUsageData(tu);
   }
 
   private boolean referenceExists(String id) {

@@ -94,9 +94,9 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.id = u.getId();
     this.name = u.getName().getScientificName();
     this.authorship = u.getName().getAuthorship();
-    this.phrase = u.getNamePhrase();
     this.rank = u.getRank();
     this.code = u.getName().getCode();
+    this.phrase = u.getNamePhrase();
     this.status = u.getStatus();
     this.parent = u.getParentId();
     if (u instanceof Taxon) {

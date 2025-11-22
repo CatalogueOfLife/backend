@@ -4,10 +4,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
-import life.catalogue.importer.store.model.NameData;
-import life.catalogue.importer.store.model.RankedUsage;
-import life.catalogue.importer.store.model.RelationData;
-import life.catalogue.importer.store.model.UsageData;
+import life.catalogue.importer.store.model.*;
 
 import life.catalogue.printer.TextTreePrinter;
 
@@ -16,6 +13,7 @@ import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -138,17 +136,32 @@ public class ImportStore implements AutoCloseable {
     return typeMaterial;
   }
 
+  public Stream<NameUsageData> nameUsages(boolean includeSynonyms) {
+    var stream = includeSynonyms ? usages().all() : usages().allTaxa();
+    return stream.map(u -> new NameUsageData(name(u), u));
+  }
+
+  public NameUsageData nameUsage(String usageID) {
+    return nameUsage(usages().objByID(usageID));
+  }
+
+  public NameUsageData nameUsage(UsageData u) {
+    return new NameUsageData(name(u), u);
+  }
+
+  @Deprecated
   public UsageData usageWithName(String usageID) {
     var u = usages().objByID(usageID);
-    loadName(u);
+    var n = name(u);
+    if (n != null) {
+      u.usage.setName(n.getName());
+    }
     return u;
   }
 
-  public NameData loadName(UsageData u) {
-    if (u != null && u.nameID != null && u.usage.getName() == null) {
-      NameData nn = names().objByID(u.nameID);
-      u.usage.setName(nn.getName());
-      return nn;
+  public NameData name(UsageData u) {
+    if (u != null && u.nameID != null) {
+      return names().objByID(u.nameID);
     }
     return null;
   }
@@ -161,16 +174,16 @@ public class ImportStore implements AutoCloseable {
   }
 
   public Set<String> usageIDsByNames(Rank rank, boolean inclUnranked, String... scientificName) {
-    Set<String> nodes = new HashSet<>();
+    Set<String> uids = new HashSet<>();
     if (scientificName != null && scientificName.length > 0) {
       Set<String> names = Arrays.stream(scientificName)
         .filter(Objects::nonNull)
         .collect(Collectors.toSet());
       for (String name : names) {
-        nodes.addAll(usageIDsByName(name, null, rank, inclUnranked));
+        uids.addAll(usageIDsByName(name, null, rank, inclUnranked));
       }
     }
-    return nodes;
+    return uids;
   }
 
   /**
@@ -210,38 +223,42 @@ public class ImportStore implements AutoCloseable {
     return taxa;
   }
 
-  public boolean createNameAndUsage(UsageData u) {
-    Preconditions.checkNotNull(u.usage.getName(), "NeoUsage with name required");
+  public boolean createNameAndUsage(NameUsageData nu) {
+    Preconditions.checkNotNull(nu.nd, "NameUsageData name required");
+    Preconditions.checkNotNull(nu.ud, "NameUsageData usage required");
 
     // is no true verbatim record existed create a new one to hold issues for validation etc.
-    if (u.usage.getVerbatimKey() == null) {
+    if (nu.ud.getVerbatimKey() == null) {
       VerbatimRecord v = new VerbatimRecord();
       put(v);
-      u.usage.setVerbatimKey(v.getId());
+      nu.ud.setVerbatimKey(v.getId());
     }
-    // first create the name, potentially assigning an id
-    NameData nn = new NameData(u.usage.getName());
+    // first create the name, potentially assigning an id from the usage
+    var nn = nu.nd;
     if (nn.getId() == null) {
-      nn.setId(u.getId());
+      nn.setId(nu.ud.getId());
     }
     if (nn.getVerbatimKey() == null) {
-      nn.setVerbatimKey(u.getVerbatimKey());
+      nn.setVerbatimKey(nu.ud.getVerbatimKey());
     }
     if (nn.getName().getOrigin() == null) {
-      nn.getName().setOrigin(u.asNameUsageBase().getOrigin());
+      nn.getName().setOrigin(nu.ud.asNameUsageBase().getOrigin());
     }
-    nn.homotypic = u.homotypic;
+    nn.homotypic = nu.ud.homotypic;
+    if (nn.basionymID == null && nu.ud.basionymID != null) {
+      nn.basionymID = nu.ud.basionymID;
+    }
     var created = names.create(nn);
     if (created) {
-      u.nameID = nn.getId();
-      if (!u.usage.isBareName()) {
-        created = usages.create(u);
+      nu.ud.nameID = nn.getId();
+      if (!nu.ud.usage.isBareName()) {
+        created = usages.create(nu.ud);
         if (!created) {
-          u.setId(null); // non unique id
+          nu.ud.setId(null); // non unique id
         }
       }
     } else {
-      LOG.debug("Skip usage {} as no name was persisted for {}", u.getId(), nn.getName().getLabel());
+      LOG.debug("Skip name usage {} as no name was persisted for {}", nu.ud.getId(), nn.getName().getLabel());
     }
     return created;
   }
@@ -349,7 +366,7 @@ public class ImportStore implements AutoCloseable {
                                                       Name name,
                                                       @Nullable UsageData source,
                                                       Rank excludeRankAndBelow) {
-    UsageData u = UsageData.createTaxon(origin, name, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+    UsageData u = UsageData.buildTaxon(origin, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     // copyTaxon verbatim classification from source
     if (source != null) {
       if (source.classification != null) {
@@ -369,7 +386,7 @@ public class ImportStore implements AutoCloseable {
     }
     
     // store, which creates a new neo node
-    createNameAndUsage(u);
+    createNameAndUsage(new NameUsageData(null, u));
 
     return new RankedUsage(u.getId(), u.isSynonym(), u.nameID, name.getScientificName(), name.getAuthorship(), name.getRank());
   }
@@ -394,19 +411,21 @@ public class ImportStore implements AutoCloseable {
     }
   }
 
-  public String printTree() throws InterruptedException {
+  public String printTree() throws InterruptedException, IOException {
     StringWriter w = new StringWriter();
-    TextTreePrinter printer = new TextTreePrinter(null,null,null,null,null,null,w);
-    TreeWalker.walkTree(this, new TreeWalker.StartEndHandler() {
-      @Override
-      public void start(UsageData data) {
-        printer.accept(data.toSimpleName());
-      }
+    try (TextTreePrinter printer = new TextTreePrinter(new TreeTraversalParameter(),null,null,null,null,null,w)) {
+      TreeWalker.walkTree(this, new TreeWalker.StartEndHandler() {
+        @Override
+        public void start(NameUsageData data) {
+          printer.accept(data.toSimpleName());
+        }
 
-      @Override
-      public void end(UsageData data) {
-      }
-    });
+        @Override
+        public void end(NameUsageData data) {
+        }
+      });
+    }
+    w.flush();
     return w.toString();
   }
 }

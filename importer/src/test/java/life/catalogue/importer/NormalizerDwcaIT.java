@@ -41,7 +41,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(49);
 
     UsageData u = usageByID("urn:lsid:irmng.org:taxname:6");
-    var n = u.getNameData().getName();
+    var n = store.name(u);
     assertTrue(u.isTaxon());
     Taxon t = (Taxon)u.usage;
 
@@ -55,8 +55,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertTrue(refIds.contains("10.1099/00207713-52-1-7"));
 
     u = usageByID("urn:lsid:irmng.org:taxname:7");
-    n = u.getNameData().getName();
-    assertEquals("10.1016/0303-2647(81)90050-2", n.getPublishedInId()); // normalised DOI
+    n = store.name(u);
+    assertEquals("10.1016/0303-2647(81)90050-2", n.getName().getPublishedInId()); // normalised DOI
   }
 
   @Test
@@ -374,7 +374,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     store.usages().allIds().forEach( id -> {
       var u = store.usageWithName(id);
-      var n = u.getNameData().getName();
+      var n = store.name(u).getName();
       if (u.getId().startsWith("10")) {
         assertEquals(Rank.GENUS, n.getRank());
         assertEquals("Abies", n.getScientificName());
@@ -431,8 +431,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     store.usages().allIds().forEach( x -> {
       System.out.println(x);
-      var u = store.usageWithName(x);
-      var n = u.getNameData().getName();
+      var nu = store.nameUsage(x);
+      var u = nu.ud;
+      var n = nu.nd.getName();
       var v = store.getVerbatim(u.getVerbatimKey());
       int id = Integer.parseInt(u.getId());
       assertEquals("Lipolexis peregrinus", n.getScientificName());
@@ -486,8 +487,9 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     normalize(48, settings);
 
-    var u = store.usageWithName("urn:lsid:marinespecies.org:taxname:887642");
-    var n = u.getNameData().getName();
+    var nu = store.nameUsage("urn:lsid:marinespecies.org:taxname:887642");
+    var u = nu.ud;
+    var n = nu.nd.getName();
     var v = store.getVerbatim(u.getVerbatimKey());
 
     assertEquals("Cambarus uhleri", n.getScientificName());
@@ -514,9 +516,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     normalize(51, settings);
     printTree();
 
-    store.usages().all().forEach( un -> {
-      var u = store.usageWithName(un.getId());
-      var n = u.getNameData().getName();
+    store.usages().all().forEach( u -> {
+      var n = store.name(u).getName();
       if (n.getRank().isInfragenericStrictly()) {
         assertNotNull(n.getInfragenericEpithet());
         assertNull(n.getUninomial());

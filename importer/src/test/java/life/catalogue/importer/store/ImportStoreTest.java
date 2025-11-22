@@ -7,6 +7,8 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Origin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.config.NormalizerConfig;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
 
 import org.gbif.dwc.terms.AcefTerm;
@@ -19,8 +21,10 @@ import org.junit.*;
 
 import com.google.common.io.Files;
 
+import static org.junit.Assert.assertEquals;
 
-public class NeoDbTest {
+
+public class ImportStoreTest {
   private int datasetKey;
   private final static NormalizerConfig cfg = new NormalizerConfig();
   private static ImportStoreFactory importStoreFactory;
@@ -53,28 +57,22 @@ public class NeoDbTest {
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
   }
-  
-  static class BatchProcException extends RuntimeException {
-    BatchProcException(String message) {
-      super(message);
-    }
-  }
 
   @Test
   public void updateTaxon() throws Exception {
-    UsageData u = taxon("id1");
+    var u = taxon("id1");
     db.createNameAndUsage(u);
 
     VerbatimRecord tr = new VerbatimRecord(123, "bla.txt", GbifTerm.VernacularName);
     tr.setType(AcefTerm.Distribution);
     tr.put(AcefTerm.DistributionElement, "Asia");
 
-    u = db.usages().objByID("id1");
-    db.usages().update(u);
+    var u2 = db.usages().objByID("id1");
+    u2.setVerbatimKey(tr.getId());
+    db.usages().update(u2);
 
-    u = db.usages().objByID("id1");
-    //assertEquals(1, t.verbatim.getExtensionRecords(AcefTerm.Distribution).size());
-    //assertEquals(tr, t.verbatim.getExtensionRecords(AcefTerm.Distribution).getUsage(0));
+    var u3 = db.usages().objByID("id1");
+    assertEquals(u2, u3);
   }
   
   
@@ -93,10 +91,10 @@ public class NeoDbTest {
     db.references().create(r);
   }
 
-  public static UsageData taxon(String id) {
-    UsageData t = UsageData.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
-    t.usage.setName(RandomUtils.randomName());
+  public static NameUsageData taxon(String id) {
+    UsageData t = UsageData.buildTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
+    NameData n = new NameData(RandomUtils.randomName());
     t.setId(id);
-    return t;
+    return new NameUsageData(n,t);
   }
 }

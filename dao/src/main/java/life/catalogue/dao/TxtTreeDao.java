@@ -338,7 +338,7 @@ public class TxtTreeDao {
     public final List<VernacularName> vernacularNames = Lists.newArrayList();
     public final List<SpeciesEstimate> estimates = Lists.newArrayList();
     public final List<TaxonProperty> properties = Lists.newArrayList();
-    public String type;
+    public String type; // the TYPE value in TextTree infos
     public final List<TypeMaterial> typeMaterial = Lists.newArrayList();
     boolean hasTaxonRelatedEntities() {
       return !distributions.isEmpty() || !media.isEmpty() || !vernacularNames.isEmpty() || !estimates.isEmpty() || !properties.isEmpty();

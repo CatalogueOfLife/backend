@@ -1,6 +1,6 @@
 package life.catalogue.importer.store;
 
-import life.catalogue.importer.store.model.UsageData;
+import life.catalogue.importer.store.model.NameUsageData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,8 +22,8 @@ public class TreeWalker {
   private static final int reportingSize = 10000;
 
   public interface StartEndHandler {
-    void start(UsageData data);
-    void end(UsageData data);
+    void start(NameUsageData data);
+    void end(NameUsageData data);
   }
 
   /**
@@ -44,30 +44,30 @@ public class TreeWalker {
       if (Thread.currentThread().isInterrupted()) {
         throw new InterruptedException("TreeWalker thread was cancelled/interrupted");
       }
-      walkUsage(root, db, children, handler, counter);
+      walkUsage(new NameUsageData(db.name(root), root), db, children, handler, counter);
     }
     return counter.get();
   }
 
-  private static void walkUsage(UsageData root, ImportStore db, Map<String, List<String>> children, TreeWalker.StartEndHandler[] handler, AtomicInteger counter) {
+  private static void walkUsage(NameUsageData root, ImportStore db, Map<String, List<String>> children, TreeWalker.StartEndHandler[] handler, AtomicInteger counter) {
     if (counter.incrementAndGet() % reportingSize == 0) {
       LOG.debug("Processed {}", counter.get());
     }
     handleStart(root, handler);
-    for (String childID : children.getOrDefault(root.getId(), ImmutableList.of())) {
-      var child = db.usages().objByID(childID);
+    for (String childID : children.getOrDefault(root.ud.getId(), ImmutableList.of())) {
+      var child = db.nameUsage(childID);
       walkUsage(child, db, children, handler, counter);
     }
     handleEnd(root, handler);
   }
 
-  private static void handleStart(UsageData n, TreeWalker.StartEndHandler[] handler) {
+  private static void handleStart(NameUsageData n, TreeWalker.StartEndHandler[] handler) {
     for (StartEndHandler h : handler) {
       h.start(n);
     }
   }
   
-  private static void handleEnd(UsageData n, TreeWalker.StartEndHandler[] handler) {
+  private static void handleEnd(NameUsageData n, TreeWalker.StartEndHandler[] handler) {
     for (StartEndHandler h : handler) {
       h.end(n);
     }

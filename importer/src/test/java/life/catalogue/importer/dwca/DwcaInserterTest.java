@@ -102,8 +102,8 @@ public class DwcaInserterTest extends InserterBaseTest {
     DataInserter ins = setup("/dwca/42");
     ins.insertAll();
 
-    UsageData u = store.usageWithName("530938-wcs");
-    var nn = u.getNameData();
+    var nu = store.nameUsage("530938-wcs");
+    var nn = nu.nd;
 
     var ref = store.references().get(nn.getName().getPublishedInId());
     assertEquals("Bot. J. Linn. Soc. (2018)", ref.getCitation());
@@ -130,10 +130,10 @@ public class DwcaInserterTest extends InserterBaseTest {
     DataInserter ins = setup("/dwca/plazi2");
     ins.insertAll();
 
-    UsageData u = store.usageWithName("03E387995E15FFE0FF36F93FFD2935BE.taxon");
-    assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", u.getNameData().getName().getScientificName());
-    assertEquals(": Zapekina-Dulkeit, 1975", u.getNameData().getName().getAuthorship());
-    assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", u.getNameData().getName().getLabel());
+    var nu = store.nameUsage("03E387995E15FFE0FF36F93FFD2935BE.taxon");
+    assertEquals("Isoperla eximia :Zapekina-Dulkeit 1975", nu.nd.getName().getScientificName());
+    assertEquals(": Zapekina-Dulkeit, 1975", nu.nd.getName().getAuthorship());
+    assertEquals("Isoperla eximia : Zapekina-Dulkeit 1975", nu.nd.getName().getLabel());
   }
 
   @Test

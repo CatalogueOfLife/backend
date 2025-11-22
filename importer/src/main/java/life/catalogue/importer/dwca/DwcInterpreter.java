@@ -9,8 +9,8 @@ import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
-import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
@@ -44,28 +44,28 @@ public class DwcInterpreter extends InterpreterBase {
     idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
 
-  public Optional<UsageData> interpretUsage(VerbatimRecord v) {
+  public Optional<NameUsageData> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      UsageData u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, ALT_ID_TERMS);
+      var nu = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.originalNameUsageID, ALT_ID_TERMS);
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);
         // for bare names u.ID is null !
         // TODO: check if that impacts name relations or type material which is linked to names, not taxa
-        if (u.getId() != null && !u.getId().equals(dwcaID)) {
-          dwcaID2taxonID.put(dwcaID, u.getId());
+        if (nu.ud.getId() != null && !nu.ud.getId().equals(dwcaID)) {
+          dwcaID2taxonID.put(dwcaID, nu.ud.getId());
         }
       }
-      if (u.isNameUsageBase()) {
-        u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+      if (nu.ud.isNameUsageBase()) {
+        nu.ud.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         // explicit accordingTo & namePhrase - the authorship could already have set these properties!
         if (v.hasTerm(DwcTerm.nameAccordingTo)) {
-          setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
+          setAccordingTo(nu.ud.usage, v.get(DwcTerm.nameAccordingTo), v);
         }
       }
-      u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
-      return u;
+      nu.ud.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
+      return nu;
     });
   }
 

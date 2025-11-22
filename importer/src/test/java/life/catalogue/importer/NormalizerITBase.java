@@ -102,7 +102,7 @@ abstract class NormalizerITBase {
     InputStream treeSteam = getClass().getResourceAsStream(resourceDir() + "/expected.tree");
     String expected = UTF8IoUtils.readString(treeSteam).trim();
     String tree = store.printTree();
-    assertEquals(expected, tree);
+    assertEquals(expected.trim(), tree.trim());
 
     // check also bare names if file exists
     InputStream bareNamesFile = getClass().getResourceAsStream(resourceDir() + "/expected-barenames.txt");
@@ -336,7 +336,7 @@ abstract class NormalizerITBase {
   }
 
   public void printTree() throws Exception {
-    store.printTree();
+    System.out.println(store.printTree());
   }
 
 }

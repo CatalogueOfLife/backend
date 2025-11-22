@@ -9,6 +9,7 @@ import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
@@ -49,7 +50,7 @@ public class ColdpInterpreter extends InterpreterBase {
     return Optional.of(refFactory.fromColDP(v));
   }
 
-  Optional<UsageData> interpretNameUsage(VerbatimRecord v) {
+  Optional<NameUsageData> interpretNameUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(nn -> {
       if (!v.hasTerm(ColdpTerm.ID)) {
@@ -59,15 +60,16 @@ public class ColdpInterpreter extends InterpreterBase {
       UsageData u;
       TaxonomicStatus status = parse(TaxonomicStatusParser.PARSER, v.get(ColdpTerm.status)).orElse(ACC_NOTE, Issue.TAXONOMIC_STATUS_INVALID, v).val;
       if (status.isBareName()) {
-        u = UsageData.createBareName(Origin.SOURCE);
+        u = UsageData.buildBareName(Origin.SOURCE);
       } else if (status.isSynonym()) {
-        u = UsageData.createSynonym(Origin.SOURCE, status);
+        u = UsageData.buildSynonym(Origin.SOURCE, status);
       } else {
-        u = UsageData.createTaxon(Origin.SOURCE, status);
+        u = UsageData.buildTaxon(Origin.SOURCE, status);
         interpretTaxonInfos(u, nn, v);
       }
+      var nu = new NameUsageData(nn, u);
       interpretUsageBase(u, nn, v);
-      return u;
+      return nu;
     });
   }
 
@@ -76,7 +78,7 @@ public class ColdpInterpreter extends InterpreterBase {
       if (!v.hasTerm(ColdpTerm.ID)) {
         return null;
       }
-      UsageData u = UsageData.createTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
+      UsageData u = UsageData.buildTaxon(Origin.SOURCE, TaxonomicStatus.ACCEPTED);
 
       // shared usage base
       interpretUsageBase(u, n, v);
@@ -123,7 +125,7 @@ public class ColdpInterpreter extends InterpreterBase {
         status = TaxonomicStatus.SYNONYM;
       }
   
-      UsageData u = UsageData.createSynonym(Origin.SOURCE, status);
+      UsageData u = UsageData.buildSynonym(Origin.SOURCE, status);
       interpretUsageBase(u, n, v);
       if (!v.hasTerm(ColdpTerm.ID)) {
         u.setId(v.getRaw(ColdpTerm.taxonID) + "-" + v.getRaw(ColdpTerm.nameID));
@@ -153,6 +155,7 @@ public class ColdpInterpreter extends InterpreterBase {
       NameUsageBase nub = (NameUsageBase) u.usage;
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
       nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
+      nub.setParentId(v.getRaw(ColdpTerm.parentID));
       nub.setIdentifier(InterpreterUtils.interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), null, v));
     }
     if (n.pnu.isDoubtful() && u.usage.isTaxon()) {
@@ -325,21 +328,26 @@ public class ColdpInterpreter extends InterpreterBase {
       genusNameTerm = ColdpTerm.genericName;
     }
 
-    Optional<ParsedNameUsage> opt = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
+    Optional<ParsedNameUsage> optPNU = nameInterpreter.interpret(v.getRaw(ColdpTerm.ID), v.get(ColdpTerm.rank), Rank.UNRANKED,
         v.get(ColdpTerm.scientificName), v.get(ColdpTerm.authorship), v.get(ColdpTerm.publishedInYear),
         v.get(ColdpTerm.uninomial), v.get(genusNameTerm), v.get(ColdpTerm.infragenericEpithet), v.get(ColdpTerm.specificEpithet), v.get(ColdpTerm.infraspecificEpithet), v.get(ColdpTerm.cultivarEpithet),
         ColdpTerm.combinationAuthorship, ColdpTerm.combinationExAuthorship, ColdpTerm.combinationAuthorshipYear,
         ColdpTerm.basionymAuthorship, ColdpTerm.basionymExAuthorship,ColdpTerm.basionymAuthorshipYear,
         ColdpTerm.notho, ColdpTerm.originalSpelling, ColdpTerm.code, nomStatusTerm,
         ColdpTerm.link, remarksTerm, altIdTerm, v);
+    var opt = optPNU.map(NameData::new);
     if (opt.isPresent()) {
-      Name n = opt.get().getName();
+      NameData nd = opt.get();
+      Name n = nd.getName();
       // etymology, gender & agreement exist only in ColDP
       // for simplicity we interpret them here and not in the base class
       n.setGenderAgreement(bool(v, ColdpTerm.genderAgreement));
       n.setGender(SafeParser.parse(GenderParser.PARSER, v.get(ColdpTerm.gender)).orNull(Issue.GENDER_INVALID, v));
       n.setEtymology(v.get(ColdpTerm.etymology));
-      
+
+      // explicit basionym
+      nd.basionymID = v.getRaw(ColdpTerm.basionymID);
+
       // publishedIn
       n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));
       setReference(v, refIdTerm, rid -> {
@@ -347,8 +355,8 @@ public class ColdpInterpreter extends InterpreterBase {
           n.setPublishedInPage(v.get(ColdpTerm.publishedInPage));
           n.setPublishedInYear(InterpreterUtils.parseNomenYear(ColdpTerm.publishedInYear, v));
       });
-      if (opt.get().getPublishedIn() == null) {
-        String pubInAuthorship = opt.get().getPublishedIn();
+      if (optPNU.get().getPublishedIn() != null) {
+        String pubInAuthorship = optPNU.get().getPublishedIn();
         if (n.getPublishedInId() == null) {
           setPublishedIn(n, pubInAuthorship, v);
         } else {
@@ -356,7 +364,7 @@ public class ColdpInterpreter extends InterpreterBase {
         }
       }
     }
-    return opt.map(NameData::new);
+    return opt;
   }
   
   private Classification interpretClassification(VerbatimRecord v) {

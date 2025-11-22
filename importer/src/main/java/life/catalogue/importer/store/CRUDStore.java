@@ -5,15 +5,11 @@ import com.google.common.base.Function;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.api.vocab.SpeciesInteractionType;
-import life.catalogue.api.vocab.TaxonConceptRelType;
 import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.store.model.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -27,7 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.util.Pool;
-import com.google.common.base.Preconditions;
 
 public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
   private static final Logger LOG = LoggerFactory.getLogger(CRUDStore.class);
@@ -37,10 +32,10 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
   private int duplicateCounter = 0;
   private final IdGenerator idGen;
   private final String objName;
-  protected final ImportStore importStore;
+  protected final ImportStore db;
 
-  CRUDStore(DB mapDb, String mapDbName, Class<T> clazz, Pool<Kryo> pool, ImportStore importStore, IdGenerator idGen) throws IOException {
-    this.importStore = importStore;
+  CRUDStore(DB mapDb, String mapDbName, Class<T> clazz, Pool<Kryo> pool, ImportStore db, IdGenerator idGen) throws IOException {
+    this.db = db;
     objName = clazz.getSimpleName();
     objects = mapDb.hashMap(mapDbName)
         .keySerializer(Serializer.STRING)
@@ -91,9 +86,9 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
     if (objects.containsKey(obj.getId())) {
       LOG.warn("Duplicate {}ID {}", objName, obj.getId());
       duplicateCounter++;
-      importStore.addIssues(obj, Issue.ID_NOT_UNIQUE);
+      db.addIssues(obj, Issue.ID_NOT_UNIQUE);
       T obj2 = objByID(obj.getId());
-      importStore.addIssues(obj2, Issue.ID_NOT_UNIQUE);
+      db.addIssues(obj2, Issue.ID_NOT_UNIQUE);
       return false;
     }
 

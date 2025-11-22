@@ -1,11 +1,12 @@
 package life.catalogue.importer.store.model;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.*;
-import life.catalogue.dao.TxtTreeDao;
+import life.catalogue.api.vocab.Origin;
+import life.catalogue.api.vocab.SpeciesInteractionType;
+import life.catalogue.api.vocab.TaxonConceptRelType;
+import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.*;
-
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -24,7 +25,9 @@ public class UsageData implements DSID<String>, VerbatimEntity {
   public NameUsage usage; // we ignore and do not persist the name part !!!
   public String nameID; // instead we keep a reference to the name id only
   public final Set<String> proParteAcceptedIDs = new HashSet<>(); // optional additional accepted taxon ids allowing for multiple parents in case of pro parte synonyms
+  // temp fields for flexible interpretation - the real fields are in NameData!
   public boolean homotypic = false;
+  public String basionymID;
 
   // supplementary infos for a taxon
   public Treatment treatment;
@@ -41,57 +44,24 @@ public class UsageData implements DSID<String>, VerbatimEntity {
   public Classification classification;
   public List<String> remarks = Lists.newArrayList();
 
-  public UsageData() {
-  }
-
-  public UsageData(TxtTreeDao.TxtUsage tu) {
-    this.usage = tu.usage;
-    this.distributions.addAll(tu.distributions);
-    this.media.addAll(tu.media);
-    this.vernacularNames.addAll(tu.vernacularNames);
-    this.estimates.addAll(tu.estimates);
-    this.properties.addAll(tu.properties);
-  }
-
-
-  private static UsageData create(NameUsage nu, Origin origin, Name name, TaxonomicStatus status) {
+  private static UsageData create(NameUsage nu, Origin origin, TaxonomicStatus status) {
     UsageData u = new UsageData();
     u.usage = nu;
     u.usage.setStatus(status);
     u.usage.setOrigin(origin);
-    if (name != null) {
-      u.usage.setName(name);
-      name.setOrigin(origin);
-    }
     return u;
   }
 
-  public static UsageData createBareName(Origin origin) {
-    return createBareName(origin, null);
+  public static UsageData buildBareName(Origin origin) {
+    return create(new BareName(), origin, TaxonomicStatus.BARE_NAME);
   }
 
-  public static UsageData createBareName(Origin origin, Name name) {
-    return create(new BareName(), origin, name, TaxonomicStatus.BARE_NAME);
+  public static UsageData buildTaxon(Origin origin, TaxonomicStatus status) {
+    return create(new Taxon(), origin, status);
   }
 
-  public static UsageData createTaxon(Origin origin, TaxonomicStatus status) {
-    return createTaxon(origin, null, status);
-  }
-  
-  public static UsageData createTaxon(Origin origin, Name name, TaxonomicStatus status) {
-    return create(new Taxon(), origin, name, status);
-  }
-  
-  public static UsageData createSynonym(Origin origin, TaxonomicStatus status) {
-    return createSynonym(origin, null, status);
-  }
-  
-  public static UsageData createSynonym(Origin origin, Name name, TaxonomicStatus status) {
-    return create(new Synonym(), origin, name, status);
-  }
-  
-  public NameData getNameData() {
-    return new NameData(usage.getName());
+  public static UsageData buildSynonym(Origin origin, TaxonomicStatus status) {
+    return create(new Synonym(), origin, status);
   }
 
   public Taxon asTaxon() {
@@ -104,10 +74,6 @@ public class UsageData implements DSID<String>, VerbatimEntity {
 
   public NameUsageBase asNameUsageBase() {
     return usage instanceof NameUsageBase ? (NameUsageBase) usage : null;
-  }
-
-  public SimpleName toSimpleName() {
-    return new SimpleName((NameUsageBase) usage);
   }
 
   public boolean isNameUsageBase() {
@@ -236,5 +202,10 @@ public class UsageData implements DSID<String>, VerbatimEntity {
   @Override
   public int hashCode() {
     return Objects.hash(usage, treatment, distributions, media, vernacularNames, estimates, properties, classification, remarks);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("%s -> %s [%s]", usage.getId(), usage.getParentId(), nameID);
   }
 }

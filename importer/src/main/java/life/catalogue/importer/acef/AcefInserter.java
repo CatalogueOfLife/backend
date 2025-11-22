@@ -11,6 +11,7 @@ import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ReferenceMapStore;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.parser.*;
 
@@ -112,15 +113,15 @@ public class AcefInserter extends DataCsvInserter {
     }
   }
 
-  public boolean createSynonymNameUsage(UsageData u) {
+  public boolean createSynonymNameUsage(NameUsageData u) {
     // check if we have seen the usage id before - this is legitimate for ambiguous and misapplied names
     // https://github.com/Sp2000/colplus-backend/issues/449
-    UsageData pre = store.usages().objByID(u.getId());
+    UsageData pre = store.usages().objByID(u.ud.getId());
     if (pre != null && pre.usage.getStatus().isSynonym()) {
       //TODO: create second relation or fail if accepted is the same!
       // we have not yet established neo relations so we need to check the verbatim data here
 
-      VerbatimRecord v = store.getVerbatim(u.usage.getVerbatimKey());
+      VerbatimRecord v = store.getVerbatim(u.ud.usage.getVerbatimKey());
       final String aID = v.getRaw(AcefTerm.AcceptedTaxonID);
       if (StringUtils.isNotEmpty(aID)) {
         var added = pre.proParteAcceptedIDs.add(aID);
