@@ -5,6 +5,7 @@ import life.catalogue.common.io.Resources;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.HashMap;
@@ -46,6 +47,16 @@ public class DateUtils {
 
   public static LocalDateTime asLocalDateTime(Date date) {
     return Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDateTime();
+  }
+
+  /**
+   * Truncates nanoseconds from the given local date time.
+   * Useful for comparing dates when the database does not support the same precision.
+   * @param dt
+   * @return
+   */
+  public static LocalDateTime truncateNanos(LocalDateTime dt) {
+    return dt.truncatedTo(ChronoUnit.MILLIS);
   }
 
   /**

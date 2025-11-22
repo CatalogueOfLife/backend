@@ -19,6 +19,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import org.junit.Test;
@@ -46,8 +47,8 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     m.setJob(DatasetImportMapperTest.class.getSimpleName());
     m.setError("no error");
     m.setState(state);
-    m.setStarted(LocalDateTime.now());
-    m.setFinished(LocalDateTime.now());
+    m.setStarted(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
+    m.setFinished(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     m.setAppliedDecisionCount(83);
     m.setBareNameCount(13);
     m.setDistributionCount(12345);
@@ -89,7 +90,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     d.setFormat(DataFormat.COLDP);
     d.setOrigin(DatasetOrigin.EXTERNAL);
     d.setDownloadUri(URI.create("http://rs.gbif.org/datasets/nub.zip"));
-    d.setDownload(LocalDateTime.now());
+    d.setDownload(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     d.setVerbatimCount(5748923);
     d.setMaxClassificationDepth(31);
     Map<Term, Integer> vcnt = new HashMap<>();
