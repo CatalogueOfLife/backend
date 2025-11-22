@@ -41,7 +41,7 @@ public class DatasetInfoCache implements DatasetListener {
                                                               .expireAfterWrite(24, TimeUnit.HOURS)
                                                               .build(this::buildLabel);
 
-  public final static DatasetInfoCache CACHE = new DatasetInfoCache();
+  public static DatasetInfoCache CACHE = new DatasetInfoCache();
 
   private DatasetInfoCache() { }
 
