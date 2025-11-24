@@ -101,7 +101,7 @@ pipeline {
                       FULL_TAG = "${DOCKER_TAG}-${PLATFORM}-${CLB_DATASET_ID}-${TIMESTAMP}"
 
                       // Run Docker build with parameters
-                      sh "docker build -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${FULL_TAG}"
+                      sh "docker buildx build --no-cache -f matching-ws/Dockerfile-image --platform linux/${PLATFORM} --build-arg INDEX_BUILD_PATH=matching-ws/index-build . -t docker.gbif.org/matching-ws:${FULL_TAG}"
                       sh "docker push docker.gbif.org/matching-ws:${FULL_TAG}"
 
                       // Tag and push the latest version if required
