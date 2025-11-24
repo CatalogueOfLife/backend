@@ -57,14 +57,14 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertEquals(0, t.distributions.size());
     assertEquals(1, t.asNameUsageBase().getReferenceIds().size());
 
-    UsageData acc = accepted(t);
-    assertEquals(1, acc.vernacularNames.size());
-    assertEquals(2, acc.distributions.size());
-    assertNull(acc.treatment);
-    assertEquals(0, acc.media.size());
-    assertEquals(1, acc.asNameUsageBase().getReferenceIds().size());
+    var acc = accepted(t);
+    assertEquals(1, acc.ud.vernacularNames.size());
+    assertEquals(2, acc.ud.distributions.size());
+    assertNull(acc.ud.treatment);
+    assertEquals(0, acc.ud.media.size());
+    assertEquals(1, acc.ud.asNameUsageBase().getReferenceIds().size());
 
-    VernacularName v = acc.vernacularNames.get(0);
+    VernacularName v = acc.ud.vernacularNames.get(0);
     assertEquals("Beer bean", v.getName());
   }
   

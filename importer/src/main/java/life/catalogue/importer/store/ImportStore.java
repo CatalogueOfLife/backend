@@ -173,19 +173,6 @@ public class ImportStore implements AutoCloseable {
     return names().all().filter(n -> n.usageIDs.isEmpty());
   }
 
-  public Set<String> usageIDsByNames(Rank rank, boolean inclUnranked, String... scientificName) {
-    Set<String> uids = new HashSet<>();
-    if (scientificName != null && scientificName.length > 0) {
-      Set<String> names = Arrays.stream(scientificName)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toSet());
-      for (String name : names) {
-        uids.addAll(usageIDsByName(name, null, rank, inclUnranked));
-      }
-    }
-    return uids;
-  }
-
   /**
    * Retuns a list of usage ids that have a matching scientific name, rank & authorship.
    * A prefixed hybrid symbol will be ignored in both the query name and stored names.
@@ -414,14 +401,14 @@ public class ImportStore implements AutoCloseable {
   public String printTree() throws InterruptedException, IOException {
     StringWriter w = new StringWriter();
     try (TextTreePrinter printer = new TextTreePrinter(new TreeTraversalParameter(),null,null,null,null,null,w)) {
-      TreeWalker.walkTree(this, new TreeWalker.StartEndHandler() {
+      TreeWalker.walkTree(this, ctxt -> printer.addBasionyms(ctxt.basionyms), new TreeWalker.StartEndHandler() {
         @Override
-        public void start(NameUsageData data) {
+        public void start(NameUsageData data, TreeWalker.WalkerContext ctxt) {
           printer.accept(data.toSimpleName());
         }
 
         @Override
-        public void end(NameUsageData data) {
+        public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {
         }
       });
     }

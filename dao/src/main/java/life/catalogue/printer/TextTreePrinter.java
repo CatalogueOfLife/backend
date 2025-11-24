@@ -57,6 +57,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
   private boolean extended;
   private final DSID<String> key;
   private final SectorInfoCache sectorInfoCache;
+  private final Set<String> basionyms = new HashSet<>();
 
   public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
@@ -75,6 +76,10 @@ public class TextTreePrinter extends AbstractTreePrinter {
   public TextTreePrinter showExtendedInfos() {
     extended = true;
     return this;
+  }
+
+  public void addBasionyms(Collection<String> basionymIds) {
+    basionyms.addAll(basionymIds);
   }
 
   /**
@@ -104,7 +109,9 @@ public class TextTreePrinter extends AbstractTreePrinter {
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(Tree.SYNONYM_SYMBOL);
     }
-    //TODO: flag basionyms
+    if (basionyms.contains(u.getId())) {
+      writer.write(Tree.BASIONYM_SYMBOL);
+    }
     if (u.isExtinct()) {
       writer.write(Tree.EXTINCT_SYMBOL);
     }

@@ -9,6 +9,7 @@ import life.catalogue.common.lang.Exceptions;
 import life.catalogue.common.tax.MisappliedNameMatcher;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.ParentStack;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
@@ -17,6 +18,7 @@ import life.catalogue.importer.coldp.ColdpInserter;
 import life.catalogue.importer.dwca.DwcaInserter;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.NotUniqueRuntimeException;
+import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
@@ -29,16 +31,15 @@ import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.parser.NameParser;
 
+import life.catalogue.release.TreeCleanerAndValidator;
+
 import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,13 +152,16 @@ public class Normalizer implements Callable<Boolean> {
 
   /**
    * Mostly checks for required attributes so that subsequent postgres imports do not fail,
-   * but also does further issue flagging and applying of missing dataset defaults.
+   * but also applies missing dataset defaults.
+   *
+   * Further name and taxonomy validation is done in PgImport when walking the tree for inserts,
+   * reusing the TreeCleanerAndValidator logic.
    */
   private void validateAndDefaults() throws InterruptedException {
     final NomCode defaultCode = dataset.getCode();
     final Set<Environment> defaultEnvironment = dataset.getEnvironment() == null ? null : Set.of(dataset.getEnvironment());
 
-    LOG.info("Start name validation");
+    LOG.info("Require mandatory name fields");
     store.names().all().forEach(nn -> {
       Name n = nn.getName();
 
@@ -175,12 +179,6 @@ public class Normalizer implements Callable<Boolean> {
       require(n, n.getScientificName(), "scientific name");
       require(n, n.getRank(), "rank");
       require(n, n.getType(), "name type");
-
-      // all names should have a verbatim record by now - even implicit ones!
-      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
-      if (v != null) {
-        store.put(v);
-      }
     });
 
     LOG.info("Apply dataset defaults");
@@ -236,8 +234,26 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
 
-    // TODO: flag PARENT_NAME_MISMATCH, PUBLISHED_BEFORE_GENUS, PARENT_SPECIES_MISSING & CLASSIFICATION_RANK_ORDER_INVALID for accepted names
-    LOG.info("Flag classification issues");
+    LOG.info("Validate name usages");
+    TreeWalker.walkTree(store, new TreeWalker.StartEndHandler() {
+      final ParentStack<TreeCleanerAndValidator.XLinneanNameUsage> parents = new ParentStack();
+
+      @Override
+      public void start(NameUsageData nu, TreeWalker.WalkerContext ctxt) {
+        LinneanNameUsage lnu = new LinneanNameUsage(nu.toNameUsageBase());
+        var issues = IssueContainer.simple();
+        TreeCleanerAndValidator.validateAndPush(lnu, parents, issues);
+        if (issues.hasIssues()) {
+          // all usages should have a verbatim record by now - even implicit ones!
+          VerbatimRecord v = store.getVerbatim(nu.ud.getVerbatimKey());
+          v.add(issues);
+          store.put(v);
+        }
+      }
+
+      @Override
+      public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {}
+    });
 
     // verify reference truncation
     LOG.info("Validate references");
@@ -310,9 +326,9 @@ public class Normalizer implements Callable<Boolean> {
     reduceRedundantNameRels();
 
     // cleanup synonym & parent relations
-    cutSynonymCycles();
-    relinkSynonymChains();
-    preferSynonymOverParentRel();
+    sanitizeSynonyms();
+    resolveSynonymParents();
+    cutParentCycles();
 
     // cleanup basionym rels
     cutBasionymChains();
@@ -346,7 +362,7 @@ public class Normalizer implements Callable<Boolean> {
           rel.setVerbatimKey(n.getVerbatimKey());
           rel.setFromID(n.getId());
           rel.setToID(n.basionymID);
-          n.relations.add(rel);
+          n. relations.add(rel);
           store.names().update(n);
         } else {
           store.addIssues(n, Issue.BASIONYM_ID_INVALID);
@@ -398,13 +414,18 @@ public class Normalizer implements Callable<Boolean> {
     store.names().all().forEach(n -> {
       Set<UniqueNameRel> rels = new HashSet<>();
       var iter = n.relations.iterator();
+      var changed = false;
       while (iter.hasNext()) {
         var r = iter.next();
         if (!rels.add(new UniqueNameRel(r.getType(), r.getFromID(), r.getToID()))) {
           // redundant - remove it
           iter.remove();
+          changed = true;
           counter.inc(r.getType());
         }
+      }
+      if (changed) {
+        store.names().update(n);
       }
     });
     for (var entry : counter.entrySet()) {
@@ -416,8 +437,8 @@ public class Normalizer implements Callable<Boolean> {
 
   private void removeOrphanSynonyms() {
     final AtomicInteger counter = new AtomicInteger(0);
-    store.usages().all().forEach(syn -> {
-      if (syn.isSynonym()) {
+    store.usages().allSynonyms().forEach(syn -> {
+      if (syn.usage.getParentId() == null || !store.usages().exists(syn.usage.getParentId())) {
         addUsageIssue(syn, Issue.ACCEPTED_NAME_MISSING);
         store.usages().remove(syn.getId());
         counter.incrementAndGet();
@@ -438,7 +459,7 @@ public class Normalizer implements Callable<Boolean> {
       if (u.isSynonym()) {
         Synonym syn = u.asSynonym();
         var n = store.names().objByID(u.nameID);
-        boolean ambiguous = !n.usageIDs.isEmpty();
+        boolean ambiguous = n.usageIDs.size()>1;
         boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(n.getName(), false, syn.getAccordingToId(), null));
         TaxonomicStatus status = syn.getStatus();
 
@@ -692,18 +713,6 @@ public class Normalizer implements Callable<Boolean> {
     store.names().update(name);
   }
 
-  /**
-   * Sanitizes synonym relations and cuts cycles at lowest rank
-   */
-  private void cutSynonymCycles() {
-    //TODO: impl see old code Issue.CHAINED_SYNONYM
-    LOG.info("Cleanup synonym cycles");
-    final String query = "MATCH (s)-[sr:SYNONYM_OF]->(x)-[:SYNONYM_OF*]->(s) RETURN sr LIMIT 1";
-
-    int counter = 0;
-    LOG.info("{} synonym cycles resolved", counter);
-  }
-
   private ExtinctName parse(RanKnName rnn) throws InterruptedException {
     var ename = new ExtinctName(rnn.name);
     ename.pname = new Name();
@@ -738,53 +747,133 @@ public class Normalizer implements Callable<Boolean> {
   }
 
   /**
-   * Sanitizes synonym relations relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
+   * Sanitizes synonym relations by relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
+   * Synonyms without an accepted parent will be flagged and removed at the very end by the removeOrphanSynonyms routine.
    */
-  private void relinkSynonymChains() {
-    //TODO: impl see old code Issue.CHAINED_SYNONYM
-    LOG.debug("Relink synonym chains to single accepted");
-    final String query = "MATCH (s)-[srs:SYNONYM_OF*]->(x)-[:SYNONYM_OF]->(t:TAXON) " +
-        "WITH srs, t UNWIND srs AS sr " +
-        "RETURN DISTINCT sr, t";
-    int counter = 0;
-    LOG.info("{} synonym chains to a taxon resolved", counter);
-
-
-    LOG.debug("Remove synonym chains missing any accepted");
-    final String query2 = "MATCH (s)-[srs:SYNONYM_OF*]->(s2:SYNONYM) WHERE NOT (s2)-[:SYNONYM_OF]->() " +
-        "WITH srs UNWIND srs AS sr " +
-        "RETURN DISTINCT sr";
-    AtomicInteger cnt = new AtomicInteger(0);
-    LOG.info("{} synonym chains to a taxon resolved", counter);
+  private void sanitizeSynonyms() {
+    final AtomicInteger synChains = new AtomicInteger();
+    store.usages().allSynonyms().forEach(syn -> {
+      if (syn.usage.getParentId() != null) {
+        var p = store.usages().parent(syn);
+        if (p.isSynonym()) {
+          synChains.incrementAndGet();
+          var chain = new ArrayList<UsageData>();
+          chain.add(syn);
+          while (p != null && p.isSynonym()) {
+            chain.add(p);
+            p = store.usages().parent(p);
+          }
+          var accID = p == null ? null : p.getId();
+          for (var s : chain) {
+            addUsageIssue(s, Issue.CHAINED_SYNONYM);
+            store.usages().assignParent(syn, accID);
+          }
+        }
+      }
+    });
+    LOG.info("Resolved {} chained synonyms", synChains.get());
   }
-
 
   /**
-   * Sanitizes relations by preferring synonym relations over parent rels.
-   * (Re)move parent relationship for synonyms, even if no synonym relation exists
-   * but the node is just flagged to be a synonym. This happens for example when a synonym indicates
-   * a non existing accepted name.
-   * <p>
-   * If synonyms are parents of other taxa relinks relationship to the accepted
-   * presence of both confuses subsequent imports, see http://dev.gbif.org/issues/browse/POR-2755
+   * Find accepted names that point to synonyms are their hierarchy
+   * and resolves them by assigning the synonyms accepted name as the parent instead.
    */
-  private void preferSynonymOverParentRel() {
-    //TODO: impl see old code Issue.SYNONYM_PARENT
-    LOG.info("Cleanup relations, preferring synonym over parent relations");
-    int parentOfRelDeleted = 0;
-    int parentOfRelRelinked = 0;
-    int childOfRelDeleted = 0;
-    LOG.info("Synonym relations cleaned up. "
-            + "{} hasParent relations deleted,"
-            + "{} isParentOf relations deleted, {} isParentOf rels moved from synonym to accepted",
-        childOfRelDeleted, parentOfRelDeleted, parentOfRelRelinked);
+  private void resolveSynonymParents() {
+    LOG.info("Cleanup taxa with synonym parents");
+    AtomicInteger cntSynParent = new AtomicInteger();
+    store.usages().allTaxa().forEach(ud -> {
+      if (ud.usage.getParentId() != null) {
+        var p = store.usages().objByID(ud.usage.getParentId());
+        if (p.isSynonym()) {
+          addUsageIssue(ud, Issue.SYNONYM_PARENT);
+          store.usages().assignParent(ud, p.usage.getParentId()); // synonyms are clean by now, this must be an accepted name usage
+          cntSynParent.incrementAndGet();
+        }
+      }
+    });
+    LOG.info("Resolved {} taxa with synonym parents", cntSynParent);
   }
 
-  private void addNameIssue(NameData data, Issue issue) {
+  /**
+   * Finds parent cycles and cuts them at the lowest possible rank.
+   */
+  private void cutParentCycles() {
+    // brute force for taxa - all synonyms should point to some accepted now
+    LOG.info("Cleanup parent cycles");
+    AtomicInteger counter = new AtomicInteger();
+    Set<String> visited = new HashSet<>();
+    store.usages().allTaxa().forEach(ud -> {
+      if (ud.usage.getParentId() != null) {
+        if (ud.usage.getParentId().equals(ud.getId())) {
+          store.usages().assignParent(ud, null);
+          store.addIssues(ud, Issue.PARENT_CYCLE);
+          counter.incrementAndGet();
+        } else {
+          List<UsageData> cycle = findParentCycle(ud, visited);
+          if (cycle != null) {
+            // find highest rank to cut
+            NameUsageData max = null;
+            for (var u : cycle) {
+              NameUsageData nu = store.nameUsage(u);
+              if (max == null || nu.nd.getRank().higherThan(max.nd.getRank())) {
+                max = nu;
+              }
+            }
+            counter.incrementAndGet();
+            store.usages().assignParent(max.ud, null);
+            store.addIssues(max.ud, Issue.PARENT_CYCLE);
+          }
+        }
+      }
+      visited.add(ud.getId());
+    });
+    LOG.info("{} parent cycles resolved", counter);
+  }
+
+  private List<UsageData> findParentCycle(UsageData ud, Set<String> checked) {
+    if (checked.contains(ud.getId()) || (ud.usage.getParentId() != null && checked.contains(ud.usage.getParentId()))) {
+      return null;
+    }
+    // self loop?
+    if (ud.usage.getId().equals(ud.usage.getParentId())) {
+      return List.of(ud);
+    }
+    Set<String> visited = new HashSet<>();
+    visited.add(ud.getId());
+
+    List<UsageData> cycle = new ArrayList<>();
+    cycle.add(ud);
+    var p = store.usages().objByID(ud.usage.getParentId());
+    while (p != null) {
+      cycle.add(p);
+      // did we check that usage already before? No need to do it again
+      if (checked.contains(p.getId())) {
+        break;
+      }
+      checked.add(p.getId());
+      // did we see the id in this cycle detection before?
+      if (visited.contains(p.getId())) {
+        // figure out the smallest cycle to return
+        int idx = 0;
+        while (idx < cycle.size()) {
+          if (cycle.get(idx).getId().equals(p.getId())) {
+            return cycle.subList(idx, cycle.size());
+          }
+          idx++;
+        }
+        throw new IllegalStateException("We must have seen the id in the cycle list!");
+      }
+      visited.add(p.getId());
+      p = store.usages().objByID(p.usage.getParentId());
+    }
+    return null;
+  }
+
+  private void addNameIssue(NameData data, Issue... issue) {
     store.addIssues(data.getName(), issue);
   }
 
-  private void addUsageIssue(UsageData data, Issue issue) {
+  private void addUsageIssue(UsageData data, Issue... issue) {
     store.addIssues(data.usage, issue);
   }
 

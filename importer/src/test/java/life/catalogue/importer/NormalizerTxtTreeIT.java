@@ -15,6 +15,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -40,16 +41,16 @@ public class NormalizerTxtTreeIT extends NormalizerITBase {
     store.debug();
     UsageData s = usageByID("13");
     assertTrue(s.isSynonym());
-    assertEquals("Pardina", s.usage.getName().getLabel());
+    assertEquals("Pardina", s.usage.getLabel());
 
     UsageData t = usageByID("12");
     assertFalse(t.isSynonym());
-    assertEquals("Lynx", t.usage.getName().getLabel());
+    assertEquals("Lynx", t.usage.getLabel());
 
-    var accs = store.usages().accepted(s);
+    var accs = store.usages().accepted(s).stream().map(store::nameUsage).toList();
     assertEquals(1, accs.size());
-    assertEquals(t.getId(), accs.getFirst().getId());
-    assertEquals(t.usage.getLabel(), accs.getFirst().usage.getLabel());
+    assertEquals(t.getId(), accs.getFirst().ud.getId());
+    assertEquals(t.usage.getLabel(), accs.getFirst().nd.getName().getLabel());
   }
 
   public static ParserConfig aspilotaCfg(){

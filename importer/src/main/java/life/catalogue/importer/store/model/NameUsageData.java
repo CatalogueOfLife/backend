@@ -1,6 +1,7 @@
 package life.catalogue.importer.store.model;
 
 import life.catalogue.api.model.Name;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.model.SimpleName;
 import life.catalogue.api.model.VerbatimEntity;
 import life.catalogue.dao.TxtTreeDao;
@@ -24,6 +25,7 @@ public class NameUsageData implements VerbatimEntity {
     ud.properties.addAll(tu.properties);
 
     nd = new NameData(tu.usage.getName());
+    ud.nameID = nd.getId();
   }
 
   @Override
@@ -60,6 +62,12 @@ public class NameUsageData implements VerbatimEntity {
       sn.setExtinct(Boolean.TRUE.equals(ud.asTaxon().isExtinct()));
     }
     return sn;
+  }
+
+  public NameUsageBase toNameUsageBase() {
+    var nub = ud.asNameUsageBase();
+    nub.setName(nd.getName());
+    return nub;
   }
 
   @Override

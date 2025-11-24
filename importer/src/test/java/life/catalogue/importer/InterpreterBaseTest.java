@@ -157,7 +157,7 @@ public class InterpreterBaseTest {
 
     assertNull(t.getNamePhrase());
 
-    n = t.getName();
+    n = nu.nd.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());
@@ -177,7 +177,8 @@ public class InterpreterBaseTest {
 
     ParsedNameUsage pnu = new ParsedNameUsage(n);
     pnu.setDoubtful(true); // gets converted to provisional
-    UsageData u = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap()).ud;
+    var nu = ib.interpretUsage(ColdpTerm.ID, pnu, ColdpTerm.status, TaxonomicStatus.ACCEPTED, v, null, Collections.emptyMap());
+    var u = nu.ud;
 
     assertTrue(u.usage.isTaxon());
     assertEquals(TaxonomicStatus.PROVISIONALLY_ACCEPTED, u.usage.getStatus());
@@ -186,7 +187,7 @@ public class InterpreterBaseTest {
     assertNull(t.isExtinct());
     assertNull(t.getNamePhrase());
 
-    n = t.getName();
+    n = nu.nd.getName();
     assertEquals("Abies alba", n.getScientificName());
     assertEquals("Abies", n.getGenus());
     assertEquals("alba", n.getSpecificEpithet());

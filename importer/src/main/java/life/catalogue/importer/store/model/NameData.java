@@ -15,7 +15,7 @@ public class NameData implements DSID<String>, VerbatimEntity {
 
   public ParsedNameUsage pnu;
   public boolean homotypic = false;
-  public String basionymID;
+  public String basionymID; // hasBasionym
   public final HashSet<String> usageIDs = new HashSet<>(); // all usages linked to this name
   public final List<RelationData<NomRelType>> relations = new ArrayList<>();
 
@@ -112,5 +112,9 @@ public class NameData implements DSID<String>, VerbatimEntity {
   @Override
   public String toString() {
     return String.format("%s [%s] %s", getId(), getRank(), pnu.getName().getLabel());
+  }
+
+  public boolean containsRelation(NomRelType nomRelType) {
+    return relations.stream().anyMatch(r -> r.getType() == nomRelType);
   }
 }

@@ -58,39 +58,34 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
 
     List<NameRelation> rels = store.names().relations(t.nameID);
-    assertEquals(1, rels.size());
-    assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
+    assertEquals(0, rels.size());
 
-    t = accepted(t);
-    assertFalse(t.isSynonym());
-    assertEquals("1006", t.getId());
-    assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+    var acc = accepted(t);
+    assertFalse(acc.ud.isSynonym());
+    assertEquals("1006", acc.ud.getId());
+    assertEquals(1, acc.nd.relations.size());
+    assertEquals(NomRelType.BASIONYM, acc.nd.relations.get(0).getType());
+
+    var tnu = accepted(t);
+    assertFalse(tnu.ud.isSynonym());
+    assertEquals("1006", tnu.ud.getId());
+    assertEquals("Leontodon taraxacoides (Vill.) Mérat", tnu.nd.getName().getLabel());
     
-    parents(t, "102", "30", "20", "10", "1");
-
-    store.names().all().forEach(n -> {
-      VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
-      assertNotNull(v);
-      if (n.getName().getId().equals("cult")){
-        assertEquals(1, v.getIssues().size());
-        assertTrue(v.contains(Issue.INCONSISTENT_NAME));
-      } else if (n.getName().getId().equals("fake")){
-        assertEquals(1, v.getIssues().size());
-        assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
-      } else if (n.getName().getScientificName().equals("Viridae")){
-        assertEquals(1, v.getIssues().size());
-        assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
-      } else {
-        assertEquals(0, v.getIssues().size());
-      }
-    });
+    parents(tnu.ud, "102", "30", "20", "10", "1");
 
     store.usages().all().forEach(u -> {
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       assertNotNull(v);
       if (u.getId().equals("fake")) {
-        assertEquals(1, v.getIssues().size());
+        assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
+        assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
+      } else if (u.getId().equals("cult")){
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.contains(Issue.INCONSISTENT_NAME));
+      } else if (u.getId().equals("1-2")){ // Viridae
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
       } else {
         assertTrue(v.getIssues().isEmpty());
       }
@@ -225,12 +220,12 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals(1, rels.size());
     assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
 
-    t = accepted(t);
-    assertFalse(t.isSynonym());
-    assertEquals("1006", t.getId());
-    assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+    var tnu = accepted(t);
+    assertFalse(tnu.ud.isSynonym());
+    assertEquals("1006", tnu.ud.getId());
+    assertEquals("Leontodon taraxacoides (Vill.) Mérat", tnu.nd.getName().getLabel());
 
-    parents(t, "102", "30", "20", "10", "1");
+    parents(tnu.ud, "102", "30", "20", "10", "1");
 
     store.names().all().forEach(n -> {
       VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
@@ -380,15 +375,19 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("Leonida taraxacoida Vill.", t.usage.getName().getLabel());
 
     List<NameRelation> rels = store.names().relations(t.nameID);
-    assertEquals(1, rels.size()); // 2 redundant basionym relations (originalNameID & NameRel) should become just one!
+    assertEquals(0, rels.size()); // this is the basionym - relations are bound to the new combinations!
+
+    var newComb = usageByID("1006"); // this is the new comb with 2 redundant basionym relations (originalNameID & NameRel) - they should become just one!
+    rels = store.names().relations(newComb.nameID);
+    assertEquals(1, rels.size());
     assertEquals(NomRelType.BASIONYM, rels.get(0).getType());
 
-    t = accepted(t);
-    assertFalse(t.isSynonym());
-    assertEquals("1006", t.getId());
-    assertEquals("Leontodon taraxacoides (Vill.) Mérat", t.usage.getName().getLabel());
+    var tnu = accepted(t);
+    assertFalse(tnu.ud.isSynonym());
+    assertEquals("1006", tnu.ud.getId());
+    assertEquals("Leontodon taraxacoides (Vill.) Mérat", tnu.nd.getName().getLabel());
 
-    parents(t, "102", "30", "20", "10", "1");
+    parents(tnu.ud, "102", "30", "20", "10", "1");
 
     store.usages().all().forEach(u -> {
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
@@ -399,8 +398,9 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
 
       } else if(u.getId().equals("cult")) {
-        assertEquals(1, v.getIssues().size());
+        assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
+        assertTrue(v.contains(Issue.PARENT_GENUS_MISSING));
 
       } else if (u.getId().equals("2")){
         assertEquals(1, v.getIssues().size());

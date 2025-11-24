@@ -17,7 +17,6 @@ import life.catalogue.importer.bibtex.BibTexInserter;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
-import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.metadata.MetadataFactory;
 
@@ -32,13 +31,13 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import it.unimi.dsi.fastutil.longs.Long2IntMap;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
-
-import javax.annotation.Nullable;
 
 import static life.catalogue.api.vocab.terms.TxtTreeTerm.*;
 

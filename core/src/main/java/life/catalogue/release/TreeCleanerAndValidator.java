@@ -119,11 +119,16 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     return sn.getId().charAt(0) == TreeMergeHandler.ID_PREFIX; // a temp merge identifier!
   }
 
-  @Override
-  public void accept(LinneanNameUsage lnu) {
+  /**
+   * THis validates the name and taxonomy/classification of the given usage.
+   * It also generates a new XLinneanNameUsage and pushes it to the parent stack, keeping track of the classification.
+   * @param lnu
+   * @param parents
+   * @param issues
+   * @return
+   */
+  public static XLinneanNameUsage validateAndPush(LinneanNameUsage lnu, ParentStack<XLinneanNameUsage> parents, IssueContainer issues) {
     var sn = new XLinneanNameUsage(lnu);
-    counter.incrementAndGet();
-    final IssueContainer issues = IssueContainer.simple();
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
     try {
@@ -134,12 +139,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
 
     if (sn.getStatus() != null && sn.getStatus().isSynonym()) {
       // validate syn vs acc rank
-      var p = parents.secondLast();
+      var p = parents.last();
       if (p != null && sn.getRank() != p.getRank()) {
         issues.add(Issue.SYNONYM_RANK_DIFFERS);
       }
 
     } else {
+      // push to stack to make sure our hierarchy is up to date and we have removed unused leaf nodes
+      parents.push(sn);
       if (sn.getRank().isSpeciesOrBelow()) {
         // flag parent mismatches
         if (sn.isParsed()) {
@@ -150,7 +157,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
             if (sp == null) {
               issues.add(Issue.PARENT_SPECIES_MISSING);
             } else if (sp.isParsed() && (
-                !Objects.equals(sn.getGenus(), sp.getGenus()) ||
+              !Objects.equals(sn.getGenus(), sp.getGenus()) ||
                 !Objects.equals(sn.getSpecificEpithet(), sp.getSpecificEpithet()))
             ) {
               issues.add(Issue.PARENT_NAME_MISMATCH);
@@ -160,26 +167,25 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
             if (genus == null) {
               issues.add(Issue.PARENT_GENUS_MISSING);
             } else if (genus.isParsed() &&
-                // genus should only have uninomial populated, but play safe here
-                !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
+              // genus should only have uninomial populated, but play safe here
+              !Objects.equals(sn.getGenus(), ObjectUtils.coalesce(genus.getUninomial(),genus.getGenus()))
             ) {
               issues.add(Issue.PARENT_NAME_MISMATCH);
             }
           }
           // flag if published before the genus
           if (!issues.contains(Issue.PARENT_NAME_MISMATCH)
-              && !issues.contains(Issue.MISSING_GENUS)
-              && !issues.contains(Issue.UNLIKELY_YEAR)
-              && genus != null && genus.authorYear != null
-              && sn.authorYear != null
-              && genus.authorYear > sn.authorYear
+            && !issues.contains(Issue.MISSING_GENUS)
+            && !issues.contains(Issue.UNLIKELY_YEAR)
+            && genus != null && genus.authorYear != null
+            && sn.authorYear != null
+            && genus.authorYear > sn.authorYear
           ) {
-              // flag if the accepted bi/trinomial the ones that have an earlier publication date!
-              issues.add(Issue.PUBLISHED_BEFORE_GENUS);
+            // flag if the accepted bi/trinomial the ones that have an earlier publication date!
+            issues.add(Issue.PUBLISHED_BEFORE_GENUS);
           }
         }
       }
-      parents.push(sn);
       // validate next higher concrete parent rank
       if (!sn.getRank().isUncomparable()) {
         parents.getLowestConcreteRank(true).ifPresent(r -> {
@@ -188,6 +194,17 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
           }
         });
       }
+    }
+    return sn;
+  }
+
+  @Override
+  public void accept(LinneanNameUsage lnu) {
+    final IssueContainer issues = IssueContainer.simple();
+    var sn = validateAndPush(lnu, parents, issues);
+    counter.incrementAndGet();
+
+    if (sn.getStatus() != null && sn.getStatus().isTaxon()) {
       // track maximum depth of accepted taxa
       if (maxDepth < parents.depth()) {
         maxDepth = parents.depth();

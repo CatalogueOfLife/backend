@@ -14,6 +14,7 @@ import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.importer.store.NotUniqueRuntimeException;
 import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.matching.nidx.NameIndex;
@@ -226,12 +227,12 @@ abstract class NormalizerITBase {
     return null;
   }
   
-  public UsageData accepted(UsageData syn) {
+  public NameUsageData accepted(UsageData syn) {
     var accepted = store.usages().accepted(syn);
     if (accepted.size() != 1) {
       throw new IllegalStateException("Synonym has " + accepted.size() + " accepted taxa");
     }
-    return accepted.get(0);
+    return store.nameUsage(accepted.get(0));
   }
   
   public List<UsageData> parents(UsageData child, String... parentIdsToVerify) {

@@ -9,6 +9,7 @@ import life.catalogue.api.vocab.Users;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.dao.ParentStack;
 import life.catalogue.dao.TaxonMetricsBuilder;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
@@ -19,6 +20,8 @@ import life.catalogue.importer.store.TreeWalker;
 import life.catalogue.importer.store.model.NameData;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.UsageData;
+
+import life.catalogue.release.TreeCleanerAndValidator;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -418,7 +421,7 @@ public class PgImport implements Callable<Boolean> {
           final TaxonMetricsBuilder mBuilder = new TaxonMetricsBuilder(TaxonMetricsBuilder.tracker(parents), dataset.getKey(), session);
 
           @Override
-          public void start(NameUsageData nu) {
+          public void start(NameUsageData nu, TreeWalker.WalkerContext ctxt) {
             Set<Integer> vKeys = new HashSet<>();
 
             var u = nu.ud;
@@ -535,7 +538,7 @@ public class PgImport implements Callable<Boolean> {
           }
 
           @Override
-          public void end(NameUsageData data) {
+          public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {
             runtimeInterruptIfCancelled();
             // remove this key from parent queue if it is an accepted taxon
             if (data.ud.isTaxon()) {

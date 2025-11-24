@@ -71,6 +71,7 @@ public class UsageStore extends CRUDStore<UsageData> {
     if (u != null) {
       var n = db.names().objByID(u.nameID);
       n.usageIDs.remove(u.getId());
+      db.names().update(n);
     }
     return u;
   }
@@ -83,7 +84,7 @@ public class UsageStore extends CRUDStore<UsageData> {
 
   public void assignParent(UsageData u, String newParentID) {
     // avoid self referencing loops and unchanged updates
-    if (newParentID != null && !newParentID.equals(u.getId()) && !newParentID.equals(u.usage.getParentId())) {
+    if (newParentID == null || (!newParentID.equals(u.getId()) && !newParentID.equals(u.usage.getParentId()))) {
       u.usage.asUsageBase().setParentId(newParentID);
       super.update(u);
     }
@@ -111,11 +112,8 @@ public class UsageStore extends CRUDStore<UsageData> {
       .collect(Collectors.toList());
   }
 
-  public UsageData parent(String parentID) {
-    return objByID(parentID);
-  }
   public UsageData parent(UsageData child) {
-    return parent(child.usage.getParentId());
+    return child.usage.getParentId() == null ? null : objByID(child.usage.getParentId());
   }
   public UsageData parent(UsageData child, Rank parentRank) {
     if (child.usage.getParentId() != null) {
@@ -142,6 +140,9 @@ public class UsageStore extends CRUDStore<UsageData> {
 
   private List<UsageData> collectParents(List<UsageData> parents, UsageData u, @Nullable String stopID) {
     if (u.usage.getParentId() != null && (stopID == null || !u.usage.getId().equals(stopID))) {
+      if (parents.stream().anyMatch(p -> p.getId().equals(u.usage.getParentId()))) {
+        throw new IllegalStateException("Cyclic parent reference detected: " + u.getId());
+      }
       var pu = objByID(u.usage.getParentId());
       parents.add(pu);
       collectParents(parents, pu, stopID);

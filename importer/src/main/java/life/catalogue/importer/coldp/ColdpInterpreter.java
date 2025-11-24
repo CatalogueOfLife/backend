@@ -155,13 +155,18 @@ public class ColdpInterpreter extends InterpreterBase {
       NameUsageBase nub = (NameUsageBase) u.usage;
       setReferences(v, ColdpTerm.referenceID, COMMA_SPLITTER, nub::setReferenceIds);
       nub.setLink(uri(v, Issue.URL_INVALID, ColdpTerm.link));
-      nub.setParentId(v.getRaw(ColdpTerm.parentID));
+      if (u.isSynonym() && v.hasTerm(ColdpTerm.taxonID)) {
+        nub.setParentId(v.getRaw(ColdpTerm.taxonID));
+      } else {
+        nub.setParentId(v.getRaw(ColdpTerm.parentID));
+      }
       nub.setIdentifier(InterpreterUtils.interpretIdentifiers(v.getRaw(ColdpTerm.alternativeID), null, v));
     }
     if (n.pnu.isDoubtful() && u.usage.isTaxon()) {
       u.usage.setStatus(TaxonomicStatus.PROVISIONALLY_ACCEPTED);
     }
 
+    u.nameID = n.getId();
     u.usage.setName(n.getName());
     NameValidator.flagSuspicousPhrase(u.usage.getNamePhrase(), v, Issue.NAME_PHRASE_UNLIKELY);
   }
