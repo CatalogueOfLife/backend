@@ -768,6 +768,11 @@ public class Normalizer implements Callable<Boolean> {
             addUsageIssue(s, Issue.CHAINED_SYNONYM);
             store.usages().assignParent(syn, accID);
           }
+        } else if (Objects.equals(p.nameID, syn.nameID)){
+          // the accepted name of the synonym is identical
+          // in this case remove the superfluous synonym: https://github.com/CatalogueOfLife/backend/issues/307
+          addUsageIssue(syn, Issue.DUPLICATE_NAME); //TODO: create specific new issue?
+          store.usages().remove(syn.getId());
         }
       }
     });

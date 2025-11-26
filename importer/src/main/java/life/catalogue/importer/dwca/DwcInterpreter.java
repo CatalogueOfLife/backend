@@ -52,13 +52,19 @@ public class DwcInterpreter extends InterpreterBase {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);
         // for bare names u.ID is null !
-        // TODO: check if that impacts name relations or type material which is linked to names, not taxa
         if (nu.ud.getId() != null && !nu.ud.getId().equals(dwcaID)) {
           dwcaID2taxonID.put(dwcaID, nu.ud.getId());
         }
       }
       if (nu.ud.isNameUsageBase()) {
-        nu.ud.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+        var nub = nu.ud.asNameUsageBase();
+        // we do very basic interpretation of parent relations here - full things in 2nd iteration in inserts...
+        if (nub.isSynonym()) {
+          nub.setParentId(v.getRaw(DwcTerm.acceptedNameUsageID));
+        } else {
+          nub.setParentId(v.getRaw(DwcTerm.parentNameUsageID));
+        }
+        nub.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         // explicit accordingTo & namePhrase - the authorship could already have set these properties!
         if (v.hasTerm(DwcTerm.nameAccordingTo)) {
           setAccordingTo(nu.ud.usage, v.get(DwcTerm.nameAccordingTo), v);
@@ -158,11 +164,17 @@ public class DwcInterpreter extends InterpreterBase {
   }
 
   Optional<RelationData<NomRelType>> interpretNameRelation(VerbatimRecord rec) {
-    var opt = interpretRelations(rec, ColdpTerm.type, NomRelTypeParser.PARSER, DwcTerm.taxonID, ColdpTerm.relatedNameID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
-    if (opt.isPresent() && rec.hasTerm(DcTerm.bibliographicCitation)) {
+    var opt = interpretRelations(rec, ColdpTerm.type, NomRelTypeParser.PARSER, DwcaTerm.ID, ColdpTerm.relatedNameID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
+    if (opt.isPresent()) {
       var rel = opt.get();
-      Reference ref = refFactory.fromDWC(rec.get(ColdpTerm.referenceID), rec.get(DcTerm.bibliographicCitation), null, rec);
-      rel.setReferenceId(ref.getId());
+      // name relation records have the dwca id as FROM - convert to the taxonID of the core
+      if (dwcaID2taxonID.containsKey(rel.getFromID())) {
+        rel.setFromID(dwcaID2taxonID.get(rel.getFromID()));
+      }
+      if (rec.hasTerm(DcTerm.bibliographicCitation)) {
+        Reference ref = refFactory.fromDWC(rec.get(ColdpTerm.referenceID), rec.get(DcTerm.bibliographicCitation), null, rec);
+        rel.setReferenceId(ref.getId());
+      }
       return opt;
     }
     return Optional.empty();

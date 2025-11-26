@@ -329,7 +329,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
     assertEquals("vector", u.usage.getName().getSpecificEpithet());
 
     VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
-    assertTrue(v.getIssues().isEmpty());
+    assertEquals(1, v.getIssues().size());
+    assertEquals(Issue.PARENT_GENUS_MISSING, v.getIssues().iterator().next());
   }
 
   /**
@@ -488,7 +489,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     var nu = usageByID(key);
     assertTrue(nu.isSynonym());
     var rels = nn.relations;
-    assertEquals(1, rels.size());
+    assertEquals(0, rels.size());
   }
 
   /**

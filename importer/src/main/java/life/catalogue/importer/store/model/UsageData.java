@@ -25,9 +25,6 @@ public class UsageData implements DSID<String>, VerbatimEntity {
   public NameUsage usage; // we ignore and do not persist the name part !!!
   public String nameID; // instead we keep a reference to the name id only
   public final Set<String> proParteAcceptedIDs = new HashSet<>(); // optional additional accepted taxon ids allowing for multiple parents in case of pro parte synonyms
-  // temp fields for flexible interpretation - the real fields are in NameData!
-  public boolean homotypic = false;
-  public String basionymID;
 
   // supplementary infos for a taxon
   public Treatment treatment;
@@ -161,13 +158,11 @@ public class UsageData implements DSID<String>, VerbatimEntity {
    * @param status new synonym status
    * @return the replaced taxon usage
    */
-  public Taxon convertToSynonym(TaxonomicStatus status) {
+  public void convertToSynonym(TaxonomicStatus status) {
     Preconditions.checkArgument(!isSynonym(), "Usage needs to be a taxon");
     Preconditions.checkArgument(status.isSynonym(), "Status needs to be a synonym status");
-    final Taxon t = asTaxon();
-    usage = new Synonym(t);
+    usage = new Synonym(asTaxon());
     usage.setStatus(status);
-    return t;
   }
 
   public boolean hasRelations() {

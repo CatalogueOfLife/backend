@@ -78,8 +78,6 @@ public class ColdpInserter extends DataCsvInserter {
     );
     insertNameRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
-        ColdpTerm.nameID,
-        ColdpTerm.relatedNameID,
         Issue.NAME_ID_INVALID
     );
     interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
@@ -94,15 +92,11 @@ public class ColdpInserter extends DataCsvInserter {
     // taxon concept relations
     insertTaxonTCRelations(reader, ColdpTerm.TaxonConceptRelation,
       inter::interpretTaxonRelations,
-      ColdpTerm.taxonID,
-      ColdpTerm.relatedTaxonID,
       Issue.TAXON_ID_INVALID
     );
     // species interactions
     insertTaxonSpiRelations(reader, ColdpTerm.SpeciesInteraction,
       inter::interpretSpeciesInteractions,
-      ColdpTerm.taxonID,
-      ColdpTerm.relatedTaxonID,
       Issue.TAXON_ID_INVALID
     );
 

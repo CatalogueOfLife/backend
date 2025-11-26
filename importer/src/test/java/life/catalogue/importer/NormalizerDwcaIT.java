@@ -72,8 +72,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
 
     var parents = store.usages().parents(t3);
     assertEquals(2, parents.size());
-    assertEquals("Arthropoda", parents.get(0).usage.getName().getLabel());
-
+    assertEquals("Arthropoda", store.nameUsage(parents.get(0)).nd.getName().getLabel());
 
     UsageData t4 = usageByID("ns:4");
     assertEquals("Rhyniognatha hirsti", t4.usage.getName().getLabel());

@@ -261,7 +261,7 @@ abstract class NormalizerITBase {
       
       assertEquals(ids.size(), synonyms.size());
       for (UsageData s : synonyms) {
-        assertTrue(ids.contains(s.usage.getName().getId()));
+        assertTrue(ids.contains(s.nameID));
       }
     }
     return synonyms;

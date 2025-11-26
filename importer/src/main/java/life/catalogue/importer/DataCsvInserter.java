@@ -222,19 +222,17 @@ public abstract class DataCsvInserter implements DataInserter {
   }
 
   protected void insertNameRelations(final CsvReader reader, final Term classTerm,
-                                     Function<VerbatimRecord, Optional<RelationData<NomRelType>>> interpret,
-                                     Term idTerm, Term relatedIdTerm, Issue invalidIdIssue
+                                     Function<VerbatimRecord, Optional<RelationData<NomRelType>>> interpret, Issue invalidIdIssue
   ) {
     insertRelations(reader, classTerm, interpret, rel -> {
       var n = store.names().objByID(rel.getFromID());
       n.relations.add(rel);
       store.names().update(n);
-    }, store.names(), idTerm, relatedIdTerm, invalidIdIssue, true);
+    }, store.names(), invalidIdIssue, true);
   }
 
   protected void insertTaxonSpiRelations(final CsvReader reader, final Term classTerm,
-                                     Function<VerbatimRecord, Optional<RelationData<SpeciesInteractionType>>> interpret,
-                                     Term idTerm, Term relatedIdTerm, Issue invalidIdIssue
+                                     Function<VerbatimRecord, Optional<RelationData<SpeciesInteractionType>>> interpret, Issue invalidIdIssue
   ) {
     insertRelations(reader, classTerm, interpret, rel -> {
       var u = store.usages().objByID(rel.getFromID());
@@ -247,55 +245,52 @@ public abstract class DataCsvInserter implements DataInserter {
         }
       }
       store.usages().update(u);
-    }, store.names(), idTerm, relatedIdTerm, invalidIdIssue, false);
+    }, store.names(), invalidIdIssue, false);
   }
 
   protected void insertTaxonTCRelations(final CsvReader reader, final Term classTerm,
                                          Function<VerbatimRecord, Optional<RelationData<TaxonConceptRelType>>> interpret,
-                                         Term idTerm, Term relatedIdTerm, Issue invalidIdIssue
+                                         Issue invalidIdIssue
   ) {
     insertRelations(reader, classTerm, interpret, rel -> {
       var u = store.usages().objByID(rel.getFromID());
       u.tcRelations.add(rel);
       store.usages().update(u);
-    }, store.names(), idTerm, relatedIdTerm, invalidIdIssue, true);
+    }, store.names(), invalidIdIssue, true);
   }
 
+  /**
+   * This requires relation from/to ids to be interpreted properly already!
+   */
   protected <T extends Enum<?>> void insertRelations(final CsvReader reader, final Term classTerm,
                                  Function<VerbatimRecord, Optional<RelationData<T>>> interpret,
-                                 final Consumer<RelationData<T>> add,
-                                 CRUDStore<?> entityStore, Term idTerm, Term relatedIdTerm,
+                                 final Consumer<RelationData<T>> add, CRUDStore<?> entityStore,
                                  Issue invalidIdIssue, boolean requireRelatedID
   ) {
     processVerbatim(reader, classTerm,rec -> {
-      // ignore any relation pointing to itself!
-      String from = rec.getRaw(idTerm);
-      String to = rec.getRaw(relatedIdTerm);
-      if (from != null && from.equals(to)) {
-        rec.add(Issue.SELF_REFERENCED_RELATION);
-        return false;
-      }
-
       Optional<RelationData<T>> opt = interpret.apply(rec);
       if (opt.isPresent()) {
+        RelationData<T>rel = opt.get();
+        // ignore any relation pointing to itself!
+        if (rel.getFromID() != null && rel.getFromID().equals(rel.getToID())) {
+          rec.add(Issue.SELF_REFERENCED_RELATION);
+          return false;
+        }
+
         // make sure ids exist
-        if (from == null || !entityStore.exists(from)) {
+        if (rel.getFromID() == null || !entityStore.exists(rel.getFromID())) {
           rec.add(invalidIdIssue);
           return false;
         }
-        if (requireRelatedID) {
-          if (to == null || !entityStore.exists(to)) {
-            rec.add(invalidIdIssue);
-            return false;
-          }
-        } else if (to != null && !entityStore.exists(to)){
+        if (rel.getToID() == null || !entityStore.exists(rel.getToID())) {
           rec.add(invalidIdIssue);
-          to = null;
+          if (requireRelatedID) {
+            return false;
+          } else {
+            rel.setToID(null);
+          }
         }
-        RelationData<T>rel = opt.get();
         rel.setVerbatimKey(rec.getId());
-        rel.setFromID(from);
-        rel.setToID(to);
         add.accept(rel);
         return true;
       }

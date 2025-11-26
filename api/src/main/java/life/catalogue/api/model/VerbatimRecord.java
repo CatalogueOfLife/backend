@@ -124,7 +124,11 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   public void setType(Term type) {
     this.type = type;
   }
-  
+
+  public boolean isType(Term type) {
+    return this.type.equals(type);
+  }
+
   public Map<Term, String> getTerms() {
     return terms;
   }
@@ -358,7 +362,23 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     }
     return null;
   }
-  
+
+  /**
+   * Get the first non blank term for a list of terms with a value which is not the one given.
+   *
+   * @param terms list to try
+   */
+  @Nullable
+  public String getFirstRawNot(String notValue, Term... terms) {
+    for (Term t : terms) {
+      String val = getRaw(t);
+      if (val != null && !val.equals(notValue)) {
+        return val;
+      }
+    }
+    return null;
+  }
+
   /**
    * Get the first non blank term for a list of terms.
    *

@@ -146,7 +146,7 @@ public class ImportStore implements AutoCloseable {
   }
 
   public NameUsageData nameUsage(UsageData u) {
-    return new NameUsageData(name(u), u);
+    return u == null ? null : new NameUsageData(name(u), u);
   }
 
   @Deprecated
@@ -231,10 +231,6 @@ public class ImportStore implements AutoCloseable {
     if (nn.getName().getOrigin() == null) {
       nn.getName().setOrigin(nu.ud.asNameUsageBase().getOrigin());
     }
-    nn.homotypic = nu.ud.homotypic;
-    if (nn.basionymID == null && nu.ud.basionymID != null) {
-      nn.basionymID = nu.ud.basionymID;
-    }
     var created = names.create(nn);
     if (created) {
       nu.ud.nameID = nn.getId();
@@ -248,6 +244,11 @@ public class ImportStore implements AutoCloseable {
       LOG.debug("Skip name usage {} as no name was persisted for {}", nu.ud.getId(), nn.getName().getLabel());
     }
     return created;
+  }
+
+  public void updateNameAndUsage(NameUsageData nu) {
+    names().update(nu.nd);
+    usages().update(nu.ud);
   }
 
   /**
@@ -340,16 +341,15 @@ public class ImportStore implements AutoCloseable {
   }
 
   /**
-   * Creates a new taxon in neo and the name usage kvp using the source usages as a template for the classification propLabel.
+   * Creates a new name usage using the source usage as a template for the classification.
    * Only copies the classification above genus and ignores genus and below!
-   * A verbatim usage is created with just the parentNameUsage(ID) values so they can getUsage resolved into proper neo relations later.
    * Name and taxon ids are generated de novo.
    *
    * @param name                the new name to be used
    * @param source              the taxon source to copyTaxon from
    * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public RankedUsage createProvisionalUsageFromSource(Origin origin,
+  public NameUsageData createProvisionalUsageFromSource(Origin origin,
                                                       Name name,
                                                       @Nullable UsageData source,
                                                       Rank excludeRankAndBelow) {
@@ -361,21 +361,14 @@ public class ImportStore implements AutoCloseable {
         // remove lower ranks
         u.classification.clearRankAndBelow(excludeRankAndBelow);
       }
-      // copyTaxon parent props from source
-      if (u.getVerbatimKey() != null) {
-        VerbatimRecord sourceTerms = getVerbatim(u.getVerbatimKey());
-        VerbatimRecord copyTerms = new VerbatimRecord();
-        copyTerms.put(DwcTerm.parentNameUsageID, sourceTerms.get(DwcTerm.parentNameUsageID));
-        copyTerms.put(DwcTerm.parentNameUsage, sourceTerms.get(DwcTerm.parentNameUsage));
-        put(copyTerms);
-        u.setVerbatimKey(copyTerms.getId());
-      }
     }
     
-    // store, which creates a new neo node
-    createNameAndUsage(new NameUsageData(null, u));
+    // store and create a new entry
+    var nd = new NameData(name);
+    var nu = new NameUsageData(nd, u);
+    createNameAndUsage(nu);
 
-    return new RankedUsage(u.getId(), u.isSynonym(), u.nameID, name.getScientificName(), name.getAuthorship(), name.getRank());
+    return nu;
   }
   
   public void updateIdGenerators() {

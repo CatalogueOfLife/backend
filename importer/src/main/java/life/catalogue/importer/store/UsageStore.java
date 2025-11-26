@@ -127,13 +127,6 @@ public class UsageStore extends CRUDStore<UsageData> {
     return null;
   }
 
-  /**
-   * List all parents excluding the given startID.
-   */
-  public List<UsageData> parents(String startID) {
-    return parents(objByID(startID));
-  }
-
   public List<UsageData> parents(UsageData child) {
     return collectParents(new ArrayList<>(), child, null);
   }
