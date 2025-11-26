@@ -293,9 +293,7 @@ public class EmlParser {
                 }
               } else {
                 switch (parser.getLocalName()) {
-                case "resourceLogoUrl":
-                  d.setLogo(getAbsoluteUri(text));
-                  break;
+                // COL specifics
                 case "confidence":
                   d.setConfidence(integer(text));
                   break;
@@ -304,6 +302,13 @@ public class EmlParser {
                   break;
                 case "version":
                   d.setVersion(text.toString());
+                  break;
+                case "feedbackUrl":
+                  d.setFeedbackUrl(getAbsoluteUri(text));
+                  break;
+                // GBIF EML
+                case "resourceLogoUrl":
+                  d.setLogo(getAbsoluteUri(text));
                   break;
                 case "citation":
                   // we dont want to add the dataset citation, just the bibliography

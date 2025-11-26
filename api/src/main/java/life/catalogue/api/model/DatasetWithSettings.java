@@ -10,6 +10,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -231,6 +232,14 @@ public class DatasetWithSettings {
 
   public void setTitle(String title) {
     dataset.setTitle(title);
+  }
+
+  public void setFeedbackUrl(URI feedbackUrl) {
+    dataset.setFeedbackUrl(feedbackUrl);
+  }
+
+  public URI getFeedbackUrl() {
+    return dataset.getFeedbackUrl();
   }
 
   public String getDescription() {

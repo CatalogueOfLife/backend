@@ -3,6 +3,8 @@ package life.catalogue.img;
 import life.catalogue.api.model.Media;
 
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +42,8 @@ public class ThumborService {
   }
 
   static String urlEscape(URI url) {
-    return url.toString().replaceFirst("\\?", "%3F");
+    //return url.toString().replaceFirst("\\?", "%3F");
+    return URLEncoder.encode(url.toString(), StandardCharsets.UTF_8);
   }
 
 }
