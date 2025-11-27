@@ -70,6 +70,11 @@ public class NameUsageData implements VerbatimEntity {
     return nub;
   }
 
+  public boolean hasParentID() {
+    var nub = ud.asNameUsageBase();
+    return nub != null && nub.getParentId() != null;
+  }
+
   @Override
   public String toString() {
     return String.format("%s -> %s [%s] %s", ud.getId(), ud.usage.getParentId(), nd.getRank(), nd.getName().getLabel());

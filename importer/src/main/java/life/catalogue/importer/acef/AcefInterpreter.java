@@ -105,7 +105,11 @@ public class AcefInterpreter extends InterpreterBase {
         }
       }
 
-      if (!synonym) {
+      AcefTerm parentTerm;
+      if (synonym) {
+        parentTerm = AcefTerm.AcceptedTaxonID;
+      } else {
+        parentTerm = AcefTerm.ParentSpeciesID;
         // taxon
         Taxon t = u.ud.asTaxon();
         t.setScrutinizer(v.get(AcefTerm.LTSSpecialist));
@@ -114,7 +118,9 @@ public class AcefInterpreter extends InterpreterBase {
         setEnvironment(t, v, AcefTerm.LifeZone);
       }
       // for both synonyms and taxa
-      u.ud.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
+      var nub = u.ud.asNameUsageBase();
+      nub.setParentId(v.getRaw(parentTerm));
+      nub.setLink(uri(v, Issue.URL_INVALID, AcefTerm.InfraSpeciesURL, AcefTerm.SpeciesURL));
       u.ud.usage.setRemarks(v.get(AcefTerm.AdditionalData));
       // flat classification for any usage
       u.ud.classification = interpretClassification(v, synonym);
@@ -157,15 +163,32 @@ public class AcefInterpreter extends InterpreterBase {
    * @return a parsed name or in case of AcceptedInfraSpecificTaxa
    */
   private Optional<ParsedNameUsage> interpretName(Term idTerm, VerbatimRecord v) {
-    String authorship;
-    String vrank = null;
-    Rank rank;
-    if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
-      rank = Rank.SUBSPECIES;
-      vrank = v.get(AcefTerm.InfraSpeciesMarker);
-      authorship = v.get(AcefTerm.InfraSpeciesAuthorString);
+    final Optional<ParsedNameUsage> opt;
+    if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
+      final var spID = v.getRaw(AcefTerm.ParentSpeciesID);
+      final var sp = store.names().objByID(spID);
+      if (sp != null && sp.getName().getRank() != Rank.GENUS) {
+        opt = nameInterpreter.interpret(v.getRaw(idTerm), v.get(AcefTerm.InfraSpeciesMarker), Rank.SUBSPECIES,
+          null, v.get(AcefTerm.InfraSpeciesAuthorString),null,
+          null, sp.getName().getGenus(), sp.getName().getInfragenericEpithet(), sp.getName().getSpecificEpithet(), v.get(AcefTerm.InfraSpeciesEpithet), null,
+          null,null,null,null,null,null,
+          null, null,null, AcefTerm.GSDNameStatus,
+          null, null, null, v
+        );
+      } else {
+        if (sp == null) {
+          v.add(Issue.PARENT_ID_INVALID);
+        }
+        opt = Optional.empty();
+      }
+
     } else {
-      if (v.hasTerm(AcefTerm.SpeciesEpithet)) {
+      Rank rank;
+      Term authorTerm = AcefTerm.AuthorString;
+      if (v.hasTerm(AcefTerm.InfraSpeciesEpithet)) {
+        rank = Rank.SUBSPECIES;
+        authorTerm = AcefTerm.InfraSpeciesAuthorString;
+      } else if (v.hasTerm(AcefTerm.SpeciesEpithet)) {
         rank = Rank.SPECIES;
       } else if (v.hasTerm(AcefTerm.SubGenusName)) {
         rank = Rank.SUBGENUS;
@@ -177,47 +200,38 @@ public class AcefInterpreter extends InterpreterBase {
         v.add(Issue.MISSING_GENUS);
         return Optional.empty();
       }
-      authorship = v.get(AcefTerm.AuthorString);
-    }
-    
-    // spot potential truncated authorstrings. CoL assembly db uses a max length of 100
-    if (NameValidator.hasUnmatchedBrackets(authorship)) {
-      v.add(Issue.UNMATCHED_NAME_BRACKETS);
-    }
-    if (Strings.nullToEmpty(authorship).length() == ACEF_AUTHOR_MAX) {
-      v.add(Issue.TRUNCATED_NAME);
-    }
-    
-    Optional<ParsedNameUsage> opt;
-    if (v.getType() == AcefTerm.AcceptedInfraSpecificTaxa) {
-      // preliminary name with just id and rank
-      ParsedNameUsage nat = new ParsedNameUsage();
-      nat.setName(new Name());
-      nat.getName().setId(v.get(idTerm));
-      nat.getName().setRank(
-          SafeParser.parse(RankParser.PARSER, vrank).orElse(ObjectUtils.coalesce(rank, Rank.INFRASPECIFIC_NAME))
-      );
-      opt = Optional.of(nat);
 
-    } else if (settings.getEnum(Setting.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
-      // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
-      ParsedNameUsage nat = new ParsedNameUsage();
-      nat.setName(new Name());
-      nat.getName().setId(v.get(idTerm));
-      nat.getName().setType(NameType.VIRUS);
-      nat.getName().setCode(NomCode.VIRUS);
-      String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + authorship.trim();
-      nat.getName().setScientificName(fullname.trim());
-      nat.getName().setRank(
-          SafeParser.parse(RankParser.PARSER, vrank).orElse(ObjectUtils.coalesce(rank, Rank.SPECIES))
-      );
-      opt = Optional.of(nat);
-      
-    } else {
-      opt = nameInterpreter.interpret(v.get(idTerm), vrank, rank, null, authorship,null,
-        null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet), null,
-        null,null,null,null,null, null,
-        null,null,null, AcefTerm.GSDNameStatus, null,null, null, v);
+      if (settings.getEnum(Setting.NOMENCLATURAL_CODE) == NomCode.VIRUS) {
+        // we shortcut building the ACEF virus name here as we don't want the genus classification to end up in the full name
+        ParsedNameUsage nat = new ParsedNameUsage();
+        nat.setName(new Name());
+        nat.getName().setId(v.get(idTerm));
+        nat.getName().setType(NameType.VIRUS);
+        nat.getName().setCode(NomCode.VIRUS);
+        String fullname = v.get(AcefTerm.SpeciesEpithet).trim() + " " + v.get(AcefTerm.AuthorString).trim();
+        nat.getName().setScientificName(fullname.trim());
+        nat.getName().setRank(
+          SafeParser.parse(RankParser.PARSER, v.get(AcefTerm.InfraSpeciesMarker)).orElse(ObjectUtils.coalesce(rank, Rank.SPECIES))
+        );
+        opt = Optional.of(nat);
+
+      } else {
+        opt = nameInterpreter.interpret(v.getRaw(idTerm), v.get(AcefTerm.InfraSpeciesMarker), rank, null, v.get(authorTerm),null,
+          null, v.get(AcefTerm.Genus), v.get(AcefTerm.SubGenusName), v.get(AcefTerm.SpeciesEpithet), v.get(AcefTerm.InfraSpeciesEpithet), null,
+          null,null,null,null,null, null,
+          null,null,null, AcefTerm.GSDNameStatus, null,null, null, v);
+      }
+    }
+
+    if (opt.isPresent()) {
+      // spot potential truncated authorstrings. The legacy CoL assembly db used a max length of 100
+      var authorship = opt.get().getName().getAuthorship();
+      if (NameValidator.hasUnmatchedBrackets(authorship)) {
+        v.add(Issue.UNMATCHED_NAME_BRACKETS);
+      }
+      if (Strings.nullToEmpty(authorship).length() == ACEF_AUTHOR_MAX) {
+        v.add(Issue.TRUNCATED_NAME);
+      }
     }
     return opt;
   }

@@ -220,6 +220,14 @@ abstract class NormalizerITBase {
     return store.getVerbatim(store.usages().objByID(id).getVerbatimKey());
   }
 
+  public IssueContainer vByUsageAndNameID(String usageID) {
+    IssueContainer issues = IssueContainer.simple();
+    var u = store.usages().objByID(usageID);
+    issues.add(store.getVerbatim(u.getVerbatimKey()));
+    issues.add(store.getVerbatim(store.names().objByID(u.nameID).getVerbatimKey()));
+    return issues;
+  }
+
   public Reference accordingTo(NameUsage nu) {
     if (nu.getAccordingToId() != null) {
       return store.references().get(nu.getAccordingToId());

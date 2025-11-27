@@ -3,6 +3,7 @@ package life.catalogue.release;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.LinneanNameUsage;
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
@@ -110,8 +111,25 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   public static class XLinneanNameUsage extends LinneanNameUsage {
     Integer authorYear;
     int numSpecies = 0;
+
+    public XLinneanNameUsage(NameUsageBase nub) {
+      super(nub);
+      authorYear = nub.getName().getPublishedInYear();
+      if (authorYear == null) {
+        parseAuthorYear();
+      }
+    }
+
     public XLinneanNameUsage(LinneanNameUsage u) {
       super(u);
+      parseAuthorYear();
+    }
+
+    private void parseAuthorYear() {
+      try {
+        authorYear = NameValidator.parseYear(this);
+      } catch (NumberFormatException ignored) {
+      }
     }
   }
 
@@ -122,20 +140,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
   /**
    * THis validates the name and taxonomy/classification of the given usage.
    * It also generates a new XLinneanNameUsage and pushes it to the parent stack, keeping track of the classification.
-   * @param lnu
+   * @param sn
    * @param parents
    * @param issues
    * @return
    */
-  public static XLinneanNameUsage validateAndPush(LinneanNameUsage lnu, ParentStack<XLinneanNameUsage> parents, IssueContainer issues) {
-    var sn = new XLinneanNameUsage(lnu);
+  public static void validateAndPush(XLinneanNameUsage sn, ParentStack<XLinneanNameUsage> parents, IssueContainer issues) {
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
-    try {
-      sn.authorYear = NameValidator.parseYear(sn);
-    } catch (NumberFormatException e) {
-      // already flagged by name validator above!
-    }
 
     if (sn.getStatus() != null && sn.getStatus().isSynonym()) {
       // validate syn vs acc rank
@@ -195,13 +207,13 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
         });
       }
     }
-    return sn;
   }
 
   @Override
   public void accept(LinneanNameUsage lnu) {
+    final var sn = new XLinneanNameUsage(lnu);
     final IssueContainer issues = IssueContainer.simple();
-    var sn = validateAndPush(lnu, parents, issues);
+    validateAndPush(sn, parents, issues);
     counter.incrementAndGet();
 
     if (sn.getStatus() != null && sn.getStatus().isTaxon()) {

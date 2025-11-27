@@ -69,9 +69,8 @@ public class AcefInserter extends DataCsvInserter {
     );
 
     // infraspecies
-    // accepted infraspecific names in ACEF have no genus or species
-    // but a link to their parent species ID.
-    // so we cannot update the scientific name yet - we do this in the relation inserter instead!
+    // accepted infraspecific names in ACEF have no genus or species, but a link to their parent species ID.
+    // so it is required that the species are inserted first!
     insertEntities(reader, AcefTerm.AcceptedInfraSpecificTaxa,
       inter::interpretInfraspecies,
       store::createNameAndUsage

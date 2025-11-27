@@ -240,9 +240,7 @@ public class DwcaInserter extends DataCsvInserter {
    * We prefer the acceptedID over the parentID in case of synonyms.
    */
   private void updateTaxonRelations() {
-    final AtomicInteger counterAcc = new AtomicInteger(0);
-    final AtomicInteger counterPar = new AtomicInteger(0);
-    final AtomicInteger counterBas = new AtomicInteger(0);
+    final AtomicInteger counter = new AtomicInteger(0);
     runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     if (getMappingFlags().isAcceptedNameMapped() || getMappingFlags().isParentNameMapped() || getMappingFlags().isOriginalNameMapped()) {
       store.usages().all().forEach(u -> {
@@ -254,8 +252,8 @@ public class DwcaInserter extends DataCsvInserter {
           if (getMappingFlags().isAcceptedNameMapped()) {
             modified = updateAccepted(v, nu);
           }
-          // parent first
-          if (getMappingFlags().isParentNameMapped()) {
+          // parent only if not set yet
+          if (getMappingFlags().isParentNameMapped() && !nu.hasParentID()) {
             modified = updateParents(v, nu) || modified;
           }
           // basionym relation
@@ -265,10 +263,12 @@ public class DwcaInserter extends DataCsvInserter {
           // persist
           if (modified) {
             store.updateNameAndUsage(nu);
+            counter.incrementAndGet();
           }
           runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
         }
       });
+      LOG.info("Updated {} taxon relations", counter.get());
       runtimeInterruptIfCancelled(INTERRUPT_MESSAGE);
     }
   }

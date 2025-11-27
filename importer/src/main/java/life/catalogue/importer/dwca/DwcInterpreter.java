@@ -58,12 +58,7 @@ public class DwcInterpreter extends InterpreterBase {
       }
       if (nu.ud.isNameUsageBase()) {
         var nub = nu.ud.asNameUsageBase();
-        // we do very basic interpretation of parent relations here - full things in 2nd iteration in inserts...
-        if (nub.isSynonym()) {
-          nub.setParentId(v.getRaw(DwcTerm.acceptedNameUsageID));
-        } else {
-          nub.setParentId(v.getRaw(DwcTerm.parentNameUsageID));
-        }
+        // we interpret parent/accepted/original relations in 2nd iteration in inserts...
         nub.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         // explicit accordingTo & namePhrase - the authorship could already have set these properties!
         if (v.hasTerm(DwcTerm.nameAccordingTo)) {

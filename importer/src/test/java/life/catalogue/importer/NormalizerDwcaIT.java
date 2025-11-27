@@ -194,18 +194,19 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals(0, t2.getRelations(NomRelType.BASIONYM).size());
     assertEquals(t2.getId(), t1.getRelation(NomRelType.BASIONYM).getToID());
 
-    // 10->11->12->10, 13->11
-    // should be: 10,13->11 12
     NameData t10 = nameByID("10");
     NameData t11 = nameByID("11");
     NameData t12 = nameByID("12");
     NameData t13 = nameByID("13");
 
-    assertEquals(1, t10.getRelations(NomRelType.BASIONYM).size());
-    assertEquals(2, t11.getRelations(NomRelType.BASIONYM).size());
-    assertEquals(0, t12.getRelations(NomRelType.BASIONYM).size());
+    // 10->11->12->10, 13->11->12->10->11
+    // expected as we sanitize sorted by id:
+    // 12->10, 13->11
+    assertEquals(0, t10.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(0, t11.getRelations(NomRelType.BASIONYM).size());
+    assertEquals(1, t12.getRelations(NomRelType.BASIONYM).size());
     assertEquals(1, t13.getRelations(NomRelType.BASIONYM).size());
-    assertEquals(t11.getId(), t10.getRelation(NomRelType.BASIONYM).getToID());
+    assertEquals(t10.getId(), t12.getRelation(NomRelType.BASIONYM).getToID());
     assertEquals(t11.getId(), t13.getRelation(NomRelType.BASIONYM).getToID());
   }
   
@@ -250,7 +251,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     expectedAccepted.put("10002", "Calendula incana subsp. maderensis");
 
     for (var acc : store.usages().accepted(syn)) {
-      assertEquals(expectedAccepted.remove(acc.getId()), acc.usage.getLabel());
+      var nu = store.nameUsage(acc);
+      assertEquals(expectedAccepted.remove(acc.getId()), nu.nd.getName().getScientificName());
     }
     assertTrue(expectedAccepted.isEmpty());
   }
@@ -272,7 +274,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     UsageData t10 = usageByID("10");
     UsageData t11 = usageByID("11");
 
-    NameData nn = nameByID("10");
+    NameData nn = nameByID("11");
     List<NameRelation> rels = store.names().relations(nn.getId());
     assertEquals(1, rels.size());
     assertEquals(NomRelType.BASED_ON, rels.getFirst().getType());
@@ -282,8 +284,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   public void testIssueFlagging() throws Exception {
     normalize(31);
     debug();
-    VerbatimRecord t9 = vByUsageID("9");
-    VerbatimRecord v9 = vByNameID("9");
+    var t9 = vByUsageAndNameID("9");
     assertTrue(t9.contains(Issue.PUBLISHED_BEFORE_GENUS));
     assertFalse(t9.contains(Issue.PARENT_NAME_MISMATCH));
 
@@ -301,12 +302,13 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Test
   public void dwc8Nons() throws Exception {
     normalize(34);
-    store.usages().all().forEach(u -> {
-      if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-        System.out.println(u.usage.getStatus() + ": " + u.usage.getName().getLabel());
-        System.out.println("  " + u.usage.getName().getRemarks());
-        System.out.println("  " + u.usage.getAccordingToId());
-        assertNotNull(u.usage.getAccordingToId());
+    store.usages().all().forEach(ud -> {
+      var u = store.nameUsage(ud);
+      if (u.nd.getName().getOrigin() == Origin.SOURCE) {
+        System.out.println(u.ud.usage.getStatus() + ": " + u.nd.getName().getLabel());
+        System.out.println("  " + u.nd.getName().getRemarks());
+        System.out.println("  " + u.ud.usage.getAccordingToId());
+        assertNotNull(u.ud.usage.getAccordingToId());
       }
     });
 
@@ -437,25 +439,26 @@ public class NormalizerDwcaIT extends NormalizerITBase {
       int id = Integer.parseInt(u.getId());
       assertEquals("Lipolexis peregrinus", n.getScientificName());
       if (id < 10) {
+        assertTrue(v.getIssues().contains(Issue.PARENT_GENUS_MISSING));
         if (id==3) {
           assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
           assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertEquals((Integer)2020, n.getPublishedInYear());
+          assertEquals(2, v.getIssues().size());
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(1, v.getIssues().size());
         } else if (id==4) {
           assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertTrue(v.getIssues().contains(Issue.PUBLISHED_YEAR_CONFLICT));
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(2, v.getIssues().size());
+          assertEquals(3, v.getIssues().size());
           assertEquals((Integer)2021, n.getPublishedInYear());
         } else {
           assertEquals("Tomanovic & Kavallieratos, 2020", n.getAuthorship());
           assertEquals(Authorship.yearAuthors("2020", "Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
           assertEquals((Integer)2020, n.getPublishedInYear());
           assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-          assertEquals(1, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
         }
 
       } else if (id < 20 || id == 23){
@@ -464,14 +467,14 @@ public class NormalizerDwcaIT extends NormalizerITBase {
         assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
         assertTrue(v.getIssues().contains(Issue.UNLIKELY_YEAR));
         assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
       } else {
         assertNull(n.getPublishedInYear());
         assertEquals("Tomanovic & Kavallieratos", n.getAuthorship());
         assertEquals(Authorship.authors("Tomanovic", "Kavallieratos"), n.getCombinationAuthorship());
         assertTrue(v.getIssues().contains(Issue.UNPARSABLE_YEAR));
         assertTrue(v.getIssues().contains(Issue.CITATION_UNPARSED));
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
       }
     });
   }

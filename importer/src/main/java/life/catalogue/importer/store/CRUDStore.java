@@ -63,7 +63,11 @@ public abstract class CRUDStore<T extends DSID<String> & VerbatimEntity> {
   public Stream<T> all() {
     return objects.values().stream();
   }
-  
+
+  public Stream<String> allKeys() {
+    return objects.keySet().stream();
+  }
+
   /**
    * @return a stream of all unique ids
    */

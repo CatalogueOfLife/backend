@@ -4,10 +4,7 @@ import life.catalogue.importer.IdGenerator;
 import life.catalogue.importer.store.model.UsageData;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,12 +99,13 @@ public class UsageStore extends CRUDStore<UsageData> {
    */
   public List<UsageData> accepted(UsageData syn) {
     if (syn.usage.isTaxon()) {
-      return null;
+      return List.of();
     }
     var pIDs = new HashSet<String>();
     pIDs.add(syn.usage.getParentId());
     pIDs.addAll(syn.proParteAcceptedIDs);
     return pIDs.stream()
+      .filter(Objects::nonNull)
       .map(this::objByID)
       .collect(Collectors.toList());
   }
@@ -146,14 +144,4 @@ public class UsageStore extends CRUDStore<UsageData> {
     return collectParents(new ArrayList<>(), child, untilID);
   }
 
-  /**
-   * Ineffective method
-   * @param accID
-   * @return
-   */
-  public List<UsageData> synonymsOf(String accID) {
-    return allSynonyms()
-      .filter(u -> u.usage.getParentId() != null && u.usage.getParentId().equals(accID))
-      .collect(Collectors.toList());
-  }
 }

@@ -240,7 +240,7 @@ public class Normalizer implements Callable<Boolean> {
 
       @Override
       public void start(NameUsageData nu, TreeWalker.WalkerContext ctxt) {
-        LinneanNameUsage lnu = new LinneanNameUsage(nu.toNameUsageBase());
+        TreeCleanerAndValidator.XLinneanNameUsage lnu = new TreeCleanerAndValidator.XLinneanNameUsage(nu.toNameUsageBase());
         var issues = IssueContainer.simple();
         TreeCleanerAndValidator.validateAndPush(lnu, parents, issues);
         if (issues.hasIssues()) {
@@ -363,6 +363,7 @@ public class Normalizer implements Callable<Boolean> {
           rel.setFromID(n.getId());
           rel.setToID(n.basionymID);
           n. relations.add(rel);
+          n.basionymID = null;
           store.names().update(n);
         } else {
           store.addIssues(n, Issue.BASIONYM_ID_INVALID);
@@ -377,7 +378,11 @@ public class Normalizer implements Callable<Boolean> {
         LOG.debug("ParentID {} of usage {} not existing", u.usage.getParentId(), u.usage.getId());
         u.usage.asUsageBase().setParentId(null);
         store.usages().update(u);
-        store.addIssues(u.usage, Issue.PARENT_ID_INVALID);
+        if (u.isSynonym()) {
+          store.addIssues(u.usage, Issue.ACCEPTED_ID_INVALID);
+        } else {
+          store.addIssues(u.usage, Issue.PARENT_ID_INVALID);
+        }
       }
     });
     LOG.info("Validate basionym relations");
@@ -460,7 +465,7 @@ public class Normalizer implements Callable<Boolean> {
         Synonym syn = u.asSynonym();
         var n = store.names().objByID(u.nameID);
         boolean ambiguous = n.usageIDs.size()>1;
-        boolean misapplied = MisappliedNameMatcher.isMisappliedName(new ParsedNameUsage(n.getName(), false, syn.getAccordingToId(), null));
+        boolean misapplied = MisappliedNameMatcher.isMisappliedName(n.pnu);
         TaxonomicStatus status = syn.getStatus();
 
         if (status == TaxonomicStatus.MISAPPLIED) {
@@ -499,11 +504,10 @@ public class Normalizer implements Callable<Boolean> {
   private void moveSynonymData() {
     AtomicInteger moved = new AtomicInteger(0);
     AtomicInteger removed = new AtomicInteger(0);
-    AtomicBoolean hasAccepted = new AtomicBoolean(false);
     store.usages().all().forEach(u -> {
       if (u.isSynonym()) {
         if (u.hasSupplementaryInfos()) {
-          hasAccepted.set(false);
+          boolean hasAccepted = false;
           for (var acc : store.usages().accepted(u)) {
             acc.distributions.addAll(u.distributions);
             acc.media.addAll(u.media);
@@ -511,7 +515,7 @@ public class Normalizer implements Callable<Boolean> {
             acc.estimates.addAll(u.estimates);
             acc.properties.addAll(u.properties);
             store.usages().update(acc);
-            hasAccepted.set(true);
+            hasAccepted=true;
           }
 
           u.distributions.clear();
@@ -521,7 +525,7 @@ public class Normalizer implements Callable<Boolean> {
           u.properties.clear();
           store.addIssues(u.usage, Issue.SYNONYM_DATA_MOVED);
           store.usages().update(u);
-          if (hasAccepted.get()) {
+          if (hasAccepted) {
             moved.incrementAndGet();
           } else {
             removed.incrementAndGet();
@@ -536,25 +540,52 @@ public class Normalizer implements Callable<Boolean> {
   /**
    * Sanitizes basionym relations, cutting chains of basionym relations
    * by preferring basionyms referred to more often.
+   * This effectively also prevents any cycles that could be fatal.
    */
   private void cutBasionymChains() {
     LOG.info("Cut basionym chains");
-    int counter = 0;
-    while (true) {
-      int cut = cutNonOverlappingBasionymChains();
-      if (cut == 0) {
-        break;
+    AtomicInteger counter = new AtomicInteger();
+    // we iterate over the keys as we update objects in the map which would corrupt the stream and result in duplicates being offered
+    Set<String> visited = new HashSet<>();
+    store.names().allKeys().sorted().forEach(key -> {
+      var n = store.names().objByID(key);
+      var rels = n.getRelations(NomRelType.BASIONYM);
+      if (!rels.isEmpty()) {
+        visited.add(key);
+        if (rels.size()>1) {
+          store.addIssues(n, Issue.MULTIPLE_BASIONYMS);
+        }
+        for (var br1 : rels) {
+          var b = store.names().objByID(br1.getToID());
+          var rels2 = b.getRelations(NomRelType.BASIONYM);
+          if (!rels2.isEmpty()) {
+            if (rels2.size()>1) {
+              store.addIssues(b, Issue.CHAINED_BASIONYM, Issue.MULTIPLE_BASIONYMS);
+            } else {
+              store.addIssues(b, Issue.CHAINED_BASIONYM);
+            }
+            // chain, remove all and relink original relation to the first outgoing name
+            boolean updated = false;
+            var iter = b.relations.iterator();
+            while (iter.hasNext()) {
+              var br2 = iter.next();
+              if (br2.getType() == NomRelType.BASIONYM) {
+                // if we've been to an id before we would start a new chain
+                if (!updated && !visited.contains(br2.getToID())) {
+                  br1.setToID(br2.getToID());
+                  store.names().update(n);
+                  updated = true;
+                }
+                iter.remove();
+              }
+            }
+            store.names().update(b);
+            counter.incrementAndGet();
+          }
+        }
       }
-      counter += cut;
-    }
+    });
     LOG.info("{} basionym chains resolved", counter);
-  }
-
-  private int cutNonOverlappingBasionymChains() {
-    //TODO: impl see old code
-    int counter = 0;
-    LongSet visited = new LongOpenHashSet();
-    return counter;
   }
 
   /**
@@ -807,30 +838,33 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("Cleanup parent cycles");
     AtomicInteger counter = new AtomicInteger();
     Set<String> visited = new HashSet<>();
-    store.usages().allTaxa().forEach(ud -> {
-      if (ud.usage.getParentId() != null) {
-        if (ud.usage.getParentId().equals(ud.getId())) {
-          store.usages().assignParent(ud, null);
-          store.addIssues(ud, Issue.PARENT_CYCLE);
-          counter.incrementAndGet();
-        } else {
-          List<UsageData> cycle = findParentCycle(ud, visited);
-          if (cycle != null) {
-            // find highest rank to cut
-            NameUsageData max = null;
-            for (var u : cycle) {
-              NameUsageData nu = store.nameUsage(u);
-              if (max == null || nu.nd.getRank().higherThan(max.nd.getRank())) {
-                max = nu;
-              }
-            }
+    store.usages().allKeys().forEach(key -> {
+      var ud = store.usages().objByID(key);
+      if (ud.isTaxon()) {
+        if (ud.usage.getParentId() != null) {
+          if (ud.usage.getParentId().equals(ud.getId())) {
+            store.usages().assignParent(ud, null);
+            store.addIssues(ud, Issue.PARENT_CYCLE);
             counter.incrementAndGet();
-            store.usages().assignParent(max.ud, null);
-            store.addIssues(max.ud, Issue.PARENT_CYCLE);
+          } else {
+            List<UsageData> cycle = findParentCycle(ud, visited);
+            if (cycle != null) {
+              // find highest rank to cut
+              NameUsageData max = null;
+              for (var u : cycle) {
+                NameUsageData nu = store.nameUsage(u);
+                if (max == null || nu.nd.getRank().higherThan(max.nd.getRank())) {
+                  max = nu;
+                }
+              }
+              counter.incrementAndGet();
+              store.usages().assignParent(max.ud, null);
+              store.addIssues(max.ud, Issue.PARENT_CYCLE);
+            }
           }
         }
+        visited.add(ud.getId());
       }
-      visited.add(ud.getId());
     });
     LOG.info("{} parent cycles resolved", counter);
   }

@@ -13,7 +13,9 @@ import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
 import java.time.Year;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -134,19 +136,25 @@ public class NormalizerACEFIT extends NormalizerITBase {
 
     Set<String> nonMisappliedIds = Sets.newHashSet("s17", "s18");
     int counter = 0;
-    for (var s : store.usages().synonymsOf(t.getId())) {
+    for (var s : synonymsOf(t.getId())) {
       assertTrue(s.asSynonym().getStatus().isSynonym());
       if (nonMisappliedIds.remove(s.getId())) {
         assertEquals(TaxonomicStatus.SYNONYM, s.asSynonym().getStatus());
         assertFalse(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
       } else {
         counter++;
-        // assertEquals(TaxonomicStatus.MISAPPLIED, s.synonym.getStatus());
-        // assertTrue(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
+        assertEquals(TaxonomicStatus.MISAPPLIED, s.asSynonym().getStatus());
+        assertTrue(hasIssues(s, Issue.DERIVED_TAXONOMIC_STATUS));
       }
     }
     assertTrue(nonMisappliedIds.isEmpty());
     assertEquals(6, counter);
+  }
+
+  List<UsageData> synonymsOf(String accID) {
+    return store.usages().allSynonyms()
+      .filter(u -> u.usage.getParentId() != null && u.usage.getParentId().equals(accID))
+      .collect(Collectors.toList());
   }
   
   @Test
@@ -169,11 +177,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
   public void acef8Nons() throws Exception {
     normalize(8);
     store.usages().all().forEach(u -> {
-      if (u.usage.getName().getOrigin() == Origin.SOURCE) {
-        System.out.println(u.getId() + ": " + u.usage.getLabel());
-        //System.out.println("  " + u.usage.getName().getNomenclaturalNote());
-        //System.out.println("  " + u.usage.getNamePhrase());
-        //System.out.println("  " + u.usage.getAccordingToId());
+      if (u.usage.getOrigin() == Origin.SOURCE) {
+        System.out.println(u.getId());
         assertTrue(u.usage.getNamePhrase() != null || u.usage.getAccordingToId() != null);
       }
     });
@@ -273,7 +278,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     UsageData u = usageByID("Scr-13-.01-.01-.00-.001-.001-.014-.b");
     assertEquals("Odontotrypes (Thorectomimus) farkaci habaensis", u.usage.getName().getScientificName());
     assertEquals("Ochi, Kon & Bai, 2018", u.usage.getName().getAuthorship());
-    assertEquals(Rank.INFRASPECIFIC_NAME, u.usage.getName().getRank());
+    assertEquals(Rank.SUBSPECIES, u.usage.getName().getRank());
 
     // this is a duplicate ID and we expect the subspecies to be dropped in favor of the species
     u = usageByID("Scr-04-.01-.01-.00-.002-.000-.009-.b");
@@ -324,10 +329,10 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertEquals(NameType.VIRUS, t.usage.getName().getType());
     assertEquals("Pseudomonas phage LKA1 ICTV", t.usage.getName().getScientificName());
 
-    var gen = store.usages().parents(t).getFirst();
-    assertEquals(Rank.GENUS, gen.usage.getName().getRank());
-    assertEquals(NameType.VIRUS, gen.usage.getName().getType());
-    assertEquals("Phikmvlikevirus", gen.usage.getName().getScientificName());
+    var gen = store.nameUsage(store.usages().parents(t).getFirst());
+    assertEquals(Rank.GENUS, gen.nd.getName().getRank());
+    assertEquals(NameType.VIRUS, gen.nd.getName().getType());
+    assertEquals("Phikmvlikevirus", gen.nd.getName().getScientificName());
   }
   
   @Test
@@ -344,7 +349,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
     t = usageByID("ib");
     assertEquals("Scyloxes asiatica carambula", t.usage.getName().getScientificName());
     assertEquals("Dunin, 2001", t.usage.getName().getAuthorship());
-    assertEquals(Rank.INFRASPECIFIC_NAME, t.usage.getName().getRank());
+    assertEquals(Rank.SUBSPECIES, t.usage.getName().getRank());
 
     t = usageByID("ae");
     assertEquals("Onthophagus (Sunenaga)", t.usage.getName().getScientificName());
@@ -464,7 +469,8 @@ public class NormalizerACEFIT extends NormalizerITBase {
     assertEquals(acceptedNames.length, accepted.size());
     for (var a : accepted) {
       assertFalse(a.isSynonym());
-      expected.remove(a.usage.getLabel());
+      var n = store.name(a);
+      expected.remove(n.getName().getScientificName());
     }
     assertTrue(expected.isEmpty());
   }

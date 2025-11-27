@@ -351,7 +351,7 @@ public class ColdpInterpreter extends InterpreterBase {
       n.setEtymology(v.get(ColdpTerm.etymology));
 
       // explicit basionym
-      nd.basionymID = v.getRaw(ColdpTerm.basionymID);
+      nd.basionymID = v.getRawButNot(ColdpTerm.basionymID, n.getId());
 
       // publishedIn
       n.setPublishedInPageLink(v.get(ColdpTerm.publishedInPageLink));

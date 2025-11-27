@@ -464,7 +464,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
 
     var rels = nn.getRelations(NomRelType.BASIONYM);
-    assertEquals(1, rels.size());
+    assertEquals(0, rels.size());
 
     for (VerbatimRecord vr : store.verbatimList()) {
       if (vr.getType() == ColdpTerm.NameRelation) {
@@ -475,6 +475,13 @@ public class NormalizerColdpIT extends NormalizerITBase {
         }
       }
     }
+
+    nn = nameByID("urn:lsid:marinespecies.org:taxname:1252864");
+    v = vByNameID(key);
+    assertTrue(v.getIssues().isEmpty());
+    rels = nn.getRelations(NomRelType.BASIONYM);
+    assertEquals(1, rels.size());
+    assertEquals(key, rels.getFirst().getToID());
   }
 
   @Test

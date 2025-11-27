@@ -466,7 +466,7 @@ public class InterpreterBase {
     // name data
     var nn = new NameData(pnu);
     if (basionymIdTerm != null) {
-      nn.basionymID = v.getRaw(basionymIdTerm);
+      nn.basionymID = v.getRawButNot(basionymIdTerm, nn.getId());
     }
 
     // a synonym by status?

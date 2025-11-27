@@ -269,6 +269,18 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     }
     return null;
   }
+
+  /**
+   * Like getRaw, but avoids returning a given value, e.g. the primary key or a record.
+   * @return the raw value without any unescaping
+   */
+  public String getRawButNot(Term term, String notValue) {
+    if (term != null) {
+      String val = terms.get(term);
+      return val != null && !val.equals(notValue) ? val : null;
+    }
+    return null;
+  }
   
   /**
    * @return the potentially unescaped value, replacing empty strings with true nulls
