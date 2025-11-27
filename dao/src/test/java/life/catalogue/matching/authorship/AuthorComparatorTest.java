@@ -106,7 +106,21 @@ public class AuthorComparatorTest {
     p2.setCombinationAuthorship(Authorship.yearAuthors("1785", "Müller O.F."));
     assertEquals(Equality.EQUAL, comp.compare(p1, p2));
   }
-  
+
+  /**
+   * https://github.com/CatalogueOfLife/data/issues/1340#issuecomment-3583782645
+   */
+  @Test
+  public void testGeoffrey() throws Exception {
+    Name p1 = new Name();
+    Name p2 = new Name();
+
+    p1.setCombinationAuthorship(parse("Geoffroy"));
+    p2.setCombinationAuthorship(parse("É. Geoffroy Saint-Hilaire"));
+
+    assertEquals(Equality.EQUAL, comp.compare(p1, p2));
+  }
+
   /**
    * Ignore the sanctioning author
    */
