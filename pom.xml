@@ -104,6 +104,7 @@
     <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
+    <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
     <maven-graalvm-plugin.version>0.10.3</maven-graalvm-plugin.version>
@@ -1063,6 +1064,11 @@
           <artifactId>native-maven-plugin</artifactId>
           <version>${maven-graalvm-plugin.version}</version>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven-deploy-plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -1090,6 +1096,10 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
