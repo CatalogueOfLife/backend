@@ -245,7 +245,7 @@ public abstract class DataCsvInserter implements DataInserter {
         }
       }
       store.usages().update(u);
-    }, store.names(), invalidIdIssue, false);
+    }, store.usages(), invalidIdIssue, false);
   }
 
   protected void insertTaxonTCRelations(final CsvReader reader, final Term classTerm,
@@ -256,7 +256,7 @@ public abstract class DataCsvInserter implements DataInserter {
       var u = store.usages().objByID(rel.getFromID());
       u.tcRelations.add(rel);
       store.usages().update(u);
-    }, store.names(), invalidIdIssue, true);
+    }, store.usages(), invalidIdIssue, true);
   }
 
   /**

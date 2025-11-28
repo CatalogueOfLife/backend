@@ -17,10 +17,7 @@ import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
 import java.io.Writer;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -148,21 +145,19 @@ public class PgImportIT extends PgImportITBase {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
-      // check species name
+      // check basionym chain issues
       Name n1 = ndao.get(key(dataset.getKey(), "1"));
       Name n2 = ndao.get(key(dataset.getKey(), "2"));
-      
-      assertIssue(n1, Issue.CHAINED_BASIONYM);
-      assertIssue(n2, Issue.CHAINED_BASIONYM);
-      
       Name n10 = ndao.get(key(dataset.getKey(), "10"));
       Name n11 = ndao.get(key(dataset.getKey(), "11"));
       Name n12 = ndao.get(key(dataset.getKey(), "12"));
       Name n13 = ndao.get(key(dataset.getKey(), "13"));
-      
+
+      assertNoIssue(n1, Issue.CHAINED_BASIONYM);
+      assertIssue(n2, Issue.CHAINED_BASIONYM);
       assertIssue(n10, Issue.CHAINED_BASIONYM);
       assertIssue(n11, Issue.CHAINED_BASIONYM);
-      assertIssue(n12, Issue.CHAINED_BASIONYM);
+      assertNoIssue(n12, Issue.CHAINED_BASIONYM);
       assertNoIssue(n13, Issue.CHAINED_BASIONYM);
     }
   }
