@@ -24,6 +24,7 @@
     <!-- build settings -->
     <minimumMavenVersion>3.9.5</minimumMavenVersion>
     <java.version>21</java.version>
+    <java.maxVersion>21</java.maxVersion>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jvm.opens.args>
@@ -103,15 +104,16 @@
     <!-- Maven plugin versions. Check for available updates: mvn versions:display-plugin-updates -->
     <depgraph-maven-plugin>4.0.3</depgraph-maven-plugin>
     <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
+    <extra-enforcer-rules.version>1.11.0</extra-enforcer-rules.version>
     <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
+    <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-git-commit-id-plugin.version>4.9.10</maven-git-commit-id-plugin.version>
     <maven-graalvm-plugin.version>0.10.3</maven-graalvm-plugin.version>
     <maven-install-plugin.version>3.1.2</maven-install-plugin.version>
     <maven-jar-plugin.version>3.4.2</maven-jar-plugin.version>
-    <maven-release-plugin.version>3.1.1</maven-release-plugin.version>
     <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
     <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
     <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
@@ -501,18 +503,6 @@
         <version>${mybatis.version}</version>
       </dependency>
 
-      <!-- eclipse collections is used by both neo4j and mapdb with different versions -->
-      <dependency>
-        <groupId>org.eclipse.collections</groupId>
-        <artifactId>eclipse-collections</artifactId>
-        <version>11.1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.eclipse.collections</groupId>
-        <artifactId>eclipse-collections-api</artifactId>
-        <version>11.1.0</version>
-      </dependency>
-
       <!-- mapdb & kryo -->
       <dependency>
         <groupId>org.mapdb</groupId>
@@ -625,6 +615,11 @@
       <dependency>
         <groupId>org.simplejavamail</groupId>
         <artifactId>simple-java-mail</artifactId>
+        <version>${simple-mail.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.simplejavamail</groupId>
+        <artifactId>batch-module</artifactId>
         <version>${simple-mail.version}</version>
       </dependency>
       <dependency>
@@ -814,7 +809,41 @@
                 </rules>
               </configuration>
             </execution>
+            <execution>
+              <id>enforce-bytecode-version</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <!-- This checks bytecode in dependencies for the expected classfile version -->
+                  <enforceBytecodeVersion>
+                    <maxJdkVersion>${java.maxVersion}</maxJdkVersion>
+                  </enforceBytecodeVersion>
+                </rules>
+                <fail>false</fail>
+              </configuration>
+            </execution>
+            <execution>
+              <id>enforce-ban-circular-dependencies</id>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+              <configuration>
+                <rules>
+                  <banCircularDependencies/>
+                </rules>
+                <fail>true</fail>
+              </configuration>
+            </execution>
           </executions>
+          <dependencies>
+            <dependency>
+              <groupId>org.codehaus.mojo</groupId>
+              <artifactId>extra-enforcer-rules</artifactId>
+              <version>${extra-enforcer-rules.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -904,6 +933,7 @@
           <executions>
             <execution>
               <id>attach-sources</id>
+              <phase>verify</phase>
               <goals>
                 <goal>jar-no-fork</goal>
               </goals>
@@ -930,12 +960,9 @@
 
             <useSystemClassLoader>false</useSystemClassLoader>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <!-- use the same JVM options as maven -->
-            <argLine>-Xmx512m ${jvm.opens.args}</argLine>
+            <!-- use default JVM settings <argLine>-Xmx256m</argLine> -->
             <runOrder>failedfirst</runOrder>
-
             <includes>
-              <!-- include regular unit tests -->
               <include>**/*Test.java</include>
             </includes>
           </configuration>
@@ -946,14 +973,8 @@
           <version>${maven-surefire-plugin.version}</version>
           <executions>
             <execution>
-              <id>integration-test</id>
               <goals>
                 <goal>integration-test</goal>
-              </goals>
-            </execution>
-            <execution>
-              <id>verify</id>
-              <goals>
                 <goal>verify</goal>
               </goals>
             </execution>
@@ -969,8 +990,13 @@
             <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
             <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
             <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
-            <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true ${jvm.opens.args}</argLine>
+            <argLine>
+              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+            </argLine>
             <runOrder>random</runOrder>
+            <includes>
+              <include>**/*IT.java</include>
+            </includes>
           </configuration>
         </plugin>
         <plugin>
@@ -979,22 +1005,14 @@
           <version>${versions-maven-plugin.version}</version>
         </plugin>
         <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>${maven-release-plugin.version}</version>
-          <configuration>
-            <goals>deploy</goals>
-            <preparationGoals>install</preparationGoals>
-            <resume>false</resume>
-            <useReleaseProfile>true</useReleaseProfile>
-            <releaseProfiles>col-release</releaseProfiles>
-            <tagNameFormat>${project.artifactId}-@{project.version}</tagNameFormat>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>org.graalvm.buildtools</groupId>
           <artifactId>native-maven-plugin</artifactId>
           <version>${maven-graalvm-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>${maven-deploy-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -1003,35 +1021,30 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>${maven-enforcer-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>${maven-jar-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${maven-compiler-plugin.version}</version>
       </plugin>
-      <!--
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>${maven-source-plugin.version}</version>
-      </plugin>
-      <!-- run integration tests (*IT) during verify -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
