@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
@@ -23,6 +24,8 @@ import life.catalogue.junit.TestDataRule;
 import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
+
+import life.catalogue.printer.PrinterUtils;
 
 import org.gbif.nameparser.api.Rank;
 
@@ -106,6 +109,15 @@ public class PgImportITBase {
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
+  }
+
+  void assertTree() throws IOException {
+    // compare with expected tree
+    SectorSyncTestBase.assertTree(dataset.getTitle(), dataset.getKey(), getClass().getResourceAsStream(resourceDir + "/expected.tree"));
+  }
+
+  void printTree() throws Exception {
+    PrinterUtils.print(dataset.getKey(), true, SqlSessionFactoryRule.getSqlSessionFactory());
   }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {

@@ -519,6 +519,7 @@ public class PgImport implements Callable<Boolean> {
 
             // index into ES later when we "end" so we can add issues still, but build up the instance here already
             NameUsageWrapper nuw = new NameUsageWrapper(u.usage);
+            //nuw.setId(u.getId()); // for some reason we need to do this here again
             nuw.setPublisherKey(dataset.getGbifPublisherKey());
             nuw.setClassification(new ArrayList<>(parents));
             nuw.setIssues(mergeIssues(vKeys));

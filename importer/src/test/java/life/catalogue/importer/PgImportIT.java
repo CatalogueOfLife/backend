@@ -616,16 +616,6 @@ public class PgImportIT extends PgImportITBase {
     }
   }
 
-  void assertTree() throws IOException {
-    // compare with expected tree
-    SectorSyncTestBase.assertTree(dataset.getTitle(), dataset.getKey(), getClass().getResourceAsStream(resourceDir + "/expected.tree"));
-  }
-
-  void printTree() throws Exception {
-    PrinterUtils.print(dataset.getKey(), true, SqlSessionFactoryRule.getSqlSessionFactory());
-  }
-
-
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
