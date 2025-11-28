@@ -41,7 +41,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -58,8 +57,6 @@ import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
 import jakarta.validation.Validator;
 
 /**
@@ -326,7 +323,7 @@ public class Normalizer implements Callable<Boolean> {
     reduceRedundantNameRels();
 
     // cleanup synonym & parent relations
-    sanitizeSynonyms();
+    resolveSynonymChains();
     resolveSynonymParents();
     cutParentCycles();
 
@@ -374,14 +371,17 @@ public class Normalizer implements Callable<Boolean> {
   private void validateRelations() {
     LOG.info("Validate parent relations");
     store.usages().all().forEach(u -> {
-      if (u.usage.getParentId() != null && !store.usages().exists(u.usage.getParentId())) {
-        LOG.debug("ParentID {} of usage {} not existing", u.usage.getParentId(), u.usage.getId());
-        u.usage.asUsageBase().setParentId(null);
-        store.usages().update(u);
-        if (u.isSynonym()) {
-          store.addIssues(u.usage, Issue.ACCEPTED_ID_INVALID);
-        } else {
-          store.addIssues(u.usage, Issue.PARENT_ID_INVALID);
+      if (u.usage.getParentId() != null) {
+        var p = store.usages().objByID(u.usage.getParentId());
+        if (p == null) {
+          LOG.debug("ParentID {} of usage {} not existing", u.usage.getParentId(), u.usage.getId());
+          u.usage.asUsageBase().setParentId(null);
+          store.usages().update(u);
+          if (u.isSynonym()) {
+            store.addIssues(u.usage, Issue.ACCEPTED_ID_INVALID);
+          } else {
+            store.addIssues(u.usage, Issue.PARENT_ID_INVALID);
+          }
         }
       }
     });
@@ -781,7 +781,7 @@ public class Normalizer implements Callable<Boolean> {
    * Sanitizes synonym relations by relinking synonym of synonyms to make sure synonyms always point to a direct accepted taxon.
    * Synonyms without an accepted parent will be flagged and removed at the very end by the removeOrphanSynonyms routine.
    */
-  private void sanitizeSynonyms() {
+  private void resolveSynonymChains() {
     final AtomicInteger synChains = new AtomicInteger();
     store.usages().allSynonyms().forEach(syn -> {
       if (syn.usage.getParentId() != null) {
@@ -822,7 +822,12 @@ public class Normalizer implements Callable<Boolean> {
         var p = store.usages().objByID(ud.usage.getParentId());
         if (p.isSynonym()) {
           addUsageIssue(ud, Issue.SYNONYM_PARENT);
-          store.usages().assignParent(ud, p.usage.getParentId()); // synonyms are clean by now, this must be an accepted name usage
+          String newParentID = p.usage.getParentId(); // synonyms are clean by now, this must be an accepted name usage
+          if (ud.getId().equals(newParentID)) { // but it can be itself, avoid selfloops
+            newParentID = null;
+            LOG.debug("No new parent found for taxon {} with synonym parent {}", ud.getId(), p.getId());
+          }
+          store.usages().assignParent(ud, newParentID);
           cntSynParent.incrementAndGet();
         }
       }

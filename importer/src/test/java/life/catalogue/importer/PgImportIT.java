@@ -3,12 +3,15 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
 import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.PrinterUtils;
 import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.dwc.terms.Term;
@@ -16,6 +19,7 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
@@ -425,10 +429,9 @@ public class PgImportIT extends PgImportITBase {
       Name n = ndao.get(key(dataset.getKey(), "30405"));
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
-      
-      // this is buggy normalization of bad data - should really be just one...
       assertEquals(2, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
     }
+    assertTree();
   }
   
   @Test
@@ -612,7 +615,17 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(2, t.getProperties().size());
     }
   }
-  
+
+  void assertTree() throws IOException {
+    // compare with expected tree
+    SectorSyncTestBase.assertTree(dataset.getTitle(), dataset.getKey(), getClass().getResourceAsStream(resourceDir + "/expected.tree"));
+  }
+
+  void printTree() throws Exception {
+    PrinterUtils.print(dataset.getKey(), true, SqlSessionFactoryRule.getSqlSessionFactory());
+  }
+
+
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {

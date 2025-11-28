@@ -3,6 +3,7 @@ package life.catalogue.importer;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
@@ -26,6 +27,8 @@ import life.catalogue.matching.nidx.NamesIndexConfig;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -44,13 +47,16 @@ import com.google.common.io.Files;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.*;
 
 /**
  *
  */
 public class PgImportITBase {
-  
+
+  String resourceDir  ;
   ImportStore store;
   NormalizerConfig cfg;
   ImporterConfig icfg = new ImporterConfig();
@@ -73,7 +79,7 @@ public class PgImportITBase {
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+
   @Before
   public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
@@ -103,14 +109,9 @@ public class PgImportITBase {
   }
 
   void normalizeAndImport(DataFormat format, int key) throws Exception {
-    URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
+    resourceDir = "/" + format.name().toLowerCase() + "/" + key;
+    URL url = getClass().getResource(resourceDir);
     dataset.setDataFormat(format);
-    normalizeAndImport(Paths.get(url.toURI()));
-  }
-
-  void normalizeAndImport(DatasetWithSettings ds) throws Exception {
-    dataset = ds;
-    URL url = getClass().getResource("/" + ds.getDataFormat().name().toLowerCase() + "/" + ds.getKey());
     normalizeAndImport(Paths.get(url.toURI()));
   }
 
@@ -236,5 +237,5 @@ public class PgImportITBase {
   public static DSID<String> key(int datasetKey, String id) {
     return new DSIDValue<>(datasetKey, id);
   }
-  
+
 }
