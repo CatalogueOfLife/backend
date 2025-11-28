@@ -25,7 +25,7 @@ public class ReleaseActionTest {
 
     var act = new ReleaseAction();
     act.method = "GET";
-    act.url = "http://www.gbif.org/dataset/{key}?alias={ALIAS}";
+    act.url = "http://www.google.com/search/{key}?alias={ALIAS}";
     assertEquals(404, act.call(httpClient, d));
   }
 }

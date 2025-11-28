@@ -25,6 +25,17 @@
     <minimumMavenVersion>3.9.5</minimumMavenVersion>
     <java.version>21</java.version>
     <java.maxVersion>21</java.maxVersion>
+    <!-- .mvn/jvm.config is not being used by surefire - we need to replicate the settings here! -->
+    <java.argLine>
+      -Djdk.net.URLClassPath.disableClassPathURLCheck=true
+      --add-opens=java.base/java.lang=ALL-UNNAMED
+      --add-opens=java.base/java.lang.reflect=ALL-UNNAMED
+      --add-opens=java.base/java.io=ALL-UNNAMED
+      --add-opens=java.base/java.util=ALL-UNNAMED
+      --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+      --add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED
+      --add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+    </java.argLine>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -57,7 +68,7 @@
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
     <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
-    <chronicle.version>2.26ea47</chronicle.version>
+    <chronicle.version>2.26ea59</chronicle.version>
     <docker-client.version>3.6.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>2.1.4</dwc-api.version>
     <dwca-io.version>3.0.0</dwca-io.version>
@@ -939,9 +950,7 @@
           <artifactId>maven-surefire-plugin</artifactId>
           <version>${maven-surefire-plugin.version}</version>
           <configuration>
-            <!-- skips surefire tests without skipping failsafe tests.
-              Property value seems to magically default to false -->
-            <skipTests>${skip.surefire.tests}</skipTests>
+            <argLine>${java.argLine}</argLine>
             <!--
             Run tests in parallel with the same JVM by default for all modules.
             Some modules run tests that share static information and will override this configuration.
@@ -984,9 +993,7 @@
             <!-- mem settings may not be necessary but the 3rd arg is. See here: -->
             <!-- https://issues.apache.org/jira/browse/SUREFIRE-1588 -->
             <!-- And here: https://talk.openmrs.org/t/error-could-not-find-or-load-main-class-org-apache-maven-surefire-booter-forkedbooter/20509 -->
-            <argLine>
-              -Djdk.net.URLClassPath.disableClassPathURLCheck=true
-            </argLine>
+            <argLine>${java.argLine}</argLine>
             <runOrder>random</runOrder>
             <includes>
               <include>**/*IT.java</include>
