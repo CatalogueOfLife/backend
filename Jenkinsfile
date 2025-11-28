@@ -6,7 +6,7 @@ pipeline {
   }
   options {
     disableConcurrentBuilds()
-    buildDiscarder(logRotator(numToKeepStr: '6'))
+    buildDiscarder(logRotator(numToKeepStr: '10'))
     skipStagesAfterUnstable()
     timestamps()
   }
