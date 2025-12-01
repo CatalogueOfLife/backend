@@ -24,6 +24,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.TreeLine;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;

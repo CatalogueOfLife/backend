@@ -62,8 +62,8 @@
     <antlr.version>4.13.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
     <batik.version>1.18</batik.version>
-    <citeproc.version>3.4.0</citeproc.version>
-    <citeproc-styles.version>2.0.0</citeproc-styles.version>
+    <citeproc.version>3.3.0</citeproc.version> <!-- 3.4.0 has problems with parsing authors, see BibTexInserterTest -->
+    <citeproc-styles.version>25.11</citeproc-styles.version>
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>

@@ -44,8 +44,8 @@ public class CslDataConverter {
       toCSLNames(src.getAuthor()),
       null, // chair
       toCSLNames(src.getCollectionEditor()),
-      null, // compiler
       toCSLNames(src.getComposer()),
+      null, // compiler
       toCSLNames(src.getContainerAuthor()),
       null, // contributor
       null, // curator
@@ -53,22 +53,16 @@ public class CslDataConverter {
       toCSLNames(src.getEditor()),
       toCSLNames(src.getEditorialDirector()),
       null, // executiveProducer
-      null, // guest
-      null, // host,
-      toCSLNames(src.getInterviewer()),
       toCSLNames(src.getIllustrator()),
-      null, // narrator
+      toCSLNames(src.getInterviewer()),
       null, // organizer,
       toCSLNames(src.getOriginalAuthor()),
       null, // performer
       null, // producer
       toCSLNames(src.getRecipient()),
       toCSLNames(src.getReviewedAuthor()),
-      null, // scriptWriter
-      null, // seriesCreator
       toCSLNames(src.getTranslator()),
       toCSLDate(src.getAccessed()),
-      null, // availableDate
       toCSLDate(src.getContainer()),
       toCSLDate(src.getEventDate()),
       toCSLDate(src.getIssued()),
@@ -77,7 +71,6 @@ public class CslDataConverter {
       src.getAbstrct(),
       src.getAnnote(),
       src.getArchive(),
-      null, // archiveCollection
       src.getArchiveLocation(),
       src.getArchivePlace(),
       src.getAuthority(),
@@ -91,11 +84,9 @@ public class CslDataConverter {
       src.getContainerTitle(),
       src.getContainerTitleShort(),
       src.getDimensions(),
-      null, // division
       src.getDOI(),
       src.getEdition(),
       src.getEvent(),
-      null, // eventTitle,
       src.getEventPlace(),
       src.getFirstReferenceNoteNumber(),
       src.getGenre(),
@@ -114,27 +105,21 @@ public class CslDataConverter {
       src.getOriginalPublisherPlace(),
       src.getOriginalTitle(),
       src.getPage(),
-      null, // part
-      null, // partTitle
       src.getPMCID(),
       src.getPMID(),
-      null, // printing
       src.getPublisher(),
       src.getPublisherPlace(),
       src.getReferences(),
-      null, // reviewedGenre,
       src.getReviewedTitle(),
       src.getScale(),
       src.getSection(),
       src.getSource(),
       src.getStatus(),
-      null, // supplement,
       src.getTitle(),
       src.getTitleShort(),
       src.getURL(),
       src.getVersion(),
       src.getVolume(),
-      null, // volumeTitle,
       src.getYearSuffix());
   }
   
