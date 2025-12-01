@@ -80,6 +80,7 @@ public class EsKryoPool extends Pool<Kryo> {
     kryo.register(Sex.class);
     kryo.register(TaxGroup.class);
     kryo.register(TaxonomicStatus.class);
+    kryo.register(SimpleNameCached.class);
 
     return kryo;
   }
