@@ -121,6 +121,17 @@ public class ParentStack<T extends NameUsageCore> {
     return null;
   }
 
+  public T getByID(String id) {
+    var iter = parents.descendingIterator();
+    while (iter.hasNext()) {
+      var p = iter.next();
+      if (p.usage.getId().equals(id)) {
+        return p.usage;
+      }
+    }
+    return null;
+  }
+
   /**
    * Flushes the remaining usages from the stack and passes them to the handlers.
    * Should be called at the end when all usages are pushed.

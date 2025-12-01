@@ -151,8 +151,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
 
     if (sn.getStatus() != null && sn.getStatus().isSynonym()) {
       // validate syn vs acc rank
-      var p = parents.last();
-      if (p != null && sn.getRank() != p.getRank()) {
+      var acc = parents.getByID(sn.getParentId());
+      if (acc != null && sn.getRank() != acc.getRank()) {
         issues.add(Issue.SYNONYM_RANK_DIFFERS);
       }
 
