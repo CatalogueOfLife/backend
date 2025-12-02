@@ -80,26 +80,27 @@ public class NameValidatorTest {
     n.setId("#1");
     n.setType(NameType.SCIENTIFIC);
     
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     n.setUninomial("Asteraceae");
     n.setRank(Rank.FAMILY);
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     for (Rank r : Rank.values()) {
       if (r.isSuprageneric() && r != Rank.FAMILY && !r.isUncomparable()) {
         n.setRank(r);
-        verify(n, Issue.RANK_NAME_SUFFIX_CONFLICT);
+        verify(n, Issue.MISSING_AUTHORSHIP, Issue.RANK_NAME_SUFFIX_CONFLICT);
       }
     }
     
     n.setRank(Rank.GENUS);
-    verify(n, Issue.RANK_NAME_SUFFIX_CONFLICT);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.RANK_NAME_SUFFIX_CONFLICT);
     
     n.setUninomial("Abies");
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     n.getCombinationAuthorship().getAuthors().add("Mill.");
+    n.rebuildAuthorship();
     verify(n);
     
     n.setRank(Rank.SPECIES);
@@ -156,7 +157,7 @@ public class NameValidatorTest {
     n.setInfraspecificEpithet("forsythi");
     n.setRank(Rank.SUBSPECIES);
     
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
   }
 
   @Test
@@ -173,13 +174,13 @@ public class NameValidatorTest {
 
     n.setInfragenericEpithet("Abies");
     n.setUninomial(null);
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
 
     n.setGenus(null);
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
 
     n.setSpecificEpithet("saxetana");
-    verify(n, Issue.INCONSISTENT_NAME);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.INCONSISTENT_NAME);
   }
   
   @Test
@@ -188,20 +189,20 @@ public class NameValidatorTest {
     n.setType(NameType.SCIENTIFIC);
     
     n.setGenus("Marmorana");
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     n.setSpecificEpithet("sax€tana");
-    verify(n, Issue.UNUSUAL_NAME_CHARACTERS);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.UNUSUAL_NAME_CHARACTERS);
     
     n.setSpecificEpithet("saxetana");
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     n.setInfraspecificEpithet("forsythi");
     n.setRank(Rank.SUBSPECIES);
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
     
     n.setInfraspecificEpithet("for sythi");
-    verify(n, Issue.UNUSUAL_NAME_CHARACTERS);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.UNUSUAL_NAME_CHARACTERS);
   }
 
   @Test
@@ -210,19 +211,19 @@ public class NameValidatorTest {
     n.setType(NameType.SCIENTIFIC);
 
     n.setUninomial("Marmorana");
-    verify(n);
+    verify(n, Issue.MISSING_AUTHORSHIP);
 
     n.setUninomial("Marmorana magna");
-    verify(n, Issue.MULTI_WORD_MONOMIAL);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.MULTI_WORD_MONOMIAL);
 
     n.setUninomial("MARMORANA");
-    verify(n, Issue.WRONG_MONOMIAL_CASE);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.WRONG_MONOMIAL_CASE);
 
     n.setUninomial("marmorana");
-    verify(n, Issue.WRONG_MONOMIAL_CASE);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.WRONG_MONOMIAL_CASE);
 
     n.setUninomial("mArmorana");
-    verify(n, Issue.WRONG_MONOMIAL_CASE);
+    verify(n, Issue.MISSING_AUTHORSHIP, Issue.WRONG_MONOMIAL_CASE);
   }
 
   @Test
@@ -230,25 +231,25 @@ public class NameValidatorTest {
     var nb = Name.newBuilder().type(NameType.SCIENTIFIC);
 
     // all no issues cause name is unranked
-    verify(nb.uninomial("Chamberlinini").build());
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP);
     nb.code(NomCode.BOTANICAL);
-    verify(nb.uninomial("Chamberlinini").build());
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP);
     nb.code(NomCode.ZOOLOGICAL);
-    verify(nb.uninomial("Chamberlinini").build());
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP);
 
     nb.rank(Rank.GENUS);
-    verify(nb.uninomial("Chamberlinini").build(), Issue.RANK_NAME_SUFFIX_CONFLICT);
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP, Issue.RANK_NAME_SUFFIX_CONFLICT);
     // botanical ones dont have such an ending
     nb.code(NomCode.BOTANICAL);
-    verify(nb.uninomial("Chamberlinini").build());
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP);
 
     nb.code(NomCode.ZOOLOGICAL);
     nb.rank(Rank.TRIBE);
-    verify(nb.uninomial("Chamberlinini").build());
+    verify(nb.uninomial("Chamberlinini").build(), Issue.MISSING_AUTHORSHIP);
 
     nb.code(NomCode.BOTANICAL);
     verify(nb.uninomial("Asteraceae").build(), Issue.RANK_NAME_SUFFIX_CONFLICT);
     nb.rank(Rank.FAMILY);
-    verify(nb.uninomial("Asteraceae").build());
+    verify(nb.uninomial("Asteraceae").build(), Issue.MISSING_AUTHORSHIP);
   }
 }
