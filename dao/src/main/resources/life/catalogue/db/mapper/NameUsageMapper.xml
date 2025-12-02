@@ -839,7 +839,6 @@
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x
     <if test="depthFirst">ORDER BY x.path</if>
-    <if test="orderByName">ORDER BY x.scientific_name, x.authorship</if>
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
