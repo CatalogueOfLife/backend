@@ -484,6 +484,9 @@ public enum Issue {
 
   MISSING_AUTHORSHIP(NAME, Level.INFO,
     "The authorship of a scientific name is missing."),
+
+  MISSPELLING_CONSOLIDATION(NAME_USAGE, Level.INFO,
+    "A misspelled accepted names existed which has been converted into a synonym."),
   ;
 
   /**

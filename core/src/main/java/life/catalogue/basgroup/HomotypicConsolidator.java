@@ -17,8 +17,11 @@ import life.catalogue.db.mapper.NameRelationMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.matching.authorship.AuthorComparator;
+import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
 import life.catalogue.matching.similarity.ScientificNameSimilarity;
 import life.catalogue.matching.similarity.StringSimilarity;
+
+import life.catalogue.parser.NomCodeParser;
 
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
@@ -48,15 +51,25 @@ public class HomotypicConsolidator {
   private static final List<TaxonomicStatus> STATUS_ORDER = List.of(TaxonomicStatus.ACCEPTED, TaxonomicStatus.PROVISIONALLY_ACCEPTED, TaxonomicStatus.SYNONYM, TaxonomicStatus.AMBIGUOUS_SYNONYM);
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_ORDER = Comparator.comparing(u -> STATUS_ORDER.indexOf(u.getStatus()));
   private static final Comparator<LinneanNameUsage> PREFERRED_STATUS_RANK_ORDER = PREFERRED_STATUS_ORDER.thenComparing(LinneanNameUsage::getRank);
+  private static final int MAX_NAME_DIFF = 1;
 
   private final SqlSession session;
   private final int datasetKey;
   private final List<SimpleName> taxa;
+  private boolean consolidateMisspellings = false;
   private Map<String, Set<String>> basionymExclusions = new HashMap<>();
   private final AuthorComparator authorComparator;
   private final BasionymSorter<LinneanNameUsage> basSorter;
   private final ToIntFunction<LinneanNameUsage> priorityFunc;
   private final IssueAdder issueAdder;
+
+  @VisibleForTesting
+  public static boolean isSameName(ConsolidationName n1, ConsolidationName n2, ModifiedDamerauLevenshtein mdl) {
+    return n1.getRank() == n2.getRank()
+      && Objects.equals(n1.getAuthorship(), n2.getAuthorship())
+      && Math.abs(n1.getName().length()-n2.getName().length()) <= MAX_NAME_DIFF
+      && mdl.getEditDistance(n1.getName(), n2.getName()) <= MAX_NAME_DIFF;
+  }
 
   /**
    * @return a consolidator that will group an entire dataset family by family
@@ -113,7 +126,7 @@ public class HomotypicConsolidator {
       LOG.info("Discover homotypic relations in {} accepted taxa of dataset {}, using {} threads", taxa.size(), datasetKey, threads);
       var exec = Executors.newFixedThreadPool(threads, new NamedThreadFactory("ht-consolidator-worker"));
       for (var tax : taxa) {
-        var task = new ConsolidatorTask(tax);
+        var task = new ConsolidatorTask(tax, consolidateMisspellings);
         exec.submit(task);
       }
       ExecutorUtils.shutdown(exec);
@@ -125,24 +138,49 @@ public class HomotypicConsolidator {
   }
 
   /**
+   * Turns on consolidation of misspellings per family
+   */
+  public void consolidateMisspellings() {
+    consolidateMisspellings=true;
+  }
+
+  static class ConsolidatedSimpleName extends SimpleName {
+    String synonymizedTo;
+  }
+
+  /**
    * Goes through all usages of a given parent taxon and tries to discover basionyms by comparing the specific or infraspecific epithet and the authorships.
    * As we often see missing brackets from author names we must code defensively and allow several original names in the data for a single epithet.
    * <p>
    * Each homotypic group is then consolidated so that only one accepted name remains.
    */
   private class ConsolidatorTask implements Runnable {
+    private final ModifiedDamerauLevenshtein mdl = new ModifiedDamerauLevenshtein();
     private final SimpleName tax;
     private final DSID<String> dsid;
+    private final boolean consolidateMisspellings;
     private int synCounter;
     private Map<String, LinneanNameUsage> usages; // lookup by id for each taxon group being consolidated
 
-    private ConsolidatorTask(SimpleName tax) {
+    private ConsolidatorTask(SimpleName tax, boolean consolidateMisspellings) {
       this.tax = tax;
       this.dsid = DSID.root(datasetKey);
+      this.consolidateMisspellings = consolidateMisspellings;
+    }
+
+    private boolean isSameName(ConsolidationName n1, ConsolidationName n2) {
+      return HomotypicConsolidator.isSameName(n1, n2, mdl);
     }
 
     @Override
     public void run() {
+      homotypicConsolidation();
+      if (consolidateMisspellings) {
+        misspellingConsolidation();
+      }
+    }
+
+    private void homotypicConsolidation() {
       synCounter = 0;
       int newBasionyms = 0;
       int newBasionymRelations = 0;
@@ -245,6 +283,65 @@ public class HomotypicConsolidator {
       LOG.info("Discovered {} new basionym, {} homotypic, {} based on and {} spelling relations. Created {} basionym placeholders and converted {} taxa into synonyms in {}",
         newBasionymRelations, newHomotypicRelations, newBasedOnRelations, newSpellingRelations, newBasionyms, synCounter, tax);
       usages = null;
+    }
+
+    private void misspellingConsolidation() {
+      synCounter = 0;
+      LOG.info("Detect misspellings within {}", tax);
+      int windowSize = 10;
+      final LinkedList<ConsolidationName> window = new LinkedList<>();
+      NameUsageMapper num = session.getMapper(NameUsageMapper.class);
+      PgUtils.consume(() -> num.processTreeConsolidationName(DSID.of(datasetKey, tax.getId())), sn -> {
+        if (NomCodeParser.isCodeCompliant(sn.getType())) {
+          consolidateMisspelling(sn, window);
+        }
+        window.add(sn);
+        if (window.size() > windowSize) {
+          window.removeFirst();
+        }
+      });
+      session.commit();
+      LOG.info("Discovered {} misspellings in {}", synCounter, tax);
+    }
+
+    private void consolidateMisspelling(ConsolidationName n1, LinkedList<ConsolidationName> window) {
+      for (var n2 : window) {
+        if (!n2.isConsolidated() && isSameName(n1, n2)) {
+          // synonymise to highest prio
+          var p1 = prio(n1);
+          var p2 = prio(n2);
+          ConsolidationName acc = null;
+          ConsolidationName syn = null;
+          if (p1 == p2 && p1<0){
+            // from a global source or management hierarchy - keep!
+            LOG.info("Likely misspelled name from a global source! {} vs {}", n1, n2);
+          } else if (p1 < p2) {
+            acc = n1;
+            syn = n2;
+          } else {
+            acc = n2;
+            syn = n1;
+          }
+          if (acc != null) {
+            var accLNU = load(acc.getId());
+            var synLNU = load(syn.getId());
+            updateParentAndStatus(synLNU.getId(), accLNU.getId(), TaxonomicStatus.SYNONYM, session.getMapper(NameUsageMapper.class));
+            issueAdder.addIssue(synLNU.getVerbatimSourceKey(), synLNU.getId(), Issue.MISSPELLING_CONSOLIDATION);
+            if (synCounter % 1000 == 0) {
+              session.commit();
+            }
+          }
+        }
+      }
+    }
+
+
+    private int prio(ConsolidationName n) {
+      var lnu = new LinneanNameUsage();
+      lnu.setId(n.getId());
+      lnu.setSectorKey(n.getSectorKey());
+      lnu.setRank(n.getRank());
+      return priorityFunc.applyAsInt(lnu);
     }
 
     private class EpithetIndex {

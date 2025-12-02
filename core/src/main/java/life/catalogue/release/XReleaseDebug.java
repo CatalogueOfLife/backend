@@ -1,6 +1,7 @@
 package life.catalogue.release;
 
 import life.catalogue.assembly.SyncFactory;
+import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
 import life.catalogue.doi.DoiUpdater;

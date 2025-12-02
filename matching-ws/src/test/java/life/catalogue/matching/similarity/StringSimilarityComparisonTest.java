@@ -21,6 +21,7 @@ public class StringSimilarityComparisonTest {
   private StopWatch watch = new StopWatch();
   private StringSimilarity l = new LevenshteinDistance();
   private StringSimilarity dl = new DamerauLevenshtein();
+  private StringSimilarity mdl1 = new ModifiedDamerauLevenshtein(1);
   private StringSimilarity mdl2 = new ModifiedDamerauLevenshtein(2);
   private StringSimilarity mdl3 = new ModifiedDamerauLevenshtein(3);
   private StringSimilarity jw = new JaroWinkler();
@@ -39,12 +40,14 @@ public class StringSimilarityComparisonTest {
     compare("Oreina elegans", "Orfelia elegans");
     compare("Lucina scotti", "Lucina wattsi");
     compare("scotti", "wattsi");
+    compare("Mesolecanium nigrofasciatum", "Mesolecanium nigrofaciatum");
   }
 
   private void compare(String x1, String x2) {
     System.out.println("\n" + x1 + "  ~  " + x2);
     sim("   L", l, x1, x2);
     sim("  DL", dl, x1, x2);
+    sim("MDL1", mdl1, x1, x2);
     sim("MDL2", mdl2, x1, x2);
     sim("MDL3", mdl3, x1, x2);
     sim("  JW", jw, x1, x2);
@@ -55,7 +58,6 @@ public class StringSimilarityComparisonTest {
   private void sim(String name, StringSimilarity sim, String x1, String x2) {
     watch.reset();
     watch.start();
-    System.out.println(
-        '\t' + name + " = " + sim.getSimilarity(x1, x2) + '\t' + watch.getNanoTime());
+    System.out.println('\t' + name + " = " + sim.getSimilarity(x1, x2) + '\t' + watch.getNanoTime());
   }
 }

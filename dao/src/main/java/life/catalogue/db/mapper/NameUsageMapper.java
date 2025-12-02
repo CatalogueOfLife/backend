@@ -418,9 +418,17 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Param("depthFirst") boolean depthFirst,
                                        @Param("ordered") boolean ordered);
 
-  default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
+  default Cursor<SimpleName> processTreeSimple(TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
   }
+
+  /**
+   * Iterates over all accepted descendants in a tree for a given start taxon.
+   * Descendants will be ordered by their scientific name alone.
+   * Processed SimpleNameCached instances have the parentID as their parent property, not a scientificName
+   * and no names index properties set, just the sectorKey
+   */
+  Cursor<ConsolidationName> processTreeConsolidationName(@Param("startID") DSID<String> startID);
 
   /**
    * Depth first process tree implementation similar to processTreeSimple, but returning a full name instance.

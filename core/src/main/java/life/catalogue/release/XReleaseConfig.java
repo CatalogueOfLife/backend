@@ -44,6 +44,18 @@ public class XReleaseConfig extends ProjectReleaseConfig {
   public boolean removeEmptyGenera = true;
 
   /**
+   * If true algorithmic detects and synonymizes (sub)species misspellings per family.
+   */
+  @Valid
+  public boolean misspellingConsolidation = true;
+
+  /**
+   * Flag exact same, accepted names but with different authors as provisionally accepted.
+   */
+  @Valid
+  public boolean flagDuplicatesAsProvisional = true;
+
+  /**
    * If true algorithmic detecting and grouping of basionyms is executed.
    */
   @Valid

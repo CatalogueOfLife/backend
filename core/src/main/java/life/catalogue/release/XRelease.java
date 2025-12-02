@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.function.ToIntFunction;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
@@ -195,6 +196,7 @@ public class XRelease extends ProjectRelease {
 
     mergeSectors();
 
+    // sanitize merges
     homotypicGrouping();
 
     // flagging
@@ -307,13 +309,16 @@ public class XRelease extends ProjectRelease {
 
   protected void homotypicGrouping() throws InterruptedException {
     checkIfCancelled();
-    final var prios = new SectorPriority(getDatasetKey(), factory);
     // detect and group basionyms
+    final var prios = new SectorPriority(getDatasetKey(), factory);
     if (xCfg.homotypicConsolidation) {
       final LocalDateTime start = LocalDateTime.now();
       var hc = HomotypicConsolidator.entireDataset(factory, newDatasetKey, prios::priority);
       if (xCfg.basionymExclusions != null) {
         hc.setBasionymExclusions(xCfg.basionymExclusions);
+      }
+      if (xCfg.misspellingConsolidation) {
+        hc.consolidateMisspellings();
       }
       hc.consolidate(xCfg.homotypicConsolidationThreads);
       DateUtils.logDuration(LOG, hc.getClass(), start);
@@ -322,7 +327,10 @@ public class XRelease extends ProjectRelease {
       LOG.warn("Homotypic grouping disabled in xrelease configs");
     }
 
-    flagDuplicatesAsProvisional(prios);
+    // finally flag duplicates with different authors as provisional
+    if (xCfg.flagDuplicatesAsProvisional) {
+      flagDuplicatesAsProvisional(prios);
+    }
   }
 
   private void updateMetadata() throws InterruptedException {
@@ -678,6 +686,50 @@ public class XRelease extends ProjectRelease {
     DateUtils.logDuration(LOG, TreeCleanerAndValidator.class, start);
   }
 
+
+  /**
+   * Goes through all accepted bi/trinomen and looks for names that are identical by rank and authorship
+   * and only differ by one letter in their scientific name.
+   *
+   * The highest priority name stays, the other becomes a synonym of it.
+   */
+  private void synonymizeMisspelledBinomials(SectorPriority prios) throws InterruptedException {
+    checkIfCancelled();
+    LOG.info("Find misspelled names and synonymize them");
+    final LocalDateTime start = LocalDateTime.now();
+    try (SqlSession session = factory.openSession(false)) {
+      var num = session.getMapper(NameUsageMapper.class);
+      var dum = session.getMapper(DuplicateMapper.class);
+      var adder = new IssueAdder(newDatasetKey, session);
+      // same names with the same rank and code
+      var dupes = dum.homonyms(newDatasetKey, Set.of(TaxonomicStatus.ACCEPTED));
+      LOG.info("Marking {} homonyms as provisional", dupes.size());
+
+      int counter = 0;
+      final DSID<String> key = DSID.root(newDatasetKey);
+      for (var d : dupes) {
+        int min = Integer.MAX_VALUE;
+        for (var u : d.getUsages()) {
+          min = Math.min(min, prios.priority(u.getSectorKey()));
+        }
+        for (var u : d.getUsages()) {
+          if (prios.priority(u.getSectorKey()) > min) {
+            num.updateStatus(key.id(u.getId()), TaxonomicStatus.PROVISIONALLY_ACCEPTED, user);
+            adder.addIssue(u.getId(), Issue.DUPLICATE_NAME);
+            if (counter++ % 1000 == 0) {
+              session.commit();
+            }
+          }
+        }
+      }
+      session.commit();
+      LOG.info("Changed {} homonyms to provisional status", counter);
+
+    } catch (Exception e) {
+      LOG.error("Homonym flagging failed", e);
+    }
+    DateUtils.logDuration(LOG, "Homonym flagging", start);
+  }
 
   /**
    * Assigns a doubtful status to accepted names that only differ in authorship

@@ -56,6 +56,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_CONSOLIDATION_NAME">
+    u.id, n.scientific_name, n.authorship, n.type, n.rank, u.status, u.parent_id, u.sector_key
+  </sql>
+
   <sql id="SELECT_SIMPLE_VERBATIM">
     <include refid="SELECT_SIMPLE"/>, u.verbatim_source_key
   </sql>
@@ -280,6 +284,12 @@
 
   <resultMap id="simpleCachedResultMap" type="SimpleNameCached" autoMapping="true" extends="simpleNidxResultMap">
     <id property="id" column="id"/>
+    <result property="sectorKey" column="sector_key" />
+  </resultMap>
+
+  <resultMap id="consolidationNameMap" type="ConsolidationName" autoMapping="true">
+    <id property="id" column="id"/>
+    <result property="name" column="scientific_name"/>
     <result property="sectorKey" column="sector_key" />
   </resultMap>
 
@@ -796,6 +806,22 @@
     AND (p.sector_key IS NULL OR p.sector_key!=#{key.id})
   </select>
 
+  <select id="processTreeConsolidationName" parameterType="map" resultMap="consolidationNameMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+      SELECT <include refid="SELECT_CONSOLIDATION_NAME"/>
+      FROM <include refid="FROM_SIMPLE"/>
+      WHERE u.dataset_key=#{startID.datasetKey} AND u.id = #{startID.id}
+      UNION
+      SELECT <include refid="SELECT_CONSOLIDATION_NAME"/>
+      FROM <include refid="FROM_SIMPLE"/>
+      JOIN x ON x.id = u.parent_id
+      WHERE u.dataset_key=#{startID.datasetKey} AND NOT is_synonym(u.status)
+    )
+    SELECT id, scientific_name, authorship, type, rank, status, sector_key
+    FROM x
+    ORDER BY x.scientific_name, x.authorship
+  </select>
+
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     WITH RECURSIVE x AS(
       SELECT <include refid="SELECT_SIMPLE"/> <include refid="DEPTH_FIRST_ROOT"/>
@@ -813,6 +839,7 @@
     SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
     FROM x
     <if test="depthFirst">ORDER BY x.path</if>
+    <if test="orderByName">ORDER BY x.scientific_name, x.authorship</if>
   </select>
 
   <select id="processTreeLinneanUsage" parameterType="map" resultMap="linneanUsageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

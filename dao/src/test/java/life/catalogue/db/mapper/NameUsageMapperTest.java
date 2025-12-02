@@ -65,6 +65,13 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void processTreeConsolidationName() throws Exception {
+    assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "swedrftgzhuj")), 0);
+    assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "root-1")), 1);
+    assertSize(mapper().processTreeConsolidationName(DSID.of(testDataRule.testData.key, "root-2")), 1);
+  }
+
+  @Test
   public void getVerbatim() throws Exception {
     mapper().getSimpleVerbatim(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));
     mapper().getSimpleParent(DSID.of(TestEntityGenerator.TAXON1.getDatasetKey(), TestEntityGenerator.TAXON1.getId()));

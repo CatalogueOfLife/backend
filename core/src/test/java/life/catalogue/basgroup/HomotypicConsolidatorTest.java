@@ -1,11 +1,14 @@
 package life.catalogue.basgroup;
 
 import life.catalogue.TestUtils;
+import life.catalogue.api.model.ConsolidationName;
 import life.catalogue.api.model.LinneanNameUsage;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
+
+import life.catalogue.matching.similarity.ModifiedDamerauLevenshtein;
 
 import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.NomCode;
@@ -20,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -27,6 +31,24 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HomotypicConsolidatorTest {
+
+  @Test
+  public void isSameName() throws Exception {
+    compare("Abies", "Abies", true);
+    compare("Abies alba", "Abies alba", true);
+    compare("Abies alba", "Abies alpa", true);
+    compare("Abies alba", "Apia alba", false);
+    compare("Mesolecanium nigrofasciatum", "Mesolecanium nigrofaciatum", true);
+    compare("Mesolecanium nigrofasciatum", "Mesolecanium nicrofaciatum", false);
+  }
+
+  void compare(String n1, String n2, boolean same) {
+    var cn1 = new ConsolidationName();
+    cn1.setName(n1);
+    var cn2 = new ConsolidationName();
+    cn2.setName(n2);
+    assertEquals(same, HomotypicConsolidator.isSameName(cn1, cn2, new ModifiedDamerauLevenshtein()));
+  }
 
   @Test
   public void findPrimaryUsage() throws Exception {
