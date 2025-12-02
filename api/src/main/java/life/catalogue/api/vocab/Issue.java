@@ -122,7 +122,7 @@ public enum Issue {
     "The name authorship contains nomenclatural status notes which conflict with the explicitly given status"),
 
   NOMENCLATURAL_CODE_INVALID(NAME, Level.ERROR,
-      "dwc:nomenclaturalCode could not be interpreted"),
+      "dwc:nomenclaturalCode or col:code could not be interpreted"),
   
   BASIONYM_AUTHOR_MISMATCH(NAME, Level.ERROR,
       "A recombination with a basionym authorship which does not match the authorship of the linked basionym"),
@@ -475,6 +475,15 @@ public enum Issue {
 
   SYNONYM_WITH_TAXON_PROPERTY(SYNONYM, Level.WARNING,
     "A synonym has linked information which applies only to taxa, e.g. distributions, media items or species estimates."),
+
+  NOMINOTYPICAL_AUTHORSHIP_DIFFERS(NAME, Level.WARNING,
+    "The authorship of the nominotypical subspecies differs from the species author. Only applies to zoology"),
+
+  NOMENCLATURAL_CODE_DIFFERS(NAME, Level.WARNING,
+    "The nomenclatural code of the name is differs from the code of it's parent."),
+
+  MISSING_AUTHORSHIP(NAME, Level.INFO,
+    "The authorship of a scientific name is missing."),
   ;
 
   /**

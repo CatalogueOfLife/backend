@@ -14,6 +14,12 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-12-02 add more issues
+```
+ALTER TYPE ISSUE ADD VALUE 'NOMINOTYPICAL_AUTHORSHIP_DIFFERS';
+ALTER TYPE ISSUE ADD VALUE 'NOMENCLATURAL_CODE_DIFFERS';
+ALTER TYPE ISSUE ADD VALUE 'MISSING_AUTHORSHIP';
+```
 
 #### 2025-11-13 feedback_url
 ```

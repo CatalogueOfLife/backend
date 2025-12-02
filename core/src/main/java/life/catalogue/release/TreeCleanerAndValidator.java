@@ -12,9 +12,13 @@ import life.catalogue.dao.ParentStack;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.NameValidator;
 
+import life.catalogue.parser.NomCodeParser;
+
 import org.gbif.nameparser.api.NameType;
+import org.gbif.nameparser.api.NomCode;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -134,13 +138,22 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
 
     if (sn.getStatus() != null && sn.getStatus().isSynonym()) {
       // validate syn vs acc rank
-      var p = parents.secondLast();
-      if (p != null && sn.getRank() != p.getRank()) {
+      var acc = parents.getByID(sn.getParentId());
+      if (acc != null && sn.getRank() != acc.getRank()) {
         issues.add(Issue.SYNONYM_RANK_DIFFERS);
       }
+      // flag code problems for synonyms
+      flagCodeProblems(sn, parents.getParents(sn.getParentId()), issues);
 
     } else {
       if (sn.getRank().isSpeciesOrBelow()) {
+        // flag authorship problem for zoological "autonyms"
+        if (sn.getCode()== NomCode.ZOOLOGICAL && sn.isAutonym()) {
+          var sp = parents.getByRank(Rank.SPECIES);
+          if (sp != null && !Objects.equals(sn.getAuthorship(), sp.getAuthorship())) {
+            issues.add(Issue.NOMINOTYPICAL_AUTHORSHIP_DIFFERS);
+          }
+        }
         // flag parent mismatches
         if (sn.isParsed()) {
           var genus = parents.getByRank(Rank.GENUS);
@@ -180,6 +193,8 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
         }
       }
       parents.push(sn);
+      // flag code problems for accepted
+      flagCodeProblems(sn, parents.getParents(), issues);
       // validate next higher concrete parent rank
       if (!sn.getRank().isUncomparable()) {
         parents.getLowestConcreteRank(true).ifPresent(r -> {
@@ -197,6 +212,21 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     if (issues.hasIssues()) {
       issueAdder.addIssues(sn.getId(), issues.getIssues());
       flagged.incrementAndGet();
+    }
+  }
+
+  private void flagCodeProblems(XLinneanNameUsage sn, List<XLinneanNameUsage> parents, IssueContainer issues) {
+    // only flag names which appear as code compliant
+    if (NomCodeParser.isCodeCompliant(sn.getType())) {
+      final var code = sn.getCode();
+      if (code != null) {
+        var pCode = parents.stream()
+          .filter(p -> p.getCode() != null)
+          .findFirst().get().getCode();
+        if (code != pCode) {
+          issues.add(Issue.NOMENCLATURAL_CODE_DIFFERS);
+        }
+      }
     }
   }
 

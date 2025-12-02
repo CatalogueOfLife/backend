@@ -5,6 +5,8 @@ import life.catalogue.api.model.IssueContainer;
 import life.catalogue.api.model.Name;
 import life.catalogue.api.vocab.Issue;
 
+import life.catalogue.parser.NomCodeParser;
+
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -124,6 +126,9 @@ public class NameValidator {
     // rules that work on unparsed names too
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
+    }
+    if (StringUtils.isBlank(n.getAuthorship())) {
+      v.add(Issue.MISSING_AUTHORSHIP);
     }
     return v.hasChanged() ? v.container : null;
   }

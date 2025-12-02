@@ -88,12 +88,37 @@ public class ParentStack<T extends NameUsageCore> {
     return parents.isEmpty() ? null : parents.getLast().usage;
   }
 
+  public List<T> getParents() {
+    return getParents(false);
+  }
+
   public List<T> getParents(boolean skipLast) {
     if (parents.isEmpty()) return Collections.emptyList();
     return parents.stream()
       .skip(skipLast ? 1 : 0)
       .map(s -> s.usage)
       .collect(Collectors.toList());
+  }
+
+
+  /**
+   * Get all parents above and including the given startID.
+   * @param startID
+   * @return empty list of sublist of parents starting with the startID
+   */
+  public List<T> getParents(String startID) {
+    if (parents.isEmpty()) return Collections.emptyList();
+    boolean started = false;
+    List<T> parentsAbove = new ArrayList<>();
+    for (var p : parents) {
+      if (p.usage.getId().equals(startID)) {
+        started=true;
+      }
+      if (started) {
+        parentsAbove.add(p.usage);
+      }
+    }
+    return parentsAbove;
   }
 
   public Optional<Rank> getLowestConcreteRank(boolean skipLast) {
@@ -115,6 +140,17 @@ public class ParentStack<T extends NameUsageCore> {
     while (iter.hasNext()) {
       var p = iter.next();
       if (p.usage.getRank() == rank) {
+        return p.usage;
+      }
+    }
+    return null;
+  }
+
+  public T getByID(String id) {
+    var iter = parents.descendingIterator();
+    while (iter.hasNext()) {
+      var p = iter.next();
+      if (p.usage.getId().equals(id)) {
         return p.usage;
       }
     }

@@ -62,15 +62,15 @@ public class TreeCleanerAndValidatorIT {
     assertIssues(Rank.SUBGENUS, "Nesodiamesa", Issue.SYNONYM_RANK_DIFFERS);
     assertIssues(Rank.GENUS, "Onychodiamesa");
 
-    assertIssues(Rank.ORDER, "Heminoptera", Issue.CLASSIFICATION_RANK_ORDER_INVALID);
-    assertIssues(Rank.ORDER, "Hymenoidales", Issue.CLASSIFICATION_RANK_ORDER_INVALID, Issue.NO_SPECIES_INCLUDED);
+    assertIssues(Rank.ORDER, "Heminoptera", Issue.CLASSIFICATION_RANK_ORDER_INVALID, Issue.MISSING_AUTHORSHIP);
+    assertIssues(Rank.ORDER, "Hymenoidales", Issue.CLASSIFICATION_RANK_ORDER_INVALID, Issue.NO_SPECIES_INCLUDED, Issue.MISSING_AUTHORSHIP);
 
-    assertIssues(Rank.ORDER, "Hymenoptera", Issue.NO_SPECIES_INCLUDED);
-    assertIssues(Rank.UNRANKED, "Hymenoidies"); // we don not flag unranked taxa
-    assertIssues(Rank.SUBORDER, "Hymenoidaloides", Issue.NO_SPECIES_INCLUDED);
-    assertIssues(Rank.FAMILY, "Hymenoidaloidea", Issue.NO_SPECIES_INCLUDED, Issue.RANK_NAME_SUFFIX_CONFLICT);
-    assertIssues(Rank.UNRANKED, "Hymenoidalododes");
-    assertIssues(Rank.SUBFAMILY, "Hymenoidaloidiea", Issue.NO_SPECIES_INCLUDED);
+    assertIssues(Rank.ORDER, "Hymenoptera", Issue.NO_SPECIES_INCLUDED, Issue.MISSING_AUTHORSHIP);
+    assertIssues(Rank.UNRANKED, "Hymenoidies", Issue.MISSING_AUTHORSHIP); // we don not flag unranked taxa
+    assertIssues(Rank.SUBORDER, "Hymenoidaloides", Issue.NO_SPECIES_INCLUDED, Issue.MISSING_AUTHORSHIP);
+    assertIssues(Rank.FAMILY, "Hymenoidaloidea", Issue.NO_SPECIES_INCLUDED, Issue.RANK_NAME_SUFFIX_CONFLICT, Issue.MISSING_AUTHORSHIP);
+    assertIssues(Rank.UNRANKED, "Hymenoidalododes", Issue.MISSING_AUTHORSHIP);
+    assertIssues(Rank.SUBFAMILY, "Hymenoidaloidiea", Issue.NO_SPECIES_INCLUDED, Issue.MISSING_AUTHORSHIP);
   }
 
   void assertIssues(Rank rank, String name, Issue ... issues) {
