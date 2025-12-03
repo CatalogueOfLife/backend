@@ -107,8 +107,6 @@ pipeline {
                       if (env.DOCKER_TAG_LATEST) {
                           sh "docker buildx imagetools create -t docker.gbif.org/matching-ws:${DOCKER_TAG}-${PLATFORM}-latest docker.gbif.org/matching-ws:${FULL_TAG}"
                       }
-
-                      sh "docker rmi docker.gbif.org/matching-ws:${FULL_TAG}"
                   }
               }
         }
