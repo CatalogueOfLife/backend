@@ -129,7 +129,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     counter.incrementAndGet();
     final IssueContainer issues = IssueContainer.simple();
     // main parsed name validation
-    NameValidator.flagIssues(sn, issues);
+    NameValidator.flagIssues(sn, lnu.getType(), issues);
     try {
       sn.authorYear = NameValidator.parseYear(sn);
     } catch (NumberFormatException e) {

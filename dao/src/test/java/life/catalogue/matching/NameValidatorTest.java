@@ -20,10 +20,10 @@ public class NameValidatorTest {
   private void verify(Name n, Issue ... expected) {
     VerbatimRecord v = new VerbatimRecord();
     if (expected.length == 0) {
-      assertNull( NameValidator.flagIssues(n, v) );
+      assertNull( NameValidator.flagIssues(n, n.getType(), v) );
 
     } else {
-      assertNotNull( NameValidator.flagIssues(n, v) );
+      assertNotNull( NameValidator.flagIssues(n, n.getType(), v) );
       for (Issue iss : expected) {
         assertTrue(v.contains(iss));
       }

@@ -174,7 +174,7 @@ public class TxtTreeDao {
     classification.addLast(new SimpleName(nu));
     nuw.setClassification(List.copyOf(classification));
 
-    NameValidator.flagIssues(nu.getName(), issues);
+    NameValidator.flagIssues(nu.getName(), nu.getName().getType(), issues);
     nuw.setIssues(issues.getIssues());
 
     docs.add(nuw);

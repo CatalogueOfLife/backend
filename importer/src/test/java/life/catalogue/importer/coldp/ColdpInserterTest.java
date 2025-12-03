@@ -89,7 +89,7 @@ public class ColdpInserterTest extends InserterBaseTest {
       var v = store.getVerbatim(n.getVerbatimKey());
       var prevIssues = IssueContainer.simple();
       prevIssues.add(v);
-      var v2 = NameValidator.flagIssues(n, v);
+      var v2 = NameValidator.flagIssues(n, n.getType(), v);
       if (v2 != null) {
         store.put(v2);
       }

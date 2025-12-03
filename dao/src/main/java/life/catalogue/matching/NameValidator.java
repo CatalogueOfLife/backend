@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.Issue;
 
 import life.catalogue.parser.NomCodeParser;
 
+import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 import org.gbif.nameparser.util.RankUtils;
 
@@ -89,8 +90,8 @@ public class NameValidator {
     }
   }
   
-  public static <T extends IssueContainer> T flagIssues(FormattableName n, T v) {
-    return flagIssues(n, new Supplier<T>() {
+  public static <T extends IssueContainer> T flagIssues(FormattableName n, NameType type, T v) {
+    return flagIssues(n, type, new Supplier<T>() {
       @Override
       public T get() {
         return v;
@@ -112,7 +113,7 @@ public class NameValidator {
    * populated propLabel and available propLabel make sense together.
    * @return a non null VerbatimRecord if any issue has been added
    */
-  public static <T extends IssueContainer> T flagIssues(FormattableName n, Supplier<T> issueSupplier) {
+  public static <T extends IssueContainer> T flagIssues(FormattableName n, NameType type, Supplier<T> issueSupplier) {
     final LazyVerbatimRecord<T> v = new LazyVerbatimRecord<>(issueSupplier);
     // only check parsed names
     if (n.isParsed()) {
@@ -127,7 +128,7 @@ public class NameValidator {
     if (!StringUtils.isBlank(n.getScientificName()) && Objects.equals(n.getScientificName(), n.getAuthorship())) {
       v.add(Issue.AUTHORSHIP_UNLIKELY);
     }
-    if (StringUtils.isBlank(n.getAuthorship())) {
+    if (NomCodeParser.isCodeCompliant(type) && type != NameType.VIRUS && StringUtils.isBlank(n.getAuthorship())) {
       v.add(Issue.MISSING_AUTHORSHIP);
     }
     return v.hasChanged() ? v.container : null;

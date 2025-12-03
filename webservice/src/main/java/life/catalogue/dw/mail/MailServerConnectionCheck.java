@@ -20,7 +20,6 @@ public final class MailServerConnectionCheck extends HealthCheck {
 
   @Override
   protected Result check() throws Exception {
-    LOG.info("Checking mail server connection");
     try {
       var f = mailer.testConnection(true);
       var res = f.get(2, TimeUnit.SECONDS);
@@ -28,7 +27,6 @@ public final class MailServerConnectionCheck extends HealthCheck {
       LOG.info( "Mail server connection check unsuccessful", e);
       return Result.unhealthy(e);
     }
-    LOG.info( "Mail server connection check successful");
     return Result.healthy();
   }
 }

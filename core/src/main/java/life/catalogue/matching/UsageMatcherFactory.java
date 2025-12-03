@@ -132,7 +132,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
    * @return true if a matcher is being prepared, false if it already existed.
    */
   public BackgroundJob prepare(int datasetKey, int userKey) throws IOException {
-    if (matchers.containsKey(datasetKey)) {
+    if (matchers.containsKey(datasetKey) && !matchers.get(datasetKey).store().isEmpty()) {
       return null;
     }
     if (dir == null) {
@@ -251,7 +251,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     remove(event.datasetKey);
   }
 
-  private void remove(int datasetKey) {
+  public void remove(int datasetKey) {
     if (matchers.containsKey(datasetKey)) {
       LOG.info("Delete matcher for dataset {} due to changed data", datasetKey);
       var m = matchers.remove(datasetKey);

@@ -189,7 +189,7 @@ public abstract class TreeBaseHandler implements TreeHandler {
       nu.getName().applyMatch(match);
     }
     // validation
-    NameValidator.flagIssues(nu.getName(), mod);
+    NameValidator.flagIssues(nu.getName(), nu.getName().getType(), mod);
     return mod;
   }
 

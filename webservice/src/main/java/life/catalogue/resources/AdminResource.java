@@ -134,16 +134,23 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/matcher/{key}/metadata")
+  @Path("/matcher/{key}")
   public UsageMatcherFactory.MatcherMetadata matcherMetadata(@PathParam("key") int key) {
     return matcherFactory.metadata(key);
   }
 
+  @DELETE
+  @Path("/matcher/{key}")
+  public void removeMatcher(@PathParam("key") int key) throws IOException {
+    matcherFactory.remove(key);
+  }
+
   @POST
-  @Path("/matcher/{key}/prepare")
+  @Path("/matcher/{key}")
   public BackgroundJob buildMatcher(@PathParam("key") int key, @Auth User user) throws IOException {
     return matcherFactory.prepare(key, user.getKey());
   }
+
 
   @GET
   @Path("/component")

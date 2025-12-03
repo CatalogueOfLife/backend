@@ -20,6 +20,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -74,15 +75,23 @@ public class NormalizerColdpIT extends NormalizerITBase {
         VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
         assertNotNull(v);
         if (n.getName().getId().equals("cult")){
-          assertEquals(1, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
           assertTrue(v.contains(Issue.INCONSISTENT_NAME));
+          assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
         } else if (n.getName().getId().equals("fake")){
           assertEquals(1, v.getIssues().size());
           assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
         } else if (n.getName().getScientificName().equals("Viridae")){
-          assertEquals(1, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
           assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
+          assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+        } else if (n.getName().getRank().isSuprageneric() ||
+          Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+        ) {
+          System.out.println(n.getId()+" "+v.getIssues());
+          assertEquals(1, v.getIssues().size());
         } else {
+          System.out.println(n.getId()+" "+v.getIssues());
           assertEquals(0, v.getIssues().size());
         }
       });
@@ -407,7 +416,8 @@ public class NormalizerColdpIT extends NormalizerITBase {
 
       parents(t.node, "102", "30", "20", "10", "1");
 
-      store.usages().all().forEach(u -> {
+      store.usages().all().forEach(nu -> {
+        var u = store.usageWithName(nu.getId());
         VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
         assertNotNull(v);
         if (u.getId().equals("fake")) {
@@ -416,13 +426,20 @@ public class NormalizerColdpIT extends NormalizerITBase {
           assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
 
         } else if(u.getId().equals("cult")) {
-          assertEquals(1, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
           assertTrue(v.contains(Issue.INCONSISTENT_NAME));
+          assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
 
         } else if (u.getId().equals("2")){
-          assertEquals(1, v.getIssues().size());
+          assertEquals(2, v.getIssues().size());
+          assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
           assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
 
+        } else if (u.usage.getRank().isSuprageneric() ||
+          Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(u.getId())
+        ){
+          assertEquals(1, v.getIssues().size());
+          assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
         } else {
           assertEquals(0, v.getIssues().size());
         }

@@ -185,7 +185,7 @@ public class Normalizer implements Callable<Boolean> {
       require(n, n.getType(), "name type");
 
       // all names should have a verbatim record by now - even implicit ones!
-      VerbatimRecord v = NameValidator.flagIssues(n, store.verbatimSupplier(n.getVerbatimKey()));
+      VerbatimRecord v = NameValidator.flagIssues(n, n.getType(), store.verbatimSupplier(n.getVerbatimKey()));
       if (v != null) {
         store.put(v);
       }
