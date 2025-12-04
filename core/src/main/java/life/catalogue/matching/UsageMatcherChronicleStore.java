@@ -1,24 +1,12 @@
 package life.catalogue.matching;
 
-import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
-
-import life.catalogue.api.model.IndexName;
-import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.model.SimpleNameClassified;
 import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxonomicStatus;
 
-import life.catalogue.db.mapper.NameUsageMapper;
-
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-
 import org.gbif.nameparser.api.Rank;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -34,8 +22,6 @@ import net.openhft.chronicle.hash.serialization.BytesReader;
 import net.openhft.chronicle.hash.serialization.BytesWriter;
 import net.openhft.chronicle.map.ChronicleMap;
 import net.openhft.chronicle.map.ChronicleMapBuilder;
-
-import org.mapdb.DataIO;
 
 public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
   private static final UsageMatcherChronicleStore.BytesMarshaller MARSHALLER = new UsageMatcherChronicleStore.BytesMarshaller();

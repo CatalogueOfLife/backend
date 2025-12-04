@@ -29,9 +29,11 @@ import org.gbif.nameparser.api.Rank;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
@@ -63,6 +65,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   private final SqlSessionFactory factory;
   private final MatchingConfig cfg;
   private final File dir;
+  private final ConcurrentHashMap<Integer, LocalDateTime> runningBuilds = new ConcurrentHashMap<>();
   private final Int2ObjectMap<UsageMatcher> matchers = new Int2ObjectOpenHashMap<>();
   private final JobExecutor executor;
 
@@ -153,21 +156,35 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return job;
   }
 
-  private class AsyncMatchLoader extends DatasetBlockingJob {
+  private class AsyncMatchLoader extends BackgroundJob {
     private final UsageMatcher matcher;
 
     public AsyncMatchLoader(UsageMatcher matcher, int userKey) {
-      super(matcher.datasetKey, userKey, JobPriority.MEDIUM);
+      super(userKey);
       this.matcher = matcher;
     }
 
     @Override
-    protected void runWithLock() throws Exception {
+    public void execute() throws Exception {
+      if (runningBuilds.contains(matcher.datasetKey)) {
+        throw new IllegalStateException("Matcher for dataset " + matcher.datasetKey + " is already being built.");
+      }
       try {
+        runningBuilds.put(matcher.datasetKey, LocalDateTime.now());
         matcher.store().load(factory);
       } finally {
         matcher.close();
+        var start = runningBuilds.remove(matcher.datasetKey);
+        LOG.info("Matcher for dataset {} loaded in {} seconds", matcher.datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
       }
+    }
+
+    @Override
+    public boolean isDuplicate(BackgroundJob other) {
+      if (other instanceof AsyncMatchLoader) {
+        return matcher.datasetKey == ((AsyncMatchLoader) other).matcher.datasetKey;
+      }
+      return super.isDuplicate(other);
     }
   }
 
@@ -204,12 +221,22 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
   }
 
   public UsageMatcher persistent(int datasetKey) throws IOException {
-    if (matchers.containsKey(datasetKey)) {
-      LOG.info("Reuse existing persistent matcher for dataset {}", datasetKey);
+    if (!matchers.containsKey(datasetKey)) {
+      UsageMatcher m = buildNewMatcher(datasetKey);
+      matchers.put(datasetKey, m);
+    }
+    return matchers.get(datasetKey);
+  }
 
-    } else {
+  private UsageMatcher buildNewMatcher(int datasetKey) throws IOException {
+    if (runningBuilds.containsKey(datasetKey)) {
+      throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
+    }
+    runningBuilds.put(datasetKey, LocalDateTime.now());
+    try {
       var f = cfg.dir(datasetKey);
 
+      UsageMatcherAbstractStore store;
       if (cfg.chronicle) {
         LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
         long count;
@@ -219,19 +246,22 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
           count = 1000 + um.count(datasetKey);
           samples = um.listSN(datasetKey, new Page(0,5));
         }
-        var store = UsageMatcherChronicleStore.build(datasetKey, f, count, samples);
-        matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
+        // this can take very long and will block !!!
+        store = UsageMatcherChronicleStore.build(datasetKey, f, count, samples);
 
       } else {
         LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
         DBMaker.Maker maker = DBMaker
           .fileDB(f)
           .fileMmapEnableIfSupported();
-        var store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
-        matchers.put(datasetKey, new UsageMatcher(datasetKey, nameIndex, store, true));
+        store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
       }
+      return new UsageMatcher(datasetKey, nameIndex, store, true);
+
+    } finally {
+      var start = runningBuilds.remove(datasetKey);
+      LOG.info("Matcher for dataset {} built in {} seconds", datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
     }
-    return matchers.get(datasetKey);
   }
 
   public UsageMatcher memory(int datasetKey) {
