@@ -9,6 +9,11 @@ import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
 
+import life.catalogue.matching.nidx.NameIndex;
+
+import life.catalogue.matching.nidx.NameIndexFactory;
+import life.catalogue.matching.nidx.NameIndexImpl;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -34,11 +39,12 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
 
   @Before
   public void setUp() throws Exception {
-    var matcher = mock(UsageMatcher.class);
     this.cfg = TestConfigs.build();
-
+    var matcher = mock(UsageMatcher.class);
+    when(matcher.match(any(), anyBoolean(), anyBoolean())).thenReturn(UsageMatch.empty(0));
     matcherFactory = mock(UsageMatcherFactory.class);
     when(matcherFactory.persistent(anyInt())).thenReturn(matcher);
+    when(matcherFactory.getNameIndex()).thenReturn(NameIndexFactory.passThru());
   }
 
   @Override

@@ -310,7 +310,7 @@ public class MatchingJob extends DatasetBlockingJob {
   ) {
     UsageMatch match;
     var opt = interpreter.interpret(sn, issues);
-      if (opt.isPresent()) {
+    if (opt.isPresent()) {
       NameUsageBase nu = (NameUsageBase) NameUsage.create(sn.getStatus(), opt.get().getName());
       // replace name parsers unranked with null to let the matcher know its coming from outside
       if (nu.getRank() == Rank.UNRANKED) {
@@ -322,7 +322,7 @@ public class MatchingJob extends DatasetBlockingJob {
       match = UsageMatch.empty(0);
       issues.add(Issue.UNPARSABLE_NAME);
     }
-      return match;
+    return match;
   }
 
   private static class MappedStream {
