@@ -67,6 +67,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  */
 public class MatchingJob extends DatasetBlockingJob {
   private static final Logger LOG = LoggerFactory.getLogger(MatchingJob.class);
+  private static final String CUSTOM_COL_PREFIX = "original_";
   private static final CsvWriterSettings CSV = new CsvWriterSettings();
   static {
     CSV.setQuotationTriggers('"', ',');
@@ -205,28 +206,32 @@ public class MatchingJob extends DatasetBlockingJob {
     try (names) {
       // write header
       List<String> cols = new ArrayList<>();
+      // first the original columns, prefixed by "original_"
+      if (srcHeader != null) {
+        for (var h : srcHeader) {
+          cols.add(CUSTOM_COL_PREFIX + StringUtils.stripToEmpty(h));
+        }
+      }
+      final int firstColIdx = cols.size();
       cols.addAll(List.of(
-        "inputID",
-        "inputRank",
-        "inputName",
-
         "matchType",
+        "matchIssues",
         "ID",
         "rank",
-        "label",
         "scientificName",
         "authorship",
         "status",
-        "acceptedName",
-        "classification",
-        "issues"
+        "acceptedID",
+        "acceptedScientificName",
+        "acceptedAuthorship",
+        "kingdom",
+        "phylum",
+        "class",
+        "order",
+        "family",
+        "genus",
+        "classification"
       ));
-      final int firstCustomColIdx = cols.size();
-      if (srcHeader != null) {
-        for (var h : srcHeader) {
-          cols.add(StringUtils.stripToEmpty(h));
-        }
-      }
       writer.writeHeaders(cols);
       final int size = cols.size();
 
@@ -234,43 +239,50 @@ public class MatchingJob extends DatasetBlockingJob {
       names.forEach(n -> {
           var m = match(n);
           var row = new String[size];
-          if (m.original != null) {
-            row[0] = m.original.getId();
-            row[1] = str(m.original.getRank());
-            row[2] = m.original.getLabel();
-          }
-          row[3] = str(m.type);
-          if (m.usage != null) {
-              row[4] = m.usage.getId();
-              row[5] = str(m.usage.getRank());
-              row[6] = m.usage.getLabel();
-              row[7] = m.usage.getName();
-              row[8] = m.usage.getAuthorship();
-              row[9] = str(m.usage.getStatus());
-              if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
-                  row[10] = m.usage.getClassification().get(0).getLabel();
-              } else {
-                  row[10] = null;
+          // first add all original input columns if provided (only works with file uploads)
+          if (srcHeader != null && n.row != null) {
+            int idx = 0;
+            for (String val : n.row) {
+              // make sure we dont have more columns than headers
+              if (idx < firstColIdx) {
+                row[idx] = val;
               }
-              row[11] = str(m.usage.getClassification());
+              idx++;
+            }
+          }
+
+          row[firstColIdx] = str(m.type);
+          row[firstColIdx+1] = concat(m.issues);
+          if (m.usage != null) {
+              row[firstColIdx+2] = m.usage.getId();
+              row[firstColIdx+3] = str(m.usage.getRank());
+              row[firstColIdx+4] = m.usage.getName();
+              row[firstColIdx+5] = m.usage.getAuthorship();
+              row[firstColIdx+6] = str(m.usage.getStatus());
+              if (m.usage.getStatus().isSynonym() && !m.usage.getClassification().isEmpty()) {
+                var acc = m.usage.getClassification().get(0);
+                row[firstColIdx+7] = acc.getId();
+                row[firstColIdx+8] = acc.getName();
+                row[firstColIdx+9] = acc.getAuthorship();
+              } else {
+                row[firstColIdx+7] = null;
+                row[firstColIdx+8] = null;
+                row[firstColIdx+9] = null;
+              }
+              Classification cl = new Classification(m.usage.getClassification());
+              row[firstColIdx+10] = cl.getKingdom();
+              row[firstColIdx+11] = cl.getPhylum();
+              row[firstColIdx+12] = cl.getClass_();
+              row[firstColIdx+13] = cl.getOrder();
+              row[firstColIdx+14] = cl.getFamily();
+              row[firstColIdx+15] = cl.getGenus();
+              row[firstColIdx+16] = str(m.usage.getClassification());
           } else {
               none.incrementAndGet();
           }
-          row[12] = concat(m.issues);
-          // also add all original input columns if provided (only works with file uploads)
-          if (srcHeader != null && n.row != null) {
-              int idx = 0;
-              for (String val : n.row) {
-                  if (idx < size - firstCustomColIdx) {
-                      // make sure we dont have more columns than headers
-                      row[firstCustomColIdx + idx] = val;
-                  }
-                  idx++;
-              }
-          }
           writer.writeRow(row);
-          if (counter.incrementAndGet() % 25000 == 0) {
-              LOG.info("Matched {} out of {} names so far", counter.get() - none.get(), counter);
+          if (counter.incrementAndGet() % 10_000 == 0) {
+              LOG.debug("Matched {} out of {} names so far", counter.get() - none.get(), counter);
           }
       });
 

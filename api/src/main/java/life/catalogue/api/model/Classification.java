@@ -116,7 +116,7 @@ public class Classification {
     this.species = other.species;
   }
 
-  public Classification(Collection<SimpleName> fullClassification) {
+  public Classification(Collection<? extends SimpleName> fullClassification) {
     for (var sn : fullClassification) {
       setByRank(sn.getRank(), sn.getName());
     }
