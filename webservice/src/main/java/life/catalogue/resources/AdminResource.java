@@ -128,9 +128,9 @@ public class AdminResource {
   }
 
   @GET
-  @Path("/matcher/metadata")
-  public UsageMatcherFactory.FactoryMetadata matcherFactoryMetadata() {
-    return matcherFactory.metadata();
+  @Path("/matcher")
+  public UsageMatcherFactory.FactoryMetadata matcherFactoryMetadata(@QueryParam("decorate") boolean decorate) {
+    return matcherFactory.metadata(decorate);
   }
 
   @GET

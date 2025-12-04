@@ -21,6 +21,7 @@
     d.alias,
     d.title,
     d.version,
+    d.private,
     d.deleted is not null as deleted,
     d.gbif_publisher_key
   </sql>

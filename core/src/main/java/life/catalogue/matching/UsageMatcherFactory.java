@@ -4,6 +4,7 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetDataChanged;
 import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.exception.NotFoundException;
+import life.catalogue.api.model.DatasetSimple;
 import life.catalogue.api.model.Page;
 import life.catalogue.api.model.SimpleNameCached;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -16,6 +17,7 @@ import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -287,6 +289,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     public final int datasetKey;
     public final boolean online;
     public final Integer size;
+    public DatasetSimple dataset;
 
     public MatcherMetadata(int datasetKey, boolean online, Integer size) {
       this.datasetKey = datasetKey;
@@ -312,7 +315,7 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
     return null;
   }
 
-  public FactoryMetadata metadata() {
+  public FactoryMetadata metadata(boolean decorate) {
     List<MatcherMetadata> matchers = new ArrayList<>();
     IntSet keys = new IntOpenHashSet();
     for (var e : this.matchers.int2ObjectEntrySet()) {
@@ -326,6 +329,16 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
         keys.add(key);
       }
     }
+    // decorate with dataset metadata
+    if (decorate) {
+      try (SqlSession session = factory.openSession()) {
+        var dm = session.getMapper(DatasetMapper.class);
+        for (MatcherMetadata m : matchers) {
+          m.dataset = dm.getSimple(m.datasetKey);
+        }
+      }
+    }
+    // sort by datasetKey
     Collections.sort(matchers);
     return new FactoryMetadata(matchers);
   }

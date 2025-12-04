@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import life.catalogue.api.vocab.DatasetOrigin;
 
 import java.util.Objects;
@@ -12,8 +14,24 @@ public class DatasetSimple {
   private String alias;
   private String title;
   private String version;
+  private boolean privat;
   private boolean deleted;
   private UUID gbifPublisherKey;
+
+  public DatasetSimple() {
+  }
+
+  public DatasetSimple(Dataset d) {
+    key = d.getKey();
+    sourceKey = d.getSourceKey();
+    origin = d.getOrigin();
+    alias = d.getAlias();
+    title = d.getTitle();
+    version = d.getVersion();
+    privat = d.isPrivat();
+    deleted = d.hasDeletedDate();
+    gbifPublisherKey = d.getGbifPublisherKey();
+  }
 
   public Integer getKey() {
     return key;
@@ -63,6 +81,15 @@ public class DatasetSimple {
     this.origin = origin;
   }
 
+  @JsonProperty("private")
+  public boolean isPrivat() {
+    return privat;
+  }
+
+  public void setPrivat(boolean privat) {
+    this.privat = privat;
+  }
+
   public boolean isDeleted() {
     return deleted;
   }
@@ -84,7 +111,8 @@ public class DatasetSimple {
     if (!(o instanceof DatasetSimple)) return false;
 
     DatasetSimple that = (DatasetSimple) o;
-    return deleted == that.deleted &&
+    return privat == that.privat &&
+      deleted == that.deleted &&
       Objects.equals(key, that.key) &&
       Objects.equals(sourceKey, that.sourceKey) &&
       origin == that.origin &&
@@ -96,6 +124,6 @@ public class DatasetSimple {
 
   @Override
   public int hashCode() {
-    return Objects.hash(key, sourceKey, origin, alias, title, version, deleted, gbifPublisherKey);
+    return Objects.hash(key, sourceKey, origin, alias, title, version, privat, deleted, gbifPublisherKey);
   }
 }

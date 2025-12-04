@@ -456,6 +456,16 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
   }
 
   @Test
+  public void simple() throws Exception {
+    for (int key : List.of(Datasets.COL, TestEntityGenerator.DATASET11.getKey(), TestEntityGenerator.DATASET12.getKey())) {
+      var d = mapper().get(key);
+      var ds = mapper().getSimple(key);
+      var ds2 = new DatasetSimple(d);
+      assertEquals(ds, ds2);
+    }
+  }
+
+  @Test
   public void list() throws Exception {
     List<Dataset> ds = createExpected();
     for (Dataset d : ds) {
