@@ -23,6 +23,8 @@ import life.catalogue.db.mapper.TaxonMapper;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.parser.*;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 
@@ -287,10 +289,15 @@ public class MatchingJob extends DatasetBlockingJob {
       });
 
     } catch (Exception e) {
+      writer.writeRow(String.format("Matching failed on line #%s: %s", counter.get()+1, e.getMessage()));
+      writer.writeRow(ExceptionUtils.getStackTrace(e));
       LOG.error("Matching failed on line #{}: {}", counter.get()+1, e.getMessage(), e);
+      throw e;
+
+    } finally {
+      writer.flush();
+      LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
     }
-    writer.flush();
-    LOG.info("Matched {} out of {} names", counter.get()-none.get(), counter);
   }
 
   private UsageMatchWithOriginal match(IssueName n) {
