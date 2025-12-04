@@ -59,6 +59,10 @@ public class SciNameNormalizerTest {
     assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montana affinis"));
     assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montana affina"));
     assertEquals("Poecile montan afin", SciNameNormalizer.normalize("Poecile montanus affinus"));
+    assertEquals("Mara mari", SciNameNormalizer.normalize("Mara mariae"));
+    assertEquals("Mara mari", SciNameNormalizer.normalize("Mara marie"));
+    assertEquals("Larus heterozig", SciNameNormalizer.normalize("Larus heterozygous"));
+    assertEquals("Larus heterozig", SciNameNormalizer.normalize("Larus heterozygus"));
   }
 
   @Test
@@ -189,6 +193,12 @@ public class SciNameNormalizerTest {
 
     assertEquals("oriental", SciNameNormalizer.stemEpithet("orientale"));
     assertEquals("oriental", SciNameNormalizer.stemEpithet("orientalis"));
+
+    assertEquals("heterozyg", SciNameNormalizer.stemEpithet("heterozygous"));
+    assertEquals("heterozyg", SciNameNormalizer.stemEpithet("heterozygus"));
+
+    assertEquals("mari", SciNameNormalizer.stemEpithet("mariae"));
+    assertEquals("mari", SciNameNormalizer.stemEpithet("marie"));
 
     // UNCHANGED
     assertEquals("ferox", SciNameNormalizer.stemEpithet("ferox"));

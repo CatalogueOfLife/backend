@@ -27,6 +27,7 @@ public class SciNameNormalizer {
   private static final Pattern suffix_ra = Pattern.compile("(?<=[a-z][^aeiou])r(?:a|um)$");
   // tor/trix, e.g. viator / viatrix
   private static final Pattern suffix_tor = Pattern.compile("trix$");
+  private static final Pattern suffix_gou = Pattern.compile("gou[sm]$");
   private static final Pattern i = Pattern.compile("(?<!\\b)[jyi]+");
   private static final Pattern trh = Pattern.compile("([gtr])h", Pattern.CASE_INSENSITIVE);
   private static final Pattern removeRepeatedLetter = Pattern.compile("(\\p{L})\\1+");
@@ -169,6 +170,7 @@ public class SciNameNormalizer {
    */
   public static String stemEpithet(String epithet) {
     if (!hasContent(epithet)) return "";
+    epithet = suffix_gou.matcher(epithet).replaceFirst("g");
     epithet = suffix_tor.matcher(epithet).replaceFirst("tor");
     epithet = suffix_ra.matcher(epithet).replaceFirst("er"); // there are some cases (e.g. liber) that do not lose the "e" - but we rather catch the majority of cases
     return suffix_a.matcher(epithet).replaceFirst("");
