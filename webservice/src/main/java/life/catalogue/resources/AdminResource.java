@@ -128,8 +128,9 @@ public class AdminResource {
   }
 
   @GET
+  @PermitAll
   @Path("/matcher")
-  public UsageMatcherFactory.FactoryMetadata matcherFactoryMetadata(@QueryParam("decorate") boolean decorate) {
+  public UsageMatcherFactory.FactoryMetadata listMatcher(@QueryParam("decorate") boolean decorate) {
     return matcherFactory.metadata(decorate);
   }
 
@@ -153,8 +154,8 @@ public class AdminResource {
 
 
   @GET
-  @Path("/component")
   @PermitAll
+  @Path("/component")
   public Map<String, Boolean> componentState() {
     return componedService.state();
   }
