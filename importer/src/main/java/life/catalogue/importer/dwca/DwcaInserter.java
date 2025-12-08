@@ -1,17 +1,14 @@
 package life.catalogue.importer.dwca;
 
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 import life.catalogue.api.model.*;
-import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.api.vocab.terms.EolDocumentTerm;
 import life.catalogue.api.vocab.terms.EolReferenceTerm;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.text.StringUtils;
-import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.DwcaReader;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.DataCsvInserter;
@@ -19,7 +16,6 @@ import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.store.ImportStore;
 import life.catalogue.importer.store.model.NameUsageData;
 import life.catalogue.importer.store.model.RelationData;
-import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.metadata.coldp.ColdpMetadataParser;
 import life.catalogue.metadata.eml.EmlParser;
 
@@ -32,7 +28,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -235,6 +230,10 @@ public class DwcaInserter extends DataCsvInserter {
     insertVerbatimEntities(reader, GbifTerm.Image, GbifTerm.TypesAndSpecimen, DwcTerm.ResourceRelationship, DNA_EXTENSION);
   }
 
+  private static class TaxRelContext {
+    boolean modified = false;
+    boolean keepParentIdEmpty = false;
+  }
   /**
    * parentID can only hold one parent.
    * We prefer the acceptedID over the parentID in case of synonyms.
@@ -247,21 +246,21 @@ public class DwcaInserter extends DataCsvInserter {
         if (u.getVerbatimKey() != null) {
           final var v = store.getVerbatim(u.getVerbatimKey());
           final var nu = store.nameUsage(u);
-          boolean modified = false;
+          TaxRelContext ctxt = new TaxRelContext();
           // accepted takes precedence
           if (getMappingFlags().isAcceptedNameMapped()) {
-            modified = updateAccepted(v, nu);
+            updateAccepted(v, nu, ctxt);
           }
           // parent only if not set yet
-          if (getMappingFlags().isParentNameMapped() && !nu.hasParentID()) {
-            modified = updateParents(v, nu) || modified;
+          if (getMappingFlags().isParentNameMapped() && !nu.hasParentID() && !ctxt.keepParentIdEmpty) {
+            updateParents(v, nu, ctxt);
           }
           // basionym relation
           if (getMappingFlags().isOriginalNameMapped()) {
-            modified = updateBasionyms(v, nu) || modified;
+            updateBasionyms(v, nu, ctxt);
           }
           // persist
-          if (modified) {
+          if (ctxt.modified) {
             store.updateNameAndUsage(nu);
             counter.incrementAndGet();
           }
@@ -273,23 +272,25 @@ public class DwcaInserter extends DataCsvInserter {
     }
   }
 
-  private boolean updateAccepted(VerbatimRecord v, NameUsageData nu) {
+  private void updateAccepted(VerbatimRecord v, NameUsageData nu, TaxRelContext ctxt) {
     var accepted = usagesByIdOrName(v, nu, true, DwcTerm.acceptedNameUsageID, Issue.ACCEPTED_ID_INVALID, DwcTerm.acceptedNameUsage, Origin.VERBATIM_ACCEPTED);
-    if (accepted.isEmpty()) {
+    // change the taxonomic status?
+    if (!nu.ud.isSynonym() && (!accepted.usages.isEmpty() || accepted.nonSelfIdValuePresent)) {
+      nu.ud.convertToSynonym(TaxonomicStatus.SYNONYM);
+    }
+    if (accepted.usages.isEmpty()) {
       // if status is synonym but we ain't got no idea of the accepted flag it
       if (nu.ud.isSynonym() || v.contains(Issue.ACCEPTED_ID_INVALID)) {
         v.add(Issue.ACCEPTED_NAME_MISSING);
         // now remove any denormed classification from this synonym to avoid parent relations
         nu.ud.classification = null;
-        return true;
+        ctxt.modified = true;
+        ctxt.keepParentIdEmpty=true;
+        return;
       }
 
     } else {
-      // change the taxonomic status?
-      if (!nu.ud.isSynonym()) {
-        nu.ud.convertToSynonym(TaxonomicStatus.SYNONYM);
-      }
-      var iter = accepted.listIterator();
+      var iter = accepted.usages.listIterator();
       while (iter.hasNext()) {
         int idx = iter.nextIndex();
         var acc = iter.next();
@@ -306,30 +307,32 @@ public class DwcaInserter extends DataCsvInserter {
           nu.nd.relations.add(rel);
         }
       }
-      return true;
+      ctxt.modified = true;
     }
-    return false;
   }
 
-  private boolean updateParents(VerbatimRecord v, NameUsageData nu) {
+  private void updateParents(VerbatimRecord v, NameUsageData nu, TaxRelContext ctxt) {
     var parents = usagesByIdOrName(v, nu, false, DwcTerm.parentNameUsageID, Issue.PARENT_ID_INVALID, DwcTerm.parentNameUsage, Origin.VERBATIM_PARENT);
-    if (!parents.isEmpty()) {
-      nu.ud.asNameUsageBase().setParentId(parents.getFirst().ud.getId());
-      return true;
+    if (!parents.usages.isEmpty()) {
+      nu.ud.asNameUsageBase().setParentId(parents.usages.getFirst().ud.getId());
+      ctxt.modified = true;
     }
-    return false;
   }
 
-  private boolean updateBasionyms(VerbatimRecord v, NameUsageData nu) {
+  private void updateBasionyms(VerbatimRecord v, NameUsageData nu, TaxRelContext ctxt) {
     var basionyms = usagesByIdOrName(v, nu, false, DwcTerm.originalNameUsageID, Issue.BASIONYM_ID_INVALID, DwcTerm.originalNameUsage, Origin.VERBATIM_BASIONYM);
-    if (!basionyms.isEmpty()) {
-      var bas = basionyms.getFirst();
+    if (!basionyms.usages.isEmpty()) {
+      var bas = basionyms.usages.getFirst();
       var rel = new RelationData<>(NomRelType.BASIONYM, nu.ud.nameID, bas.nd.getId());
       rel.setVerbatimKey(v.getId());
       nu.nd.relations.add(rel);
-      return true;
+      ctxt.modified = true;
     }
-    return false;
+  }
+
+  class ResolvedUsages {
+    final List<NameUsageData> usages = Lists.newArrayList();
+    boolean nonSelfIdValuePresent = false;
   }
 
   /**
@@ -340,51 +343,52 @@ public class DwcaInserter extends DataCsvInserter {
    *
    * @return list of potentially split ids with their matching usage found, otherwise null
    */
-  private List<NameUsageData> usagesByIdOrName(VerbatimRecord v, NameUsageData t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
-    List<NameUsageData> usages = Lists.newArrayList();
+  private ResolvedUsages usagesByIdOrName(VerbatimRecord v, NameUsageData t, boolean allowMultiple, DwcTerm idTerm, Issue invalidIdIssue, DwcTerm nameTerm, Origin createdNameOrigin) {
+    final ResolvedUsages ru = new ResolvedUsages();
     final String unsplitIds = v.getRaw(idTerm);
     final String taxonID = t.ud.getId();
     boolean pointsToSelf = unsplitIds != null && unsplitIds.equals(taxonID);
-    if (pointsToSelf) return usages;
+    if (pointsToSelf) return ru;
 
     if (unsplitIds != null) {
+      ru.nonSelfIdValuePresent = true;
       if (allowMultiple && getMappingFlags().getMultiValueDelimiters().containsKey(idTerm)) {
-        usages.addAll(usagesByIds(getMappingFlags().getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), taxonID));
+        ru.usages.addAll(usagesByIds(getMappingFlags().getMultiValueDelimiters().get(idTerm).splitToList(unsplitIds), taxonID));
       } else {
         // match by taxonID to see if this is an existing identifier or if we should try to split it
         var nu = store.nameUsage(unsplitIds);
         if (nu != null) {
-          usages.add(nu);
+          ru.usages.add(nu);
 
         } else if (allowMultiple){
           for (Splitter splitter : COMMON_SPLITTER) {
             List<String> vals = splitter.splitToList(unsplitIds);
             if (vals.size() > 1) {
-              usages.addAll(usagesByIds(vals, taxonID));
+              ru.usages.addAll(usagesByIds(vals, taxonID));
               break;
             }
           }
         }
       }
       // could not find anything?
-      if (usages.isEmpty()) {
+      if (ru.usages.isEmpty()) {
         v.add(invalidIdIssue);
         LOG.info("{} {} not existing", idTerm.simpleName(), unsplitIds);
       }
     }
 
-    if (usages.isEmpty() && v.hasTerm(nameTerm)) {
+    if (ru.usages.isEmpty() && v.hasTerm(nameTerm)) {
       // try to setup rel via the name if it is different
       String relatedName = v.get(nameTerm);
       pointsToSelf = relatedName.equals(t.nd.getName().getLabel());
       if (!pointsToSelf) {
-        var ru = usageByName(nameTerm, v, t, createdNameOrigin);
-        if (ru != null) {
-          usages.add(ru);
+        var relu = usageByName(nameTerm, v, t, createdNameOrigin);
+        if (relu != null) {
+          ru.usages.add(relu);
         }
       }
     }
-    return usages;
+    return ru;
   }
 
   private List<NameUsageData> usagesByIds(Iterable<String> taxonIDs, String fromID) {
@@ -405,7 +409,7 @@ public class DwcaInserter extends DataCsvInserter {
    * It first tries to lookup existing records by the canonical name with author, but falls back to authorless lookup if no matches.
    * If the name is the same as the original records scientificName it is ignored.
    *
-   * If a name cannot be found it is created as explicit names
+   * If a name cannot be found it is created as an implicit name
    *
    * @param nameTerm the term to read the scientific name from
    * @return the accepted node with its name. Null if no accepted name was mapped or equals the record itself
@@ -421,8 +425,17 @@ public class DwcaInserter extends DataCsvInserter {
           name.setRank(Rank.UNRANKED);
         }
         if (!name.getScientificName().equalsIgnoreCase(source.nd.getName().getScientificName())) {
-          var matches = store.names().nameIdsByName(name.getScientificName()).stream()
+          var nameIDs = store.names().nameIdsByName(name.getScientificName());
+          Set<String> usageIDs = new HashSet<>();
+          for (String id : nameIDs) {
+            var n = store.names().objByID(id);
+            if (n != null) {
+              usageIDs.addAll(n.usageIDs);
+            }
+          }
+          var matches = usageIDs.stream()
             .map(store::nameUsage)
+            .filter(Objects::nonNull)
             .collect(Collectors.toCollection(ArrayList::new));
           // remove other authors, but allow names without authors
           if (!matches.isEmpty() && name.hasAuthorship()) {
@@ -434,7 +447,7 @@ public class DwcaInserter extends DataCsvInserter {
           if (matches.isEmpty()) {
             // create name
             LOG.debug("{} {} not existing, materialize it", nameTerm.simpleName(), name);
-            return store.createProvisionalUsageFromSource(createdOrigin, name, source.ud, source.nd.getRank());
+            return store.createUsageFromSource(createdOrigin, name, source);
 
           } else{
             if (matches.size() > 1) {

@@ -475,6 +475,9 @@ public enum Issue {
 
   SYNONYM_WITH_TAXON_PROPERTY(SYNONYM, Level.WARNING,
     "A synonym has linked information which applies only to taxa, e.g. distributions, media items or species estimates."),
+
+  BAD_BASIONYM_AUTHORSHIP(NAME, Level.WARNING,
+    "A basionym has itself a basionym authorship, i.e. an author in brackets")
   ;
 
   /**

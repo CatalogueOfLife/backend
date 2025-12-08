@@ -123,6 +123,10 @@ public class TextTreePrinter extends AbstractTreePrinter {
       writer.write(" ");
       writer.write(u.getAuthorship());
     }
+    if (u.getPhrase() != null) {
+      writer.write(" ");
+      writer.write(u.getPhrase());
+    }
     writer.write(" [");
     Rank r = ObjectUtils.coalesce(u.getRank(), Rank.UNRANKED);
     writer.write(r.name().toLowerCase());

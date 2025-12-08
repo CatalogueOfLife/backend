@@ -8,7 +8,6 @@ import life.catalogue.importer.store.model.*;
 
 import life.catalogue.printer.TextTreePrinter;
 
-import org.gbif.dwc.terms.DwcTerm;
 import org.gbif.dwc.terms.Term;
 import org.gbif.nameparser.api.Rank;
 
@@ -200,7 +199,7 @@ public class ImportStore implements AutoCloseable {
     }
     // filter authorship
     if (authorship != null) {
-      names.removeIf(n -> !authorship.equalsIgnoreCase(n.getName().getAuthorship()));
+      names.removeIf(n -> n.getName().getAuthorship() != null && !authorship.equalsIgnoreCase(n.getName().getAuthorship()));
     }
 
     Set<String> taxa = new HashSet<>();
@@ -347,19 +346,30 @@ public class ImportStore implements AutoCloseable {
    *
    * @param name                the new name to be used
    * @param source              the taxon source to copyTaxon from
-   * @param excludeRankAndBelow the rank (and all ranks below) to exclude from the source classification
    */
-  public NameUsageData createProvisionalUsageFromSource(Origin origin,
-                                                      Name name,
-                                                      @Nullable UsageData source,
-                                                      Rank excludeRankAndBelow) {
-    UsageData u = UsageData.buildTaxon(origin, TaxonomicStatus.PROVISIONALLY_ACCEPTED);
+  public NameUsageData createUsageFromSource(Origin origin,
+                                             Name name,
+                                             @Nullable NameUsageData source) {
+    UsageData u = UsageData.buildTaxon(origin, TaxonomicStatus.ACCEPTED);
     // copyTaxon verbatim classification from source
     if (source != null) {
-      if (source.classification != null) {
-        u.classification = new Classification(source.classification);
+      if (source.ud.classification != null) {
+        u.classification = new Classification(source.ud.classification);
+        // try to find proper rank in classification
+        if (name.getRank()==Rank.UNRANKED) {
+          var lowestCLRank = u.classification.getLowestExistingRank();
+          if ( Objects.equals(name.getScientificName(), u.classification.getByRank(source.nd.getRank())) ) {
+            name.setRank(source.nd.getRank());
+          } else if (Objects.equals(name.getScientificName(), u.classification.getGenus())) {
+            name.setRank(Rank.GENUS);
+            u.classification.clearRankAndBelow(Rank.GENUS);
+          } else if ( lowestCLRank != null && Objects.equals(name.getScientificName(), u.classification.getByRank(lowestCLRank)) ) {
+            name.setRank(lowestCLRank);
+            u.classification.clearRankAndBelow(lowestCLRank);
+          }
+        }
         // remove lower ranks
-        u.classification.clearRankAndBelow(excludeRankAndBelow);
+        u.classification.clearRankAndBelow(source.nd.getRank());
       }
     }
     
@@ -397,7 +407,11 @@ public class ImportStore implements AutoCloseable {
       TreeWalker.walkTree(this, ctxt -> printer.addBasionyms(ctxt.basionyms), new TreeWalker.StartEndHandler() {
         @Override
         public void start(NameUsageData data, TreeWalker.WalkerContext ctxt) {
-          printer.accept(data.toSimpleName());
+          var sn = data.toSimpleName();
+          if (sn.getPhrase() == null && !data.ud.proParteAcceptedIDs.isEmpty()) {
+            sn.setPhrase("pro-parte:" + String.join("|", data.ud.proParteAcceptedIDs));
+          }
+          printer.accept(sn);
         }
 
         @Override

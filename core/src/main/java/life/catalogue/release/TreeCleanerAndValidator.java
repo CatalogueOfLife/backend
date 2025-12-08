@@ -1,9 +1,6 @@
 package life.catalogue.release;
 
-import life.catalogue.api.model.DSID;
-import life.catalogue.api.model.IssueContainer;
-import life.catalogue.api.model.LinneanNameUsage;
-import life.catalogue.api.model.NameUsageBase;
+import life.catalogue.api.model.*;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.assembly.TreeMergeHandler;
@@ -16,6 +13,8 @@ import life.catalogue.matching.NameValidator;
 import org.gbif.nameparser.api.NameType;
 import org.gbif.nameparser.api.Rank;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -145,7 +144,7 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
    * @param issues
    * @return
    */
-  public static void validateAndPush(XLinneanNameUsage sn, ParentStack<XLinneanNameUsage> parents, IssueContainer issues) {
+  public static void validateAndPush(XLinneanNameUsage sn, ParentStack<XLinneanNameUsage> parents, List<? extends ScientificName> basionyms, IssueContainer issues) {
     // main parsed name validation
     NameValidator.flagIssues(sn, issues);
 
@@ -207,13 +206,21 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
         });
       }
     }
+    // validate basionym relations
+    for (var bas : basionyms) {
+      if (bas.hasBasionymAuthorship()) {
+        issues.add(Issue.BAD_BASIONYM_AUTHORSHIP);
+      }
+    }
   }
 
   @Override
   public void accept(LinneanNameUsage lnu) {
     final var sn = new XLinneanNameUsage(lnu);
     final IssueContainer issues = IssueContainer.simple();
-    validateAndPush(sn, parents, issues);
+    //TODO: load from db ???
+    List<? extends ScientificName> basionyms = new ArrayList<>();
+    validateAndPush(sn, parents, basionyms, issues);
     counter.incrementAndGet();
 
     if (sn.getStatus() != null && sn.getStatus().isTaxon()) {

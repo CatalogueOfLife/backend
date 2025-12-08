@@ -151,6 +151,11 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
     } else {
       sb.append("UNNAMED");
     }
+    appendNamePhraseAndAccordingTo(sb, namePhrase, accordingTo, html);
+    return sb;
+  }
+
+  public static void appendNamePhraseAndAccordingTo(StringBuilder sb, String namePhrase, String accordingTo, boolean html) {
     if (namePhrase != null) {
       sb.append(" ");
       sb.append(namePhrase);
@@ -165,7 +170,6 @@ public abstract class NameUsageBase extends DatasetScopedEntity<String> implemen
       sb.append(" ");
       sb.append(abbreviate(accordingTo));
     }
-    return sb;
   }
 
   public static String abbreviate(String citation) {

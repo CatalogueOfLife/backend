@@ -13,6 +13,9 @@ public class NameUsageData implements VerbatimEntity {
   public NameUsageData(NameData nd, UsageData ud) {
     this.nd = nd;
     this.ud = ud;
+    if (ud != null && ud.usage.getName()==null) {
+      ud.usage.setName(nd.getName());
+    }
   }
 
   public NameUsageData(TxtTreeDao.TxtUsage tu) {
@@ -49,13 +52,28 @@ public class NameUsageData implements VerbatimEntity {
   }
 
   public String getLabel() {
-    return nd.getName().getLabel();
+    return getLabel(false);
+  }
+
+  public String getLabel(boolean hideExtinct) {
+    return NameUsageBase.labelBuilder(nd.getName(),
+      hideExtinct || !ud.usage.isTaxon() ? null : ud.usage.asTaxon().isExtinct(),
+      ud.usage.getStatus(),
+      ud.usage.getNamePhrase(),
+      ud.usage.getAccordingTo(),
+      false
+    ).toString();
   }
 
   public SimpleName toSimpleName() {
     var sn = new SimpleName(nd.getName());
     sn.setId(ud.usage.getId()); // otherwise we get the name id !
-    sn.setPhrase(ud.usage.getNamePhrase());
+    // we place both the phrase and accordingTo into phrase here, so accordingTo is not lost
+    StringBuilder phrase = new StringBuilder();
+    NameUsageBase.appendNamePhraseAndAccordingTo(phrase, ud.usage.getNamePhrase(), ud.usage.getAccordingTo(), false);
+    if (!phrase.isEmpty()) {
+      sn.setPhrase(phrase.toString().trim());
+    }
     sn.setStatus(ud.usage.getStatus());
     sn.setParent(ud.usage.getParentId());
     if (ud.isTaxon()) {
@@ -77,6 +95,6 @@ public class NameUsageData implements VerbatimEntity {
 
   @Override
   public String toString() {
-    return String.format("%s -> %s [%s] %s", ud.getId(), ud.usage.getParentId(), nd.getRank(), nd.getName().getLabel());
+    return String.format("%s -> %s [%s] %s", ud.getId(), ud.usage.getParentId(), nd.getRank(), getLabel());
   }
 }

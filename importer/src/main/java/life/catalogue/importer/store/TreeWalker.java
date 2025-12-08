@@ -1,11 +1,15 @@
 package life.catalogue.importer.store;
 
+import life.catalogue.api.model.NameUsageBase;
 import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.importer.store.model.NameUsageData;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+import life.catalogue.importer.txttree.TxtTreeInserter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +22,19 @@ import javax.annotation.Nullable;
  * A utility class to iterate over usages in the store in taxonomic order and execute any number of StartEndHandler while walking.
  */
 public class TreeWalker {
-  private static final Comparator<NameUsageData> BY_RANK_N_NAME = Comparator
-    .comparing((NameUsageData nu) -> nu.nd.getRank())
-    .thenComparing(n -> n.nd.getName().getLabel());
   private static final Logger LOG = LoggerFactory.getLogger(TreeWalker.class);
   private static final int reportingSize = 10000;
+  private static final Comparator<NameUsageData> BY_RANK_N_NAME = Comparator
+    .comparing((NameUsageData nu) -> nu.nd.getRank())
+    .thenComparing(TreeWalker::sortableName);
 
   public interface StartEndHandler {
     void start(NameUsageData data, WalkerContext ctxt);
     void end(NameUsageData data, WalkerContext ctxt);
+  }
+
+  private static String sortableName(NameUsageData nu) {
+    return nu.getLabel(true);
   }
 
   public static int walkTree(ImportStore db, StartEndHandler... handler) throws InterruptedException {
@@ -61,7 +69,7 @@ public class TreeWalker {
     final AtomicInteger counter = new AtomicInteger();
     // index by parentKey TODO: use mapdb???
     final Map<String, List<String>> children = new HashMap<>();
-    // index basionyms TODO: use mapdb???
+    // index basionym usage ids TODO: use mapdb???
     final Set<String> basionyms = new HashSet<>();
 
     public WalkerContext(ImportStore db) {
@@ -81,7 +89,8 @@ public class TreeWalker {
     db.names().all().forEach(n -> {
       var brel = n.getRelation(NomRelType.BASIONYM);
       if (brel != null) {
-        ctxt.basionyms.add(brel.getToID());
+        var bn = db.names().objByID(brel.getToID());
+        ctxt.basionyms.addAll(bn.usageIDs);
       }
     });
     return ctxt;
@@ -94,9 +103,22 @@ public class TreeWalker {
     handleStart(node, ctxt, handler);
     var childUsages = ctxt.children.getOrDefault(node.ud.getId(), ImmutableList.of()).stream()
       .map(ctxt.db::nameUsage)
+      .toList();
+    final Comparator<NameUsageData> synComp = Comparator
+      .comparing((NameUsageData nu) -> !ctxt.basionyms.contains(nu.ud.getId()))
+      .thenComparing(TreeWalker::sortableName);
+    var synonyms = childUsages.stream()
+      .filter(u->u.ud.isSynonym())
+      .sorted(synComp)
+      .toList();
+    var children = childUsages.stream()
+      .filter(u->u.ud.isTaxon())
       .sorted(BY_RANK_N_NAME)
       .toList();
-    for (var child : childUsages) {
+    for (var child : synonyms) {
+      walkUsage(child, ctxt, handler);
+    }
+    for (var child : children) {
       walkUsage(child, ctxt, handler);
     }
     handleEnd(node, ctxt, handler);

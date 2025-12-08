@@ -39,7 +39,7 @@ import jakarta.validation.Validator;
 import static org.junit.Assert.*;
 
 /**
- * Tests to normalize various dwc archives and compare the results from the resulting neo store with
+ * Tests to normalize various dwc archives and compare the results from the resulting import store with
  * an expected text tree representation stored as files.
  * <p>
  * This exactly compares the parent_of and synonym_of relations, implicitly created names/taxa and
@@ -157,24 +157,8 @@ public class NormalizerTreeIT {
       String dbtree = store.printTree();
       assertFalse("Empty tree, probably no root node found", dbtree.isEmpty());
 
-      // debug all usages
-      //store.verbatimList().forEach(v -> {
-      //  System.out.println(v.getId());
-      //  for (Map.Entry<Term, String> tv : v.getTerms().entrySet()) {
-      //    System.out.println("  " + tv.getKey().prefixedName() + "  ->  " + tv.getValue());
-      //  }
-      //  System.out.print("  Issues: ");
-      //  for (Issue i : v.getIssues()) {
-      //    System.out.print(i + " ");
-      //  }
-      //  System.out.println("\n\n");
-      //});
-      //store.usages().all().forEach(u -> {
-      //  System.out.println(u.getId() + " " + u.usage.getOrigin() + "  vk="+u.usage.getVerbatimKey());
-      //});
-
       // compare trees
-      assertEquals("Taxon tree not as expected", expected, dbtree);
+      assertEquals("Taxon tree not as expected", expected.trim(), dbtree.trim());
 
       // queue non tree nodes
       String bareNames = store.bareNames()

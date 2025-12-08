@@ -239,7 +239,10 @@ public class Normalizer implements Callable<Boolean> {
       public void start(NameUsageData nu, TreeWalker.WalkerContext ctxt) {
         TreeCleanerAndValidator.XLinneanNameUsage lnu = new TreeCleanerAndValidator.XLinneanNameUsage(nu.toNameUsageBase());
         var issues = IssueContainer.simple();
-        TreeCleanerAndValidator.validateAndPush(lnu, parents, issues);
+        var basionyms = nu.nd.getRelations(NomRelType.BASIONYM).stream()
+          .map(nr -> store.names().objByID(nr.getToID()).getName())
+          .collect(Collectors.toList());
+        TreeCleanerAndValidator.validateAndPush(lnu, parents, basionyms, issues);
         if (issues.hasIssues()) {
           // all usages should have a verbatim record by now - even implicit ones!
           VerbatimRecord v = store.getVerbatim(nu.ud.getVerbatimKey());
@@ -359,7 +362,7 @@ public class Normalizer implements Callable<Boolean> {
           rel.setVerbatimKey(n.getVerbatimKey());
           rel.setFromID(n.getId());
           rel.setToID(n.basionymID);
-          n. relations.add(rel);
+          n.relations.add(rel);
           n.basionymID = null;
           store.names().update(n);
         } else {
@@ -603,13 +606,16 @@ public class Normalizer implements Callable<Boolean> {
     }
 
     LOG.info("Start processing higher denormalized classification ...");
-    store.nameUsages(false).forEach(u -> {
-      // the highest current parent of n
-      var highest = findHighestParent(u);
-      // only need to apply classification if highest exists and is not already a superdomain, the denormed classification cannot add to it anymore!
-      if (highest != null && highest.nd.getRank() != Rank.SUPERDOMAIN) {
-        if (u.ud.classification != null) {
-          applyClassification(highest, u.ud.classification);
+    store.usages().allKeys().forEach(key -> {
+      var u = store.nameUsage(key);
+      if (u.ud.isTaxon()) {
+        // the highest current parent of n
+        var highest = findHighestParent(u);
+        // only need to apply classification if highest exists and is not already a superdomain, the denormed classification cannot add to it anymore!
+        if (highest != null && highest.nd.getRank() != Rank.SUPERDOMAIN) {
+          if (u.ud.classification != null) {
+            applyClassification(highest, u.ud.classification);
+          }
         }
       }
     });
@@ -675,20 +681,20 @@ public class Normalizer implements Callable<Boolean> {
     Rank parentRank = parentID == null ? null : store.name(store.usages().objByID(parentID)).getRank();
     // from kingdom to subgenus
     for (final Rank hr : Classification.RANKS) {
-      if ((n.getRank() == null || hr.higherThan(n.getRank())) && cl.getByRank(hr) != null) {
+      if ((n.getRank() == null || !n.getRank().higherThan(hr)) && cl.getByRank(hr) != null) {
         // test for existing usage with that name & rank (allowing also unranked names)
         boolean found = false;
         // we need to lookup the name by its normed form as we create them via createHigherTaxon
         // to be safe we query for both versions
         var rnn = new RanKnName(hr, cl.getByRankCleaned(hr));
         final ExtinctName normedName = parseCache.get(rnn);
-        for (String uid : store.usageIDsByName(normedName.pname == null ? cl.getByRankCleaned(hr) : normedName.pname.getScientificName(), null, hr, false)) {
+        for (String uid : store.usageIDsByName(normedName.pname == null ? cl.getByRankCleaned(hr) : normedName.pname.getScientificName(), null, hr, true)) {
           var u = store.usages().objByID(uid);
           // ignore synonyms
           if (u.isSynonym()) continue;
           if (parentID == null) {
-            // make sure found usage does also not have any parent
-            if (u.usage.getParentId() == null) {
+            // make sure found usage does also not have any linnean rank as parent
+            if (nextLinneanRankOfParents(u) == null) {
               found = true;
             }
 
@@ -730,6 +736,18 @@ public class Normalizer implements Callable<Boolean> {
     if (parentID != null) {
       store.usages().assignParent(taxon.ud, parentID);
     }
+  }
+
+  private Rank nextLinneanRankOfParents(UsageData u) {
+    u = store.usages().parent(u);
+    while (u != null && u.usage.getParentId() != null) {
+      var nd = store.names().objByID(u.nameID);
+      if (nd.getRank().isLinnean()) {
+        return nd.getRank();
+      }
+      u = store.usages().parent(u);
+    }
+    return null;
   }
 
   private Set<Rank> mappedRanksInBetween(UsageData u1, UsageData u2){
@@ -790,11 +808,11 @@ public class Normalizer implements Callable<Boolean> {
           synChains.incrementAndGet();
           var chain = new ArrayList<UsageData>();
           chain.add(syn);
-          while (p != null && p.isSynonym()) {
+          while (p != null && p.isSynonym() && listContainsID(chain, p.getId())) {
             chain.add(p);
             p = store.usages().parent(p);
           }
-          var accID = p == null ? null : p.getId();
+          var accID = p == null || p.isSynonym() ? null : p.getId();
           for (var s : chain) {
             addUsageIssue(s, Issue.CHAINED_SYNONYM);
             store.usages().assignParent(syn, accID);
@@ -808,6 +826,10 @@ public class Normalizer implements Callable<Boolean> {
       }
     });
     LOG.info("Resolved {} chained synonyms", synChains.get());
+  }
+
+  private boolean listContainsID(List<UsageData> list, final String id) {
+    return list.stream().noneMatch(u -> Objects.equals(u.getId(), id));
   }
 
   /**
