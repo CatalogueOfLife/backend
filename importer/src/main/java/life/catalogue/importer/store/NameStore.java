@@ -14,8 +14,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import life.catalogue.importer.store.model.RelationData;
+
+import life.catalogue.importer.store.model.UsageData;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.mapdb.DB;
@@ -36,7 +39,11 @@ public class NameStore extends CRUDStore<NameData> {
         .valueSerializer(new MapDbStringSetSerializer(pool, 64))
         .createOrOpen();
   }
-  
+
+  public Stream<NameData> allBareNames() {
+    return all().filter(nd -> nd.usageIDs.isEmpty());
+  }
+
   /**
    * @return the matching name nodes with the scientificName in a mutable set
    */

@@ -255,6 +255,17 @@ public class Normalizer implements Callable<Boolean> {
       public void end(NameUsageData data, TreeWalker.WalkerContext ctxt) {}
     });
 
+    LOG.info("Validate bare names");
+    store.names().allBareNames().forEach(nn -> {
+      var issues = IssueContainer.simple();
+      NameValidator.flagIssues(nn.getName(), issues);
+      if (issues.hasIssues()) {
+        VerbatimRecord v = store.getVerbatim(nn.getVerbatimKey());
+        v.add(issues);
+        store.put(v);
+      }
+    });
+
     // verify reference truncation
     LOG.info("Validate references");
     for (Reference r : store.references()) {

@@ -30,9 +30,6 @@ public class UsageStore extends CRUDStore<UsageData> {
   public Stream<UsageData> allSynonyms() {
     return all().filter(UsageData::isSynonym);
   }
-  public Stream<UsageData> allBareNames() {
-    return all().filter(UsageData::isBareName);
-  }
 
   @Override
   public boolean create(UsageData obj) {
