@@ -59,6 +59,14 @@ public class SectorSyncIT extends SectorSyncTestBase {
     // rematch draft
     matchingRule.rematch(draftRule.testData.key);
     tdao = syncFactoryRule.getTdao();
+
+    // make sure accordingTo syncs are off by default for the project
+    try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var ds = dm.getSettings(Datasets.COL);
+      ds.put(Setting.SECTOR_COPY_ACCORDING_TO, false);
+      dm.updateSettings(Datasets.COL, ds, Users.TESTER);
+    }
   }
 
   @After
@@ -114,7 +122,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
       dm.updateSettings(Datasets.COL, ds, Users.TESTER);
     }
     syncAll();
-    assertTree("cat14b.txt");
+    assertTree("cat14b2.txt");
     u = getByName(Datasets.COL, Rank.SPECIES, "Culex americanus");
     assertNotNull(u.getAccordingToId());
     assertNotNull(u.getAccordingTo());

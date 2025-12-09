@@ -105,6 +105,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
   }
 
   protected void start(SimpleName u) throws IOException {
+    //writer.write(u.getPath() + "\n"); # debugging the path
     writer.write(StringUtils.repeat(' ', level * indentation));
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(Tree.SYNONYM_SYMBOL);
@@ -123,7 +124,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
       writer.write(" ");
       writer.write(u.getAuthorship());
     }
-    if (u.getPhrase() != null) {
+    if (!StringUtils.isBlank(u.getPhrase())) {
       writer.write(" ");
       writer.write(u.getPhrase());
     }

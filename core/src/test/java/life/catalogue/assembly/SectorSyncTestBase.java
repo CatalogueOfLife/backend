@@ -218,8 +218,10 @@ public abstract class SectorSyncTestBase {
   void print(int datasetKey) throws Exception {
     StringWriter writer = new StringWriter();
     writer.append("\nDATASET "+datasetKey+"\n");
-    PrinterFactory.dataset(TextTreePrinter.class, datasetKey, SqlSessionFactoryRule.getSqlSessionFactory(), writer).print();
-    System.out.println(writer.toString());
+    var printer = PrinterFactory.dataset(TextTreePrinter.class, datasetKey, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
+    printer.showAccordingTo();
+    printer.print();
+    System.out.println(writer);
   }
 
   void print(String filename) throws Exception {
@@ -239,11 +241,11 @@ public abstract class SectorSyncTestBase {
   }
 
   public static void assertSameTree(int datasetKey1, int datasetKey2) throws IOException {
-    String tree1 = readTree(datasetKey1, null, false);
+    String tree1 = readTree(datasetKey1, null, false, true);
     System.out.println("\n*** DATASET "+datasetKey1+" TREE ***");
     System.out.println(tree1);
 
-    String tree2 = readTree(datasetKey2, null, false);
+    String tree2 = readTree(datasetKey2, null, false, true);
     System.out.println("\n*** DATASET "+datasetKey2+" TREE ***");
     System.out.println(tree2);
 
@@ -259,7 +261,7 @@ public abstract class SectorSyncTestBase {
   }
   public static void assertTree(String project, int datasetKey, @Nullable String rootID, InputStream expectedTree, boolean showIDs) throws IOException {
     String expected = UTF8IoUtils.readString(expectedTree).trim();
-    String tree = readTree(datasetKey, rootID, showIDs);
+    String tree = readTree(datasetKey, rootID, showIDs, true);
 
     // compare trees
     System.out.println("\n*** DATASET "+datasetKey+" TREE ***");
@@ -267,12 +269,15 @@ public abstract class SectorSyncTestBase {
     assertEquals("Tree from project " + project + " not as expected for dataset " + datasetKey, expected, tree);
   }
 
-  public static String readTree(int datasetKey,@Nullable String rootID, boolean showIDs) throws IOException {
+  public static String readTree(int datasetKey,@Nullable String rootID, boolean showIDs, boolean showAccordingTo) throws IOException {
     Writer writer = new StringWriter();
     TreeTraversalParameter ttp = TreeTraversalParameter.dataset(datasetKey, rootID);
     var printer = PrinterFactory.dataset(TextTreePrinter.class, ttp, SqlSessionFactoryRule.getSqlSessionFactory(), writer);
     if (showIDs) {
       printer.showIDs();
+    }
+    if (showAccordingTo) {
+      printer.showAccordingTo();
     }
     printer.print();
     String tree = writer.toString().trim();

@@ -418,6 +418,10 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
                                        @Param("depthFirst") boolean depthFirst,
                                        @Param("ordered") boolean ordered);
 
+  Cursor<SimpleName> processTreeSimpleInclAccordingTo(@Param("param") TreeTraversalParameter params,
+                                       @Param("depthFirst") boolean depthFirst,
+                                       @Param("ordered") boolean ordered);
+
   default Cursor<SimpleName> processTreeSimple(@Param("param") TreeTraversalParameter params) {
     return processTreeSimple(params, false, false);
   }
