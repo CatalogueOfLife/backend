@@ -291,7 +291,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             assertNotNull(n.getPublishedInId());
             ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
             assertNotNull(ref);
-            assertEquals("Tuthill. (1955). Australian genera of the Family Psyllidae (Hemiptera, Homoptera). Australian Journal of Zoology, 227–257. https://doi.org/10.1071/zo9550227", ref.getCitation());
+            assertEquals("Tuthill, L. D., & Taylor, K. L. (1955). Australian genera of the Family Psyllidae (Hemiptera, Homoptera). Australian Journal of Zoology, 227–257. https://doi.org/10.1071/zo9550227", ref.getCitation());
             assertEquals("10.1071/zo9550227", ref.getCsl().getDOI());
             assertEquals("Australian genera of the Family Psyllidae (Hemiptera, Homoptera)", ref.getCsl().getTitle());
             break;
@@ -317,7 +317,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             assertNotNull(n.getPublishedInId());
             ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
             assertNotNull(ref);
-            assertEquals("Froggatt. (1903). Australian Psyllidae. Part III. Proceedings of the Linnean Society of New South Wales, 315–337 (+ 2). https://biodiversity.org.au/afd/publication/c55e5de7-a0e1-4287-b023-547032310e04", ref.getCitation());
+            assertEquals("Froggatt, W. W. (1903). Australian Psyllidae. Part III. Proceedings of the Linnean Society of New South Wales, 315–337 (+ 2). https://biodiversity.org.au/afd/publication/c55e5de7-a0e1-4287-b023-547032310e04", ref.getCitation());
             assertNull(ref.getCsl().getDOI());
             assertEquals("https://biodiversity.org.au/afd/publication/c55e5de7-a0e1-4287-b023-547032310e04", ref.getCsl().getURL());
             assertEquals("Australian Psyllidae. Part III", ref.getCsl().getTitle());
