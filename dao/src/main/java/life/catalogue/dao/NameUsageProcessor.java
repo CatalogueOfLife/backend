@@ -165,8 +165,11 @@ public class NameUsageProcessor {
                 LOG.debug("Load missing usage {} of dataset {}", syn.getParentId(), datasetKey);
                 acc = num.get(uKey.id(syn.getParentId()));
                 if (acc == null) {
-                  LOG.error("Bad data. Accepted parent usage {} of dataset {} not found for synonym {} {}!", syn.getParentId(), datasetKey, syn.getId(), syn.getLabel());
+                  LOG.error("Bad data. Accepted usage {} of synonym {} {} in dataset {} not found!", syn.getParentId(), syn.getId(), syn.getLabel(), datasetKey);
                   throw new IllegalStateException(String.format("Accepted parent usage %s of dataset %s not found for synonym %s %s!", syn.getParentId(), datasetKey, syn.getId(), syn.getLabel()));
+                } else if (!acc.isTaxon()){
+                  LOG.error("Bad data. Accepted usage {} of synonym {} {} in dataset {} is a {}!", syn.getParentId(), syn.getId(), syn.getLabel(), datasetKey, acc.getStatus());
+                  acc = null;
                 } else {
                   taxa.put(new NameUsageWrapper(acc));
                 }
