@@ -45,13 +45,13 @@
         by these BOMs (use the right versions):
 
         Main two Dropwizard BOMs:
-        https://github.com/dropwizard/dropwizard/blob/v4.0.8/dropwizard-bom/pom.xml
-        https://github.com/dropwizard/dropwizard/blob/v4.0.8/dropwizard-dependencies/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v5.0.0/dropwizard-bom/pom.xml
+        https://github.com/dropwizard/dropwizard/blob/v5.0.0/dropwizard-dependencies/pom.xml
 
         Which also imports the
-        Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.0.15/bom/pom.xml
-        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.17.2/pom.xml
-        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-11.0.23/jetty-bom/pom.xml
+        Jersey BOM: https://github.com/eclipse-ee4j/jersey/blob/3.1.11/bom/pom.xml
+        Jackson BOM: https://github.com/FasterXML/jackson-bom/blob/jackson-bom-2.20.0/pom.xml
+        Jetty BOM: https://github.com/jetty/jetty.project/blob/jetty-12.1.1/jetty-bom/pom.xml
 
         These BOMs manage dependency versions for many things including:
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
@@ -67,23 +67,22 @@
     <commons-collections4.version>4.3</commons-collections4.version>
     <commons-compress.version>1.27.1</commons-compress.version>
     <commons-io.version>2.17.0</commons-io.version>
-    <commons-lang3.version>3.17.0</commons-lang3.version><!-- 3.16 coming in through DW4.0.8 resulted in stuck tests in jenkins -->
     <chronicle.version>2.27ea90</chronicle.version>
     <docker-client.version>3.6.0</docker-client.version><!--keep in sync with test containers -->
     <dwc-api.version>2.1.4</dwc-api.version>
     <dwca-io.version>3.0.0</dwca-io.version>
     <elasticsearch.version>8.1.3</elasticsearch.version>
     <fastutil.version>8.5.15</fastutil.version>
-    <fory.version>0.12.3</fory.version>
+    <fory.version>0.13.2</fory.version>
     <gbif-api.version>2.1.3</gbif-api.version>
-    <hikaricp.version>6.3.0</hikaricp.version>
-    <icu4j.version>75.1</icu4j.version>
+    <hikaricp.version>7.0.2</hikaricp.version>
+    <icu4j.version>78.1</icu4j.version>
     <java-diff-utils.version>4.12</java-diff-utils.version>
-    <javers.version>7.6.2</javers.version>
+    <javers.version>7.9.0</javers.version>
     <jbibtex.version>1.0.20</jbibtex.version>
     <jjwt.version>0.12.6</jjwt.version>
-    <jsoup.version>1.19.1</jsoup.version>
-    <junit.version>5.11.2</junit.version>
+    <jsoup.version>1.21.2</jsoup.version>
+    <junit.version>5.13.4</junit.version>
     <kryo.version>5.6.2</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
     <lombok.version>1.18.30</lombok.version>
@@ -92,17 +91,17 @@
     <mybatis.version>3.5.19</mybatis.version>
     <name-parser.version>3.14.0</name-parser.version>
     <newick-io.version>1.0.6</newick-io.version>
-    <poi.version>5.2.3</poi.version>
+    <poi.version>5.5.1</poi.version>
     <pollexor.version>3.0.0</pollexor.version>
-    <postgresql.version>42.7.6</postgresql.version>
-    <scribejava.version>8.3.1</scribejava.version>
-    <simple-mail.version>8.12.5</simple-mail.version>
+    <postgresql.version>42.7.8</postgresql.version>
+    <scribejava.version>8.3.3</scribejava.version>
+    <simple-mail.version>8.12.6</simple-mail.version>
     <stax2.version>4.2.2</stax2.version>
     <testcontainers.version>2.0.2</testcontainers.version><!--keep in sync with docker client-->
     <text-tree.version>1.6.5</text-tree.version>
-    <tika.version>2.9.2</tika.version>
+    <tika.version>3.2.3</tika.version>
     <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
-    <woodstox.version>6.6.2</woodstox.version>
+    <woodstox.version>7.1.1</woodstox.version>
     <imgscalr.version>4.2</imgscalr.version>
     <univocity-parsers.version>2.9.1</univocity-parsers.version>
 
@@ -111,7 +110,7 @@
     <exec-maven-plugin.version>3.4.1</exec-maven-plugin.version>
     <extra-enforcer-rules.version>1.11.0</extra-enforcer-rules.version>
     <maven-clean-plugin.version>3.4.0</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
     <maven-dependency-plugin.version>3.8.0</maven-dependency-plugin.version>
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
@@ -570,11 +569,6 @@
         <groupId>org.elasticsearch</groupId>
         <artifactId>elasticsearch</artifactId>
         <version>${elasticsearch.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-lang3</artifactId>
-        <version>${commons-lang3.version}</version>
       </dependency>
       <!-- unicode, transliterations
           Consider much simpler https://github.com/jirutka/unidecode
