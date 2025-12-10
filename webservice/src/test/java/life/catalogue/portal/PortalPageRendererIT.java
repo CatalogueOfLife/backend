@@ -17,7 +17,7 @@ import java.util.UUID;
 
 import org.apache.hc.core5.http.HttpStatus;
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.*;
 
 import static life.catalogue.portal.PortalPageRenderer.Environment.*;

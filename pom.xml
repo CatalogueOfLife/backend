@@ -82,6 +82,7 @@
     <jbibtex.version>1.0.20</jbibtex.version>
     <jjwt.version>0.12.6</jjwt.version>
     <jsoup.version>1.21.2</jsoup.version>
+    <jspecify.version>1.0.0</jspecify.version>
     <junit.version>5.13.4</junit.version>
     <kryo.version>5.6.2</kryo.version>
     <kryo-reflectasm.version>1.11.9</kryo-reflectasm.version>
@@ -604,6 +605,11 @@
       </dependency>
 
       <!-- other -->
+      <dependency>
+        <groupId>org.jspecify</groupId>
+        <artifactId>jspecify</artifactId>
+        <version>${jspecify.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
