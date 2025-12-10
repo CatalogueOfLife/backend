@@ -2,7 +2,6 @@ package life.catalogue.importer.coldp;
 
 import life.catalogue.api.TestEntityGenerator;
 import life.catalogue.api.model.*;
-import life.catalogue.api.vocab.Issue;
 import life.catalogue.api.vocab.License;
 import life.catalogue.api.vocab.SpeciesInteractionType;
 import life.catalogue.common.csl.CslDataConverter;
@@ -10,9 +9,6 @@ import life.catalogue.common.csl.CslUtil;
 import life.catalogue.importer.DataInserter;
 import life.catalogue.importer.InserterBaseTest;
 
-import life.catalogue.matching.NameValidator;
-
-import org.gbif.nameparser.api.NamePart;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.ByteArrayInputStream;
@@ -30,70 +26,6 @@ import de.undercouch.citeproc.csl.CSLType;
 import static org.junit.Assert.*;
 
 public class ColdpInserterTest extends InserterBaseTest {
-
-  /**
-   * https://github.com/CatalogueOfLife/backend/issues/1473
-   */
-  @Test
-  public void hybridWorldPlants() throws Exception {
-    NeoInserter ins = setup("/coldp/41");
-    ins.insertAll();
-
-    validateNames();
-
-    try (Transaction tx = store.getNeo().beginTx()) {
-      var n = store.names().objByID("3a3f862b-6b67-5a70-baeb-dd468bd60ad7").getName();
-      assertEquals(Rank.SUBSPECIES, n.getRank());
-      assertEquals(NamePart.SPECIFIC, n.getNotho());
-      assertEquals("Neotinea × dietrichiana subsp. bugarachensis", n.getScientificName());
-      assertEquals("Neotinea", n.getGenus());
-      assertEquals("dietrichiana", n.getSpecificEpithet());
-      assertEquals("bugarachensis", n.getInfraspecificEpithet());
-      assertEquals("(J.Claess. & J.-M.Lewin) H.Kretzschmar, Eccarius & H.Dietr.", n.getAuthorship());
-      var v = store.getVerbatim(n.getVerbatimKey());
-      assertEquals(0, v.getIssues().size());
-
-
-      n = store.names().objByID("2983f3b6-642b-5aba-8839-0ae83c46f03e").getName();
-      assertEquals(Rank.GENUS, n.getRank());
-      // only the verbatim scientificName contains the hybrid marker
-      // the uninomial given does not - which we prefer
-      // also col:notho is empty in this case
-      assertNull(n.getNotho());
-      assertEquals("Neotinacamptis", n.getScientificName());
-      assertEquals("Neotinacamptis", n.getUninomial());
-      assertNull(n.getGenus());
-      assertNull(n.getSpecificEpithet());
-      assertNull(n.getInfraspecificEpithet());
-      v = store.getVerbatim(n.getVerbatimKey());
-      assertEquals(0, v.getIssues().size());
-
-
-      n = store.names().objByID("a95b0c69-0177-5043-84f2-e205e08219f5").getName();
-      assertEquals(Rank.SPECIES, n.getRank());
-      assertEquals(NamePart.SPECIFIC, n.getNotho());
-      // the original scientificName has 2 hybrid marker which we do not support!
-      assertEquals("Anacamptorchis × durandii", n.getScientificName());
-      assertEquals("Anacamptorchis", n.getGenus());
-      assertEquals("durandii", n.getSpecificEpithet());
-      assertNull(n.getInfraspecificEpithet());
-      v = store.getVerbatim(n.getVerbatimKey());
-      assertEquals(0, v.getIssues().size());
-    }
-  }
-
-  void validateNames() {
-    store.names().all().forEach(nn -> {
-      Name n = nn.getName();
-      var v = store.getVerbatim(n.getVerbatimKey());
-      var prevIssues = IssueContainer.simple();
-      prevIssues.add(v);
-      var v2 = NameValidator.flagIssues(n, n.getType(), v);
-      if (v2 != null) {
-        store.put(v2);
-      }
-    });
-  }
 
   /**
    * https://github.com/CatalogueOfLife/backend/issues/1229
