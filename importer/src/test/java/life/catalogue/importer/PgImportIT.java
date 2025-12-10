@@ -25,7 +25,7 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -617,7 +617,7 @@ public class PgImportIT extends PgImportITBase {
   }
 
   @Test
-  @Ignore("manual test for debugging entire imports")
+  @Disabled("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 

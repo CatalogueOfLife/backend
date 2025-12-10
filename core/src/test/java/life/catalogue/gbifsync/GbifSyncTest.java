@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -30,7 +31,7 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 
-@Ignore("Long running tests to be manually executed when working on GbifSync")
+@Disabled("Long running tests to be manually executed when working on GbifSync")
 @RunWith(MockitoJUnitRunner.class)
 public class GbifSyncTest {
   

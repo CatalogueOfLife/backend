@@ -14,7 +14,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 public class DownloadUtilTest {
@@ -35,7 +35,7 @@ public class DownloadUtilTest {
   }
 
   @Test
-  @Ignore("manual only")
+  @Disabled("manual only")
   public void testBdjRateLimiting() throws IOException, ExecutionException, InterruptedException {
     DownloadUtil d = new DownloadUtil(hc);
     var keys = new int[]{94202,98935,96601};
@@ -64,7 +64,7 @@ public class DownloadUtilTest {
   }
 
   @Test
-  @Ignore("manual debugging")
+  @Disabled("manual debugging")
   public void plazi() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);
     d.download(URI.create("https://tb.plazi.org/GgServer/dwca/1C5A0163FFCBF3266052EB7D4D70FFF7.zip"), f);
@@ -87,7 +87,7 @@ public class DownloadUtilTest {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void downloadFtp() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);
     d.download(URI.create("ftp://ftp.ebi.ac.uk/pub/databases/ena/taxonomy/sdwca.zip"), f);
@@ -97,14 +97,14 @@ public class DownloadUtilTest {
    * https://github.com/CatalogueOfLife/checklistbank/issues/1295
    */
   @Test
-  @Ignore
+  @Disabled
   public void downloadNaturalis() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);
     d.download(URI.create("https://api.biodiversitydata.nl/v2/taxon/dwca/getDataSet/nsr"), f);
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void downloadWithToken() throws IOException {
     DownloadUtil d = new DownloadUtil(hc, "xxx", "gdToken");
     // a private repo should be accessible with the right API token

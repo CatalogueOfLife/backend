@@ -12,7 +12,6 @@ import life.catalogue.db.mapper.DatasetPartitionMapper;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
-
 import life.catalogue.matching.UsageMatcherMemStore;
 import life.catalogue.matching.UsageMatcherStore;
 
@@ -24,6 +23,7 @@ import java.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.jupiter.api.Disabled;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
 import static org.gbif.nameparser.api.Rank.*;
@@ -175,7 +175,7 @@ public class IdProviderTest {
   }
 
   @Test
-  @Ignore("work in progress")
+  @Disabled("work in progress")
   public void misappliedAndUnparsable() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(

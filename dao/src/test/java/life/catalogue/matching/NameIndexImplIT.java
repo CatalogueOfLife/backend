@@ -38,7 +38,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.ibatis.session.SqlSession;
-import org.junit.*;
+import org.junit.After;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -109,7 +113,7 @@ public class NameIndexImplIT {
   }
 
   @Test
-  @Ignore("manual test for debugging highly concurrent read/writes")
+  @Disabled("manual test for debugging highly concurrent read/writes")
   public void concurrency() throws Exception {
     setupPersistent();
     final int concurrency = 100;

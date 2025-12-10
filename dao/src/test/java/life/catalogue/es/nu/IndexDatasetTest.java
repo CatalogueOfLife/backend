@@ -9,10 +9,10 @@ import life.catalogue.junit.SqlSessionFactoryRule;
 import java.io.IOException;
 
 import org.elasticsearch.client.RestClient;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
-@Ignore // Only for playing around with big datasets
+@Disabled // Only for playing around with big datasets
 public class IndexDatasetTest extends EsReadWriteTestBase {
 
   @Test

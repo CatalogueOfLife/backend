@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class PublisherSyncJobTest {
 
   @Test
-  @Ignore("GBIF service needs to be mocked - this uses live services")
+  @Disabled("GBIF service needs to be mocked - this uses live services")
   void getFromGBIF() throws Exception {
     var gcfg = new GbifConfig();
 

@@ -6,7 +6,7 @@ import life.catalogue.api.model.CslDate;
 import org.jbibtex.BibTeXDatabase;
 import org.jbibtex.Key;
 import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import de.undercouch.citeproc.bibtex.BibTeXConverter;
@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNull;
 
 public class CslDataConverterTest {
   @Test
-  @Ignore
+  @Disabled
   public void toCSLItemData() {
   }
 

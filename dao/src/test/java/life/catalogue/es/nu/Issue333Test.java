@@ -12,7 +12,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertEquals;
  * words. Therefore we should probably always (and only) store and query on the strongly normalized version. We are
  * going to ignore this issue for now and take it along in the redesign.
  */
-@Ignore
+@Disabled
 public class Issue333Test extends EsReadTestBase {
 
   @Before

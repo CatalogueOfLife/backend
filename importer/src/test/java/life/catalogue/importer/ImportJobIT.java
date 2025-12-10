@@ -13,9 +13,9 @@ import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageServiceFS;
-import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -28,6 +28,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -122,7 +123,7 @@ public class ImportJobIT {
   }
 
   @Test
-  @Ignore("require github raw to always work")
+  @Disabled("require github raw to always work")
   public void proxy() {
     setupAndRun(DataFormat.PROXY, "proxy/1011.yaml");
     job.run();

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -125,7 +125,7 @@ public class DwcaInserterTest extends InserterBaseTest {
   }
 
   @Test
-  @Ignore("unfinished")
+  @Disabled("unfinished")
   public void plazi2() throws Exception {
     DataInserter ins = setup("/dwca/plazi2");
     ins.insertAll();

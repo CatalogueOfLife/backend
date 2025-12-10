@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,7 +184,7 @@ public class NameParserTest {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void parseLinnaeusPubIn() throws Exception {
     assertName("Poa annua L. Sp. Pl. 1: 68 1753", "Poa annua")
       .species("Poa", "annua")

@@ -22,7 +22,7 @@ import java.util.*;
 import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -482,7 +482,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  @Ignore("Fails since https://github.com/Sp2000/colplus-backend/commit/76ac785a29dc39054859a4471e2dbb20bbc9de8b")
+  @Disabled("Fails since https://github.com/Sp2000/colplus-backend/commit/76ac785a29dc39054859a4471e2dbb20bbc9de8b")
   public void testWithBigQ() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setHighlight(false);
@@ -555,7 +555,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
   }
 
   @Test
-  @Ignore("Bad use of ScinameNormalizer in indexing/querying")
+  @Disabled("Bad use of ScinameNormalizer in indexing/querying")
   public void testWithSmthii__2() {
     NameUsageSearchRequest query = new NameUsageSearchRequest();
     query.setSearchType(SearchType.PREFIX);
@@ -636,7 +636,7 @@ public class NameUsageSearchServiceTest extends EsReadTestBase {
    * https://github.com/CatalogueOfLife/backend/issues/992
    */
   @Test
-  @Ignore("Generic fuzzy search not yet working")
+  @Disabled("Generic fuzzy search not yet working")
   public void fuzzySearch() {
 
     // Define search

@@ -5,12 +5,12 @@ import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetLogoChanged;
 import life.catalogue.api.vocab.Users;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Ignore("Still unclear why this fails sometimes on jenkins but never locally")
+@Disabled("Still unclear why this fails sometimes on jenkins but never locally")
 public class EventBrokerTest extends EventBrokerTestBase {
 
   @Test

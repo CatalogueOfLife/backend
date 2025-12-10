@@ -8,13 +8,17 @@ import java.io.IOException;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 
 import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.*;
 
-@Ignore("The underlying crossref service is rather unreliable")
+@Disabled("The underlying crossref service is rather unreliable")
 public class DoiResolverIT {
 
   static CloseableHttpClient http;

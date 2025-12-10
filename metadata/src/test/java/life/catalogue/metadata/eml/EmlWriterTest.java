@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -106,7 +106,7 @@ public class EmlWriterTest {
   }
 
   @Test
-  @Ignore("Needs live prod API and is slow - for debugging EML writer only!")
+  @Disabled("Needs live prod API and is slow - for debugging EML writer only!")
   public void emlTestAllProdDatasets() throws Exception {
     IntSet keys = new IntOpenHashSet();
     keys.add(Datasets.COL);

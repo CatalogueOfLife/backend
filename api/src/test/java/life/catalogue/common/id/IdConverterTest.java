@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ public class IdConverterTest {
    * This file is supposed to be included in the postgres database, but because of its size is not bundled with the jars.
    */
   @Test
-  @Ignore
+  @Disabled
   public void writeMappingFile() throws IOException {
     File f = new File("latin29.txt");
     try (Writer w = UTF8IoUtils.writerFromFile(f)) {

@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import jakarta.ws.rs.client.Client;
@@ -39,7 +39,7 @@ public class DatasetPagerTest {
   }
 
   @Test
-  @Ignore("GBIF service needs to be mocked - this uses live services")
+  @Disabled("GBIF service needs to be mocked - this uses live services")
   public void datasetPager() throws Exception {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider(ApiModule.MAPPER);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);

@@ -2,14 +2,14 @@ package life.catalogue.command;
 
 import life.catalogue.WsServer;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 /**
  * Manual test class to run an entire command in your IDE for debugging purposes mostly.
  * This can obviously also achieved by just calling the CliApp main class with the appropriate arguments
  */
-@Ignore
+@Disabled
 public class ExecuteCmd {
   
   @Test
