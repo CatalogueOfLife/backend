@@ -18,6 +18,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +43,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
   public NormalizerColdpIT() {
     super(DataFormat.COLDP);
   }
-  
+
   @Test
   public void testSpecs() throws Exception {
     normalize(0);
@@ -76,6 +77,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
     store.usages().all().forEach(u -> {
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       assertNotNull(v);
+      var n = store.name(u);
       if (u.getId().equals("fake")) {
         assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
@@ -84,8 +86,14 @@ public class NormalizerColdpIT extends NormalizerITBase {
         assertEquals(1, v.getIssues().size());
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
       } else if (u.getId().equals("1-2")){ // Viridae
-        assertEquals(1, v.getIssues().size());
+        assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
+      } else if (n.getName().getRank().isSuprageneric() ||
+        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+      ) {
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
       } else {
         assertTrue(v.getIssues().isEmpty());
       }
@@ -393,20 +401,29 @@ public class NormalizerColdpIT extends NormalizerITBase {
     store.usages().all().forEach(u -> {
       VerbatimRecord v = store.getVerbatim(u.getVerbatimKey());
       assertNotNull(v);
+      System.out.println(u.getId()+" "+v.getIssues());
+      var n = store.names().objByID(u.nameID);
       if (u.getId().equals("fake")) {
         assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.PARTIAL_DATE));
         assertTrue(v.contains(Issue.PARENT_SPECIES_MISSING));
 
       } else if(u.getId().equals("cult")) {
-        assertEquals(2, v.getIssues().size());
+        assertEquals(3, v.getIssues().size());
         assertTrue(v.contains(Issue.INCONSISTENT_NAME));
         assertTrue(v.contains(Issue.PARENT_GENUS_MISSING));
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
 
       } else if (u.getId().equals("2")){
-        assertEquals(1, v.getIssues().size());
+        assertEquals(2, v.getIssues().size());
         assertTrue(v.contains(Issue.RANK_NAME_SUFFIX_CONFLICT));
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
 
+      } else if (n.getName().getRank().isSuprageneric() ||
+        Set.of("1006-s1", "1006-s2", "100", "102", "1001a", "hybrid", "1005").contains(n.getId())
+      ) {
+        assertEquals(1, v.getIssues().size());
+        assertTrue(v.contains(Issue.MISSING_AUTHORSHIP));
       } else {
         assertEquals(0, v.getIssues().size());
       }
