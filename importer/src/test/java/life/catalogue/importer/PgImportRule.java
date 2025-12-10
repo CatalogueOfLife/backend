@@ -15,8 +15,8 @@ import life.catalogue.dao.DatasetDao;
 import life.catalogue.db.mapper.UserMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.matching.nidx.NameIndexFactory;
@@ -62,9 +62,10 @@ public class PgImportRule extends ExternalResource {
   }
 
   private final Validator validator;
+  private ImportStoreFactory importStoreFactory;
   private DatasetDao ddao;
 
-  private NeoDb store;
+  private ImportStore store;
   private NormalizerConfig cfg;
   private ImporterConfig icfg = new ImporterConfig();
   private DatasetWithSettings dataset;
@@ -162,6 +163,7 @@ public class PgImportRule extends ExternalResource {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    importStoreFactory = new ImportStoreFactory(cfg);
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       session.getMapper(UserMapper.class).create(IMPORT_USER);
     }
@@ -180,7 +182,7 @@ public class PgImportRule extends ExternalResource {
   public void after() {
     super.after();
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
@@ -236,12 +238,11 @@ public class PgImportRule extends ExternalResource {
 
   private void normalizeAndImportDataset(Path source) throws Exception {
     // normalize
-    store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+    store = importStoreFactory.create(dataset.getKey(), 1);
     Normalizer norm = new Normalizer(dataset, store, source, nidx, ImageService.passThru(), validator, null);
     norm.call();
 
     // import into postgres
-    store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
     PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }

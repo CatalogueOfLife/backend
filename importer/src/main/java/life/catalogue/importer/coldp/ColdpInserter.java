@@ -8,15 +8,12 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.InputStreamUtils;
 import life.catalogue.csv.ColdpReader;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.NeoCsvInserter;
+import life.catalogue.importer.DataCsvInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.bibtex.BibTexInserter;
 import life.catalogue.importer.csljson.CslJsonInserter;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NodeBatchProcessor;
-import life.catalogue.importer.neo.model.NeoProperties;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.TreatmentFormatParser;
 
@@ -25,8 +22,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.apache.commons.io.FilenameUtils;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +30,13 @@ import static life.catalogue.common.lang.Exceptions.interruptIfCancelled;
 /**
  *
  */
-public class ColdpInserter extends NeoCsvInserter {
+public class ColdpInserter extends DataCsvInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(ColdpInserter.class);
 
   private ColdpInterpreter inter;
 
-  public ColdpInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+  public ColdpInserter(ImportStore store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     super(folder, ColdpReader.from(folder), store, settings, refFactory);
   }
   
@@ -50,14 +45,14 @@ public class ColdpInserter extends NeoCsvInserter {
    * quick check to see if all required files are existing.
    */
   @Override
-  protected void batchInsert() throws NormalizationFailedException, InterruptedException {
+  protected void insert() throws NormalizationFailedException, InterruptedException {
     inter = new ColdpInterpreter(settings, reader.getMappingFlags(), refFactory, store);
 
     // This inserts the plain references from the Reference file with no links to names, taxa or distributions.
     // Links are added afterwards in other methods when a ACEF:ReferenceID field is processed by lookup to the neo store.
     insertEntities(reader, ColdpTerm.Reference,
         inter::interpretReference,
-        store.references()::create
+      r -> store.references().create(r)
     );
 
     // insert CSL-JSON references
@@ -67,7 +62,7 @@ public class ColdpInserter extends NeoCsvInserter {
     // name_usage combination
     insertEntities(reader, ColdpTerm.NameUsage,
       inter::interpretNameUsage,
-      u -> store.createNameAndUsage(u) != null
+      store::createNameAndUsage
     );
 
     // TODO: authors
@@ -78,16 +73,12 @@ public class ColdpInserter extends NeoCsvInserter {
 
     // name & relations
     insertEntities(reader, ColdpTerm.Name,
-        inter::interpretName,
-        n -> store.names().create(n) != null
+      inter::interpretName,
+      store.names()::create
     );
-    insertRelations(reader, ColdpTerm.NameRelation,
+    insertNameRelations(reader, ColdpTerm.NameRelation,
         inter::interpretNameRelations,
-        store.names(),
-        ColdpTerm.nameID,
-        ColdpTerm.relatedNameID,
-        Issue.NAME_ID_INVALID,
-      true
+        Issue.NAME_ID_INVALID
     );
     interpretTypeMaterial(reader, ColdpTerm.TypeMaterial,
         inter::interpretTypeMaterial
@@ -96,31 +87,23 @@ public class ColdpInserter extends NeoCsvInserter {
     // taxa
     insertEntities(reader, ColdpTerm.Taxon,
         inter::interpretTaxon,
-        t -> store.usages().create(t) != null
+        store.usages()::create
     );
     // taxon concept relations
-    insertRelations(reader, ColdpTerm.TaxonConceptRelation,
+    insertTaxonTCRelations(reader, ColdpTerm.TaxonConceptRelation,
       inter::interpretTaxonRelations,
-      store.usages(),
-      ColdpTerm.taxonID,
-      ColdpTerm.relatedTaxonID,
-      Issue.TAXON_ID_INVALID,
-      true
+      Issue.TAXON_ID_INVALID
     );
     // species interactions
-    insertRelations(reader, ColdpTerm.SpeciesInteraction,
+    insertTaxonSpiRelations(reader, ColdpTerm.SpeciesInteraction,
       inter::interpretSpeciesInteractions,
-      store.usages(),
-      ColdpTerm.taxonID,
-      ColdpTerm.relatedTaxonID,
-      Issue.TAXON_ID_INVALID,
-      false
+      Issue.TAXON_ID_INVALID
     );
 
     // synonyms
-    insertEntities(reader, ColdpTerm.Synonym,
+     insertEntities(reader, ColdpTerm.Synonym,
         inter::interpretSynonym,
-        s -> store.usages().create(s) != null
+        store.usages()::create
     );
 
     // supplementary
@@ -152,51 +135,13 @@ public class ColdpInserter extends NeoCsvInserter {
     insertTreatments();
   }
 
-  @Override
-  protected void postBatchInsert() throws NormalizationFailedException {
-    // lookup species interaction related names - this requires neo4j so cant be done during batch inserts
-    for (RelType rt : RelType.values()) {
-      if (rt.isSpeciesInteraction()) {
-        int counter = 0;
-        try (Transaction tx = store.getNeo().beginTx();
-             var iter = store.iterRelations(rt)
-        ) {
-          while (iter.hasNext()) {
-            var rel = iter.next();
-            if (!rel.hasProperty(NeoProperties.SCINAME)) {
-              Node relatedUsageNode = rel.getEndNode();
-              if (store.getDevNullNode().getId() != relatedUsageNode.getId()) {
-                // there is a real related usage node existing, use its name
-                String name = NeoProperties.getScientificNameWithAuthorFromUsage(relatedUsageNode);
-                if (!name.equals(NeoProperties.NULL_NAME)) {
-                  rel.setProperty(NeoProperties.SCINAME, name);
-                  counter++;
-                }
-              }
-            }
-            // still no name? flag issue
-            if (!rel.hasProperty(NeoProperties.SCINAME) && rel.hasProperty(NeoProperties.VERBATIM_KEY)) {
-              Integer vkey = (Integer) rel.getProperty(NeoProperties.VERBATIM_KEY, null);
-              LOG.debug("Missing related names for {} interaction, verbatimKey={}", rt.specInterType, vkey);
-              store.addIssues(vkey, Issue.RELATED_NAME_MISSING);
-            }
-          }
-          tx.success();
-        }
-        if (counter > 0) {
-          LOG.info("Added related names for {} {} interactions", counter, rt.specInterType);
-        }
-      }
-    }
-  }
-
   private void insertTreatments() throws InterruptedException {
     ColdpReader coldp = (ColdpReader) reader;
     if (coldp.hasTreatments()) {
       try {
         final int datasetKey = store.getDatasetKey();
         for (Path tp : coldp.getTreatments()) {
-          interruptIfCancelled("NeoInserter interrupted, exit early");
+          interruptIfCancelled("DAta inserter interrupted, exit early");
           insertTreatment(datasetKey, tp);
         }
       } catch (IOException e) {
@@ -230,7 +175,7 @@ public class ColdpInserter extends NeoCsvInserter {
       t.setDocument(InputStreamUtils.readEntireStream(Files.newInputStream(tp)));
 
       if (t.getFormat() != null && t.getDocument() != null && t.getId() != null) {
-        NeoUsage nu = store.usages().objByID(t.getId());
+        UsageData nu = store.usages().objByID(t.getId());
         if (nu != null) {
           nu.treatment = t;
           store.usages().update(nu);
@@ -264,10 +209,4 @@ public class ColdpInserter extends NeoCsvInserter {
       }
     }
   }
-
-  @Override
-  protected NodeBatchProcessor relationProcessor() {
-    return new ColdpRelationInserter(store);
-  }
-
 }

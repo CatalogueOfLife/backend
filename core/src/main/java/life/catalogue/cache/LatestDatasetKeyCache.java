@@ -3,7 +3,7 @@ package life.catalogue.cache;
 import java.util.UUID;
 
 import org.apache.ibatis.session.SqlSessionFactory;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public interface LatestDatasetKeyCache {
   void setSqlSessionFactory(SqlSessionFactory factory);

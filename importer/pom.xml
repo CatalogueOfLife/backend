@@ -11,7 +11,7 @@
 
   <artifactId>importer</artifactId>
   <name>CLB importer</name>
-  <description>Importer component of ChecklistBank using neo4j</description>
+  <description>Importer component of ChecklistBank</description>
 
   <dependencies>
     <!-- col & gbif -->
@@ -67,34 +67,7 @@
       <groupId>org.gbif</groupId>
       <artifactId>text-tree</artifactId>
     </dependency>
-
-    <!-- neo4j -->
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-kernel</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-cypher</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-slf4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>graph-algorithms-algo</artifactId>
-    </dependency>
-    <!-- somehow missing from neo4j deps on java 11: https://github.com/Sp2000/colplus-backend/issues/573 -->
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk15on</artifactId>
-    </dependency>
-
+ 
     <!-- DB -->
     <dependency>
       <groupId>org.mybatis</groupId>
@@ -299,8 +272,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.glassfish</groupId>
-      <artifactId>jakarta.el</artifactId>
+      <groupId>org.glassfish.expressly</groupId>
+      <artifactId>expressly</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

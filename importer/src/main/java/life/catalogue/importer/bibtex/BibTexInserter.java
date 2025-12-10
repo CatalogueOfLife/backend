@@ -6,7 +6,7 @@ import life.catalogue.api.model.VerbatimRecord;
 import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.csl.CslDataConverter;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.store.ImportStore;
 
 import org.gbif.dwc.terms.BibTexTerm;
 import org.gbif.dwc.terms.Term;
@@ -31,12 +31,12 @@ public class BibTexInserter {
 
   private static final Logger LOG = LoggerFactory.getLogger(BibTexInserter.class);
   private final int datasetKey;
-  private final NeoDb store;
+  private final ImportStore store;
   private final File bibtexFile;
   private final ReferenceFactory refFactory;
   private final AtomicInteger counter = new AtomicInteger();
 
-  public BibTexInserter(NeoDb store, File bibtexFile, ReferenceFactory refFactory) {
+  public BibTexInserter(ImportStore store, File bibtexFile, ReferenceFactory refFactory) {
     this.bibtexFile = bibtexFile;
     this.store = store;
     this.refFactory = refFactory;

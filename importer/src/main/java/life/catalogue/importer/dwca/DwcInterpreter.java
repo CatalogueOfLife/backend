@@ -8,11 +8,9 @@ import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.dao.ReferenceFactory;
 import life.catalogue.importer.InterpreterBase;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoRel;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
-import life.catalogue.interpreter.InterpreterUtils;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameUsageData;
+import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.parser.*;
 
 import org.gbif.dwc.terms.*;
@@ -41,33 +39,34 @@ public class DwcInterpreter extends InterpreterBase {
   private final Term idTerm;
   private final Map<String, String> dwcaID2taxonID = new HashMap<>();
 
-  public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, NeoDb store) {
+  public DwcInterpreter(DatasetSettings settings, MappingInfos mappingFlags, ReferenceFactory refFactory, ImportStore store) {
     super(settings, refFactory, store, false);
     idTerm = mappingFlags.hasTaxonId() ? DwcTerm.taxonID : DwcaTerm.ID;
   }
 
-  public Optional<NeoUsage> interpretUsage(VerbatimRecord v) {
+  public Optional<NameUsageData> interpretUsage(VerbatimRecord v) {
     // name
     return interpretName(v).map(pnu -> {
-      NeoUsage u = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, ALT_ID_TERMS);
+      var nu = interpretUsage(idTerm, pnu, DwcTerm.taxonomicStatus, TaxonomicStatus.ACCEPTED, v, DwcTerm.originalNameUsageID, ALT_ID_TERMS);
       if (idTerm == DwcTerm.taxonID) {
         // remember dwca ids for extension lookups
         var dwcaID = v.getRaw(DwcaTerm.ID);
         // for bare names u.ID is null !
-        // TODO: check if that impacts name relations or type material which is linked to names, not taxa
-        if (u.getId() != null && !u.getId().equals(dwcaID)) {
-          dwcaID2taxonID.put(dwcaID, u.getId());
+        if (nu.ud.getId() != null && !nu.ud.getId().equals(dwcaID)) {
+          dwcaID2taxonID.put(dwcaID, nu.ud.getId());
         }
       }
-      if (u.isNameUsageBase()) {
-        u.asNameUsageBase().setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
+      if (nu.ud.isNameUsageBase()) {
+        var nub = nu.ud.asNameUsageBase();
+        // we interpret parent/accepted/original relations in 2nd iteration in inserts...
+        nub.setLink(uri(v, Issue.URL_INVALID, DcTerm.references));
         // explicit accordingTo & namePhrase - the authorship could already have set these properties!
         if (v.hasTerm(DwcTerm.nameAccordingTo)) {
-          setAccordingTo(u.usage, v.get(DwcTerm.nameAccordingTo), v);
+          setAccordingTo(nu.ud.usage, v.get(DwcTerm.nameAccordingTo), v);
         }
       }
-      u.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
-      return u;
+      nu.ud.usage.setRemarks(v.get(DwcTerm.taxonRemarks));
+      return nu;
     });
   }
 
@@ -159,17 +158,19 @@ public class DwcInterpreter extends InterpreterBase {
     return dwcaID;
   }
 
-  Optional<NeoRel> interpretNameRelations(VerbatimRecord rec) {
-    NeoRel rel = new NeoRel();
-    SafeParser<NomRelType> type = SafeParser.parse(NomRelTypeParser.PARSER, rec.get(ColdpTerm.type));
-    if (type.isPresent()) {
-      rel.setType(RelType.from(type.get()));
-      rel.setRemarks(InterpreterUtils.replaceHtml(rec.get(ColdpTerm.remarks), true));
+  Optional<RelationData<NomRelType>> interpretNameRelation(VerbatimRecord rec) {
+    var opt = interpretRelations(rec, ColdpTerm.type, NomRelTypeParser.PARSER, DwcaTerm.ID, ColdpTerm.relatedNameID, ColdpTerm.relatedTaxonScientificName, ColdpTerm.remarks, ColdpTerm.referenceID);
+    if (opt.isPresent()) {
+      var rel = opt.get();
+      // name relation records have the dwca id as FROM - convert to the taxonID of the core
+      if (dwcaID2taxonID.containsKey(rel.getFromID())) {
+        rel.setFromID(dwcaID2taxonID.get(rel.getFromID()));
+      }
       if (rec.hasTerm(DcTerm.bibliographicCitation)) {
         Reference ref = refFactory.fromDWC(rec.get(ColdpTerm.referenceID), rec.get(DcTerm.bibliographicCitation), null, rec);
         rel.setReferenceId(ref.getId());
       }
-      return Optional.of(rel);
+      return opt;
     }
     return Optional.empty();
   }

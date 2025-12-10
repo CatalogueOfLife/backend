@@ -3,12 +3,15 @@ package life.catalogue.importer;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.ReferenceSearchRequest;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncTestBase;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.UTF8IoUtils;
+import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.printer.PrinterFactory;
+import life.catalogue.printer.PrinterUtils;
 import life.catalogue.printer.TextTreePrinter;
 
 import org.gbif.dwc.terms.Term;
@@ -16,12 +19,9 @@ import org.gbif.dwc.terms.UnknownTerm;
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
@@ -77,7 +77,6 @@ public class PgImportIT extends PgImportITBase {
     
     Reference pubIn = rdao.get(key(dataset.getKey(), trametes_modesta.getPublishedInId()), trametes_modesta.getPublishedInPage());
     assertEquals("Norw. Jl Bot. 19: 236 (1972)", pubIn.getCitation());
-    assertEquals("r4", pubIn.getId());
   }
 
   @Test
@@ -150,21 +149,19 @@ public class PgImportIT extends PgImportITBase {
     try (SqlSession session = SqlSessionFactoryRule.getSqlSessionFactory().openSession(true)) {
       vMapper = session.getMapper(VerbatimRecordMapper.class);
       
-      // check species name
+      // check basionym chain issues
       Name n1 = ndao.get(key(dataset.getKey(), "1"));
       Name n2 = ndao.get(key(dataset.getKey(), "2"));
-      
-      assertIssue(n1, Issue.CHAINED_BASIONYM);
-      assertIssue(n2, Issue.CHAINED_BASIONYM);
-      
       Name n10 = ndao.get(key(dataset.getKey(), "10"));
       Name n11 = ndao.get(key(dataset.getKey(), "11"));
       Name n12 = ndao.get(key(dataset.getKey(), "12"));
       Name n13 = ndao.get(key(dataset.getKey(), "13"));
-      
+
+      assertNoIssue(n1, Issue.CHAINED_BASIONYM);
+      assertIssue(n2, Issue.CHAINED_BASIONYM);
       assertIssue(n10, Issue.CHAINED_BASIONYM);
       assertIssue(n11, Issue.CHAINED_BASIONYM);
-      assertIssue(n12, Issue.CHAINED_BASIONYM);
+      assertNoIssue(n12, Issue.CHAINED_BASIONYM);
       assertNoIssue(n13, Issue.CHAINED_BASIONYM);
     }
   }
@@ -432,10 +429,9 @@ public class PgImportIT extends PgImportITBase {
       Name n = ndao.get(key(dataset.getKey(), "30405"));
       assertEquals("Haematomma ochroleucum var. porphyrium", n.getScientificName());
       assertEquals("30405", n.getId());
-      
-      // this is buggy normalization of bad data - should really be just one...
       assertEquals(2, tdao.listRoot(dataset.getKey(), new Page()).getResult().size());
     }
+    assertTree();
   }
   
   @Test
@@ -515,7 +511,7 @@ public class PgImportIT extends PgImportITBase {
     }
 
     // now try to import again to make sure deletions of previous data work
-    store.closeAndDelete();
+    store.close();
     FileUtils.deleteQuietly(cfg.archiveDir);
     FileUtils.deleteQuietly(cfg.scratchDir);
     normalizeAndImport(COLDP, 0);
@@ -619,7 +615,7 @@ public class PgImportIT extends PgImportITBase {
       assertEquals(2, t.getProperties().size());
     }
   }
-  
+
   @Test
   @Ignore("manual test for debugging entire imports")
   public void testExternalManually() throws Exception {

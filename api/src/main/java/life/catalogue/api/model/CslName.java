@@ -17,6 +17,7 @@ public class CslName {
   private String suffix;
   private Boolean isInstitution;
   private String orcid; // at this stage we only use this for CrossRef, see DoiResolver!
+  private String literal;
 
   public CslName() {
   }
@@ -102,11 +103,19 @@ public class CslName {
     this.orcid = orcid;
   }
 
+  public String getLiteral() {
+    return literal;
+  }
+
+  public void setLiteral(String literal) {
+    this.literal = literal;
+  }
+
   public CSLName toCSL() {
-    return new CSLName(getFamily(), getGiven(), getDroppingParticle(),
-      getNonDroppingParticle(), getSuffix(), null, null,
-      null, null, null, null,
-      getIsInstitution());
+    return new CSLName(family, given, droppingParticle,
+      nonDroppingParticle, suffix, null, null,
+      null, null, literal, null,
+      isInstitution);
   }
 
   @Override
@@ -120,12 +129,13 @@ public class CslName {
            && Objects.equals(nonDroppingParticle, cslName.nonDroppingParticle)
            && Objects.equals(suffix, cslName.suffix)
            && Objects.equals(isInstitution, cslName.isInstitution)
+           && Objects.equals(literal, cslName.literal)
            && Objects.equals(orcid, cslName.orcid);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution, orcid);
+    return Objects.hash(family, given, droppingParticle, nonDroppingParticle, suffix, isInstitution, literal, orcid);
   }
 
   @Override
@@ -151,6 +161,12 @@ public class CslName {
         sb.append(", ");
       }
       sb.append(given);
+    }
+    if (literal != null) {
+      if (sb.length()>0) {
+        sb.append(" ");
+      }
+      sb.append(literal);
     }
     return sb.toString();
   }

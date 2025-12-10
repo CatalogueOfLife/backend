@@ -3,6 +3,8 @@ package life.catalogue.importer;
 import life.catalogue.TestUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
+import life.catalogue.assembly.SectorSyncTestBase;
+import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
@@ -13,9 +15,9 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.model.RankedName;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
+import life.catalogue.importer.store.model.RankedName;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
 import life.catalogue.junit.TestDataRule;
@@ -23,9 +25,13 @@ import life.catalogue.junit.TreeRepoRule;
 import life.catalogue.matching.nidx.NameIndexFactory;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
+import life.catalogue.printer.PrinterUtils;
+
 import org.gbif.nameparser.api.Rank;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Path;
@@ -44,16 +50,20 @@ import com.google.common.io.Files;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 
+import javax.annotation.Nullable;
+
 import static org.junit.Assert.*;
 
 /**
  *
  */
 public class PgImportITBase {
-  
-  NeoDb store;
+
+  String resourceDir  ;
+  ImportStore store;
   NormalizerConfig cfg;
   ImporterConfig icfg = new ImporterConfig();
+  ImportStoreFactory importStoreFactory;
   DatasetWithSettings dataset;
   VerbatimRecordMapper vMapper;
   DatasetDao ddao;
@@ -72,12 +82,13 @@ public class PgImportITBase {
   
   @Rule
   public final TreeRepoRule treeRepoRule = new TreeRepoRule();
-  
+
   @Before
-  public void initCfg() {
+  public void initCfg() throws Exception {
     cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
+    importStoreFactory = new ImportStoreFactory(cfg);
     dataset = new DatasetWithSettings();
     dataset.setType(DatasetType.OTHER);
     dataset.setOrigin(DatasetOrigin.EXTERNAL);
@@ -92,23 +103,27 @@ public class PgImportITBase {
   }
   
   @After
-  public void cleanup() {
+  public void cleanup() throws Exception {
     if (store != null) {
-      store.closeAndDelete();
+      store.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }
   }
-  
-  void normalizeAndImport(DataFormat format, int key) throws Exception {
-    URL url = getClass().getResource("/" + format.name().toLowerCase() + "/" + key);
-    dataset.setDataFormat(format);
-    normalizeAndImport(Paths.get(url.toURI()));
+
+  void assertTree() throws IOException {
+    // compare with expected tree
+    SectorSyncTestBase.assertTree(dataset.getTitle(), dataset.getKey(), getClass().getResourceAsStream(resourceDir + "/expected.tree"));
   }
 
-  void normalizeAndImport(DatasetWithSettings ds) throws Exception {
-    dataset = ds;
-    URL url = getClass().getResource("/" + ds.getDataFormat().name().toLowerCase() + "/" + ds.getKey());
+  void printTree() throws Exception {
+    PrinterUtils.print(dataset.getKey(), true, SqlSessionFactoryRule.getSqlSessionFactory());
+  }
+
+  void normalizeAndImport(DataFormat format, int key) throws Exception {
+    resourceDir = "/" + format.name().toLowerCase() + "/" + key;
+    URL url = getClass().getResource(resourceDir);
+    dataset.setDataFormat(format);
     normalizeAndImport(Paths.get(url.toURI()));
   }
 
@@ -125,14 +140,13 @@ public class PgImportITBase {
       }
 
       // normalize
-      store = NeoDbFactory.create(dataset.getKey(), 1, cfg);
+      store = importStoreFactory.create(dataset.getKey(), 1);
       Normalizer norm = new Normalizer(dataset, store, source,
         NameIndexFactory.build(NamesIndexConfig.memory(1024), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.INSTANCE).started(),
         ImageService.passThru(), validator, null);
       norm.call();
       
       // import into postgres
-      store = NeoDbFactory.open(dataset.getKey(), 1, cfg);
       PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       
@@ -235,5 +249,5 @@ public class PgImportITBase {
   public static DSID<String> key(int datasetKey, String id) {
     return new DSIDValue<>(datasetKey, id);
   }
-  
+
 }

@@ -37,7 +37,9 @@ public class TaxonMetricsBuilder {
     .build(this::lookupSource);
 
   public interface ClassificationTracker {
-    int depth();
+    default int depth() {
+      return classification().size();
+    }
     List<SimpleName> classification();
   }
   public static ClassificationTracker tracker(final Stack<SimpleName> stack) {

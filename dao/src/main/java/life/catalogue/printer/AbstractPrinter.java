@@ -41,8 +41,9 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
   protected final Rank countRank; // count by
   protected final TaxonCounter taxonCounter; // method to do the counting
   protected final SqlSessionFactory factory;
-  protected SqlSession session;
   protected final boolean ordered; // ordered for classification processing
+  private boolean showAccordingTo; // adds accordingTo to name phrase to be printed (SimpleName doesn't have an accordingTo property)
+  protected SqlSession session;
 
   /**
    * @param ordered if true does a more expensive depth first traversal with ordered children
@@ -68,6 +69,12 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
     this.taxonCounter = taxonCounter;
   }
 
+
+  public AbstractPrinter showAccordingTo() {
+    this.showAccordingTo = true;
+    return this;
+  }
+
   /**
    * @return number of written lines, i.e. name usages
    * @throws IOException
@@ -78,7 +85,11 @@ public abstract class AbstractPrinter implements Consumer<SimpleName>, AutoClose
     try {
       session = factory.openSession(true);
       if (ordered || params.hasFilter()) {
-        PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+        if (showAccordingTo) {
+          PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimpleInclAccordingTo(params, ordered, ordered), this);
+        } else {
+          PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processTreeSimple(params, ordered, ordered), this);
+        }
       } else {
         PgUtils.consume(() -> session.getMapper(NameUsageMapper.class).processDatasetSimple(params.getDatasetKey()), this);
       }

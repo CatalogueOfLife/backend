@@ -4,16 +4,18 @@ import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.common.lang.InterruptedRuntimeException;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ColdpReader;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.NeoDbFactory;
-import life.catalogue.importer.neo.NodeBatchProcessor;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.ImportStoreFactory;
 
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+
+
 
 import com.google.common.io.Files;
 
@@ -27,23 +29,18 @@ public class NeoCsvInserterTest {
     NormalizerConfig cfg = new NormalizerConfig();
     cfg.archiveDir = Files.createTempDir();
     cfg.scratchDir = Files.createTempDir();
-
-    NeoDb db = NeoDbFactory.create(datasetKey, 1, cfg);
+    ImportStoreFactory factory = new ImportStoreFactory(cfg);
+    ImportStore db = factory.create(datasetKey, 1);
 
     URL url = getClass().getResource("/coldp/20");
     Path src = Paths.get(url.toURI());
 
     //Path src = cfg.sourceDir(datasetKey).toPath();
     java.nio.file.Files.createDirectories(src);
-    NeoCsvInserter ins = new NeoCsvInserter(src, ColdpReader.from(src), db, new DatasetSettings(), null) {
+    DataCsvInserter ins = new DataCsvInserter(src, ColdpReader.from(src), db, new DatasetSettings(), null) {
       @Override
-      protected void batchInsert() throws NormalizationFailedException, InterruptedException, InterruptedRuntimeException {
+      protected void insert() throws NormalizationFailedException, InterruptedException, InterruptedRuntimeException {
         throw new InterruptedRuntimeException("no inserts");
-      }
-
-      @Override
-      protected NodeBatchProcessor relationProcessor() {
-        return null;
       }
     };
 
@@ -54,7 +51,7 @@ public class NeoCsvInserterTest {
     } catch (InterruptedException e) {
       // good!
     } finally {
-      db.closeAndDelete();
+      db.close();
       FileUtils.deleteQuietly(cfg.archiveDir);
       FileUtils.deleteQuietly(cfg.scratchDir);
     }

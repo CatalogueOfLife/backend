@@ -3,19 +3,20 @@ package life.catalogue.importer.txttree;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.vocab.Issue;
+import life.catalogue.api.vocab.NomRelType;
 import life.catalogue.api.vocab.Setting;
 import life.catalogue.common.io.PathUtils;
 import life.catalogue.csv.CsvReader;
 import life.catalogue.csv.MappingInfos;
 import life.catalogue.csv.SourceInvalidException;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.NeoInserter;
+import life.catalogue.importer.DataInserter;
 import life.catalogue.importer.NormalizationFailedException;
 import life.catalogue.importer.bibtex.BibTexInserter;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoRel;
-import life.catalogue.importer.neo.model.NeoUsage;
-import life.catalogue.importer.neo.model.RelType;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameUsageData;
+import life.catalogue.importer.store.model.RelationData;
 import life.catalogue.interpreter.TxtTreeInterpreter;
 import life.catalogue.metadata.MetadataFactory;
 
@@ -23,6 +24,7 @@ import org.gbif.nameparser.api.NomCode;
 import org.gbif.txtree.SimpleTreeNode;
 import org.gbif.txtree.TreeLine;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,8 +32,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Set;
 
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Transaction;
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +42,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 import static life.catalogue.api.vocab.terms.TxtTreeTerm.*;
 
-public class TxtTreeInserter implements NeoInserter {
+public class TxtTreeInserter implements DataInserter {
   private static final Logger LOG = LoggerFactory.getLogger(TxtTreeInserter.class);
   private static final MappingInfos FLAGS = new MappingInfos();
   static {
@@ -51,7 +53,7 @@ public class TxtTreeInserter implements NeoInserter {
     FLAGS.setTaxonId(false);
   }
   private final Path folder;
-  private final NeoDb store;
+  private final ImportStore store;
   private final int datasetKey;
   private Path treeFile;
   private String treeFileName;
@@ -62,7 +64,7 @@ public class TxtTreeInserter implements NeoInserter {
   private final DatasetSettings settings;
   private final TxtTreeInterpreter interpreter;
 
-  public TxtTreeInserter(NeoDb store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
+  public TxtTreeInserter(ImportStore store, Path folder, DatasetSettings settings, ReferenceFactory refFactory) throws IOException {
     if (!Files.isDirectory(folder)) {
       throw new FileNotFoundException("Folder does not exist: " + folder);
     }
@@ -103,14 +105,9 @@ public class TxtTreeInserter implements NeoInserter {
   }
 
   private void addVerbatim(TreeLine tl){
-    VerbatimRecord v = new VerbatimRecord(datasetKey, tl.line, treeFileName, Tree);
+    VerbatimRecord v = new VerbatimRecord((Integer)datasetKey, tl.line, treeFileName, Tree);
     v.getTerms().put(indent, String.valueOf(tl.level));
     v.getTerms().put(content, tl.content);
-    if (tl.infos != null) {
-      for (var entry : tl.infos.entrySet()) {
-
-      }
-    }
     store.put(v);
     line2verbatimKey.put(tl.line, (int) v.getId());
   }
@@ -124,15 +121,12 @@ public class TxtTreeInserter implements NeoInserter {
       }
       LOG.info("Read tree and insert verbatim records from {}", treeFile);
       tree = org.gbif.txtree.Tree.simple(Files.newInputStream(treeFile), this::addVerbatim);
-      LOG.info("Read tree with {} nodes from {}", tree.size(), treeFile);
+      LOG.info("Read tree with {} nodes from {}", String.valueOf(tree.size()), treeFile);
       // insert names and taxa in depth first order
       int ordinal = 1;
       NomCode code = settings.getEnum(Setting.NOMENCLATURAL_CODE);
       for (SimpleTreeNode t : tree.getRoot()) {
-        try (Transaction tx = store.getNeo().beginTx()) {
-          recursiveNodeInsert(null, t, ordinal++, code);
-          tx.success();
-        }
+        recursiveNodeInsert(null, t, ordinal++, code);
       }
     } catch (Exception e) {
       throw new NormalizationFailedException("Failed to insert text tree from " + treeFile, e);
@@ -144,52 +138,61 @@ public class TxtTreeInserter implements NeoInserter {
     return MetadataFactory.readMetadata(folder);
   }
 
-  private void persist(NeoUsage u, SimpleTreeNode t) {
-    store.createNameAndUsage(u); // this removes the usage.name
-    if (u.getId() == null) {
+  private void persist(NameUsageData u, SimpleTreeNode t) {
+    if (!store.createNameAndUsage(u)) {
       // try again with line number as ID in case of duplicates
-      u.setId(String.valueOf(t.id));
-      store.usages().create(u);
+      u.ud.setId(String.valueOf(t.id));
+      if (u.ud.nameID == null) {
+        u.nd.setId(String.valueOf(t.id));
+        store.createNameAndUsage(u);
+      } else {
+        store.usages().create(u.ud);
+      }
     }
   }
 
-  private void recursiveNodeInsert(Node parent, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
-    NeoUsage u = usage(t, false, ordinal, parentCode);
-    final NomCode code = u.usage.getName().getCode();
+  private void recursiveNodeInsert(String parentID, SimpleTreeNode t, int ordinal, NomCode parentCode) throws InterruptedException {
+    var u = usage(t, parentID, false, ordinal, parentCode);
+    final NomCode code = u.nd.getName().getCode();
     persist(u, t);
-    if (parent != null) {
-      store.assignParent(parent, u.node);
-    }
     for (SimpleTreeNode syn : t.synonyms){
-      NeoUsage s = usage(syn, true, 0, code);
+      var s = usage(syn, u.ud.getId(), true, 0, code);
       persist(s, t);
-      store.createSynonymRel(s.node, u.node);
       if (syn.basionym) {
-        NeoRel rel = new NeoRel();
-        rel.setType(RelType.HAS_BASIONYM);
+        var rel = new RelationData<NomRelType>();
+        rel.setType(NomRelType.BASIONYM);
         rel.setVerbatimKey(line2verbatimKey.get(syn.id));
-        store.createNeoRel(u.nameNode, s.nameNode, rel);
+        rel.setFromID(u.ud.nameID);
+        rel.setToID(s.ud.nameID);
+        store.addNameRelation(rel);
       }
     }
     int childOrdinal = 1;
     for (SimpleTreeNode c : t.children){
-      recursiveNodeInsert(u.node, c, childOrdinal++, code);
+      recursiveNodeInsert(u.ud.getId(), c, childOrdinal++, code);
     }
   }
 
 
-  private NeoUsage usage(SimpleTreeNode tn, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
+  private NameUsageData usage(SimpleTreeNode tn, @Nullable String parentID, boolean synonym, int ordinal, NomCode parentCode) throws InterruptedException {
     VerbatimRecord v = store.getVerbatim(line2verbatimKey.get(tn.id));
     final int existingIssues = v.getIssues().size();
     // convert
     var tu = interpreter.interpret(tn, synonym, ordinal, parentCode, this::referenceExists);
     tu.usage.setVerbatimKey(v.getId());
+    if (parentID != null) {
+      if (store.usages().exists(parentID)) {
+        tu.usage.setParentId(parentID);
+      } else {
+        tu.issues.add(Issue.PARENT_ID_INVALID);
+      }
+    }
     // store issues?
     v.add(tu.issues.getIssues());
     if (existingIssues < v.getIssues().size()) {
       store.put(v);
     }
-    return new NeoUsage(tu);
+    return new NameUsageData(tu);
   }
 
   private boolean referenceExists(String id) {

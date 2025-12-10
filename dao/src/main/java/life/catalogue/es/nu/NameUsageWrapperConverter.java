@@ -272,7 +272,11 @@ public class NameUsageWrapperConverter implements DownwardConverter<NameUsageWra
     }
     // decision
     saveDecisions(nuw, doc);
-    prunePayload(nuw);
+
+    // WARN !!!
+    // TODO: Something wrong, we get null dataset keys and maybe other null properties in ES for some reason with this !!!
+    //
+    //prunePayload(nuw);
     doc.setPayload(encode(nuw));
     return doc;
   }

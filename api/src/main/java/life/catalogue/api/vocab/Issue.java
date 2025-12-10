@@ -487,6 +487,9 @@ public enum Issue {
 
   MISSPELLING_CONSOLIDATION(NAME_USAGE, Level.INFO,
     "A misspelled accepted names existed which has been converted into a synonym."),
+
+  BAD_BASIONYM_AUTHORSHIP(NAME, Level.WARNING,
+    "A basionym has itself a basionym authorship, i.e. an author in brackets")
   ;
 
   /**

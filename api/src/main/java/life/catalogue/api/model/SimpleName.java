@@ -94,9 +94,9 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     this.id = u.getId();
     this.name = u.getName().getScientificName();
     this.authorship = u.getName().getAuthorship();
-    this.phrase = u.getNamePhrase();
     this.rank = u.getRank();
     this.code = u.getName().getCode();
+    this.phrase = u.getNamePhrase();
     this.status = u.getStatus();
     this.parent = u.getParentId();
     if (u instanceof Taxon) {
@@ -328,6 +328,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
     return Objects.equals(id, that.id) &&
         Objects.equals(name, that.name) &&
         Objects.equals(authorship, that.authorship) &&
+        extinct == that.extinct &&
         rank == that.rank &&
         code == that.code &&
         group == that.group &&
@@ -338,7 +339,7 @@ public class SimpleName implements Comparable<SimpleName>, NameUsageCore {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, name, authorship, rank, code, group, status, phrase, parent);
+    return Objects.hash(id, name, authorship, extinct, rank, code, group, status, phrase, parent);
   }
 
   public int compareTo(SimpleName other) {

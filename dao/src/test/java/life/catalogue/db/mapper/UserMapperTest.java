@@ -8,6 +8,7 @@ import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.Users;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     assertEquals(11, mapper().search("", User.Role.ADMIN, page).size());
     // last login persistency
     var login = mapper().getByUsername("user8");
-    final var now = LocalDateTime.now();
+    final var now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
     login.setLastLogin(now);
     mapper().update(login);
     commit();
@@ -165,7 +166,7 @@ public class UserMapperTest extends MapperTestBase<UserMapper> {
     commit();
     final int key = u.getKey();
 
-    mapper().block(key, LocalDateTime.now());
+    mapper().block(key, LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
     u = mapper().get(key);
     assertTrue(u.isBlockedUser());
 

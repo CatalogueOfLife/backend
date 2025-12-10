@@ -42,15 +42,23 @@ public class CslDataConverter {
       src.getJournalAbbreviation(),
       src.getTitleShort(),
       toCSLNames(src.getAuthor()),
+      null, // chair
       toCSLNames(src.getCollectionEditor()),
       toCSLNames(src.getComposer()),
+      null, // compiler
       toCSLNames(src.getContainerAuthor()),
+      null, // contributor
+      null, // curator
       toCSLNames(src.getDirector()),
       toCSLNames(src.getEditor()),
       toCSLNames(src.getEditorialDirector()),
-      toCSLNames(src.getInterviewer()),
+      null, // executiveProducer
       toCSLNames(src.getIllustrator()),
+      toCSLNames(src.getInterviewer()),
+      null, // organizer,
       toCSLNames(src.getOriginalAuthor()),
+      null, // performer
+      null, // producer
       toCSLNames(src.getRecipient()),
       toCSLNames(src.getReviewedAuthor()),
       toCSLNames(src.getTranslator()),
@@ -69,6 +77,7 @@ public class CslDataConverter {
       src.getCallNumber(),
       src.getChapterNumber(),
       src.getCitationNumber(),
+      null, // citationKey
       src.getCitationLabel(),
       src.getCollectionNumber(),
       src.getCollectionTitle(),
@@ -96,7 +105,6 @@ public class CslDataConverter {
       src.getOriginalPublisherPlace(),
       src.getOriginalTitle(),
       src.getPage(),
-      src.getPageFirst(),
       src.getPMCID(),
       src.getPMID(),
       src.getPublisher(),

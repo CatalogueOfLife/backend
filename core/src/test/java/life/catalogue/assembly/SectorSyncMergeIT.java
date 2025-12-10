@@ -287,6 +287,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
         LOG.debug(n.getScientificName());
         switch (n.getScientificName()) {
           case "Aacanthocnema":
+            // from bionames
             assertNotNull(n.getPublishedInId());
             ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
             assertNotNull(ref);
@@ -296,6 +297,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             break;
 
           case "Aacanthocnema burckhardti":
+            // from bionames
             assertNotNull(n.getPublishedInId());
             ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
             assertNotNull(ref);
@@ -311,6 +313,7 @@ public class SectorSyncMergeIT extends SectorSyncTestBase {
             break;
 
           case "Aacanthocnema dobsoni":
+            // from afd
             assertNotNull(n.getPublishedInId());
             ref = rm.get(DSID.of(Datasets.COL, n.getPublishedInId()));
             assertNotNull(ref);

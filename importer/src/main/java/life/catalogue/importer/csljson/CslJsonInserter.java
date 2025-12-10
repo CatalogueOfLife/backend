@@ -8,7 +8,7 @@ import life.catalogue.api.vocab.Issue;
 import life.catalogue.common.func.ThrowingSupplier;
 import life.catalogue.common.io.UTF8IoUtils;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.neo.NeoDb;
+import life.catalogue.importer.store.ImportStore;
 
 import org.gbif.dwc.terms.Term;
 import org.gbif.dwc.terms.UnknownTerm;
@@ -33,13 +33,13 @@ public class CslJsonInserter {
   private static final Term CSLJSON_CLASS_TERM = new UnknownTerm(URI.create("http://citationstyles.org/CSL-JSON"), "csl", "CSL-JSON", true);
   private static final Logger LOG = LoggerFactory.getLogger(CslJsonInserter.class);
   private final int datasetKey;
-  private final NeoDb store;
+  private final ImportStore store;
   private final File cslJsonFile;
   private final ReferenceFactory refFactory;
   private final AtomicInteger counter = new AtomicInteger();
   private final boolean jsonLines;
 
-  public CslJsonInserter(NeoDb store, File cslJsonFile, boolean jsonLines, ReferenceFactory refFactory) {
+  public CslJsonInserter(ImportStore store, File cslJsonFile, boolean jsonLines, ReferenceFactory refFactory) {
     this.cslJsonFile = cslJsonFile;
     this.jsonLines = jsonLines;
     this.store = store;

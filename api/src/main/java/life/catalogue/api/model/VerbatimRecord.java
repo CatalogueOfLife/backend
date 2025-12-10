@@ -124,7 +124,11 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
   public void setType(Term type) {
     this.type = type;
   }
-  
+
+  public boolean isType(Term type) {
+    return this.type.equals(type);
+  }
+
   public Map<Term, String> getTerms() {
     return terms;
   }
@@ -265,6 +269,18 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     }
     return null;
   }
+
+  /**
+   * Like getRaw, but avoids returning a given value, e.g. the primary key or a record.
+   * @return the raw value without any unescaping
+   */
+  public String getRawButNot(Term term, String notValue) {
+    if (term != null) {
+      String val = terms.get(term);
+      return val != null && !val.equals(notValue) ? val : null;
+    }
+    return null;
+  }
   
   /**
    * @return the potentially unescaped value, replacing empty strings with true nulls
@@ -358,7 +374,23 @@ public class VerbatimRecord implements DSID<Integer>, IssueContainer, Serializab
     }
     return null;
   }
-  
+
+  /**
+   * Get the first non blank term for a list of terms with a value which is not the one given.
+   *
+   * @param terms list to try
+   */
+  @Nullable
+  public String getFirstRawNot(String notValue, Term... terms) {
+    for (Term t : terms) {
+      String val = getRaw(t);
+      if (val != null && !val.equals(notValue)) {
+        return val;
+      }
+    }
+    return null;
+  }
+
   /**
    * Get the first non blank term for a list of terms.
    *

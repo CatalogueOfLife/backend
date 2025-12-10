@@ -5,8 +5,11 @@ import life.catalogue.api.vocab.*;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.dao.ReferenceFactory;
-import life.catalogue.importer.neo.NeoDb;
-import life.catalogue.importer.neo.model.NeoUsage;
+import life.catalogue.importer.store.ImportStore;
+import life.catalogue.importer.store.model.NameData;
+import life.catalogue.importer.store.model.NameUsageData;
+import life.catalogue.importer.store.model.RelationData;
+import life.catalogue.importer.store.model.UsageData;
 import life.catalogue.interpreter.InterpreterUtils;
 import life.catalogue.interpreter.NameInterpreter;
 import life.catalogue.matching.NameValidator;
@@ -43,7 +46,7 @@ public class InterpreterBase {
   private static final Logger LOG = LoggerFactory.getLogger(InterpreterBase.class);
   protected static final Pattern AREA_VALUE_PATTERN = Pattern.compile("[\\w\\s:.-]+", Pattern.UNICODE_CHARACTER_CLASS);
   static final Pattern SEC_REF = Pattern.compile("^\\s*(sensu|sec\\.?|fide|auct\\.?|according to) (?!lat|str|non|nec|auct(?:orum)?)(.{3,})$", Pattern.CASE_INSENSITIVE);
-  protected final NeoDb store;
+  protected final ImportStore store;
   protected final DatasetSettings settings;
   protected final NameInterpreter nameInterpreter;
   private final Gazetteer distributionStandard;
@@ -55,7 +58,7 @@ public class InterpreterBase {
    * @param store
    * @param preferAtomsDefault should name atoms be preferred over the scientificName by default, i.e. if no dataset setting exists?
    */
-  public InterpreterBase(DatasetSettings settings, ReferenceFactory refFactory, NeoDb store, boolean preferAtomsDefault) {
+  public InterpreterBase(DatasetSettings settings, ReferenceFactory refFactory, ImportStore store, boolean preferAtomsDefault) {
     this.settings = settings;
     this.refFactory = refFactory;
     this.store = store;
@@ -88,6 +91,9 @@ public class InterpreterBase {
 
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer){
     return setReference(v, refIdTerm, refIdConsumer, null);
+  }
+  protected Reference setReference(Referenced obj, VerbatimRecord v, Term refIdTerm){
+    return setReference(v, refIdTerm, obj::setReferenceId, null);
   }
 
   protected Reference setReference(VerbatimRecord v, Term refIdTerm, Consumer<String> refIdConsumer, @Nullable Consumer<String> refCitationConsumer){
@@ -456,22 +462,28 @@ public class InterpreterBase {
     return settings.get(Setting.EXTINCT) != null && rank != null && !rank.isUncomparable() && !rank.higherThan(settings.getEnum(Setting.EXTINCT));
   }
 
-  public NeoUsage interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Map<Term, Identifier.Scope> altIdTerms) {
-    NeoUsage u;
+  public NameUsageData interpretUsage(Term idTerm, ParsedNameUsage pnu, Term taxStatusTerm, TaxonomicStatus defaultStatus, VerbatimRecord v, Term basionymIdTerm, Map<Term, Identifier.Scope> altIdTerms) {
+    // name data
+    var nn = new NameData(pnu);
+    if (basionymIdTerm != null) {
+      nn.basionymID = v.getRawButNot(basionymIdTerm, nn.getId());
+    }
+
     // a synonym by status?
     EnumNote<TaxonomicStatus> status = SafeParser.parse(TaxonomicStatusParser.PARSER, v.get(taxStatusTerm))
       .orElse(()->new EnumNote<>(defaultStatus, null), Issue.TAXONOMIC_STATUS_INVALID, v);
 
+    UsageData u;
     if (status.val.isBareName()) {
-      u = NeoUsage.createBareName(Origin.SOURCE, pnu.getName());
+      u = UsageData.buildBareName(Origin.SOURCE);
     } else if (status.val.isSynonym()) {
-      u = NeoUsage.createSynonym(Origin.SOURCE, pnu.getName(), status.val);
+      u = UsageData.buildSynonym(Origin.SOURCE, status.val);
       if (pnu.isExtinct()) {
         // flag this as synonyms cannot have the extinct flag
         v.add(Issue.NAME_CONTAINS_EXTINCT_SYMBOL);
       }
     } else {
-      u = NeoUsage.createTaxon(Origin.SOURCE, pnu.getName(), status.val);
+      u = UsageData.buildTaxon(Origin.SOURCE, status.val);
       var t = (Taxon) u.usage;
       if (pnu.isExtinct() || isExtinctBySetting(t.getRank())) {
         t.setExtinct(true);
@@ -485,7 +497,7 @@ public class InterpreterBase {
     u.setId(v.getRaw(idTerm));
     u.setVerbatimKey(v.getId());
     setTaxonomicNote(u.usage, pnu.getTaxonomicNote(), v);
-    u.homotypic = TaxonomicStatusParser.isHomotypic(status);
+    nn.homotypic = TaxonomicStatusParser.isHomotypic(status);
 
     if (u.isNameUsageBase()) {
       List<Identifier> ids = new ArrayList<>();
@@ -510,7 +522,7 @@ public class InterpreterBase {
         u.classification.setByTerm(t, v.get(t));
       }
     }
-    return u;
+    return new NameUsageData(nn, u);
   }
 
   protected void setEnvironment(Taxon t, VerbatimRecord v, Term environment) {
@@ -533,5 +545,33 @@ public class InterpreterBase {
     if (t.getEnvironments() == null || t.getEnvironments().isEmpty() && settings.containsKey(Setting.ENVIRONMENT)) {
       t.setEnvironments(Set.of(settings.getEnum(Setting.ENVIRONMENT)));
     }
+  }
+
+  protected String getRemarks(VerbatimRecord v, Term remarks) {
+    return getFormattedText(v, remarks);
+  }
+
+  protected <T extends Enum<?> > Optional <RelationData<T>> interpretRelations(VerbatimRecord rec, Term typeTerm, EnumParser < T > parser,
+                                                                               Term from, Term to,
+                                                                               @Nullable Term relatedScientificName, @Nullable Term remarks, @Nullable Term referenceID
+  ) {
+    RelationData<T> rel = new RelationData<>();
+    SafeParser<T> type = SafeParser.parse(parser, rec.get(typeTerm));
+    if (type.isPresent()) {
+      rel.setType(type.get());
+      rel.setFromID(rec.getRaw(from));
+      rel.setToID(rec.getRaw(to));
+      if (relatedScientificName != null) {
+        rel.setRelatedScientificName(rec.get(relatedScientificName));
+      }
+      if (remarks != null) {
+        rel.setRemarks(getRemarks(rec, remarks));
+      }
+      if (referenceID != null) {
+        setReference(rel, rec, referenceID);
+      }
+      return Optional.of(rel);
+    }
+    return Optional.empty();
   }
 }

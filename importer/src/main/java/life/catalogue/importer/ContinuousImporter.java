@@ -1,7 +1,5 @@
 package life.catalogue.importer;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import life.catalogue.api.vocab.Users;
 import life.catalogue.common.Managed;
 import life.catalogue.common.util.LoggingUtils;
@@ -11,7 +9,6 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.db.mapper.DatasetMapper;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +17,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import com.google.common.annotations.VisibleForTesting;
 
 
 /**

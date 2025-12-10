@@ -57,6 +57,7 @@ public class TextTreePrinter extends AbstractTreePrinter {
   private boolean extended;
   private final DSID<String> key;
   private final SectorInfoCache sectorInfoCache;
+  private final Set<String> basionyms = new HashSet<>();
 
   public TextTreePrinter(TreeTraversalParameter params, Set<Rank> ranks, @Nullable Boolean extinct,
                          @Nullable Rank countRank, @Nullable TaxonCounter taxonCounter,
@@ -75,6 +76,10 @@ public class TextTreePrinter extends AbstractTreePrinter {
   public TextTreePrinter showExtendedInfos() {
     extended = true;
     return this;
+  }
+
+  public void addBasionyms(Collection<String> basionymIds) {
+    basionyms.addAll(basionymIds);
   }
 
   /**
@@ -100,11 +105,14 @@ public class TextTreePrinter extends AbstractTreePrinter {
   }
 
   protected void start(SimpleName u) throws IOException {
+    //writer.write(u.getPath() + "\n"); # debugging the path
     writer.write(StringUtils.repeat(' ', level * indentation));
     if (u.getStatus() != null && u.getStatus().isSynonym()) {
       writer.write(Tree.SYNONYM_SYMBOL);
     }
-    //TODO: flag basionyms
+    if (basionyms.contains(u.getId())) {
+      writer.write(Tree.BASIONYM_SYMBOL);
+    }
     if (u.isExtinct()) {
       writer.write(Tree.EXTINCT_SYMBOL);
     }
@@ -115,6 +123,10 @@ public class TextTreePrinter extends AbstractTreePrinter {
     if (u.getAuthorship() != null) {
       writer.write(" ");
       writer.write(u.getAuthorship());
+    }
+    if (!StringUtils.isBlank(u.getPhrase())) {
+      writer.write(" ");
+      writer.write(u.getPhrase());
     }
     writer.write(" [");
     Rank r = ObjectUtils.coalesce(u.getRank(), Rank.UNRANKED);

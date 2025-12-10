@@ -13,7 +13,7 @@ import life.catalogue.matching.nidx.NamesIndexConfig;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.neo4j.graphdb.Transaction;
+
 
 import static org.junit.Assert.assertNotNull;
 
@@ -41,23 +41,19 @@ public class NormalizerFullIT extends NormalizerITBase {
   public void testSpecs() throws Exception {
     // run once to feed the names index
     normalize(0);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.names().all().forEach(n -> {
-        VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
-        assertNotNull(v);
-      });
-    }
-  
+    store.names().all().forEach(n -> {
+      VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+      assertNotNull(v);
+    });
+
     // run again to get proper matches!
-    store.closeAndDelete();
+    store.close();
     normalize(0);
-    try (Transaction tx = store.getNeo().beginTx()) {
-      store.names().all().forEach(n -> {
-        assertNotNull(n.getName().getNamesIndexType());
-        VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
-        assertNotNull(v);
-      });
-    }
+    store.names().all().forEach(n -> {
+      assertNotNull(n.getName().getNamesIndexType());
+      VerbatimRecord v = store.getVerbatim(n.getVerbatimKey());
+      assertNotNull(v);
+    });
   }
  
 }

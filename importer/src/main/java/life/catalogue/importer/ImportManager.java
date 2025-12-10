@@ -28,6 +28,7 @@ import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.matching.nidx.NameIndex;
 import life.catalogue.metadata.DoiResolver;
 import life.catalogue.release.AbstractProjectCopy;
@@ -81,6 +82,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   private final SqlSessionFactory factory;
   private final NameIndex index;
   private final NameUsageIndexService indexService;
+  private final ImportStoreFactory importStoreFactory;
 
   private final JobExecutor jobExecutor;
   private final EventBroker bus;
@@ -104,6 +106,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
     this.validator = validator;
     this.resolver = resolver;
     this.jobExecutor = jobExecutor;
+    this.importStoreFactory = new ImportStoreFactory(nCfg);
     this.downloader = new DownloadUtil(client, iCfg.githubToken, iCfg.githubTokenGeoff);
     this.index = index;
     this.imgService = imgService;
@@ -442,10 +445,9 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, downloader, factory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
-        () -> req.start(),
-          this::successCallBack,
-          this::errorCallBack);
+      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
+        req::start, this::successCallBack, this::errorCallBack
+      );
     }
   }
 
@@ -478,7 +480,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   @Override
-  public void start() {
+  public void start() throws Exception {
     LOG.info("Starting import manager with {} import threads and a queue of {} max.",
         iCfg.threads,
         iCfg.maxQueue);
@@ -498,7 +500,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   }
 
   @Override
-  public void stop() {
+  public void stop() throws Exception {
     // orderly shutdown running imports
     for (Future f : futures.values()) {
       f.cancel(true);

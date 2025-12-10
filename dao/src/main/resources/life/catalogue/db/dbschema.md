@@ -1,7 +1,4 @@
 
-
-
-
 ## DB Schema Changes
 are to be applied manually to prod.
 Dev can usually be wiped and started from scratch.
@@ -13,6 +10,11 @@ We could have used Liquibase, but we would not have trusted the automatic update
 and done it manually. So we can as well log changes here.
 
 ### PROD changes
+
+#### 2025-12-08 new basionym issue
+```
+ALTER TYPE ISSUE ADD VALUE 'BAD_BASIONYM_AUTHORSHIP';
+```
 
 #### 2025-12-02 add more issues
 ```

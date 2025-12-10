@@ -56,6 +56,10 @@
     u.id, n.scientific_name, n.authorship, u.name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
   </sql>
 
+  <sql id="SELECT_SIMPLE_INCL_ACCORDING">
+    u.id, n.scientific_name, n.authorship, concat_ws(' ', u.name_phrase, 'sensu ' || r.citation) AS name_phrase, COALESCE(u.extinct, FALSE) AS extinct, n.rank, n.code, u.status, u.parent_id
+  </sql>
+
   <sql id="SELECT_CONSOLIDATION_NAME">
     u.id, n.scientific_name, n.authorship, n.type, n.rank, u.status, u.parent_id, u.sector_key
   </sql>
@@ -167,6 +171,9 @@
 
   <sql id="FROM_SIMPLE">
     name_usage u JOIN name n ON u.dataset_key=n.dataset_key AND u.name_id=n.id
+  </sql>
+  <sql id="FROM_SIMPLE_INCL_ACCORDING">
+    <include refid="FROM_SIMPLE"/> LEFT JOIN reference r ON r.id=u.according_to_id AND r.dataset_key=u.dataset_key
   </sql>
 
   <sql id="FROM_SIMPLE_CACHED">
@@ -760,12 +767,12 @@
 
   <sql id="DEPTH_FIRST_ROOT">
     <if test="depthFirst">
-      ,concat_ws('|',<if test="ordered">u.ordinal, n.scientific_name, n.authorship,</if> u.id) || '|' AS path
+      ,concat_ws('|',<if test="ordered">u.ordinal, n.scientific_name, concat_ws(' ', n.authorship,u.name_phrase),</if> u.id) || '|' AS path
     </if>
   </sql>
   <sql id="DEPTH_FIRST">
     <if test="depthFirst">
-      ,concat_ws('|', x.path, <if test="ordered">not is_synonym(u.status), u.ordinal, n.scientific_name, n.authorship,</if> u.id) || '|' AS path
+      ,x.path || concat_ws('|', <if test="ordered">not is_synonym(u.status), u.ordinal, n.scientific_name, concat_ws(' ', n.authorship,u.name_phrase),</if> u.id) || '|' AS path
     </if>
   </sql>
 
@@ -820,6 +827,25 @@
     SELECT id, scientific_name, authorship, type, rank, status, sector_key
     FROM x
     ORDER BY x.scientific_name, x.authorship
+  </select>
+
+  <select id="processTreeSimpleInclAccordingTo" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    WITH RECURSIVE x AS(
+        SELECT <include refid="SELECT_SIMPLE_INCL_ACCORDING"/> <include refid="DEPTH_FIRST_ROOT"/>
+        FROM <include refid="FROM_SIMPLE_INCL_ACCORDING"/>
+        WHERE u.dataset_key=#{param.datasetKey} AND <include refid="WHERE_START"/>
+      UNION
+        SELECT <include refid="SELECT_SIMPLE_INCL_ACCORDING"/>  <include refid="DEPTH_FIRST"/>
+        FROM <include refid="FROM_SIMPLE_INCL_ACCORDING"/>
+        JOIN x ON x.id = u.parent_id
+        <where>
+          u.dataset_key=#{param.datasetKey}
+          <include refid="WHERE_UNION"/>
+        </where>
+    )
+    SELECT id, scientific_name, authorship, name_phrase, extinct, rank, code, status, parent_id
+    FROM x
+    <if test="depthFirst">ORDER BY x.path</if>
   </select>
 
   <select id="processTreeSimple" parameterType="map" resultMap="simpleResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">

@@ -12,9 +12,8 @@ import life.catalogue.common.io.Resources;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.es.NameUsageIndexService;
-import life.catalogue.event.BrokerConfig;
-import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageServiceFS;
+import life.catalogue.importer.store.ImportStoreFactory;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.img.ThumborService;
 import life.catalogue.junit.PgSetupRule;
@@ -64,12 +63,14 @@ public class ImportJobIT {
   private SectorDao sDao;
   private DecisionDao dDao;
   private DatasetDao datasetDao;
+  private ImportStoreFactory importStoreFactory;
 
 
   @Before
   public void init() throws Exception {
     cfg = TestConfigs.build();
     hc = HttpClients.createDefault();
+    importStoreFactory = new ImportStoreFactory(cfg.normalizer);
     diDao = new DatasetImportDao(SqlSessionFactoryRule.getSqlSessionFactory(), treeRepoRule.getRepo());
     indexService = NameUsageIndexService.passThru();
     NameDao nDao = new NameDao(SqlSessionFactoryRule.getSqlSessionFactory(), indexService, NameIndexFactory.passThru(), validator);
@@ -115,9 +116,9 @@ public class ImportJobIT {
     }
 
     ImportRequest req = ImportRequest.external(d.getKey(), Users.TESTER);
-    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), NameIndexFactory.passThru(), validator, null,
+    job = new ImportJob(req, d, cfg.importer, cfg.normalizer, new DownloadUtil(hc), SqlSessionFactoryRule.getSqlSessionFactory(), importStoreFactory,
+      NameIndexFactory.passThru(), validator, null,
       indexService, new ImageServiceFS(cfg.img, null), diDao, datasetDao, sDao, dDao, TestUtils.mockedBroker(), this::start, this::success, this::error);
-
   }
 
   @Test

@@ -120,7 +120,6 @@ public class CslUtil {
       data.getOriginalPublisherPlace() == null &&
       data.getOriginalTitle() == null &&
       data.getPage() == null &&
-      data.getPageFirst() == null &&
       data.getPMCID() == null &&
       data.getPMID() == null &&
       data.getPublisher() == null &&

@@ -1,5 +1,7 @@
 package life.catalogue.api.model;
 
+import de.undercouch.citeproc.bibtex.PageRanges;
+
 import life.catalogue.api.jackson.FuzzyDateCSLSerde;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
@@ -223,9 +225,8 @@ public class Citation {
 
     // pages
     if (page != null) {
-      PageRange pr = PageParser.parse(page);
+      PageRanges pr = PageParser.parse(page);
       builder.page(pr.getLiteral());
-      builder.pageFirst(pr.getPageFirst());
       if (pr.getNumberOfPages() != null) {
         builder.numberOfPages(String.valueOf(pr.getNumberOfPages()));
       }

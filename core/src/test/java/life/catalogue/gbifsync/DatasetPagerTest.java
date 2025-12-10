@@ -44,9 +44,9 @@ public class DatasetPagerTest {
     final JacksonJsonProvider jacksonJsonProvider = new JacksonJsonProvider(ApiModule.MAPPER);
     ClientConfig cfg = new ClientConfig(jacksonJsonProvider);
     cfg.register(new LoggingFeature(Logger.getLogger(getClass().getName()), Level.ALL, LoggingFeature.Verbosity.PAYLOAD_ANY, 1024));
-  
+
     final Client client = ClientBuilder.newClient(cfg);
-    
+
     DatasetPager pager = new DatasetPager(client, new GbifConfig(), LocalDate.of(2023, 5, 23));
 
     // test VASCAN

@@ -328,6 +328,7 @@ CREATE TYPE ISSUE AS ENUM (
   'NOMENCLATURAL_CODE_DIFFERS',
   'MISSING_AUTHORSHIP',
   'MISSPELLING_CONSOLIDATION'
+  'BAD_BASIONYM_AUTHORSHIP'
 );
 
 CREATE TYPE JOBSTATUS AS ENUM (
@@ -817,26 +818,6 @@ CREATE TABLE "user" (
   settings HSTORE
 );
 
-CREATE TABLE publisher (
-  key UUID PRIMARY KEY,
-  title TEXT,
-  description TEXT,
-  homepage TEXT,
-  city TEXT,
-  province TEXT,
-  country TEXT,
-  latitude NUMERIC(8, 5),
-  longitude NUMERIC(8, 5),
-  doc tsvector GENERATED ALWAYS AS (
-    setweight(to_tsvector('dataset', key::text), 'A') ||
-    setweight(to_tsvector('dataset', f_unaccent(title)), 'A') ||
-    setweight(to_tsvector('dataset', f_unaccent(coalesce(description,''))), 'B') ||
-    setweight(to_tsvector('dataset', f_unaccent(coalesce(city,''))), 'B') ||
-    setweight(to_tsvector('dataset', f_unaccent(coalesce(province,''))), 'B') ||
-    setweight(to_tsvector('dataset', f_unaccent(coalesce(country,''))), 'B')
-  ) STORED
-);
-
 
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
@@ -873,7 +854,6 @@ CREATE TABLE dataset (
   conversion_description TEXT,
   conversion_url TEXT,
   url TEXT,
-  feedback_url TEXT,
   logo TEXT,
   notes TEXT,
 
