@@ -228,8 +228,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>jakarta.el</groupId>
-      <artifactId>jakarta.el-api</artifactId>
+      <groupId>org.glassfish.expressly</groupId>
+      <artifactId>expressly</artifactId>
+      <version>5.0.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
