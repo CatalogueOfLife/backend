@@ -1,7 +1,4 @@
 
-
-
-
 ## DB Schema Changes
 are to be applied manually to prod.
 Dev can usually be wiped and started from scratch.
@@ -15,7 +12,9 @@ and done it manually. So we can as well log changes here.
 ### PROD changes
 
 #### 2025-12-08 new basionym issue
+```
 ALTER TYPE ISSUE ADD VALUE 'BAD_BASIONYM_AUTHORSHIP';
+```
 
 #### 2025-09-01 XR hangs on copy
 ```
