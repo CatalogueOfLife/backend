@@ -127,7 +127,7 @@ public class TaxonomicAlignJob extends BackgroundJob {
 
       dumpDockerLogs(client, container.getId(), new File(tmpDir, "align.log"));
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       LOG.error("Error running taxonomic alignment job {}", getKey(), e);
       throw e;
 
