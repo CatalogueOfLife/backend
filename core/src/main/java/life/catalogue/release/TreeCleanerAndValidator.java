@@ -255,12 +255,14 @@ public class TreeCleanerAndValidator implements Consumer<LinneanNameUsage> {
     if (NomCodeParser.isCodeCompliant(sn.getType())) {
       final var code = sn.getCode();
       if (code != null) {
-        var pCode = parents.stream()
+        var parent = parents.stream()
           .filter(p -> p.getCode() != null)
-          .findFirst().get().getCode();
-        if (code != pCode) {
-          issues.add(Issue.NOMENCLATURAL_CODE_DIFFERS);
-        }
+          .findFirst();
+        parent.ifPresent(p -> {
+          if (code != p.getCode()) {
+            issues.add(Issue.NOMENCLATURAL_CODE_DIFFERS);
+          }
+        });
       }
     }
   }
