@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -490,7 +491,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
    * Full Systema Diptera dataset with 170.000 names. Takes 2 minutes, be patient
    */
   @Test
-  @Disabled("large dataset that takes a long time")
+  @Disabled @Ignore("large dataset that takes a long time")
   public void acef101() throws Exception {
     normalize(101);
     UsageData t = usageByID("Sys-2476");
@@ -499,7 +500,7 @@ public class NormalizerACEFIT extends NormalizerITBase {
   }
   
   @Test
-  @Disabled("external dependency")
+  @Disabled @Ignore("external dependency")
   public void testGsdGithub() throws Exception {
     normalize(URI.create("https://raw.githubusercontent.com/Sp2000/colplus-repo/master/ACEF/201.tar.gz"));
   }

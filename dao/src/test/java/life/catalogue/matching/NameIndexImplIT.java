@@ -42,6 +42,7 @@ import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -113,7 +114,7 @@ public class NameIndexImplIT {
   }
 
   @Test
-  @Disabled("manual test for debugging highly concurrent read/writes")
+  @Disabled @Ignore("manual test for debugging highly concurrent read/writes")
   public void concurrency() throws Exception {
     setupPersistent();
     final int concurrency = 100;

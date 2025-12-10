@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -562,7 +563,7 @@ public class SectorSyncIT extends SectorSyncTestBase {
   }
 
   @Test
-  @Disabled("Work in progress")
+  @Disabled @Ignore("Work in progress")
   public void testMerge() throws Exception {
     final int d1key = dataRule.mapKey(DataFormat.COLDP, 0);
     final int d2key = dataRule.mapKey(DataFormat.DWCA, 1);

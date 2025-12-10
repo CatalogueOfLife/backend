@@ -12,13 +12,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
 import de.undercouch.citeproc.csl.CSLType;
 
 import static org.junit.Assert.*;
 
-@Disabled("The underlying crossref service is rather unreliable")
+@Disabled @Ignore("The underlying crossref service is rather unreliable")
 public class DoiResolverIT {
 
   static CloseableHttpClient http;

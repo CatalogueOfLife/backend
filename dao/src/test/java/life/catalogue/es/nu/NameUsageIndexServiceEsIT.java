@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -102,7 +103,7 @@ public class NameUsageIndexServiceEsIT extends EsReadWriteTestBase {
   }
 
   @Test
-  @Disabled
+  @Disabled @Ignore
   public void issue407() throws IOException {
 
     int USER_ID = 10;

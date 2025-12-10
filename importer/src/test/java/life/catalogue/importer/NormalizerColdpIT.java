@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -205,7 +206,7 @@ public class NormalizerColdpIT extends NormalizerITBase {
   }
 
   @Test
-  @Disabled("work in progress")
+  @Disabled @Ignore("work in progress")
   public void testExcelMites() throws Exception {
     normalizeExcel("Torotrogla_villosa.xlsx", NomCode.ZOOLOGICAL);
     store.debug();

@@ -9,10 +9,11 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
-@Disabled("require github raw to always work. Currently down")
+@Disabled @Ignore("require github raw to always work. Currently down")
 public class DistributedArchiveServiceTest {
   
   static CloseableHttpClient client;

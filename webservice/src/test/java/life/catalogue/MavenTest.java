@@ -3,7 +3,8 @@
  import life.catalogue.common.id.IdConverter;
  import life.catalogue.common.util.HumanSize;
 
- import org.junit.jupiter.api.Disabled;
+ import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
  import org.junit.Test;
 
 /**
@@ -18,7 +19,7 @@ public class MavenTest {
   }
 
   @Test
-  @Disabled("To list encoded ids to prepare test data manually")
+  @Disabled @Ignore("To list encoded ids to prepare test data manually")
   public void encode() throws Exception {
     int y;
     for (int x = 1; x < 100; x++) {

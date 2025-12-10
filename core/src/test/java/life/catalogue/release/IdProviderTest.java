@@ -23,6 +23,7 @@ import java.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
 import static life.catalogue.api.vocab.TaxonomicStatus.*;
@@ -175,7 +176,7 @@ public class IdProviderTest {
   }
 
   @Test
-  @Disabled("work in progress")
+  @Disabled @Ignore("work in progress")
   public void misappliedAndUnparsable() throws Exception {
     // 1st attempt
     prevIdsByAttempt.put(1, List.of(

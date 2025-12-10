@@ -28,6 +28,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.*;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -123,7 +124,7 @@ public class ImportJobIT {
   }
 
   @Test
-  @Disabled("require github raw to always work")
+  @Disabled @Ignore("require github raw to always work")
   public void proxy() {
     setupAndRun(DataFormat.PROXY, "proxy/1011.yaml");
     job.run();

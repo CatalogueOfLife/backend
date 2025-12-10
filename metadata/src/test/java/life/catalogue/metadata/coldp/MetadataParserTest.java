@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -278,7 +279,7 @@ public class MetadataParserTest {
   }
 
    @Test
-   @Disabled
+   @Disabled @Ignore
    public void manualFile() throws Exception {
     Optional<DatasetWithSettings> m = ColdpMetadataParser.readYAML(new FileInputStream("/Users/markus/code/data/data-col-hierarchy/metadata.yaml"));
     Dataset d = m.get().getDataset();

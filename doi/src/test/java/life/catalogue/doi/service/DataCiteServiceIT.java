@@ -20,6 +20,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -30,7 +31,7 @@ import jakarta.ws.rs.client.ClientBuilder;
 
 import static org.junit.Assert.*;
 
-@Disabled("Using real DataCite API - manual test only")
+@Disabled @Ignore("Using real DataCite API - manual test only")
 public class DataCiteServiceIT {
   static final Logger LOG = Logger.getLogger(DataCiteServiceIT.class.getName());
 
@@ -191,7 +192,7 @@ public class DataCiteServiceIT {
   }
 
   @Test
-  @Disabled("can be used to manually publish dois from a list")
+  @Disabled @Ignore("can be used to manually publish dois from a list")
   public void publishList() throws Exception {
     DoiConfig cfg = new DoiConfig();
     cfg.api = "https://api.datacite.org";

@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -26,7 +27,7 @@ public class HttpClientBuilderTest {
   }
 
   @Test
-  @Disabled
+  @Disabled @Ignore
   public void downloadNaturalis() throws IOException {
     var f = File.createTempFile("download", ".zip");
     var env = new Environment("prod");

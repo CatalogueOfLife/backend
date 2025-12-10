@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 
 import jakarta.ws.rs.client.Client;
@@ -32,7 +33,7 @@ import static org.junit.Assert.*;
  * Same test again as in doi package, but using the Dropwizard jersey client
  * which apparently behaves differently and uses http client under the hood.
  */
-@Disabled("Using real DataCite API - manual test only")
+@Disabled @Ignore("Using real DataCite API - manual test only")
 public class DataCiteServiceIT2 {
   static final Logger LOG = Logger.getLogger(DataCiteServiceIT2.class.getName());
 

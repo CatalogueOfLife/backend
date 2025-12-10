@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -38,14 +39,14 @@ public class GBIFAuthenticationTest {
   }
   
   @Test
-  @Disabled("GBIF service needs to be mocked - this uses live services")
+  @Disabled @Ignore("GBIF service needs to be mocked - this uses live services")
   public void authenticateGBIF() {
     Assert.assertEquals("markus", gbif.authenticateGBIF("markus", "xxx"));
     Assert.assertEquals("colplus", gbif.authenticateGBIF("colplus", "xxx"));
   }
   
   @Test
-  @Disabled("GBIF service needs to be mocked - this uses live services")
+  @Disabled @Ignore("GBIF service needs to be mocked - this uses live services")
   public void getUser() throws URISyntaxException {
     User u = gbif.getFullGbifUser("colplus");
     Assert.assertNotNull(u);

@@ -7,6 +7,7 @@ import life.catalogue.api.vocab.TaxonomicStatus;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class ReleasedIdsTest {
   }
 
   @Test
-  @Disabled("manual test to check memory footprint")
+  @Disabled @Ignore("manual test to check memory footprint")
   public void memory() throws InterruptedException {
     init(1000000);
     System.out.println("DONE");

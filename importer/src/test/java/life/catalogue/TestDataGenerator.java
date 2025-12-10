@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
@@ -50,7 +51,7 @@ import jakarta.validation.Validation;
  * Run the respective "test" whenever you want the test resource to be changed based on newer archive imports.
  * Note that the test data resources must live in the core module, not in the importer (which does hold the archives though)
  */
-@Disabled("for manual use only")
+@Disabled @Ignore("for manual use only")
 public class TestDataGenerator {
   final static SqlSessionFactoryRule pg = new PgSetupRule(); // new PgConnectionRule("col", "postgres", "postgres", 100);
   final static TreeRepoRule treeRepoRule = new TreeRepoRule();

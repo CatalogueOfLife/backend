@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -543,7 +544,7 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   }
 
   @Test
-  @Disabled
+  @Disabled @Ignore
   public void testExternal() throws Exception {
 
     //normalize(Paths.get("/Users/markus/Desktop/antcat"));

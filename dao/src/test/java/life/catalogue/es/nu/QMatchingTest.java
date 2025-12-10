@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -91,7 +92,7 @@ public class QMatchingTest extends EsReadTestBase {
   }
 
   @Test
-  @Disabled("Bad use of ScinameNormalizer in indexing/querying")
+  @Disabled @Ignore("Bad use of ScinameNormalizer in indexing/querying")
   public void fuzzyAndPrefix() throws IOException {
     EsTestUtils.indexCrocodiles(this);
 
@@ -138,7 +139,7 @@ public class QMatchingTest extends EsReadTestBase {
   }
 
   @Test
-  @Disabled("Bad use of ScinameNormalizer in indexing/querying")
+  @Disabled @Ignore("Bad use of ScinameNormalizer in indexing/querying")
   public void fuzzyAndWholeWordsOnly() throws IOException {
     EsTestUtils.indexCrocodiles(this);
 

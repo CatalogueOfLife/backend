@@ -19,12 +19,13 @@ import java.util.function.Consumer;
 
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-@Disabled("manual tests to detect the indexing memory leak")
+@Disabled @Ignore("manual tests to detect the indexing memory leak")
 public class NameUsageProcessorMEM {
 
   @ClassRule
@@ -36,7 +37,7 @@ public class NameUsageProcessorMEM {
   private NameMapper nm;
 
   @Test
-  @Disabled
+  @Disabled @Ignore
   public void createTestData() {
 
     try (SqlSession session = pg.getSqlSessionFactory().openSession(false)) {

@@ -11,6 +11,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -302,7 +303,7 @@ public class DwcaReaderTest {
   }
 
   @Test
-  @Disabled("local test only")
+  @Disabled @Ignore("local test only")
   public void fromFile() throws Exception {
     try (var dir = TempFile.directory();
          var zip = TempFile.file()

@@ -5,6 +5,7 @@ import life.catalogue.common.date.FuzzyDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Ignore;
 import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
 
@@ -49,7 +50,7 @@ public class CitationTest {
    * Make sure this renders via CSL.
    */
   @Test
-  @Disabled
+  @Disabled @Ignore
   public void citationStringOnly() {
     assertCitation("Corona epidemic forever.");
     assertCitation("Schneider, B., & Berners Lee, T. (2024). Corona epidemic forever.");
