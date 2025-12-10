@@ -57,7 +57,7 @@
         commons-lang3, caffeine, guava, jersey, commons-text, servlet api, httpclient,
         liquibase, freemarker, jetty, jackson, metrics, etc.
     -->
-    <dropwizard.version>4.0.8</dropwizard.version>
+    <dropwizard.version>4.0.16</dropwizard.version>
 
     <antlr.version>4.13.2</antlr.version>
     <assertj.version>3.11.1</assertj.version>
