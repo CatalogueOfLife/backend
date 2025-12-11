@@ -21,8 +21,8 @@ ENV ZK_TIMESTAMP=-1
 # Directories and perms
 RUN mkdir -p /data/$APP_ARTIFACT && \
     mkdir -p /usr/local/gbif/ && \
-    groupadd -r $USER -g 1000 && \
-    useradd -r -g $USER -u 1000 -m $USER && \
+    addgroup -g 1000 $USER && \
+    adduser -G $USER -u 1000 -D $USER && \
     chown -R $USER:$USER /data/$APP_ARTIFACT && \
     chown -R $USER:$USER /usr/local/gbif/
 
