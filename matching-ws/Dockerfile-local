@@ -1,5 +1,5 @@
 # Use an official Maven runtime as a parent image
-FROM maven:3.8.5-openjdk-11 AS builder
+FROM maven:3.9.11-eclipse-temurin-21-alpine AS builder
 
 # Set the working directory in the container
 WORKDIR /app

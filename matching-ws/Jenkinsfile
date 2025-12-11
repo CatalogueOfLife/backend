@@ -38,6 +38,13 @@ pipeline {
                         usernamePassword(credentialsId: 'col', usernameVariable: 'CLB_USER', passwordVariable: 'CLB_PASSWORD')]) {
                 sh  "rm -Rf ${env.WORKSPACE}/matching-ws/index-build"
                 sh  "java $JVM_OPTIONS -jar ${env.WORKSPACE}/matching-ws/target/matching-ws-*-exec.jar  \
+                     --add-opens=java.base/java.lang=ALL-UNNAMED \
+                     --add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+                     --add-opens=java.base/java.io=ALL-UNNAMED \
+                     --add-opens=java.base/java.util=ALL-UNNAMED \
+                     --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+                     --add-opens=jdk.compiler/com.sun.tools.javac=ALL-UNNAMED \
+                     --add-opens=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
                      --spring.cloud.bootstrap.location=${env.WORKSPACE}/matching-ws/src/main/resources/bootstrap.yml \
                      --mode=INDEX \
                      --server.port=0 \

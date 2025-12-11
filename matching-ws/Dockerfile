@@ -1,6 +1,5 @@
 # Use an official Maven runtime as a parent image
-FROM maven:3.8.5-openjdk-11 AS builder
-
+FROM maven:3.9.11-eclipse-temurin-21-alpine AS builder
 # Set the working directory in the container
 WORKDIR /app
 
@@ -75,7 +74,7 @@ RUN if [ -n "$CLB_DATASET_ID" ]; then \
 RUN echo "spring.cloud.zookeeper.discovery.metadata.timestamp=$(date +%s%3N)" > /tmp/timestamp.properties
 
 # Copy the executable JAR file from the builder image to the new image
-FROM openjdk:11-jdk-slim-sid
+FROM eclipse-temurin:21
 
 # Set environment variables
 ARG DEBIAN_FRONTEND=noninteractive
