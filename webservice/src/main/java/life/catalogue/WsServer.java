@@ -452,7 +452,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // shared read only resources
     WsROServer.registerReadOnlyResources(j, cfg, getSqlSessionFactory(), executor,
-      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      ddao, dsdao, exportManager.blocked(), diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService,
       imgService, feedback, doiResolver, coljersey
     );

@@ -43,6 +43,7 @@ import org.gbif.dwc.terms.TermFactory;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -245,7 +246,8 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // shared read only resources
     registerReadOnlyResources(j, cfg, getSqlSessionFactory(), null,
-      ddao, dsdao, diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
+      ddao, dsdao, new AtomicBoolean(),
+      diDao, dupeDao, edao, exdao, ndao, pdao, spdao, rdao, tdao, sdao, decdao, trDao, txtrDao,
       searchService, suggestService, indexService, imgService,
       FeedbackService.passThru(), doiResolver, coljersey
     );
@@ -273,7 +275,7 @@ public class WsROServer extends Application<WsServerConfig> {
   }
 
   static void registerReadOnlyResources(JerseyEnvironment j, WsServerConfig cfg, SqlSessionFactory factory,
-                                        @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao,
+                                        @Nullable JobExecutor exec, DatasetDao ddao, DatasetSourceDao dsdao, AtomicBoolean exportBlocker,
                                         DatasetImportDao diDao, DuplicateDao dupeDao, EstimateDao edao, DatasetExportDao exdao, NameDao ndao, PublisherDao pdao, SectorPublisherDao spdao, ReferenceDao rdao, TaxonDao tdao, SynonymDao sdao, DecisionDao decdao, TreeDao trDao, TxtTreeDao txtrDao,
                                         NameUsageSearchService searchService, NameUsageSuggestionService suggestService, NameUsageIndexService indexService,
                                         ImageService imgService, FeedbackService feedbackService, DoiResolver doiResolver, ColJerseyBundle coljersey) {
@@ -300,7 +302,7 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new VernacularResource());
 
     // global resources
-    j.register(new ExportResource(exdao, cfg));
+    j.register(new ExportResource(exdao, exportBlocker, cfg));
     j.register(new NameUsageSearchResource(searchService));
     j.register(new PublisherResource(pdao));
     j.register(new RobotsResource());

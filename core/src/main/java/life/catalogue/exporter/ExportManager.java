@@ -2,6 +2,7 @@ package life.catalogue.exporter;
 
 import life.catalogue.api.event.DatasetChanged;
 import life.catalogue.api.event.DatasetListener;
+import life.catalogue.api.exception.UnavailableException;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.DatasetExport;
 import life.catalogue.api.model.ExportRequest;
@@ -15,6 +16,7 @@ import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.img.ImageService;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -32,6 +34,7 @@ public class ExportManager implements DatasetListener {
   private final JobExecutor executor;
   private final DatasetExportDao dao;
   private final DatasetImportDao diDao;
+  private final AtomicBoolean blocked = new AtomicBoolean(false);
 
   public ExportManager(ExporterConfig cfg, SqlSessionFactory factory, JobExecutor executor, ImageService imageService,
                        DatasetExportDao exportDao, DatasetImportDao diDao) {
@@ -65,6 +68,10 @@ public class ExportManager implements DatasetListener {
     return null;
   }
 
+  public AtomicBoolean blocked() {
+    return blocked;
+  }
+
   public UUID submit(ExportRequest req, int userKey) throws IllegalArgumentException {
     UUID prev = exists(req);
     if (prev != null) {
@@ -75,6 +82,9 @@ public class ExportManager implements DatasetListener {
       }
     }
     validate(req);
+    if (blocked.get()) {
+      throw new UnavailableException("New export requests are currently not accepted.");
+    }
     DatasetExportJob job;
     switch (req.getFormat()) {
       case COLDP:

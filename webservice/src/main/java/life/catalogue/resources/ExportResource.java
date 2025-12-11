@@ -13,6 +13,9 @@ import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.jersey.MoreHttpHeaders;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import life.catalogue.exporter.ExportManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,11 +32,13 @@ import jakarta.ws.rs.core.Response;
 public class ExportResource {
   private final WsServerConfig cfg;
   private final DatasetExportDao dao;
+  private final AtomicBoolean exportBlocker;
 
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(ExportResource.class);
 
-  public ExportResource(DatasetExportDao dao, WsServerConfig cfg) {
+  public ExportResource(DatasetExportDao dao, AtomicBoolean exportBlocker, WsServerConfig cfg) {
+    this.exportBlocker = exportBlocker;
     this.cfg = cfg;
     this.dao = dao;
   }
@@ -41,6 +46,27 @@ public class ExportResource {
   @GET
   public ResultPage<DatasetExport> list(@BeanParam ExportSearchRequest filter, @Valid @BeanParam Page page) {
     return dao.list(filter, page);
+  }
+
+  @GET
+  @Path("blocked")
+  public boolean isBlocked() {
+    return exportBlocker.get();
+  }
+
+  @POST
+  @Path("blocked")
+  @RolesAllowed({Roles.ADMIN})
+  public boolean block() {
+    exportBlocker.set(true);
+    return true;
+  }
+
+  @DELETE
+  @Path("blocked")
+  @RolesAllowed({Roles.ADMIN})
+  public void deblock() {
+    exportBlocker.set(false);
   }
 
   @GET
