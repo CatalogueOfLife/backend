@@ -11,7 +11,6 @@ import life.catalogue.db.mapper.legacy.model.LResponse;
 import life.catalogue.dw.jersey.filter.LegacyAPI;
 import life.catalogue.dw.jersey.filter.VaryAccept;
 
-import java.net.URI;
 import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;

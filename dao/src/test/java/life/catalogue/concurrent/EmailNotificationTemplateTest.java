@@ -6,11 +6,13 @@ import life.catalogue.config.MailConfig;
 
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertNotNull;
 
 public abstract class EmailNotificationTemplateTest {
 
-  public abstract BackgroundJob buildJob();
+  public abstract BackgroundJob buildJob() throws IOException;
 
   @Test
   public void templates() throws Exception {

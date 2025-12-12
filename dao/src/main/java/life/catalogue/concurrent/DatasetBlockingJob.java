@@ -46,7 +46,7 @@ public abstract class DatasetBlockingJob extends BackgroundJob {
   /**
    * Loads the dataset and throws an IAE if it does not exist, is deleted or does not contain and data yet.
    */
-  protected Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
+  protected static Dataset loadDataset(SqlSessionFactory factory, int datasetKey){
     try (SqlSession session = factory.openSession(false)) {
       Dataset dataset = session.getMapper(DatasetMapper.class).get(datasetKey);
       if (dataset == null || dataset.getDeleted() != null) {

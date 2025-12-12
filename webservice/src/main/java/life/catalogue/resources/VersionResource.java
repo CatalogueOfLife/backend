@@ -1,7 +1,5 @@
 package life.catalogue.resources;
 
-import life.catalogue.WsServerConfig;
-
 import java.time.LocalDateTime;
 
 import jakarta.ws.rs.GET;
@@ -17,8 +15,8 @@ public class VersionResource {
   private final String version;
   private final LocalDateTime startup;
 
-  public VersionResource(WsServerConfig cfg, LocalDateTime startup) {
-    version = cfg.versionString();
+  public VersionResource(String version, LocalDateTime startup) {
+    this.version = version;
     this.startup = startup;
   }
 

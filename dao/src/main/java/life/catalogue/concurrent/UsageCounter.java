@@ -81,6 +81,10 @@ public class UsageCounter {
     return taxCounter.get() + synCounter.get() + bareCounter.get();
   }
 
+  public int get() {
+    return size();
+  }
+
   public boolean isEmpty() {
     return taxCounter.get() == 0 && synCounter.get() == 0 && bareCounter.get() == 0;
   }

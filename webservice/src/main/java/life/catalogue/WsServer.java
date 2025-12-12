@@ -6,7 +6,6 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.assembly.SyncManager;
 import life.catalogue.cache.CacheFlush;
-import life.catalogue.cache.UsageCache;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.command.*;
 import life.catalogue.common.io.DownloadUtil;
@@ -72,6 +71,7 @@ import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
 import life.catalogue.resources.legacy.LegacyWebserviceResource;
+import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
@@ -445,7 +445,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new DatasetJobResource(getSqlSessionFactory(), ddao, syncManager, copyFactory, executor));
     j.register(new DatasetReviewerResource(adao));
     j.register(new DatasetTaxDiffResource(executor, getSqlSessionFactory(), docker, cfg));
-    j.register(new NameUsageMatchingResource(cfg, executor, getSqlSessionFactory(), matcherFactory));
+    j.register(new NameUsageMatchingResource(cfg.matching, executor, getSqlSessionFactory(), matcherFactory));
     j.register(new LegacyWebserviceResource(cfg, env.metrics(), getSqlSessionFactory()));
     j.register(new SectorDiffResource(sDiff));
     j.register(new SectorResource(secdao, fmsDao, siDao, syncManager));
@@ -462,6 +462,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new OpenApiResource(OpenApiFactory.build(cfg, env)));
     j.register(new ImporterResource(cfg, importManager, diDao, ddao));
     j.register(new JobResource(cfg.job, executor));
+    j.register(new NameParserAdminResource(getSqlSessionFactory()));
     j.register(new NamesIndexResource(ni, getSqlSessionFactory(), cfg, executor));
     j.register(new ResolverResource(doiResolver));
     j.register(new UserResource(auth.getJwtCodec(), udao, auth.getIdService()));

@@ -118,19 +118,6 @@ public class NormalizerConfig {
   }
 
   /**
-   * Creates a new random & unique scratch file that can e.g. be used for uploads.
-   */
-  public File uploadFile() {
-    return uploadFile("", "");
-  }
-  public File uploadFile(String suffix) {
-    return uploadFile("", suffix);
-  }
-  public File uploadFile(String prefix, String suffix) {
-    return new File(scratchDir, "upload/" + prefix + UUID.randomUUID() + suffix);
-  }
-
-  /**
    * Makes sure all configured directories do actually exist and create them if missing
    * @return true if at least one dir was newly created
    */

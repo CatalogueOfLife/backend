@@ -102,6 +102,10 @@ public class TreeTraversalParameter {
     return taxonID;
   }
 
+  public DSID<String> getTaxonDSID() {
+    return taxonID == null ? null : DSID.of(datasetKey, taxonID);
+  }
+
   public void setTaxonID(String taxonID) {
     this.taxonID = taxonID;
   }

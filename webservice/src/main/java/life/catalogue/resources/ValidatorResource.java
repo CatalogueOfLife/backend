@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import io.dropwizard.auth.Auth;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 
 @Path("/validator")

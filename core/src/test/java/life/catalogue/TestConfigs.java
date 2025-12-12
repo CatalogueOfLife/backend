@@ -1,10 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.GbifConfig;
-import life.catalogue.config.ImporterConfig;
-import life.catalogue.config.NormalizerConfig;
-import life.catalogue.config.ReleaseConfig;
+import life.catalogue.config.*;
 import life.catalogue.db.PgConfig;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.exporter.ExporterConfig;
@@ -24,6 +21,7 @@ public class TestConfigs implements ExporterConfig {
 
   public ImporterConfig importer = new ImporterConfig();
   public NormalizerConfig normalizer = new NormalizerConfig();
+  public MatchingConfig matching = new MatchingConfig();
   public ImgConfig img = new ImgConfig();
   public ReleaseConfig release = new ReleaseConfig();
   public ProjectReleaseConfig projectRelease = new ProjectReleaseConfig();
@@ -45,6 +43,7 @@ public class TestConfigs implements ExporterConfig {
 
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
+    cfg.matching.uploadDir = Files.createTempDir();
     cfg.img.repo = cfg.normalizer.scratchDir.toPath();
     cfg.job.downloadDir = Files.createTempDir();
 
@@ -55,6 +54,7 @@ public class TestConfigs implements ExporterConfig {
     FileUtils.deleteQuietly(job.downloadDir);
     FileUtils.deleteQuietly(normalizer.scratchDir);
     FileUtils.deleteQuietly(normalizer.archiveDir);
+    FileUtils.deleteQuietly(matching.uploadDir);
   }
 
   @Override

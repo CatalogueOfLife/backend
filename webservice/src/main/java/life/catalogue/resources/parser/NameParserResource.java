@@ -1,11 +1,10 @@
 package life.catalogue.resources.parser;
 
-import life.catalogue.api.model.*;
-import life.catalogue.api.search.QuerySearchRequest;
+import life.catalogue.api.model.IssueContainer;
+import life.catalogue.api.model.Name;
+import life.catalogue.api.model.ParsedNameUsage;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.Issue;
-import life.catalogue.dao.ParserConfigDao;
-import life.catalogue.dw.auth.Roles;
 import life.catalogue.parser.NameParser;
 
 import org.gbif.nameparser.api.NomCode;
@@ -16,18 +15,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.dropwizard.auth.Auth;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 
@@ -38,14 +36,6 @@ public class NameParserResource {
   @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(NameParserResource.class);
   private static final NameParser parser = NameParser.PARSER;
-  private final ParserConfigDao dao;
-  private final SqlSessionFactory factory;
-
-  public NameParserResource(SqlSessionFactory factory) {
-    dao = new ParserConfigDao(factory);
-    this.factory = factory;
-
-  }
 
   public static class CRName implements IssueContainer {
     private NomCode code;
@@ -218,45 +208,4 @@ public class NameParserResource {
       return Optional.empty();
     }
   }
-
-  @GET
-  @Path("config")
-  public ResultPage<ParserConfig> searchConfig(@BeanParam QuerySearchRequest request, @Valid @BeanParam Page page) {
-    return dao.search(request, page);
-  }
-
-  @POST
-  @RolesAllowed({Roles.ADMIN})
-  @Path("config")
-  public String createConfig(@Valid ParserConfig config, @Auth User user) {
-    dao.add(config, user.getKey());
-    return config.getId();
-  }
-
-  @POST
-  @RolesAllowed({Roles.ADMIN})
-  @Path("config/batch")
-  public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth User user) {
-    List<String> ids = new ArrayList<>(configs.size());
-    for (ParserConfig pc : configs) {
-      if (pc == null) continue;
-      dao.add(pc, user.getKey());
-      ids.add(pc.getId());
-    }
-    return ids;
-  }
-
-  @GET
-  @Path("config/{id}")
-  public ParserConfig getConfig(@PathParam("id") String id) {
-    return dao.get(id);
-  }
-
-  @DELETE
-  @Path("config/{id}")
-  @RolesAllowed({Roles.ADMIN})
-  public void deleteConfig(@PathParam("id") String id, @Auth User user) {
-    dao.deleteName(id, user.getKey());
-  }
-
 }

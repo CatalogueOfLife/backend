@@ -12,9 +12,7 @@ import life.catalogue.api.vocab.MatchType;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.api.vocab.TaxonomicStatus;
 import life.catalogue.concurrent.BackgroundJob;
-import life.catalogue.concurrent.DatasetBlockingJob;
 import life.catalogue.concurrent.JobExecutor;
-import life.catalogue.concurrent.JobPriority;
 import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.DatasetInfoCache;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -222,46 +220,46 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   public UsageMatcher persistent(int datasetKey) throws IOException {
     if (!matchers.containsKey(datasetKey)) {
-      UsageMatcher m = buildNewMatcher(datasetKey);
+      UsageMatcher m = buildPersistentMatcher(datasetKey);
       matchers.put(datasetKey, m);
     }
     return matchers.get(datasetKey);
   }
 
-  private UsageMatcher buildNewMatcher(int datasetKey) throws IOException {
+  private UsageMatcher buildPersistentMatcher(int datasetKey) throws IOException {
     if (runningBuilds.containsKey(datasetKey)) {
       throw new IllegalStateException("Matcher for dataset " + datasetKey + " is already being built. Please try again in a few minutes");
     }
     runningBuilds.put(datasetKey, LocalDateTime.now());
     try {
-      var f = cfg.dir(datasetKey);
-
-      UsageMatcherAbstractStore store;
-      if (cfg.chronicle) {
-        LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
-        long count;
-        List<SimpleNameCached> samples;
-        try (SqlSession s = factory.openSession()) {
-          var um = s.getMapper(NameUsageMapper.class);
-          count = 1000 + um.count(datasetKey);
-          samples = um.listSN(datasetKey, new Page(0,5));
-        }
-        // this can take very long and will block !!!
-        store = UsageMatcherChronicleStore.build(datasetKey, f, count, samples);
-
-      } else {
-        LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
-        DBMaker.Maker maker = DBMaker
-          .fileDB(f)
-          .fileMmapEnableIfSupported();
-        store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
+      try (SqlSession s = factory.openSession()) {
+        var um = s.getMapper(NameUsageMapper.class);
+        int count = 1000 + um.count(datasetKey);
+        var samples = um.listSN(datasetKey, new Page(0,5));
+        return buildPersistentMatcher(datasetKey, samples, count, cfg, nameIndex);
       }
-      return new UsageMatcher(datasetKey, nameIndex, store, true);
-
     } finally {
       var start = runningBuilds.remove(datasetKey);
       LOG.info("Matcher for dataset {} built in {} seconds", datasetKey, LocalDateTime.now().minusSeconds(start.getSecond()).getSecond());
     }
+  }
+
+  public static UsageMatcher buildPersistentMatcher(int datasetKey, List<SimpleNameCached> samples, int maxUsages, MatchingConfig cfg, NameIndex nameIndex) throws IOException {
+    var f = cfg.dir(datasetKey);
+
+    UsageMatcherAbstractStore store;
+    if (cfg.chronicle) {
+      LOG.info("Create new persistent chronicle matcher for dataset {} at {}", datasetKey, f);
+      store = UsageMatcherChronicleStore.build(datasetKey, f, maxUsages, samples);
+
+    } else {
+      LOG.info("Create new persistent mapdb matcher for dataset {} at {}", datasetKey, f);
+      DBMaker.Maker maker = DBMaker
+        .fileDB(f)
+        .fileMmapEnableIfSupported();
+      store = UsageMatcherMapDBStore.build(datasetKey, maker.make());
+    }
+    return new UsageMatcher(datasetKey, nameIndex, store, true);
   }
 
   public UsageMatcher memory(int datasetKey) {

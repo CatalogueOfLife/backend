@@ -56,7 +56,7 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
       .averageValue(samples.stream().map(SimpleNameCached::getId).toArray(String[]::new))
       .createPersistedTo(canonicalF);
 
-    return new UsageMatcherChronicleStore(datasetKey, dir, usages, byCanonNidx);
+    return new UsageMatcherChronicleStore(datasetKey, usages, byCanonNidx);
   }
 
   static SimpleNameCached sample(String id) {
@@ -95,7 +95,7 @@ public class UsageMatcherChronicleStore extends UsageMatcherAbstractStore {
     }
   }
 
-  private UsageMatcherChronicleStore(int datasetKey, File dir, ChronicleMap<String, SimpleNameCached> usages, ChronicleMap<Integer, String[]> byCanonNidx) {
+  private UsageMatcherChronicleStore(int datasetKey, ChronicleMap<String, SimpleNameCached> usages, ChronicleMap<Integer, String[]> byCanonNidx) {
     super(datasetKey, usages, true);
     this.byCanonNidx = byCanonNidx;
     this.usageCMap = usages;

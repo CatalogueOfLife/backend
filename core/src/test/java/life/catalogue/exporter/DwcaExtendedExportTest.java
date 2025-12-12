@@ -37,11 +37,6 @@ public class DwcaExtendedExportTest {
       }
 
       @Override
-      protected Dataset loadDataset(SqlSessionFactory factory, int datasetKey) {
-        return new Dataset();
-      }
-
-      @Override
       protected void createExport(DatasetExport export) {
         // nothing
       }

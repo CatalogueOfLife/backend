@@ -15,8 +15,6 @@ import life.catalogue.dw.jersey.MoreHttpHeaders;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import life.catalogue.exporter.ExportManager;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,9 +1,5 @@
 package life.catalogue.resources;
 
-import jakarta.ws.rs.container.ContainerRequestContext;
-
-import jakarta.ws.rs.core.*;
-
 import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Page;
@@ -31,6 +27,8 @@ import io.dropwizard.auth.Auth;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.core.*;
 
 @Path("/user")
 @Produces(MediaType.APPLICATION_JSON)

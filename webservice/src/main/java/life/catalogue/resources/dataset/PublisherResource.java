@@ -1,8 +1,6 @@
 package life.catalogue.resources.dataset;
 
-import io.swagger.v3.oas.annotations.Hidden;
-
-import life.catalogue.api.model.*;
+import life.catalogue.api.model.Publisher;
 import life.catalogue.dao.PublisherDao;
 
 import java.util.List;
@@ -11,6 +9,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 

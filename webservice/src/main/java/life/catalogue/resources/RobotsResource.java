@@ -2,7 +2,6 @@ package life.catalogue.resources;
 
 import life.catalogue.common.io.Resources;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import jakarta.ws.rs.GET;

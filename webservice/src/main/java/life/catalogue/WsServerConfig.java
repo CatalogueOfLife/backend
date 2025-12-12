@@ -18,14 +18,12 @@ import life.catalogue.feedback.GithubConfig;
 import life.catalogue.img.ImgConfig;
 import life.catalogue.img.ThumborConfig;
 import life.catalogue.matching.DockerConfig;
-import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
+import life.catalogue.resources.legacy.LegacyConfig;
 
 import java.io.File;
 import java.net.URI;
 import java.util.Properties;
-
-import life.catalogue.resources.legacy.LegacyConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -159,12 +157,6 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public MatchingConfig matching = new MatchingConfig();
 
   /**
-   * Usage cache mapdb file to persist map on disk. If empty will use a volatile memory index.
-   */
-  @NotNull
-  public File usageCacheFile = new File("/tmp/usage-cache");
-
-  /**
    * Directory to store text tree, name index lists and other metrics for each dataset and sector import attempt
    * on disc.
    */
@@ -236,6 +228,7 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
     LOG.info("Use archive directory {}", normalizer.archiveDir);
     LOG.info("Use scratch directory {}", normalizer.scratchDir);
     LOG.info("Use matcher storage directory {}", matching.storageDir);
+    LOG.info("Use matcher upload directory {}", matching.uploadDir);
     LOG.info("Use metrics directory {}", metricsRepo);
     LOG.info("Use download directory {}", job.downloadDir);
     LOG.info("Use release reports directory {}", release.reportDir);

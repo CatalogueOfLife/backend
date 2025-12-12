@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -48,12 +50,12 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
   }
 
   @Override
-  public BackgroundJob buildJob() {
+  public BackgroundJob buildJob() throws IOException {
     try (TempFile tmp = new TempFile()) {
       MatchingRequest req = new MatchingRequest();
       req.setDatasetKey(dataRule.testData.key);
       req.setUpload(tmp.file);
-      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.normalizer);
+      return new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
     }
   }
 
@@ -62,7 +64,7 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
     MatchingRequest req = new MatchingRequest();
     req.setDatasetKey(dataRule.testData.key);
     req.setSourceDatasetKey(dataRule.testData.key);
-    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.normalizer);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
     job.run();
     assertTrue(job.isFinished());
   }

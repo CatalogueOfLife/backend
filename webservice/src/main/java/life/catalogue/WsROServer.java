@@ -45,6 +45,8 @@ import java.time.LocalDateTime;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.util.Timeout;
@@ -71,8 +73,6 @@ import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import jakarta.ws.rs.client.Client;
-
-import javax.annotation.Nullable;
 
 /**
  * A read-only (RO) server for the most common resources.
@@ -307,13 +307,13 @@ public class WsROServer extends Application<WsServerConfig> {
     j.register(new PublisherResource(pdao));
     j.register(new RobotsResource());
     j.register(new VernacularGlobalResource());
-    j.register(new VersionResource(cfg, LocalDateTime.now()));
+    j.register(new VersionResource(cfg.versionString(), LocalDateTime.now()));
     j.register(new VocabResource());
 
     // global parsers
     j.register(new HomotypicGroupingResource());
     j.register(new HomoglyphParserResource());
-    j.register(new NameParserResource(factory));
+    j.register(new NameParserResource());
     j.register(new MetadataParserResource());
     j.register(new ParserResource<>());
     j.register(new ReferenceParserResource(doiResolver));
