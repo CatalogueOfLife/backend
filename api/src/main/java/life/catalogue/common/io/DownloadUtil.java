@@ -147,6 +147,7 @@ public class DownloadUtil {
       }
       
     } catch (IOException e) {
+      LOG.error("Failed to download {} to {}", url, downloadTo.getAbsolutePath(), e);
       throw new DownloadException(url, e);
     }
   }
