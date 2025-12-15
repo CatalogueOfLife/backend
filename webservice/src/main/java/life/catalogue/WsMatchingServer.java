@@ -1,9 +1,15 @@
 package life.catalogue;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import com.google.common.annotations.VisibleForTesting;
+
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
+import life.catalogue.command.MatcherIndexCmd;
+import life.catalogue.common.Managed;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.db.EmptySqlSessionFactory;
@@ -79,8 +85,16 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
     TermFactory.instance().registerTermEnum(ColdpTerm.class);
     // use a custom jackson mapper
     ObjectMapper om = ApiModule.configureMapper(Jackson.newMinimalObjectMapper());
+    om.addMixIn(Dataset.class, DatasetSizeMixin.class);
     bootstrap.setObjectMapper(om);
+    ApiModule.MAPPER.addMixIn(Dataset.class, DatasetSizeMixin.class);
+    // commands
+    bootstrap.addCommand(new MatcherIndexCmd());
+  }
 
+  private abstract class DatasetSizeMixin {
+    @JsonProperty(access = JsonProperty.Access.READ_WRITE)
+    private Integer size;
   }
 
   @Override
@@ -115,8 +129,9 @@ public class WsMatchingServer extends Application<WsMatchingServerConfig> {
 
     env.healthChecks().register("name-parser", new NameParserHealthCheck());
 
-    SqlSessionFactory factory = new EmptySqlSessionFactory();
-    NameIndex nidx = NameIndexFactory.build(cfg.namesIndex, factory, AuthorshipNormalizer.INSTANCE);
+    NameIndex nidx = NameIndexFactory.build(cfg.namesIndex, null, AuthorshipNormalizer.INSTANCE);
+    env.lifecycle().manage(ManagedUtils.from((Managed) nidx));
+
     Dataset dataset = readDataset(cfg.matching.datasetJson(cfg.matchingDatasetKey));
     UsageMatcher matcher = UsageMatcherFactory.buildPersistentMatcher(
       cfg.matchingDatasetKey, List.of(), dataset.getSize()+1, cfg.matching, nidx

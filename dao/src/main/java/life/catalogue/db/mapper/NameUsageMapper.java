@@ -227,11 +227,24 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   /**
    * Iterates over all usages for a given dataset, optionally filtered by a minimum/maximum rank to include.
    * Warn: Read only properties are not populated to save excessive joins.
-   * In particular this is the accepted Taxon for a Synonym instance
+   * In particular this is the accepted Taxon for a Synonym instance,
+   * the classification of Taxon
    * and the publishedIn and accordingTo reference citation fields.
    * Use the respective ID fields instead.
    */
   Cursor<NameUsageBase> processDataset(@Param("datasetKey") int datasetKey,
+                                       @Nullable @Param("minRank") Rank minRank,
+                                       @Nullable @Param("maxRank") Rank maxRank);
+
+  @Override
+  default Cursor<NameUsageBase> processDataset(int datasetKey) {
+    return processDataset(datasetKey, null, null);
+  }
+
+  /**
+   * Same as processDataset, but also populates the taxon.classification list
+   */
+  Cursor<NameUsageBase> processDatasetWithClassification(@Param("datasetKey") int datasetKey,
                                        @Nullable @Param("minRank") Rank minRank,
                                        @Nullable @Param("maxRank") Rank maxRank);
 

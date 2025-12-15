@@ -57,6 +57,14 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
   }
 
   @Test
+  public void processDatasetWithClassification() throws Exception {
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, null, null), 4);
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 4);
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.SUBGENUS, Rank.GENUS), 0);
+    assertSize(mapper().processDatasetWithClassification(testDataRule.testData.key, Rank.VARIETY, Rank.SPECIES), 4);
+  }
+
+  @Test
   public void processDataset() throws Exception {
     assertSize(mapper().processDataset(testDataRule.testData.key, null, null), 4);
     assertSize(mapper().processDataset(testDataRule.testData.key, Rank.SPECIES, Rank.GENUS), 4);

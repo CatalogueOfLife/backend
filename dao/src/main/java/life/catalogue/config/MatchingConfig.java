@@ -19,7 +19,7 @@ public class MatchingConfig {
    * Temporary folder for file uploads.
    */
   @NotNull
-  public File uploadDir = new File("/tmp/col");
+  public File uploadDir = new File("/tmp/col/upload");
 
   /**
    * Directory with matching data for a specific dataset

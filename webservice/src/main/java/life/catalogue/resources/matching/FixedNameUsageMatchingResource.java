@@ -14,6 +14,8 @@ import life.catalogue.matching.*;
 
 import life.catalogue.resources.ImporterResource;
 
+import org.glassfish.jersey.server.internal.process.MappableException;
+
 import java.io.*;
 
 @Path("/match/nameusage")
@@ -23,6 +25,7 @@ import java.io.*;
 public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingResource {
   private final UsageMatcher matcher;
   private final Dataset dataset;
+  private final User user = new User(100, "match-service");
 
   public FixedNameUsageMatchingResource(MatchingConfig cfg, Dataset dataset, UsageMatcher matcher) {
     super(cfg);
@@ -39,8 +42,7 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
   @Consumes({MediaType.TEXT_PLAIN, MoreMediaTypes.TEXT_CSV, MoreMediaTypes.TEXT_TSV, MoreMediaTypes.TEXT_CSV_ALT2, MoreMediaTypes.TEXT_WILDCARD})
   public Response matchTsvJob(@BeanParam @Valid MatchingRequest req,
                               @Context HttpHeaders headers,
-                              InputStream data,
-                              @Auth User user) throws IOException {
+                              InputStream data) throws IOException {
     req.setDatasetKey(dataset.getKey());
     req.setUpload(upload(data, user, ImporterResource.contentType2Suffix(headers)));
     validateRequest(req);
@@ -50,7 +52,7 @@ public class FixedNameUsageMatchingResource extends AbstractNameUsageMatchingRes
       try {
         job.runWithLock();
       } catch (Exception e) {
-        throw new RuntimeException(e);
+        throw new MappableException(e); // jersey unwraps this before applying exception mappings
       }
     };
     return Response

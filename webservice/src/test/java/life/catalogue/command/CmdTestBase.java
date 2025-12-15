@@ -56,12 +56,15 @@ public abstract class CmdTestBase {
     this(cmdSupply, TestDataRule.empty());
   }
   public CmdTestBase(Supplier<Command> cmdSupply, TestDataRule rule) {
+    this(cmdSupply, rule, "config-test.yaml", true);
+  }
+  public CmdTestBase(Supplier<Command> cmdSupply, TestDataRule rule, String configFile, boolean addAdminDb) {
     this.testDataRule = rule;
     this.cmdSupply = cmdSupply;
     cfg = new TempFile("col-cfg", ".yaml");
     // prepare config file
     try {
-      URL res = Resources.getResource("config-test.yaml");
+      URL res = Resources.getResource(configFile);
       try (var w = UTF8IoUtils.writerFromFile(cfg.file)) {
         w.write(Resources.toString(res, Charsets.UTF_8));
         // append db & adminDb cfg for pg container
@@ -69,12 +72,14 @@ public abstract class CmdTestBase {
         w.write("\ndb:\n");
         YamlUtils.write(db, 2, w);
 
-        w.write("\nadminDb:\n");
-        PgDbConfig adb = new PgDbConfig();
-        adb.database = PgSetupRule.ADMIN_DB_NAME;
-        adb.password = db.password;
-        adb.user = db.user;
-        YamlUtils.write(adb, 2, w);
+        if (addAdminDb) {
+          w.write("\nadminDb:\n");
+          PgDbConfig adb = new PgDbConfig();
+          adb.database = PgSetupRule.ADMIN_DB_NAME;
+          adb.password = db.password;
+          adb.user = db.user;
+          YamlUtils.write(adb, 2, w);
+        }
       }
       LOG.info("Wrote cli config file to {}", cfg.file.getAbsolutePath());
     } catch (Exception e) {

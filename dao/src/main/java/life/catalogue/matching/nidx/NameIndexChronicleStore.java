@@ -172,6 +172,11 @@ public class NameIndexChronicleStore implements NameIndexStore {
   }
 
   @Override
+  public int maxKey() {
+    return keys.keySet().stream().mapToInt(v -> v).max().orElse(0);
+  }
+
+  @Override
   public int count() {
     assertOnline();
     return keys.size();

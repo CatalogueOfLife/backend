@@ -69,6 +69,15 @@ public class User implements Entity<Integer>, Principal {
   private LocalDateTime blocked;
   private LocalDateTime created;
 
+  public User() {
+  }
+
+  public User(Integer key, @Nonnull String username) {
+    this.key = key;
+    this.username = username;
+    this.created = LocalDateTime.now();
+  }
+
   /**
    * Copies properties that are not managed in the GBIF registry to this instance.
    * Last login is also NOT copied!

@@ -47,6 +47,11 @@ public class SimpleNameCached extends SimpleNameWithNidx {
     this.sectorKey = u.getSectorKey();
   }
 
+  public SimpleNameCached(Name n, Integer canonicalId) {
+    super(n, canonicalId);
+    this.sectorKey = n.getSectorKey();
+  }
+
   public Integer getSectorKey() {
     return sectorKey;
   }

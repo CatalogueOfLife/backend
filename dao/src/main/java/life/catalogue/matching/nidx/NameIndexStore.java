@@ -27,6 +27,12 @@ public interface NameIndexStore extends Managed {
   Iterable<IndexName> all();
 
   /**
+   * The maximum key of all stored names index entries.
+   * @return max key or zero if store is empty
+   */
+  int maxKey();
+
+  /**
    * Counts all name usages. Potentially an expensive operation.
    */
   int count();

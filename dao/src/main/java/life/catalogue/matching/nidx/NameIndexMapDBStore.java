@@ -174,6 +174,11 @@ public class NameIndexMapDBStore implements NameIndexStore {
   }
 
   @Override
+  public int maxKey() {
+    return keys.keySet().stream().mapToInt(v -> v).max().orElse(0);
+  }
+
+  @Override
   public List<IndexName> delete(int id, Function<IndexName, String> keyFunc) {
     List<IndexName> removed = new ArrayList<>();
     var n = keys.remove(id);

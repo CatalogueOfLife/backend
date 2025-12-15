@@ -1,15 +1,15 @@
 package life.catalogue;
 
 import life.catalogue.common.io.Resources;
-import life.catalogue.concurrent.JobConfig;
-import life.catalogue.config.MailConfig;
 import life.catalogue.config.MatchingConfig;
+import life.catalogue.db.PgConfig;
 import life.catalogue.dw.cors.CorsBundleConfiguration;
 import life.catalogue.dw.cors.CorsConfiguration;
-import life.catalogue.dw.mail.MailBundleConfig;
 import life.catalogue.matching.nidx.NamesIndexConfig;
 
 import java.util.Properties;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +26,10 @@ public class WsMatchingServerConfig extends Configuration implements CorsBundleC
   private static final Logger LOG = LoggerFactory.getLogger(WsMatchingServerConfig.class);
 
   public Properties version;
+
+  @Valid
+  @Nullable
+  public PgConfig db;
 
   @Valid
   @NotNull

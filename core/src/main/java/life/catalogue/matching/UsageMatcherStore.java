@@ -1,12 +1,12 @@
 package life.catalogue.matching;
 
 import life.catalogue.api.exception.NotFoundException;
-import life.catalogue.api.model.NameUsage;
-import life.catalogue.api.model.SimpleNameCached;
-import life.catalogue.api.model.SimpleNameClassified;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.TaxGroup;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.NameUsageMapper;
+
+import life.catalogue.matching.nidx.NameIndex;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -19,6 +19,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public interface UsageMatcherStore extends AutoCloseable {
   Logger LOG = LoggerFactory.getLogger(UsageMatcherStore.class);
 
+  /**
+   * Loads the dataset into the matcher store, using the previously persisted name matches.
+   * @param factory
+   */
   default int load(SqlSessionFactory factory){
     LOG.info("Start loading all usages from dataset {}", datasetKey());
     var cnt = new AtomicInteger();
@@ -31,6 +35,30 @@ public interface UsageMatcherStore extends AutoCloseable {
     }
     LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey());
     return cnt.intValue();
+  }
+
+  /**
+   * Loads the dataset into the matcher store, using an explicit names index to (re)match all usages against
+   * before they are added. Writes to the names index are allowed.
+   * @param factory
+   * @param ni
+   */
+  default int load(SqlSessionFactory factory, NameIndex ni){
+    LOG.info("Start loading all usages from dataset {}", datasetKey());
+    var cnt = new AtomicInteger();
+    try (SqlSession session = factory.openSession()) {
+      var num = session.getMapper(NameUsageMapper.class);
+      PgUtils.consume(() -> num.processDataset(datasetKey()), u -> matchAndAdd(u, ni));
+    }
+    LOG.info("Loaded {} usages for dataset {}", cnt, datasetKey());
+    return cnt.intValue();
+  }
+
+  private void matchAndAdd(NameUsageBase u, NameIndex ni) {
+    var m = ni.match(u.getName(), true, false);
+    u.getName().applyMatch(m);
+    var sn = new SimpleNameCached(u, m.getCanonicalNameKey());
+    add(sn);
   }
 
   default int analyze(TaxGroupAnalyzer analyzer){

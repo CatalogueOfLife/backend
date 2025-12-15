@@ -71,6 +71,10 @@ public class UsageMatcher implements AutoCloseable {
     return storage.load(sqlSessionFactory);
   }
 
+  public int load(SqlSessionFactory sqlSessionFactory, NameIndex ni) {
+    return storage.load(sqlSessionFactory, ni);
+  }
+
   /**
    * This first parsed the name and matches it to the names index,
    * before calling the actual match method which requires the names index ids to be present.

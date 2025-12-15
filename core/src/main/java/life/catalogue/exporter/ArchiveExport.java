@@ -171,7 +171,7 @@ public abstract class ArchiveExport extends DatasetExportJob {
       NameUsageMapper num = session.getMapper(NameUsageMapper.class);
       final Cursor<NameUsageBase> cursor;
       if (fullDataset) {
-        cursor = num.processDataset(datasetKey, null, null);
+        cursor = num.processDatasetWithClassification(datasetKey, null, null);
       } else {
         var ttp = TreeTraversalParameter.dataset(datasetKey, req.getTaxonID(), null, req.getMinRank(), req.isSynonyms());
         cursor = num.processTree(ttp);

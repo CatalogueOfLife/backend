@@ -614,7 +614,21 @@
     WHERE dataset_key=#{datasetKey}
   </insert>
 
-  <select id="processDataset" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+  <select id="processDataset" parameterType="map" resultMap="usageResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
+    SELECT <include refid="SELECT_BASE"/>
+    FROM <include refid="FROM_BASE"/>
+    <where>
+      u.dataset_key = #{datasetKey}
+      <if test="maxRank != null">
+        AND n.rank >= #{maxRank}::rank
+      </if>
+      <if test="minRank != null">
+        AND n.rank &lt;= #{minRank}::rank
+      </if>
+    </where>
+  </select>
+
+  <select id="processDatasetWithClassification" parameterType="map" resultMap="usageClassificationResultMap" resultOrdered="true" fetchSize="1000" resultSetType="FORWARD_ONLY">
     SELECT <include refid="SELECT_BASE"/>, tm.classification
     FROM <include refid="FROM_BASE"/>
       LEFT JOIN taxon_metrics tm ON tm.dataset_key=u.dataset_key AND tm.taxon_id=u.id

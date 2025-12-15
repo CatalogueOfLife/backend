@@ -55,7 +55,7 @@ public class NameIndexImplTest {
 
     when(factory.openSession()).thenReturn(session);
     when(session.getMapper(any())).thenReturn(mapper);
-    when(mapper.processAll()).thenReturn(new EmptyListCursor<>());
+    //when(mapper.processAll()).thenReturn(new EmptyListCursor<>());
     doAnswer(new Answer<IndexName>() {
       public IndexName answer(InvocationOnMock invocation) {
         IndexName param = invocation.getArgument(0, IndexName.class);
