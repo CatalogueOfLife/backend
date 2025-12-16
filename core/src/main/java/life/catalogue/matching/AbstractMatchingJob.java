@@ -144,7 +144,10 @@ public abstract class AbstractMatchingJob extends DatasetBlockingJob {
         writeMatches(writer, null, TreeStreams.dataset(session, ttp)
                                         .map(sn -> {
                                           if (rootClassification != null) {
-                                            sn.getClassification().addAll(rootClassification);
+                                            List<SimpleName> cl = new ArrayList<>();
+                                            cl.addAll(sn.getClassification());
+                                            cl.addAll(rootClassification);
+                                            sn.setClassification(cl);
                                           }
                                           return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
                                         })
