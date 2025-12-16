@@ -124,7 +124,7 @@ public class PgImport implements Callable<Boolean> {
 
       insertUsageRelations();
 
-      updateMetadata();
+      updateMetadata(); // also updates last successful attempt !!!
 
       LOG.info("Completed dataset {} insert with {} verbatim records, " +
           "{} names, {} taxa, {} synonyms, {} references, " +

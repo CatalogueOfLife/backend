@@ -496,6 +496,11 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   Cursor<String> processIds(@Param("datasetKey") int datasetKey, @Param("synonyms") boolean includeSynonyms, @Param("minLength") Integer minLength);
 
   /**
+   * Checks whether any parents (of both synonyms or accepted) exist that are synonyms.
+   */
+  boolean hasParentSynoynms(@Param("datasetKey") int datasetKey);
+
+  /**
    * Lists all usage ids of taxa which have synonyms as their parent.
    */
   List<String> detectParentSynoynms(@Param("datasetKey") int datasetKey);

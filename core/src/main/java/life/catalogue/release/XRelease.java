@@ -194,18 +194,25 @@ public class XRelease extends ProjectRelease {
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
+    assertNoSynonymParents();
     mergeSectors();
+    assertNoSynonymParents();
 
     // sanitize merges
     homotypicGrouping();
+    assertNoSynonymParents();
 
     // flagging
     validateAndCleanTree();
+    assertNoSynonymParents();
     cleanImplicitTaxa();
+    assertNoSynonymParents();
     flagLoops();
+    assertNoSynonymParents();
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
+    assertNoSynonymParents();
 
     // stable ids
     mapTmpIDs();
@@ -304,6 +311,14 @@ public class XRelease extends ProjectRelease {
       // find previous public release needed for DOI management
       final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
       return createReleaseDOI(prevReleaseKey);
+    }
+  }
+
+  private void assertNoSynonymParents() {
+    try (SqlSession session = factory.openSession(false)) {
+      if (session.getMapper(NameUsageMapper.class).hasParentSynoynms(newDatasetKey)) {
+        throw new IllegalStateException("XRelease introduced parent synonyms");
+      }
     }
   }
 
