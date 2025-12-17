@@ -27,7 +27,14 @@ public interface DatasetImportMapper extends DatasetProcessable<DatasetImport> {
    */
   DatasetImport getNext(@Param("key") int datasetKey,
                         @Param("attempt") int attempt,
-                        @Param("state") ImportState finished);
+                        @Param("state") ImportState state);
+
+  /**
+   * Looks up the last dataset import with the given state, i.e. the import with a higher attempt
+   */
+  DatasetImport getLast(@Param("key") int datasetKey,
+                        @Param("attempt") int attempt,
+                        @Param("state") ImportState state);
 
   /**
    * Returns just the MD5 hash of the dataset archive used for the given import attempt.

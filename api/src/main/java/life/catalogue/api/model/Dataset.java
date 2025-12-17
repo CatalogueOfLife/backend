@@ -38,6 +38,8 @@ import jakarta.validation.constraints.NotNull;
  * Metadata about a dataset which can be archived
  */
 public class Dataset extends DataEntity<Integer> {
+  // must be updated on startup to the actual configured prefix!
+  public static String DOI_PREFIX = null;
   // key=json field name, value=java type specific instance which is considered to be null, but can be stored and moved around without loss
   // only used for internal representation of explicit nulls for patches!!!
   public static final Map<String, Object> NULL_TYPES;
@@ -148,7 +150,6 @@ public class Dataset extends DataEntity<Integer> {
   private Integer size;
 
   // human metadata
-  private DOI doi;
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
   private Map<String, String> identifier = new HashMap<>();
   @NotNull
@@ -222,7 +223,6 @@ public class Dataset extends DataEntity<Integer> {
     this.gbifPublisherKey = other.gbifPublisherKey;
     this.size = other.size;
     this.notes = other.notes;
-    this.doi = other.doi;
     this.identifier = other.identifier;
     this.title = other.title;
     this.alias = other.alias;
@@ -367,6 +367,7 @@ public class Dataset extends DataEntity<Integer> {
         .publisher(publisher.getOrganisation())
         .publisherPlace(publisher.getAddress());
     }
+    var doi = ObjectUtils.coalesce(getVersionDoi(), getDoi());
     if (doi != null) {
       builder.DOI(doi.toString());
     }
@@ -421,7 +422,7 @@ public class Dataset extends DataEntity<Integer> {
     c.setIssued(issued);
     c.setVersion(version);
     c.setIssn(issn);;
-    c.setDoi(doi);
+    c.setDoi(ObjectUtils.coalesce(getVersionDoi(), getDoi()));
     if (url != null) {
       c.setUrl(url.toString());
     }
@@ -543,11 +544,11 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public DOI getDoi() {
-    return doi;
+    return DOI_PREFIX == null || origin == DatasetOrigin.PROJECT ? null : DOI.dataset(DOI_PREFIX, key);
   }
 
-  public void setDoi(DOI doi) {
-    this.doi = doi;
+  public DOI getVersionDoi() {
+    return DOI_PREFIX == null || origin.isProjectOrRelease() || attempt == null ? null : DOI.datasetAttempt(DOI_PREFIX, key, attempt);
   }
 
   public String getTitle() {
@@ -1020,7 +1021,6 @@ public class Dataset extends DataEntity<Integer> {
            && Objects.equals(gbifPublisherKey, dataset.gbifPublisherKey)
            && Objects.equals(size, dataset.size)
            && Objects.equals(notes, dataset.notes)
-           && Objects.equals(doi, dataset.doi)
            && Objects.equals(identifier, dataset.identifier)
            && Objects.equals(title, dataset.title)
            && Objects.equals(alias, dataset.alias)
@@ -1060,7 +1060,7 @@ public class Dataset extends DataEntity<Integer> {
     return Objects.hash(super.hashCode(), key, sourceKey, privat, type, origin,
       attempt, lastImportAttempt, lastImportState, imported, deleted,
       gbifKey, gbifPublisherKey, size, notes,
-      doi, identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
+      identifier, title, alias, description, issued, version, issn, contact, creator, editor, publisher, contributor, keyword,
       containerKey, containerTitle, containerCreator, containerVersion, containerPublisher, containerIssued,
       geographicScope, taxonomicScope, taxonomicGroupScope, temporalScope, confidence, completeness, license, url, feedbackUrl, logo,
       urlFormatter, conversion,  source);

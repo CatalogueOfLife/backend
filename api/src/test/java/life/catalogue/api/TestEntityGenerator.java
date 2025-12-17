@@ -309,7 +309,6 @@ public class TestEntityGenerator {
     d.setContributor(List.of(newAgent(),newAgent(),newAgent(),newAgent(),newAgent()));
     d.setAttempt(4567);
     d.setIssued(FuzzyDate.now());
-    d.setDoi(DOI.test(RandomUtils.randomLatinString(100)));
     d.setVersion(RandomUtils.randomLatinString(8));
     d.setSourceKey(3);
     d.setUrl(RandomUtils.randomUri());

@@ -218,6 +218,14 @@
     LIMIT 1
   </select>
 
+  <select id="getLast" resultMap="datasetImportResultMap">
+    SELECT <include refid="SELECT"/>
+    FROM <include refid="FROM"/>
+    WHERE di.dataset_key=#{key} AND di.attempt &lt; #{attempt} AND di.state=#{state}::IMPORTSTATE
+    ORDER BY di.attempt DESC
+    LIMIT 1
+  </select>
+
   <select id="getMD5" resultType="string">
     SELECT md5
     FROM <include refid="FROM"/>

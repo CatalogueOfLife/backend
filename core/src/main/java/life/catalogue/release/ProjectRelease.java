@@ -16,7 +16,10 @@ import life.catalogue.common.util.LoggingUtils;
 import life.catalogue.common.util.YamlUtils;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.db.mapper.*;
+import life.catalogue.db.mapper.CitationMapper;
+import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.db.mapper.DatasetSourceMapper;
+import life.catalogue.db.mapper.SectorMapper;
 import life.catalogue.doi.DoiUpdater;
 import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.doi.service.DoiService;
@@ -29,10 +32,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -363,39 +364,13 @@ public class ProjectRelease extends AbstractProjectCopy {
     LocalDateTime start = LocalDateTime.now();
     try (SqlSession session = factory.openSession(true)) {
       final AtomicInteger counter = new AtomicInteger(0);
-      // treat source. Archive dataset metadata & logos & assign a potentially new DOI
+      // treat source. Archive dataset metadata & logos
       DatasetSourceMapper psm = session.getMapper(DatasetSourceMapper.class);
       var cm = session.getMapper(CitationMapper.class);
       // create fixed source dataset records for this release.
       // This DOES create source dataset records for aggregated publishers.
       // It does not create source records for merge sectors without data in the release itself!
-      final boolean createSourceDOIs = prCfg.issueSourceDOIs && doiCfg != null;
-      Set<UUID> publishers = new HashSet<>();
-      if (createSourceDOIs) {
-        if (prCfg.issuePublisherSourceDOIs) {
-          LOG.info("Create DOIs for all sources, including datasets from sector publishers!");
-        } else {
-          LOG.warn("Do not create DOIs for sources from sector publishers!");
-          var pm = session.getMapper(SectorPublisherMapper.class);
-          publishers.addAll(pm.listAllKeys(projectKey));
-        }
-      }
-      LOG.info("{} source DOIs for release {}", createSourceDOIs ? "Create" : "Do not create", newDatasetKey);
       for (var d : srcDao.listSectorBasedSources(projectKey, newDatasetKey, true)) {
-        // avoid creating DOIs for datasets managed by publishers
-        if (createSourceDOIs && !publishers.contains(d.getGbifPublisherKey())) {
-          // can we reuse a previous DOI for the source?
-          DOI srcDOI = findSourceDOI(prevReleaseKey, d.getKey(), session);
-          if (srcDOI == null) {
-            srcDOI = doiCfg.datasetSourceDOI(newDatasetKey, d.getKey());
-            d.setDoi(srcDOI);
-            LOG.info("Creating new DOI {} for modified source {} of release {}", srcDOI, d.getKey(), newDatasetKey);
-            var srcAttr = doiUpdater.buildSourceMetadata(d, newDataset, true);
-            doiService.createSilently(srcAttr);
-          }
-          d.setDoi(srcDOI);
-        }
-
         LOG.info("Archive dataset {}#{} for release {}: {}", d.getKey(), attempt, newDatasetKey, d.getAliasOrTitle());
         psm.create(newDatasetKey, d);
         cm.createRelease(d.getKey(), newDatasetKey, attempt);

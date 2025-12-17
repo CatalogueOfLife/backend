@@ -77,18 +77,6 @@ public class DataCiteService implements DoiService {
   }
 
   @Override
-  public DOI fromDataset(int datasetKey) {
-    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey);
-    return new DOI(cfg.prefix, suffix);
-  }
-
-  @Override
-  public DOI fromDatasetSource(int datasetKey, int sourceKey) {
-    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + "-" + IdConverter.LATIN29.encode(sourceKey);
-    return new DOI(cfg.prefix, suffix);
-  }
-
-  @Override
   public DoiAttributes resolve(DOI doi) {
     LOG.debug("retrieve {}", doi);
     try {

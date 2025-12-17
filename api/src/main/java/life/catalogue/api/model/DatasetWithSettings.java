@@ -222,8 +222,8 @@ public class DatasetWithSettings {
     return dataset.getDoi();
   }
 
-  public void setDoi(DOI doi) {
-    dataset.setDoi(doi);
+  public DOI getVersionDoi() {
+    return dataset.getVersionDoi();
   }
 
   public String getTitle() {

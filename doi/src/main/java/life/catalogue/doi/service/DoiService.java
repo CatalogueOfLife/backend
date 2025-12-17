@@ -27,10 +27,6 @@ import org.slf4j.LoggerFactory;
 public interface DoiService {
   Logger LOG = LoggerFactory.getLogger(DoiService.class);
 
-  DOI fromDataset(int datasetKey);
-
-  DOI fromDatasetSource(int datasetKey, int sourceKey);
-
   /**
    * Resolves the registered identifier.
    *
@@ -63,7 +59,7 @@ public interface DoiService {
 
   /**
    * Tries to delete an identifier. If it is still a draft DOI it will be fully deleted.
-   * If it was published already, i.e. state=finadable, it will be hidden instead and enter state=registered.
+   * If it was published already, i.e. state=findable, it will be hidden instead and enter state=registered.
    * Make sure to also update the DOIs url location to an appropriate tombstone page in that case.
    *
    * @param doi the identifier to delete
@@ -129,16 +125,6 @@ public interface DoiService {
 
   static DoiService passThru() {
     return new DoiService() {
-
-      @Override
-      public DOI fromDataset(int datasetKey) {
-        return DOI.test(String.valueOf(datasetKey));
-      }
-
-      @Override
-      public DOI fromDatasetSource(int datasetKey, int sourceKey) {
-        return DOI.test(String.valueOf(datasetKey) + "-" + String.valueOf(sourceKey));
-      }
 
       @Override
       public DoiAttributes resolve(DOI doi) throws DoiException {

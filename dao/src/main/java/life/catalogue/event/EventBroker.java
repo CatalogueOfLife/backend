@@ -60,14 +60,15 @@ public class EventBroker implements AutoCloseable {
   public void register(Listener listener) {
     if (listener instanceof DatasetListener) {
       datasetListeners.add((DatasetListener) listener);
-    } else if (listener instanceof DoiListener) {
+    }
+    if (listener instanceof DoiListener) {
       doiListeners.add((DoiListener) listener);
-    } else if (listener instanceof UserListener) {
+    }
+    if (listener instanceof UserListener) {
       userListeners.add((UserListener) listener);
-    } else if (listener instanceof SectorListener) {
+    }
+    if (listener instanceof SectorListener) {
       sectorListeners.add((SectorListener) listener);
-    } else {
-      throw new IllegalArgumentException("Unknown listener type: " + listener.getClass().getSimpleName());
     }
   }
 

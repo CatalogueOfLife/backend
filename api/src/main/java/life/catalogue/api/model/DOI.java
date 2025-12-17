@@ -40,9 +40,9 @@ public class DOI implements Serializable {
 
   private static final String DATASET_PATH = "d";
   private static final String EXPORT_PATH = "e";
-  private static final String OTHER_PATH = "x";
-  private static final Pattern DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-]+)$");
+  private static final Pattern DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-.]+)$");
   private static final Pattern SOURCE_DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)-(.+)$");
+  private static final Pattern DATASET_ATTEMPT_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)\\.v(\\d+)$");
 
   private String prefix;
   private String suffix;
@@ -85,6 +85,11 @@ public class DOI implements Serializable {
 
   public static DOI datasetSource(String prefix, int datasetKey, int sourceKey) {
     String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + "-" + IdConverter.LATIN29.encode(sourceKey);
+    return new DOI(prefix, suffix);
+  }
+
+  public static DOI datasetAttempt(String prefix, int datasetKey, int attempt) {
+    String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + ".v" + attempt;
     return new DOI(prefix, suffix);
   }
 
@@ -175,6 +180,16 @@ public class DOI implements Serializable {
   }
 
   @JsonIgnore
+  public boolean isDatasetAttempt() {
+    return suffix.startsWith(DATASET_PATH) && suffix.contains(".v");
+  }
+
+  @JsonIgnore
+  public boolean isDatasetSource() {
+    return suffix.startsWith(DATASET_PATH) &&  suffix.contains("-");
+  }
+
+  @JsonIgnore
   public int datasetKey() throws IllegalArgumentException {
     Preconditions.checkArgument(isCOL(), "COL DOI required");
     Matcher m = DATASET_PATTERN.matcher(suffix);
@@ -192,6 +207,16 @@ public class DOI implements Serializable {
       return DSID.of(IdConverter.LATIN29.decode(m.group(1).toUpperCase()), IdConverter.LATIN29.decode(m.group(2).toUpperCase()));
     }
     throw new IllegalArgumentException("Not a valid COL source dataset DOI: " + getDoiName());
+  }
+
+  @JsonIgnore
+  public DSID<Integer> datasetAttemptKey() throws IllegalArgumentException {
+    Preconditions.checkArgument(isCOL(), "COL DOI required");
+    Matcher m = DATASET_ATTEMPT_PATTERN.matcher(suffix);
+    if (m.find()) {
+      return DSID.of(IdConverter.LATIN29.decode(m.group(1).toUpperCase()), Integer.parseInt(m.group(2)));
+    }
+    throw new IllegalArgumentException("Not a valid COL dataset attempt DOI: " + getDoiName());
   }
 
   public int hashCode() {

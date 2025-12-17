@@ -28,7 +28,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     Dataset d = new Dataset();
     d.setKey(12345);
     d.setSourceKey(12345);
-    d.setDoi(DOI.test("123456789"));
     d.setIssued(FuzzyDate.of("1999-09-21"));
     d.setVersion("1999 v2");
     d.setIdentifier(Map.of(
@@ -240,7 +239,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setCreator(Agent.parse(List.of("Hobern, Donald", "Gielis, C.")));
     d.setEditor(Agent.parse(List.of("Hobern, Donald")));
     d.setUrl(URI.create("https://alucitoidea.hobern.net"));
-    d.setDoi(DOI.col("e456fgvzb"));
     // these are taken from the container (=COL) for sources by the mapper
     d.setVersion("Annual Edition 2024");
     d.setIssued(FuzzyDate.of(2024,6,18));
@@ -262,7 +260,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setVersion("1.0.21.199 (18 Jul 2021)");
     d.setIssued(FuzzyDate.of(2021,7,18));
     d.setUrl(URI.create("https://alucitoidea.hobern.net"));
-    d.setDoi(DOI.col("e456fgvzb"));
     d.setContainerTitle("Catalogue of Life Checklist");
     d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
 
@@ -283,7 +280,6 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setVersion("1.0.21.199 (18 Jul 2021)");
     d.setIssued(FuzzyDate.of(2021,7,18));
     d.setUrl(URI.create("https://alucitoidea.hobern.net"));
-    d.setDoi(DOI.col("e456fgvzb"));
     d.setContainerTitle("Catalogue of Life Checklist");
     d.setContainerCreator(Agent.parse(List.of("Banki, Olaf", "Roskov, Yuri")));
 

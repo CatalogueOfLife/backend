@@ -1,11 +1,14 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.coldp.ColdpTerm;
 import life.catalogue.common.io.DownloadUtil;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
+import life.catalogue.doi.service.DataCiteService;
+import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.auth.AuthBundle;
 import life.catalogue.dw.cors.CorsBundle;
 import life.catalogue.dw.db.MybatisBundle;
@@ -182,8 +185,12 @@ public class WsROServer extends Application<WsServerConfig> {
     // validation
     var validator = env.getValidator();
 
-    // doi
+    // DOI
     DoiResolver doiResolver = new DoiResolver(httpClient);
+    if (cfg.doi != null) {
+      LOG.info("Use DOI prefix: {}", cfg.doi.prefix);
+      Dataset.DOI_PREFIX = cfg.doi.prefix;
+    }
 
     // name parser
     NameParser.PARSER.register(env.metrics());

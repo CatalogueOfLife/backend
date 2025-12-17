@@ -1,13 +1,19 @@
 package life.catalogue.doi;
 
 import life.catalogue.api.event.ChangeDoi;
+import life.catalogue.api.event.DatasetChanged;
+import life.catalogue.api.event.DatasetListener;
 import life.catalogue.api.event.DoiListener;
-import life.catalogue.api.exception.NotFoundException;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.DatasetImport;
+import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.DatasetOrigin;
+import life.catalogue.api.vocab.ImportState;
 import life.catalogue.cache.LatestDatasetKeyCache;
 import life.catalogue.dao.DatasetInfoCache;
+import life.catalogue.db.mapper.DatasetArchiveMapper;
+import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.DatasetSourceMapper;
 import life.catalogue.doi.datacite.model.DoiAttributes;
@@ -16,6 +22,7 @@ import life.catalogue.doi.service.DoiException;
 import life.catalogue.doi.service.DoiService;
 
 import java.net.URI;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,13 +37,9 @@ import org.slf4j.LoggerFactory;
  * Service to update or delete DOI metadata when datasets change or get deleted.
  * DOIs for releases and projects are 1:1, so its simple to delete or update them.
  *
- * For release sources things are more complex as we share the same DOI for the same source in multiple releases
- * in case the source data has not changed. This means the same DOI applies to multiple archived source datasets.
- *
- * As a rule the URL designated in the DOI metadata should always refer to the earliest release when the DOI was first minted.
- * TODO: We might need to rethink this rule and point it to the first annual release (if existing) as these releases will not be deleted.
+ * TODO: We might need to rethink the logic for annual releases
  */
-public class DoiUpdater implements DoiListener {
+public class DoiUpdater implements DoiListener, DatasetListener {
   private static final Logger LOG = LoggerFactory.getLogger(DoiUpdater.class);
   private final SqlSessionFactory factory;
   private final DoiService doiService;
@@ -59,48 +62,59 @@ public class DoiUpdater implements DoiListener {
   @Override
   public void doiChanged(ChangeDoi event){
     if (event.getDoi().isCOL()) {
-      int datasetKey = -1;
-      Integer sourceKey = null;
       try {
-        // a dataset/release DOI
-        datasetKey = event.getDoi().datasetKey();
-        // make sure we have a project release
-        var info = DatasetInfoCache.CACHE.info(datasetKey, true);
-        if (info.origin != DatasetOrigin.RELEASE || info.sourceKey == null) {
-          LOG.warn("COL dataset DOI {} that is not a release: {}", event.getDoi(), datasetKey);
-          return;
-        }
-      } catch (NotFoundException e) {
-        LOG.warn("COL dataset DOI {} points to a non existing dataset {}", event.getDoi(), datasetKey);
-        return;
+        if (event.getDoi().isDatasetAttempt()) {
+          // a dataset attempt DOI
+          var key = event.getDoi().datasetAttemptKey();
+          int datasetKey = key.getDatasetKey();
+          int attempt = key.getId();
+          var dataset = DatasetInfoCache.CACHE.info(datasetKey, true);
+          if (dataset.origin.isProjectOrRelease()) {
+            LOG.warn("COL dataset attempt DOI {} that refers to {} dataset {}", event.getDoi(), dataset.origin, datasetKey);
+          } else if (event.isDelete()) {
+            deleteAttempt(event.getDoi(), datasetKey, attempt);
+          } else if (!deleted.contains(event.getDoi())){
+            updateAttempt(event.getDoi(), datasetKey, attempt);
+          }
 
-      } catch (IllegalArgumentException e) {
-        // a source dataset DOI
-        var key = event.getDoi().sourceDatasetKey();
-        datasetKey = key.getDatasetKey();
-        sourceKey = key.getId();
-        var project = DatasetInfoCache.CACHE.info(sourceKey);
-        var source = DatasetInfoCache.CACHE.info(sourceKey);
-        if (project.origin != DatasetOrigin.PROJECT || project.key != source.sourceKey) {
-          LOG.warn("COL source dataset DOI {} that is not a source dataset key {}", event.getDoi(), sourceKey);
-          return;
-        }
-      }
+        } else if (event.getDoi().isDatasetSource()) {
+          // a source dataset DOI
+          var key = event.getDoi().sourceDatasetKey();
+          int releaseKey = key.getDatasetKey();
+          int sourceKey = key.getId();
+          var release = DatasetInfoCache.CACHE.info(releaseKey, true);
+          if (!release.origin.isRelease()) {
+            LOG.warn("COL source dataset DOI {} that is not linked to a release key {}", event.getDoi(), releaseKey);
+            return;
+          }
+          if (event.isDelete()) {
+            deleteSource(event.getDoi(), releaseKey, sourceKey);
+          } else if (!deleted.contains(event.getDoi())){
+            updateSource(event.getDoi(), releaseKey, sourceKey);
+          }
 
-      if (event.isDelete()) {
-        if (sourceKey == null) {
-          delete(event.getDoi(), datasetKey);
         } else {
-          delete(event.getDoi(), datasetKey, sourceKey);
+          // a dataset/release DOI
+          int datasetKey = event.getDoi().datasetKey();
+          if (event.isDelete()) {
+            delete(event.getDoi(), datasetKey);
+          } else if (!deleted.contains(event.getDoi())){
+            update(event.getDoi(), datasetKey);
+          }
         }
 
-      } else if (!deleted.contains(event.getDoi())){
-        if (sourceKey == null) {
-          update(event.getDoi(), datasetKey);
-        } else {
-          update(event.getDoi(), datasetKey, sourceKey);
-        }
+      } catch (Exception e) {
+        LOG.error("Error processing ChangeDoi event for COL dataset DOI {}", event.getDoi(), e);
       }
+    }
+  }
+
+  @Override
+  public void datasetChanged(DatasetChanged d) {
+    if (d.isCreated() && d.obj.getDoi() != null) {
+      // dataset dao does not deal with DOIs, we need to create them in DataCite here!
+      var attr = buildDatasetMetadata(d.obj);
+      create(attr);
     }
   }
 
@@ -112,9 +126,15 @@ public class DoiUpdater implements DoiListener {
       var dm = session.getMapper(DatasetMapper.class);
       Dataset d = dm.get(datasetKey);
       d.setDoi(doi); // make sure we don't accidently update some other DOI
-      boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
-      final Integer prevReleaseKey = dm.previousRelease(datasetKey);
-      var attr = buildReleaseMetadata(d.getSourceKey(), latest, d, prevReleaseKey);
+      DoiAttributes attr;
+      if (d.getOrigin().isRelease()) {
+        boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
+        final Integer prevReleaseKey = dm.previousRelease(datasetKey);
+        attr = buildReleaseMetadata(d.getSourceKey(), latest, d, prevReleaseKey);
+
+      } else {
+        attr = buildDatasetMetadata(d);
+      }
       update(attr);
     }
   }
@@ -122,7 +142,7 @@ public class DoiUpdater implements DoiListener {
   /**
    * Updates a release source
    */
-  private void update(DOI doi, int datasetKey, int sourceDatasetKey) {
+  private void updateSource(DOI doi, int datasetKey, int sourceDatasetKey) {
     try (SqlSession session = factory.openSession()) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       Dataset release = dm.get(datasetKey);
@@ -131,6 +151,29 @@ public class DoiUpdater implements DoiListener {
       boolean latest = datasetKeyCache.isLatestRelease(datasetKey);
       var attr = buildSourceMetadata(source, release, latest);
       update(attr);
+    }
+  }
+
+  /**
+   * Updates a release source
+   */
+  private void updateAttempt(DOI doi, int datasetKey, int attempt) {
+    try (SqlSession session = factory.openSession()) {
+      var dam = session.getMapper(DatasetArchiveMapper.class);
+      var dim = session.getMapper(DatasetImportMapper.class);
+      Dataset d = dam.get(datasetKey, attempt);
+      d.setDoi(doi); // make sure we dont accidently update some other DOI
+      DatasetImport lastImport = dim.getLast(datasetKey, attempt, ImportState.FINISHED);
+      var attr = buildAttemptMetadata(d, lastImport == null ? null : lastImport.getAttempt());
+      update(attr);
+    }
+  }
+
+  private void create(DoiAttributes attr) {
+    try {
+      doiService.create(attr);
+    } catch (DoiException e) {
+      LOG.error("Error creating COL DOI {}", attr.getDoi(), e);
     }
   }
 
@@ -143,11 +186,15 @@ public class DoiUpdater implements DoiListener {
   }
 
   private void delete(DOI doi, int datasetKey){
-    delete(doi, converter.datasetURI(datasetKey, false));
+    delete(doi, converter.datasetURI(datasetKey));
   }
 
-  private void delete(DOI doi, int datasetKey, int sourceDatasetKey){
+  private void deleteSource(DOI doi, int datasetKey, int sourceDatasetKey){
     delete(doi, converter.sourceURI(datasetKey, sourceDatasetKey, false));
+  }
+
+  private void deleteAttempt(DOI doi, int datasetKey, int attempt){
+    delete(doi, converter.attemptURI(datasetKey, attempt));
   }
 
   private void delete(DOI doi, URI url){
@@ -169,6 +216,30 @@ public class DoiUpdater implements DoiListener {
 
   private DOI doi(Dataset d) {
     return d != null ? d.getDoi() : null;
+  }
+
+  public DoiAttributes buildAttemptMetadata(Dataset d, @Nullable Integer prevAttempt, @Nullable Integer nextAttempt) {
+    try (SqlSession session = factory.openSession(true)) {
+      var dm = session.getMapper(DatasetMapper.class);
+      var dam = session.getMapper(DatasetArchiveMapper.class);
+      Dataset project = .get(datasetKey);
+      Dataset prevRelease = null;
+      if (prevReleaseKey != null) {
+        prevRelease = session.getMapper(DatasetMapper.class).get(prevReleaseKey);
+      }
+      return converter.datasetAttempt(d, latest, doi(project), doi(prevRelease));
+    }
+  }
+
+  public DoiAttributes buildDatasetMetadata(Dataset d) {
+    try (SqlSession session = factory.openSession(true)) {
+      Dataset project = session.getMapper(DatasetMapper.class).get(projectKey);
+      Dataset prevRelease = null;
+      if (prevReleaseKey != null) {
+        prevRelease = session.getMapper(DatasetMapper.class).get(prevReleaseKey);
+      }
+      return converter.release(d, latest, doi(project), doi(prevRelease));
+    }
   }
 
   public DoiAttributes buildReleaseMetadata(int projectKey, boolean latest, Dataset release, @Nullable Integer prevReleaseKey) {

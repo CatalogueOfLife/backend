@@ -32,6 +32,10 @@ public class DoiConfig {
     return DOI.dataset(prefix, datasetKey);
   }
 
+  public DOI datasetDOI(int datasetKey, int attempt) {
+    return DOI.dataset(prefix, datasetKey);
+  }
+
   public DOI datasetSourceDOI(int datasetKey, int sourceKey) {
     return DOI.datasetSource(prefix, datasetKey, sourceKey);
   }

@@ -566,7 +566,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     session.commit();
     session.close();
-    // other non pg stuff
+    // other non pg stuff - DOIs are created by the dataset change listener DoiUpdater´
     pullLogo(obj, null, user);
     bus.publish(DatasetChanged.created(obj, user));
     return false;

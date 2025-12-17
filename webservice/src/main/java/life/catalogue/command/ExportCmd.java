@@ -22,7 +22,7 @@ import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.PublicReleaseListener;
+import life.catalogue.release.PublishDatasetListener;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +46,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   private JobExecutor exec;
   private ExportManager manager;
   private final MailBundle mail = new MailBundle();
-  private PublicReleaseListener copy;
+  private PublishDatasetListener copy;
   private Set<DataFormat> formats;
   private final Map<Integer, List<ExpFormat>> exportsByDatasetKey = new HashMap<>();
   private boolean force;
@@ -119,7 +119,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
     DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    copy = new PublicReleaseListener(cfg.release, cfg.job, factory, httpClient, exportDao, doiService, converter);
+    copy = new PublishDatasetListener(cfg.release, cfg.job, factory, httpClient, exportDao, doiService, converter);
   }
 
   @Override

@@ -70,17 +70,6 @@ public class ProjectReleaseConfig {
   public MetadataConfig metadata = new MetadataConfig();
 
   /**
-   * If true a release will issue new DOIs to changed sources which are not owned by a sector publisher.
-   */
-  public boolean issueSourceDOIs = false;
-
-  /**
-   * If true a release will also issue new DOIs to changed sources from sector publishers.
-   * For this to work issueSourceDOIs must also be true.
-   */
-  public boolean issuePublisherSourceDOIs = false;
-
-  /**
    * If true a release will first delete all bare names from the project before it copies data.
    */
   public boolean removeBareNames = true;

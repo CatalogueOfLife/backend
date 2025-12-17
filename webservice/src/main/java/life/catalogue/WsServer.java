@@ -1,6 +1,7 @@
 package life.catalogue;
 
 import life.catalogue.api.jackson.ApiModule;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.JobResult;
 import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.assembly.SyncFactory;
@@ -66,7 +67,7 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.release.PublicReleaseListener;
+import life.catalogue.release.PublishDatasetListener;
 import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
@@ -372,6 +373,8 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = DoiService.passThru();
       LOG.warn("DataCite DOI service not configured!");
     } else {
+      LOG.info("Use DOI prefix: {}", cfg.doi.prefix);
+      Dataset.DOI_PREFIX = cfg.doi.prefix;
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
@@ -490,7 +493,7 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublicReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
+    broker.register(new PublishDatasetListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
     broker.register(doiUpdater);
     broker.register(exportManager);
