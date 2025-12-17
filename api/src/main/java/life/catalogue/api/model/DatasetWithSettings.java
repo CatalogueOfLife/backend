@@ -10,7 +10,6 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -351,12 +350,16 @@ public class DatasetWithSettings {
     dataset.setKeyword(keyword);
   }
 
-  public Map<String, String> getIdentifier() {
+  public List<Identifier> getIdentifier() {
     return dataset.getIdentifier();
   }
 
-  public void setIdentifier(Map<String, String> identifier) {
+  public void setIdentifier(List<Identifier> identifier) {
     dataset.setIdentifier(identifier);
+  }
+
+  public void addIdentifier(Identifier identifier) {
+    dataset.addIdentifier(identifier);
   }
 
   public String getAlias() {

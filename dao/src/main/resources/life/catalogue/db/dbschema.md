@@ -11,6 +11,30 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-12-17 identifier list
+Migrate identifiers from hstore to list
+```
+ALTER TABLE dataset ADD COLUMN identifier2 TEXT[];
+UPDATE dataset SET identifier2=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+ALTER TABLE dataset DROP COLUMN identifier;
+ALTER TABLE dataset RENAME COLUMN identifier2 TO identifier;
+
+ALTER TABLE dataset_archive ADD COLUMN identifier2 TEXT[];
+UPDATE dataset_archive SET identifier2=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+ALTER TABLE dataset_archive DROP COLUMN identifier;
+ALTER TABLE dataset_archive RENAME COLUMN identifier2 TO identifier;
+
+ALTER TABLE dataset_source ADD COLUMN identifier2 TEXT[];
+UPDATE dataset_source SET identifier2=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+ALTER TABLE dataset_source DROP COLUMN identifier;
+ALTER TABLE dataset_source RENAME COLUMN identifier2 TO identifier;
+
+ALTER TABLE dataset_patch ADD COLUMN identifier2 TEXT[];
+UPDATE dataset_patch SET identifier2=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+ALTER TABLE dataset_patch DROP COLUMN identifier;
+ALTER TABLE dataset_patch RENAME COLUMN identifier2 TO identifier;
+```
+
 #### 2025-12-08 new basionym issue
 ```
 ALTER TYPE ISSUE ADD VALUE 'BAD_BASIONYM_AUTHORSHIP';

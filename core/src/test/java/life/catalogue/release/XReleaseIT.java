@@ -15,8 +15,6 @@ import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.DatasetMapper;
 import life.catalogue.db.mapper.NameUsageMapper;
 import life.catalogue.db.mapper.VerbatimSourceMapper;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -169,12 +167,10 @@ public class XReleaseIT extends SectorSyncTestBase {
     var dDao = new DatasetDao(factory, du, diDao, validator, broker);
     var rDao = mock(ReferenceDao.class);
     var exportManager = mock(ExportManager.class);
-    var doiService = mock(DoiService.class);
-    var doiUpdater = mock(DoiUpdater.class);
     projectCopyFactory = new ProjectCopyFactory(hc, NameMatchingRule.getIndex(), syncFactory, matcherFactory, diDao, dDao, siDao, rDao, nDao, sdao,
-      exportManager, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater,
+      exportManager, NameUsageIndexService.passThru(), ImageService.passThru(),
       SqlSessionFactoryRule.getSqlSessionFactory(), validator,
-      cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
+      cfg.release, cfg.apiURI, cfg.clbURI
     );
 
     // set project default settings

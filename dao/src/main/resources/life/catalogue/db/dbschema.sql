@@ -849,7 +849,7 @@ CREATE TABLE dataset (
   gbif_key UUID UNIQUE,
   gbif_publisher_key UUID,
 
-  identifier HSTORE,
+  identifier TEXT[],
   title TEXT NOT NULL,
   alias TEXT,
   description TEXT,
@@ -899,7 +899,7 @@ CREATE TABLE dataset (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
-      setweight(to_tsvector('dataset', f_unaccent(coalesce(identifier::text, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(identifier), ''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
       setweight(to_tsvector('dataset', f_unaccent( left(
         coalesce(description, '') ||

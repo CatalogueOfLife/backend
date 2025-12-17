@@ -34,6 +34,9 @@ public abstract class MapperTestBase<M> {
   static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
   protected final Class<M> mapperClazz;
   protected final static int appleKey = TestDataRule.APPLE.key;
+  static {
+    Dataset.DOI_PREFIX = DOI.TEST_PREFIX;
+  }
 
   @ClassRule
   public static SqlSessionFactoryRule pgRule = new PgSetupRule();
@@ -129,9 +132,9 @@ public abstract class MapperTestBase<M> {
       di.setOrigin(d.getOrigin());
       di.setFormat(ds.getEnum(Setting.DATA_FORMAT));
       dim.create(di);
+      // also update dataset with attempt
+      dm.updateLastImport(di.getDatasetKey(), di.getAttempt());
     }
-    // also update dataset with attempt
-    did.updateDatasetLastAttempt(di);
     return di;
   }
 

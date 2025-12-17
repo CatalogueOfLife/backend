@@ -91,7 +91,7 @@ public class DwcaInserterTest extends InserterBaseTest {
     var m = ins.readMetadata().get();
     // should read json, not eml!
     assertEquals("Chapter 7: Linnaean Plant Names and their Types (part Q)", m.getTitle());
-    assertEquals("93F443DCBCEDFBF26165C392E1E8901C", m.getIdentifier().get("plazi"));
+    assertEquals("plazi:93F443DCBCEDFBF26165C392E1E8901C", m.getIdentifier().getFirst());
     assertEquals("Department of Botany, Natural History Museum, Cromwell Road, London, UK", m.getCreator().get(0).getOrganisation());
     assertEquals(License.CC0, m.getLicense());
     assertEquals(1, m.getSource().size());

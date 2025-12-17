@@ -33,7 +33,7 @@ public class DoiConfig {
   }
 
   public DOI datasetDOI(int datasetKey, int attempt) {
-    return DOI.dataset(prefix, datasetKey);
+    return DOI.datasetAttempt(prefix, datasetKey, attempt);
   }
 
   public DOI datasetSourceDOI(int datasetKey, int sourceKey) {

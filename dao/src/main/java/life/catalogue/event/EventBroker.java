@@ -1,19 +1,13 @@
 package life.catalogue.event;
 
 import life.catalogue.api.event.*;
-import life.catalogue.common.Managed;
 import life.catalogue.concurrent.ExecutorUtils;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
-import net.openhft.chronicle.core.io.AbstractCloseable;
-import net.openhft.chronicle.core.io.ThreadingIllegalStateException;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -188,8 +182,8 @@ public class EventBroker implements AutoCloseable {
             LOG.error("Failed to broker sector delete event: {}", event, e);
           }
         }
-      } else if (obj instanceof ChangeDoi) {
-        ChangeDoi event = (ChangeDoi) obj;
+      } else if (obj instanceof DoiChange) {
+        DoiChange event = (DoiChange) obj;
         for (DoiListener l : doiListeners) {
           try {
             l.doiChanged(event);

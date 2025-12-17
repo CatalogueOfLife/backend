@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.api.event.DatasetDataChanged;
+import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.DatasetImport;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DataFormat;
@@ -360,6 +361,9 @@ public class ImportJob implements Runnable {
           dao.updateMetrics(di, datasetKey);
 
           bus.publish(new DatasetDataChanged(datasetKey));
+          if (dataset.getDoi() != null) {
+            bus.publish(DoiChange.create(dataset.getVersionDoi()));
+          }
 
           if (rematchDecisions()) {
             updateState(ImportState.MATCHING);

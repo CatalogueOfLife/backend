@@ -3,15 +3,10 @@ package life.catalogue.release;
 import life.catalogue.TestConfigs;
 import life.catalogue.TestUtils;
 import life.catalogue.assembly.SyncFactoryRule;
-import life.catalogue.cache.LatestDatasetKeyCacheImpl;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.ReferenceDao;
-import life.catalogue.dao.UserDao;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
@@ -68,12 +63,7 @@ public abstract class ProjectBaseIT {
     EventBroker bus = TestUtils.mockedBroker();
     ExportManager exm = mock(ExportManager.class);
     DatasetExportDao exDao = mock(DatasetExportDao.class);
-    UserDao udao = mock(UserDao.class);
     ReferenceDao rdao = mock(ReferenceDao.class);
-    DoiService doiService = mock(DoiService.class);
-    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    LatestDatasetKeyCacheImpl lrCache = mock(LatestDatasetKeyCacheImpl.class);
-    DoiUpdater doiUpdater = new DoiUpdater(SqlSessionFactoryRule.getSqlSessionFactory(), doiService, lrCache, converter);
     validator = Validation.buildDefaultValidatorFactory().getValidator();
     dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
       null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator
@@ -81,8 +71,8 @@ public abstract class ProjectBaseIT {
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
-      exm, NameUsageIndexService.passThru(), ImageService.passThru(), doiService, doiUpdater, SqlSessionFactoryRule.getSqlSessionFactory(), validator,
-      cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
+      exm, NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(), validator,
+      cfg.release, cfg.apiURI, cfg.clbURI
     );
   }
   

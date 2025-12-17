@@ -56,21 +56,15 @@ public class DatasetDaoTest extends DaoTestBase {
   public void doiDupeOverload() throws Exception {
     DOI doi = DOI.col("10.15468/dl.v0i1f3");
     Dataset d1 = DatasetMapperTest.create();
-    d1.setDoi(doi);
+    d1.addIdentifier(doi);
 
     dao.create(d1, Users.TESTER);
     commit();
 
    for (int i = 0; i < 200; i++) {
      Dataset d2 = DatasetMapperTest.create();
-     d2.setDoi(doi);
-     try {
-       dao.create(d2, Users.GBIF_SYNC);
-     } catch (NotUniqueException e) {
-       d2.setDoi(null);
-       dao.create(d2, Users.GBIF_SYNC);
-
-     }
+     d2.addIdentifier(doi);
+     dao.create(d2, Users.GBIF_SYNC);
    }
 
    System.out.println("done");
@@ -177,32 +171,6 @@ public class DatasetDaoTest extends DaoTestBase {
     Dataset d = DatasetMapperTest.create();
     d.setOrigin(null);
     dao.create(d, Users.TESTER);
-  }
-
-  @Test(expected = NotUniqueException.class)
-  public void duplicateDOI() throws Exception {
-    final DOI doi = DOI.col("1234567");
-    Dataset d = DatasetMapperTest.create();
-    d.setDoi(doi);
-    dao.create(d, Users.TESTER);
-
-    d = DatasetMapperTest.create();
-    d.setDoi(doi);
-    dao.create(d, Users.TESTER);
-  }
-
-  @Test(expected = NotUniqueException.class)
-  public void duplicateDOIupd() throws Exception {
-    final DOI doi = DOI.col("1234567");
-    Dataset d2 = DatasetMapperTest.create();
-    d2.setDoi(doi);
-    dao.create(d2, Users.TESTER);
-
-    Dataset d = DatasetMapperTest.create();
-    dao.create(d, Users.TESTER);
-
-    d.setDoi(doi);
-    dao.update(d, Users.TESTER);
   }
 
   @Test(expected = IllegalArgumentException.class)

@@ -103,7 +103,6 @@ public abstract class AbstractProjectCopy extends DatasetBlockingJob {
     d.setAlias(null); // must be unique
     d.setGbifKey(null); // must be unique
     d.setGbifPublisherKey(null);
-    d.setDoi(null);
     // use the current attempt which gets written into the dataset table only at the end of the (successful) job
     d.setAttempt(attempt);
     d.setNotes(String.format("Created by %s#%s %s.", getJobName(), attempt, getKey()));

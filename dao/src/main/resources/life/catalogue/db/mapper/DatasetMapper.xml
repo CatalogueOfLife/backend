@@ -211,7 +211,7 @@
     <result property="editor" column="editor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
     <result property="publisher" column="publisher" typeHandler="life.catalogue.db.type.AgentTypeHandler"/>
     <result property="contributor" column="contributor" typeHandler="life.catalogue.db.type.AgentArrayTypeHandler"/>
-    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
+    <result property="identifier" column="identifier" typeHandler="life.catalogue.db.type2.IdentifierArrayTypeHandler"/>
     <result property="urlFormatter" column="url_formatter" typeHandler="life.catalogue.db.type2.HstoreMapTypeHandler"/>
     <result property="taxonomicGroupScope" column="taxonomic_group_scope" typeHandler="life.catalogue.db.type2.TaxGroupSetTypeHandler"/>
     <association property="conversion" javaType="life.catalogue.api.model.Dataset$UrlDescription">
@@ -491,14 +491,22 @@
   </select>
 
   <select id="previousRelease" resultType="integer">
-    SELECT prev.key FROM dataset r JOIN dataset prev ON prev.source_key=r.source_key
+    SELECT prev.key FROM dataset r JOIN dataset prev ON prev.source_key=r.source_key AND prev.origin=r.origin
     WHERE r.key = #{key}
       AND prev.deleted IS NULL
       AND NOT prev.private
-      AND prev.origin=r.origin
-      AND prev.key != r.key
-      AND prev.created &lt; r.created
-    ORDER BY prev.created DESC
+      AND prev.key &lt; r.key
+    ORDER BY prev.key DESC
+    LIMIT 1
+  </select>
+
+  <select id="nextRelease" resultType="integer">
+    SELECT r.key FROM dataset r JOIN dataset prev ON prev.source_key=r.source_key AND prev.origin=r.origin
+    WHERE prev.key = #{key}
+      AND r.deleted IS NULL
+      AND NOT r.private
+      AND prev.key &lt; r.key
+    ORDER BY r.key ASC
     LIMIT 1
   </select>
 
@@ -518,36 +526,6 @@
     SELECT <include refid="SELECT_SIMPLE"/>
     FROM dataset d
     WHERE key = #{key}
-  </select>
-
-  <select id="getByDoi" resultMap="datasetResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    WHERE doi = #{doi}
-  </select>
-
-  <select id="getPreviousRelease" resultMap="datasetResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-      JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
-    WHERE rel.key = #{key}
-        AND d.key &lt; #{key}
-        AND d.deleted IS NULL
-        AND NOT d.private
-    ORDER BY d.key DESC
-    LIMIT 1
-  </select>
-
-  <select id="getNextRelease" resultMap="datasetResultMap">
-    SELECT <include refid="SELECT"/>
-    FROM <include refid="FROM"/>
-    JOIN dataset rel ON rel.source_key=d.source_key AND rel.origin=d.origin
-    WHERE rel.key = #{key}
-    AND d.key > #{key}
-    AND d.deleted IS NULL
-    AND NOT d.private
-    ORDER BY d.key ASC
-    LIMIT 1
   </select>
 
   <select id="getMaxKey" parameterType="map" resultType="integer">

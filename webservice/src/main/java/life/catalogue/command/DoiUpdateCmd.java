@@ -135,49 +135,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     if (!doi.isCOL()) {
       throw new IllegalArgumentException("DOI needs to be a Catalogue of Life DOI");
     }
-
-    try (SqlSession session = factory.openSession(true)) {
-      DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      Dataset release = dm.getByDoi(doi);
-      if (release == null) {
-        throw NotFoundException.notFound(Dataset.class, doi);
-      } else if (!release.getOrigin().isRelease()) {
-        throw new IllegalArgumentException("Dataset " + doi + " is not a release but a " + release.getOrigin() + " dataset");
-      }
-      Dataset project = dm.get(release.getSourceKey());
-      Dataset prev = dm.getPreviousRelease(release.getKey());
-      Dataset next = dm.getNextRelease(release.getKey());
-      updateDOI(doi, release, next==null, project.getDoi(), prev==null ? null : prev.getDoi());
-    }
   }
   private void updateReleaseOrProject(Dataset release, boolean portal, @Nullable DOI project, @Nullable DOI prev, DatasetMapper dm) {
     DOI doi = release.getDoi();
-    try {
-      if (doi == null) {
-        // issue a new DOI!
-        doi = doiService.fromDataset(release.getKey());
-        release.setDoi(doi);
-        dm.update(release); // persist doi
-        var attr = converter.release(release, portal, project, prev);
-        LOG.info("Issue new DOI {} for release {}", doi, release.getKey());
-        try {
-          doiService.create(attr);
-          releaseCreated++;
-          doiService.publish(doi);
-          releasePublished++;
-        } catch (DoiException e) {
-          LOG.info("Failed to create DOI {} for release {}. Try to do an update instead", doi, release.getKey(), e);
-          updateDOI(doi, release, portal, project, prev);
-        }
-
-      } else {
-        updateDOI(doi, release, portal, project, prev);
-      }
-    } catch (DoiException e) {
-      LOG.error("Error updating DOIs for release {} with DOI {}", release.getKey(), doi, e);
-    } finally {
-      LOG.info("Total releases created={}, updated={}, published={}. Total sources updated={}, published={}", releaseCreated, releaseUpdated, releasePublished,  sourceUpdated, sourcePublished);
-    }
   }
 
   private void updateDOI(DOI doi, Dataset release, boolean isLatest, @Nullable DOI project, @Nullable DOI prev) throws DoiException {
@@ -202,24 +162,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       LOG.info("Updating DOIs for {}release {} {}", isLatest ? "latest " : "", release.getKey(), release.getAlias());
       var dsm = session.getMapper(DatasetSourceMapper.class);
       for (Dataset source : dsm.listReleaseSources(release.getKey(), false)) {
-        final DOI srcDoi = source.getDoi();
-        if (srcDoi != null && srcDoi.isCOL()) {
-          try {
-            var data = doiService.resolve(srcDoi);
-            var attr = converter.source(source, null, release, isLatest);
-            LOG.info("Update DOI {} for source {} {}", srcDoi, source.getKey(), source.getAlias());
-            doiService.update(attr);
-            sourceUpdated++;
-            if (!release.isPrivat() && data.getState() != DoiState.FINDABLE) {
-              LOG.info("Publish DOI {} for source {} {} of public release {}", srcDoi, source.getKey(), source.getAlias(), release.getKey());
-              doiService.publish(srcDoi);
-              sourcePublished++;
-            }
-
-          } catch (DoiException e) {
-            LOG.error("Error updating DOI {} for source {} in release {}", srcDoi, source.getKey(), release.getKey(), e);
-          }
-        }
+        //TODO:
       }
     }
   }

@@ -30,9 +30,9 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setSourceKey(12345);
     d.setIssued(FuzzyDate.of("1999-09-21"));
     d.setVersion("1999 v2");
-    d.setIdentifier(Map.of(
-      "gbif", UUID.randomUUID().toString(),
-      "col", "1001"
+    d.setIdentifier(List.of(
+      Identifier.parse("gbif" + UUID.randomUUID()),
+      Identifier.parse("col:1001")
     ));
     d.setUrlFormatter(Map.of(
       "name", "https://fishbase.mnhn.fr/summary/{ID}",

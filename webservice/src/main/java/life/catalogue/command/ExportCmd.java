@@ -13,16 +13,13 @@ import life.catalogue.dao.DatasetExportDao;
 import life.catalogue.dao.DatasetImportDao;
 import life.catalogue.dao.UserDao;
 import life.catalogue.db.mapper.DatasetMapper;
-import life.catalogue.doi.service.DataCiteService;
-import life.catalogue.doi.service.DatasetConverter;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.dw.mail.MailBundle;
 import life.catalogue.event.EventBroker;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
 import life.catalogue.img.ImageServiceFS;
 import life.catalogue.release.ProjectRelease;
-import life.catalogue.release.PublishDatasetListener;
+import life.catalogue.release.PublishReleaseListener;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +43,7 @@ public class ExportCmd extends AbstractMybatisCmd {
   private JobExecutor exec;
   private ExportManager manager;
   private final MailBundle mail = new MailBundle();
-  private PublishDatasetListener copy;
+  private PublishReleaseListener copy;
   private Set<DataFormat> formats;
   private final Map<Integer, List<ExpFormat>> exportsByDatasetKey = new HashMap<>();
   private boolean force;
@@ -117,9 +114,7 @@ public class ExportCmd extends AbstractMybatisCmd {
     final ImageService imageService = new ImageServiceFS(cfg.img, bus);
     final DatasetExportDao exportDao = new DatasetExportDao(cfg.job, factory, validator);
     manager = new ExportManager(cfg, factory, exec, imageService, exportDao, new DatasetImportDao(factory, cfg.metricsRepo));
-    DoiService doiService = new DataCiteService(cfg.doi, jerseyClient);
-    DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    copy = new PublishDatasetListener(cfg.release, cfg.job, factory, httpClient, exportDao, doiService, converter);
+    copy = new PublishReleaseListener(cfg.release, cfg.job, factory, httpClient, exportDao, bus);
   }
 
   @Override

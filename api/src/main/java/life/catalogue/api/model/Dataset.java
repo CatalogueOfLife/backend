@@ -47,6 +47,7 @@ public class Dataset extends DataEntity<Integer> {
   private static final URI NULL_URI = URI.create("null:null");
   private static final FuzzyDate NULL_DATE = FuzzyDate.of(0);
   private static final Agent NULL_AGENT = Agent.person("Null","Null","null@null.nl","0000-0000-0000-0000");
+  private static final Identifier NULL_IDENTIFIER = new Identifier("null","NULL");
   private static final List<String> NULL_LIST_STR = List.of("NULL","Null","null");
   private static final UrlDescription NULL_DESC = new UrlDescription("http://null.nu/null", "null");
   private static final Map<String,String> NULL_MAP = Map.of("NULL","NULL",  "Null","Null",  "null","null");
@@ -111,6 +112,8 @@ public class Dataset extends DataEntity<Integer> {
         } else if (p.getPropertyType().equals(List.class)) {
           if (p.getName().equals("keyword")) {
             nullType = NULL_LIST_STR;
+          } else if (p.getName().equals("identifier")) {
+            nullType = List.of(NULL_IDENTIFIER);
           } else {
             nullType = List.of(NULL_AGENT);
           }
@@ -151,7 +154,7 @@ public class Dataset extends DataEntity<Integer> {
 
   // human metadata
   @JsonInclude(JsonInclude.Include.NON_EMPTY)
-  private Map<String, String> identifier = new HashMap<>();
+  private List<Identifier> identifier = new ArrayList<>();
   @NotNull
   @NotBlank
   private String title;
@@ -548,7 +551,9 @@ public class Dataset extends DataEntity<Integer> {
   }
 
   public DOI getVersionDoi() {
-    return DOI_PREFIX == null || origin.isProjectOrRelease() || attempt == null ? null : DOI.datasetAttempt(DOI_PREFIX, key, attempt);
+    return DOI_PREFIX == null
+      || (origin != null && origin.isProjectOrRelease())
+      || attempt == null ? null : DOI.datasetAttempt(DOI_PREFIX, key, attempt);
   }
 
   public String getTitle() {
@@ -765,12 +770,27 @@ public class Dataset extends DataEntity<Integer> {
     }
   }
 
-  public Map<String, String> getIdentifier() {
+  public List<Identifier> getIdentifier() {
     return identifier;
   }
 
-  public void setIdentifier(Map<String, String> identifier) {
+  public void setIdentifier(List<Identifier> identifier) {
     this.identifier = identifier;
+  }
+
+  public void addIdentifier(DOI doi) {
+    if (doi != null) {
+      addIdentifier(new Identifier(doi));
+    }
+  }
+
+  public void addIdentifier(Identifier identifier) {
+    if (identifier != null) {
+      if (this.identifier == null) {
+        this.identifier = new ArrayList<>();
+      }
+      this.identifier.add(identifier);
+    }
   }
 
   public String getAlias() {

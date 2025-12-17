@@ -1,6 +1,8 @@
 package life.catalogue.resources;
 
 import life.catalogue.WsServerConfig;
+import life.catalogue.api.event.DoiChange;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DSID;
 import life.catalogue.api.model.RequestScope;
 import life.catalogue.api.model.User;
@@ -395,6 +397,23 @@ public class AdminResource {
       .build();
   }
 
+  @POST
+  @Path("/doi/{doi}")
+  public void createDOI(@PathParam("doi") String doiString) {
+    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.create(doi)));
+  }
+
+  @PUT
+  @Path("/doi/{doi}")
+  public void updateDOI(@PathParam("doi") String doiString) {
+    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.update(doi)));
+  }
+
+  @PATCH
+  @Path("/doi/{doi}")
+  public void publishDOI(@PathParam("doi") String doiString) {
+    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.publish(doi)));
+  }
 
   private BackgroundJob runJob(BackgroundJob job){
     exec.submit(job);

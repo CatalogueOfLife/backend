@@ -115,15 +115,6 @@ public class DataCiteServiceIT2 {
   }
 
   @Test
-  public void buildDOI() {
-    System.out.println( service.fromDataset(1010) );
-    System.out.println( service.fromDataset(2298) );
-    System.out.println( service.fromDataset(25298) );
-    System.out.println( service.fromDatasetSource(2298, 1010) );
-    System.out.println( service.fromDatasetSource(25298, 41010) );
-  }
-
-  @Test
   public void jsonDoiSerde() throws Exception {
     DoiAttributes attr = generate(DOI.test("1234567890"));
     DataCiteWrapper data = new DataCiteWrapper(attr);

@@ -17,10 +17,24 @@ public class IdentifierTest {
   }
 
   @Test
+  public void http() {
+    final String url = "http://depo.msu.ru/ipt/resource?r=astrakhan";
+    Identifier id = Identifier.parse(url);
+    var id2 = Identifier.parse(id.toString());
+    assertEquals(id2, id);
+
+    Identifier id3 = new Identifier(Identifier.Scope.URL, url);
+    assertEquals(url, id3.getId());
+  }
+
+  @Test
   public void dois() {
     DOI doi = new DOI("10.48580/234567");
     Identifier id = Identifier.parse(doi.getDoiName());
     assertEquals(doi.getDoiString(), id.toString());
+
+    var id2 = new Identifier(doi);
+    assertEquals(id2, id);
 
     id = Identifier.parse(doi.getDoiString());
     assertEquals(doi.getDoiString(), id.toString());

@@ -5,6 +5,7 @@ import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncIT;
 import life.catalogue.assembly.SyncFactoryRule;
+import life.catalogue.config.MatchingConfig;
 import life.catalogue.dao.DatasetDao;
 import life.catalogue.dao.ReferenceDao;
 import life.catalogue.db.mapper.DatasetMapper;
@@ -15,7 +16,6 @@ import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.importer.PgImportRule;
 import life.catalogue.junit.*;
-import life.catalogue.config.MatchingConfig;
 import life.catalogue.matching.UsageMatcherFactory;
 import life.catalogue.pgcopy.PgCopyUtils;
 import life.catalogue.release.ProjectCopyFactory;
@@ -37,8 +37,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.junit.ClassRule;
 import org.junit.Ignore;
-import org.junit.jupiter.api.Disabled;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.postgresql.jdbc.PgConnection;
@@ -232,8 +232,8 @@ public class TestDataGenerator {
       var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), null);
       var projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
         syncFactoryRule.getDiDao(), ddao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),
-        null, NameUsageIndexService.passThru(), ImageService.passThru(), null, null, SqlSessionFactoryRule.getSqlSessionFactory(),
-        validator, cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
+        null, NameUsageIndexService.passThru(), ImageService.passThru(), SqlSessionFactoryRule.getSqlSessionFactory(),
+        validator, cfg.release, cfg.apiURI, cfg.clbURI
       );
       var rel = projectCopyFactory.buildRelease(Datasets.COL, Users.RELEASER);
       rel.run();

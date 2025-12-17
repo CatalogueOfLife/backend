@@ -403,6 +403,8 @@ public class TreeMergeHandler extends TreeBaseHandler {
   }
 
   private void acceptNameThrowsNoCatch(Name n) throws InterruptedException {
+    counter++;
+    LOG.debug("process bare {} {}", n.getRank(), n.getLabel());
     Set<InfoGroup> upd = EnumSet.noneOf(InfoGroup.class);
 
     if (n.getNamesIndexType() == null) {
@@ -411,7 +413,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     if (n.getNamesIndexType() == MatchType.EXACT) {
       var candidates = nm.listByNidx(targetDatasetKey, n.getNamesIndexId());
       if (candidates.size() == 1) {
-        Name existing = candidates.get(0);
+        Name existing = candidates.getFirst();
         VerbatimSource vs = new VerbatimSource(targetDatasetKey, null, sector.getId(), sector.getSubjectDatasetKey(), n.getId(), EntityType.NAME);
         var pn = updateName(existing, n, vs, upd, null);
 
@@ -430,7 +432,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
           }
         }
       } else {
-        LOG.debug("Cannot merge {} into {} matching names", n, candidates.size());
+        LOG.debug("Cannot merge bare name {}. {} match candidates", n, candidates.size());
       }
     }
   }
@@ -942,7 +944,7 @@ public class TreeMergeHandler extends TreeBaseHandler {
     session.close();
     batchSession.commit();
     batchSession.close();
-    LOG.info("Sector {}: Total processed={}, thrown={}, ignored={}, created={}, updated={}", sector, counter, thrown, ignored, created, updated);
+    LOG.info("{}: Total processed={}, thrown={}, ignored={}, created={}, updated={}", sector, counter, thrown, ignored, created, updated);
   }
 
   public int getUpdated() {

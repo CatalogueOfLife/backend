@@ -45,7 +45,10 @@ public class ZenodoParser {
   private static Dataset convert(ZenodoResource z) {
     if (z != null) {
       Dataset d = new Dataset();
-      d.setDoi(z.doi);
+      if (z.doi != null) {
+        var id = new Identifier(z.doi);
+        d.addIdentifier(id);
+      }
       d.setTitle(z.metadata.title);
       d.setVersion(z.metadata.version);
       d.setDescription(z.metadata.description);

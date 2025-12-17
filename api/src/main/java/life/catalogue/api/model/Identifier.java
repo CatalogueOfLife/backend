@@ -19,7 +19,7 @@ public class Identifier {
   public enum Scope {
     LOCAL,
     DOI,
-    HTTP,
+    URL,
     URN,
     LSID,
 

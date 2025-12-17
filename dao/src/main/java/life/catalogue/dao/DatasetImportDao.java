@@ -88,13 +88,7 @@ public class DatasetImportDao {
     }
     return di;
   }
-  
-  public void updateDatasetLastAttempt(DatasetImport di) {
-    try (SqlSession session = factory.openSession(true)) {
-      session.getMapper(DatasetMapper.class).updateLastImport(di.getDatasetKey(), di.getAttempt());
-    }
-  }
-  
+
   public DatasetImport getLast(int datasetKey) {
     // a release? use mother project in that case
     DatasetInfoCache.DatasetInfo info = DatasetInfoCache.CACHE.info(datasetKey);

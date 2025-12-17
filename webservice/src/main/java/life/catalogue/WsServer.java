@@ -15,7 +15,7 @@ import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.dao.*;
 import life.catalogue.db.LookupTables;
-import life.catalogue.doi.DoiUpdater;
+import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.doi.service.DataCiteService;
 import life.catalogue.doi.service.DatasetConverter;
 import life.catalogue.doi.service.DoiService;
@@ -67,7 +67,7 @@ import life.catalogue.parser.NameParser;
 import life.catalogue.printer.DatasetDiffService;
 import life.catalogue.printer.SectorDiffService;
 import life.catalogue.release.ProjectCopyFactory;
-import life.catalogue.release.PublishDatasetListener;
+import life.catalogue.release.PublishReleaseListener;
 import life.catalogue.release.PublisherChangeListener;
 import life.catalogue.resources.*;
 import life.catalogue.resources.dataset.*;
@@ -378,7 +378,7 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
-    DoiUpdater doiUpdater = new DoiUpdater(getSqlSessionFactory(), doiService, coljersey.getCache(), converter);
+    DoiChangeListener doiChangeListener = new DoiChangeListener(getSqlSessionFactory(), doiService, coljersey.getCache(), converter, cfg.doi);
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
@@ -386,8 +386,8 @@ public class WsServer extends Application<WsServerConfig> {
     // syncs and releases
     final var syncFactory = new SyncFactory(getSqlSessionFactory(), matcherFactory, ni, secdao, siDao, edao, indexService, broker);
     final var copyFactory = new ProjectCopyFactory(httpClient, ni, syncFactory, matcherFactory, diDao, ddao, siDao, rdao, ndao, secdao,
-      exportManager, indexService, imgService, doiService, doiUpdater, getSqlSessionFactory(), validator,
-      cfg.release, cfg.doi, cfg.apiURI, cfg.clbURI
+      exportManager, indexService, imgService, getSqlSessionFactory(), validator,
+      cfg.release, cfg.apiURI, cfg.clbURI
     );
 
     // importer
@@ -493,9 +493,9 @@ public class WsServer extends Application<WsServerConfig> {
     if (cfg.apiURI != null) {
       broker.register(new CacheFlush(httpClient, cfg.apiURI));
     }
-    broker.register(new PublishDatasetListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, doiService, converter));
+    broker.register(new PublishReleaseListener(cfg.release, cfg.job, getSqlSessionFactory(), httpClient, exdao, broker));
     broker.register(new PublisherChangeListener(getSqlSessionFactory()));
-    broker.register(doiUpdater);
+    broker.register(doiChangeListener);
     broker.register(exportManager);
     broker.register(syncManager);
     broker.register(importManager);

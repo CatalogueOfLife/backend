@@ -1,9 +1,6 @@
 package life.catalogue.common.text;
 
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.DOI;
-import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.DatasetOrigin;
 import life.catalogue.api.vocab.DatasetType;
 import life.catalogue.common.date.FuzzyDate;
@@ -11,7 +8,6 @@ import life.catalogue.common.date.FuzzyDate;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -64,7 +60,7 @@ public class CitationUtils {
       return d.getDeleted();
     }
 
-    public Map<String, String> getIdentifier() {
+    public List<Identifier> getIdentifier() {
       return d.getIdentifier();
     }
 

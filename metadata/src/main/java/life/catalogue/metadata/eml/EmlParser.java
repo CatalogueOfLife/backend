@@ -225,11 +225,7 @@ public class EmlParser {
                   String val = text(text);
                   if (val != null) {
                     Identifier id = Identifier.parse(val);
-                    if (id.isDOI()) {
-                      d.setDoi(DOI.parse(id.toString()).get());
-                    } else {
-                      d.getIdentifier().put(id.getScope(), id.getId());
-                    }
+                    d.addIdentifier(id);
                     break;
                   }
                 case "title":

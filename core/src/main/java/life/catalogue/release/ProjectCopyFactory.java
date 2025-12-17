@@ -3,9 +3,6 @@ package life.catalogue.release;
 import life.catalogue.assembly.SyncFactory;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DoiConfig;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -29,8 +26,6 @@ public class ProjectCopyFactory {
   private final SectorDao sDao;
   private final SectorImportDao siDao;
   private final NameUsageIndexService indexService;
-  private final DoiService doiService;
-  private final DoiUpdater doiUpdater;
   private final SqlSessionFactory factory;
   private final UsageMatcherFactory matcherFactory;
   private final SyncFactory syncFactory;
@@ -39,15 +34,14 @@ public class ProjectCopyFactory {
   private final Validator validator;
   private final NameIndex nameIndex;
   private final ReleaseConfig cfg;
-  private final DoiConfig doiCfg;
   private final URI apiURI;
   private final URI clbURI;
 
   public ProjectCopyFactory(CloseableHttpClient client, NameIndex nameIndex, SyncFactory syncFactory, UsageMatcherFactory matcherFactory,
                             DatasetImportDao diDao, DatasetDao dDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
                             ExportManager exportManager, NameUsageIndexService indexService, ImageService imageService,
-                            DoiService doiService, DoiUpdater doiUpdater, SqlSessionFactory factory, Validator validator,
-                            ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI
+                            SqlSessionFactory factory, Validator validator,
+                            ReleaseConfig cfg, URI apiURI, URI clbURI
   ) {
     this.client = client;
     this.nameIndex = nameIndex;
@@ -62,12 +56,9 @@ public class ProjectCopyFactory {
     this.siDao = siDao;
     this.indexService = indexService;
     this.imageService = imageService;
-    this.doiService = doiService;
-    this.doiUpdater = doiUpdater;
     this.factory = factory;
     this.validator = validator;
     this.cfg = cfg;
-    this.doiCfg = doiCfg;
     this.apiURI = apiURI;
     this.clbURI = clbURI;
   }
@@ -80,12 +71,12 @@ public class ProjectCopyFactory {
    */
   public XRelease buildExtendedRelease(final int releaseKey, final int userKey) {
     return new XRelease(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
-      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+      cfg, apiURI, clbURI, client, exportManager, validator);
   }
 
   public XRelease buildDebugXRelease(final int releaseKey, final int userKey) {
     return new XReleaseDebug(factory, syncFactory, matcherFactory, nameIndex, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey,
-      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+      cfg, apiURI, clbURI, client, exportManager, validator);
   }
 
   /**
@@ -96,7 +87,7 @@ public class ProjectCopyFactory {
    */
   public ProjectRelease buildRelease(final int projectKey, final int userKey) {
     return new ProjectRelease(factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, projectKey, userKey,
-      cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+      cfg, apiURI, clbURI, client, exportManager, validator);
   }
 
   /**

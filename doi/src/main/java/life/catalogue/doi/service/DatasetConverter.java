@@ -1,5 +1,7 @@
 package life.catalogue.doi.service;
 
+import com.google.common.base.Preconditions;
+
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
@@ -57,119 +59,20 @@ public class DatasetConverter {
    * @return
    */
   public DoiAttributes release(Dataset release, boolean portal, @Nullable DOI previousVersion, @Nullable DOI nextVersion) {
-    DoiAttributes attr = common(release, previousVersion, nextVersion);
+    DoiAttributes attr = common(release.getDoi(), release, previousVersion, nextVersion);
     attr.setUrl(releaseURI(release.getKey(), portal).toString());
-    // other relations
-    if (release.getSource() != null) {
-      for (var src : release.getSource()) {
-        if (src.getDoi() != null) {
-          RelatedIdentifier id = new RelatedIdentifier();
-          id.setRelatedIdentifier(src.getDoi().getDoiName());
-          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-          id.setRelationType(RelationType.IS_DERIVED_FROM);
-          attr.getRelatedIdentifiers().add(id);
-        }
-      }
-    }
     return attr;
   }
 
   public DoiAttributes dataset(Dataset d) {
-    DoiAttributes attr = common(d, null, null);
+    DoiAttributes attr = common(d.getDoi(), d, null, null);
     attr.setUrl(datasetURI(d.getKey()).toString());
-    // release relation
-    if (d.getDoi() != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(d.getDoi().getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_PART_OF);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    if (originalSourceDOI != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(originalSourceDOI.getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_DERIVED_FROM);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    // source relations
-    if (source.getSource() != null) {
-      for (var src : source.getSource()) {
-        if (src.getDoi() != null) {
-          RelatedIdentifier id = new RelatedIdentifier();
-          id.setRelatedIdentifier(src.getDoi().getDoiName());
-          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-          id.setRelationType(RelationType.IS_DERIVED_FROM);
-          attr.getRelatedIdentifiers().add(id);
-        }
-      }
-    }
     return attr;
   }
 
-  public DoiAttributes datasetAttempt(Dataset d, @Nullable DOI originalSourceDOI, Dataset release, boolean latest) {
-    DoiAttributes attr = common(d, latest, null);
-    attr.setUrl(sourceURI(release.getKey(), d.getKey(), latest).toString());
-    // release relation
-    if (release.getDoi() != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(release.getDoi().getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_PART_OF);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    if (originalSourceDOI != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(originalSourceDOI.getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_DERIVED_FROM);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    // source relations
-    if (d.getSource() != null) {
-      for (var src : d.getSource()) {
-        if (src.getDoi() != null) {
-          RelatedIdentifier id = new RelatedIdentifier();
-          id.setRelatedIdentifier(src.getDoi().getDoiName());
-          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-          id.setRelationType(RelationType.IS_DERIVED_FROM);
-          attr.getRelatedIdentifiers().add(id);
-        }
-      }
-    }
-    return attr;
-  }
-
-  public DoiAttributes source(Dataset source, @Nullable DOI originalSourceDOI, Dataset release, boolean latest) {
-    DoiAttributes attr = common(source, latest, null);
-    attr.setUrl(sourceURI(release.getKey(), source.getKey(), latest).toString());
-    // release relation
-    if (release.getDoi() != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(release.getDoi().getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_PART_OF);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    if (originalSourceDOI != null) {
-      RelatedIdentifier id = new RelatedIdentifier();
-      id.setRelatedIdentifier(originalSourceDOI.getDoiName());
-      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-      id.setRelationType(RelationType.IS_DERIVED_FROM);
-      attr.getRelatedIdentifiers().add(id);
-    }
-    // source relations
-    if (source.getSource() != null) {
-      for (var src : source.getSource()) {
-        if (src.getDoi() != null) {
-          RelatedIdentifier id = new RelatedIdentifier();
-          id.setRelatedIdentifier(src.getDoi().getDoiName());
-          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-          id.setRelationType(RelationType.IS_DERIVED_FROM);
-          attr.getRelatedIdentifiers().add(id);
-        }
-      }
-    }
+  public DoiAttributes datasetAttempt(Dataset d, @Nullable DOI previousAttempt, @Nullable DOI nextAttempt) {
+    DoiAttributes attr = common(d.getVersionDoi(), d, previousAttempt, nextAttempt);
+    attr.setUrl(attemptURI(d.getKey(), d.getAttempt()).toString());
     return attr;
   }
 
@@ -180,8 +83,9 @@ public class DatasetConverter {
    * @param nextVersion
    * @return
    */
-  private DoiAttributes common(Dataset d, @Nullable DOI previousVersion, @Nullable DOI nextVersion) {
-    DoiAttributes attr = new DoiAttributes(d.getDoi());
+  private DoiAttributes common(DOI doi, Dataset d, @Nullable DOI previousVersion, @Nullable DOI nextVersion) {
+    Preconditions.checkNotNull(doi, "DOI required");
+    DoiAttributes attr = new DoiAttributes(doi);
     // title
     attr.setTitles(List.of(new Title(d.getTitle())));
     // publisher
@@ -239,30 +143,14 @@ public class DatasetConverter {
       );
     }
     attr.setContributors(contribs);
-    // ids
+    // alternative ids
     if (d.getIdentifier() != null) {
       List<Identifier> ids = new ArrayList<>();
-      for (var entry : d.getIdentifier().entrySet()) {
-        Identifier id = null;
-        // we can only map DOI, URL or URNs
-        var doi = DOI.parse(entry.getValue());
-        if (doi.isPresent()) {
-          id = new Identifier();
-          id.setIdentifier(doi.toString());
-          id.setIdentifierType(Identifier.DOI_TYPE);
-        } else if (entry.getValue().toLowerCase().startsWith("urn:")) {
-          id = new Identifier();
-          id.setIdentifier(entry.getValue());
-          id.setIdentifierType("URN");
-        } else if (entry.getValue().toLowerCase().startsWith("http")) {
-          id = new Identifier();
-          id.setIdentifier(entry.getValue());
-          id.setIdentifierType("URL");
-        }
-
-        if (id != null) {
-          ids.add(id);
-        }
+      for (var did : d.getIdentifier()) {
+        Identifier id = new Identifier();
+        id.setIdentifier(did.getId());
+        id.setIdentifierType(did.getScope());
+        ids.add(id);
       }
       attr.setIdentifiers(ids);
     }
@@ -281,6 +169,18 @@ public class DatasetConverter {
       id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
       id.setRelationType(RelationType.IS_PREVIOUS_VERSION_OF);
       ids.add(id);
+    }
+    // sources
+    if (d.getSource() != null) {
+      for (var src : d.getSource()) {
+        if (src.getDoi() != null) {
+          RelatedIdentifier id = new RelatedIdentifier();
+          id.setRelatedIdentifier(src.getDoi().getDoiName());
+          id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+          id.setRelationType(RelationType.IS_DERIVED_FROM);
+          ids.add(id);
+        }
+      }
     }
     attr.setRelatedIdentifiers(ids);
     return attr;
@@ -342,8 +242,8 @@ public class DatasetConverter {
     return clbBuilder.build(datasetKey);
   }
 
-  public URI sourceURI(int projectKey, int sourceKey, boolean portal) {
-    return portal ? portalSourceBuilder.build(sourceKey) : clbSourceBuilder.build(projectKey, sourceKey);
+  public URI sourceURI(int projectKey, int sourceKey) {
+    return clbSourceBuilder.build(projectKey, sourceKey);
   }
 
   public URI attemptURI(int datasetKey, int attempt) {

@@ -42,7 +42,7 @@ public class EventKryoPool extends Pool<Kryo> {
 
     // events
     kryo.register(Event.class);
-    kryo.register(ChangeDoi.class);
+    kryo.register(DoiChange.class);
     kryo.register(DatasetChanged.class);
     kryo.register(DatasetDataChanged.class);
     kryo.register(DatasetLogoChanged.class);

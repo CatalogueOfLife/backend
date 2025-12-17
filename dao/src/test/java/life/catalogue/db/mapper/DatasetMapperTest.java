@@ -61,17 +61,16 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
     d.setVersion("v123");
     d.setUrl(URI.create("https://www.gbif.org/dataset/" + d.getVersion()));
     d.setFeedbackUrl(URI.create("https://www.github.com/xyz/123/issues"));
-    d.setIdentifier(Map.of(
-      "gbif", UUID.randomUUID().toString(),
-      "col", "1001"
-    ));
+    d.setIdentifier(new ArrayList<>(List.of(
+      new Identifier(DOI.test(UUID.randomUUID().toString())),
+      new Identifier("col","1001")
+    )));
     d.setUrlFormatter(Map.of(
       "name", "http://" + RandomUtils.randomLatinString(8) + ".org/name/{ID}",
       "reference", "https://fishbase.mnhn.fr/references/FBRefSummary.php?ID={ID}"
     ));
     d.setConversion(new Dataset.UrlDescription("http://www.gbif.org/readme", "My first instructions how to read"));
     d.setNotes("my notes");
-    d.setDoi(DOI.test(UUID.randomUUID().toString()));
     d.setSize(0);
     // we dont add source citations as the DatasetMapper does not persist them
     // this is done in the DAO only and should be tested there!
@@ -307,7 +306,6 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
     Dataset r = create();
     r.setGbifKey(null);
-    r.setDoi(null);
     r.setOrigin(DatasetOrigin.RELEASE);
     r.setSourceKey(p.getKey());
     r.setAttempt(0);
@@ -853,8 +851,7 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
       Agent.person("Karl", "Marx", "karl@mailinator.com", "0000-0000-0000-0001"),
       Agent.person("Chuck", "Berry", "chuck@mailinator.com", "0000-0666-0666-0666")
     ));
-
-    ds.setDoi(doi);
+    ds.addIdentifier(doi);
     ds.setSourceKey(sourceKey);
     mapper().create(TestEntityGenerator.setUserDate(ds));
 
@@ -899,11 +896,15 @@ public class DatasetMapperTest extends CRUDEntityTestBase<Integer, Dataset, Data
 
     commit();
 
-    var d2b = mapper().getByDoi(DOI.test("123456-b"));
+    var req = new DatasetSearchRequest();
+    req.setQ(DOI.test("123456-b").getDoiName());
+    var d2b = mapper().search(req, 1, new Page()).get(0);
     assertEquals(removeDbCreatedProps(d2), removeDbCreatedProps(d2b));
-
-    assertEquals(removeDbCreatedProps(d1), removeDbCreatedProps(mapper().getPreviousRelease(d2.getKey())));
-    assertEquals(removeDbCreatedProps(d3), removeDbCreatedProps(mapper().getNextRelease(d2.getKey())));
+    var dm = mapper();
+    var pk = dm.previousRelease(d2.getKey());
+    var nk = dm.nextRelease(d2.getKey());
+    assertEquals(removeDbCreatedProps(d1), removeDbCreatedProps(dm.get(pk)));
+    assertEquals(removeDbCreatedProps(d3), removeDbCreatedProps(dm.get(nk)));
   }
 
   @Override

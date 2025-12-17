@@ -174,7 +174,7 @@ public class DatasetPager {
     final Dataset dataset = new Dataset();
     final DatasetSettings settings = new DatasetSettings();
     Integer clbDatasetKey;
-    // identifier s keys for just the CLB_DATASET_KEY entries
+    // identifier keys for just the CLB_DATASET_KEY entries
     final List<Integer> identifierKeys = new ArrayList<>();
 
     public Integer getKey() {
@@ -222,7 +222,7 @@ public class DatasetPager {
     d.dataset.addContributor(hostCache.get(g.installationKey));
     d.dataset.setTitle(g.title);
     d.dataset.setDescription(g.description);
-    DOI.parse(g.doi).ifPresent(d.dataset::setDoi);
+    DOI.parse(g.doi).ifPresent(doi -> d.dataset.addIdentifier(new Identifier(doi)));
     Optional<GEndpoint> coldp = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("COLDP")).findFirst();
     Optional<GEndpoint> dwca = g.endpoints.stream().filter(e -> e.type.equalsIgnoreCase("DWC_ARCHIVE")).findFirst();
     if (coldp.isPresent() || dwca.isPresent()) {
@@ -304,21 +304,17 @@ public class DatasetPager {
 
   private void addIdentifiers(GbifDataset d, UUID uuid, List<GIdentifier> ids) {
     if (ids != null && !ids.isEmpty()) {
-      // we enforce unique identifiers - there are often duplicates in GBIF
-      final Set<String> values = new HashSet<>();
-      final Map<String, String> map = new HashMap<>();
-      final Map<String, Integer> suffices = new HashMap<>();
+      List<Identifier> list = new ArrayList<>();
       for (GIdentifier id : ids) {
         if (StringUtils.isBlank(id.type) || StringUtils.isBlank(id.identifier)) continue;
 
-        String key = null;
+        Identifier ident = null;
         switch (id.type) {
           case "DOI":
             // normalize DOIs
             Optional<DOI> doi = DOI.parse(id.identifier);
             if (doi.isPresent()) {
-              id.identifier = doi.get().toString();
-              key = uniqueKey("DOI", map, suffices);
+              ident = new Identifier(doi.get());
             } else {
               LOG.warn("Ignore bad DOI GBIF identifier {} found in dataset {}", id.identifier, uuid);
             }
@@ -329,24 +325,18 @@ public class DatasetPager {
             if(!id.identifier.startsWith("http") && !id.identifier.startsWith("https")){
               id.identifier = "http://" + id.identifier;
             }
-            key = uniqueKey(extractDomain(id.identifier), map, suffices);
+            ident = new Identifier(Identifier.Scope.URN, id.identifier);
             break;
 
           case "UUID":
             try {
               // normalize UUIDs
               UUID uid = UUIDSerde.from(id.identifier);
-              id.identifier = uid.toString();
-              key = uniqueKey("GBIF", map, suffices);
+              ident = new Identifier(Identifier.Scope.GBIF, uid.toString());
 
             } catch (IllegalArgumentException e) {
               LOG.warn("Ignore bad UUID GBIF identifier {} found in dataset {}", id.identifier, uuid);
             }
-            break;
-
-          case "LSID":
-            // urn:lsid:zoobank.org:pub:392603E1-AC9A-4A4D-923D-307216718171
-            key = uniqueKey("LSID", map, suffices);
             break;
 
           case GbifSyncJob.CLB_DATASET_KEY:
@@ -371,53 +361,19 @@ public class DatasetPager {
             continue;
 
           default:
-            LOG.warn("Unknown GBIF identifier type {} found in dataset {}", id.type, uuid);
+            ident = new Identifier(id.type, id.identifier);
         }
 
-        if (key != null) {
-          if (values.contains(id.identifier.toUpperCase())) {
-            LOG.debug("Ignore duplicate identifier {} of type {} found in dataset {}", id.identifier, id.type, uuid);
-            // reduce suffix if it was such a key
-            var m = SUFFIX_KEY.matcher(key);
-            if (m.find()) {
-              var origKey = m.group(1);
-              suffices.put(origKey, suffices.get(origKey)-1);
-            }
-          } else {
-            values.add(id.identifier.toUpperCase());
-            map.put(key, id.identifier);
-          }
+        if (ident != null) {
+          list.add(ident);
         }
       }
-      d.dataset.setIdentifier(map);
-    }
-  }
-
-  static String uniqueKey(final String key, Map<String, String> map, Map<String, Integer> suffices) {
-    int num = suffices.getOrDefault(key, 2);
-    if (map.containsKey(key)) {
-      String key2 = key + "-" + num++;
-      suffices.put(key, num);
-      return key2;
-    } else {
-      return key;
-    }
-  }
-
-  @VisibleForTesting
-  protected static String extractDomain(String url) {
-    try {
-      URI uri = URI.create(url);
-      if (uri.getHost() != null) {
-        Matcher m = domain.matcher(uri.getHost());
-        if (m.find()) {
-          return m.group(1);
-        }
+      // we enforce unique identifiers - there are often duplicates in GBIF
+      if (list.size()>1) {
+        list = list.stream().distinct().collect(Collectors.toUnmodifiableList());
       }
-    } catch (IllegalArgumentException e) {
-      LOG.info("Bad GBIF URL identifier {}", url);
+      d.dataset.setIdentifier(list);
     }
-    return "URL";
   }
 
   static String toNotes(List<GComment> comments) {

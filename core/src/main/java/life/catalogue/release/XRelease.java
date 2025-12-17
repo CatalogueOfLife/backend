@@ -18,9 +18,6 @@ import life.catalogue.dao.*;
 import life.catalogue.db.CopyDataset;
 import life.catalogue.db.PgUtils;
 import life.catalogue.db.mapper.*;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DoiConfig;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -38,7 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
-import java.util.function.ToIntFunction;
 
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.ibatis.session.SqlSession;
@@ -70,9 +66,9 @@ public class XRelease extends ProjectRelease {
 
   XRelease(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService,
            DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao,
-           int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager,
-           DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+           int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, Validator validator
+  ) {
+    super("releasing extended", factory, indexService, imageService, diDao, dDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, exportManager, validator);
     this.siDao = siDao;
     this.syncFactory = syncFactory;
     this.matcherFactory = matcherFactory;
@@ -223,8 +219,10 @@ public class XRelease extends ProjectRelease {
     // update metadata
     updateMetadata();
 
-    // DOI
-    prevReleaseKey = createReleaseDOI();
+    // prev release
+    try (SqlSession session = factory.openSession(true)) {
+      prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
+    }
   }
 
   @Override
@@ -302,15 +300,6 @@ public class XRelease extends ProjectRelease {
         // we don't persist the sectors yet - this happens when we sync them in mergeSectors()
         s.setDatasetKey(tmpProjectKey);
       }
-    }
-  }
-
-  @Override
-  protected Integer createReleaseDOI() throws Exception {
-    try (SqlSession session = factory.openSession(true)) {
-      // find previous public release needed for DOI management
-      final Integer prevReleaseKey = session.getMapper(DatasetMapper.class).previousRelease(newDatasetKey);
-      return createReleaseDOI(prevReleaseKey);
     }
   }
 

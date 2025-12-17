@@ -319,7 +319,9 @@ public class TestEntityGenerator {
     d.setGbifKey(UUID.randomUUID());
     d.setGbifPublisherKey(UUID.randomUUID());
     d.setConfidence(4);
-    d.setIdentifier(Map.of("foo", "bar"));
+    d.setIdentifier(List.of(
+      Identifier.parse("foo:bar")
+    ));
     d.setImported(LocalDateTime.now());
     d.setLastImportState(ImportState.FINISHED);
     d.addSource(newCitation());

@@ -1,12 +1,8 @@
 package life.catalogue.release;
 
 import life.catalogue.assembly.SyncFactory;
-import life.catalogue.basgroup.SectorPriority;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.dao.*;
-import life.catalogue.doi.DoiUpdater;
-import life.catalogue.doi.service.DoiConfig;
-import life.catalogue.doi.service.DoiService;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.exporter.ExportManager;
 import life.catalogue.img.ImageService;
@@ -28,8 +24,8 @@ import jakarta.validation.Validator;
 public class XReleaseDebug extends XRelease{
   private static final int SECTOR_SYNCS_LIMIT = 4;
 
-  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, DoiConfig doiCfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, DoiService doiService, DoiUpdater doiUpdater, Validator validator) {
-    super(factory, syncFactory, matcherFactory, nidx, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, doiCfg, apiURI, clbURI, client, exportManager, doiService, doiUpdater, validator);
+  public XReleaseDebug(SqlSessionFactory factory, SyncFactory syncFactory, UsageMatcherFactory matcherFactory, NameIndex nidx, NameUsageIndexService indexService, ImageService imageService, DatasetDao dDao, DatasetImportDao diDao, SectorImportDao siDao, ReferenceDao rDao, NameDao nDao, SectorDao sDao, int releaseKey, int userKey, ReleaseConfig cfg, URI apiURI, URI clbURI, CloseableHttpClient client, ExportManager exportManager, Validator validator) {
+    super(factory, syncFactory, matcherFactory, nidx, indexService, imageService, dDao, diDao, siDao, rDao, nDao, sDao, releaseKey, userKey, cfg, apiURI, clbURI, client, exportManager, validator);
   }
 
   @Override

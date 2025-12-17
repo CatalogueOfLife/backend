@@ -60,7 +60,6 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
     try {
       Dataset d = DatasetMapperTest.create();
       d.setGbifKey(null);
-      d.setDoi(null);
       d.setKey(999);
       mapper(DatasetMapper.class).create(d);
       mapper(DatasetMapper.class).create(d);
@@ -82,7 +81,6 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   public void uniqueConstraints() throws Exception {
     Dataset d = DatasetMapperTest.create();
     d.setGbifKey(null);
-    d.setDoi(null);
     testUnique(d, null);
 
     UUID gbif = UUID.randomUUID();
@@ -90,8 +88,8 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
     testUnique(d, "Dataset with gbif_key='"+gbif+"' already exists");
 
     d.setGbifKey(null);
-    d.setDoi(DOI.test("12345"));
-    testUnique(d, "Dataset with doi='"+d.getDoi().getDoiName()+"' already exists");
+    d.addIdentifier(DOI.test("swedtgzhj"));
+    testUnique(d, null);
   }
 
   void testUnique(Dataset d, String expected) throws Exception {

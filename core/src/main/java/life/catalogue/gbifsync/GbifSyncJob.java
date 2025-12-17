@@ -1,7 +1,5 @@
 package life.catalogue.gbifsync;
 
-import life.catalogue.api.exception.NotUniqueException;
-import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.vocab.DatasetOrigin;
@@ -166,20 +164,7 @@ public class GbifSyncJob extends GlobalBlockingJob {
           // create new dataset
           gbif.dataset.setCreatedBy(Users.GBIF_SYNC);
           gbif.dataset.setModifiedBy(Users.GBIF_SYNC);
-          try {
-            dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
-          } catch (NotUniqueException e) {
-            // catch DOI unique constraint errors and try again without the DOI
-            // in the GBIF registry, especially with Plazi datasets, it happens that multiple datasets have the same DOI!
-            DOI doi = gbif.dataset.getDoi();
-            if (doi != null) {
-              gbif.dataset.setDoi(null);
-              var dk = dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
-              LOG.warn("Removed non unique DOI {} from newly created dataset {}: {}", doi, dk, gbif.getTitle());
-            } else {
-              throw e;
-            }
-          }
+          dao.create(gbif.dataset, gbif.settings, Users.GBIF_SYNC);
           LOG.info("New dataset {} added from GBIF: {}", gbif.getKey(), gbif.getTitle());
           created++;
           key = gbif.getKey();
@@ -191,38 +176,22 @@ public class GbifSyncJob extends GlobalBlockingJob {
                    !Objects.equals(gbif.dataset.getLicense(), curr.getLicense()) ||
                    !Objects.equals(gbif.dataset.getPublisher(), curr.getPublisher()) ||
                    !Objects.equals(gbif.dataset.getGbifPublisherKey(), curr.getGbifPublisherKey()) ||
-                   !Objects.equals(gbif.dataset.getUrl(), curr.getUrl()) ||
-                   !Objects.equals(gbif.dataset.getDoi(), curr.getDoi())
+                   !Objects.equals(gbif.dataset.getUrl(), curr.getUrl())
         ) {
           // we modify core metadata (title, description, contacts, version) via the dwc archive metadata
-          //gbif syncs only change one of the following
+          // gbif syncs only change one of the following
           // - dwca access url
           // - license
           // - publisher (publishOrgKey)
           // - gbif publisher key
           // - homepage
-          // - doi
           curr.setDataAccess(gbif.getDataAccess());
           curr.setDataFormat(gbif.getDataFormat());
           curr.setLicense(gbif.dataset.getLicense());
           curr.setPublisher(gbif.dataset.getPublisher());
           curr.setGbifPublisherKey(gbif.dataset.getGbifPublisherKey());
           curr.setUrl(gbif.dataset.getUrl());
-          curr.setDoi(gbif.dataset.getDoi());
-          try {
-            dao.update(curr, Users.GBIF_SYNC);
-          } catch (NotUniqueException e) {
-            // catch DOI unique constraint errors and try again without the DOI
-            // in the GBIF registry, especially with Plazi datasets, it happens that multiple datasets have the same DOI!
-            DOI doi = curr.getDoi();
-            if (doi != null) {
-              curr.setDoi(null);
-              dao.update(curr, Users.GBIF_SYNC);
-              LOG.warn("Removed non unique DOI {} from updated dataset {}: {}", doi, curr.getKey(), gbif.getTitle());
-            } else {
-              throw e;
-            }
-          }
+          dao.update(curr, Users.GBIF_SYNC);
           updated++;
         } else if (curr.getType() == DatasetType.ARTICLE &&
           (curr.getAlias() == null || curr.getAlias() != null && curr.getAlias().endsWith(curr.getKey().toString()))

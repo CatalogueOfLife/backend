@@ -3,6 +3,7 @@ package life.catalogue.dw.jersey.provider;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.vocab.License;
 import life.catalogue.common.date.FuzzyDate;
 import life.catalogue.common.io.Resources;
@@ -19,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DatasetPatchMessageBodyRWTest {
+  static {
+    Dataset.DOI_PREFIX = DOI.TEST_PREFIX;
+  }
 
   @Test
   public void readFrom() throws IOException {
@@ -27,10 +31,10 @@ public class DatasetPatchMessageBodyRWTest {
     var d = rw.readFrom(Dataset.class, null, null, null, null, entity);
     System.out.println(d);
 
-    assertEquals(Dataset.NULL_TYPES.get("doi"), d.getDoi());
     assertEquals(Dataset.NULL_TYPES.get("issued"), d.getIssued());
     assertEquals(Dataset.NULL_TYPES.get("contact"), d.getContact());
     assertEquals(Dataset.NULL_TYPES.get("publisher"), d.getPublisher());
+    assertEquals(Dataset.NULL_TYPES.get("identifier"), d.getIdentifier());
     assertEquals(Dataset.NULL_TYPES.get("contributor"), d.getContributor());
   }
 
@@ -42,10 +46,10 @@ public class DatasetPatchMessageBodyRWTest {
     d.setKey(278852);
     d.setAlias("COL");
     d.setIssued((FuzzyDate) Dataset.NULL_TYPES.get("issued"));
-    d.setDoi((DOI) Dataset.NULL_TYPES.get("doi"));
     d.setDescription("COL as we know it");
     d.setContact((Agent) Dataset.NULL_TYPES.get("contact"));
     d.setPublisher((Agent) Dataset.NULL_TYPES.get("publisher"));
+    d.setIdentifier((List<Identifier>) Dataset.NULL_TYPES.get("identifier"));
     d.setContributor((List<Agent>) Dataset.NULL_TYPES.get("contributor"));
     d.setLicense(License.CC_BY);
 
@@ -57,9 +61,9 @@ public class DatasetPatchMessageBodyRWTest {
     System.out.println(json);
 
     assertTrue(json.contains("\"issued\":null"));
-    assertTrue(json.contains("\"doi\":null"));
     assertTrue(json.contains("\"contact\":null"));
     assertTrue(json.contains("\"publisher\":null"));
+    assertTrue(json.contains("\"identifier\":null"));
     assertTrue(json.contains("\"contributor\":null"));
 
     assertTrue(json.contains("\"description\":\"COL as we know it\""));

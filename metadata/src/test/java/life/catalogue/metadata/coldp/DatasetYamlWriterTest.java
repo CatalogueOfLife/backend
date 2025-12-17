@@ -5,6 +5,7 @@ import life.catalogue.api.model.DatasetTest;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class DatasetYamlWriterTest {
     assertFalse(yaml.contains("orcidAsUrl"));
     assertTrue(yaml.contains("col: 1001"));
 
-    d.setIdentifier(new HashMap<>());
+    d.setIdentifier(new ArrayList<>());
     // expect no empty object
     yaml = print(d);
     assertFalse(yaml.contains("col: 1001"));
