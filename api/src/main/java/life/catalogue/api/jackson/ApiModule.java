@@ -1,5 +1,7 @@
 package life.catalogue.api.jackson;
 
+import life.catalogue.api.model.Dataset;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.api.vocab.Country;
 import life.catalogue.api.vocab.terms.TxtTreeTerm;
 import life.catalogue.coldp.ColdpTerm;
@@ -13,6 +15,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -152,10 +157,11 @@ public class ApiModule extends SimpleModule {
     ctxt.setMixInAnnotations(Authorship.class, AuthorshipMixIn.class);
     ctxt.setMixInAnnotations(Term.class, TermMixIn.class);
   }
-  
+
   abstract static class AuthorshipMixIn {
     @JsonIgnore
     abstract boolean isEmpty();
+
   }
 
   @JsonSerialize(using = TermSerde.Serializer.class, keyUsing = TermSerde.KeySerializer.class)

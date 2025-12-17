@@ -4,6 +4,7 @@ import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Agent;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetWithSettings;
+import life.catalogue.api.model.Identifier;
 import life.catalogue.parser.DateParser;
 import life.catalogue.parser.SafeParser;
 import life.catalogue.parser.UriParser;
@@ -165,6 +166,32 @@ public class ColdpMetadataParser {
       } else {
         super.setIssued(SafeParser.parse(DateParser.PARSER, issued).orNull());
       }
+    }
+
+    @JsonProperty("identifier")
+    public void setIdentifier(Object identifier) {
+      List<Identifier> ids = new ArrayList<>();
+      if (identifier instanceof List) {
+        for (Object x : (List)identifier) {
+          ids.add(Identifier.parse(x.toString()));
+        }
+      } else if (identifier instanceof Map) {
+        for (Map.Entry<?, ?> entry : ((Map<?,?>)identifier).entrySet()) {
+          ids.add(new Identifier(entry.getKey().toString(), entry.getValue().toString()));
+        }
+      } else {
+        throw new IllegalArgumentException("Invalid identifier format: " + identifier);
+      }
+      setIdentifier(ids);
+    }
+
+    public void setIdentifier(Map<String, String> identifiers) {
+      List<Identifier> ids = new ArrayList<>();
+      for (Map.Entry<String, String> entry : identifiers.entrySet()) {
+        var id = new Identifier(entry.getKey(), entry.getValue());
+        ids.add(id);
+      }
+      setIdentifier(ids);
     }
   }
 

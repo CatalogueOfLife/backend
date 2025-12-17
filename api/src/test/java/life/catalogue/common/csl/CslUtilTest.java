@@ -50,7 +50,7 @@ public class CslUtilTest {
 
   @Test
   public void bibtex() throws Exception {
-    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
+    var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
     System.out.println( CslUtil.toBibTexString(d.toCSL()) );
 
     d.setKey(999);

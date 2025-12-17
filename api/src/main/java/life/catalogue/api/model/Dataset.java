@@ -5,13 +5,10 @@ import life.catalogue.api.util.ObjectUtils;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.csl.CslUtil;
 import life.catalogue.common.date.FuzzyDate;
-import life.catalogue.common.util.YamlUtils;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.time.LocalDateTime;
@@ -305,14 +302,6 @@ public class Dataset extends DataEntity<Integer> {
     @Override
     public int hashCode() {
       return Objects.hash(url, description);
-    }
-  }
-
-  public static Dataset read(InputStream in){
-    try {
-      return YamlUtils.read(Dataset.class, in);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     }
   }
 

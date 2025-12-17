@@ -24,12 +24,12 @@ public class DatasetYamlWriterTest {
     assertTrue(yaml.contains("doi: 10.80631"));
     assertTrue(yaml.contains("issued: 2024-11"));
     assertFalse(yaml.contains("orcidAsUrl"));
-    assertTrue(yaml.contains("col: 1001"));
+    assertTrue(yaml.contains("- col:1001"));
 
     d.setIdentifier(new ArrayList<>());
     // expect no empty object
     yaml = print(d);
-    assertFalse(yaml.contains("col: 1001"));
+    assertFalse(yaml.contains("col:1001"));
     assertFalse(yaml.contains("identifier:"));
   }
 

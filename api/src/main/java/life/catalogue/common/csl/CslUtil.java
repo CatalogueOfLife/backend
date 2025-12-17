@@ -2,15 +2,19 @@ package life.catalogue.common.csl;
 
 import life.catalogue.api.model.CslData;
 import life.catalogue.api.model.CslName;
+import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.Reference;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import life.catalogue.common.util.YamlUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jbibtex.BibTeXEntry;
@@ -26,6 +30,15 @@ public class CslUtil {
   private final static CslFormatter apaHtml = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.HTML);
   private final static CslFormatter apaText = new CslFormatter(CslFormatter.STYLE.APA, CslFormatter.FORMAT.TEXT);
   private final static Pattern VOLUME_ISSUE_PAGE = Pattern.compile("^(.*?)\\s*(\\d+)\\s*(?:\\(\\s*(\\d+)\\s*\\))?\\s*(?::\\s*(?:(?:p|pp|page)\\.?\\s*)?(\\d+))?\\s*$");
+
+
+  public static Dataset readDataset(InputStream in){
+    try {
+      return YamlUtils.read(Dataset.class, in);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   /**
    * WARNING!

@@ -2,7 +2,6 @@ package life.catalogue.common.csl;
 
 import life.catalogue.api.jackson.ApiModule;
 import life.catalogue.api.model.Citation;
-import life.catalogue.api.model.Dataset;
 import life.catalogue.common.io.Resources;
 import life.catalogue.common.io.UTF8IoUtils;
 
@@ -31,7 +30,7 @@ public class CslFormatterTest {
 
   @Test
   public void colApa() throws Exception {
-    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
+    var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
     CSLItemData csl = d.toCSL();
     PrintWriter writer = new PrintWriter(System.out);
 
@@ -42,7 +41,7 @@ public class CslFormatterTest {
 
   @Test
   public void colStyles() throws Exception {
-    var d = Dataset.read(Resources.stream("metadata/col.yaml"));
+    var d = CslUtil.readDataset(Resources.stream("metadata/col.yaml"));
     CSLItemData csl = d.toCSL();
 
     PrintWriter writer = new PrintWriter(System.out);
