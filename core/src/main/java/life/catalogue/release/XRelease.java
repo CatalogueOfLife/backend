@@ -194,7 +194,6 @@ public class XRelease extends ProjectRelease {
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
-    assertNoSynonymParents();
     mergeSectors();
     assertNoSynonymParents();
 
@@ -544,6 +543,7 @@ public class XRelease extends ProjectRelease {
     final Supplier<String> typeMaterialIdGen = new XIdGen();
     updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
+      assertNoSynonymParents();
       if (counter >= maxSectors) {
         LOG.warn("Stop merging as we reached the debug limit of {} sectors", maxSectors);
         break;
