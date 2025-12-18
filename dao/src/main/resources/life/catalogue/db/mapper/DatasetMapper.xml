@@ -687,7 +687,7 @@
 
   <update id="updateLastImport" parameterType="integer">
     UPDATE dataset
-    SET attempt = #{attempt}
+    SET attempt = #{attempt}, version_doi = #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}
     WHERE key = #{key}
   </update>
 

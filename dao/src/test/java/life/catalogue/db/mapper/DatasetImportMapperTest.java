@@ -203,7 +203,7 @@ public class DatasetImportMapperTest extends MapperTestBase<DatasetImportMapper>
     mapper().create(d2);
     assertNull(mapper().current(datasetKey));
 
-    mapper(DatasetMapper.class).updateLastImport(datasetKey, d1.getAttempt());
+    mapper(DatasetMapper.class).updateLastImport(datasetKey, d1.getAttempt(), null);
     var curr = mapper().current(datasetKey);
     assertNotNull(curr);
     assertEquals(d1.getAttempt(), curr.getAttempt());

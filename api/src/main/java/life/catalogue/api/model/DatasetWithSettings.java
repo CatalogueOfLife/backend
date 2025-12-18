@@ -213,10 +213,6 @@ public class DatasetWithSettings {
     return dataset.getAttempt();
   }
 
-  public void setImportAttempt(Integer importAttempt) {
-    dataset.setAttempt(importAttempt);
-  }
-
   public DOI getDoi() {
     return dataset.getDoi();
   }

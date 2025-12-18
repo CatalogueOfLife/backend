@@ -187,10 +187,6 @@ public class WsROServer extends Application<WsServerConfig> {
 
     // DOI
     DoiResolver doiResolver = new DoiResolver(httpClient);
-    if (cfg.doi != null) {
-      LOG.info("Use DOI prefix: {}", cfg.doi.prefix);
-      Dataset.DOI_PREFIX = cfg.doi.prefix;
-    }
 
     // name parser
     NameParser.PARSER.register(env.metrics());
@@ -227,7 +223,7 @@ public class WsROServer extends Application<WsServerConfig> {
     // daos
     final DatasetImportDao diDao = new DatasetImportDao(getSqlSessionFactory(), cfg.metricsRepo);
 
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif, new DownloadUtil(httpClient),
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif, cfg.doi, new DownloadUtil(httpClient),
       ImageService.passThru(), diDao, null, indexService, cfg.normalizer::scratchFile, broker, validator
     );
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);

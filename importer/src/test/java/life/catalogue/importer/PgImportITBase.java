@@ -1,6 +1,7 @@
 package life.catalogue.importer;
 
 import life.catalogue.TestUtils;
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.assembly.SectorSyncTestBase;
@@ -147,7 +148,7 @@ public class PgImportITBase {
       norm.call();
       
       // import into postgres
-      PgImport importer = new PgImport(1, dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
+      PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, Users.IMPORTER, store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, indexService);
       importer.call();
       
     } catch (Exception e) {

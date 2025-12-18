@@ -58,6 +58,8 @@
   </sql>
 
   <sql id="PROPS">
+    #{obj.doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
+    #{obj.versionDoi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
     #{obj.type}::datasettype,
     #{obj.gbifKey},
     #{obj.gbifPublisherKey},

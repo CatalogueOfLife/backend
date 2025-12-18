@@ -64,6 +64,7 @@ public class PgImport implements Callable<Boolean> {
   private final DatasetDao datasetDao;
   private final NameUsageIndexService indexService;
   private final int attempt;
+  private final DOI versionDOI;
   private final DatasetWithSettings dataset;
   private final Map<Integer, Integer> verbatimKeys = new HashMap<>();
   private LoadingCache<Integer, Set<Issue>> verbatimIssueCache;
@@ -85,9 +86,10 @@ public class PgImport implements Callable<Boolean> {
   private int sRelCounter;
   private int userKey;
 
-  public PgImport(int attempt, DatasetWithSettings dataset, int userKey, ImportStore store,
+  public PgImport(int attempt, DOI versionDOI, DatasetWithSettings dataset, int userKey, ImportStore store,
                   SqlSessionFactory sessionFactory, ImporterConfig cfg, DatasetDao datasetDao, NameUsageIndexService indexService) {
     this.attempt = attempt;
+    this.versionDOI = versionDOI;
     this.dataset = dataset;
     this.userKey = userKey;
     this.store = store;
@@ -187,11 +189,13 @@ public class PgImport implements Callable<Boolean> {
         datasetDao.update(old.getDataset(), userKey);
       }
 
-      dm.updateLastImport(dataset.getKey(), attempt);
+      dm.updateLastImport(dataset.getKey(), attempt, versionDOI);
+      dataset.getDataset().setAttempt(attempt);
+      dataset.getDataset().setVersionDoi(versionDOI);
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
 
       if (!dataset.getDataset().isPrivat()) {
-        LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
+      LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
       }
     }
   }

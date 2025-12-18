@@ -14,6 +14,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.DatasetProcessable;
 import life.catalogue.db.mapper.*;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
@@ -77,6 +78,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public static final int TEMP_KEY_START = 100_000_000;
   private final NormalizerConfig nCfg;
   private final ReleaseConfig rCfg;
+  private final DoiConfig dCfg;
   private final DownloadUtil downloader;
   private final ImageService imgService;
   private final BiFunction<Integer, String, File> scratchFileFunc;
@@ -92,7 +94,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    * @param scratchFileFunc function to generate a scrach dir for logo updates
    */
   public DatasetDao(SqlSessionFactory factory,
-                    NormalizerConfig nCfg, ReleaseConfig rCfg, GbifConfig gbifCfg,
+                    NormalizerConfig nCfg, ReleaseConfig rCfg, GbifConfig gbifCfg, DoiConfig dCfg,
                     DownloadUtil downloader,
                     ImageService imgService,
                     DatasetImportDao diDao,
@@ -104,6 +106,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     super(true, factory, Dataset.class, DatasetMapper.class, validator);
     this.nCfg = nCfg;
     this.rCfg = rCfg;
+    this.dCfg = dCfg;
     this.downloader = downloader;
     this.imgService = imgService;
     this.scratchFileFunc = scratchFileFunc;
@@ -121,7 +124,7 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
    */
   @VisibleForTesting
   public DatasetDao(SqlSessionFactory factory, DownloadUtil downloader, DatasetImportDao diDao, Validator validator, EventBroker broker) {
-    this(factory, new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
+    this(factory, new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), new DoiConfig(), downloader, ImageService.passThru(), diDao, null, NameUsageIndexService.passThru(), null, broker, validator);
   }
 
   public static boolean isTempKey(Integer key) {
@@ -517,6 +520,11 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   public Integer create(Dataset obj, int user) {
     // apply some defaults for required fields
     sanitize(obj);
+    // move DOI to identifiers to make space for the CLB generated DOI in createAfter (it needs the new datasetKey)
+    if (obj.getDoi() != null) {
+      obj.addIdentifier(obj.getDoi());
+      obj.setDoi(null);
+    }
     return super.create(obj, user);
   }
 
@@ -551,17 +559,21 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
   }
   @Override
   protected boolean createAfter(Dataset obj, int user, DatasetMapper mapper, SqlSession session) {
+    // assign a new concept DOI
+    obj.setDoi(dCfg.datasetDOI(obj.getKey()));
+    // update alias for ARTICLE datasets: https://github.com/CatalogueOfLife/backend/issues/1421
+    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
+      obj.setAlias(articleAlias(obj));
+    }
+    // update
+    mapper.update(obj);
+
     // persist source citations
     if (obj.getSource() != null) {
       var cm = session.getMapper(CitationMapper.class);
       for (var c : obj.getSource()) {
         cm.create(obj.getKey(), c);
       }
-    }
-    // update alias for ARTICLE datasets: https://github.com/CatalogueOfLife/backend/issues/1421
-    if (obj.getAlias() == null && obj.getType() == DatasetType.ARTICLE) {
-      obj.setAlias(articleAlias(obj));
-      mapper.update(obj);
     }
 
     // sequences for mutable projects - releases and external datasets do not need persistent sequences. Imports generate them on the fly temporarily
@@ -570,12 +582,10 @@ public class DatasetDao extends DataEntityDao<Integer, Dataset, DatasetMapper> {
     }
     session.commit();
     session.close();
-    // other non pg stuff - DOIs are created by the dataset change listener DoiUpdater´
+    // other non pg stuff - DOIs are created in DataCite by the dataset change listener
     pullLogo(obj, null, user);
     bus.publish(DatasetChanged.created(obj, user));
-    if (obj.getDoi() != null) {
-      bus.publish(DoiChange.create(obj.getDoi()));
-    }
+    bus.publish(DoiChange.create(obj.getDoi()));
     return false;
   }
 

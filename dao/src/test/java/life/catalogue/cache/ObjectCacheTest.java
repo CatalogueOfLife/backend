@@ -18,7 +18,7 @@ public class ObjectCacheTest {
   public void crud() throws Exception {
     final ApiKryoPool pool = new ApiKryoPool(8);
     try (TempFile dir = new TempFile();
-         ObjectCache<NameUsageWrapper> cache = new ObjectCacheMapDB<>(NameUsageWrapper.class, dir.file, pool)
+         ObjectCache<NameUsageWrapper> cache = new ObjectCacheMapDB<>(NameUsageWrapper.class, dir.file, pool, false)
     ) {
       t.setId("a");
 
@@ -36,7 +36,7 @@ public class ObjectCacheTest {
   void bench(int size) throws Exception {
     final ApiKryoPool pool = new ApiKryoPool(8);
     try (TempFile dir = new TempFile();
-         ObjectCache<NameUsageWrapper> cache = new ObjectCacheMapDB<>(NameUsageWrapper.class, dir.file, pool)
+         ObjectCache<NameUsageWrapper> cache = new ObjectCacheMapDB<>(NameUsageWrapper.class, dir.file, pool, false)
     ) {
       var watch = StopWatch.createStarted();
       for (int i = 0; i < size; i=i+2) {

@@ -20,9 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DatasetPatchMessageBodyRWTest {
-  static {
-    Dataset.DOI_PREFIX = DOI.TEST_PREFIX;
-  }
 
   @Test
   public void readFrom() throws IOException {

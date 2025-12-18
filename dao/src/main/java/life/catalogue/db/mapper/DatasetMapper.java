@@ -34,6 +34,9 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   int MAGIC_ADMIN_USER_KEY = -42;
 
+  /**
+   * Gets any dataset in its simple form, including deleted ones
+   */
   DatasetSimple getSimple(@Param("key") int key);
 
   void deletePhysically(@Param("key") int key);
@@ -364,10 +367,12 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
    */
   Integer lastImportAttempt(@Param("key") int datasetKey);
   
-  int updateLastImport(@Param("key") int key, @Param("attempt") int attempt);
+  int updateLastImport(@Param("key") int key,
+                       @Param("attempt") int attempt,
+                       @Nullable @Param("doi") DOI versionDOI);
 
   /**
-   * Sets the datasets LastImportAttempt to now
+   * Sets the datasets LastImportAttempt timestamp to now()
    * @param key dataset key
    */
   int updateLastImportAttempt(@Param("key") int key);

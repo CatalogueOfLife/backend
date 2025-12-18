@@ -55,6 +55,23 @@ public class Identifier {
       }
     }
 
+    final String lower = identifier.toLowerCase();
+    // URL
+    if (lower.startsWith("http://") || lower.startsWith("https://")
+      || lower.startsWith("ftp://") || lower.startsWith("ftps://")) {
+      return new Identifier(Scope.URL, identifier);
+    }
+
+    // LSID
+    if (lower.startsWith("urn:lsid:")) {
+      return new Identifier(Scope.LSID, identifier);
+    }
+
+    // URN
+    if (lower.startsWith("urn:")) {
+      return new Identifier(Scope.URN, identifier);
+    }
+
     var m = SCOPE_PARSER.matcher(identifier);
     if (m.find()) {
       return new Identifier(m.group(1), m.group(2));

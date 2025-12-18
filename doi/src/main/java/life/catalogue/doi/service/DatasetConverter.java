@@ -34,12 +34,10 @@ public class DatasetConverter {
   private final UriBuilder clbBuilder;
   private final UriBuilder clbSourceBuilder;
   private final UriBuilder clbAttemptBuilder;
-  private final UriBuilder portalSourceBuilder;
   private final Function<Integer, User> userByID;
 
   public DatasetConverter(URI portalURI, URI clbURI, Function<Integer, User> userByID) {
     portal = UriBuilder.fromUri(portalURI).path("data/metadata").build();
-    portalSourceBuilder = UriBuilder.fromUri(portalURI).path("data/dataset/{key}");
     clbBuilder = UriBuilder.fromUri(clbURI).path("dataset/{key}");
     clbSourceBuilder = UriBuilder.fromUri(clbURI).path("dataset/{projectKey}/source/{key}");
     clbAttemptBuilder= UriBuilder.fromUri(clbURI).path("dataset/{datasetKey}/imports/{attempt}");
@@ -70,9 +68,15 @@ public class DatasetConverter {
     return attr;
   }
 
-  public DoiAttributes datasetAttempt(Dataset d, @Nullable DOI previousAttempt, @Nullable DOI nextAttempt) {
+  public DoiAttributes datasetVersion(Dataset d, @Nullable DOI previousAttempt, @Nullable DOI nextAttempt) {
     DoiAttributes attr = common(d.getVersionDoi(), d, previousAttempt, nextAttempt);
     attr.setUrl(attemptURI(d.getKey(), d.getAttempt()).toString());
+    // add version of concept
+    RelatedIdentifier id = new RelatedIdentifier();
+    id.setRelatedIdentifier(d.getDoi().getDoiName());
+    id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+    id.setRelationType(RelationType.IS_VERSION_OF);
+    attr.getRelatedIdentifiers().add(id);
     return attr;
   }
 

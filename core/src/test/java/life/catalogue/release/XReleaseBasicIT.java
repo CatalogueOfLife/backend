@@ -89,7 +89,7 @@ public class XReleaseBasicIT {
     var nuIdxService = NameUsageIndexService.passThru();
     var imgService = ImageService.passThru();
     var diDao = new DatasetImportDao(factory, TreeRepoRule.getRepo());
-    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
+    var dDao = new DatasetDao(factory, cfg.normalizer, cfg.release, cfg.gbif, cfg.doi, null, imgService, diDao, exDao, nuIdxService, null, bus, validator);
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);
     projectCopyFactory = new ProjectCopyFactory(null, NameMatchingRule.getIndex(), SyncFactoryRule.getFactory(), matcherFactory,
       syncFactoryRule.getDiDao(), dDao, syncFactoryRule.getSiDao(), rdao, syncFactoryRule.getnDao(), syncFactoryRule.getSdao(),

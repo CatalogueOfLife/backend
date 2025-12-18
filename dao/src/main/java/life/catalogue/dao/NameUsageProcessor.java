@@ -226,7 +226,7 @@ public class NameUsageProcessor {
   }
 
   private ObjectCache<NameUsageWrapper> buildObjCache() throws IOException {
-    return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8));
+    return new ObjectCacheMapDB<>(NameUsageWrapper.class, new File(tmpDir, UUID.randomUUID().toString()), new ApiKryoPool(8), false);
   }
   private UsageCache buildUsageCache(int datasetKey) throws Exception {
     return UsageCache.mapDB(datasetKey, new File(tmpDir, UUID.randomUUID().toString()));

@@ -42,7 +42,9 @@ public class DOI implements Serializable {
   private static final String EXPORT_PATH = "e";
   private static final Pattern DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-.]+)$");
   private static final Pattern SOURCE_DATASET_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)-(.+)$");
-  private static final Pattern DATASET_ATTEMPT_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)\\.v(\\d+)$");
+  private static final Pattern DATASET_VERSION_PATTERN = Pattern.compile("^"+DATASET_PATH+"(.+)\\.v(\\d+)$");
+  // pattern that matches the dataset key also for version and source dois!
+  private static final Pattern DATASET_KEY_PATTERN = Pattern.compile("^"+DATASET_PATH+"([^-.]+)");
 
   private String prefix;
   private String suffix;
@@ -88,7 +90,7 @@ public class DOI implements Serializable {
     return new DOI(prefix, suffix);
   }
 
-  public static DOI datasetAttempt(String prefix, int datasetKey, int attempt) {
+  public static DOI datasetVersion(String prefix, int datasetKey, int attempt) {
     String suffix = DATASET_PATH + IdConverter.LATIN29.encode(datasetKey) + ".v" + attempt;
     return new DOI(prefix, suffix);
   }
@@ -180,7 +182,12 @@ public class DOI implements Serializable {
   }
 
   @JsonIgnore
-  public boolean isDatasetAttempt() {
+  public boolean isDatasetConcept() {
+    return suffix.startsWith(DATASET_PATH) && !suffix.contains(".v") && !suffix.contains("-");
+  }
+
+  @JsonIgnore
+  public boolean isDatasetVersion() {
     return suffix.startsWith(DATASET_PATH) && suffix.contains(".v");
   }
 
@@ -192,7 +199,7 @@ public class DOI implements Serializable {
   @JsonIgnore
   public int datasetKey() throws IllegalArgumentException {
     Preconditions.checkArgument(isCOL(), "COL DOI required");
-    Matcher m = DATASET_PATTERN.matcher(suffix);
+    Matcher m = DATASET_KEY_PATTERN.matcher(suffix);
     if (m.find()) {
       return IdConverter.LATIN29.decode(m.group(1).toUpperCase());
     }
@@ -210,9 +217,9 @@ public class DOI implements Serializable {
   }
 
   @JsonIgnore
-  public DSID<Integer> datasetAttemptKey() throws IllegalArgumentException {
+  public DSID<Integer> datasetVersionKey() throws IllegalArgumentException {
     Preconditions.checkArgument(isCOL(), "COL DOI required");
-    Matcher m = DATASET_ATTEMPT_PATTERN.matcher(suffix);
+    Matcher m = DATASET_VERSION_PATTERN.matcher(suffix);
     if (m.find()) {
       return DSID.of(IdConverter.LATIN29.decode(m.group(1).toUpperCase()), Integer.parseInt(m.group(2)));
     }

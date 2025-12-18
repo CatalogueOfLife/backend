@@ -12,7 +12,7 @@ import static life.catalogue.api.event.DoiChange.DoiEventType.*;
  */
 public class DoiChange implements Event {
   private DOI doi;
-  public DoiEventType type;
+  private DoiEventType type;
 
   public enum DoiEventType {
     CREATE, UPDATE, DELETE, PUBLISH
@@ -51,15 +51,15 @@ public class DoiChange implements Event {
     return type;
   }
 
-  public boolean isDeletion(){
+  public boolean isDelete(){
     return type == DELETE;
   }
 
-  public boolean isCreated(){
+  public boolean isCreate(){
     return type ==  CREATE;
   }
 
-  public boolean isUpdated(){
+  public boolean isUpdate(){
     return type ==  UPDATE;
   }
 

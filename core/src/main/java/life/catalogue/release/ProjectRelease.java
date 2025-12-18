@@ -329,8 +329,8 @@ public class ProjectRelease extends AbstractProjectCopy {
     checkIfCancelled();
     try (SqlSession session = factory.openSession(true)) {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
-      dm.updateLastImport(projectKey, attempt);
-      dm.updateLastImport(newDatasetKey, attempt);
+      dm.updateLastImport(projectKey, attempt, null);
+      dm.updateLastImport(newDatasetKey, attempt, null);
     }
     // flush varnish cache for dataset/3LR and LRC (or LXR & LXRC)
     if (client != null && datasetApiBuilder != null) {

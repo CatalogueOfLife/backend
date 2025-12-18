@@ -52,7 +52,7 @@ public class DataCiteService implements DoiService {
   }
 
   public DataCiteService(DoiConfig cfg, Client client, @Nullable Mailer mailer, @Nullable String onErrorTo, @Nullable String onErrorFrom) {
-    LOG.info("Setting up DataCite DOI service with user {} and API {}", cfg.username, cfg.api);
+    LOG.info("Setting up DataCite DOI service for prefix {} with user {} and API {}", cfg.prefix, cfg.username, cfg.api);
     Preconditions.checkArgument(cfg.api.startsWith("https"), "SSL required to use the DataCite API");
     this.cfg = cfg;
     dois = client.target(UriBuilder.fromUri(cfg.api).path("dois").build());

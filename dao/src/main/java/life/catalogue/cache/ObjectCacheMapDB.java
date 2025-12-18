@@ -5,8 +5,7 @@ import life.catalogue.common.kryo.map.MapDbObjectSerializer;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,30 +30,40 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
   private final DB db;
   private final Map<String, T> map;
   private final Class<T> clazz;
+  private final boolean reuse;
 
   /**
    * @param location the db file for storing the values
+   * @param reuse if true the cache will open existing data and keep it on the filesystem when closed.
+   *              if false a new cache will be created every time and files will be deleted on close.
    */
-  public ObjectCacheMapDB(Class<T> clazz, File location, Pool<Kryo> kryoPool) throws IOException {
+  public ObjectCacheMapDB(Class<T> clazz, File location, Pool<Kryo> kryoPool, boolean reuse) throws IOException {
+    this.reuse = reuse;
     this.clazz = clazz;
     this.dbFile = location;
     this.pool = kryoPool;
     if (location.exists()) {
-      LOG.info("Delete existing {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
-      location.delete();
+      if (!reuse) {
+        LOG.info("Delete existing {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
+        location.delete();
+      }
     } else {
       FileUtils.forceMkdirParent(location);
     }
-    LOG.info("Create persistent {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
+    if (location.exists() && reuse) {
+      LOG.info("Open existing {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
+    } else {
+      LOG.info("Create persistent {} cache at {}", clazz.getSimpleName(), location.getAbsolutePath());
+    }
     db = DBMaker
       .fileDB(location)
       .fileMmapEnableIfSupported()
       .make();
-    map = db.hashMap("objects")
-            .keySerializer(Serializer.STRING)
-            .valueSerializer(new MapDbObjectSerializer<>(clazz, pool, 128))
-            .counterEnable()
-            .create();
+    var builder = db.hashMap("objects")
+      .keySerializer(Serializer.STRING)
+      .valueSerializer(new MapDbObjectSerializer<>(clazz, pool, 128))
+      .counterEnable();
+    map = reuse ? builder.createOrOpen() : builder.create();
   }
 
   @Override
@@ -64,7 +73,9 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
         db.close();
       }
     } finally {
-      FileUtils.deleteQuietly(dbFile);
+      if (!reuse) {
+        FileUtils.deleteQuietly(dbFile);
+      }
     }
   }
 
@@ -98,5 +109,10 @@ public class ObjectCacheMapDB<T extends HasID<String>> implements ObjectCache<T>
   @Override
   public Iterator<T> iterator() {
     return map.values().iterator();
+  }
+
+  @Override
+  public List<T> list() {
+    return new ArrayList<>(map.values());
   }
 }

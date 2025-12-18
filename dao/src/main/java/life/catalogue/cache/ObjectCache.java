@@ -2,8 +2,9 @@ package life.catalogue.cache;
 
 import life.catalogue.api.model.HasID;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
+
+import life.catalogue.common.collection.IterUtils;
 
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -24,6 +25,15 @@ public interface ObjectCache<T extends HasID<String>> extends AutoCloseable, Ite
   void remove(String id);
 
   int size();
+
+  default List<T> list() {
+    List<T> list = new ArrayList<>(size());
+    var it = iterator();
+    while (it.hasNext()) {
+      list.add(it.next());
+    }
+    return list;
+  }
 
   @Override
   void close();

@@ -1,6 +1,8 @@
 package life.catalogue.importer;
 
+import life.catalogue.api.RandomUtils;
 import life.catalogue.api.TestEntityGenerator;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.api.model.DatasetSettings;
 import life.catalogue.api.model.DatasetWithSettings;
@@ -48,7 +50,7 @@ public class PgImportTest {
 
     DatasetWithSettings ds = new DatasetWithSettings(d2, new DatasetSettings());
     d2.setAlias(d.getAlias());
-    PgImport imp = new PgImport(1, ds, Users.TESTER, null,
+    PgImport imp = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), ds, Users.TESTER, null,
       SqlSessionFactoryRule.getSqlSessionFactory(), new ImporterConfig(), ddao, null);
     imp.updateMetadata();
   }

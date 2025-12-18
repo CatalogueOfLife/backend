@@ -841,6 +841,7 @@ CREATE TABLE publisher (
 CREATE TABLE dataset (
   key serial PRIMARY KEY,
   doi text,
+  version_doi text,
   source_key INTEGER REFERENCES dataset,
   attempt INTEGER,
   private BOOLEAN DEFAULT FALSE,
@@ -892,6 +893,7 @@ CREATE TABLE dataset (
       setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(version_doi, ''))), 'B') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
       setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
@@ -991,7 +993,9 @@ ALTER TABLE dataset_patch
   DROP COLUMN type,
   DROP COLUMN gbif_key,
   DROP COLUMN gbif_publisher_key,
-  DROP COLUMN origin;
+  DROP COLUMN origin,
+  DROP COLUMN doi,
+  DROP COLUMN version_doi;
 ALTER TABLE dataset_patch
   ALTER COLUMN title DROP NOT NULL;
 ALTER TABLE dataset_patch ADD FOREIGN KEY (key) REFERENCES dataset;

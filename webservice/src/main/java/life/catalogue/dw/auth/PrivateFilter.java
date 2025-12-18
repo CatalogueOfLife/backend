@@ -39,7 +39,6 @@ public class PrivateFilter implements ContainerRequestFilter {
   private SqlSessionFactory factory;
   // is dataset private cache?
   private final Map<Integer, Boolean> cache = new HashMap<>(10_000);
-  private final Int2BooleanMap cache2 = Int2BooleanMaps.synchronize(new Int2BooleanOpenHashMap(10_000));
 
   @Override
   public void filter(ContainerRequestContext req) throws IOException {

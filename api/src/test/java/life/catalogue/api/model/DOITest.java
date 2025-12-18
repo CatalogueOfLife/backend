@@ -29,17 +29,20 @@ public class DOITest {
     doi = DOI.datasetSource(DOI.TEST_PREFIX, 3, 1010);
     assertEquals("10.80631/d5-37v", doi.toString());
     assertEquals(DSID.of(3,1010), doi.sourceDatasetKey());
-    assertIAE(doi::datasetKey);
+    assertIAE(doi::datasetVersionKey);
+    assertEquals(3, doi.datasetKey());
 
-    doi = DOI.datasetAttempt(DOI.TEST_PREFIX, 1010, 67);
+    doi = DOI.datasetVersion(DOI.TEST_PREFIX, 1010, 67);
     assertEquals("10.80631/d37v.v67", doi.toString());
-    assertEquals(DSID.of(1010,67), doi.datasetAttemptKey());
-    assertIAE(doi::datasetKey);
+    assertEquals(DSID.of(1010,67), doi.datasetVersionKey());
+    assertIAE(doi::sourceDatasetKey);
+    assertEquals(1010, doi.datasetKey());
 
     doi = DOI.test("1010");
     assertEquals("10.80631/1010", doi.toString());
     assertIAE(doi::datasetKey);
     assertIAE(doi::sourceDatasetKey);
+    assertIAE(doi::datasetVersionKey);
   }
 
   void assertIAE(Supplier supplier) {

@@ -55,7 +55,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     }
 
     final int attempt = 3;
-    dmapper().updateLastImport(datasetKey, attempt);
+    dmapper().updateLastImport(datasetKey, attempt, null);
     commit();
 
     mapper().createArchive(datasetKey);
@@ -77,7 +77,7 @@ public class CitationMapperTest extends MapperTestBase<CitationMapper> {
     }
 
     final int attempt = 3;
-    dmapper().updateLastImport(datasetKey, attempt);
+    dmapper().updateLastImport(datasetKey, attempt, null);
     mapper().createArchive(datasetKey);
 
     Dataset rel = DatasetTest.generateTestDataset();

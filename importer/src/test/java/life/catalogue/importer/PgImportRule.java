@@ -1,6 +1,8 @@
 package life.catalogue.importer;
 
 import life.catalogue.TestUtils;
+import life.catalogue.api.RandomUtils;
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.DatasetWithSettings;
 import life.catalogue.api.model.User;
 import life.catalogue.api.vocab.DataFormat;
@@ -243,7 +245,7 @@ public class PgImportRule extends ExternalResource {
     norm.call();
 
     // import into postgres
-    PgImport importer = new PgImport(1, dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
+    PgImport importer = new PgImport(1, DOI.test(RandomUtils.randomLatinString(20)), dataset, IMPORT_USER.getKey(), store, SqlSessionFactoryRule.getSqlSessionFactory(), icfg, ddao, NameUsageIndexService.passThru());
     importer.call();
   }
 }

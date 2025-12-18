@@ -65,7 +65,7 @@ public abstract class ProjectBaseIT {
     DatasetExportDao exDao = mock(DatasetExportDao.class);
     ReferenceDao rdao = mock(ReferenceDao.class);
     validator = Validation.buildDefaultValidatorFactory().getValidator();
-    dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
+    dDao = new DatasetDao(SqlSessionFactoryRule.getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif, cfg.doi,
       null, ImageService.passThru(), syncFactoryRule.getDiDao(), exDao, NameUsageIndexService.passThru(), null, bus, validator
     );
     var matcherFactory = new UsageMatcherFactory(new MatchingConfig(), NameMatchingRule.getIndex(), SqlSessionFactoryRule.getSqlSessionFactory(), jobExecutor);

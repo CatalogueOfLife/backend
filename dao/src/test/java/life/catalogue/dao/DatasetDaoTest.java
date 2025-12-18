@@ -14,6 +14,7 @@ import life.catalogue.config.ImporterConfig;
 import life.catalogue.config.NormalizerConfig;
 import life.catalogue.config.ReleaseConfig;
 import life.catalogue.db.mapper.DatasetMapperTest;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.img.ImageService;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -41,7 +42,7 @@ public class DatasetDaoTest extends DaoTestBase {
     JobConfig cfg = new JobConfig();
     DatasetExportDao exDao = new DatasetExportDao(cfg, SqlSessionFactoryRule.getSqlSessionFactory(), validator);
     dao = new DatasetDao(factory(),
-      new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(),
+      new NormalizerConfig(), new ReleaseConfig(), new GbifConfig(), new DoiConfig(),
       null,
       ImageService.passThru(),
       diDao, exDao,

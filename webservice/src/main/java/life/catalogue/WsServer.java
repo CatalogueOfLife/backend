@@ -338,7 +338,7 @@ public class WsServer extends Application<WsServerConfig> {
     MetricsDao mdao = new MetricsDao(getSqlSessionFactory());
     AuthorizationDao adao = new AuthorizationDao(getSqlSessionFactory(), broker);
     DatasetExportDao exdao = new DatasetExportDao(cfg.job, getSqlSessionFactory(), validator);
-    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif,
+    DatasetDao ddao = new DatasetDao(getSqlSessionFactory(), cfg.normalizer, cfg.release, cfg.gbif, cfg.doi,
       new DownloadUtil(httpClient), imgService, diDao, exdao, indexService, cfg.normalizer::scratchFile, broker, validator
     );
     DatasetSourceDao dsdao = new DatasetSourceDao(getSqlSessionFactory());
@@ -373,12 +373,11 @@ public class WsServer extends Application<WsServerConfig> {
       doiService = DoiService.passThru();
       LOG.warn("DataCite DOI service not configured!");
     } else {
-      LOG.info("Use DOI prefix: {}", cfg.doi.prefix);
-      Dataset.DOI_PREFIX = cfg.doi.prefix;
       doiService = new DataCiteService(cfg.doi, jerseyClient, mail.getMailer(), cfg.job.onErrorTo, cfg.job.onErrorFrom);
     }
     DatasetConverter converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
     DoiChangeListener doiChangeListener = new DoiChangeListener(getSqlSessionFactory(), doiService, coljersey.getCache(), converter, cfg.doi);
+    env.lifecycle().manage(ManagedUtils.from(doiChangeListener));
 
     // exporter
     ExportManager exportManager = new ExportManager(cfg, getSqlSessionFactory(), executor, imgService, exdao, diDao);
@@ -391,7 +390,7 @@ public class WsServer extends Application<WsServerConfig> {
     );
 
     // importer
-    importManager = new ImportManager(cfg.importer, cfg.normalizer,
+    importManager = new ImportManager(cfg.importer, cfg.normalizer, cfg.doi,
       env.metrics(),
       httpClient,
       broker,

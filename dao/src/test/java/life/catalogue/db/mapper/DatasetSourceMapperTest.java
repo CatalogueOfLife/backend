@@ -125,7 +125,7 @@ public class DatasetSourceMapperTest extends MapperTestBase<DatasetSourceMapper>
     // persist source citations, sth the DatasetDao normally does
     persistDatasetCitations(s);
     // attempt is updated separately, but needed to copy citations into a release
-    dm.updateLastImport(s.getKey(), s.getAttempt());
+    dm.updateLastImport(s.getKey(), s.getAttempt(), null);
 
     // archived source dataset
     mapper(DatasetArchiveMapper.class).create(s.getKey());

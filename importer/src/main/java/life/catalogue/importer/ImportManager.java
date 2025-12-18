@@ -25,6 +25,7 @@ import life.catalogue.config.NormalizerConfig;
 import life.catalogue.csv.ExcelCsvExtractor;
 import life.catalogue.dao.*;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
@@ -77,6 +78,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   private final Map<Integer, PBQThreadPoolExecutor.ComparableFutureTask> futures = new ConcurrentHashMap<>();
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
+  private final DoiConfig dCfg;
   private final DownloadUtil downloader;
   private final DoiResolver resolver;
   private final SqlSessionFactory factory;
@@ -96,11 +98,12 @@ public class ImportManager implements Managed, Idle, DatasetListener {
   private final Timer importTimer;
   private final Counter failed;
 
-  public ImportManager(ImporterConfig iCfg, NormalizerConfig nCfg, MetricRegistry registry, CloseableHttpClient client, EventBroker bus,
+  public ImportManager(ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg, MetricRegistry registry, CloseableHttpClient client, EventBroker bus,
                        SqlSessionFactory factory, NameIndex index, DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao,
                        NameUsageIndexService indexService, ImageService imgService, JobExecutor jobExecutor, Validator validator, DoiResolver resolver) {
     this.iCfg = iCfg;
     this.nCfg = nCfg;
+    this.dCfg = dCfg;
     this.bus = bus;
     this.factory = factory;
     this.validator = validator;
@@ -445,7 +448,7 @@ public class ImportManager implements Managed, Idle, DatasetListener {
         ds.remove(Setting.DATA_ACCESS);
         dm.updateSettings(req.datasetKey, ds, req.createdBy);
       }
-      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
+      return new ImportJob(req, new DatasetWithSettings(d, ds), iCfg, nCfg, dCfg, downloader, factory, importStoreFactory, index, validator, resolver, indexService, imgService, dao, dDao, sDao, decisionDao, bus,
         req::start, this::successCallBack, this::errorCallBack
       );
     }

@@ -26,7 +26,7 @@ public class DatasetArchiveMapperTest extends MapperTestBase<DatasetArchiveMappe
     d1.setPrivat(true); // this is the default and we dont store the property
 
     dmapper().create(d1);
-    dmapper().updateLastImport(d1.getKey(), 3);
+    dmapper().updateLastImport(d1.getKey(), 3, null);
 
     mapper().create(d1.getKey());
     commit();

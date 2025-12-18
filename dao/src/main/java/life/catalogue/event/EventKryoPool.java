@@ -79,6 +79,7 @@ public class EventKryoPool extends Pool<Kryo> {
     registerCollectionClasses(kryo);
 
     // enums
+    kryo.register(DoiChange.DoiEventType.class);
     kryo.register(Country.class);
     kryo.register(DataFormat.class);
     kryo.register(DatasetOrigin.class);

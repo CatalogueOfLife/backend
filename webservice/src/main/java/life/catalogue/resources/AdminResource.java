@@ -17,6 +17,7 @@ import life.catalogue.concurrent.BackgroundJob;
 import life.catalogue.concurrent.JobExecutor;
 import life.catalogue.concurrent.JobPriority;
 import life.catalogue.dao.DatasetDao;
+import life.catalogue.doi.DoiChangeListener;
 import life.catalogue.dw.auth.Roles;
 import life.catalogue.dw.managed.Component;
 import life.catalogue.dw.managed.ManagedService;
@@ -88,13 +89,15 @@ public class AdminResource {
   private final EventBroker bus;
   private final EmailEncryption encryption;
   private final UsageMatcherFactory matcherFactory;
+  private final DoiChangeListener doiListener;
 
   public AdminResource(SqlSessionFactory factory, ManagedService managedService, SyncManager assembly, DownloadUtil downloader,
                        WsServerConfig cfg, ImageService imgService, NameIndex ni, UsageMatcherFactory matcherFactory,
                        NameUsageIndexService indexService, NameUsageSearchService searchService,
                        ImportManager importManager, DatasetDao ddao, GbifSyncManager gbifSync,
-                       JobExecutor executor, EventBroker bus, EmailEncryption encryption) {
+                       JobExecutor executor, EventBroker bus, EmailEncryption encryption, DoiChangeListener doiListener) {
     this.factory = factory;
+    this.doiListener = doiListener;
     this.encryption = encryption;
     this.bus = bus;
     this.matcherFactory = matcherFactory;
@@ -397,22 +400,37 @@ public class AdminResource {
       .build();
   }
 
+  private DOI doi(String suffix) {
+    return new DOI(cfg.doi.prefix, suffix);
+  }
+
+  @Path("/doi/list")
+  public List<DoiChangeListener.XDoiChange> listDOIEvents() {
+    return doiListener.list();
+  }
+
+  @Produces("text/plain")
+  @Path("/doi/list")
+  public Stream<String> listDOIEventsAsText() {
+    return doiListener.list().stream().map(DoiChangeListener.XDoiChange::toString);
+  }
+
   @POST
-  @Path("/doi/{doi}")
-  public void createDOI(@PathParam("doi") String doiString) {
-    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.create(doi)));
+  @Path("/doi/{suffix}")
+  public void createDOI(@PathParam("suffix") String suffix) {
+    bus.publish(DoiChange.create(doi(suffix)));
   }
 
   @PUT
-  @Path("/doi/{doi}")
-  public void updateDOI(@PathParam("doi") String doiString) {
-    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.update(doi)));
+  @Path("/doi/{suffix}")
+  public void updateDOI(@PathParam("suffix") String suffix) {
+    bus.publish(DoiChange.update(doi(suffix)));
   }
 
   @PATCH
-  @Path("/doi/{doi}")
-  public void publishDOI(@PathParam("doi") String doiString) {
-    DOI.parse(doiString).ifPresent(doi -> bus.publish(DoiChange.publish(doi)));
+  @Path("/doi/{suffix}")
+  public void publishDOI(@PathParam("suffix") String suffix) {
+    bus.publish(DoiChange.publish(doi(suffix)));
   }
 
   private BackgroundJob runJob(BackgroundJob job){

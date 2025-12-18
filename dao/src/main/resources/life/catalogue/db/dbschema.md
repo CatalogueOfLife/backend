@@ -11,6 +11,16 @@ and done it manually. So we can as well log changes here.
 
 ### PROD changes
 
+#### 2025-12-18 version DOIs
+```
+ALTER TABLE dataset ADD COLUMN version_doi TEXT;
+ALTER TABLE dataset_archive ADD COLUMN version_doi TEXT;
+ALTER TABLE dataset_source ADD COLUMN version_doi TEXT;
+ALTER TABLE dataset_patch DROP COLUMN doi;
+
+-- TODO: move dois to identifiers
+```
+
 #### 2025-12-17 identifier list
 Migrate identifiers from hstore to list
 ```

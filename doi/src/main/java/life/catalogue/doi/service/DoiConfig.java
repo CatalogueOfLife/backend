@@ -1,10 +1,15 @@
 package life.catalogue.doi.service;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 import life.catalogue.api.model.DOI;
 
 import com.google.common.base.MoreObjects;
 
 import jakarta.validation.constraints.NotNull;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * DataCite DOI configuration.
@@ -27,17 +32,26 @@ public class DoiConfig {
   @NotNull
   public String prefix = "10.80631";
 
+  /**
+   * Filesystem location where to persist DOI events
+   */
+  @NotNull
+  public String store = "/tmp/clb/datacite";
+
+  /**
+   * Quarantine time in seconds to wait before a DOI change event is actually acted on.
+   * This is useful to pool changes for a DOI when several updates happen shortly after each other.
+   */
+  @Min(2)
+  @Max(24*60*60)  // 1 day
+  public int waitPeriod = 5*60; // 5 minutes
 
   public DOI datasetDOI(int datasetKey) {
     return DOI.dataset(prefix, datasetKey);
   }
 
-  public DOI datasetDOI(int datasetKey, int attempt) {
-    return DOI.datasetAttempt(prefix, datasetKey, attempt);
-  }
-
-  public DOI datasetSourceDOI(int datasetKey, int sourceKey) {
-    return DOI.datasetSource(prefix, datasetKey, sourceKey);
+  public DOI datasetVersionDOI(int datasetKey, int attempt) {
+    return DOI.datasetVersion(prefix, datasetKey, attempt);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package life.catalogue.common.kryo;
 
+import life.catalogue.api.event.DoiChange;
 import life.catalogue.api.model.*;
 import life.catalogue.api.search.NameUsageWrapper;
 import life.catalogue.api.search.SimpleDecision;
@@ -34,6 +35,9 @@ import de.undercouch.citeproc.csl.CSLType;
  */
 public class ApiKryoPool extends Pool<Kryo> {
 
+  public ApiKryoPool() {
+    super(true, true);
+  }
   public ApiKryoPool(int maximumCapacity) {
     super(true, true, maximumCapacity);
   }

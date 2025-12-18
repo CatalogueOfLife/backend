@@ -24,6 +24,7 @@ import life.catalogue.dao.DecisionDao;
 import life.catalogue.dao.SectorDao;
 import life.catalogue.db.mapper.DatasetImportMapper;
 import life.catalogue.db.mapper.DatasetMapper;
+import life.catalogue.doi.service.DoiConfig;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.event.EventBroker;
 import life.catalogue.img.ImageService;
@@ -78,6 +79,7 @@ public class ImportJob implements Runnable {
   private DatasetImport di;
   private final ImporterConfig iCfg;
   private final NormalizerConfig nCfg;
+  private final DoiConfig dCfg;
   private final DownloadUtil downloader;
   private final SqlSessionFactory factory;
   private final DatasetImportDao dao;
@@ -97,7 +99,7 @@ public class ImportJob implements Runnable {
   private final BiConsumer<ImportRequest, Exception> errorCallback;
   
   ImportJob(ImportRequest req, DatasetWithSettings d,
-            ImporterConfig iCfg, NormalizerConfig nCfg,
+            ImporterConfig iCfg, NormalizerConfig nCfg, DoiConfig dCfg,
             DownloadUtil downloader, SqlSessionFactory factory, ImportStoreFactory importStoreFactory, NameIndex index, Validator validator, DoiResolver resolver,
             NameUsageIndexService indexService, ImageService imgService,
             DatasetImportDao diao, DatasetDao dDao, SectorDao sDao, DecisionDao decisionDao, EventBroker bus,
@@ -111,6 +113,7 @@ public class ImportJob implements Runnable {
     this.req = req;
     this.iCfg = iCfg;
     this.nCfg = nCfg;
+    this.dCfg = dCfg;
     this.downloader = downloader;
     this.resolver = resolver;
     this.distributedArchiveService = new DistributedArchiveService(downloader.getClient());
@@ -352,7 +355,9 @@ public class ImportJob implements Runnable {
           LOG.info("Writing {} to Postgres & Elastic!", datasetKey);
           updateState(ImportState.INSERTING);
           // this does write to both pg and elastic!
-          var pgImport = new PgImport(di.getAttempt(), dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
+          // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
+          var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
+          var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
           pgImport.call();
 
           LOG.info("Build import metrics for dataset {}", datasetKey);
@@ -361,7 +366,7 @@ public class ImportJob implements Runnable {
           dao.updateMetrics(di, datasetKey);
 
           bus.publish(new DatasetDataChanged(datasetKey));
-          if (dataset.getDoi() != null) {
+          if (dataset.getVersionDoi() != null) {
             bus.publish(DoiChange.create(dataset.getVersionDoi()));
           }
 

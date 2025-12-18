@@ -6,6 +6,8 @@
 
   <sql id="SELECT">
     <include refid="life.catalogue.db.mapper.DatasetPatchMapper.SELECT"/>,
+    d.doi,
+    d.version_doi,
     d.gbif_key,
     d.gbif_publisher_key,
     d.attempt,
@@ -16,6 +18,8 @@
   </sql>
 
   <sql id="COLS">
+    doi,
+    version_doi,
     type,
     gbif_key,
     gbif_publisher_key,
@@ -23,6 +27,8 @@
   </sql>
 
   <sql id="PROPS">
+    #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
+    #{versionDoi, typeHandler=life.catalogue.db.type.DoiTypeHandler},
     #{type}::datasettype,
     #{gbifKey},
     #{gbifPublisherKey},
