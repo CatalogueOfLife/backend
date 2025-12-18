@@ -1,5 +1,7 @@
 package life.catalogue.api.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import life.catalogue.api.model.DOI;
 
 import java.util.Objects;
@@ -51,18 +53,22 @@ public class DoiChange implements Event {
     return type;
   }
 
+  @JsonIgnore
   public boolean isDelete(){
     return type == DELETE;
   }
 
+  @JsonIgnore
   public boolean isCreate(){
     return type ==  CREATE;
   }
 
+  @JsonIgnore
   public boolean isUpdate(){
     return type ==  UPDATE;
   }
 
+  @JsonIgnore
   public boolean isPublish(){
     return type ==  PUBLISH;
   }

@@ -404,15 +404,10 @@ public class AdminResource {
     return new DOI(cfg.doi.prefix, suffix);
   }
 
-  @Path("/doi/list")
-  public List<DoiChangeListener.XDoiChange> listDOIEvents() {
+  @GET
+  @Path("/doi")
+  public List<DoiChangeListener.XDoiChange> listDOIEventsAsText() {
     return doiListener.list();
-  }
-
-  @Produces("text/plain")
-  @Path("/doi/list")
-  public Stream<String> listDOIEventsAsText() {
-    return doiListener.list().stream().map(DoiChangeListener.XDoiChange::toString);
   }
 
   @POST

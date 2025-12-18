@@ -98,7 +98,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
         }
       }
 
-      var xevent = new XDoiChange(event, key);
+      var xevent = new XDoiChange(event, key, wait);
       if (event.isUpdate()) {
         // pool updates for some time
         // this overrides potentially already waiting events for the same DOI and type
@@ -176,23 +176,30 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
       var k = super.create();
       k.register(DoiChange.class);
       k.register(DoiChange.DoiEventType.class);
+      k.register(DoiChangeListener.XDoiChange.class);
       return k;
     }
   }
-  public class XDoiChange extends DoiChange implements HasID<String>, Comparable<XDoiChange> {
-    final int datasetKey;
-    final long time;
-    final int fails;
+  public static class XDoiChange extends DoiChange implements HasID<String>, Comparable<XDoiChange> {
+    public int datasetKey;
+    public long time;
+    public int fails;
 
-    XDoiChange(DoiChange event, int datasetKey) {
-      this(event, datasetKey, 0);
+    public XDoiChange() {
     }
 
-    XDoiChange(DoiChange event, int datasetKey, int fails) {
+    XDoiChange(DoiChange event, int datasetKey, long wait) {
       super(event.getDoi(), event.getType());
       this.datasetKey = datasetKey;
+      this.fails = 0;
+      time = System.currentTimeMillis() + wait;
+    }
+
+    XDoiChange(XDoiChange event, int fails) {
+      super(event.getDoi(), event.getType());
+      this.datasetKey = event.datasetKey;
       this.fails = fails;
-      time = System.currentTimeMillis() + wait + TimeUnit.HOURS.toMillis((long) fails*fails);
+      time = System.currentTimeMillis() + TimeUnit.HOURS.toMillis((long) fails*fails);
     }
 
     @Override
@@ -224,12 +231,17 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     public void run() {
       List<XDoiChange> all = list();
       Collections.sort(all);
+      int counter = 0;
       LOG.debug("Found {} DOI events to process", all.size());
       for (XDoiChange event : all) {
         if (event.time < System.currentTimeMillis()) {
           events.remove(event.getId());
           executor.submit(new DoiChangeJob(event));
+          counter++;
         }
+      }
+      if (counter > 0) {
+        LOG.info("Executed {} DOI events from {}", counter, all.size());
       }
     }
   }

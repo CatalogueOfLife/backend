@@ -52,9 +52,11 @@ public class CronExecutor implements Managed {
     for (var f : futures) {
       f.cancel(true);
     }
-    scheduler.shutdown();
-    LOG.info("Cron executor stopped");
-    scheduler = null;
+    if (scheduler != null) {
+      scheduler.shutdown();
+      LOG.info("Cron executor stopped");
+      scheduler = null;
+    }
   }
 
   @Override

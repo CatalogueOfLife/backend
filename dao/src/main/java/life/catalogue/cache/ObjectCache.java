@@ -27,7 +27,7 @@ public interface ObjectCache<T extends HasID<String>> extends AutoCloseable, Ite
   int size();
 
   default List<T> list() {
-    List<T> list = new ArrayList<>(size());
+    List<T> list = new ArrayList<>();
     var it = iterator();
     while (it.hasNext()) {
       list.add(it.next());
