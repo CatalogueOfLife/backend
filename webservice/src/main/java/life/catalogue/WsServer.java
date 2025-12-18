@@ -438,7 +438,7 @@ public class WsServer extends Application<WsServerConfig> {
     j.register(new AdminResource(
       getSqlSessionFactory(), managedService, syncManager, new DownloadUtil(httpClient), cfg,
       imgService, ni, matcherFactory, indexService, searchService,
-      importManager, ddao, gbifSync, executor, broker, encryption)
+      importManager, ddao, gbifSync, executor, broker, encryption, doiChangeListener)
     );
 
     // dataset scoped
