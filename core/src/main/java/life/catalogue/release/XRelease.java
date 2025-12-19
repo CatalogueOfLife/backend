@@ -195,23 +195,19 @@ public class XRelease extends ProjectRelease {
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();
-    assertNoSynonymParents();
+    // make sure we dont have synonym chains - sth we should really prevent in mergeSectors already!
+    moveSynonymChains();
 
     // sanitize merges
     homotypicGrouping();
-    assertNoSynonymParents();
 
     // flagging
     validateAndCleanTree();
-    assertNoSynonymParents();
     cleanImplicitTaxa();
-    assertNoSynonymParents();
     flagLoops();
-    assertNoSynonymParents();
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
-    assertNoSynonymParents();
 
     // stable ids
     mapTmpIDs();
@@ -313,10 +309,13 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void assertNoSynonymParents() {
-    try (SqlSession session = factory.openSession(false)) {
-      if (session.getMapper(NameUsageMapper.class).hasParentSynoynms(newDatasetKey)) {
-        throw new IllegalStateException("XRelease introduced parent synonyms");
+  private void moveSynonymChains() {
+    int iterations = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      int cnt = 1;
+      while (cnt > 0 && iterations++ < 10) {
+        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(newDatasetKey);
+        LOG.info("Moved {} synonyms of synonyms to their parent", cnt);
       }
     }
   }
@@ -543,7 +542,6 @@ public class XRelease extends ProjectRelease {
     final Supplier<String> typeMaterialIdGen = new XIdGen();
     updateState(ImportState.INSERTING);
     for (Sector s : sectors) {
-      assertNoSynonymParents();
       if (counter >= maxSectors) {
         LOG.warn("Stop merging as we reached the debug limit of {} sectors", maxSectors);
         break;
