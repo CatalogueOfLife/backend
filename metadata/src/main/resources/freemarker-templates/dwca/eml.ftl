@@ -56,8 +56,8 @@
     <alternateIdentifier>${doi}</alternateIdentifier>
   </#if>
   <#if identifier?has_content>
-   <#list identifier?keys as scope>
-    <alternateIdentifier>${scope}:${identifier[scope]}</alternateIdentifier>
+   <#list identifier as id>
+    <alternateIdentifier>${id}</alternateIdentifier>
    </#list>
   </#if>
   <@tag name="title" value=title indent=2 />

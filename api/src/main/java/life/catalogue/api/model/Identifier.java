@@ -93,6 +93,10 @@ public class Identifier {
     this.id = id.trim();
   }
 
+  public Identifier(String scope, Object id) {
+    this(scope, id.toString());
+  }
+
   public Identifier(DOI doi) {
     this.scope = Scope.DOI.prefix();
     this.id = doi.getDoiName();
@@ -106,6 +110,11 @@ public class Identifier {
   @JsonIgnore
   public boolean isDOI() {
     return Objects.equals(scope, Scope.DOI.prefix());
+  }
+
+  @JsonIgnore
+  public DOI asDOI() {
+    return isDOI() ? new DOI(id) : null;
   }
 
   public String getScope() {

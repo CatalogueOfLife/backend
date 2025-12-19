@@ -20,7 +20,7 @@ public class ZenodoParserTest {
     Optional<DatasetWithSettings> m = ZenodoParser.parse(Resources.stream("metadata/zenodo.json"));
     Dataset d = m.get().getDataset();
 
-    assertEquals(new DOI("10.5281/zenodo.6407053"), d.getDoi());
+    assertEquals(new DOI("10.5281/zenodo.6407053"), d.getIdentifier().getFirst().asDOI());
     assertEquals("Mammal Diversity Database", d.getTitle());
     var nathan = Agent.person("Nathan", "Upham", null, "0000-0001-5412-9342");
     nathan.setOrganisation("Arizona State University");

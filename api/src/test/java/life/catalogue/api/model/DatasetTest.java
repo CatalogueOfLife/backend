@@ -31,7 +31,8 @@ public class DatasetTest extends SerdeTestBase<Dataset> {
     d.setIssued(FuzzyDate.of("1999-09-21"));
     d.setVersion("1999 v2");
     d.setIdentifier(List.of(
-      Identifier.parse("gbif" + UUID.randomUUID()),
+      new Identifier("gbif", UUID.randomUUID()),
+      Identifier.parse("PLAZI:" + UUID.randomUUID()),
       Identifier.parse("col:1001")
     ));
     d.setUrlFormatter(Map.of(
