@@ -8,6 +8,7 @@ import org.gbif.nameparser.api.Rank;
 import java.net.URI;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -16,6 +17,7 @@ import static org.junit.Assert.*;
  * WARNING !!!
  * These test make use of some production configurations and need to be adjusted if these change considerably!
  */
+@Ignore("prod configs need to be changed when this branch is deployed. E.g remove issueSourceDOIs")
 public class ReleaseConfigTest {
 
   @Before
