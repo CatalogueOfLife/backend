@@ -4,20 +4,23 @@ import life.catalogue.common.date.DateUtils;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hc.client5.http.classic.methods.HttpGet;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.client5.http.utils.URIUtils;
+import org.apache.hc.core5.http.*;
+import org.apache.hc.core5.http.io.support.ClassicRequestBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,35 +123,102 @@ public class DownloadUtil {
       }
     }
     
-    // execute
+    // execute, we do 2 manual redirect as HC avoids authenticated redirects
+    try {
+      return exec(get, url, downloadTo);
+    } catch (RedirectException e) {
+      var redirect = ClassicRequestBuilder.copy(get).setUri(e.location).build();
+      try {
+        return exec(redirect, e.location, downloadTo);
+      } catch (RedirectException e2) {
+        redirect = ClassicRequestBuilder.copy(get).setUri(e2.location).build();
+        try {
+          return exec(redirect, e2.location, downloadTo);
+        } catch (RedirectException ex) {
+          throw new DownloadException(e2.location, ex);
+        }
+      }
+    }
+  }
+
+  private boolean exec(ClassicHttpRequest get, final URI url, final File downloadTo) throws DownloadException, RedirectException {
     try (CloseableHttpResponse response = hc.execute(get)) {
       final int status = response.getCode();
       System.out.println(String.format("%s -> %s", status, get));
       if (status == HttpStatus.SC_NOT_MODIFIED) {
         LOG.debug("Content not modified since last request");
         return false;
-        
+
+      } else if (status == HttpStatus.SC_MOVED_PERMANENTLY || status == HttpStatus.SC_MOVED_TEMPORARILY) {
+        // handle redirects manually - HC avoids redirecting authenticated requests!
+        final URI redirectUri = getRedirectLocation(url, get, response);
+        throw new RedirectException(redirectUri);
+
       } else if (status / 100 == 2) {
         // write to file only when download succeeds
         saveToFile(response, downloadTo);
         LOG.debug("Successfully downloaded {} to {}", url, downloadTo.getAbsolutePath());
         return true;
-        
+
       } else {
         LOG.warn("Downloading {} to {} failed!: {}", url, downloadTo.getAbsolutePath(), status);
         StringBuilder sb = new StringBuilder()
-            .append("http ")
-            .append(status)
-            .append(" ")
-            .append(response.getReasonPhrase())
-            .append(" for URL ")
-            .append(url);
+          .append("http ")
+          .append(status)
+          .append(" ")
+          .append(response.getReasonPhrase())
+          .append(" for URL ")
+          .append(url);
         throw new DownloadException(url, sb.toString());
       }
-      
+
     } catch (IOException e) {
       LOG.error("Failed to download {} to {}", url, downloadTo.getAbsolutePath(), e);
       throw new DownloadException(url, e);
+    }
+  }
+
+  private static class RedirectException extends Exception {
+    final URI location;
+
+    private RedirectException(URI location) {
+      this.location = location;
+    }
+  }
+
+  private URI getRedirectLocation(final URI originalURL, final ClassicHttpRequest req, final CloseableHttpResponse resp) throws DownloadException {
+    //get the location header to find out where to redirect to
+    final Header locationHeader = resp.getFirstHeader(HttpHeaders.LOCATION);
+    if (locationHeader == null) {
+      throw new DownloadException(originalURL, "Redirect location is missing");
+    }
+    final String location = locationHeader.getValue();
+    try {
+      URI uri = createLocationURI(location);
+      if (!uri.isAbsolute()) {
+        // Resolve location URI
+        uri = URIUtils.resolve(req.getUri(), uri);
+      }
+      return uri;
+
+    } catch (final HttpException | URISyntaxException ex) {
+      throw new DownloadException(originalURL, "Bad redirect location: " + location);
+    }
+  }
+
+  private URI createLocationURI(final String location) throws ProtocolException {
+    try {
+      final URIBuilder b = new URIBuilder(new URI(location).normalize());
+      final String host = b.getHost();
+      if (host != null) {
+        b.setHost(host.toLowerCase(Locale.ROOT));
+      }
+      if (b.isPathEmpty()) {
+        b.setPathSegments("");
+      }
+      return b.build();
+    } catch (final URISyntaxException ex) {
+      throw new ProtocolException("Invalid redirect URI: " + location, ex);
     }
   }
 

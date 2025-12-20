@@ -27,6 +27,7 @@ public class DownloadUtilTest {
   public void start() throws IOException {
     hc = HttpClientBuilder.create()
       .setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+      .disableRedirectHandling()
       .build();
     f = File.createTempFile("download", ".zip");
     System.out.println(f);
