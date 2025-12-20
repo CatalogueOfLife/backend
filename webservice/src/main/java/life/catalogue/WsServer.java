@@ -75,6 +75,9 @@ import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -233,6 +236,7 @@ public class WsServer extends Application<WsServerConfig> {
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
       .using(cfg.client)
+      .using(DefaultRedirectStrategy.INSTANCE)
       .build(getUserAgent(cfg)); // http client pool is managed via DW lifecycle inside this build call
 
     // reuse the same http client pool also for jersey clients!

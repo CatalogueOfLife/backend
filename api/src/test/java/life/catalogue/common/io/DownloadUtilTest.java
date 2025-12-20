@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.junit.After;
@@ -24,7 +25,9 @@ public class DownloadUtilTest {
 
   @Before
   public void start() throws IOException {
-    hc = HttpClientBuilder.create().build();
+    hc = HttpClientBuilder.create()
+      .setRedirectStrategy(DefaultRedirectStrategy.INSTANCE)
+      .build();
     f = File.createTempFile("download", ".zip");
     System.out.println(f);
   }
@@ -69,6 +72,13 @@ public class DownloadUtilTest {
   public void plazi() throws IOException {
     DownloadUtil d = new DownloadUtil(hc);
     d.download(URI.create("https://tb.plazi.org/GgServer/dwca/1C5A0163FFCBF3266052EB7D4D70FFF7.zip"), f);
+  }
+
+  @Test
+  @Disabled @Ignore("manual debugging")
+  public void github() throws IOException {
+    DownloadUtil d = new DownloadUtil(hc);
+    d.download(URI.create("https://github.com/mdoering/hominidae/archive/refs/heads/main.zip"), f);
   }
 
   boolean download(DownloadUtil d, URI uri, File down) {
