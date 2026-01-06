@@ -151,7 +151,7 @@ public class XReleaseBasicIT {
       // assert metadata
       var dm = session.getMapper(DatasetMapper.class);
       var d = dm.get(xrel.newDatasetKey);
-      assertEquals("COL25", d.getAlias());
+      assertEquals("COL26", d.getAlias());
       assertEquals("The XR addresses 3 gaps of the base release.", d.getDescription());
       assertEquals((Integer)5, d.getConfidence());
     }
