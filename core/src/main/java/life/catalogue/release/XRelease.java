@@ -314,7 +314,7 @@ public class XRelease extends ProjectRelease {
     try (SqlSession session = factory.openSession(true)) {
       int cnt = 1;
       while (cnt > 0 && iterations++ < 10) {
-        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(newDatasetKey);
+        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(tmpProjectKey);
         LOG.info("Moved {} synonyms of synonyms to their parent", cnt);
       }
     }
