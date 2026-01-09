@@ -78,6 +78,8 @@ import life.catalogue.swagger.OpenApiFactory;
 import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
 import org.apache.hc.client5.http.protocol.RedirectStrategy;
 
+import org.eclipse.jetty.http.UriCompliance;
+
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -114,6 +116,7 @@ import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import jakarta.ws.rs.client.Client;
 
+import static life.catalogue.WsROServer.allowAmbiguousURIs;
 import static life.catalogue.WsROServer.registerReadOnlyHealthChecks;
 
 public class WsServer extends Application<WsServerConfig> {
@@ -207,6 +210,9 @@ public class WsServer extends Application<WsServerConfig> {
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     LOG.info("Starting COL server");
     final JerseyEnvironment j = env.jersey();
+
+    // configure jetty to allow encoded path values, e.g. URLs as taxon IDs
+    allowAmbiguousURIs(env);
 
     // enable CORS also for admin backend
     env.admin()

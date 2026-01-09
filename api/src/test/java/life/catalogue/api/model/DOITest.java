@@ -35,6 +35,9 @@ public class DOITest {
     assertEquals("10.80631/1010", doi.toString());
     assertIAE(doi::datasetKey);
     assertIAE(doi::sourceDatasetKey);
+
+    doi = DOI.test("dgvy3-3fz");
+    assertEquals(DSID.of(313636,1188), doi.sourceDatasetKey());
   }
 
   void assertIAE(Supplier supplier) {
