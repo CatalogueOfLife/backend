@@ -61,7 +61,7 @@ public class CacheControlResponseFilter implements ContainerResponseFilter {
   private void allowCaching(ContainerResponseContext resp, long ageInSeconds, boolean allowBrowserCache){
     resp.getHeaders().putSingle(HttpHeaders.CACHE_CONTROL, "public, max-age=" + ageInSeconds + ", s-maxage=" + ageInSeconds);
     if (!allowBrowserCache) {
-      resp.getHeaders().putSingle("x-remove-cache-control", "true");
+      resp.getHeaders().putSingle("X-Remove-Cache-Control", "true");
     }
   }
 

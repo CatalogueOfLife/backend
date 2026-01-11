@@ -54,8 +54,8 @@ public class GbifTrustedAuth {
   
   private static final String ALGORITHM = "HmacSHA1";
   private static final String GBIF_SCHEME = "GBIF";
-  private static final String HEADER_GBIF_USER = "x-gbif-user";
-  private static final String HEADER_ORIGINAL_REQUEST_URL = "x-url";
+  private static final String HEADER_GBIF_USER = "X-GBIF-User";
+  private static final String HEADER_ORIGINAL_REQUEST_URL = "X-Url";
   private static final char NEWLINE = '\n';
   
   private final String user;
