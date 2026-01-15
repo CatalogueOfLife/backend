@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
    <archive xmlns="http://rs.tdwg.org/dwc/text/" metadata="eml.xml"><core encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.tdwg.org/dwc/terms/Taxon">
 		<files>
-			<location>taxon.txt</location>
+			<location>taxon.tsv</location>
 		</files>
 		<id index="0" /><field index="0" term="http://rs.tdwg.org/dwc/terms/taxonID"/>
 <field index="1" term="http://rs.tdwg.org/dwc/terms/scientificNameID"/>
@@ -36,59 +36,5 @@
 <field index="30" default="VLIZ" term="http://rs.tdwg.org/dwc/terms/institutionCode"/>
 <field index="31" default="https://doi.org/10.14284/170" term="http://rs.tdwg.org/dwc/terms/datasetID"/>
 
-	</core><extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/SpeciesProfile">
-		<files>
-			<location>speciesprofile.txt</location>
-		</files>
-		<coreid index="0" /><field index="1" term="http://rs.gbif.org/terms/1.0/isMarine"/>
-<field index="2" term="http://rs.gbif.org/terms/1.0/isFreshwater"/>
-<field index="3" term="http://rs.gbif.org/terms/1.0/isTerrestrial"/>
-<field index="4" term="http://rs.gbif.org/terms/1.0/isExtinct"/>
-<field index="5" term="isBrackish"/>
-
-	</extension><extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/VernacularName">
-		<files>
-			<location>vernacularname.txt</location>
-		</files>
-		<coreid index="0" /><field index="1" term="http://rs.tdwg.org/dwc/terms/vernacularName"/>
-<field index="2" term="http://purl.org/dc/terms/source"/>
-<field index="3" vocabulary="http://purl.org/dc/terms/ISO639-3" term="http://purl.org/dc/terms/language"/>
-<field index="4" term="http://rs.gbif.org/terms/1.0/isPreferredName"/>
-
-	</extension><extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Reference">
-		<files>
-			<location>reference.txt</location>
-		</files>
-		<coreid index="0" /><field index="1" term="http://purl.org/dc/terms/identifier"/>
-<field index="2" term="http://purl.org/dc/terms/bibliographicCitation"/>
-<field index="3" term="http://purl.org/dc/terms/title"/>
-<field index="4" term="http://purl.org/dc/terms/creator"/>
-<field index="5" term="http://purl.org/dc/terms/date"/>
-<field index="6" term="http://purl.org/dc/terms/description"/>
-<field index="7" term="http://purl.org/dc/terms/type"/>
-
-	</extension><extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Distribution">
-		<files>
-			<location>distribution.txt</location>
-		</files>
-		<coreid index="0" /><field index="1" term="http://rs.tdwg.org/dwc/terms/locationID"/>
-<field index="2" term="http://rs.tdwg.org/dwc/terms/locality"/>
-<field index="3" vocabulary="https://www.marinespecies.org/introduced/wiki/Traits:Occurrence" term="http://rs.tdwg.org/dwc/terms/occurrenceStatus"/>
-<field index="4" vocabulary="https://www.marinespecies.org/introduced/wiki/Traits:Origin" term="http://rs.tdwg.org/dwc/terms/establishmentMeans"/>
-<field index="5" vocabulary="https://www.marinespecies.org/introduced/wiki/Traits:Invasiveness" term="http://www.marinespecies.org/traits/Invasiveness"/>
-<field index="6" term="http://rs.tdwg.org/dwc/terms/eventDate"/>
-<field index="7" term="http://purl.org/dc/terms/source"/>
-<field index="8" term="http://rs.tdwg.org/dwc/terms/occurrenceRemarks"/>
-<field index="9" term="http://rs.tdwg.org/dwc/terms/countryCode"/>
-
-	</extension><extension encoding="UTF-8" linesTerminatedBy="\r\n" fieldsTerminatedBy="\t" fieldsEnclosedBy="" ignoreHeaderLines="1" rowType="http://rs.gbif.org/terms/1.0/Identifier">
-		<files>
-			<location>identifier.txt</location>
-		</files>
-		<coreid index="0" /><field index="1" term="http://purl.org/dc/terms/identifier"/>
-<field index="2" term="http://purl.org/dc/terms/title"/>
-<field index="3" term="http://purl.org/dc/terms/format"/>
-<field index="4" term="http://rs.tdwg.org/dwc/terms/datasetID"/>
-<field index="5" default="http://vocab.nerc.ac.uk/collection/P01/current/SNANID01/" term="http://purl.org/dc/terms/subject"/>
-
-	</extension></archive>
+	</core>
+</archive>
