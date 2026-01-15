@@ -538,8 +538,18 @@ public class NormalizerColdpIT extends NormalizerITBase {
    * https://github.com/CatalogueOfLife/testing/issues/141
    */
   @Test
-  public void zooSection() throws Exception {
+  public void zooSectionParentID() throws Exception {
     normalize(12);
+    printTree();
+    assertTree();
+  }
+
+  /**
+   * https://github.com/CatalogueOfLife/testing/issues/141
+   */
+  @Test
+  public void zooSectionFlat() throws Exception {
+    normalize(-12);
     printTree();
     assertTree();
   }

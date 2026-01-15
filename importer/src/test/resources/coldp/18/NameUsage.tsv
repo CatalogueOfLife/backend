@@ -14,5 +14,5 @@ col:ID	col:parentID	col:basionymID	col:status	col:nameStatus	col:rank	col:scient
 704338-az			Accepted		Species	Cassine peragua	L.	Celastraceae	Cassine		species with denormed genus
 704334-az	704338-az		synonym	Orthographic	Species	Cassine paragua	Mill.			orth. var.	
 rubus			Accepted		Genus	xRubus	Döring	Rosaceae			
-976403-az	976403-az		Local Biotype		Species	×Rubus aculeolatus	P.J.Müll.	Rosaceae	Rubus		hybrid species with denormed genus
-983287-az	983287-az		Artificial Hybrid		Species	Rubus × loganobaccus	L.H.Bailey	Rosaceae	Rubus		
+976403-az			Local Biotype		Species	×Rubus aculeolatus	P.J.Müll.	Rosaceae	Rubus		hybrid species with denormed genus
+983287-az			Artificial Hybrid		Species	Rubus × loganobaccus	L.H.Bailey	Rosaceae	Rubus		

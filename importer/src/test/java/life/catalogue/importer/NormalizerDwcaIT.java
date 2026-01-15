@@ -543,6 +543,16 @@ public class NormalizerDwcaIT extends NormalizerITBase {
     assertEquals(11, store.usages().all().count());
   }
 
+  /**
+   * https://github.com/CatalogueOfLife/testing/issues/141
+   */
+  @Test
+  public void wormsCircularTree() throws Exception {
+    normalize(54);
+    printTree();
+    assertTree();
+  }
+
   @Test
   @Disabled @Ignore
   public void testExternal() throws Exception {
