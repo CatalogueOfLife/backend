@@ -10,6 +10,7 @@ import org.gbif.nameparser.api.Authorship;
 import org.gbif.nameparser.api.Rank;
 
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -557,8 +558,8 @@ public class NormalizerDwcaIT extends NormalizerITBase {
   @Disabled @Ignore
   public void testExternal() throws Exception {
 
-    //normalize(Paths.get("/Users/markus/Desktop/antcat"));
-    normalize(URI.create("https://ipt.laji.fi/archive.do?r=cfs"));
+    normalize(Paths.get("/Users/markus/Downloads/dataset-2011"));
+    //normalize(URI.create("https://ipt.laji.fi/archive.do?r=cfs"));
     //normalize(URI.create("http://sftp.kew.org/pub/data_collaborations/Fabaceae/DwCA/wcvp_fabaceae_DwCA.zip"));
     //normalize(URI.create("http://www.marinespecies.org/dwca/WoRMS_DwC-A.zip"));
     //normalize(Paths.get("/Users/markus/code/col+/data-world-plants/dwca"));
