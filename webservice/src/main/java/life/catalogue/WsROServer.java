@@ -55,6 +55,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.core5.util.Timeout;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.eclipse.jetty.ee10.servlet.ServletHandler;
 import org.elasticsearch.client.RestClient;
 import org.glassfish.jersey.CommonProperties;
 import org.glassfish.jersey.client.ClientProperties;
@@ -137,10 +138,27 @@ public class WsROServer extends Application<WsServerConfig> {
     return mybatis.getSqlSessionFactory();
   }
 
+  /**
+   * Configures the Jetty serverlet handler to decode ambiguous URIs.
+   * This is needed for jetty to allow encoded path values
+   * in addition to configuring dropwizard:
+   *
+   *   server.applicationConnectors.uriCompliance: JETTY_11
+   *
+   * See https://jetty.org/docs/jetty/12.1/programming-guide/server/compliance.html#uri
+   */
+  static void allowAmbiguousURIs(Environment env) {
+    var hdl = (ServletHandler) env.getApplicationContext().getHandler();
+    hdl.setDecodeAmbiguousURIs(true);
+  }
+
   @Override
   public void run(WsServerConfig cfg, Environment env) throws Exception {
     final JerseyEnvironment j = env.jersey();
     LOG.warn("This service runs in read only mode and only responds to GET, HEAD & OPTIONS requests.");
+
+    // configure jetty to allow encoded path values, e.g. URLs as taxon IDs
+    allowAmbiguousURIs(env);
 
     // this is read only - make sure we don't use a proper auth - whatever the configs say
     //var noUsers = new MapAuthenticationFactory();

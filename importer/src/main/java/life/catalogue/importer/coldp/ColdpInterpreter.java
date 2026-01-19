@@ -374,8 +374,12 @@ public class ColdpInterpreter extends InterpreterBase {
   
   private Classification interpretClassification(VerbatimRecord v) {
     Classification cl = new Classification();
-    for (ColdpTerm term : ColdpTerm.DENORMALIZED_RANKS) {
-      cl.setByTerm(term, v.get(term));
+    // only interpret the flat classification if parentID is not present!
+    // https://github.com/CatalogueOfLife/coldp/blob/master/README.md#parentid
+    if (!v.hasTerm(ColdpTerm.parentID)) {
+      for (ColdpTerm term : ColdpTerm.DENORMALIZED_RANKS) {
+        cl.setByTerm(term, v.get(term));
+      }
     }
     return cl;
   }

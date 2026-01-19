@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class JobResult extends DataEntity<UUID> {
   private static final Logger LOG = LoggerFactory.getLogger(JobResult.class);
   //TODO: not nice. Should better only be on JobConfig!
-  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.checklistbank.org/jobs/");
+  private static URI DOWNLOAD_BASE_URI = URI.create("https://download.checklistbank.org/job/");
   private static File DOWNLOAD_DIR = new File("/tmp/jobs");
 
   /**

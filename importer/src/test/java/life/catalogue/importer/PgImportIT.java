@@ -622,8 +622,8 @@ public class PgImportIT extends PgImportITBase {
   public void testExternalManually() throws Exception {
     dataset.setType(DatasetType.TAXONOMIC);
 
-    //normalizeAndImportFolder(new File("/Users/markus/Downloads/113"), ACEF);
-    normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-305823.zip"), COLDP);
+    normalizeAndImportFolder(new File("/Users/markus/Downloads/worms"), DWCA);
+    //normalizeAndImportArchive(new File("/Users/markus/Downloads/dataset-305823.zip"), COLDP);
 
     //normalizeAndImport(URI.create("https://hosted-datasets.gbif.org/datasets/iucn/iucn-latest.zip"), DWCA);
     //normalizeAndImport(URI.create("https://tb.plazi.org/GgServer/dwca/CB7EFFE7FFD3FFB3E551FFBDFF9C916F.zip"), DWCA);

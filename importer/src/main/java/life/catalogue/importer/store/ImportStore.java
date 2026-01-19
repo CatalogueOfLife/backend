@@ -402,8 +402,15 @@ public class ImportStore implements AutoCloseable {
   }
 
   public String printTree() throws InterruptedException, IOException {
+    return printTree(false);
+  }
+
+  public String printTree(boolean showIDs) throws InterruptedException, IOException {
     StringWriter w = new StringWriter();
     try (TextTreePrinter printer = new TextTreePrinter(new TreeTraversalParameter(),null,null,null,null,null,w)) {
+      if (showIDs) {
+        printer.showIDs();
+      }
       TreeWalker.walkTree(this, ctxt -> printer.addBasionyms(ctxt.basionyms), new TreeWalker.StartEndHandler() {
         @Override
         public void start(NameUsageData data, TreeWalker.WalkerContext ctxt) {

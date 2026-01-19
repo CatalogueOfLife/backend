@@ -1,5 +1,6 @@
 package life.catalogue.importer;
 
+import com.google.common.annotations.VisibleForTesting;
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.*;
 import life.catalogue.common.collection.CollectionUtils;
@@ -914,7 +915,8 @@ public class Normalizer implements Callable<Boolean> {
     LOG.info("{} parent cycles resolved", counter);
   }
 
-  private List<UsageData> findParentCycle(UsageData ud, Set<String> checked) {
+  @VisibleForTesting
+  protected List<UsageData> findParentCycle(UsageData ud, Set<String> checked) {
     if (checked.contains(ud.getId()) || (ud.usage.getParentId() != null && checked.contains(ud.usage.getParentId()))) {
       return null;
     }
@@ -929,27 +931,28 @@ public class Normalizer implements Callable<Boolean> {
     cycle.add(ud);
     var p = store.usages().objByID(ud.usage.getParentId());
     while (p != null) {
-      cycle.add(p);
       // did we check that usage already before? No need to do it again
       if (checked.contains(p.getId())) {
         break;
       }
-      checked.add(p.getId());
       // did we see the id in this cycle detection before?
       if (visited.contains(p.getId())) {
         // figure out the smallest cycle to return
         int idx = 0;
         while (idx < cycle.size()) {
           if (cycle.get(idx).getId().equals(p.getId())) {
+            checked.addAll(visited);
             return cycle.subList(idx, cycle.size());
           }
           idx++;
         }
         throw new IllegalStateException("We must have seen the id in the cycle list!");
       }
+      cycle.add(p);
       visited.add(p.getId());
       p = store.usages().objByID(p.usage.getParentId());
     }
+    checked.addAll(visited);
     return null;
   }
 

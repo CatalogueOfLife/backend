@@ -1,2 +1,2 @@
-Testing badly nested sections in trees 
-See https://github.com/CatalogueOfLife/testing/issues/141
+Ignore flat classification in case parentID is given!
+See https://github.com/CatalogueOfLife/testing/issues/318

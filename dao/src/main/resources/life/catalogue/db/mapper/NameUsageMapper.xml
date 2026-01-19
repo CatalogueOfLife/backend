@@ -952,6 +952,16 @@
     )
   </select>
 
+  <update id="moveSynonymOfSynonym" parameterType="map">
+    UPDATE name_usage u SET parent_id = p.parent_id
+    FROM name_usage p
+    WHERE u.dataset_key=#{datasetKey}
+      AND p.dataset_key=u.dataset_key
+      AND p.id=u.parent_id
+      AND is_synonym(u.status)
+      AND is_synonym(p.status)
+  </update>
+
   <select id="detectParentSynoynms" parameterType="map" resultType="string">
     SELECT u.id
     FROM name_usage u

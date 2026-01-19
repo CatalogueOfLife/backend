@@ -40,7 +40,6 @@ public class NameParserAdminResource {
 
   @POST
   @RolesAllowed({Roles.ADMIN})
-  @Path("config")
   public String createConfig(@Valid ParserConfig config, @Auth User user) {
     dao.add(config, user.getKey());
     return config.getId();
@@ -48,7 +47,7 @@ public class NameParserAdminResource {
 
   @POST
   @RolesAllowed({Roles.ADMIN})
-  @Path("config/batch")
+  @Path("batch")
   public List<String> createConfigs(@Valid List<ParserConfig> configs, @Auth User user) {
     List<String> ids = new ArrayList<>(configs.size());
     for (ParserConfig pc : configs) {
@@ -60,13 +59,13 @@ public class NameParserAdminResource {
   }
 
   @GET
-  @Path("config/{id}")
+  @Path("{id}")
   public ParserConfig getConfig(@PathParam("id") String id) {
     return dao.get(id);
   }
 
   @DELETE
-  @Path("config/{id}")
+  @Path("{id}")
   @RolesAllowed({Roles.ADMIN})
   public void deleteConfig(@PathParam("id") String id, @Auth User user) {
     dao.deleteName(id, user.getKey());

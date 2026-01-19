@@ -98,7 +98,7 @@ public class MatcherIndexCmd extends ConfiguredCommand<WsMatchingServerConfig> {
     }
     if (cfg.namesIndex.file.exists()) {
       System.out.println("Names index already exists, please use the --delete parameter or remove manually: " + cfg.namesIndex.file.getAbsolutePath());
-      System.exit(1);
+      return;
     }
     // key
     final int key = ObjectUtils.coalesce(ns.getInt(ARG_KEY), cfg.matchingDatasetKey);
@@ -106,7 +106,7 @@ public class MatcherIndexCmd extends ConfiguredCommand<WsMatchingServerConfig> {
     System.out.println("Index dataset " + key);
     if (dir.exists()) {
       System.out.println("Matcher index directory already exists, please use the --delete parameter or remove manually: " + dir.getAbsolutePath());
-      System.exit(1);
+      return;
     }
 
     // mybatis

@@ -76,6 +76,11 @@ import life.catalogue.resources.parser.NameParserAdminResource;
 import life.catalogue.resources.parser.ResolverResource;
 import life.catalogue.swagger.OpenApiFactory;
 
+import org.apache.hc.client5.http.impl.DefaultRedirectStrategy;
+import org.apache.hc.client5.http.protocol.RedirectStrategy;
+
+import org.eclipse.jetty.http.UriCompliance;
+
 import org.gbif.dwc.terms.TermFactory;
 
 import java.io.IOException;
@@ -112,6 +117,7 @@ import io.dropwizard.jackson.Jackson;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import jakarta.ws.rs.client.Client;
 
+import static life.catalogue.WsROServer.allowAmbiguousURIs;
 import static life.catalogue.WsROServer.registerReadOnlyHealthChecks;
 
 public class WsServer extends Application<WsServerConfig> {
@@ -206,6 +212,9 @@ public class WsServer extends Application<WsServerConfig> {
     LOG.info("Starting COL server");
     final JerseyEnvironment j = env.jersey();
 
+    // configure jetty to allow encoded path values, e.g. URLs as taxon IDs
+    allowAmbiguousURIs(env);
+
     // enable CORS also for admin backend
     env.admin()
       .addFilter("cors", new CorsFilter(cfg.getCorsConfiguration()))
@@ -234,6 +243,7 @@ public class WsServer extends Application<WsServerConfig> {
     // use a custom metrics naming strategy that does not involve the user agent name with a version
     httpClient = new HttpClientBuilder(env)
       .using(cfg.client)
+      .using(DefaultRedirectStrategy.INSTANCE)
       .build(getUserAgent(cfg)); // http client pool is managed via DW lifecycle inside this build call
 
     // reuse the same http client pool also for jersey clients!

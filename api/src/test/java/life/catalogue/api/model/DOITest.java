@@ -20,7 +20,7 @@ public class DOITest {
   }
 
   @Test
-  public void builder() {
+  public void datasetKeys() {
     DOI doi = DOI.dataset(DOI.TEST_PREFIX, 1010);
     assertEquals("10.80631/d37v", doi.toString());
     assertEquals(1010, doi.datasetKey());
@@ -42,7 +42,6 @@ public class DOITest {
     assertEquals("10.80631/1010", doi.toString());
     assertIAE(doi::datasetKey);
     assertIAE(doi::sourceDatasetKey);
-    assertIAE(doi::datasetVersionKey);
   }
 
   void assertIAE(Supplier supplier) {

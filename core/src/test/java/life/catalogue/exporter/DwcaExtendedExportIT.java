@@ -44,6 +44,7 @@ public class DwcaExtendedExportIT extends ExportTest {
   public void dwcRankTerms() {
     var req = new ExportRequest();
     req.setDatasetKey(3);
+    req.setFormat(DataFormat.DWCA);
     var exp = new TestDwcaExtendedExport(req, 1, SqlSessionFactoryRule.getSqlSessionFactory(), new TestConfigs(), null);
     var terms = exp.define(EntityType.NAME_USAGE);
     var set = Arrays.stream(terms).collect(Collectors.toSet());

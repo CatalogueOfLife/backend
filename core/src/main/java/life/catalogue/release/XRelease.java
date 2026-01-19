@@ -190,25 +190,22 @@ public class XRelease extends ProjectRelease {
     usageIdGen = new XIdProvider(projectKey, tmpProjectKey, attempt, xreleaseDatasetKey, cfg, prCfg, ni, factory);
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
-    assertNoSynonymParents();
     mergeSectors();
-    assertNoSynonymParents();
+    // make sure we dont have synonym chains - sth we should really prevent in mergeSectors already!
+    moveSynonymChains("post sector merge");
 
     // sanitize merges
     homotypicGrouping();
-    assertNoSynonymParents();
+    moveSynonymChains("post homotypic grouping");
 
     // flagging
     validateAndCleanTree();
-    assertNoSynonymParents();
     cleanImplicitTaxa();
-    assertNoSynonymParents();
     flagLoops();
-    assertNoSynonymParents();
+    moveSynonymChains("post flagging");
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
-    assertNoSynonymParents();
 
     // stable ids
     mapTmpIDs();

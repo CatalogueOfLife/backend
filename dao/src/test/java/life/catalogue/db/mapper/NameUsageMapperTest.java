@@ -22,6 +22,8 @@ import org.apache.ibatis.cursor.Cursor;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
+
 import static life.catalogue.api.TestEntityGenerator.DATASET11;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -288,11 +290,37 @@ public class NameUsageMapperTest extends MapperTestBase<NameUsageMapper> {
 
   private Synonym createSynonym(Taxon acc, Rank rank){
     DSID<Integer> secKey = DSID.of(acc.getDatasetKey(), acc.getSectorKey());
+    return createSynonym(rank, acc.getId(), secKey);
+  }
+
+  private Synonym createSynonym(Rank rank, String accID, DSID<Integer> secKey){
     Name n = createName(rank, secKey);
-    Synonym s = TestEntityGenerator.newSynonym(n, acc.getId());
-    s.setSectorKey(acc.getSectorKey());
+    Synonym s = TestEntityGenerator.newSynonym(n, accID);
+    s.setSectorKey(secKey.getId());
     sm.create(s);
     return s;
+  }
+
+  @Test
+  public void moveSynonymOfSynonym() throws Exception {
+    final DSID<Integer> secKey = DSID.root(testDataRule.testData.key);
+    Taxon t = createTaxon(Rank.SPECIES, TestEntityGenerator.TAXON1.getId(), secKey);
+    Synonym s1 = createSynonym(t, Rank.SPECIES);
+    Synonym s2 = createSynonym(Rank.SPECIES, s1.getId(), secKey);
+    Synonym s2b = createSynonym(Rank.SPECIES, s1.getId(), secKey);
+    Synonym s3 = createSynonym(Rank.SPECIES, s2.getId(), secKey);
+
+    int cnt = mapper().moveSynonymOfSynonym(testDataRule.testData.key);
+    assertEquals(3, cnt);
+
+    cnt = mapper().moveSynonymOfSynonym(testDataRule.testData.key);
+    assertEquals(1, cnt);
+
+    cnt = mapper().moveSynonymOfSynonym(testDataRule.testData.key);
+    assertEquals(0, cnt);
+
+    cnt = mapper().moveSynonymOfSynonym(testDataRule.testData.key);
+    assertEquals(0, cnt);
   }
 
   @Test

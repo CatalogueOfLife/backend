@@ -18,10 +18,10 @@ public class ExportRequest {
   private boolean bareNames = false;
   private Rank minRank;
   // output format
-  private DataFormat format;
+  private DataFormat format = DataFormat.COLDP;
   private TabularFormat tabFormat = TabularFormat.TSV;
-  private boolean excel;
-  private boolean extended;
+  private boolean excel = false;
+  private boolean extended = false;
   // only relevant for simple dwc & coldp exports
   private Boolean classification; // triggers a simple dwc tree export
   private Boolean taxGroups;

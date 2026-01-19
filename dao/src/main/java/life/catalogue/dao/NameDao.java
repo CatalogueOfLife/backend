@@ -2,10 +2,7 @@ package life.catalogue.dao;
 
 import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.NomRelType;
-import life.catalogue.db.mapper.NameMapper;
-import life.catalogue.db.mapper.NameMatchMapper;
-import life.catalogue.db.mapper.NameRelationMapper;
-import life.catalogue.db.mapper.TypeMaterialMapper;
+import life.catalogue.db.mapper.*;
 import life.catalogue.es.NameUsageIndexService;
 import life.catalogue.matching.nidx.NameIndex;
 
@@ -66,8 +63,16 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
     }
   }
 
+  private void updateUsageIndex(Name n, SqlSession session) {
+    var num = session.getMapper(NameUsageMapper.class);
+    for (String uid : num.listUsageIDsByNameID(n.getDatasetKey(), n.getId())) {
+      indexService.update(n.getDatasetKey(), uid);
+    }
+  }
+
   @Override
   protected boolean createAfter(Name n, int user, NameMapper mapper, SqlSession session) {
+    updateUsageIndex(n, session);
     // create name match
     NameMatch m = nameIndex.match(n, true, false);
     session.getMapper(NameMatchMapper.class).create(n, n.getSectorKey(), m.getNameKey(),m.getType());
@@ -77,6 +82,7 @@ public class NameDao extends SectorEntityDao<Name, NameMapper> {
 
   @Override
   protected boolean updateAfter(Name n, Name old, int user, NameMapper mapper, SqlSession session, boolean keepSessionOpen) {
+    updateUsageIndex(n, session);
     // update name match
     NameMatch m = nameIndex.match(n, true, false);
     session.getMapper(NameMatchMapper.class).update(n,m.getNameKey(), m.getType());

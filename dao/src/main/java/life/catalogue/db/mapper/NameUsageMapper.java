@@ -501,6 +501,12 @@ public interface NameUsageMapper extends SectorProcessable<NameUsageBase>, CopyD
   boolean hasParentSynoynms(@Param("datasetKey") int datasetKey);
 
   /**
+   * Looks for synonyms of synonyms and assigns them the (hopefully accepted) parent of their former synonym parent.
+   * @return number of modified synonyms
+   */
+  int moveSynonymOfSynonym(@Param("datasetKey") int datasetKey);
+
+  /**
    * Lists all usage ids of taxa which have synonyms as their parent.
    */
   List<String> detectParentSynoynms(@Param("datasetKey") int datasetKey);

@@ -345,7 +345,7 @@ abstract class NormalizerITBase {
   }
 
   public void printTree() throws Exception {
-    System.out.println(store.printTree());
+    System.out.println(store.printTree(true));
   }
 
 }
