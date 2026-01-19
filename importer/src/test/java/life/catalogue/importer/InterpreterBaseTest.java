@@ -255,6 +255,12 @@ public class InterpreterBaseTest {
   }
 
   private void assertDistributions(Gazetteer std, String loc, String... expectedIDs) {
+    assertDistributions(std, loc, std, expectedIDs);
+  }
+  private void assertDistributions(String loc, Gazetteer expectedGazetteer, String... expectedIDs) {
+    assertDistributions(null, loc, expectedGazetteer, expectedIDs);
+  }
+  private void assertDistributions(Gazetteer std, String loc, Gazetteer expectedGazetteer, String... expectedIDs) {
     List<Distribution> dis = InterpreterBase.createDistributions(std, loc, new VerbatimRecord(), null, null,null,null,null,null,null,null,null,
       new BiConsumer<Distribution, VerbatimRecord>() {
       @Override
@@ -265,7 +271,7 @@ public class InterpreterBaseTest {
 
     int counter = 0;
     for (Distribution d : dis) {
-      assertEquals(std, d.getArea().getGazetteer());
+      assertEquals(expectedGazetteer, d.getArea().getGazetteer());
       assertEquals(expectedIDs[counter++], d.getArea().getId());
     }
   }

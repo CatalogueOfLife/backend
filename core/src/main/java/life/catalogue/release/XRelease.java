@@ -196,15 +196,17 @@ public class XRelease extends ProjectRelease {
 
     mergeSectors();
     // make sure we dont have synonym chains - sth we should really prevent in mergeSectors already!
-    moveSynonymChains();
+    moveSynonymChains("post sector merge");
 
     // sanitize merges
     homotypicGrouping();
+    moveSynonymChains("post homotypic grouping");
 
     // flagging
     validateAndCleanTree();
     cleanImplicitTaxa();
     flagLoops();
+    moveSynonymChains("post flagging");
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
@@ -309,13 +311,13 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void moveSynonymChains() {
+  private void moveSynonymChains(String phase) {
     int iterations = 0;
     try (SqlSession session = factory.openSession(true)) {
       int cnt = 1;
       while (cnt > 0 && iterations++ < 10) {
-        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(tmpProjectKey);
-        LOG.info("Moved {} synonyms of synonyms to their parent", cnt);
+        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(newDatasetKey);
+        LOG.info("Moved {} synonyms of synonyms to their parent during phase {}", cnt, phase);
       }
     }
   }
@@ -378,13 +380,13 @@ public class XRelease extends ProjectRelease {
     checkIfCancelled();
     // any chained synonyms?
     try (SqlSession session = factory.openSession(false)) {
-      var adder = new IssueAdder(tmpProjectKey, session);
+      var adder = new IssueAdder(newDatasetKey, session);
       var chains = session.getMapper(NameUsageMapper.class).detectChainedSynonyms(newDatasetKey);
       if (chains != null && !chains.isEmpty()) {
         LOG.error("{} chained synonyms found in XRelease {}", chains.size(), newDatasetKey);
 
         var num = session.getMapper(NameUsageMapper.class);
-        var key = DSID.<String>root(tmpProjectKey);
+        var key = DSID.<String>root(newDatasetKey);
 
         for (var id : chains) {
           key.id(id);
@@ -399,7 +401,7 @@ public class XRelease extends ProjectRelease {
       if (synParents != null && !synParents.isEmpty()) {
         LOG.error("{} taxa found in XRelease {} with synonyms as their parent", synParents.size(),newDatasetKey);
         var num = session.getMapper(NameUsageMapper.class);
-        var key = DSID.<String>root(tmpProjectKey);
+        var key = DSID.<String>root(newDatasetKey);
         for (var id : synParents) {
           key.id(id);
           var syn = num.getSimpleParent(key);
@@ -418,7 +420,7 @@ public class XRelease extends ProjectRelease {
 
         Name n = Name.newBuilder()
           .id("cycleParentPlaceholder")
-          .datasetKey(tmpProjectKey)
+          .datasetKey(newDatasetKey)
           .scientificName("Cycle parent holder")
           .rank(Rank.UNRANKED)
           .type(NameType.PLACEHOLDER)
@@ -431,7 +433,7 @@ public class XRelease extends ProjectRelease {
         tm.create(cycleParent);
 
         session.commit();
-        final DSID<String> key = DSID.root(tmpProjectKey);
+        final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : cycles) {
           num.updateParentId(key, cycleParent.getId(), user);
           adder.addIssue(id, Issue.PARENT_CYCLE);
@@ -442,7 +444,7 @@ public class XRelease extends ProjectRelease {
 
       // look for non existing parents
       var num = session.getMapper(NameUsageMapper.class);
-      var missing = num.listMissingParentIds(tmpProjectKey);
+      var missing = num.listMissingParentIds(newDatasetKey);
       if (missing != null && !missing.isEmpty()) {
         LOG.error("{} usages found with a non existing parentID", missing.size());
         final String parent;
@@ -451,7 +453,7 @@ public class XRelease extends ProjectRelease {
         } else {
           parent = null;
         }
-        final DSID<String> key = DSID.root(tmpProjectKey);
+        final DSID<String> key = DSID.root(newDatasetKey);
         for (String id : missing) {
           num.updateParentId(key, parent, user);
           adder.addIssue(id, Issue.PARENT_ID_INVALID);
