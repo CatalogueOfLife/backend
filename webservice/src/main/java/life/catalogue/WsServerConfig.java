@@ -36,6 +36,8 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
+import javax.annotation.Nullable;
+
 
 public class WsServerConfig extends Configuration implements ExporterConfig, CorsBundleConfiguration, MailBundleConfig {
   private static final Logger LOG = LoggerFactory.getLogger(WsServerConfig.class);
@@ -81,7 +83,8 @@ public class WsServerConfig extends Configuration implements ExporterConfig, Cor
   public DockerConfig docker = new DockerConfig();
 
   @Valid
-  public DoiConfig doi;
+  @NotNull
+  public DoiConfig doi = new DoiConfig();
 
   @Valid
   @NotNull

@@ -379,7 +379,7 @@ public class WsServer extends Application<WsServerConfig> {
 
     // DOI
     DoiService doiService;
-    if (cfg.doi == null) {
+    if (cfg.doi == null || !cfg.doi.hasCredentials()) {
       doiService = DoiService.passThru();
       LOG.warn("DataCite DOI service not configured!");
     } else {

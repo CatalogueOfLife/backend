@@ -46,6 +46,8 @@ public class TestConfigs implements ExporterConfig {
     cfg.matching.uploadDir = Files.createTempDir();
     cfg.img.repo = cfg.normalizer.scratchDir.toPath();
     cfg.job.downloadDir = Files.createTempDir();
+    // keep doi user empty so we don't interact with the API - but create DOI instances locally
+    cfg.doi = new DoiConfig();
 
     return cfg;
   }

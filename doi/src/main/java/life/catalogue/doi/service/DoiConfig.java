@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * DataCite DOI configuration.
+ * If no username and password is provided no DOI registration will take place.
  */
 public class DoiConfig {
 
@@ -45,6 +46,10 @@ public class DoiConfig {
   @Min(2)
   @Max(24*60*60)  // 1 day
   public int waitPeriod = 5*60; // 5 minutes
+
+  public boolean hasCredentials() {
+    return username != null && password != null;
+  }
 
   public DOI datasetDOI(int datasetKey) {
     return DOI.dataset(prefix, datasetKey);
