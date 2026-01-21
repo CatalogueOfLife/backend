@@ -39,7 +39,7 @@ public class DatasetMatcher extends BaseMatcher {
    * @param allowInserts if true allows inserts into the names index
    * @param onlyMissingMatches if true only names without an existing matching record will be re-matched
    */
-  public void match(int datasetKey, boolean allowInserts, boolean onlyMissingMatches) throws RuntimeException {
+  public void match(int datasetKey, boolean allowInserts, boolean onlyMissingMatches, int userKey) throws RuntimeException {
     try {
       final int totalBefore = total;
       final int updatedBefore = updated;
@@ -100,7 +100,7 @@ public class DatasetMatcher extends BaseMatcher {
       }
     } finally {
       if (bus != null) {
-        bus.publish(new DatasetDataChanged(datasetKey));
+        bus.publish(new DatasetDataChanged(datasetKey, userKey));
       }
     }
   }

@@ -25,7 +25,7 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
   private final GlobalMatcher gm;
   public GlobalMatcherJob(int userKey, SqlSessionFactory factory, NameIndex ni, EventBroker bus) {
     super(userKey, JobPriority.HIGH);
-    this.gm = new GlobalMatcher(factory, ni, bus);
+    this.gm = new GlobalMatcher(factory, ni, bus, userKey);
   }
 
   @Override
@@ -36,10 +36,12 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
   static class GlobalMatcher extends BaseMatcher implements Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(GlobalMatcher.class);
     private final EventBroker bus;
+    private final int userKey;
 
-    GlobalMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBroker bus) {
+    GlobalMatcher(SqlSessionFactory factory, NameIndex ni, @Nullable EventBroker bus, int userKey) {
       super(factory, ni);
       this.bus = bus;
+      this.userKey = userKey;
     }
 
     @Override
@@ -53,7 +55,7 @@ public class GlobalMatcherJob extends GlobalBlockingJob {
         LOG.info("Created {} missing name matches, {} not matching.", total, nomatch);
         if (bus != null) {
           for (int dkey : hn.getDatasets()) {
-            bus.publish(new DatasetDataChanged(dkey));
+            bus.publish(new DatasetDataChanged(dkey, userKey));
           }
         }
       } catch (RuntimeException e) {

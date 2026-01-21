@@ -163,7 +163,7 @@ public class XRelease extends ProjectRelease {
 
     // make sure the base release is fully matched
     // runs in parallel to the rest of the prep phase below
-    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
+    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey, getUserKey());
     final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
 
     // add new publisher sectors
@@ -191,18 +191,14 @@ public class XRelease extends ProjectRelease {
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();
-    // make sure we dont have synonym chains - sth we should really prevent in mergeSectors already!
-    moveSynonymChains("post sector merge");
 
     // sanitize merges
     homotypicGrouping();
-    moveSynonymChains("post homotypic grouping");
 
     // flagging
     validateAndCleanTree();
     cleanImplicitTaxa();
     flagLoops();
-    moveSynonymChains("post flagging");
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
@@ -300,10 +296,13 @@ public class XRelease extends ProjectRelease {
     }
   }
 
-  private void assertNoSynonymParents() {
-    try (SqlSession session = factory.openSession(false)) {
-      if (session.getMapper(NameUsageMapper.class).hasParentSynoynms(newDatasetKey)) {
-        throw new IllegalStateException("XRelease introduced parent synonyms");
+  private void moveSynonymChains(String phase) {
+    int iterations = 0;
+    try (SqlSession session = factory.openSession(true)) {
+      int cnt = 1;
+      while (cnt > 0 && iterations++ < 10) {
+        cnt = session.getMapper(NameUsageMapper.class).moveSynonymOfSynonym(newDatasetKey);
+        LOG.info("Moved {} synonyms of synonyms to their parent during phase {}", cnt, phase);
       }
     }
   }
@@ -332,6 +331,8 @@ public class XRelease extends ProjectRelease {
     if (xCfg.flagDuplicatesAsProvisional) {
       flagDuplicatesAsProvisional(prios);
     }
+    // make sure we dont have synonym chains - sth we should really prevent in homotypic grouping itself!
+    moveSynonymChains("post homotypic grouping");
   }
 
   private void updateMetadata() throws InterruptedException {

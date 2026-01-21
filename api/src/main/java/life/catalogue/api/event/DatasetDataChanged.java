@@ -7,12 +7,14 @@ import java.util.Objects;
  */
 public class DatasetDataChanged implements Event {
   public int datasetKey;
+  public int user;
 
   public DatasetDataChanged() {
   }
 
-  public DatasetDataChanged(int datasetKey) {
+  public DatasetDataChanged(int datasetKey, int userKey) {
     this.datasetKey = datasetKey;
+    this.user = userKey;
   }
 
   @Override

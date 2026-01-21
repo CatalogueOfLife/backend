@@ -20,7 +20,7 @@ public class EventKryoPoolTest {
   @Test
   public void testEvents() throws Exception {
     assertSerde(kryo, new DatasetLogoChanged(8));
-    assertSerde(kryo, new DatasetDataChanged(8));
+    assertSerde(kryo, new DatasetDataChanged(8, Users.TESTER));
     assertSerde(kryo, new UserPermissionChanged("markus"));
     assertSerde(kryo, new DatasetLogoChanged(8));
     assertSerde(kryo, new DeleteSector(DSID.of(123, 1234), 18));

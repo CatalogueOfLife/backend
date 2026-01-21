@@ -277,8 +277,14 @@ public class UsageMatcherFactory implements DatasetListener, AutoCloseable {
 
   @Override
   public void datasetDataChanged(DatasetDataChanged event) {
-    // remove any persistent matcher for the dataset that changed
-    remove(event.datasetKey);
+    try {
+      // remove any persistent matcher for the dataset that changed
+      remove(event.datasetKey);
+      // recreate
+      prepare(event.datasetKey, event.user);
+    } catch (Exception e) {
+      LOG.error("Failed to recreate persistent matcher for dataset {}", event.datasetKey, e);
+    }
   }
 
   public void remove(int datasetKey) {
