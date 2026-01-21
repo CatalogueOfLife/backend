@@ -195,18 +195,14 @@ public class XRelease extends ProjectRelease {
     usageIdGen.removeIdsFromDataset(tmpProjectKey);
 
     mergeSectors();
-    // make sure we dont have synonym chains - sth we should really prevent in mergeSectors already!
-    moveSynonymChains("post sector merge");
 
     // sanitize merges
     homotypicGrouping();
-    moveSynonymChains("post homotypic grouping");
 
     // flagging
     validateAndCleanTree();
     cleanImplicitTaxa();
     flagLoops();
-    moveSynonymChains("post flagging");
 
     // remove orphan names and references
     removeOrphans(tmpProjectKey);
@@ -346,6 +342,8 @@ public class XRelease extends ProjectRelease {
     if (xCfg.flagDuplicatesAsProvisional) {
       flagDuplicatesAsProvisional(prios);
     }
+    // make sure we dont have synonym chains - sth we should really prevent in homotypic grouping itself!
+    moveSynonymChains("post homotypic grouping");
   }
 
   private void updateMetadata() throws InterruptedException {
