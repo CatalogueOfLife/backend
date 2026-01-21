@@ -359,7 +359,8 @@ public class ImportJob implements Runnable {
           di.setMaxClassificationDepth(pgImport.getMaxDepth());
           dao.updateMetrics(di, datasetKey);
 
-          bus.publish(new DatasetDataChanged(datasetKey));
+          // flush dataset in varnish, update matcher, etc
+          bus.publish(new DatasetDataChanged(datasetKey, req.createdBy));
 
           if (rematchDecisions()) {
             updateState(ImportState.MATCHING);
@@ -408,7 +409,7 @@ public class ImportJob implements Runnable {
       throw e;
       
     } finally {
-      // remove source scratch folder with neo4j and decompressed dwca folders
+      // remove source scratch folder with import store and decompressed dwca folders
       final File scratchDir = nCfg.scratchDir(datasetKey);
       LOG.debug("Remove scratch dir {}", scratchDir.getAbsolutePath());
       try {
@@ -420,8 +421,6 @@ public class ImportJob implements Runnable {
       try (SqlSession session = factory.openSession(true)) {
         session.getMapper(DatasetMapper.class).updateLastImportAttempt(datasetKey);
       }
-      // flush dataset in varnish
-      bus.publish(new DatasetDataChanged(datasetKey));
     }
   }
 

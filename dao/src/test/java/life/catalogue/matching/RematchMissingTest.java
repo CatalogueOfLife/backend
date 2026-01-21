@@ -1,5 +1,6 @@
 package life.catalogue.matching;
 
+import life.catalogue.api.vocab.Users;
 import life.catalogue.common.tax.AuthorshipNormalizer;
 import life.catalogue.junit.PgSetupRule;
 import life.catalogue.junit.SqlSessionFactoryRule;
@@ -26,7 +27,7 @@ public class RematchMissingTest {
   public void run() throws IOException {
     NameIndex nidx = NameIndexFactory.build(NamesIndexConfig.memory(512), SqlSessionFactoryRule.getSqlSessionFactory(), AuthorshipNormalizer.createWithoutAuthormap()).started();
     DatasetMatcher m = new DatasetMatcher(SqlSessionFactoryRule.getSqlSessionFactory(), nidx, null);
-    var task = new RematchMissing(m, testDataRule.testData.key);
+    var task = new RematchMissing(m, testDataRule.testData.key, Users.TESTER);
     task.run();
   }
 }

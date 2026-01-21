@@ -12,17 +12,19 @@ public class RematchMissing implements Runnable {
   private final DatasetMatcher matcher;
 
   private final int datasetKey;
+  private final int userKey;
 
-  public RematchMissing(SqlSessionFactory factory, NameIndex ni, EventBroker bus, int datasetKey) {
-    this(new DatasetMatcher(factory, ni.assertOnline(), bus), datasetKey);
+  public RematchMissing(SqlSessionFactory factory, NameIndex ni, EventBroker bus, int datasetKey, int userKey) {
+    this(new DatasetMatcher(factory, ni.assertOnline(), bus), datasetKey, userKey);
   }
-  public RematchMissing(DatasetMatcher matcher, int datasetKey) {
+  public RematchMissing(DatasetMatcher matcher, int datasetKey, int userKey) {
     this.datasetKey = datasetKey;
     this.matcher = matcher;
+    this.userKey = userKey;
   }
 
   @Override
   public void run() {
-    matcher.match(datasetKey, true, true);
+    matcher.match(datasetKey, true, true, userKey);
   }
 }

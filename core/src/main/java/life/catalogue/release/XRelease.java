@@ -167,7 +167,7 @@ public class XRelease extends ProjectRelease {
 
     // make sure the base release is fully matched
     // runs in parallel to the rest of the prep phase below
-    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey);
+    Runnable matchMissingTask = new RematchMissing(factory, ni, null, baseReleaseKey, getUserKey());
     final var thread = ExecutorUtils.runInNewThread(matchMissingTask);
 
     // add new publisher sectors

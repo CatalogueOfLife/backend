@@ -147,7 +147,7 @@ abstract class SectorRunnable implements Runnable {
 
       state.setState( ImportState.FINISHED);
       LOG.info("Completed {} for sector {} with {} names and {} usages", this.getClass().getSimpleName(), sectorKey, state.getNameCount(), state.getUsagesCount());
-      bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey()));
+      bus.publish(new DatasetDataChanged(sectorKey.getDatasetKey(), user));
       successCallback.accept(this);
       if (updateSectorAttemptOnSuccess) {
         // update sector with latest attempt on success if subclass requested it

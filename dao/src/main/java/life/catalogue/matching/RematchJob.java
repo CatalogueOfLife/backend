@@ -87,7 +87,7 @@ public class RematchJob extends BackgroundJob {
 
     DatasetMatcher matcher = new DatasetMatcher(factory, ni, bus);
     for (int key : datasetKeys) {
-      matcher.match(key, true, missingOnly);
+      matcher.match(key, true, missingOnly, getUserKey());
     }
 
     LOG.info("Rematched {} datasets ({} failed), updating {} names from {} in total",
