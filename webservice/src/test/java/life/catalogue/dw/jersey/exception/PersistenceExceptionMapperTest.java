@@ -56,9 +56,33 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   }
 
   @Test
+  public void uniqueDoi() throws Exception {
+    try {
+      Dataset d = DatasetMapperTest.create();
+      d.setGbifKey(null);
+      d.setKey(null);
+      mapper(DatasetMapper.class).create(d);
+      d.setKey(null);
+      mapper(DatasetMapper.class).create(d);
+      commit();
+
+    } catch (PersistenceException e) {
+      PersistenceExceptionMapper map = new PersistenceExceptionMapper();
+      Response resp = map.toResponse(e);
+      assertNotNull(resp);
+      assertEquals(400, resp.getStatus());
+      ErrorMessage obj = (ErrorMessage) resp.getEntity();
+      assertEquals(400, (int)obj.getCode());
+      assertTrue(obj.getMessage().startsWith("Dataset with doi='10.80631/"));
+      assertNull(obj.getDetails());
+    }
+  }
+
+  @Test
   public void uniqueDataset() throws Exception {
     try {
       Dataset d = DatasetMapperTest.create();
+      d.setDoi(null);
       d.setGbifKey(null);
       d.setKey(999);
       mapper(DatasetMapper.class).create(d);
@@ -80,6 +104,7 @@ public class PersistenceExceptionMapperTest extends MapperTestBase<DecisionMappe
   @Test
   public void uniqueConstraints() throws Exception {
     Dataset d = DatasetMapperTest.create();
+    d.setDoi(null);
     d.setGbifKey(null);
     testUnique(d, null);
 
