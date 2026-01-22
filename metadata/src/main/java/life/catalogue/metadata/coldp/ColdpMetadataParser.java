@@ -29,7 +29,7 @@ public class ColdpMetadataParser {
   }
   private static final ObjectReader DATASET_JSON_READER;
   static {
-    DATASET_JSON_READER = ApiModule.MAPPER.readerFor(Dataset.class);
+    DATASET_JSON_READER = ApiModule.MAPPER.readerFor(JsonDataset.class);
   }
 
   /**
@@ -195,6 +195,26 @@ public class ColdpMetadataParser {
     }
   }
 
+  static class JsonDataset extends Dataset {
+    @JsonProperty("identifier")
+    public void setIdentifierObj(Object ids) {
+      if (ids != null) {
+        if (ids instanceof Map) {
+          var map = (Map<String, String>)ids;
+          setIdentifier(map.entrySet().stream()
+                  .map(e -> new Identifier(e.getKey(), e.getValue()))
+                  .collect(Collectors.toList())
+          );
+        } else if (ids instanceof List) {
+          var list = (List<String>)ids;
+          setIdentifier(list.stream()
+                  .map(Identifier::parse)
+                  .collect(Collectors.toList())
+          );
+        }
+      }
+    }
+  }
   public static Optional<DatasetWithSettings> readYAML(InputStream stream) throws IOException {
     if (stream != null) {
       DatasetWithSettings d = DATASET_YAML_READER.readValue(stream);

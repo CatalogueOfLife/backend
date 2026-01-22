@@ -1,9 +1,6 @@
 package life.catalogue.importer.dwca;
 
-import life.catalogue.api.model.Agent;
-import life.catalogue.api.model.DatasetSettings;
-import life.catalogue.api.model.DatasetWithSettings;
-import life.catalogue.api.model.VerbatimRecord;
+import life.catalogue.api.model.*;
 import life.catalogue.api.vocab.Environment;
 import life.catalogue.api.vocab.Gazetteer;
 import life.catalogue.api.vocab.License;
@@ -91,7 +88,25 @@ public class DwcaInserterTest extends InserterBaseTest {
     var m = ins.readMetadata().get();
     // should read json, not eml!
     assertEquals("Chapter 7: Linnaean Plant Names and their Types (part Q)", m.getTitle());
-    assertEquals("plazi:93F443DCBCEDFBF26165C392E1E8901C", m.getIdentifier().getFirst());
+    assertEquals(new Identifier("plazi","93F443DCBCEDFBF26165C392E1E8901C"), m.getIdentifier().getFirst());
+    assertEquals("Department of Botany, Natural History Museum, Cromwell Road, London, UK", m.getCreator().get(0).getOrganisation());
+    assertEquals(License.CC0, m.getLicense());
+    assertEquals(1, m.getSource().size());
+    assertEquals("Linnaean Society of London in association with the Natural History Museum", m.getSource().get(0).getPublisher());
+  }
+
+  /**
+   * Plazi with COL metadata.json using a list of identifiers
+   */
+  @Test
+  public void dwca40b() throws Exception {
+    DataInserter ins = setup("/dwca/40b");
+    ins.insertAll();
+
+    var m = ins.readMetadata().get();
+    // should read json, not eml!
+    assertEquals("Chapter 7: Linnaean Plant Names and their Types (part Q)", m.getTitle());
+    assertEquals(new Identifier("plazi","93F443DCBCEDFBF26165C392E1E8901C"), m.getIdentifier().getFirst());
     assertEquals("Department of Botany, Natural History Museum, Cromwell Road, London, UK", m.getCreator().get(0).getOrganisation());
     assertEquals(License.CC0, m.getLicense());
     assertEquals(1, m.getSource().size());

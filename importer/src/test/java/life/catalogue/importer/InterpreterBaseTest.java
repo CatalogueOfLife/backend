@@ -83,7 +83,10 @@ public class InterpreterBaseTest {
     assertEquals(List.of(new Identifier("tsn", "2134\\,COL:GHS")), resp);
 
     resp = InterpreterUtils.interpretIdentifiers("https://species.wikimedia.org/wiki/Poa_annua", null, issues);
-    assertEquals(List.of(new Identifier("https", "//species.wikimedia.org/wiki/Poa_annua")), resp);
+    assertEquals(List.of(new Identifier("url", "https://species.wikimedia.org/wiki/Poa_annua")), resp);
+
+    resp = InterpreterUtils.interpretIdentifiers("http://species.wikimedia.org/wiki/Poa_annua", null, issues);
+    assertEquals(List.of(new Identifier("url", "http://species.wikimedia.org/wiki/Poa_annua")), resp);
 
     assertFalse(issues.hasIssues());
 
