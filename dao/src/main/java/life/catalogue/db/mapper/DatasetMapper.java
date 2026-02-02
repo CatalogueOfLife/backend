@@ -343,6 +343,8 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
 
   Integer getKeyByGBIF(@Param("key") UUID key);
 
+  UUID getGBIFKey(@Param("key") int key);
+
   Dataset getByGBIF(@Param("key") UUID key);
 
   /**

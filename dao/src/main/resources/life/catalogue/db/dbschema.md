@@ -18,7 +18,56 @@ ALTER TABLE dataset_archive ADD COLUMN version_doi TEXT;
 ALTER TABLE dataset_source ADD COLUMN version_doi TEXT;
 ALTER TABLE dataset_patch DROP COLUMN doi;
 
--- TODO: move dois to identifiers
+ALTER TABLE dataset DROP COLUMN doc;
+
+ALTER TABLE dataset ADD COLUMN identifier_txt TEXT[];
+ALTER TABLE dataset_archive ADD COLUMN identifier_txt TEXT[];
+ALTER TABLE dataset_source ADD COLUMN identifier_txt TEXT[];
+ALTER TABLE dataset_patch ADD COLUMN identifier_txt TEXT[];
+
+-- migrate identifier hstore to text array
+UPDATE dataset SET identifier_txt=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+UPDATE dataset_archive SET identifier_txt=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+UPDATE dataset_source SET identifier_txt=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+UPDATE dataset_patch SET identifier_txt=(select array_agg(key || ':' || value) from each(identifier)) WHERE identifier IS NOT NULL;
+-- move doi to identifiers if not COL or TEST
+UPDATE dataset SET identifier_txt = array_prepend('doi:' || doi, identifier_txt)  WHERE doi IS NOT NULL AND NOT (doi ~ '^10.48580/' OR doi ~ '^10.80631/');
+UPDATE dataset_archive SET identifier_txt = array_prepend('doi:' || doi, identifier_txt)  WHERE doi IS NOT NULL AND NOT (doi ~ '^10.48580/' OR doi ~ '^10.80631/');
+UPDATE dataset_source SET identifier_txt = array_prepend('doi:' || doi, identifier_txt)  WHERE doi IS NOT NULL AND NOT (doi ~ '^10.48580/' OR doi ~ '^10.80631/');
+
+-- drop old columns
+ALTER TABLE dataset DROP COLUMN identifier;
+ALTER TABLE dataset_archive DROP COLUMN identifier;
+ALTER TABLE dataset_source DROP COLUMN identifier;
+ALTER TABLE dataset_patch DROP COLUMN identifier;
+ALTER TABLE dataset RENAME COLUMN identifier_txt TO identifier;
+ALTER TABLE dataset_archive RENAME COLUMN identifier_txt TO identifier;
+ALTER TABLE dataset_source RENAME COLUMN identifier_txt TO identifier;
+ALTER TABLE dataset_patch RENAME COLUMN identifier_txt TO identifier;
+
+-- add doc column for searching
+ALTER TABLE dataset ADD COLUMN doc tsvector GENERATED ALWAYS AS (
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(alias,''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(key::text, ''))), 'A') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(doi, ''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(version_doi, ''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(title,''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(keyword),''))), 'B') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(geographic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(taxonomic_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(temporal_scope,''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(issn, ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(gbif_key::text,''))), 'C')  ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(array_str(identifier), ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent(coalesce(agent_str(contact), ''))), 'C') ||
+      setweight(to_tsvector('dataset', f_unaccent( left(
+        coalesce(description, '') ||
+        coalesce(agent_str(publisher), '') ||
+        coalesce(agent_str(creator), '') ||
+        coalesce(agent_str(editor), '') ||
+        coalesce(agent_str(contributor), '')
+      , 1024*1024))), 'D')
+  ) STORED; 
 ```
 
 #### 2025-12-17 identifier list

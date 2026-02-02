@@ -540,6 +540,11 @@
     WHERE gbif_key = #{key}
   </select>
 
+  <select id="getGBIFKey" resultType="java.util.UUID">
+    SELECT gbif_key FROM dataset
+    WHERE key = #{key}
+  </select>
+
   <select id="getByGBIF" resultMap="datasetResultMap">
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
