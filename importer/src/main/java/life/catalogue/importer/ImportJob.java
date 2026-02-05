@@ -54,6 +54,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -422,6 +423,7 @@ public class ImportJob implements Runnable {
       final File scratchDir = nCfg.scratchDir(datasetKey);
       LOG.debug("Remove scratch dir {}", scratchDir.getAbsolutePath());
       try {
+        PathUtils.deleteDirectory(sourceDir); // this is nested in the one below, but we see stale open files piling up
         FileUtils.deleteDirectory(scratchDir);
       } catch (IOException e) {
         LOG.error("Failed to remove scratch dir {}", scratchDir, e);

@@ -97,10 +97,6 @@ public class NormalizerConfig {
     return new File(scratchDir, "job/" + jobKey.toString());
   }
 
-  public File scratchFile(UUID jobKey) {
-    return new File(scratchDir, "job/" + jobKey.toString());
-  }
-
   public File importStorageDir() {
     return scratchDir("import-store");
   }

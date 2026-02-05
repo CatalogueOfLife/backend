@@ -135,7 +135,7 @@
 
   <select id="classification" resultMap="treeResultMap">
     <bind name="datasetKey" value="key.datasetKey"/>
-    WITH RECURSIVE x AS(
+    WITH RECURSIVE x AS (
       SELECT <include refid="SELECT"/>
       FROM <include refid="FROM"/>
       WHERE t.dataset_key=#{key.datasetKey} AND t.id = #{key.id}
