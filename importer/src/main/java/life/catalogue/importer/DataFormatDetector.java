@@ -9,6 +9,7 @@ import life.catalogue.importer.txttree.TxtTreeInserter;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -70,8 +71,8 @@ public class DataFormatDetector {
   }
 
   public static boolean isProxyDescriptor(Path source) {
-    try {
-      return DistributedArchiveService.isReadable(new FileInputStream(source.toFile()));
+    try (InputStream is = new FileInputStream(source.toFile())) {
+      return DistributedArchiveService.isReadable(is);
     } catch (IOException e) {
       return false;
     }

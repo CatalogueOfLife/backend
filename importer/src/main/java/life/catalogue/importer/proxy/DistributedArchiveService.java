@@ -58,7 +58,9 @@ public class DistributedArchiveService {
    * @return the descriptor instance read from the URL
    */
   public ArchiveDescriptor download(URI descriptor, File archiveFile) throws IOException {
-    return download(read(descriptor.toURL().openStream()), archiveFile);
+    try (InputStream is = descriptor.toURL().openStream()) {
+      return download(read(is), archiveFile);
+    }
   }
 
   /**
@@ -67,7 +69,9 @@ public class DistributedArchiveService {
    * @return the descriptor instance
    */
   public ArchiveDescriptor upload(File archiveFile) throws IOException {
-    return download(read(new FileInputStream(archiveFile)), archiveFile);
+    try (InputStream is = new FileInputStream(archiveFile)) {
+      return download(read(is), archiveFile);
+    }
   }
 
   public static ArchiveDescriptor read(InputStream is) throws IllegalArgumentException {
@@ -91,9 +95,11 @@ public class DistributedArchiveService {
   public static Optional<Path> isReadable(Path folder) {
     try {
       for (Path f : PathUtils.listFiles(folder, Set.of("yaml", "yml", "archive"))) {
-        if (isReadable(Files.newInputStream(f))) {
-          LOG.info("Found readable proxy descriptor {}", f);
-          return Optional.of(f);
+        try (InputStream is = Files.newInputStream(f)) {
+          if (isReadable(is)) {
+            LOG.info("Found readable proxy descriptor {}", f);
+            return Optional.of(f);
+          }
         }
       }
     } catch (Exception e) {

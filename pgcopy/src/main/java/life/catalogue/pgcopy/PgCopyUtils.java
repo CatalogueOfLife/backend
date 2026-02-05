@@ -41,8 +41,10 @@ public class PgCopyUtils {
   }
 
   public static long loadTSV(PgConnection con, String table, File csv) throws IOException, SQLException {
-    HeadlessStreamTSV in = new HeadlessStreamTSV(new FileInputStream(csv));
-    return load(con, table, in.getHeader(), in, TSV);
+    try (FileInputStream fis = new FileInputStream(csv)) {
+      HeadlessStreamTSV in = new HeadlessStreamTSV(fis);
+      return load(con, table, in.getHeader(), in, TSV);
+    }
   }
 
   /**
@@ -57,7 +59,9 @@ public class PgCopyUtils {
   }
 
   public static long loadBinary(PgConnection con, String table, List<String> columns, File f) throws IOException, SQLException {
-    return load(con, table, columns, new FileInputStream(f), BINARY);
+    try (FileInputStream fis = new FileInputStream(f)) {
+      return load(con, table, columns, fis, BINARY);
+    }
   }
 
   /**

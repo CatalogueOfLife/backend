@@ -53,7 +53,7 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
     return new StoreIterator();
   }
 
-  class StoreIterator implements Iterator<T> {
+  class StoreIterator implements Iterator<T>, AutoCloseable {
     private final InputChunked input;
     private final UnsafeInput inputStream;
 
@@ -89,7 +89,8 @@ public class KryoCollectionStore<T> implements AutoCloseable, Iterable<T> {
       }
     }
 
-    private void close() throws Exception {
+    @Override
+    public void close() throws IOException {
       input.close();
       inputStream.close();
     }

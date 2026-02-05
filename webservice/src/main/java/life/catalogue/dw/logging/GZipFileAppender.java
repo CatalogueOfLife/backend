@@ -50,8 +50,21 @@ public class GZipFileAppender<E> extends FileAppender<E> {
       if (!result) {
         addError("Failed to create parent directories for [" + file.getAbsolutePath() + "]");
       }
-      GZIPOutputStream gzipos = new GZIPOutputStream(new FileOutputStream(file), true);
-      setOutputStream(gzipos);
+      FileOutputStream fos = null;
+      GZIPOutputStream gzipos = null;
+      try {
+        fos = new FileOutputStream(file);
+        gzipos = new GZIPOutputStream(fos, true);
+        setOutputStream(gzipos);
+      } catch (IOException e) {
+        // Clean up on exception
+        if (gzipos != null) {
+          try { gzipos.close(); } catch (IOException ignored) {}
+        } else if (fos != null) {
+          try { fos.close(); } catch (IOException ignored) {}
+        }
+        throw e;
+      }
     } finally {
       streamWriteLock.unlock();
     }

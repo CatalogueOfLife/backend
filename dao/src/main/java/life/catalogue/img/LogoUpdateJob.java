@@ -127,7 +127,9 @@ public class LogoUpdateJob extends BackgroundJob {
           try {
             downloader.download(dataset.getLogo(), logo);
             // now read image and copy to logo repo for resizing
-            imgService.putDatasetLogo(dataset.getKey(), ImageServiceFS.read(new FileInputStream(logo)));
+            try (FileInputStream fis = new FileInputStream(logo)) {
+              imgService.putDatasetLogo(dataset.getKey(), ImageServiceFS.read(fis));
+            }
             return true;
 
           } catch (DownloadException e) {
