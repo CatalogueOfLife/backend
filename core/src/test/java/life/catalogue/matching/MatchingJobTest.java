@@ -22,7 +22,10 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -67,5 +70,28 @@ public class MatchingJobTest extends EmailNotificationTemplateTest {
     var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
     job.run();
     assertTrue(job.isFinished());
+  }
+
+  @Test
+  public void testMatchingProducesValidZip() throws Exception {
+    MatchingRequest req = new MatchingRequest();
+    req.setDatasetKey(dataRule.testData.key);
+    req.setSourceDatasetKey(dataRule.testData.key);
+    var job = new MatchingJob(req, Users.TESTER, SqlSessionFactoryRule.getSqlSessionFactory(), matcherFactory, cfg.matching);
+    job.run();
+    assertTrue(job.isFinished());
+
+    // Verify the result file is a valid ZIP
+    var resultFile = job.getResult().getFile();
+    assertTrue("Result file should exist", resultFile.exists());
+    assertTrue("Result file should not be empty", resultFile.length() > 0);
+
+    // Try to open as ZIP - this will throw if ZIP is invalid
+    try (ZipFile zipFile = new ZipFile(resultFile)) {
+      ZipEntry entry = zipFile.entries().nextElement();
+      assertNotNull("ZIP should contain at least one entry", entry);
+      assertTrue("Entry name should end with .tsv or .csv",
+        entry.getName().endsWith(".tsv") || entry.getName().endsWith(".csv"));
+    }
   }
 }

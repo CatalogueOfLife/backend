@@ -119,47 +119,52 @@ public abstract class AbstractMatchingJob extends DatasetBlockingJob {
     return super.isDuplicate(other);
   }
 
+  /**
+   * @param os the stream to write to. Will be closed by this method!
+   * @throws Exception
+   */
   protected void matchToOut(OutputStream os) throws Exception {
-    BufferedOutputStream bos = new BufferedOutputStream(os);
-    var zos = new ZipOutputStream(bos);
-    zos.putNextEntry(new ZipEntry(req.resultFileName()));
+    try (BufferedOutputStream bos = new BufferedOutputStream(os);
+         ZipOutputStream zos = new ZipOutputStream(bos)
+    ) {
+      zos.putNextEntry(new ZipEntry(req.resultFileName()));
 
-    AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
-                               new CsvWriter(zos, StandardCharsets.UTF_8, CSV) :
-                               new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
-    // match
-    if (req.getUpload() != null) {
-      LOG.info("Match uploaded names from {} file {}", req.getFormat(), req.getUpload());
-      var mstream = streamUpload();
-      writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
-      // delete file upload
-      FileUtils.deleteQuietly(req.getUpload());
+      AbstractWriter<?> writer = req.getFormat() == TabularFormat.CSV ?
+                                 new CsvWriter(zos, StandardCharsets.UTF_8, CSV) :
+                                 new TsvWriter(zos, StandardCharsets.UTF_8, new TsvWriterSettings());
+      // match
+      if (req.getUpload() != null) {
+        LOG.info("Match uploaded names from {} file {}", req.getFormat(), req.getUpload());
+        var mstream = streamUpload();
+        writeMatches(writer, mstream.mapper.rawHeader, mstream.stream);
+        // delete file upload
+        FileUtils.deleteQuietly(req.getUpload());
 
-    } else if (req.getSourceDatasetKey() != null) {
-      try (SqlSession session = openSession()) {
-        // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
-        final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
-        ttp.setDatasetKey(req.getSourceDatasetKey());
-        final AtomicLong count = new AtomicLong(0);
-        writeMatches(writer, null, TreeStreams.dataset(session, ttp)
-                                        .map(sn -> {
-                                          if (rootClassification != null) {
-                                            List<SimpleName> cl = new ArrayList<>();
-                                            cl.addAll(sn.getClassification());
-                                            cl.addAll(rootClassification);
-                                            sn.setClassification(cl);
-                                          }
-                                          return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
-                                        })
-        );
+      } else if (req.getSourceDatasetKey() != null) {
+        try (SqlSession session = openSession()) {
+          // we need to swap datasetKey for sourceDatasetKey - we dont want to traverse and match the target!
+          final TreeTraversalParameter ttp = new TreeTraversalParameter(req);
+          ttp.setDatasetKey(req.getSourceDatasetKey());
+          final AtomicLong count = new AtomicLong(0);
+          writeMatches(writer, null, TreeStreams.dataset(session, ttp)
+                                          .map(sn -> {
+                                            if (rootClassification != null) {
+                                              List<SimpleName> cl = new ArrayList<>();
+                                              cl.addAll(sn.getClassification());
+                                              cl.addAll(rootClassification);
+                                              sn.setClassification(cl);
+                                            }
+                                            return new IssueName(sn, new IssueContainer.Simple(), null, count.incrementAndGet());
+                                          })
+          );
+        }
+
+      } else {
+        throw new IllegalArgumentException("Upload or sourceDatasetKey required");
       }
-
-    } else {
-      throw new IllegalArgumentException("Upload or sourceDatasetKey required");
+      writer.flush();
+      zos.closeEntry();
     }
-    writer.flush();
-    zos.closeEntry();
-    os.flush();
   }
 
   static class IssueName {
