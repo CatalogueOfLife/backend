@@ -53,7 +53,7 @@ public class ImportSourceRunner {
     System.out.println("Copy coldp.zip from resources to " + archive.getAbsolutePath());
     Resources.copy("import-runner-test/coldp.zip", archive);
 
-    extraDelete = args.length > 1;
+    extraDelete = args.length > 2;
 
     for (int x = 0; x < iterations; x++) {
       doImport(x);
