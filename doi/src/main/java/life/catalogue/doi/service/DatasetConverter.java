@@ -71,12 +71,14 @@ public class DatasetConverter {
   public DoiAttributes datasetVersion(Dataset d, @Nullable DOI previousAttempt, @Nullable DOI nextAttempt) {
     DoiAttributes attr = common(d.getVersionDoi(), d, previousAttempt, nextAttempt);
     attr.setUrl(attemptURI(d.getKey(), d.getAttempt()).toString());
-    // add version of concept
-    RelatedIdentifier id = new RelatedIdentifier();
-    id.setRelatedIdentifier(d.getDoi().getDoiName());
-    id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
-    id.setRelationType(RelationType.IS_VERSION_OF);
-    attr.getRelatedIdentifiers().add(id);
+    // add version of concept - if that exists (which can miss in the early days)
+    if (d.getDoi() != null) {
+      RelatedIdentifier id = new RelatedIdentifier();
+      id.setRelatedIdentifier(d.getDoi().getDoiName());
+      id.setRelatedIdentifierType(RelatedIdentifierType.DOI);
+      id.setRelationType(RelationType.IS_VERSION_OF);
+      attr.getRelatedIdentifiers().add(id);
+    }
     return attr;
   }
 
