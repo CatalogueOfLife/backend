@@ -192,7 +192,7 @@ public class PgImport implements Callable<Boolean> {
       dm.updateLastImport(dataset.getKey(), attempt, versionDOI);
       dataset.getDataset().setAttempt(attempt);
       dataset.getDataset().setVersionDoi(versionDOI);
-      LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());
+      LOG.info("Updated last successful import attempt {} and version doi {} for dataset {}: {}", attempt, versionDOI, dataset.getKey(), dataset.getTitle());
 
       if (!dataset.getDataset().isPrivat()) {
       LOG.info("Updated last successful import attempt {} for dataset {}: {}", attempt, dataset.getKey(), dataset.getTitle());

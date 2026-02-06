@@ -32,6 +32,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.*;
 
@@ -130,7 +131,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     return events.list();
   }
 
-  private DoiAttributes metadata(DOI doi) {
+  private DoiAttributes metadata(DOI doi) throws DoiException {
     try (SqlSession session = factory.openSession(true)) {
       var dm = session.getMapper(DatasetMapper.class);
       var dam = session.getMapper(DatasetArchiveMapper.class);
@@ -138,7 +139,16 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
 
       if (doi.isDatasetVersion()) {
         var key = doi.datasetVersionKey();
-        Dataset d = dam.get(doi.datasetKey(), key.getId());
+        // for the latest attempt we need to consult the live dataset, older ones are in the archive
+        // as we mostly create version DOIs on import, we first try the main dataset
+        Dataset d = dm.get(doi.datasetKey());
+        if (d == null || !Objects.equals(d.getAttempt(), key.getId())) {
+          // try archive
+          d = dam.get(doi.datasetKey(), key.getId());
+        }
+        if (d == null) {
+          throw new DoiException(doi, "Can't find the metadata for dataset import " + key);
+        }
         d.setVersionDoi(doi);
         var prevImp = dim.getLast(key.getDatasetKey(), key.getId(), ImportState.FINISHED);
         var nextImp = dim.getNext(key.getDatasetKey(), key.getId(), ImportState.FINISHED);
@@ -151,6 +161,9 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
 
       } else {
         Dataset d = dm.get(doi.datasetKey());
+        if (d == null) {
+          throw new DoiException(doi, "Can't find the metadata for dataset " + doi.datasetKey());
+        }
         d.setDoi(doi);
         if (d.getOrigin().isRelease()) {
           var prevKey = dm.previousRelease(d.getKey());

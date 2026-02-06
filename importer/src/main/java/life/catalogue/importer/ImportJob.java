@@ -357,6 +357,7 @@ public class ImportJob implements Runnable {
           updateState(ImportState.INSERTING);
           // this does write to both pg and elastic!
           // pgimport also updates the datasets import attempt & version DOI at the very end - only if successful!
+          // and it moves the previous dataset metadata into the dataset archive
           var vDOI = dCfg.datasetVersionDOI(datasetKey, getAttempt());
           var pgImport = new PgImport(di.getAttempt(), vDOI, dataset, req.createdBy, store, factory, iCfg, dDao, indexService);
           pgImport.call();
