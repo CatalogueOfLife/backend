@@ -97,7 +97,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     try {
       // make sure it is a DOI with our prefix
       if (!event.getDoi().getPrefix().equalsIgnoreCase(cfg.prefix)) {
-        LOG.warn("Ignore DOI {} with wrong DOI prefix for this config", event.getDoi());
+        LOG.info("Ignore {} event for DOI {} with wrong DOI prefix for this config", event.getType(), event.getDoi());
         return;
       }
 
@@ -107,7 +107,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         var d = dm.getSimple(key);
         if (d == null) {
-          LOG.warn("Ignore DOI {} with unknown dataset key {}", event.getDoi(), key);
+          LOG.warn("Ignore {} event for DOI {} with unknown dataset key {}", event.getType(), event.getDoi(), key);
           return;
         }
       }
