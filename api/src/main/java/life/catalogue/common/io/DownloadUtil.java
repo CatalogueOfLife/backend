@@ -24,6 +24,8 @@ import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 /**
  *
  */
@@ -67,26 +69,22 @@ public class DownloadUtil {
    * Updates the last modified file property to reflect the last servers modified http header.
    *
    * @param downloadTo file to download to
-   * @return true if changed or false if unmodified since lastModified
+   * @return true if changed and downloaded or false if unmodified since lastModified
    * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
    */
-  public boolean downloadIfModified(URI url, File downloadTo) throws DownloadException {
-    ZonedDateTime lastModified = null;
-    if (downloadTo.exists()) {
-      lastModified = ZonedDateTime.ofInstant(
-          Instant.ofEpochMilli(downloadTo.lastModified()),
-          ZoneId.systemDefault()
-      );
-    }
+  public boolean downloadIfModified(URI url, File downloadTo, LocalDateTime lastModified) throws DownloadException {
     return downloadIfModifiedSince(url, lastModified, downloadTo);
   }
-  
+
   /**
-   * @return last modified timestamp of the local download file
-   * (which should be the same as the remote file)
+   * @return last modified timestamp of an existing local file or null if not existing
    */
-  public LocalDateTime lastModified(File file) {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault());
+  public static LocalDateTime lastModified(@Nullable File file) {
+    LocalDateTime lastModified = null;
+    if (file != null && file.exists()) {
+      lastModified = LocalDateTime.ofInstant(Instant.ofEpochMilli(file.lastModified()), ZoneId.systemDefault());
+    }
+    return lastModified;
   }
   
   /**
@@ -98,10 +96,10 @@ public class DownloadUtil {
    * @return true if changed or false if unmodified since lastModified
    * @throws DownloadException if any error occurred incl all http 4xx, 5xx responses
    */
-  private boolean downloadIfModifiedSince(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws DownloadException {
+  private boolean downloadIfModifiedSince(final URI url, final LocalDateTime lastModified, final File downloadTo) throws DownloadException {
     if (url == null) return false;
     if (url.getScheme().equalsIgnoreCase("ftp")) {
-      return downloadIfModifiedSinceFTP(url, lastModified, downloadTo);
+      return downloadIfModifiedSinceFTP(url, downloadTo);
     }
     
     HttpGet get = new HttpGet(url.toString());
@@ -109,8 +107,9 @@ public class DownloadUtil {
     // prepare conditional GET request headers
     if (lastModified != null) {
       // DateTimeFormatter is threadsafe these days
-      LOG.debug("Conditional GET: {}", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified));
-      get.addHeader(MODIFIED_SINCE, DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModified));
+      ZonedDateTime lastModifiedZoned = ZonedDateTime.of(lastModified, ZoneId.systemDefault());
+      LOG.debug("Conditional GET: {}", DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModifiedZoned));
+      get.addHeader(MODIFIED_SINCE, DateTimeFormatter.RFC_1123_DATE_TIME.format(lastModifiedZoned));
     }
     
     if (githubToken != null && GITHUB_DOMAINS.matcher(url.getHost()).find()) {
@@ -222,7 +221,7 @@ public class DownloadUtil {
     }
   }
 
-  private boolean downloadIfModifiedSinceFTP(final URI url, final ZonedDateTime lastModified, final File downloadTo) throws DownloadException {
+  private boolean downloadIfModifiedSinceFTP(final URI url, final File downloadTo) throws DownloadException {
     LOG.debug("Use FTP for {}", url);
     try {
       // copy stream to local file

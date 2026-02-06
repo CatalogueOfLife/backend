@@ -38,8 +38,7 @@ public class TestConfigs implements ExporterConfig {
 
     cfg.importer.continuous.polling = 0;
     cfg.importer.threads = 2;
-    // wait for half a minute before completing an import to run assertions
-    cfg.importer.wait = 30;
+    cfg.importer.wait = 0;
 
     cfg.normalizer.archiveDir = Files.createTempDir();
     cfg.normalizer.scratchDir = Files.createTempDir();
