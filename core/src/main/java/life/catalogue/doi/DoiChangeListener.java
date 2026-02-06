@@ -29,11 +29,13 @@ import life.catalogue.doi.service.DoiService;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +54,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
   private final Set<DOI> deleted = ConcurrentHashMap.newKeySet();
   private final LatestDatasetKeyCache datasetKeyCache;
   private final DoiConfig cfg;
-  private final ObjectCache<XDoiChange> events;
+  private final ObjectCache<XDoiChange> events; // tmp persisted cache
   private final long wait;
   private final ScheduledExecutorService scheduler;
   private final ExecutorService executor;
@@ -64,13 +66,24 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
     this.datasetKeyCache = datasetKeyCache;
     this.cfg = cfg;
     this.wait = TimeUnit.SECONDS.toMillis(cfg.waitPeriod);
-    this.events = new ObjectCacheMapDB<>(XDoiChange.class, new File(cfg.store), new DOIKryoPool(), true);
+    // to avoid collision with running apps in parallel during deploys we create new event stores
+    this.events = new ObjectCacheMapDB<>(XDoiChange.class, freeStoreFile(new File(cfg.store)), new DOIKryoPool(), true);
     LOG.info("Start DOI listener executing changes every {} minutes from {}", TimeUnit.SECONDS.toMinutes(cfg.waitPeriod), cfg.store);
     this.scheduler = Executors.newScheduledThreadPool(1,
       new NamedThreadFactory("doi-updater", Thread.NORM_PRIORITY, true)
     );
     scheduler.scheduleAtFixedRate(new UpdateJob(), 0, cfg.waitPeriod/2, TimeUnit.SECONDS);
     executor = Executors.newVirtualThreadPerTaskExecutor();
+  }
+
+  protected static File freeStoreFile(File dir) throws IOException {
+    FileUtils.forceMkdir(dir);
+    int x = 1;
+    File f = null;
+    while (f == null || f.exists()) {
+      f = new File(dir, "event-" + x++);
+    }
+    return f;
   }
 
   /**
@@ -93,7 +106,7 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
         DatasetMapper dm = session.getMapper(DatasetMapper.class);
         var d = dm.getSimple(key);
         if (d == null) {
-          LOG.warn("Ignore DOI {} with unkown dataset key {}", event.getDoi(), key);
+          LOG.warn("Ignore DOI {} with unknown dataset key {}", event.getDoi(), key);
           return;
         }
       }
@@ -300,6 +313,12 @@ public class DoiChangeListener implements DoiListener, AutoCloseable {
   public void close() throws Exception {
     ExecutorUtils.shutdown(scheduler, 10, TimeUnit.SECONDS);
     executor.close();
+    if (events.size()>0) {
+      LOG.warn("Closing DOI change listener with {} DOI events waiting", events.size());
+      for (XDoiChange event : events) {
+        LOG.info("Discard queued DOI {} for dataset {}: {}", event.getType(), event.datasetKey, event.getDoi());
+      }
+    }
     events.close();
   }
 }
