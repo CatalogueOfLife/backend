@@ -37,6 +37,7 @@ public class DOI implements Serializable {
   static final Pattern HTTP = Pattern.compile("^https?://(dx\\.)?doi\\.org/(urn:)?(doi:)?", 2);
   static final Pattern PARSER = Pattern.compile("^(?:urn:)?(?:doi:)?(10(?:\\.[0-9]+)+)/(.+)$", 2);
   private static final String RESOLVER = "https://doi.org/";
+  private static final String TEST_RESOLVER = "https://handle.test.datacite.org/";
 
   private static final String DATASET_PATH = "d";
   private static final String EXPORT_PATH = "e";
@@ -148,7 +149,8 @@ public class DOI implements Serializable {
 
   public URI getUrl() {
     try {
-      return URI.create(RESOLVER + this.prefix + '/' + URLEncoder.encode(this.suffix, CHAR_ENCODING));
+      var resolver = isTest() ? TEST_RESOLVER : RESOLVER;
+      return URI.create(resolver + this.prefix + '/' + URLEncoder.encode(this.suffix, CHAR_ENCODING));
     } catch (UnsupportedEncodingException var2) {
       throw new IllegalStateException("Unsupported DOI encoding", var2);
     }
@@ -179,6 +181,11 @@ public class DOI implements Serializable {
   @JsonIgnore
   public boolean isGBIF() {
     return GBIF_PREFIX.equalsIgnoreCase(prefix);
+  }
+
+  @JsonIgnore
+  public boolean isTest() {
+    return TEST_PREFIX.equalsIgnoreCase(prefix);
   }
 
   @JsonIgnore

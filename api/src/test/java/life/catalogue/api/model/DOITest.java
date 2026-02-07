@@ -17,6 +17,12 @@ public class DOITest {
     assertEquals("10.48580/234567", doi.getDoiName());
     assertEquals("doi:10.48580/234567", doi.getDoiString());
     assertEquals(URI.create("https://doi.org/10.48580/234567"), doi.getUrl());
+
+    doi = DOI.test("234567");
+    assertEquals("10.80631/234567", doi.toString());
+    assertEquals("10.80631/234567", doi.getDoiName());
+    assertEquals("doi:10.80631/234567", doi.getDoiString());
+    assertEquals(URI.create("https://handle.test.datacite.org/10.80631/234567"), doi.getUrl());
   }
 
   @Test
