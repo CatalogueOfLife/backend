@@ -125,6 +125,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       }
     }
     LOG.info("Done");
+    LOG.info("Created {}, updated {} and published {} DOIs", created.total(), updated.total(), published.total());
   }
 
   private void updateDOI(DOI doi) throws DoiException {
@@ -279,7 +280,6 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     @Override
     public void run() {
       try {
-        var data = doiService.resolve(doi);
         metadata.setDoi(doi);
         if (create) {
           LOG.info("Create DOI {} for {} {}", doi, info.origin, info.key);
@@ -290,10 +290,13 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
           doiService.update(metadata);
           updated.inc(info.origin);
         }
+        var data = doiService.resolve(doi);
         if (data.getState() != DoiState.FINDABLE) {
           LOG.info("Publish DOI {} for {} {}", doi, info.origin, info.key);
           doiService.publish(doi);
           published.inc(info.origin);
+        } else {
+          LOG.info("Final state of DOI {}: {}", doi, data.getState());
         }
       } catch (DoiException e) {
         LOG.error("Failed to sync DOI {} for {} {} with Datacite", doi, info.origin, info.key, e);

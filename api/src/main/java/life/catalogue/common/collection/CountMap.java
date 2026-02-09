@@ -50,4 +50,7 @@ public class CountMap<K> extends HashMap<K, Integer> {
     return best;
   }
 
+  public int total() {
+    return values().stream().mapToInt(Integer::intValue).sum();
+  }
 }
