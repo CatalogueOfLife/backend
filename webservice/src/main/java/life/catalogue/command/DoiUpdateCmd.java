@@ -120,7 +120,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
         }
       }
     } finally {
-      ExecutorUtils.shutdown(executor);
+      if (executor != null) {
+        ExecutorUtils.shutdown(executor);
+      }
     }
     LOG.info("Done");
   }
@@ -175,6 +177,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var d = dm.get(datasetKey);
       var create = assertDoiExists(d);
+      LOG.info("{} DOI {}for external dataset {}: {}", create?"Create":"Update", versions==null?"":" and it's versions ", datasetKey, d.getTitle());
       executor.execute(new DataciteSync(d.getDoi(), converter.dataset(d), d.getKey(), create));
       // also update past import versions in the archive?
       if (versions != null) {
