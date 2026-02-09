@@ -81,6 +81,12 @@
     WHERE d.key = #{key} AND d.attempt = #{attempt}
   </select>
 
+  <update id="updateVersionDOI" parameterType="map">
+    UPDATE dataset_archive
+    SET version_doi = #{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}
+    WHERE key = #{key} AND attempt = #{attempt}
+  </update>
+
   <insert id="create" parameterType="map">
     INSERT INTO dataset_archive (key, attempt, <include refid="COLS"/>, source_key, origin, created_by, created, modified)
     SELECT key, attempt, <include refid="COLS"/>, source_key, origin, created_by, now(), now()
@@ -92,6 +98,7 @@
     SELECT <include refid="SELECT"/>
     FROM <include refid="FROM"/>
     WHERE d.key = #{datasetKey}
+    ORDER BY attempt DESC
   </select>
 
   <delete id="deleteByDataset" parameterType="map">

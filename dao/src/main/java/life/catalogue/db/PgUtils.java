@@ -74,9 +74,20 @@ public class PgUtils {
     }
   }
 
+  /**
+   * Converts a cursor into a list and closes the cursor afterwards.
+   * @param cursor
+   * @return
+   * @param <T>
+   */
   public static <T> List<T> toList(Cursor<T> cursor) {
     var list = new ArrayList<T>();
     cursor.forEach(list::add);
+    try {
+      cursor.close();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     return list;
   }
 

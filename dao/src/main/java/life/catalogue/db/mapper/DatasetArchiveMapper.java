@@ -1,5 +1,6 @@
 package life.catalogue.db.mapper;
 
+import life.catalogue.api.model.DOI;
 import life.catalogue.api.model.Dataset;
 import life.catalogue.db.DatasetProcessable;
 
@@ -14,6 +15,14 @@ public interface DatasetArchiveMapper extends DatasetProcessable<Dataset>, Datas
    * @param key current dataset key to archive
    */
   void create(@Param("key") int key);
+
+  /**
+   * Updates the DOI of a dataset version in the archive.
+   * @param key
+   * @param attempt
+   * @param doi
+   */
+  void updateVersionDOI(@Param("key") int key, @Param("attempt") int attempt, @Param("doi") DOI doi);
 
   /**
    * Retrieves a dataset from the archive by its key and import attempt.

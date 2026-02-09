@@ -63,6 +63,13 @@ public interface DatasetMapper extends CRUD<Integer, Dataset>, GlobalPageable<Da
   void updateSettings(@Param("key") int key, @Param("settings") DatasetSettings settings, @Param("userKey") int userKey);
 
   /**
+   * Updates only the DOI of a dataset.
+   * @param key
+   * @param doi
+   */
+  void updateDOI(@Param("key") int key, @Param("doi") DOI doi);
+
+  /**
    * Updates the taxonomic group scope of a given dataset.
    * It adds missing parental groups to the set before storing it with the dataset.
    */
