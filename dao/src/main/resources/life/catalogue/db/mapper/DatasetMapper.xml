@@ -617,6 +617,11 @@
     WHERE key = #{key}
   </update>
 
+  <update id="updateVersionDOI" parameterType="map">
+    UPDATE dataset SET (version_doi, modified) = (#{doi, typeHandler=life.catalogue.db.type.DoiTypeHandler}, now())
+    WHERE key = #{key}
+  </update>
+
   <update id="_updateTaxonomicGroupScope" parameterType="map">
     UPDATE dataset SET taxonomic_group_scope = #{groups, typeHandler=life.catalogue.db.type2.TaxGroupSetTypeHandler}
     WHERE key = #{key}

@@ -182,27 +182,44 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       executor.execute(new DataciteSync(d.getDoi(), converter.dataset(d), d.getKey(), create));
       // also update past import versions in the archive?
       if (versions != null) {
+        DOI next = null;
+        // first update the current version of the dataset itself
+        boolean createV = false;
+        if (d.getVersionDoi() == null) {
+          createV = true;
+          d.setVersionDoi(cfg.doi.datasetVersionDOI(d.getKey(), d.getAttempt()));
+          dm.updateVersionDOI(d.getKey(), d.getVersionDoi());
+        }
+        // we wait with updating the DOI metadata until we know the last version DOI
+        DOI firstArchivedVersionDOI = null;
+        // now the archived versions
         int countDown = versions;
         var dam = session.getMapper(DatasetArchiveMapper.class);
         // we retrieve past version with the most current attempt first in the imports list
         var imports = PgUtils.toList(dam.processDataset(d.getKey()));
         var iter = PeekingIterator.peekingIterator(imports.iterator());
-        DOI next = null;
         while (iter.hasNext() && countDown != 0) {
           var v = iter.next();
           countDown--;
           // add missing version DOI
-          boolean createV = false;
           if (v.getVersionDoi() == null) {
             createV = true;
             v.setVersionDoi(cfg.doi.datasetVersionDOI(v.getKey(), v.getAttempt()));
             dam.updateVersionDOI(v.getKey(), v.getAttempt(), v.getVersionDoi());
+          } else {
+            createV = false;
+          }
+          // remember the first archived version DOI for the current dataset update at the end
+          if (firstArchivedVersionDOI == null) {
+            firstArchivedVersionDOI=v.getVersionDoi();
           }
           var prev = iter.peek();
           DOI prevDOI = prev != null ? prev.getVersionDoi() : null;
           executor.execute(new DataciteSync(v.getVersionDoi(), converter.datasetVersion(v, prevDOI, next), v.getKey(), createV));
           next = v.getVersionDoi();
         }
+        // now we also update the current version
+        executor.execute(new DataciteSync(d.getVersionDoi(), converter.datasetVersion(d, firstArchivedVersionDOI, next), d.getKey(), createV));
       }
     }
   }
@@ -303,5 +320,4 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       }
     }
   }
-
 }
