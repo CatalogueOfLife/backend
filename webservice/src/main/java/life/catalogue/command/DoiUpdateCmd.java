@@ -47,9 +47,11 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private static final String ARG_ALL = "all";
   private static final String ARG_VERSIONS = "versions";
   private static final String ARG_THREADS = "threads";
+  private static final String ARG_NO_UPDATE = "noUpdate";
+  private Integer versions  ;
+  private boolean noUpdate = false;
   private DoiService doiService;
   private DatasetConverter converter;
-  private Integer versions  ;
   private CountMap<DatasetOrigin> created = new CountMap<>();
   private CountMap<DatasetOrigin> updated = new CountMap<>();
   private CountMap<DatasetOrigin> published = new CountMap<>();
@@ -77,7 +79,13 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       .dest(ARG_ALL)
       .type(Boolean.class)
       .required(false)
-      .help("Update all DOIs for all releases and external datasets, including their ");
+      .help("Update all DOIs for all releases and external datasets, including their versions");
+    subparser.addArgument("--"+ ARG_NO_UPDATE)
+      .dest(ARG_NO_UPDATE)
+      .type(Boolean.class)
+      .required(false)
+      .setDefault(false)
+      .help("Do not update DOIs, only create new ones or publish existing ones");
     subparser.addArgument("--"+ ARG_VERSIONS)
       .dest(ARG_VERSIONS)
       .type(Integer.class)
@@ -107,6 +115,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       var threads = ns.getInt(ARG_THREADS);
       this.executor = Executors.newFixedThreadPool(threads, new NamedThreadFactory("datacite-worker"));
       versions = ns.getInt(ARG_VERSIONS);
+      noUpdate = ns.getBoolean(ARG_NO_UPDATE);
 
       var doiStr = ns.getString(ARG_DOI);
       var key = ns.getInt(ARG_KEY);
@@ -184,7 +193,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       DatasetMapper dm = session.getMapper(DatasetMapper.class);
       var d = dm.get(datasetKey);
       var create = assertDoiExists(d);
-      LOG.info("{} DOI {}for external dataset {}: {}", create?"Create":"Update", versions==null?"":" and it's versions ", datasetKey, d.getTitle());
+      LOG.info("Schedule dataset {} with DOI {}", datasetKey, d.getDoi());
       executor.execute(new DataciteSync(d.getDoi(), converter.dataset(d), d.getKey(), create));
       // also update past import versions in the archive?
       if (versions != null) {
@@ -331,24 +340,22 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       try {
         metadata.setDoi(doi);
         if (create) {
-          LOG.info("Create DOI {} for {} {}", doi, info.origin, info.key);
+          LOG.info("Create DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
           doiService.create(metadata);
           created.inc(info.origin);
-        } else {
-          LOG.info("Update DOI {} for {} {}", doi, info.origin, info.key);
+        } else if (!noUpdate){
+          LOG.info("Update DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
           doiService.update(metadata);
           updated.inc(info.origin);
         }
         var data = doiService.resolve(doi);
         if (data.getState() != DoiState.FINDABLE) {
-          LOG.info("Publish DOI {} for {} {}", doi, info.origin, info.key);
+          LOG.info("Publish DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst());
           doiService.publish(doi);
           published.inc(info.origin);
-        } else {
-          LOG.info("Final state of DOI {}: {}", doi, data.getState());
         }
       } catch (DoiException e) {
-        LOG.error("Failed to sync DOI {} for {} {} with Datacite", doi, info.origin, info.key, e);
+        LOG.error("Failed to sync with Datacite DOI {} for {} {}: {}", doi, info.origin, info.key, metadata.getTitles().getFirst(), e);
       }
     }
   }
