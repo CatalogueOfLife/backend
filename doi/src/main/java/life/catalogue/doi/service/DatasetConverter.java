@@ -118,10 +118,10 @@ public class DatasetConverter {
     if (d.getCreator() != null && !d.getCreator().isEmpty()) {
       attr.setCreators(toCreators(d.getCreator()));
     } else if (d.getEditor() != null && !d.getEditor().isEmpty()) {
-      LOG.info("No authors given. Use dataset editors instead");
+      LOG.debug("No authors given. Use dataset editors instead");
       attr.setCreators(toCreators(d.getEditor()));
     } else {
-      LOG.info("No authors given. Use dataset creator instead");
+      LOG.debug("No authors given. Use dataset creator instead");
       User user = userByID.apply(d.getCreatedBy());
       Creator creator;
       if (user.getLastname() != null) {
