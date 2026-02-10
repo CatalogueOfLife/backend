@@ -165,7 +165,7 @@ public class DataCiteService implements DoiService {
     Preconditions.checkNotNull(attr.getDoi());
     Preconditions.checkArgument(attr.getDoi().isComplete(), "DOI suffix required");
 
-    LOG.info("update metadata for DOI {}", attr);
+    LOG.info("update metadata for {}", attr.getDoi());
     Response resp = null;
     try {
       DataCiteWrapper data = new DataCiteWrapper(attr);

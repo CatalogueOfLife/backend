@@ -53,6 +53,7 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
   private CountMap<DatasetOrigin> updated = new CountMap<>();
   private CountMap<DatasetOrigin> published = new CountMap<>();
   private ExecutorService executor;
+  private EventBroker events;
 
   public DoiUpdateCmd() {
     super("doi", true, "Update all project, release and release source DOIs for the given project dataset key");
@@ -99,7 +100,8 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
       // setup
       doiService = new DataCiteService(cfg.doi, jerseyClient);
       Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-      UserDao udao = new UserDao(factory, cfg.mail, null, new EventBroker(cfg.broker), validator);
+      events = new EventBroker(cfg.broker);
+      UserDao udao = new UserDao(factory, cfg.mail, null, events, validator);
       converter = new DatasetConverter(cfg.portalURI, cfg.clbURI, udao::get);
       var threads = ns.getInt(ARG_THREADS);
       this.executor = Executors.newFixedThreadPool(threads, new NamedThreadFactory("datacite-worker"));
@@ -122,6 +124,9 @@ public class DoiUpdateCmd extends AbstractMybatisCmd {
     } finally {
       if (executor != null) {
         ExecutorUtils.shutdown(executor);
+      }
+      if (events != null) {
+        events.close();
       }
     }
     LOG.info("Done");
